@@ -31,7 +31,7 @@ import {
   ROUTES,
   userRoleItems,
   platformRoleFilterItems,
-  INCLUDE_PLATFORM_ADMINS,
+  PLATFORM_MANAGED_ROLES,
   userStatusItems,
   FilterDropdownOptions,
   userStatus,
@@ -72,6 +72,11 @@ export const UserManagement: FC = () => {
   // tab (mirrors PrivateLayout's `requiredRole || requiredFeature`).
   const canManagePlatformAdmins =
     isSuperDuperAdmin || hasFeature(features, FeatureToggleKey.ADMIN_USER_MANAGEMENT);
+  // Platform accounts are now always part of the Users list rather than an
+  // opt-in filter, so this has to match the backend's own gate exactly: the
+  // flag rides on every users request, and a mismatch would 403 the whole list
+  // instead of just one filter.
+  const canListPlatformAdmins = permissions.includes(Permissions.VIEW_SUPER_DUPER_ADMINS);
 
   // Platform-admin count for the tab strip. RTK Query shares this cache entry
   // with the SuperAdmins tab itself, so no duplicate request is made.
@@ -81,7 +86,7 @@ export const UserManagement: FC = () => {
   const superAdminTierCount = platformAdminsForCount?.count ?? 0;
 
   const requestedTab = (searchParams.get("tab") as TabType) || TabType.USERS;
-  // The Super Admins tab is gated; a deep link to it from anyone else falls
+  // The Ally admins tab is gated; a deep link to it from anyone else falls
   // back to Users (the backing endpoints would 403 anyway).
   const activeTab =
     requestedTab === TabType.SUPER_ADMINS && !canManagePlatformAdmins
@@ -145,7 +150,7 @@ export const UserManagement: FC = () => {
     handleUserAddClick,
     handleAddCredit,
     includePlatformAdmins,
-  } = useUserManagement(tenants, isSuperDuperAdmin);
+  } = useUserManagement(tenants, canListPlatformAdmins);
 
   const watchedRoles = userMethods.watch("roles") || [];
 
@@ -153,6 +158,26 @@ export const UserManagement: FC = () => {
     watchedRoles.includes(UserRole.MULTI_TENANT_ADMIN) ||
     selectedUser?.role === UserRole.MULTI_TENANT_ADMIN ||
     selectedUser?.roles?.includes(UserRole.MULTI_TENANT_ADMIN);
+
+  // Platform tiers aren't in the picker (the Ally admins tab owns them), so
+  // without this the modal would look as though the account holds only its app
+  // roles — and saving would look like it had dropped the rest.
+  const heldPlatformRoles = (selectedUser?.roles ?? []).filter(role =>
+    PLATFORM_MANAGED_ROLES.includes(role),
+  );
+  const platformRolesNote = heldPlatformRoles.length ? (
+    <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light italic">
+      {en.userManagement.platformRolesKept(
+        heldPlatformRoles
+          .map(role =>
+            role === UserRole.PLATFORM_ADMIN
+              ? en.userManagement.allyAdminRole
+              : formatCapitalizedEnum(role),
+          )
+          .join(", "),
+      )}
+    </div>
+  ) : null;
 
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
@@ -270,12 +295,17 @@ export const UserManagement: FC = () => {
             formMethods={userMethods}
             handleClick={handleChangeRole}
             extraContent={
-              isMultiTenantAdmin ? (
-                <AssignedOrganizations
-                  userId={selectedUser?.id as number}
-                  canEdit={canEditMultiTenantAdmins}
-                  allTenants={tenants}
-                />
+              platformRolesNote || isMultiTenantAdmin ? (
+                <div className="flex flex-col gap-3">
+                  {platformRolesNote}
+                  {isMultiTenantAdmin && (
+                    <AssignedOrganizations
+                      userId={selectedUser?.id as number}
+                      canEdit={canEditMultiTenantAdmins}
+                      allTenants={tenants}
+                    />
+                  )}
+                </div>
               ) : undefined
             }
           />
@@ -469,31 +499,14 @@ export const UserManagement: FC = () => {
                 {
                   id: "roles",
                   label: FilterDropdownOptions.ROLE,
-                  // The platform roles are only worth offering once those
-                  // accounts are actually in the list.
+                  // The platform roles are only worth offering to a viewer whose
+                  // list actually contains those accounts.
                   options: [
                     ...userRoleItems,
                     ...(includePlatformAdmins ? platformRoleFilterItems : []),
                   ].map(role => ({ label: role, value: role })),
                   renderOption: option => formatCapitalizedEnum(option.value),
                 },
-                // Super-duper-admin only: platform accounts are hidden from
-                // this list by default (the backend rejects the opt-in from
-                // anyone else), so hide the control rather than let it 403.
-                ...(isSuperDuperAdmin
-                  ? [
-                      {
-                        id: "platformAccounts" as const,
-                        label: FilterDropdownOptions.PLATFORM_ACCOUNTS,
-                        options: [
-                          {
-                            label: en.userManagement.platformAccountsInclude,
-                            value: INCLUDE_PLATFORM_ADMINS,
-                          },
-                        ],
-                      },
-                    ]
-                  : []),
                 {
                   id: "organizations",
                   label: FilterDropdownOptions.ORGANIZATION,

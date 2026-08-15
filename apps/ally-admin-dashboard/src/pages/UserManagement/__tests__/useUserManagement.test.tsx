@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { INCLUDE_PLATFORM_ADMINS, UserRole } from "@constants";
+import { UserRole } from "@constants";
 
 import { useUserManagement } from "../useUserManagement";
 
@@ -10,14 +10,18 @@ const getUsersQuery = vi.fn();
 const USERS_RESULT = { data: { data: [], count: 0 }, isFetching: false };
 
 // Every role the backend knows about, in the shape GET /authorization/roles
-// returns — including the two the picker must never offer.
+// returns. The endpoint now filters the platform tiers itself, but they are
+// kept here on purpose: the picker has to stay right against a backend that
+// hasn't shipped that filter yet.
 const allRoles = [
   { id: 1, name: UserRole.COUNSELLOR },
   { id: 2, name: UserRole.ADMIN },
   { id: 3, name: UserRole.LEARNER },
   { id: 4, name: UserRole.CLIENT },
+  { id: 5, name: UserRole.MULTI_TENANT_ADMIN },
   { id: 6, name: UserRole.SUPER_ADMIN },
   { id: 7, name: UserRole.SUPER_DUPER_ADMIN },
+  { id: 8, name: UserRole.PLATFORM_ADMIN },
 ];
 
 // Keep the rest of @api real: @store (pulled in transitively) needs baseAPI.
@@ -58,12 +62,7 @@ describe("useUserManagement", () => {
   });
 
   describe("role picker", () => {
-    // The former SUPER_ADMIN/SUPER_DUPER_ADMIN exclusion (TIER_MANAGED_ROLES) is
-    // gone: PLATFORM_ADMIN is now a single boolean assigned/removed via the
-    // dedicated Admin User Management screen (POST/DELETE /v1/platform-admins),
-    // not through this generic role picker, so there is nothing left to lock out
-    // here beyond the anonymous-chat CLIENT identity.
-    it("offers the assignable roles but not CLIENT", async () => {
+    it("offers the assignable app roles but not CLIENT", async () => {
       const { result } = renderHook(() => useUserManagement([]));
 
       await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
@@ -72,6 +71,22 @@ describe("useUserManagement", () => {
       expect(offered).toContain(UserRole.LEARNER);
       expect(offered).toContain(UserRole.COUNSELLOR);
       expect(offered).not.toContain(UserRole.CLIENT);
+    });
+
+    // PLATFORM_ADMIN is granted on the Ally admins tab alongside the feature
+    // toggles that decide what the admin can reach; granting it here would
+    // leave those unset. The three retired tiers still carry live permissions,
+    // so offering one would mint an admin that tab cannot see.
+    it("never offers a platform tier", async () => {
+      const { result } = renderHook(() => useUserManagement([]));
+
+      await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
+
+      const offered = result.current.roles.map(role => role.name);
+      expect(offered).not.toContain(UserRole.PLATFORM_ADMIN);
+      expect(offered).not.toContain(UserRole.SUPER_ADMIN);
+      expect(offered).not.toContain(UserRole.SUPER_DUPER_ADMIN);
+      expect(offered).not.toContain(UserRole.MULTI_TENANT_ADMIN);
     });
   });
 
@@ -126,44 +141,30 @@ describe("useUserManagement", () => {
     });
   });
 
-  describe("platform-admin opt-in", () => {
-    const applyIncludeFilter = (result: { current: ReturnType<typeof useUserManagement> }) =>
-      act(() =>
-        result.current.handleApplyFilters({
-          organizations: [],
-          roles: [],
-          statuses: [],
-          platformAccounts: [INCLUDE_PLATFORM_ADMINS],
-        }),
-      );
-
-    it("asks for platform admins once a super duper admin opts in", async () => {
+  describe("platform accounts in the list", () => {
+    // No opt-in any more: the list a permitted viewer gets is the whole list.
+    it("asks for platform admins straight away for a viewer who may see them", () => {
       const { result } = renderHook(() => useUserManagement([], true));
 
-      applyIncludeFilter(result);
-
-      await waitFor(() =>
-        expect(getUsersQuery).toHaveBeenLastCalledWith(
-          expect.objectContaining({ includePlatformAdmins: true }),
-        ),
+      expect(getUsersQuery).toHaveBeenLastCalledWith(
+        expect.objectContaining({ includePlatformAdmins: true }),
       );
       expect(result.current.includePlatformAdmins).toBe(true);
     });
 
     // Anyone else would get a 403, so the param must never leave the client.
-    it("never sends it for a viewer who cannot list them", async () => {
+    it("never sends it for a viewer who cannot list them", () => {
       const { result } = renderHook(() => useUserManagement([], false));
 
-      applyIncludeFilter(result);
-
-      await waitFor(() => expect(result.current.includePlatformAdmins).toBe(false));
-      expect(getUsersQuery).not.toHaveBeenCalledWith(
-        expect.objectContaining({ includePlatformAdmins: true }),
+      expect(getUsersQuery).toHaveBeenLastCalledWith(
+        expect.objectContaining({ includePlatformAdmins: undefined }),
       );
+      expect(result.current.includePlatformAdmins).toBe(false);
     });
 
-    // Otherwise the list asks for rows the backend has just been told to hide.
-    it("drops platform role filters when the opt-in is switched off", async () => {
+    // The role filter is the only platform-account control left, so a selected
+    // platform role has to survive an apply untouched.
+    it("keeps a selected platform role filter", async () => {
       const { result } = renderHook(() => useUserManagement([], true));
 
       act(() =>
@@ -171,30 +172,13 @@ describe("useUserManagement", () => {
           organizations: [],
           roles: [UserRole.SUPER_ADMIN, UserRole.LEARNER],
           statuses: [],
-          platformAccounts: [INCLUDE_PLATFORM_ADMINS],
-        }),
-      );
-      await waitFor(() => expect(result.current.filters.roles).toContain(UserRole.SUPER_ADMIN));
-
-      act(() =>
-        result.current.handleApplyFilters({
-          organizations: [],
-          roles: [UserRole.SUPER_ADMIN, UserRole.LEARNER],
-          statuses: [],
-          platformAccounts: [],
         }),
       );
 
-      await waitFor(() => expect(result.current.filters.roles).toEqual([UserRole.LEARNER]));
-      expect(result.current.includePlatformAdmins).toBe(false);
-    });
-
-    it("omits the param entirely by default", () => {
-      renderHook(() => useUserManagement([], true));
-
-      expect(getUsersQuery).toHaveBeenLastCalledWith(
-        expect.objectContaining({ includePlatformAdmins: undefined }),
+      await waitFor(() =>
+        expect(result.current.filters.roles).toEqual([UserRole.SUPER_ADMIN, UserRole.LEARNER]),
       );
+      expect(result.current.includePlatformAdmins).toBe(true);
     });
   });
 });

@@ -87,7 +87,6 @@ vi.mock("@components", () => ({
               roles: ["admin"],
               organizations: [],
               statuses: [],
-              platformAccounts: [],
             })
           }
         >
@@ -177,7 +176,7 @@ describe("UserManagement", () => {
     isFilterOpen: false,
     setIsFilterOpen: vi.fn(),
     addFilterBtnRef: { current: null },
-    filters: { organizations: [], roles: [], statuses: [], platformAccounts: [] },
+    filters: { organizations: [], roles: [], statuses: [] },
     handleApplyFilters: vi.fn(),
     includePlatformAdmins: false,
     users: mockUsers as any,
@@ -636,7 +635,6 @@ describe("UserManagement", () => {
         roles: ["admin"],
         organizations: [],
         statuses: [],
-        platformAccounts: [],
       });
     });
   });
@@ -733,20 +731,38 @@ describe("UserManagement", () => {
       renderUserManagement();
     };
 
-    it("offers the platform-accounts filter to a super duper admin", () => {
+    // The opt-in is gone: platform accounts are simply in the list for anyone
+    // allowed to see them.
+    it("offers no platform-accounts filter section", () => {
       openFilters("SUPER_DUPER_ADMIN");
-
-      expect(screen.getByTestId("filter-section-platformAccounts")).toBeInTheDocument();
-      expect(screen.getByText("Include Ally staff & super admins")).toBeInTheDocument();
-    });
-
-    it("hides it from a plain super admin, whose request would be rejected", () => {
-      openFilters("SUPER_ADMIN");
 
       expect(screen.queryByTestId("filter-section-platformAccounts")).not.toBeInTheDocument();
     });
 
-    it("offers the platform roles in the Role filter only once they are listed", () => {
+    // Matches the backend's own gate — the flag now rides on every request.
+    it("asks the hook to list platform accounts for a viewer holding the permission", () => {
+      setPermissions([Permissions.EDIT_USER, Permissions.VIEW_SUPER_DUPER_ADMINS], {
+        role: "SUPER_DUPER_ADMIN",
+      });
+      renderUserManagement();
+
+      expect(useUserManagementHook.useUserManagement).toHaveBeenLastCalledWith(
+        expect.anything(),
+        true,
+      );
+    });
+
+    it("does not, for a viewer without it", () => {
+      setPermissions([Permissions.EDIT_USER], { role: "SUPER_ADMIN" });
+      renderUserManagement();
+
+      expect(useUserManagementHook.useUserManagement).toHaveBeenLastCalledWith(
+        expect.anything(),
+        false,
+      );
+    });
+
+    it("offers the platform roles in the Role filter only to viewers whose list holds them", () => {
       setPermissions([Permissions.EDIT_USER], { role: "SUPER_DUPER_ADMIN" });
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
@@ -760,7 +776,7 @@ describe("UserManagement", () => {
       expect(roleSection).toHaveTextContent("SUPER_DUPER_ADMIN");
     });
 
-    it("keeps the platform roles out of the Role filter by default", () => {
+    it("keeps the platform roles out of the Role filter for everyone else", () => {
       openFilters("SUPER_DUPER_ADMIN");
 
       const roleSection = screen.getByTestId("filter-section-roles");
@@ -768,10 +784,6 @@ describe("UserManagement", () => {
       expect(roleSection).toHaveTextContent("LEARNER");
     });
 
-    // The former "tier role kept" note is gone along with TIER_MANAGED_ROLES:
-    // PLATFORM_ADMIN is a single boolean assigned/removed via the dedicated
-    // Admin User Management screen now, not through this generic role picker,
-    // so "Change role" has nothing left to protect against.
     it("shows no extra content for an ordinary account's change-role modal", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
@@ -782,6 +794,38 @@ describe("UserManagement", () => {
       renderUserManagement();
 
       expect(screen.queryByTestId("modal-extra-content")).not.toBeInTheDocument();
+    });
+
+    // The picker can't show the tier, so without this note the modal reads as
+    // though the account holds only its app roles — and saving reads as though
+    // it dropped the rest.
+    it("names a held platform tier as read-only context, in product language", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: { ...mockUsers[0], roles: ["PLATFORM_ADMIN", "LEARNER"] },
+      } as any);
+
+      renderUserManagement();
+
+      const note = screen.getByTestId("modal-extra-content");
+      expect(note).toHaveTextContent("Ally admin is kept");
+      expect(note).toHaveTextContent("Ally admins tab");
+      // The raw group name is an implementation detail of the collapse.
+      expect(note).not.toHaveTextContent("PLATFORM_ADMIN");
+    });
+
+    // Accounts the collapse migration hasn't touched still hold a retired tier.
+    it("names a held retired tier too", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: { ...mockUsers[0], roles: ["SUPER_DUPER_ADMIN"] },
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("modal-extra-content")).toHaveTextContent("Super duper admin");
     });
   });
 

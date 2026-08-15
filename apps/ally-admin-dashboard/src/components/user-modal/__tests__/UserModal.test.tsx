@@ -534,7 +534,7 @@ describe("UserModal", () => {
     });
 
     // A platform account holds roles this picker deliberately never offers
-    // (the super-admin tier lives on the Super Admins tab). Seeding them would
+    // (the super-admin tier lives on the Ally admins tab). Seeding them would
     // render a tag that can be seen but never removed, and submitting would
     // drop them.
     describe("roles the picker does not offer", () => {

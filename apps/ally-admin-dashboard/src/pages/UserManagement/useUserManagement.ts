@@ -25,8 +25,7 @@ import {
   FilterDropdownOptions,
   userStatus,
   UserRole,
-  INCLUDE_PLATFORM_ADMINS,
-  platformRoleFilterItems,
+  PLATFORM_MANAGED_ROLES,
 } from "@constants";
 import {
   AddUserFormData,
@@ -42,21 +41,10 @@ export const USERS_PAGE_SIZE = 20;
 const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
 
 /**
- * Drop the opt-in and any platform role selected under it. Leaving
- * `roles: ["SUPER_ADMIN"]` behind once those accounts are excluded again would
- * ask the backend for rows it will never return — an empty list with no visible
- * cause.
- */
-const withoutPlatformAdmins = (current: FilterValues): FilterValues => ({
-  ...current,
-  platformAccounts: [],
-  roles: current.roles.filter(role => !platformRoleFilterItems.includes(role)),
-});
-
-/**
  * @param canListPlatformAdmins whether the viewer may list accounts holding a
- * platform role (super duper admins only). Gates both the filter section and
- * the query param, so nobody else can trip the backend's 403.
+ * platform role. When they may, those accounts are simply part of the list —
+ * there is no opt-in to make. Gates the query param, so nobody else can trip
+ * the backend's 403.
  */
 export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = false) {
   const [search, setSearch] = useState<string>("");
@@ -68,7 +56,6 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
     organizations: [],
     roles: [],
     statuses: [],
-    platformAccounts: [],
   });
   const [tenantIdFilters, setTenantIdFilters] = useState<string[]>([]);
 
@@ -121,8 +108,9 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
   const { data: userRoles } = useGetRoleQuery();
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
-  const includePlatformAdmins =
-    canListPlatformAdmins && filters.platformAccounts.includes(INCLUDE_PLATFORM_ADMINS);
+  // No opt-in: a viewer who is allowed to see platform accounts sees them in
+  // the list like any other account.
+  const includePlatformAdmins = canListPlatformAdmins;
   const userParams = {
     limit: USERS_PAGE_SIZE,
     offset: usersOffset,
@@ -162,13 +150,20 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
   useEffect(() => {
     if (!userRoles) return;
 
-    // CLIENT is an anonymous-chat identity, never granted by hand. The former
-    // SUPER_ADMIN/SUPER_DUPER_ADMIN tier roles no longer need special-casing
-    // here: PLATFORM_ADMIN is a single boolean now, assigned/removed via the
-    // dedicated Admin User Management screen (POST/DELETE /v1/platform-admins)
-    // rather than through this generic "change role" picker, and the backend
-    // rejects assigning the 3 retired groups through it.
-    const filteredRoles = userRoles.filter(role => role.name !== UserRole.CLIENT);
+    // CLIENT is an anonymous-chat identity, never granted by hand.
+    //
+    // The platform tiers are filtered for a second reason: PLATFORM_ADMIN is
+    // owned by the Ally admins tab, which grants it alongside the per-user
+    // feature toggles that decide what an admin can actually reach — granting
+    // it here would produce an admin with no toggles at all. The three retired
+    // tiers still sit in `groups` for rollback safety and still carry live
+    // permissions, so they must not be offered either. `/v1/authorization/roles`
+    // now filters all four server-side; this keeps the picker right against a
+    // backend that hasn't shipped that yet.
+    const filteredRoles = userRoles.filter(
+      role =>
+        role.name !== UserRole.CLIENT && !(PLATFORM_MANAGED_ROLES as string[]).includes(role.name),
+    );
     setRoles(filteredRoles);
   }, [userRoles]);
 
@@ -208,25 +203,11 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, statuses: [] })),
       });
     }
-    // Named rather than shown as a raw value: the chip has to make it obvious
-    // why staff accounts suddenly appear in a tenant's user list.
-    if (includePlatformAdmins) {
-      chips.push({
-        label: FilterDropdownOptions.PLATFORM_ACCOUNTS,
-        value: en.userManagement.platformAccountsIncluded,
-        allValue: [en.userManagement.platformAccountsIncluded],
-        onClear: () => setFilters(previousFilters => withoutPlatformAdmins(previousFilters)),
-      });
-    }
     return chips;
-  }, [filters, includePlatformAdmins]);
+  }, [filters]);
 
   const handleApplyFilters = (newFilters: FilterValues) => {
-    setFilters(
-      newFilters.platformAccounts.includes(INCLUDE_PLATFORM_ADMINS)
-        ? newFilters
-        : withoutPlatformAdmins(newFilters),
-    );
+    setFilters(newFilters);
     const organizationIds = newFilters.organizations
       .map(name => tenants.find(tenant => tenant.name === name)?.id)
       .filter((id): id is string => Boolean(id));

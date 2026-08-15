@@ -235,21 +235,23 @@ export const userRoleItems = ["COUNSELOR", "ADMIN", "LEARNER", "MULTI_TENANT_ADM
 export const userStatusItems = ["ACTIVE", "SUSPENDED"];
 
 /**
- * Extra Role-filter entries offered once "Ally staff & platform admins" is
- * included in the list, so those accounts can be isolated instead of hunted for
+ * Extra Role-filter entries offered to a viewer whose list includes Ally staff
+ * and platform admins, so those accounts can be isolated instead of hunted for
  * among a tenant's own users. Kept apart from userRoleItems because the base
  * list is what every viewer sees.
+ *
+ * Filtering, not assigning — these are deliberately not the same list as the
+ * role picker's, which offers none of them (see PLATFORM_MANAGED_ROLES).
+ * PLATFORM_ADMIN finds migrated admins; the two retired tiers find the
+ * accounts the collapse migration hasn't reached. MULTI_TENANT_ADMIN is
+ * already in userRoleItems, so it isn't repeated here.
  */
-export const platformRoleFilterItems = ["SUPER_ADMIN", "SUPER_DUPER_ADMIN"];
-
-/** The single Platform-accounts filter value; presence means "include them". */
-export const INCLUDE_PLATFORM_ADMINS = "INCLUDE_PLATFORM_ADMINS";
+export const platformRoleFilterItems = ["PLATFORM_ADMIN", "SUPER_ADMIN", "SUPER_DUPER_ADMIN"];
 
 export enum FilterDropdownOptions {
   ORGANIZATION = "Organisation",
   ROLE = "Role",
   STATUS = "Status",
-  PLATFORM_ACCOUNTS = "Platform accounts",
 }
 
 export enum userStatus {
@@ -282,7 +284,31 @@ export enum UserRole {
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
+  /**
+   * The single platform-tier role that replaced SUPER_ADMIN /
+   * SUPER_DUPER_ADMIN / MULTI_TENANT_ADMIN. Access within it is per-user
+   * feature toggles, not sub-tiers. Named PLATFORM_ADMIN because ADMIN already
+   * means a tenant-scoped org admin.
+   */
+  PLATFORM_ADMIN = "PLATFORM_ADMIN",
 }
+
+/**
+ * Roles the generic "Change role" picker must never offer.
+ *
+ * PLATFORM_ADMIN is granted on the Ally admins tab, together with the feature
+ * toggles that decide what the admin can reach; granting it from the role
+ * picker would leave those unset. The other three are the retired tiers it
+ * replaced — their groups still exist for rollback safety and still carry live
+ * permissions, so assigning one would mint an admin the Ally admins tab cannot
+ * see. Mirrors ally-be's PLATFORM_MANAGED_ROLES.
+ */
+export const PLATFORM_MANAGED_ROLES: string[] = [
+  UserRole.PLATFORM_ADMIN,
+  UserRole.SUPER_ADMIN,
+  UserRole.SUPER_DUPER_ADMIN,
+  UserRole.MULTI_TENANT_ADMIN,
+];
 
 /**
  * Platform-level super-admin roles. SUPER_DUPER_ADMIN is a peer of SUPER_ADMIN
