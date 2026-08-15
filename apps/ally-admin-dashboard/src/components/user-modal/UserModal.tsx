@@ -186,7 +186,7 @@ export const UserModal: React.FC<UserModalProps> = ({
 
     // A tag this picker doesn't offer can be rendered but never removed or
     // re-added, so seed it only with the roles that ARE offered. The rest (the
-    // super-admin tier, managed on the Super Admins tab) are shown as read-only
+    // super-admin tier, managed on the Ally admins tab) are shown as read-only
     // context by the caller's extraContent and re-added when the form is saved.
     const offeredRoles = new Set(
       (field.options ?? []).map(option => ("name" in option && option.name) || option.value),

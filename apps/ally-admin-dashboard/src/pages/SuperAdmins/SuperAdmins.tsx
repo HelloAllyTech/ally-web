@@ -34,7 +34,7 @@ type PendingAction =
 
 /**
  * Management surface for the consolidated PLATFORM_ADMIN role, rendered as the
- * "Super Admins" tab inside User Management (next to Organizations). Replaces
+ * "Ally admins" tab inside User Management (next to Organizations). Replaces
  * the former promote/demote tier list: there is now a single role, plus a
  * per-admin feature-toggle matrix (see PlatformAdminDetail). From here an
  * `admin_user_management` holder can:

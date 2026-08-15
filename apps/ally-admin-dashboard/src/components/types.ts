@@ -220,11 +220,6 @@ export interface FilterValues {
   organizations: string[];
   roles: string[];
   statuses: string[];
-  /**
-   * Single-option section: holds INCLUDE_PLATFORM_ADMINS when the viewer has
-   * asked for Ally staff / super admins to be listed too. Empty otherwise.
-   */
-  platformAccounts: string[];
 }
 
 export interface FilterDropdownProps {

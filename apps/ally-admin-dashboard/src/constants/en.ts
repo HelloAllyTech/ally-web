@@ -564,7 +564,7 @@ export const en = {
     startSession: "Start Session",
   },
   superAdmins: {
-    title: "Super Admins",
+    title: "Ally admins",
     subtitle:
       "Manage the platform's super admins — add new ones, and promote to or demote from the elevated super duper admin tier.",
     promote: "Promote",
@@ -716,12 +716,11 @@ export const en = {
     maxCharError: (count: number) => `Maximum ${count} characters allowed`,
     changeRoleErrorMessage: "At least one role must be selected",
     changeRoleUnknownRole: "One of this user's roles is no longer available — reload and try again",
-    platformAccountsInclude: "Include Ally staff & super admins",
-    platformAccountsIncluded: "Included",
     // Plain text: this renders in the modal body, not the markdown-aware
     // confirmation popup.
-    tierRolesKept: (roles: string) =>
-      `${roles} is kept — change that in the Super Admins tab. Roles picked here are added alongside it.`,
+    allyAdminRole: "Ally admin",
+    platformRolesKept: (roles: string) =>
+      `${roles} is kept — change that in the Ally admins tab, where each admin's access is set. Roles picked here are added alongside it.`,
     appRoleTenantHint:
       "Consumer-app roles only show content assigned to this account's organization.",
     creditRequiredError: "Credit details are required",
