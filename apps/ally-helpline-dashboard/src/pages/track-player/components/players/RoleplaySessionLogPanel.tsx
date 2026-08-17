@@ -39,16 +39,9 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
 
   const tabList = [
     {
-      id: "review",
-      label: t("postSim.tabs.sessionReview"),
-      content: (
-        <SimulationSummary
-          sessionId={sessionId}
-          summaryData={summaryData}
-          retryMaxReached={retryMaxReached}
-          className="flex min-h-0 flex-col"
-        />
-      ),
+      id: "skills",
+      label: t("postSim.tabs.skillsDemonstrated"),
+      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
     },
     {
       id: "transcript",
@@ -62,9 +55,16 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
       ),
     },
     {
-      id: "skills",
-      label: t("postSim.tabs.skillsDemonstrated"),
-      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
+      id: "review",
+      label: t("postSim.tabs.sessionReview"),
+      content: (
+        <SimulationSummary
+          sessionId={sessionId}
+          summaryData={summaryData}
+          retryMaxReached={retryMaxReached}
+          className="flex min-h-0 flex-col"
+        />
+      ),
     },
   ];
 

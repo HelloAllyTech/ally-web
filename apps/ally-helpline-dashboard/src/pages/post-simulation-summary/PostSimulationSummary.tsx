@@ -82,21 +82,9 @@ export const PostSimulationSummary: FC = () => {
 
   const tabList = [
     {
-      id: 1,
-      label: t("postSim.tabs.sessionReview"),
-      content: (
-        <SimulationSummary
-          sessionId={sessionId ?? ""}
-          summaryData={summaryData}
-          retryMaxReached={retryMaxReached}
-          className="h-full min-h-0 flex flex-col overflow-hidden"
-        />
-      ),
-    },
-    {
-      id: 4,
-      label: t("postSim.tabs.askAi"),
-      content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
+      id: 5,
+      label: t("postSim.tabs.skillsDemonstrated"),
+      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
     },
     {
       id: 2,
@@ -111,9 +99,21 @@ export const PostSimulationSummary: FC = () => {
       ),
     },
     {
-      id: 5,
-      label: t("postSim.tabs.skillsDemonstrated"),
-      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
+      id: 4,
+      label: t("postSim.tabs.askAi"),
+      content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
+    },
+    {
+      id: 1,
+      label: t("postSim.tabs.sessionReview"),
+      content: (
+        <SimulationSummary
+          sessionId={sessionId ?? ""}
+          summaryData={summaryData}
+          retryMaxReached={retryMaxReached}
+          className="h-full min-h-0 flex flex-col overflow-hidden"
+        />
+      ),
     },
     ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
       ? [
