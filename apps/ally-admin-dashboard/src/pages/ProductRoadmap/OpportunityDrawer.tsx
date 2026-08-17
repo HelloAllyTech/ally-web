@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-import { Link } from "@icons";
+import { Link, TooltipIcon } from "@icons";
 import { toast } from "sonner";
 
-import { Select, SelectItem, TextArea, SkeletonText } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea, SkeletonText, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateRoadmapCommentMutation,
   useGetRoadmapCommentsQuery,
@@ -18,19 +18,24 @@ import { ROUTES } from "@constants";
 import { RoadmapOpportunityStage, RoadmapTaxonomyItem } from "@types";
 
 import { GenerateClaudePromptModal } from "./GenerateClaudePromptModal";
+import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
+import { STAGE_LABEL } from "./utils/stages";
 
 const PRD_MAX = 20000;
 const CLAUDE_PROMPT_MAX = 20000;
 const COMMENT_MAX = 500;
 
 const STAGES = Object.values(RoadmapOpportunityStage);
-const STAGE_LABEL: Record<string, string> = {
-  new: "New",
-  prioritised: "Prioritised",
-  under_development: "In development",
-  released: "Released",
-  archived: "Archived",
-};
+
+/**
+ * Months offered in the planned-month picker: two back through twelve forward.
+ *
+ * Wider than the board's default window on purpose — the board is for seeing a plan, this is for
+ * making one, and being unable to park something in "next year" from the drawer would send people
+ * back to dragging across a window they have to step twice to reach.
+ */
+const PLANNED_MONTHS_BACK = 2;
+const PLANNED_MONTHS_FORWARD = 12;
 
 interface OpportunityDrawerProps {
   opportunityId: string;
@@ -81,6 +86,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     ownerUserId: "",
     prd: "",
     claudePrompt: "",
+    /** 'YYYY-MM', or "" for Unscheduled. */
+    plannedMonth: "",
   });
   const [commentBody, setCommentBody] = useState("");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -95,6 +102,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       ownerUserId: opportunity.ownerUserId ? String(opportunity.ownerUserId) : "",
       prd: opportunity.prd ?? "",
       claudePrompt: opportunity.claudePrompt ?? "",
+      plannedMonth: opportunity.plannedMonth ?? "",
     });
   }, [opportunity]);
 
@@ -106,6 +114,18 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     }
   }, [isError, onClose]);
 
+  /**
+   * The month options. Computed once per mount rather than per render — a memo keyed on nothing
+   * still rebuilds every render, and the list only changes when the calendar month does.
+   */
+  const plannedMonthOptions = useMemo(() => {
+    const current = monthKeyOf(new Date());
+    return Array.from(
+      { length: PLANNED_MONTHS_BACK + PLANNED_MONTHS_FORWARD + 1 },
+      (_unused, index) => shiftMonthKey(current, index - PLANNED_MONTHS_BACK),
+    );
+  }, []);
+
   const isDirty =
     !!opportunity &&
     (draft.description !== opportunity.description ||
@@ -113,7 +133,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       draft.productGoal !== opportunity.productGoal ||
       draft.ownerUserId !== (opportunity.ownerUserId ? String(opportunity.ownerUserId) : "") ||
       draft.prd !== (opportunity.prd ?? "") ||
-      draft.claudePrompt !== (opportunity.claudePrompt ?? ""));
+      draft.claudePrompt !== (opportunity.claudePrompt ?? "") ||
+      draft.plannedMonth !== (opportunity.plannedMonth ?? ""));
 
   /**
    * Soft-delete. The backend also returns every contributor's coins to them, soft-deletes the
@@ -146,6 +167,9 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           ownerUserId: draft.ownerUserId ? Number(draft.ownerUserId) : null,
           prd: draft.prd || null,
           claudePrompt: draft.claudePrompt || null,
+          // "" is the Unscheduled option, which must send null — sending "" would fail the
+          // month-key @Matches with a 400 instead of clearing the plan.
+          plannedMonth: draft.plannedMonth || null,
         },
       }).unwrap();
       toast.success("Saved.");
@@ -250,6 +274,45 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   <SelectItem key={stage} value={stage} text={STAGE_LABEL[stage]} />
                 ))}
               </Select>
+
+              {/* Planned month, so something can be scheduled without opening the board and
+                  dragging. Locked once shipped: the lane is then the month it actually shipped in,
+                  which the backend enforces with a 422 — disabling the control is how that rule
+                  becomes visible instead of arriving as a failed save. */}
+              <div>
+                <div className="flex items-center gap-1">
+                  <Select
+                    id="drawer-planned-month"
+                    labelText="Planned month"
+                    value={draft.plannedMonth}
+                    disabled={!canManage || opportunity.monthPinned}
+                    onChange={event =>
+                      setDraft(prev => ({ ...prev, plannedMonth: event.target.value }))
+                    }
+                  >
+                    <SelectItem value="" text="Unscheduled" />
+                    {plannedMonthOptions.map(month => (
+                      <SelectItem key={month} value={month} text={monthLabel(month)} />
+                    ))}
+                  </Select>
+                  <Tooltip
+                    label="Which month you intend to ship this in. Once the stage is Released the card moves to the month it actually shipped, and this stops being editable — so a slipped plan stays visible instead of being overwritten."
+                    align="bottom"
+                  >
+                    <button type="button" className="inline-flex cursor-pointer items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </div>
+                {opportunity.monthPinned && (
+                  <p className="text-typography-secondary mt-1 text-xs">
+                    Shipped in {monthLabel(opportunity.effectiveMonth)}
+                    {opportunity.plannedMonth &&
+                      opportunity.plannedMonth !== opportunity.effectiveMonth &&
+                      ` · was planned for ${monthLabel(opportunity.plannedMonth)}`}
+                  </p>
+                )}
+              </div>
 
               <Select
                 id="drawer-goal"

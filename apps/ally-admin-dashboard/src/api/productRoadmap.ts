@@ -1,5 +1,8 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  RoadmapBoardMoveResponse,
+  RoadmapBoardQuery,
+  RoadmapBoardResponse,
   RoadmapCoinBudget,
   RoadmapComment,
   RoadmapDuplicateMatch,
@@ -38,6 +41,116 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         ],
       },
     ),
+
+    /**
+     * The month board.
+     *
+     * Provides the SAME `{ id: "LIST" }` tag as the table, deliberately: every mutation that
+     * already invalidates the list (create, update, delete, split, merge) must refresh the board
+     * too, and giving the board its own tag would mean auditing all of them and forgetting one.
+     */
+    getRoadmapBoard: builder.query<RoadmapBoardResponse, RoadmapBoardQuery>({
+      query: params => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.BOARD,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: result => [
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+        ...[...(result?.months ?? []), ...(result?.unscheduled ? [result.unscheduled] : [])]
+          .flatMap(lane => lane.items)
+          .map(o => ({ type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: o.id })),
+      ],
+    }),
+
+    /**
+     * Drop a card into a month lane.
+     *
+     * ⚠️ NO invalidatesTags, for the same reason as setRoadmapAllocation: invalidating would
+     * refetch the whole board on every drag and repaint under the user's cursor. The optimistic
+     * patch below IS the update, and it applies exactly what the server is about to do.
+     *
+     * The one case that does refetch is a STALE drag — when the server reports having reordered
+     * fewer ids than we sent, somebody else moved a card out of this lane while ours was in the
+     * air, so our optimistic order is genuinely wrong and guessing again would be worse than
+     * a refetch. Everyone else's board is refreshed by the socket's ROADMAP_INVALIDATED('board').
+     */
+    moveRoadmapOpportunity: builder.mutation<
+      RoadmapBoardMoveResponse,
+      {
+        opportunityId: string;
+        month: string | null;
+        orderedIds: string[];
+        /**
+         * The board query args to patch. Must be the SAME memoised object the board subscription
+         * uses, or updateQueryData targets a cache entry nobody is rendering — the trap documented
+         * on useAllocateCoins.
+         */
+        boardArgs: RoadmapBoardQuery;
+      }
+    >({
+      query: ({ opportunityId, month, orderedIds }) => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.BOARD_LANE,
+        method: HttpMethod.PUT,
+        body: { opportunityId, month, orderedIds },
+      }),
+      onQueryStarted: async (
+        { opportunityId, month, orderedIds, boardArgs },
+        { dispatch, queryFulfilled },
+      ) => {
+        const patch = dispatch(
+          productRoadmapAPI.util.updateQueryData("getRoadmapBoard", boardArgs, draft => {
+            const lanes = [...draft.months, draft.unscheduled];
+            const source = lanes.find(lane => lane.items.some(o => o.id === opportunityId));
+            const destination = lanes.find(lane => lane.month === month);
+            // A drop into a lane outside the current window has nothing to patch — the server
+            // still performs it, and the card correctly disappears on the next read.
+            if (!source || !destination) return;
+
+            const moving = source.items.find(o => o.id === opportunityId);
+            if (!moving) return;
+
+            if (source !== destination) {
+              source.items = source.items.filter(o => o.id !== opportunityId);
+              source.total = Math.max(0, source.total - 1);
+              destination.total += 1;
+              // plannedMonth is the field that actually moved; effectiveMonth follows it because
+              // a draggable card is by definition not pinned.
+              moving.plannedMonth = month;
+              moving.effectiveMonth = month;
+            }
+
+            const byId = new Map(destination.items.map(o => [o.id, o]));
+            byId.set(moving.id, moving);
+            const reordered = orderedIds
+              .map(id => byId.get(id))
+              .filter((o): o is NonNullable<typeof o> => !!o);
+            // Anything the client's order didn't mention stays, after the ordered block — a lane
+            // truncated by laneLimit holds cards this drag never knew about.
+            const untouched = destination.items.filter(o => !orderedIds.includes(o.id));
+            destination.items = [...reordered, ...untouched];
+            destination.items.forEach((o, index) => {
+              o.boardPosition = index;
+            });
+          }),
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          if (data.reordered.length !== orderedIds.length) {
+            dispatch(
+              productRoadmapAPI.util.invalidateTags([
+                { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+              ]),
+            );
+          }
+        } catch {
+          // Covers the 422 on a pinned card as well as a network failure: either way the board
+          // must snap back to what the server still believes.
+          patch.undo();
+        }
+      },
+    }),
 
     /** For the ?opportunity=<id> deep link, where the row may not be on the current page. */
     getRoadmapOpportunity: builder.query<RoadmapOpportunity, string>({
@@ -543,6 +656,8 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetRoadmapOpportunitiesQuery,
+  useGetRoadmapBoardQuery,
+  useMoveRoadmapOpportunityMutation,
   useGetRoadmapOpportunityQuery,
   useGetRoadmapCoinBudgetQuery,
   useGetRoadmapFacetsQuery,

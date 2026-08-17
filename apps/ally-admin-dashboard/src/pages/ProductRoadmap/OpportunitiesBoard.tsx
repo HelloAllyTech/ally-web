@@ -12,7 +12,7 @@ import {
   TableRow,
   SkeletonText,
 } from "@ally-ui-mono/ui-shared";
-import { Button, EmptyState, ListToolbar } from "@components";
+import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   RoadmapCoinBudget,
@@ -26,30 +26,11 @@ import {
 } from "@types";
 
 import { CoinAllocator } from "./CoinAllocator";
-import { RoadmapAdvancedFilters } from "./RoadmapAdvancedFilters";
+import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
 import { useAllocateCoins } from "./useAllocateCoins";
-import {
-  EMPTY_ADVANCED_FILTERS,
-  RoadmapAdvancedFilterValues,
-  countActiveAdvancedFilters,
-} from "./utils/filters";
+import { RoadmapAdvancedFilterValues } from "./utils/filters";
 import { pageRange } from "./utils/paging";
-
-const STAGE_STYLE: Record<string, string> = {
-  new: "bg-background-secondary text-typography-primary",
-  prioritised: "bg-primary-100 text-primary-600",
-  under_development: "bg-primary-50 text-primary-500",
-  released: "bg-green-50 text-green-700",
-  archived: "bg-background-secondary text-typography-secondary",
-};
-
-const STAGE_LABEL: Record<string, string> = {
-  new: "New",
-  prioritised: "Prioritised",
-  under_development: "In development",
-  released: "Released",
-  archived: "Archived",
-};
+import { STAGE_LABEL, STAGE_STYLE, typeLabel } from "./utils/stages";
 
 interface OpportunitiesBoardProps {
   listArgs: RoadmapOpportunitiesQuery;
@@ -89,6 +70,8 @@ interface OpportunitiesBoardProps {
   offset: number;
   pageSize: number;
   onOffsetChange: (offset: number) => void;
+  /** The Table / Month board switch, rendered inside the shared filter bar. */
+  layoutToggle?: React.ReactNode;
 }
 
 /**
@@ -140,8 +123,9 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   offset,
   pageSize,
   onOffsetChange,
+  layoutToggle,
 }) => {
-  const allocate = useAllocateCoins(listArgs);
+  const allocate = useAllocateCoins({ kind: "list", args: listArgs });
   const rows = data?.items ?? [];
   // Unfiltered max, so the bars keep a stable scale when a filter is applied.
   const maxScore = Math.max(1, data?.maxScore ?? 1);
@@ -167,136 +151,37 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
     </TableHeader>
   );
 
-  const toggle = <T,>(list: T[], value: T): T[] =>
-    list.includes(value) ? list.filter(v => v !== value) : [...list, value];
-
-  const activeFilters =
-    typeFilter.length +
-      stageFilter.length +
-      goalFilter.length +
-      ownerFilter.length +
-      countActiveAdvancedFilters(advanced) >
-    0;
+  const activeFilters = hasActiveFilters({
+    typeFilter,
+    stageFilter,
+    goalFilter,
+    ownerFilter,
+    advanced,
+  });
 
   return (
     <div className="flex flex-col gap-3">
-      <ListToolbar
-        searchValue={search}
+      <RoadmapFilterBar
+        search={search}
         onSearchChange={onSearchChange}
-        placeholder="Search opportunities"
-        action={
-          canVote
-            ? {
-                label: "New opportunity",
-                onClick: onAddClick,
-                variant: ButtonVariant.PRIMARY,
-              }
-            : undefined
-        }
+        typeFilter={typeFilter}
+        onTypeFilterChange={onTypeFilterChange}
+        stageFilter={stageFilter}
+        onStageFilterChange={onStageFilterChange}
+        goalFilter={goalFilter}
+        onGoalFilterChange={onGoalFilterChange}
+        ownerFilter={ownerFilter}
+        onOwnerFilterChange={onOwnerFilterChange}
+        advanced={advanced}
+        onAdvancedChange={onAdvancedChange}
+        goals={goals}
+        facets={facets}
+        onManageGoals={onManageGoals}
+        canVote={canVote}
+        canManage={canManage}
+        onAddClick={onAddClick}
+        trailing={layoutToggle}
       />
-
-      {/* Filters live above the table, not in a second <thead> row. The source put date and
-          number inputs inside <th>s, which forced a 1240px min-width plus horizontal scroll and
-          put absolute-positioned dropdowns inside a scroll container — this repo's known
-          phantom-second-scrollbar bug. */}
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-typography-secondary">Type</span>
-        {Object.values(RoadmapOpportunityType).map(value => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onTypeFilterChange(toggle(typeFilter, value))}
-            className={`border px-2 py-1 ${
-              typeFilter.includes(value)
-                ? "border-primary-500 text-primary-600"
-                : "border-border-light text-typography-secondary"
-            }`}
-          >
-            {value === RoadmapOpportunityType.BUG ? "Bug" : "Idea"}
-          </button>
-        ))}
-
-        <span className="text-typography-secondary ml-3">Stage</span>
-        {Object.values(RoadmapOpportunityStage).map(value => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onStageFilterChange(toggle(stageFilter, value))}
-            className={`border px-2 py-1 ${
-              stageFilter.includes(value)
-                ? "border-primary-500 text-primary-600"
-                : "border-border-light text-typography-secondary"
-            }`}
-          >
-            {STAGE_LABEL[value]}
-          </button>
-        ))}
-
-        <span className="text-typography-secondary ml-3">Goal</span>
-        {canManage && (
-          <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
-            Manage
-          </Button>
-        )}
-        {goals.map(goal => (
-          <button
-            key={goal.id}
-            type="button"
-            onClick={() => onGoalFilterChange(toggle(goalFilter, goal.name))}
-            className={`border px-2 py-1 ${
-              goalFilter.includes(goal.name)
-                ? "border-primary-500 text-primary-600"
-                : "border-border-light text-typography-secondary"
-            }`}
-          >
-            {goal.name}
-          </button>
-        ))}
-
-        {/* Owner options come from GET /facets, not from the loaded rows. Deriving them from the
-            page would shrink the option list as soon as a filter or the 50-row page limit hid an
-            owner — and four of the saved views migrated from production are defined ENTIRELY by
-            ownerFilter, so without this control those tabs would apply as "no filter" and
-            silently show everything. */}
-        {!!facets?.owners?.length && (
-          <>
-            <span className="text-typography-secondary ml-3">Owner</span>
-            {facets.owners.map(owner => (
-              <button
-                key={owner}
-                type="button"
-                onClick={() => onOwnerFilterChange(toggle(ownerFilter, owner))}
-                className={`border px-2 py-1 ${
-                  ownerFilter.includes(owner)
-                    ? "border-primary-500 text-primary-600"
-                    : "border-border-light text-typography-secondary"
-                }`}
-              >
-                {owner}
-              </button>
-            ))}
-          </>
-        )}
-
-        {activeFilters && (
-          <Button
-            variant={ButtonVariant.TEXT}
-            onClick={() => {
-              onTypeFilterChange([]);
-              onStageFilterChange([]);
-              onGoalFilterChange([]);
-              onOwnerFilterChange([]);
-              // Must include the collapsed panel: "Clear filters" that leaves a hidden date range
-              // applied is the exact confusion the active-count badge exists to prevent.
-              onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
-            }}
-          >
-            Clear filters
-          </Button>
-        )}
-      </div>
-
-      <RoadmapAdvancedFilters values={advanced} onChange={onAdvancedChange} facets={facets} />
 
       {isLoading ? (
         <SkeletonText paragraph lineCount={8} />
@@ -393,7 +278,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                     </div>
                     <div className="text-typography-secondary text-xs mt-1 flex gap-2">
                       <span>
-                        {opportunity.type === RoadmapOpportunityType.BUG ? "Bug" : "Idea"}
+                        {typeLabel(opportunity.type)}
                       </span>
                       {opportunity.commentCount > 0 && (
                         <span>· {opportunity.commentCount} comments</span>

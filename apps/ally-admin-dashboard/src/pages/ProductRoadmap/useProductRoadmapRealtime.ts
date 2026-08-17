@@ -23,6 +23,11 @@ interface RoadmapEventBase {
   actorId?: number;
 }
 
+/** ROADMAP_INVALIDATED's reason, from ally-be's RoadmapEvent union. */
+interface RoadmapInvalidatedEvent extends RoadmapEventBase {
+  reason?: string;
+}
+
 /**
  * Coalesce window. Split and merge emit a burst of events in one transaction; invalidating per
  * event would fire several refetches for a single user action.
@@ -138,10 +143,18 @@ export const useProductRoadmapRealtime = ({
         ]);
       },
 
-      [RoadmapSocketEvent.ROADMAP_INVALIDATED]: () => {
+      [RoadmapSocketEvent.ROADMAP_INVALIDATED]: (event: RoadmapInvalidatedEvent) => {
         // Tier 2: split, merge, taxonomy edits. Deliberately NOT echo-suppressed — an owner rename
         // cascades to rows ally-be never touched, so even the actor's own client cannot know what
         // changed without re-querying. This is also why the backend cannot enumerate the delta.
+        //
+        // 'board' is the ONE reason that IS echo-suppressed, and it has to be: a month-board drag
+        // is fully known to the client that performed it, which already applied the exact patch
+        // optimistically. Without this the card animates into its new lane, our own broadcast
+        // comes back, the board refetches and the card visibly jumps — the same failure the coin
+        // input had before actorId existed. Other people's boards still refresh, since the
+        // suppression is per-actor.
+        if (event?.reason === "board" && isOwnEcho(event)) return;
         invalidate([
           TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES,
           TAG_TYPES.PRODUCT_ROADMAP_FACETS,

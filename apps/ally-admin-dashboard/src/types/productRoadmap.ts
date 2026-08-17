@@ -34,6 +34,18 @@ export interface RoadmapOpportunity {
   /** AI-generated Claude Code implementation prompt, saved verbatim like `prd`. */
   claudePrompt: string | null;
   releasedAt: string | null;
+  /** The month this was PLANNED into, 'YYYY-MM'. Null means Unscheduled. */
+  plannedMonth: string | null;
+  /** Manual rank within its month lane, ascending. Only meaningful against its own lane. */
+  boardPosition: number;
+  /**
+   * The lane the card actually shows in: its release month once shipped, else plannedMonth.
+   * Server-derived — never recompute it here, or the board and the API will disagree about
+   * where a slipped item lives.
+   */
+  effectiveMonth: string | null;
+  /** True when the lane is a fact rather than a plan, so the card must not be draggable. */
+  monthPinned: boolean;
   /** SUM of every user's coins across every period. Computed in SQL, never stored. */
   priorityScore: number;
   /** The CALLER's coins on this opportunity in the CURRENT period only. */
@@ -73,6 +85,52 @@ export interface RoadmapOpportunitiesQuery {
   order?: "ASC" | "DESC";
   limit?: number;
   offset?: number;
+}
+
+/** Which layout the Opportunities tab is showing. Persisted in saved-view state. */
+export enum RoadmapBoardLayout {
+  TABLE = "table",
+  MONTH_BOARD = "month-board",
+}
+
+export interface RoadmapMonthLane {
+  /** 'YYYY-MM', or null for the Unscheduled lane. */
+  month: string | null;
+  items: RoadmapOpportunity[];
+  /** True lane size, which is NOT items.length when laneLimit truncated it. */
+  total: number;
+}
+
+export interface RoadmapBoardResponse {
+  /** One entry per month in the window, INCLUDING empty months — a gap in a plan is information. */
+  months: RoadmapMonthLane[];
+  unscheduled: RoadmapMonthLane;
+  /** Earliest/latest month holding anything at all. Unfiltered, so the window arrows don't flicker. */
+  bounds: { earliest: string | null; latest: string | null };
+  from: string;
+  to: string;
+  maxScore: number;
+  periodKey: string;
+  /** True when the board hit its global row bound and some lanes are incomplete. */
+  truncated: boolean;
+}
+
+/** The board read. Same filters as the table, windowed by month instead of paginated. */
+export type RoadmapBoardQuery = Omit<
+  RoadmapOpportunitiesQuery,
+  "sortBy" | "order" | "limit" | "offset"
+> & {
+  from?: string;
+  to?: string;
+  laneLimit?: number;
+};
+
+export interface RoadmapBoardMoveResponse {
+  opportunityId: string;
+  plannedMonth: string | null;
+  effectiveMonth: string | null;
+  /** The ids actually rewritten — shorter than what was sent if the drag was stale. */
+  reordered: string[];
 }
 
 export interface RoadmapCoinBudget {
@@ -164,6 +222,12 @@ export interface RoadmapViewState {
   priorityMin?: string;
   priorityMax?: string;
   sort?: { field: string; dir: "asc" | "desc" };
+  /**
+   * Which layout the view opens in. Absent on every view migrated from the standalone app and on
+   * everything saved before month boards existed, which is why readers must default it to TABLE
+   * rather than treat undefined as a distinct third state.
+   */
+  layout?: RoadmapBoardLayout;
 }
 
 export interface RoadmapSavedView {

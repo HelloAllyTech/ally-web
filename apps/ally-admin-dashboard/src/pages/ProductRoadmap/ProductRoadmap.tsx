@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
+  useGetRoadmapBoardQuery,
   useGetRoadmapCoinBudgetQuery,
   useGetRoadmapFacetsQuery,
   useGetRoadmapInterviewNotesQuery,
@@ -14,6 +15,8 @@ import {
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
 import {
+  RoadmapBoardLayout,
+  RoadmapBoardQuery,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunity,
   RoadmapOpportunityStage,
@@ -25,6 +28,7 @@ import { AddOpportunityModal } from "./AddOpportunityModal";
 import { InterviewsTab } from "./InterviewsTab";
 import { MergeOpportunitiesModal } from "./MergeOpportunitiesModal";
 import { MergeSelectionBar } from "./MergeSelectionBar";
+import { MonthBoard } from "./MonthBoard";
 import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunityDrawer } from "./OpportunityDrawer";
 import { ProductGoalsManager } from "./ProductGoalsManager";
@@ -34,9 +38,26 @@ import { SplitOpportunityModal } from "./SplitOpportunityModal";
 import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
 import { useSavedViews } from "./useSavedViews";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
+import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
 import { normaliseSortField } from "./utils/views";
 
 const PAGE_SIZE = 50;
+
+/**
+ * Default month window: one back, four forward. Mirrors ROADMAP_BOARD_DEFAULTS in ally-be — the
+ * backend defaults the same way when `from`/`to` are omitted, and the client computes it too so
+ * the window stepper has something concrete to step FROM on first render.
+ */
+const WINDOW_MONTHS_BACK = 1;
+const WINDOW_MONTHS_FORWARD = 4;
+
+const defaultWindow = () => {
+  const current = monthKeyOf(new Date());
+  return {
+    from: shiftMonthKey(current, -WINDOW_MONTHS_BACK),
+    to: shiftMonthKey(current, WINDOW_MONTHS_FORWARD),
+  };
+};
 
 /** Top-level tabs, deep-linked via ?tab= so a shared link lands where the sender was. */
 enum RoadmapTab {
@@ -89,6 +110,13 @@ export const ProductRoadmap: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   /** Offset pagination, PAGE_SIZE rows at a time. See resetPaging for the invalidation rule. */
   const [offset, setOffset] = useState(0);
+  /**
+   * Table or month board. Table stays the default: it is the layout every saved view was written
+   * against, and a view with no `layout` key must open the way it always has.
+   */
+  const [layout, setLayout] = useState<RoadmapBoardLayout>(RoadmapBoardLayout.TABLE);
+  /** The month board's window. Page-level so the layout toggle doesn't reset it. */
+  const [monthWindow, setMonthWindow] = useState(defaultWindow);
 
   /**
    * Every search / filter / sort change returns to the first page.
@@ -141,7 +169,35 @@ export const ProductRoadmap: React.FC = () => {
     [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order, offset],
   );
 
-  const { data, isLoading, isFetching } = useGetRoadmapOpportunitiesQuery(listArgs);
+  /**
+   * The month board's args — the same filters, minus sort and offset, plus the month window.
+   *
+   * Derived from `listArgs` rather than rebuilt, so the two layouts cannot drift on how a filter
+   * is normalised (empty string vs undefined is the one that bites: sending "" fails @IsISO8601).
+   * Memoised for the same reason listArgs is — useAllocateCoins and the drag mutation both patch
+   * this exact cache entry, and a fresh object each render would patch one nobody is rendering.
+   */
+  const boardArgs = useMemo<RoadmapBoardQuery>(() => {
+    const { sortBy: _sortBy, order: _order, limit: _limit, offset: _offset, ...filters } = listArgs;
+    return { ...filters, from: monthWindow.from, to: monthWindow.to };
+  }, [listArgs, monthWindow]);
+
+  const isMonthBoard = layout === RoadmapBoardLayout.MONTH_BOARD;
+
+  const { data, isLoading, isFetching } = useGetRoadmapOpportunitiesQuery(listArgs, {
+    // Don't hold a subscription to the layout that isn't on screen: it would refetch the table on
+    // every socket invalidation while the user is looking at the board.
+    skip: isMonthBoard,
+  });
+  const {
+    data: boardData,
+    isLoading: isBoardLoading,
+    isFetching: isBoardFetching,
+  } = useGetRoadmapBoardQuery(boardArgs, { skip: !isMonthBoard });
+
+  const boardCount = boardData
+    ? [boardData.unscheduled, ...boardData.months].reduce((sum, lane) => sum + lane.total, 0)
+    : 0;
   const { data: budget } = useGetRoadmapCoinBudgetQuery();
   const { data: goals } = useGetRoadmapProductGoalsQuery();
   const { data: facets } = useGetRoadmapFacetsQuery();
@@ -177,8 +233,12 @@ export const ProductRoadmap: React.FC = () => {
       priorityMin: advanced.priorityMin || undefined,
       priorityMax: advanced.priorityMax || undefined,
       sort: { field: sortBy, dir: order === "DESC" ? "desc" : "asc" },
+      // Only written when it is NOT the default, so saving a view from the table produces the same
+      // state a pre-month-board view has and every existing view stays clean rather than showing a
+      // permanent unsaved-changes dot.
+      layout: layout === RoadmapBoardLayout.TABLE ? undefined : layout,
     }),
-    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order],
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order, layout],
   );
 
   const applyViewState = (state: RoadmapViewState) => {
@@ -203,9 +263,43 @@ export const ProductRoadmap: React.FC = () => {
       normaliseSortField(state.sort?.field) as NonNullable<RoadmapOpportunitiesQuery["sortBy"]>,
     );
     setOrder(state.sort?.dir === "asc" ? "ASC" : "DESC");
+    // Absent on every migrated view and everything saved before month boards, so undefined has to
+    // mean TABLE rather than "leave whatever layout is showing" — otherwise selecting an old view
+    // while on the board would look like the view had failed to apply.
+    setLayout(state.layout ?? RoadmapBoardLayout.TABLE);
     // A saved view is a whole new result set; page 3 of the previous one does not survive it.
     resetPaging();
   };
+
+  /**
+   * The Table / Month board switch.
+   *
+   * Rendered here and passed down, so both layouts show the identical control in the identical
+   * place — a toggle that moved when you used it would be its own bug.
+   */
+  const layoutToggle = (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-typography-secondary">View</span>
+      {[
+        { id: RoadmapBoardLayout.TABLE, label: "Table" },
+        { id: RoadmapBoardLayout.MONTH_BOARD, label: "Month board" },
+      ].map(option => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => setLayout(option.id)}
+          aria-pressed={layout === option.id}
+          className={`border px-2 py-1 ${
+            layout === option.id
+              ? "border-primary-500 text-primary-600"
+              : "border-border-light text-typography-secondary"
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
 
   // Live updates. Gated on VIEW so the socket stays closed rather than connecting and being
   // rejected by the gateway's permission middleware.
@@ -297,7 +391,10 @@ export const ProductRoadmap: React.FC = () => {
           {
             id: RoadmapTab.OPPORTUNITIES,
             label: "Opportunities",
-            count: data?.count ?? 0,
+            // On the board this is the sum of the lane totals, which is exactly the number of
+            // cards the board is showing across the current window plus Unscheduled — not the
+            // whole table's count, because the board deliberately only covers a month window.
+            count: isMonthBoard ? boardCount : (data?.count ?? 0),
           },
           {
             id: RoadmapTab.INTERVIEWS,
@@ -340,7 +437,39 @@ export const ProductRoadmap: React.FC = () => {
         />
       )}
 
-      {activeTab === RoadmapTab.OPPORTUNITIES && (
+      {activeTab === RoadmapTab.OPPORTUNITIES && isMonthBoard && (
+        <MonthBoard
+          boardArgs={boardArgs}
+          data={boardData}
+          isLoading={isBoardLoading}
+          isFetching={isBoardFetching}
+          budget={budget}
+          goals={goals ?? []}
+          facets={facets}
+          search={search}
+          onSearchChange={withPagingReset(setSearch)}
+          typeFilter={typeFilter}
+          onTypeFilterChange={withPagingReset(setTypeFilter)}
+          stageFilter={stageFilter}
+          onStageFilterChange={withPagingReset(setStageFilter)}
+          goalFilter={goalFilter}
+          onGoalFilterChange={withPagingReset(setGoalFilter)}
+          ownerFilter={ownerFilter}
+          onOwnerFilterChange={withPagingReset(setOwnerFilter)}
+          advanced={advanced}
+          onAdvancedChange={withPagingReset(setAdvanced)}
+          onManageGoals={() => setIsGoalsOpen(true)}
+          canVote={canVote}
+          canManage={canManage}
+          onOpenOpportunity={openOpportunity}
+          onAddClick={() => setIsAddOpen(true)}
+          window={monthWindow}
+          onWindowChange={setMonthWindow}
+          layoutToggle={layoutToggle}
+        />
+      )}
+
+      {activeTab === RoadmapTab.OPPORTUNITIES && !isMonthBoard && (
         <OpportunitiesBoard
           listArgs={listArgs}
           data={data}
@@ -374,6 +503,7 @@ export const ProductRoadmap: React.FC = () => {
           onSplit={setSplitTarget}
           offset={offset}
           pageSize={PAGE_SIZE}
+          layoutToggle={layoutToggle}
           onOffsetChange={next => {
             setOffset(next);
             // Selection cannot span pages: the merge bar would count rows the board no longer
@@ -383,7 +513,7 @@ export const ProductRoadmap: React.FC = () => {
         />
       )}
 
-      {activeTab === RoadmapTab.OPPORTUNITIES && canManage && (
+      {activeTab === RoadmapTab.OPPORTUNITIES && !isMonthBoard && canManage && (
         <MergeSelectionBar
           count={selectedIds.size}
           onClear={() => setSelectedIds(new Set())}
