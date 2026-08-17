@@ -20,8 +20,8 @@ const numberInput =
 
 /**
  * Per-item completion criteria editor. Renders only the fields the given item
- * type supports; quiz pass-score lives in the quiz settings (mirrored server-side)
- * so it is intentionally absent here.
+ * type supports; quiz and annotation pass-scores live in their own settings
+ * blocks (mirrored server-side) so they are intentionally absent here.
  */
 export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
   sectionIndex,
@@ -38,7 +38,11 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
     return Number.isNaN(value) ? undefined : value;
   };
 
-  if (type === TrackItemType.CASE || type === TrackItemType.QUIZ) {
+  if (
+    type === TrackItemType.CASE ||
+    type === TrackItemType.QUIZ ||
+    type === TrackItemType.ANNOTATED_ARTIFACT
+  ) {
     return null;
   }
 

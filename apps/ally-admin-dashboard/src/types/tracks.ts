@@ -1,3 +1,5 @@
+import type { ArtifactSwatch } from "@ally-ui-mono/ui-shared";
+
 import { SimulationStatus } from "./createSimulation";
 import { AssignmentStatus } from "./organizationAccess";
 
@@ -13,6 +15,7 @@ export enum TrackItemType {
   ARTICLE = "ARTICLE",
   VIDEO = "VIDEO",
   JOURNAL = "JOURNAL",
+  ANNOTATED_ARTIFACT = "ANNOTATED_ARTIFACT",
 }
 
 /* -------------------------------------------------------------------------- */
@@ -149,7 +152,58 @@ export interface QuizContent {
   questions: QuizQuestion[];
 }
 
-export type TrackItemContent = ArticleContent | VideoContent | JournalContent | QuizContent;
+/* ---- Annotation (ANNOTATED_ARTIFACT) ---- */
+
+export type AnnotationArtifactKind = "TRANSCRIPT" | "DOCUMENT";
+
+export type AnnotationRevealKey = "after_each_attempt" | "after_pass_or_last_attempt";
+
+export interface AnnotationUnit {
+  id: string; // uuid
+  /** TRANSCRIPT only. */
+  speaker?: string;
+  text: string;
+}
+
+export interface AnnotationLabelDef {
+  id: string; // uuid
+  text: string;
+  description?: string;
+  color: ArtifactSwatch;
+}
+
+/** One (unit, label) pair the author expects the learner to find. */
+export interface AnnotationTarget {
+  unitId: string;
+  labelId: string;
+  points?: number; // default 1
+  /** The teaching moment, shown to the learner on reveal. */
+  note?: string;
+}
+
+export interface AnnotationSettings {
+  passScore: number; // 0-100, default 70
+  maxAttempts: number | null; // null = unlimited
+  /** Points deducted per mark that isn't a target. 0 disables the penalty. */
+  falsePositivePenalty: number;
+  revealKey: AnnotationRevealKey;
+}
+
+export interface AnnotationContent {
+  kind: AnnotationArtifactKind;
+  intro?: string;
+  units: AnnotationUnit[];
+  labels: AnnotationLabelDef[];
+  targets: AnnotationTarget[];
+  settings: AnnotationSettings;
+}
+
+export type TrackItemContent =
+  | ArticleContent
+  | VideoContent
+  | JournalContent
+  | QuizContent
+  | AnnotationContent;
 
 export interface CompletionCriteria {
   /** Roleplay, 0 or above (score depends on configured behaviours and can exceed 100). */
@@ -161,6 +215,12 @@ export interface CompletionCriteria {
   watchPct?: number;
   /** Article. */
   minReadSeconds?: number;
+}
+
+/** Source text an author pastes, kept in form state so re-segmentation is live. */
+export interface AnnotationFormValue extends AnnotationContent {
+  /** The raw pasted artifact. Not persisted — units are the source of truth. */
+  sourceText: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -298,8 +358,9 @@ export interface TrackMediaUploadUrlResponse {
 
 /**
  * One item row in the builder form. Discriminated by `type` with the matching
- * content slot populated (`article` / `video` / `journal` / `quiz`); roleplay
- * and case items carry their picked reference plus display fields.
+ * content slot populated (`article` / `video` / `journal` / `quiz` /
+ * `annotation`); roleplay and case items carry their picked reference plus
+ * display fields.
  * `localId` is a client uuid used as the stable RHF/dnd key; `serverId` is the
  * persisted `track_items.id` when the item already exists on the server.
  */
@@ -318,6 +379,7 @@ export interface TrackItemFormValue {
   video?: VideoContent;
   journal?: JournalContent;
   quiz?: QuizContent;
+  annotation?: AnnotationFormValue;
   completionCriteria: CompletionCriteria;
 }
 

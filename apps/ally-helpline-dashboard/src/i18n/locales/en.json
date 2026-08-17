@@ -1431,7 +1431,13 @@
       "prompts_other": "{{count}} prompts",
       "roleplay": "Roleplay",
       "minScore": "score {{score}}+",
-      "case": "Case study"
+      "case": "Case study",
+      "annotationTranscript": "Transcript",
+      "annotationDocument": "Note",
+      "lines": "{{count}} line",
+      "lines_other": "{{count}} lines",
+      "labels": "{{count}} label",
+      "labels_other": "{{count}} labels"
     },
     "continueLearning": {
       "label": "Continue learning"
@@ -1527,6 +1533,29 @@
         "retry": "Retry quiz",
         "next": "Next",
         "attemptsUsed": "Attempt {{used}} of {{max}}"
+      }
+    },
+    "annotation": {
+      "labels": "Labels",
+      "instructions": "Pick a label, then tap every line where you see it. Marking a line that isn't part of the answer costs you points, so mark only what you'd defend. You need {{passScore}}% to pass.",
+      "instructionsNoPenalty": "Pick a label, then tap every line where you see it. Wrong marks don't cost you anything here. You need {{passScore}}% to pass.",
+      "markedCount": "{{count}} marked",
+      "markedCount_other": "{{count}} marked",
+      "submit": "Submit",
+      "markSomethingFirst": "Mark at least one line to submit",
+      "tryAgain": "Try again",
+      "attemptsLeft": "{{count}} attempt left",
+      "attemptsLeft_other": "{{count}} attempts left",
+      "passed": "Passed · pass mark {{passScore}}%",
+      "notYet": "Not yet · pass mark {{passScore}}%",
+      "keyHidden": "The lines you missed stay hidden until you pass or use your last attempt.",
+      "tally": {
+        "found": "{{count}} found",
+        "found_other": "{{count}} found",
+        "missed": "{{count}} missed",
+        "missed_other": "{{count}} missed",
+        "notHere": "{{count}} marked in error",
+        "notHere_other": "{{count}} marked in error"
       }
     }
   }

@@ -15,6 +15,7 @@ import {
 
 import { CelebrationKind, CelebrationOverlay } from "./components/CelebrationOverlay";
 import { PlayerBottomNav } from "./components/PlayerBottomNav";
+import { AnnotationItemPlayer } from "./components/players/annotation/AnnotationItemPlayer";
 import { ArticleItemPlayer } from "./components/players/ArticleItemPlayer";
 import { JournalItemPlayer } from "./components/players/JournalItemPlayer";
 import { QuizItemPlayer } from "./components/players/quiz/QuizItemPlayer";
@@ -169,6 +170,15 @@ export const TrackPlayer: FC = () => {
             itemId={itemId}
             onCompleted={handleCompletion}
             onRequestNext={goNextOrOverview}
+          />
+        );
+      case TrackItemType.ANNOTATED_ARTIFACT:
+        return (
+          <AnnotationItemPlayer
+            payload={payload}
+            itemId={itemId}
+            alreadyCompleted={alreadyCompleted}
+            onCompleted={handleCompletion}
           />
         );
       case TrackItemType.ROLEPLAY:

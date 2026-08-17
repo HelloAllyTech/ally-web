@@ -8,6 +8,8 @@
  */
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  AnnotationAttemptResult,
+  AnnotationMarkInput,
   EnrollTrackResponse,
   GetLearnTracksResponse,
   GetNextTrackItemResponse,
@@ -201,6 +203,23 @@ const tracksAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: ALL_TRACK_TAGS,
     }),
+
+    /**
+     * Submit annotation marks. Graded synchronously server-side (pure set
+     * comparison — no LLM), so the result comes back on this response and
+     * there is no regrade counterpart.
+     */
+    submitAnnotationAttempt: builder.mutation<
+      AnnotationAttemptResult,
+      { itemId: string; marks: AnnotationMarkInput[] }
+    >({
+      query: ({ itemId, marks }) => ({
+        url: ApiEndpoints.TRACKS.ANNOTATION_ATTEMPTS(itemId),
+        method: HttpMethod.POST,
+        body: { marks },
+      }),
+      invalidatesTags: ALL_TRACK_TAGS,
+    }),
   }),
 });
 
@@ -217,6 +236,7 @@ export const {
   useRegradeQuizAttemptMutation,
   useSaveJournalDraftMutation,
   useSubmitJournalMutation,
+  useSubmitAnnotationAttemptMutation,
 } = tracksAPI;
 
 export { tracksAPI };
