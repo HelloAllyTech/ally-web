@@ -505,6 +505,7 @@ export const RoleplaySessionLogDetail: FC = () => {
               label="Knowledge retrieval (avg)"
               value={formatMs(data.latency.avgKnowledgeRetrievalMs)}
             />
+            <Field label="Behaviors (avg)" value={formatMs(data.latency.avgBehaviorsMs)} />
             <Field label="Interruptions" value={formatNumber(data.latency.interruptedTurns)} />
             <Field label="LLM timeouts" value={formatNumber(data.latency.llmTimedOutTurns)} />
           </SectionCard>
