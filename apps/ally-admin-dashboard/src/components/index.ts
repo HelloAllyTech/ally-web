@@ -33,6 +33,7 @@ export * from "./empty-state";
 export * from "./skeleton-loader";
 export * from "./user-option-dropdown";
 export * from "./access-denied";
+export * from "./error-boundary";
 export * from "./credit-field";
 export * from "./custom-field-group";
 export * from "./profile-card";

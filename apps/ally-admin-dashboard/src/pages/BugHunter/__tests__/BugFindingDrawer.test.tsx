@@ -174,10 +174,7 @@ describe("BugFindingDrawer — fix session", () => {
     renderDrawer(
       finding({ status: BugFindingStatus.FIXING, sessionRunUrl: "https://github.com/run/1" }),
     );
-    expect(screen.getByText("Watch it work")).toHaveAttribute(
-      "href",
-      "https://github.com/run/1",
-    );
+    expect(screen.getByText("Watch it work")).toHaveAttribute("href", "https://github.com/run/1");
   });
 
   it("surfaces the backend's own refusal message rather than a generic one", async () => {
@@ -347,6 +344,38 @@ describe("BugFindingDrawer — multi-repo plan", () => {
 
   it("shows no plan block for an ordinary single-repo bug", () => {
     renderDrawer(finding());
+    expect(screen.queryByText(/This fix spans/)).not.toBeInTheDocument();
+  });
+});
+
+describe("BugFindingDrawer — a backend older than this build", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  /**
+   * The admin console shipped the plan/release drawer one release ahead of the
+   * ally-be that serves `steps`, and the drawer read `.some`/`.length` straight
+   * off the missing array. With no error boundary above it the throw unmounted
+   * the whole console — every row in the bugs table went to a blank screen.
+   * The drawer has to survive a response that predates a field it knows about.
+   */
+  it("still renders the bug when the response carries no steps or events at all", () => {
+    const legacy = finding();
+    delete legacy.steps;
+    delete legacy.events;
+    delete legacy.releasable;
+    delete legacy.releaseTarget;
+    delete legacy.releaseBlockedReason;
+
+    renderDrawer(legacy);
+
+    // What the admin came for is on screen, not a blank page.
+    expect(screen.getByText("Terms link is not formatted correctly")).toBeInTheDocument();
+    expect(
+      screen.getByText("The external emergency-services link renders unstyled."),
+    ).toBeInTheDocument();
+    // The timeline degrades to its empty state rather than taking the page down.
+    expect(screen.getByText(/No activity yet/i)).toBeInTheDocument();
+    // And no plan block, since an absent step list means the same as an empty one.
     expect(screen.queryByText(/This fix spans/)).not.toBeInTheDocument();
   });
 });

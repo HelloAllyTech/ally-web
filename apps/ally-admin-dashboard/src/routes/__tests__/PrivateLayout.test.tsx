@@ -4,7 +4,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, afterAll, beforeEach, vi } from "vitest";
 
 import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions, UserRole } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
@@ -219,7 +219,10 @@ describe("PrivateLayout", () => {
                   // The fixed mocked user (id: 1) carries no `role`, so this
                   // never matches "SUPER_DUPER_ADMIN" — access must come from
                   // the toggle alone.
-                  <PrivateLayout requiredRole={UserRole.SUPER_DUPER_ADMIN} requiredFeature="settings">
+                  <PrivateLayout
+                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
+                    requiredFeature="settings"
+                  >
                     <div>FeatureGrantedContent</div>
                   </PrivateLayout>
                 }
@@ -248,7 +251,10 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  <PrivateLayout requiredRole={UserRole.SUPER_DUPER_ADMIN} requiredFeature="settings">
+                  <PrivateLayout
+                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
+                    requiredFeature="settings"
+                  >
                     <div>GatedContent</div>
                   </PrivateLayout>
                 }
@@ -327,6 +333,54 @@ describe("PrivateLayout", () => {
       renderCharacterRoute();
 
       expect(screen.queryByText("OrgGrantedContent")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * The barrier is deliberately inside the shell. A page that throws during
+   * render used to unmount the whole console — blank white screen, no nav, no
+   * way back but a manual reload.
+   */
+  describe("crash barrier around the routed page", () => {
+    const Exploding = () => {
+      throw new Error("Cannot read properties of undefined (reading 'some')");
+    };
+
+    // React and the boundary both log the caught error; keep the run readable.
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    afterAll(() => consoleError.mockRestore());
+
+    const renderExplodingRoute = () =>
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
+                    <Exploding />
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+    it("keeps the shell and explains itself when the page throws", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+      const { hasPermissions } = await import("@utils");
+      (hasPermissions as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      renderExplodingRoute();
+
+      // The admin still has somewhere to go — that's the whole point.
+      expect(screen.getByText("Sidebar")).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByText(/this page stopped working/i)).toBeInTheDocument();
+      // And the failure is named, not swallowed.
+      expect(screen.getByText(/reading 'some'/)).toBeInTheDocument();
     });
   });
 });

@@ -12,6 +12,11 @@ import {
 } from "@ally-ui-mono/ui-shared";
 import { useGetBugFindingsQuery } from "@api";
 import { EmptyState } from "@components";
+// Reached past the barrel on purpose. Importing the barrel pulls @constants,
+// which reads `cellTypes` back off it at module-eval time — a test that needs
+// the real boundary while stubbing the barrel deadlocks on that cycle. Same
+// direct-path treatment as @components/action-confirmation-popup elsewhere.
+import { ErrorBoundary } from "@components/error-boundary";
 import { en } from "@constants";
 import { BugFinding, BugFindingStatus } from "@types";
 import { formatDate } from "@utils";
@@ -193,7 +198,16 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ focusFindingId, on
         </Table>
       )}
 
-      {selectedId && <BugFindingDrawer id={selectedId} onClose={() => setSelectedId(null)} />}
+      {/* Scoped barrier, keyed to the open bug. The page-level one in
+          PrivateLayout would already stop a bad drawer blanking the console,
+          but it would take the bugs table down with it — and the table is how
+          you'd reach a different bug. This keeps the failure inside the drawer,
+          and a different row starts clean rather than inheriting the error. */}
+      {selectedId && (
+        <ErrorBoundary variant="panel" resetKey={selectedId} onDismiss={() => setSelectedId(null)}>
+          <BugFindingDrawer id={selectedId} onClose={() => setSelectedId(null)} />
+        </ErrorBoundary>
+      )}
     </div>
   );
 };

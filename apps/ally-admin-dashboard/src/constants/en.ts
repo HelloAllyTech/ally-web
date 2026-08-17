@@ -107,6 +107,25 @@ export const en = {
     message:
       "You don't have permission to access this page. Please contact your administrator if you believe this is an error.",
   },
+  /**
+   * What a crashed page or panel says. Two deliberate choices here. The tone
+   * apologises and always offers a way forward rather than stating a fault —
+   * whoever hits this has work they were part-way through. And the technical
+   * detail is shown rather than hidden: every reader of this console is Ally
+   * staff or a tenant admin, and that one line is what makes a report
+   * actionable instead of "the admin panel broke".
+   */
+  errorBoundary: {
+    pageTitle: "Sorry — this page stopped working",
+    pageMessage:
+      "Something went wrong while showing this page, so we stopped before anything got worse. Your work elsewhere in the console is unaffected. Try again, and if it keeps happening send the detail below to the Ally engineering team.",
+    panelTitle: "Sorry — this panel stopped working",
+    panelMessage:
+      "Something went wrong while showing this section. The rest of the page still works, so you can close it and carry on.",
+    tryAgain: "Try again",
+    reloadPage: "Reload the page",
+    detailLabel: "Technical detail",
+  },
   error: {
     apiRequestFailed: "API request failed",
     noRefreshDataReceived: "No refresh data received",
