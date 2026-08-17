@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import {
   useCreateTrackMutation,
+  useGetTrackTranslationsQuery,
   useLazyGetTrackByIdQuery,
   useUpdateTrackByIdMutation,
   useUpdateTrackStructureMutation,
@@ -19,7 +20,12 @@ import { SimulationStatus, TrackFormValues, TrackItemType } from "@types";
 import { ItemEditorCanvas } from "./components/ItemEditorCanvas";
 import { TrackOutlineRail } from "./components/TrackOutlineRail";
 import { TrackSettingsEditor } from "./components/TrackSettingsEditor";
-import { TrackSelection, isSettingsSelection } from "./components/types";
+import { TrackTranslationsEditor } from "./components/TrackTranslationsEditor";
+import {
+  TrackSelection,
+  isSettingsSelection,
+  isTranslationsSelection,
+} from "./components/types";
 import {
   createEmptySection,
   createItemOfType,
@@ -45,6 +51,11 @@ export const CreateTrack: FC = () => {
   const [showErrorPopover, setShowErrorPopover] = useState(false);
 
   const [getTrackById, { data: trackDetail }] = useLazyGetTrackByIdQuery();
+  // Drives the badge on the rail's Languages node. Skipped until the course
+  // exists — a course with no id has nothing to translate.
+  const { data: translations } = useGetTrackTranslationsQuery(trackId ?? "", {
+    skip: !trackId,
+  });
   const [createTrack] = useCreateTrackMutation();
   const [updateTrackMetadata] = useUpdateTrackByIdMutation();
   const [updateTrackStructure] = useUpdateTrackStructureMutation();
@@ -94,6 +105,11 @@ export const CreateTrack: FC = () => {
     [publishErrors],
   );
   const canPublish = publishErrors.length === 0;
+  const publishedLanguageCount = useMemo(
+    () =>
+      (translations?.languages ?? []).filter(language => language.status === "PUBLISHED").length,
+    [translations],
+  );
 
   /* ----------------------------- Rail actions ---------------------------- */
 
@@ -223,6 +239,9 @@ export const CreateTrack: FC = () => {
 
   const renderCanvas = () => {
     if (isSettingsSelection(selection)) return <TrackSettingsEditor />;
+    if (isTranslationsSelection(selection)) {
+      return <TrackTranslationsEditor trackId={trackId} isDirty={isDirty} />;
+    }
     const { sectionIndex, itemIndex } = selection;
     const item = sections[sectionIndex]?.items?.[itemIndex];
     if (!item) {
@@ -293,6 +312,8 @@ export const CreateTrack: FC = () => {
             selection={selection}
             errorKeys={errorKeys}
             onSelectSettings={() => setSelection("settings")}
+            onSelectTranslations={() => setSelection("translations")}
+            publishedLanguageCount={publishedLanguageCount}
             onSelectItem={(sectionIndex, itemIndex) => setSelection({ sectionIndex, itemIndex })}
             onAddSection={handleAddSection}
             onAddItem={handleAddItem}

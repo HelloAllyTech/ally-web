@@ -7,6 +7,10 @@ export enum SocketEvent {
   REPORTS_UPDATED = "REPORTS_UPDATED",
   JOIN_USER_TRANSLATIONS_ROOM = "JOIN_USER_TRANSLATIONS_ROOM",
   TRANSLATION_PROGRESS = "TRANSLATION_PROGRESS",
+  // Course translation runs on its own namespace and its own room/event names,
+  // so a scenario run and a course run cannot be mistaken for one another.
+  JOIN_USER_TRACK_TRANSLATIONS_ROOM = "JOIN_USER_TRACK_TRANSLATIONS_ROOM",
+  TRACK_TRANSLATION_PROGRESS = "TRACK_TRANSLATION_PROGRESS",
   DISCONNECT = "DISCONNECT",
 }
 

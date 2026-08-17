@@ -168,6 +168,21 @@ export const ApiEndpoints = {
     TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
     MEDIA_UPLOAD_URL: "/v1/learn/admin/tracks/media/upload-url",
     MEDIA: "/v1/learn/admin/tracks/media",
+    // Per-language course translation.
+    TRANSLATIONS: (id: string) => `/v1/learn/admin/tracks/${id}/translations`,
+    TRANSLATE: (id: string) => `/v1/learn/admin/tracks/${id}/translations/translate`,
+    TRANSLATION: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}`,
+    TRANSLATION_FIELDS: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}/fields`,
+    TRANSLATION_REVIEW: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}/review`,
+    TRANSLATION_MEDIA: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}/media`,
+    TRANSLATION_PUBLISH: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}/publish`,
+    TRANSLATION_UNPUBLISH: (id: string, languageId: number) =>
+      `/v1/learn/admin/tracks/${id}/translations/${languageId}/unpublish`,
   },
 
   CHARACTERS: {
@@ -658,6 +673,7 @@ export const TAG_TYPES = {
   WHATSAPP_BOT_ANALYTICS: "whatsAppBotAnalytics",
 
   TRACKS_V2: "tracksV2",
+  TRACK_TRANSLATIONS: "trackTranslations",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
   // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions
