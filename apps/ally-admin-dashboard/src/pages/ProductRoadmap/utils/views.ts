@@ -37,6 +37,11 @@ const STATE_KEYS: (keyof RoadmapViewState)[] = [
   "priorityMin",
   "priorityMax",
   "sort",
+  // Appended, not inserted: STATE_KEYS drives a canonical serialisation used for the dirty check,
+  // and the order only has to be STABLE, not meaningful. Absent on every pre-month-board view,
+  // and serializeViewState skips undefined — so an old view does not become permanently dirty
+  // just because this key now exists.
+  "layout",
 ];
 
 /**
