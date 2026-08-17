@@ -596,6 +596,18 @@ export interface Prompt {
    */
   promptType?: string;
   /**
+   * Whether the studio's variant pickers offer this prompt as a choice.
+   *
+   * A future-visibility switch, not a capability toggle. `false` removes the
+   * variant from the Skill Version / evaluator dropdowns so no NEW simulation
+   * can be pointed at it; simulations already referencing its promptCode keep
+   * running on it, and the editor keeps resolving it (the by-type endpoint
+   * still returns hidden rows — see `getPromptsByType` in ally-be). Undefined
+   * is treated as visible, so pre-flag rows and any reader that hasn't
+   * refetched behave as before.
+   */
+  visibleInStudio?: boolean;
+  /**
    * When true, this prompt declares a States section; the studio renders
    * the state editor and runtime substitutes the matched state's
    * guidelines into {state_x_guidelines} and gates RAG per state.
