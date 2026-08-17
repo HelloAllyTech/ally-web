@@ -13,6 +13,8 @@ import {
   PROMPT_VARIABLE_MANDATORY_MAP,
   en,
   CUSTOM_CHARACTER_ID,
+  DEFAULT_LANGUAGE,
+  FORM_FIELD_IDS,
 } from "@constants";
 import { useClickOutside, useIsPlaceholderUsed } from "@hooks";
 import { CharacterData } from "@types";
@@ -165,6 +167,66 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     fieldId => !mediaFieldIds.includes(fieldId),
   );
 
+  // Voice, language characteristics, linguistic style samples and knowledge
+  // sources live on the character in a flat/default-language shape, but the
+  // simulation form keys the first three by language (see LanguageVoiceMapping)
+  // and stores knowledge sources as {id, title, content} rows rather than the
+  // character's {id, title, text}. They're merged into the default-language
+  // slot only, the same way Agent Builder Copilot applies these same fields
+  // (see agentBuilderApply.ts's "linguistic_style_samples" case) — trainers
+  // add other languages by hand. They're deliberately not added to
+  // `formFieldIds`: that map also drives the manual-edit / perfect-match
+  // comparison below, which only does scalar string equality and can't
+  // meaningfully compare these language-keyed objects and arrays.
+  const applyComplexCharacterFields = useCallback(
+    (characterData: CharacterData) => {
+      const lang = DEFAULT_LANGUAGE.value;
+
+      if (characterData.voiceId) {
+        const current = (getValues(FORM_FIELD_IDS.LANGUAGES_VOICES) ?? {}) as Record<
+          string,
+          string
+        >;
+        setValue(
+          FORM_FIELD_IDS.LANGUAGES_VOICES,
+          { ...current, [lang]: characterData.voiceId },
+          { shouldDirty: true, shouldTouch: true },
+        );
+      }
+
+      if (characterData.languageCharacteristics) {
+        const current = (getValues("languageCharacteristics") ?? {}) as Record<string, string>;
+        setValue(
+          "languageCharacteristics",
+          { ...current, [lang]: characterData.languageCharacteristics },
+          { shouldDirty: true, shouldTouch: true },
+        );
+      }
+
+      if (characterData.linguisticStyleSamples?.length) {
+        const current = (getValues(FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES) ?? {}) as Record<
+          string,
+          string[]
+        >;
+        setValue(
+          FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES,
+          { ...current, [lang]: characterData.linguisticStyleSamples },
+          { shouldDirty: true, shouldTouch: true },
+        );
+      }
+
+      if (characterData.knowledgeSources?.length) {
+        const rows = characterData.knowledgeSources.map(source => ({
+          id: source.id,
+          title: source.title,
+          content: source.text ?? "",
+        }));
+        setValue(FORM_FIELD_IDS.KNOWLEDGE_SOURCE, rows, { shouldDirty: true, shouldTouch: true });
+      }
+    },
+    [getValues, setValue],
+  );
+
   // Handle character selection
   const handleCharacterSelect = useCallback(
     (characterId: string, characterData?: CharacterData) => {
@@ -195,13 +257,15 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
             shouldTouch: true,
           });
         });
+
+        applyComplexCharacterFields(characterData);
       }
 
       // Close dropdown and reset search after selection
       setIsCharacterDropdownOpen(false);
       setSearchQuery("");
     },
-    [id, setValue],
+    [id, setValue, applyComplexCharacterFields],
   );
 
   // Get selected character
