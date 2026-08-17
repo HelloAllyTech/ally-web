@@ -10,6 +10,11 @@ import {
   TrackMetadataInput,
   TrackStructureInput,
   TrackTenantVisibilityInput,
+  TrackTranslationDetail,
+  TrackTranslationFieldEdit,
+  TrackTranslationFieldRef,
+  TrackTranslationsResponse,
+  TrackTranslationSummary,
   UpdateTrackInput,
 } from "@types";
 
@@ -112,6 +117,111 @@ const tracksApi = baseAPI.injectEndpoints({
         body,
       }),
     }),
+
+    /* ---------------------------------------------------------------- *
+     * Translations
+     * ---------------------------------------------------------------- */
+
+    getTrackTranslations: builder.query<TrackTranslationsResponse, string>({
+      query: id => ({
+        url: ApiEndpoints.TRACKS.TRANSLATIONS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    setTrackLanguages: builder.mutation<
+      TrackTranslationSummary[],
+      { id: string; languageIds: number[] }
+    >({
+      query: ({ id, languageIds }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATIONS(id),
+        method: HttpMethod.PUT,
+        body: { languageIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    translateTrack: builder.mutation<
+      { jobId: string; languageIds: number[] },
+      { id: string; languageIds?: number[] }
+    >({
+      query: ({ id, languageIds }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATE(id),
+        method: HttpMethod.POST,
+        body: { languageIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    getTrackTranslation: builder.query<
+      TrackTranslationDetail,
+      { id: string; languageId: number }
+    >({
+      query: ({ id, languageId }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION(id, languageId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    updateTrackTranslationFields: builder.mutation<
+      { updated: number },
+      { id: string; languageId: number; edits: TrackTranslationFieldEdit[] }
+    >({
+      query: ({ id, languageId, edits }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION_FIELDS(id, languageId),
+        method: HttpMethod.PUT,
+        body: { edits },
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    reviewTrackTranslation: builder.mutation<
+      { reviewed: number },
+      { id: string; languageId: number; fields?: TrackTranslationFieldRef[] }
+    >({
+      query: ({ id, languageId, fields }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION_REVIEW(id, languageId),
+        method: HttpMethod.POST,
+        body: { fields },
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    setTrackTranslationMedia: builder.mutation<
+      { success: boolean },
+      { id: string; languageId: number; trackItemId: string; url: string | null }
+    >({
+      query: ({ id, languageId, trackItemId, url }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION_MEDIA(id, languageId),
+        method: HttpMethod.PUT,
+        body: { trackItemId, url },
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    publishTrackTranslation: builder.mutation<
+      TrackTranslationSummary,
+      { id: string; languageId: number }
+    >({
+      query: ({ id, languageId }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION_PUBLISH(id, languageId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
+
+    unpublishTrackTranslation: builder.mutation<
+      { success: boolean },
+      { id: string; languageId: number }
+    >({
+      query: ({ id, languageId }) => ({
+        url: ApiEndpoints.TRACKS.TRANSLATION_UNPUBLISH(id, languageId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
+    }),
   }),
 });
 
@@ -128,4 +238,13 @@ export const {
   useRemoveTracksFromTenantMutation,
   useGetTrackMediaUploadUrlMutation,
   useDeleteTrackMediaMutation,
+  useGetTrackTranslationsQuery,
+  useSetTrackLanguagesMutation,
+  useTranslateTrackMutation,
+  useGetTrackTranslationQuery,
+  useUpdateTrackTranslationFieldsMutation,
+  useReviewTrackTranslationMutation,
+  useSetTrackTranslationMediaMutation,
+  usePublishTrackTranslationMutation,
+  useUnpublishTrackTranslationMutation,
 } = tracksApi;

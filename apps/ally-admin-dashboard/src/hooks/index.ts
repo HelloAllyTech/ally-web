@@ -9,6 +9,7 @@ import { useLiveKitRoom } from "./useLiveKitRoom";
 import { useResolvedPrimaryLanguageId } from "./useResolvedPrimaryLanguageId";
 import { useScenarioReportsSocket } from "./useScenarioReportsSocket";
 import { useScenarioTranslationsSocket } from "./useScenarioTranslationsSocket";
+import { useTrackTranslationsSocket } from "./useTrackTranslationsSocket";
 import { useSimulationCases } from "./useSimulationCases";
 import { useSimulationPathways } from "./useSimulationPathways";
 import { useSimulations } from "./useSimulations";
@@ -37,4 +38,5 @@ export {
   useSpecAutosave,
   useTracks,
   useBugHuntStream,
+  useTrackTranslationsSocket,
 };

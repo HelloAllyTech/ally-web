@@ -15,17 +15,20 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { Plus, Settings, WarningAlt } from "@assets";
+import { Languages, Plus, Settings, WarningAlt } from "@assets";
 import { TrackItemType, TrackSectionFormValue } from "@types";
 
 import { SectionNode } from "./SectionNode";
-import { TrackSelection, isSettingsSelection } from "./types";
+import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./types";
 
 interface TrackOutlineRailProps {
   sections: TrackSectionFormValue[];
   selection: TrackSelection;
   errorKeys: Set<string>;
   onSelectSettings: () => void;
+  onSelectTranslations: () => void;
+  /** Published translation count, shown as a badge on the Languages node. */
+  publishedLanguageCount: number;
   onSelectItem: (sectionIndex: number, itemIndex: number) => void;
   onAddSection: () => void;
   onAddItem: (sectionIndex: number, type: TrackItemType) => void;
@@ -40,6 +43,8 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
   selection,
   errorKeys,
   onSelectSettings,
+  onSelectTranslations,
+  publishedLanguageCount,
   onSelectItem,
   onAddSection,
   onAddItem,
@@ -76,6 +81,24 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
         <Settings className="w-4 h-4" />
         <span className="text-sm font-medium flex-1 text-left">Track settings</span>
         {settingsHasError && <WarningAlt className="w-3.5 h-3.5 text-destructive-500" />}
+      </button>
+
+      <button
+        type="button"
+        onClick={onSelectTranslations}
+        className={`w-full flex items-center gap-2 px-2 py-2 rounded-md mb-2 ${
+          isTranslationsSelection(selection)
+            ? "bg-primary-50 text-primary-700"
+            : "hover:bg-secondary-50 text-typography-800"
+        }`}
+      >
+        <Languages className="w-4 h-4" />
+        <span className="text-sm font-medium flex-1 text-left">Languages</span>
+        {publishedLanguageCount > 0 && (
+          <span className="rounded-full bg-success-50 px-1.5 py-0.5 text-[10px] text-success-700">
+            {publishedLanguageCount}
+          </span>
+        )}
       </button>
 
       <DndContext

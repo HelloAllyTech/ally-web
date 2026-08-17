@@ -406,3 +406,143 @@ export interface PublishError {
   nodeKey: string;
   message: string;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Per-language translation (track_translations)                              */
+/* -------------------------------------------------------------------------- */
+
+/** Per-language lifecycle. Learners are only ever served PUBLISHED. */
+export enum TrackTranslationStatus {
+  NOT_STARTED = "NOT_STARTED",
+  TRANSLATING = "TRANSLATING",
+  READY_FOR_REVIEW = "READY_FOR_REVIEW",
+  PUBLISHED = "PUBLISHED",
+  FAILED = "FAILED",
+}
+
+export enum TrackTranslationFallbackReason {
+  VIDEO_NOT_LOCALISED = "VIDEO_NOT_LOCALISED",
+  SCENARIO_NOT_TRANSLATED = "SCENARIO_NOT_TRANSLATED",
+  CASE_NOT_TRANSLATED = "CASE_NOT_TRANSLATED",
+}
+
+export interface TrackTranslationFallback {
+  trackItemId: string;
+  itemTitle: string;
+  reason: TrackTranslationFallbackReason;
+}
+
+export interface TrackTranslationSummary {
+  languageId: number;
+  languageCode: string;
+  languageLabel: string;
+  status: TrackTranslationStatus;
+  publishedAt: string | null;
+  totalFields: number;
+  translatedFields: number;
+  /** Scoring fields still awaiting confirmation. Blocks publish. */
+  pendingScoringReview: number;
+  sourceChanged: number;
+  editedFields: number;
+  fallbackItems: TrackTranslationFallback[];
+  canPublish: boolean;
+  blockedReason: string | null;
+  error: string | null;
+}
+
+export interface TrackAvailableLanguage {
+  languageId: number;
+  languageCode: string;
+  label: string;
+}
+
+export interface TrackTranslationsResponse {
+  availableLanguages: TrackAvailableLanguage[];
+  languages: TrackTranslationSummary[];
+}
+
+export type TrackTranslationFieldScope = "track" | "section" | "item";
+
+/** One translatable string, English beside its translation. */
+export interface TrackTranslationField {
+  /** Stable-id path, e.g. `content.questions[q3].options[o1].text`. */
+  path: string;
+  kind: string;
+  /** Feeds grading — must be reviewed before the language can publish. */
+  scoring: boolean;
+  english: string;
+  translated: string | null;
+  edited: boolean;
+  reviewed: boolean;
+  sourceChanged: boolean;
+  needsReview: boolean;
+}
+
+export interface TrackTranslationItem {
+  id: string;
+  type: TrackItemType;
+  order: number;
+  fields: TrackTranslationField[];
+  /** VIDEO only: the per-language cut, if the trainer supplied one. */
+  media: { url: string | null } | null;
+  /** ROLEPLAY/CASE defer to the linked entity's own translation. */
+  deferredTo: { kind: "SCENARIO" | "CASE"; id: string } | null;
+}
+
+export interface TrackTranslationSection {
+  id: string;
+  order: number;
+  fields: TrackTranslationField[];
+  items: TrackTranslationItem[];
+}
+
+export interface TrackTranslationDetail {
+  trackId: string;
+  languageId: number;
+  languageCode: string;
+  label: string;
+  status: TrackTranslationStatus;
+  publishedAt: string | null;
+  error: string | null;
+  summary: TrackTranslationSummary | null;
+  track: { id: string; fields: TrackTranslationField[] };
+  sections: TrackTranslationSection[];
+}
+
+export interface TrackTranslationFieldEdit {
+  scope: TrackTranslationFieldScope;
+  entityId?: string;
+  path: string;
+  value: string;
+}
+
+export interface TrackTranslationFieldRef {
+  scope: TrackTranslationFieldScope;
+  entityId?: string;
+  path: string;
+}
+
+/** Live progress over the `/tracks/translations` socket. */
+export enum TrackTranslationJobStatus {
+  STARTED = "STARTED",
+  TRANSLATING = "TRANSLATING",
+  LANGUAGE_COMPLETED = "LANGUAGE_COMPLETED",
+  LANGUAGE_FAILED = "LANGUAGE_FAILED",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+}
+
+export interface TrackTranslationProgress {
+  jobId: string;
+  trackId: string;
+  trackTitle?: string;
+  status: TrackTranslationJobStatus;
+  language?: string;
+  languageId?: number;
+  completed: number;
+  total: number;
+  fieldsCompleted?: number;
+  fieldsTotal?: number;
+  error?: string;
+  emittedAt: string;
+}

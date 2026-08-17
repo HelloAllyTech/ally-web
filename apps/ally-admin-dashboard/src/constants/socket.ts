@@ -1,6 +1,7 @@
 export enum SocketConnectionPaths {
   SCENARIO_REPORTS = "scenarios/reports",
   SCENARIO_TRANSLATIONS = "scenarios/translations",
+  TRACK_TRANSLATIONS = "tracks/translations",
 }
 
 /** Minutes of report history to request when joining the user reports room. Backend uses this to limit REPORTS_UPDATED payload size. */
