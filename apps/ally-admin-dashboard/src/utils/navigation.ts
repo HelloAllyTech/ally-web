@@ -5,7 +5,9 @@ import {
   SIDEBAR_ITEMS,
   Permissions,
   buildSidebarItemFeatureKeyMap,
+  buildSidebarItemOrgToggleMap,
   isRoleplayStudioEmailAllowed,
+  OrgToggle,
 } from "@constants";
 import { store } from "@store";
 
@@ -188,6 +190,7 @@ export const deriveNavigationItems = ({
   features,
   savedOrder,
   email,
+  orgToggles,
 }: {
   // Accepts `string[]` to match how permissions/features are stored in Redux;
   // enum members compare cleanly against the string entries.
@@ -200,9 +203,17 @@ export const deriveNavigationItems = ({
    * slice in the store (read lazily at call time to avoid init-order issues).
    */
   email?: string;
+  /**
+   * Org-level (per-tenant) toggles the caller's organisation has switched on.
+   * A tab whose per-user feature toggle is absent can still appear via this
+   * route — that is how a tenant's own ADMINs see Characters. Optional: an
+   * omitted or empty map behaves exactly as before.
+   */
+  orgToggles?: Partial<Record<OrgToggle, boolean>>;
 }): NavigationItem[] => {
   const navigationItems = buildNavigationItems();
   const featureGatedItems = buildSidebarItemFeatureKeyMap(SIDEBAR_ITEMS);
+  const orgGatedItems = buildSidebarItemOrgToggleMap(SIDEBAR_ITEMS);
   const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const hasPermissions = Boolean(permissions && permissions.length > 0);
 
@@ -210,7 +221,20 @@ export const deriveNavigationItems = ({
     // Feature-toggle-gated tabs. Independent of permissions — a tab here is
     // either the user's toggle grants it or it does not exist for them.
     const featureKey = featureGatedItems.get(item.id);
-    if (featureKey) return hasFeature(features, featureKey);
+    if (featureKey) {
+      if (hasFeature(features, featureKey)) return true;
+      // Second grant path for a tenant's own admins: the ORG has the feature
+      // on and this user holds the permission to use it. Both halves are
+      // required — the org switch alone must not surface the tab for, say, a
+      // counsellor who happens to log into admin.
+      const orgGate = orgGatedItems.get(item.id);
+      return Boolean(
+        orgGate &&
+        orgToggles?.[orgGate.toggle] &&
+        hasPermissions &&
+        permissions!.includes(orgGate.permission),
+      );
+    }
 
     switch (item.id) {
       // Permission-gated tabs require permissions to be loaded; until then

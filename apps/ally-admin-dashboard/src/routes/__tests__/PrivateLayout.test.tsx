@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions, UserRole } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { PrivateLayout } from "../PrivateLayout";
@@ -42,6 +42,7 @@ vi.mock("@api", () => ({
   useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
   useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
   useGetFeatureTogglesQuery: vi.fn(() => ({ data: [], isLoading: false })),
+  useGetCharacterLibraryEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
   useGetUserPreferencesQuery: () => ({ data: undefined, isLoading: false }),
   useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
   useLazyGetPermissionsQuery: () => [
@@ -259,6 +260,73 @@ describe("PrivateLayout", () => {
 
       expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
       expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
+    });
+  });
+
+  describe("requiredOrgToggle (a tenant's own admins)", () => {
+    const renderCharacterRoute = () =>
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  // The mocked user is neither SUPER_DUPER_ADMIN nor a holder
+                  // of the character_library per-user toggle, so only the org
+                  // switch can let them through.
+                  <PrivateLayout
+                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
+                    requiredFeature="character_library"
+                    requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
+                  >
+                    <div>OrgGrantedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+    it("grants access when the org has the feature on", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+      const { useGetCharacterLibraryEnabledQuery } = await import("@api");
+      (useGetCharacterLibraryEnabledQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: true,
+        isLoading: false,
+      });
+
+      renderCharacterRoute();
+
+      expect(screen.getByText("OrgGrantedContent")).toBeInTheDocument();
+    });
+
+    it("denies access when the org has the feature off", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+      const { useGetCharacterLibraryEnabledQuery } = await import("@api");
+      (useGetCharacterLibraryEnabledQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: false,
+        isLoading: false,
+      });
+
+      renderCharacterRoute();
+
+      expect(screen.queryByText("OrgGrantedContent")).not.toBeInTheDocument();
+      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
+    });
+
+    it("fails closed while the org read is still in flight", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+      const { useGetCharacterLibraryEnabledQuery } = await import("@api");
+      (useGetCharacterLibraryEnabledQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: undefined,
+        isLoading: true,
+      });
+
+      renderCharacterRoute();
+
+      expect(screen.queryByText("OrgGrantedContent")).not.toBeInTheDocument();
     });
   });
 });

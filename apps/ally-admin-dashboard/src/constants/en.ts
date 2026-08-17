@@ -220,6 +220,9 @@ export const en = {
     characters: "Characters",
     createNewCharacter: "Create new character",
     createWithInterviewAgent: "Create with interview agent",
+    // Shown in the platform admin's "Organisation" column for a character with
+    // no owning tenant — the curated library Ally itself maintains.
+    allyOwnedCharacter: "Ally (global)",
     languageStyle: "Language style",
     enterLanguageStyle: "Describe the character's dialect, register, or code-mixing style",
     dialectSamples: "Dialect samples",
@@ -755,6 +758,9 @@ export const en = {
     configureSimulationSettings: "Configure scribe fields",
     customFields: "Custom fields",
     customFieldsEnabled: "Enable custom fields",
+    characterLibraryEnabled: "Enable Character Library",
+    characterLibraryEnabledHint:
+      "Lets this organisation's admins build their own characters, including with the interview agent. They see only characters their own organisation creates, and cannot edit or delete one once saved.",
     scribeNoteCreationEnabled: "Enable manual note creation",
     voiceNoteEnabled: "Enable voice note (mic dictation)",
     customFieldTypes: "Custom field types",
@@ -2224,7 +2230,7 @@ export const en = {
       "On a nightly schedule (and whenever triggered on demand), an agent scans the Ally repos for bugs — failing or flaky tests, an LLM code-review pass, production error signals, and bugs your team already reported on the product roadmap. Every bug it finds — and every bug your team reports — lands in the table below, from any source, with its current status.",
     faqModesTitle: "What's the difference between Manual and AI mode?",
     faqModesBody:
-      "Both modes discover and verify bugs identically, on the same schedule. In AI mode a verify-confirmed bug goes straight to the fix stage. In Manual mode it waits at \"Pending approval\" in the table until you approve it — nothing gets fixed without a click first.",
+      'Both modes discover and verify bugs identically, on the same schedule. In AI mode a verify-confirmed bug goes straight to the fix stage. In Manual mode it waits at "Pending approval" in the table until you approve it — nothing gets fixed without a click first.',
     faqTrivialTitle: "What can it fix on its own vs. what does it just propose?",
     faqTrivialBody:
       "Only a narrow, pre-approved category auto-merges: a lint/type-only fix, or a single-file fix backed by a new regression test that fails before the fix and passes after. It never touches migrations, auth/permission code, payment paths, or other security-sensitive services, no matter how small the diff looks — those always go to review.",
@@ -2233,16 +2239,16 @@ export const en = {
       "Yes — open the bug and press \"Start fix session\". An agent works on that one bug immediately instead of waiting for the nightly sweep: it writes a test that reproduces the bug, fixes it, checks the whole suite is still green, and opens a PR, merging it if nothing guarded is involved. If the bug hasn't been matched to a codebase yet, you'll be asked which repo to work in. Bug Hunter has to be on Manual or AI first.",
     faqMultiRepoTitle: "What if a bug needs changes in more than one repo?",
     faqMultiRepoBody:
-      "It handles it. A fix session only has one repo checked out, so when it finds that a complete fix needs work elsewhere too, it stops without committing anything and hands back a plan — one step per repo, in the order they have to ship. Bug Hunter then works through them itself: one session at a time, each waiting for the one before it to merge. When they're all merged you get one \"Release to production\" button, and it deploys them in that same order, waiting for each to go green before starting the next. If a step gets stuck the whole plan stops there rather than building on something that never landed.",
+      'It handles it. A fix session only has one repo checked out, so when it finds that a complete fix needs work elsewhere too, it stops without committing anything and hands back a plan — one step per repo, in the order they have to ship. Bug Hunter then works through them itself: one session at a time, each waiting for the one before it to merge. When they\'re all merged you get one "Release to production" button, and it deploys them in that same order, waiting for each to go green before starting the next. If a step gets stuck the whole plan stops there rather than building on something that never landed.',
     faqReleaseTitle: "How does a fix actually reach users?",
     faqReleaseBody:
-      "Once a fix is merged, a \"Release to production\" button appears on the bug. Pressing it cuts the next patch version and runs that service's normal production release pipeline — the same one a person would trigger by hand, database migration and all. That step is deliberately never automatic: an agent can take a fix as far as master on its own, but putting it in front of real users stays a decision someone makes, and we record who made it.",
+      'Once a fix is merged, a "Release to production" button appears on the bug. Pressing it cuts the next patch version and runs that service\'s normal production release pipeline — the same one a person would trigger by hand, database migration and all. That step is deliberately never automatic: an agent can take a fix as far as master on its own, but putting it in front of real users stays a decision someone makes, and we record who made it.',
     faqReviewTitle: "Where do I review what it found?",
     faqReviewBody:
       "Right in the table below — click any row to open its details, approve or reject it (Manual mode), or answer a question it's asked. There's no separate review screen anymore.",
     faqEscalationTitle: "Where does it tell me it's stuck?",
     faqEscalationBody:
-      "In the \"Bug Hunter says\" inbox at the top of this page — that's the only place it speaks. It posts there when it needs an answer from you, when something went wrong, and when a fix reaches production. The count next to the title is what's unread; it turns orange when something is actually blocked waiting on you. A bug at \"Needs input\" has an open question — open it to read and answer. A quiet, successful night posts nothing at all, on purpose.",
+      'In the "Bug Hunter says" inbox at the top of this page — that\'s the only place it speaks. It posts there when it needs an answer from you, when something went wrong, and when a fix reaches production. The count next to the title is what\'s unread; it turns orange when something is actually blocked waiting on you. A bug at "Needs input" has an open question — open it to read and answer. A quiet, successful night posts nothing at all, on purpose.',
     faqReposTitle: "Which repos does it touch?",
     faqReposBody: "ally-be, ally-web, ally-ai, ally-ai-learn, and ally-mobile.",
     faqCostTitle: "How much does a run cost?",
@@ -2293,7 +2299,8 @@ export const en = {
     findingStatusRejected: "Rejected",
     findingStatusFailed: "Failed",
     findingsEmptyTitle: "No bugs yet",
-    findingsEmptySubtitle: "Once Bug Hunter is Manual or AI, anything it finds — or your team reports — will show up here.",
+    findingsEmptySubtitle:
+      "Once Bug Hunter is Manual or AI, anything it finds — or your team reports — will show up here.",
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
     // ── Finding drawer ────────────────────────────────────────────────────────
@@ -2303,7 +2310,8 @@ export const en = {
     drawerTimelineEmpty: "No activity yet.",
     drawerLoadFailed: "Couldn't load this bug's details.",
     drawerReportedBugNotice: "Reported by your team, not yet triaged by a hunt run.",
-    drawerGuardedPathNotice: "Touches a guarded path (migrations, auth, or payments) — never eligible for auto-merge.",
+    drawerGuardedPathNotice:
+      "Touches a guarded path (migrations, auth, or payments) — never eligible for auto-merge.",
     drawerApprove: "Approve to fix",
     drawerReject: "Reject",
     drawerApproveConfirmTitle: "Approve this bug for fixing?",
@@ -2324,7 +2332,8 @@ export const en = {
     inboxNothingBlocked: "Nothing blocked — just updates",
     inboxAllClear: "Nothing new",
     inboxMarkAllRead: "Mark all read",
-    inboxEmpty: "Nothing yet. Bug Hunter posts here when it needs an answer, hits a problem, or ships something.",
+    inboxEmpty:
+      "Nothing yet. Bug Hunter posts here when it needs an answer, hits a problem, or ships something.",
     notificationLevelActionNeeded: "Needs you",
     notificationLevelProblem: "Problem",
     notificationLevelInfo: "Update",
@@ -2346,7 +2355,8 @@ export const en = {
       "This bug hasn't been matched to a codebase yet, so pick the one the agent should open. It'll be remembered for this bug.",
     drawerFixSessionStart: "Start session",
     drawerFixSessionFailed: "Couldn't start the fix session.",
-    drawerFixSessionQueued: "Waiting for the runner to pick this up. It usually starts within a minute or two.",
+    drawerFixSessionQueued:
+      "Waiting for the runner to pick this up. It usually starts within a minute or two.",
     drawerWatchSession: "Watch it work",
     // ── Release to production ────────────────────────────────────────────────
     drawerRelease: "Release to production",
