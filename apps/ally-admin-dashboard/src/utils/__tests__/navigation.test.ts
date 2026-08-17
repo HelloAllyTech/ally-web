@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { NavigationItem } from "@components/types";
-import { ROUTES, SIDEBAR_ITEMS, Permissions, FeatureToggleKey } from "@constants";
+import { ROUTES, SIDEBAR_ITEMS, Permissions, FeatureToggleKey, OrgToggle } from "@constants";
 
 import { applySavedOrder, deriveNavigationItems } from "../navigation";
 
@@ -146,6 +146,51 @@ describe("deriveNavigationItems", () => {
     expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
     expect(ids).toContain(SIDEBAR_ITEMS.WHATSAPP_BOT);
     expect(ids).toContain(SIDEBAR_ITEMS.BUG_HUNTER);
+  });
+
+  describe("org-toggle tier (a tenant's own admins)", () => {
+    it("shows Characters when the org has it on and the user holds the view permission", () => {
+      const result = deriveNavigationItems({
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.VIEW_CHARACTER_LIBRARY],
+        features: [],
+        savedOrder: undefined,
+        orgToggles: { [OrgToggle.CHARACTER_LIBRARY]: true },
+      });
+      expect(result.map(i => i.id)).toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
+    });
+
+    it("hides Characters when the org has it on but the user lacks the permission", () => {
+      const result = deriveNavigationItems({
+        permissions: [Permissions.EDIT_SCENARIO],
+        features: [],
+        savedOrder: undefined,
+        orgToggles: { [OrgToggle.CHARACTER_LIBRARY]: true },
+      });
+      expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
+    });
+
+    it("hides Characters when the user holds the permission but the org toggle is off", () => {
+      const result = deriveNavigationItems({
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.VIEW_CHARACTER_LIBRARY],
+        features: [],
+        savedOrder: undefined,
+        orgToggles: { [OrgToggle.CHARACTER_LIBRARY]: false },
+      });
+      expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
+    });
+
+    it("does not leak the org toggle to other feature-gated tabs", () => {
+      const result = deriveNavigationItems({
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.VIEW_CHARACTER_LIBRARY],
+        features: [],
+        savedOrder: undefined,
+        orgToggles: { [OrgToggle.CHARACTER_LIBRARY]: true },
+      });
+      const ids = result.map(i => i.id);
+      expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
+      expect(ids).not.toContain(SIDEBAR_ITEMS.USER_BADGES);
+      expect(ids).not.toContain(SIDEBAR_ITEMS.AI_LAB);
+    });
   });
 
   it("hides every feature-gated tab from a regular admin even when they hold every permission", () => {

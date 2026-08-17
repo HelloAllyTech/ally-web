@@ -17,8 +17,19 @@ vi.mock("@assets", () => ({
 }));
 
 vi.mock("@components", () => ({
-  NotionTable: ({ tableData, onRowClick, onRowChange, onSelectionChange, tableFooter }: any) => (
+  NotionTable: ({
+    tableData,
+    onRowClick,
+    onRowChange,
+    onSelectionChange,
+    tableFooter,
+    hideSelectionColumn,
+  }: any) => (
     <div data-testid="notion-table">
+      <span data-testid="hide-selection-column">{String(Boolean(hideSelectionColumn))}</span>
+      <span data-testid="column-ids">
+        {tableData?.columns?.map((c: any) => c.id).join(",")}
+      </span>
       {tableData?.data?.map((row: any, idx: number) => (
         <div
           key={row?.id?.rowId ?? idx}
@@ -89,10 +100,12 @@ vi.mock("@components", () => ({
     onDelete,
     selectedCharacter,
     isNewCharacter,
+    readOnly,
   }: any) =>
     isOpen ? (
       <div data-testid="character-side-panel">
         <span data-testid="side-panel-new">{String(isNewCharacter)}</span>
+        <span data-testid="side-panel-readonly">{String(Boolean(readOnly))}</span>
         <button
           onClick={() => onSave?.({ ...selectedCharacter, name: "Saved Name" })}
           data-testid="side-panel-save"
@@ -131,6 +144,7 @@ vi.mock("@constants", () => ({
       failedToUpdateCharacter: "Failed to update character",
       createNewCharacter: "Create new character",
       createWithInterviewAgent: "Create with interview agent",
+      allyOwnedCharacter: "Ally (global)",
     },
     common: {
       loading: "Loading...",
@@ -151,9 +165,31 @@ vi.mock("@constants", () => ({
     { id: "name", label: "Name", accessor: "name" },
     { id: "age", label: "Age", accessor: "age" },
   ],
+  CHARACTER_LIBRARY_OWNER_COLUMNS: [
+    { id: "createdByName", label: "Created by", accessor: "createdByName" },
+    { id: "tenantName", label: "Organisation", accessor: "tenantName" },
+  ],
+  Permissions: {
+    VIEW_CHARACTER_LIBRARY: "view:scenario-character",
+    CREATE_CHARACTER_LIBRARY: "create:scenario-character",
+    EDIT_CHARACTER_LIBRARY: "edit:scenario-character",
+    DELETE_CHARACTER_LIBRARY: "delete:scenario-character",
+  },
   ROUTES: {
     CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
   },
+}));
+
+// Platform admin by default (full CRUD). Tenant-admin cases narrow this to
+// view + create.
+const mockPermissions = vi.fn(() => [
+  "view:scenario-character",
+  "create:scenario-character",
+  "edit:scenario-character",
+  "delete:scenario-character",
+]);
+vi.mock("@hooks", () => ({
+  useUser: () => ({ permissions: mockPermissions() }),
 }));
 
 const toastSuccess = vi.fn();
@@ -201,6 +237,14 @@ describe("CharacterLibrary", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks wipes the default implementation too — restore the
+    // platform-admin permission set each test.
+    mockPermissions.mockReturnValue([
+      "view:scenario-character",
+      "create:scenario-character",
+      "edit:scenario-character",
+      "delete:scenario-character",
+    ]);
     mockDeleteCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
     mockUpdateCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
     (api.useGetCharactersQuery as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -430,6 +474,58 @@ describe("CharacterLibrary", () => {
 
     await waitFor(() => {
       expect(toastError).toHaveBeenCalledWith("Failed to update character");
+    });
+  });
+
+  describe("tenant admin (view + create only)", () => {
+    const asTenantAdmin = () =>
+      mockPermissions.mockReturnValue(["view:scenario-character", "create:scenario-character"]);
+
+    it("hides the owner columns, which only mean something across orgs", async () => {
+      asTenantAdmin();
+      renderCharacterLibrary();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("column-ids").textContent).toBe("name,age");
+      });
+    });
+
+    it("shows the owner columns for a platform admin", async () => {
+      renderCharacterLibrary();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("column-ids").textContent).toBe(
+          "name,age,createdByName,tenantName",
+        );
+      });
+    });
+
+    it("hides the bulk-select column so there is no delete path", async () => {
+      asTenantAdmin();
+      renderCharacterLibrary();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("hide-selection-column").textContent).toBe("true");
+      });
+    });
+
+    it("opens an existing character read-only", async () => {
+      asTenantAdmin();
+      renderCharacterLibrary();
+
+      fireEvent.click(await screen.findByTestId("table-row-0"));
+
+      expect(screen.getByTestId("side-panel-readonly").textContent).toBe("true");
+    });
+
+    it("still opens the create panel editable", async () => {
+      asTenantAdmin();
+      renderCharacterLibrary();
+
+      fireEvent.click(await screen.findByTestId("toolbar-action"));
+
+      expect(screen.getByTestId("side-panel-new").textContent).toBe("true");
+      expect(screen.getByTestId("side-panel-readonly").textContent).toBe("false");
     });
   });
 });

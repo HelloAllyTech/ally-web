@@ -312,6 +312,31 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CUSTOM_FIELDS_ENABLED],
     }),
 
+    /**
+     * Org-level Character Library switch. `tenantId` is optional: a platform
+     * admin passes one to read another org's setting, everyone else omits it
+     * and gets their own org (the backend pins them to their JWT tenant).
+     */
+    getCharacterLibraryEnabled: builder.query<boolean, string | void>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CHARACTER_LIBRARY_ENABLED,
+        params: tenantId ? { tenantId } : undefined,
+      }),
+      providesTags: [TAG_TYPES.CHARACTER_LIBRARY_ENABLED],
+    }),
+
+    updateCharacterLibraryEnabled: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabled: boolean }
+    >({
+      query: ({ tenantId, enabled }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CHARACTER_LIBRARY_ENABLED,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.CHARACTER_LIBRARY_ENABLED],
+    }),
+
     getScribeNoteCreationEnabled: builder.query<boolean, string>({
       query: tenantId => ({
         url: ApiEndpoints.USER_MANAGEMENT.SCRIBE_NOTE_CREATION_ENABLED,
@@ -461,6 +486,8 @@ export const {
   useUpdateCustomFieldTypesMutation,
   useGetCustomFieldsEnabledQuery,
   useUpdateCustomFieldsEnabledMutation,
+  useGetCharacterLibraryEnabledQuery,
+  useUpdateCharacterLibraryEnabledMutation,
   useGetScribeNoteCreationEnabledQuery,
   useUpdateScribeNoteCreationEnabledMutation,
   useGetScribeVoiceNoteEnabledQuery,

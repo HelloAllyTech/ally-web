@@ -1273,6 +1273,29 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     minWidth: 300,
   },
 ];
+
+/**
+ * Appended to CHARACTER_LIBRARY_TABLE_COLUMNS for platform admins only. Answers
+ * "who made this and for which org" now that a tenant's own admins can create
+ * characters — meaningless in a tenant admin's view, which shows one org's rows
+ * and nothing else, so it isn't shown there.
+ */
+export const CHARACTER_LIBRARY_OWNER_COLUMNS = [
+  {
+    id: "createdByName",
+    label: "Created by",
+    accessor: "createdByName",
+    dataType: cellTypes.normalText,
+    minWidth: 180,
+  },
+  {
+    id: "tenantName",
+    label: "Organisation",
+    accessor: "tenantName",
+    dataType: cellTypes.normalText,
+    minWidth: 180,
+  },
+];
 export const USER_BADGES_TABLE_COLUMNS = [
   {
     id: "imageUrl",

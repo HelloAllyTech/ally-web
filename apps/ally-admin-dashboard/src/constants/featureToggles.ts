@@ -39,6 +39,37 @@ export const FeatureToggleKey = {
 export type FeatureToggleKeyType = (typeof FeatureToggleKey)[keyof typeof FeatureToggleKey];
 
 /**
+ * Org-level (per-tenant) toggles — a different axis from FeatureToggleKey
+ * above, which is per-USER and only ever set for platform admins. An org
+ * toggle is flipped by a platform admin on the organisation, and switches a
+ * surface on for that org's OWN admins. Backed by a `preference` row, read one
+ * at a time via its own settings endpoint.
+ */
+export const OrgToggle = {
+  CHARACTER_LIBRARY: "character_library",
+} as const;
+
+export type OrgToggle = (typeof OrgToggle)[keyof typeof OrgToggle];
+
+/**
+ * Sidebar item id -> the org toggle plus the permission that together surface
+ * it for a tenant's own admins. The mirror of buildSidebarItemFeatureKeyMap for
+ * the org axis; same lazy-build rule, same reason.
+ *
+ * `permission` is a plain string rather than the Permissions enum to keep this
+ * module free of a `@constants` cross-import at module scope.
+ */
+export const buildSidebarItemOrgToggleMap = (
+  sidebarItems: Record<string, string>,
+): Map<string, { toggle: OrgToggle; permission: string }> =>
+  new Map([
+    [
+      sidebarItems.CHARACTER_LIBRARY,
+      { toggle: OrgToggle.CHARACTER_LIBRARY, permission: "view:scenario-character" },
+    ],
+  ]);
+
+/**
  * Sidebar item id -> feature-toggle key. Single source of truth for nav
  * gating (utils/navigation.ts) — replaces the old buildSuperDuperAdminOnlyItems()
  * set and the SUPER_ADMIN_ROLES switch branch with one lookup. Built lazily by

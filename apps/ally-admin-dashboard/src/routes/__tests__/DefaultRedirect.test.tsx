@@ -18,6 +18,7 @@ vi.mock("@api", () => ({
   useGetUserQuery: vi.fn(),
   useGetPermissionsQuery: vi.fn(),
   useGetUserPreferencesQuery: vi.fn(),
+  useGetCharacterLibraryEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
   baseAPI: {
     reducerPath: "baseAPI",
     reducer: vi.fn(),

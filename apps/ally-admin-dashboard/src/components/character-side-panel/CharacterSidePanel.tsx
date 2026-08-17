@@ -37,6 +37,13 @@ interface CharacterSidePanelProps {
   onDelete?: (characterId: string) => void;
   onSave: (character: CharacterData) => void;
   isNewCharacter?: boolean;
+  /**
+   * View-only: every field is disabled and Save is replaced by Close. Used for
+   * tenant admins, who may create a character and read it back but not change
+   * one once saved. Purely presentational — the backend withholds
+   * edit:scenario-character from them regardless.
+   */
+  readOnly?: boolean;
 }
 
 interface FieldProps {
@@ -61,7 +68,8 @@ const PanelHeader: React.FC<{
   onDelete?: (characterId: string) => void;
   hasCharacter: boolean;
   isNewCharacter?: boolean;
-}> = ({ characterId, onClose, onDelete, hasCharacter, isNewCharacter }) => (
+  readOnly?: boolean;
+}> = ({ characterId, onClose, onDelete, hasCharacter, isNewCharacter, readOnly }) => (
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
@@ -69,10 +77,10 @@ const PanelHeader: React.FC<{
     >
       <DoubleArrowRight width={14} height={14} />
       <span className="text-base font-tertiary font-[500]">
-        {isNewCharacter ? "Create character" : "Edit character"}
+        {isNewCharacter ? "Create character" : readOnly ? "Character" : "Edit character"}
       </span>
     </button>
-    {hasCharacter && !isNewCharacter && onDelete && (
+    {hasCharacter && !isNewCharacter && !readOnly && onDelete && (
       <button onClick={() => onDelete(characterId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
         <span className="text-base font-tertiary font-medium text-typography-900">
@@ -90,6 +98,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   onDelete,
   onSave,
   isNewCharacter = false,
+  readOnly = false,
 }) => {
   const emptyCharacter: CharacterData = {
     name: "",
@@ -277,10 +286,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           onDelete={handleDelete}
           hasCharacter={!!selectedCharacter}
           isNewCharacter={isNewCharacter}
+          readOnly={readOnly}
         />
 
         <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
-          <div className="space-y-4">
+          <fieldset disabled={readOnly} className="space-y-4 min-w-0 border-0 p-0 m-0">
             <Field label="Name" required>
               <TextInput
                 id="character-name"
@@ -454,26 +464,38 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 />
               </div>
             </Field>
-          </div>
+          </fieldset>
         </div>
 
         <div className="flex items-center justify-center gap-4 p-4 bg-white shrink-0 mt-auto relative z-10 w-full">
-          <Button
-            variant={ButtonVariant.PRIMARY}
-            onClick={handleSave}
-            disabled={!isFormValid() || !hasFormChanged() || isCreating || isUpdating}
-            className="min-w-[120px]"
-          >
-            {isCreating || isUpdating ? "Saving..." : en.common.save}
-          </Button>
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={handleCancel}
-            className="min-w-[120px]"
-            disabled={isCreating || isUpdating}
-          >
-            {en.common.cancel}
-          </Button>
+          {readOnly ? (
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleCancel}
+              className="min-w-[120px]"
+            >
+              {en.common.close}
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={handleSave}
+                disabled={!isFormValid() || !hasFormChanged() || isCreating || isUpdating}
+                className="min-w-[120px]"
+              >
+                {isCreating || isUpdating ? "Saving..." : en.common.save}
+              </Button>
+              <Button
+                variant={ButtonVariant.SECONDARY}
+                onClick={handleCancel}
+                className="min-w-[120px]"
+                disabled={isCreating || isUpdating}
+              >
+                {en.common.cancel}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

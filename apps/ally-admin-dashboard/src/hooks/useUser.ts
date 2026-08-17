@@ -16,8 +16,9 @@ import {
   useGetUserPreferencesQuery,
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
+  useGetCharacterLibraryEnabledQuery,
 } from "@api";
-import { LOCAL_STORAGE_KEYS, isSuperAdminRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, isSuperAdminRole, OrgToggle } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions, setFeatures } from "@reducer";
 import { RootState, store } from "@store";
 import { deriveNavigationItems } from "@utils";
@@ -142,9 +143,23 @@ export const useUser = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN);
   };
 
+  // Org-level Character Library switch — the second way the Characters tab can
+  // appear, for a tenant's own admins who have no per-user feature toggles.
+  const { data: isCharacterLibraryOrgEnabled } = useGetCharacterLibraryEnabledQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
   const filteredNavigationItems = useMemo(
-    () => deriveNavigationItems({ permissions, features, savedOrder: adminSidebarOrder }),
-    [permissions, features, adminSidebarOrder],
+    () =>
+      deriveNavigationItems({
+        permissions,
+        features,
+        savedOrder: adminSidebarOrder,
+        orgToggles: {
+          [OrgToggle.CHARACTER_LIBRARY]: Boolean(isCharacterLibraryOrgEnabled),
+        },
+      }),
+    [permissions, features, adminSidebarOrder, isCharacterLibraryOrgEnabled],
   );
 
   // Only super admins may personalize their sidebar order.

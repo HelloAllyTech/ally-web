@@ -2,8 +2,13 @@ import React from "react";
 
 import { Navigate } from "react-router-dom";
 
-import { useGetUserQuery, useGetPermissionsQuery, useGetUserPreferencesQuery } from "@api";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import {
+  useGetUserQuery,
+  useGetPermissionsQuery,
+  useGetUserPreferencesQuery,
+  useGetCharacterLibraryEnabledQuery,
+} from "@api";
+import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle } from "@constants";
 // Import the specific module rather than the "@utils" barrel: the barrel pulls
 // in Redux-logger and component dependencies that this root-path redirect has no
 // need for, and would otherwise bloat its chunk.
@@ -26,7 +31,9 @@ export const DefaultRedirect: React.FC = () => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
 
-  const { data: user, isLoading: isUserLoading } = useGetUserQuery(undefined, {
+  // Kept for its isLoading gate below — the tab list itself is derived from
+  // permissions and toggles, not from the user record.
+  const { isLoading: isUserLoading } = useGetUserQuery(undefined, {
     skip: !isAuthenticated,
   });
   const { data: permissions, isLoading: isPermsLoading } = useGetPermissionsQuery(undefined, {
@@ -40,6 +47,11 @@ export const DefaultRedirect: React.FC = () => {
     isLoading: isPrefsLoading,
     isUninitialized: isPrefsUninitialized,
   } = useGetUserPreferencesQuery(undefined, { skip: !isAuthenticated });
+  // Org-level Character Library switch: for a tenant admin whose only other
+  // tabs are permission-gated, this can decide the landing tab.
+  const { data: isCharacterLibraryOrgEnabled } = useGetCharacterLibraryEnabledQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
@@ -56,8 +68,15 @@ export const DefaultRedirect: React.FC = () => {
 
   const items = deriveNavigationItems({
     permissions: permissions ?? [],
-    role: user?.role,
+    // This screen doesn't fetch the per-user toggles, so feature-gated tabs are
+    // never the landing tab here — passing undefined states the long-standing
+    // runtime behaviour instead of leaving a stale `role` prop the function
+    // stopped accepting.
+    features: undefined,
     savedOrder: preferences?.admin_sidebar_order,
+    orgToggles: {
+      [OrgToggle.CHARACTER_LIBRARY]: Boolean(isCharacterLibraryOrgEnabled),
+    },
   });
 
   return <Navigate to={items[0]?.path ?? ROUTES.SIMULATION_STUDIO} replace />;

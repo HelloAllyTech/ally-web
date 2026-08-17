@@ -3,13 +3,19 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-import { useGetUserQuery, useGetPermissionsQuery, useGetFeatureTogglesQuery } from "@api";
+import {
+  useGetUserQuery,
+  useGetPermissionsQuery,
+  useGetFeatureTogglesQuery,
+  useGetCharacterLibraryEnabledQuery,
+} from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import {
   LOCAL_STORAGE_KEYS,
   ROUTES,
+  OrgToggle,
   Permissions,
   UserRole,
   normalizeEmailForAllowlist,
@@ -31,6 +37,15 @@ interface PrivateLayoutProps {
    * pass-through).
    */
   requiredFeature?: string | string[];
+  /**
+   * Third grant path, alongside `requiredRole` and `requiredFeature`: the
+   * caller's ORG has the feature switched on. Per-user feature toggles only
+   * exist for platform admins, so this is how a tenant's own admins reach a
+   * surface built for Ally staff. Always pair it with `requiredPermissions` —
+   * the org switch says the feature is on for the org, the permission says
+   * this user may use it.
+   */
+  requiredOrgToggle?: OrgToggle;
   isPreview?: boolean;
   /**
    * Optional email allowlist (compared case-insensitively against the logged-in
@@ -46,6 +61,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   requiredPermissions = [],
   requiredRole,
   requiredFeature,
+  requiredOrgToggle,
   allowedEmails,
 }) => {
   const isAuthenticated =
@@ -54,6 +70,12 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
   const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
   const { data: features, isLoading: isFeaturesLoading } = useGetFeatureTogglesQuery();
+  // One request per org toggle, skipped entirely on routes that don't ask for
+  // one — which is every route but the Character Library today.
+  const { data: isCharacterLibraryOrgEnabled, isLoading: isOrgToggleLoading } =
+    useGetCharacterLibraryEnabledQuery(undefined, {
+      skip: requiredOrgToggle !== OrgToggle.CHARACTER_LIBRARY,
+    });
 
   const dispatch = useDispatch();
 
@@ -71,6 +93,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   let hasPermission = true;
   let hasRole = true;
   let hasRequiredFeature = true;
+  let hasOrgToggle = false;
   let hasAllowedEmail = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
@@ -105,6 +128,14 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasRequiredFeature = requiredFeatureKeys.some(key => hasFeature(features, key));
   }
 
+  // Org-toggle gating. Fails CLOSED while loading and on a fetch error, same as
+  // the per-user toggles above — the role/feature checks are the escape hatch
+  // for a platform admin, so a slow or failed org read can never be the thing
+  // that grants access.
+  if (requiredOrgToggle === OrgToggle.CHARACTER_LIBRARY) {
+    hasOrgToggle = !isOrgToggleLoading && isCharacterLibraryOrgEnabled === true;
+  }
+
   // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
   // +tag-tolerant (a +tag sub-address matches its base email, via
   // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
@@ -119,7 +150,8 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // passes if EITHER check does — the toggle is additive access, not a
   // narrowing of the legacy role check, until the legacy prop is removed in a
   // later cleanup pass.
-  const hasAccess = hasPermission && (hasRole || hasRequiredFeature) && hasAllowedEmail;
+  const hasAccess =
+    hasPermission && (hasRole || hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
 
   if (hasAccess && isPreview) return children;
 

@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetDashboardSettingsAllQuery,
   useGetTenantByIdQuery,
   useUpdateTenantMutation,
+  useGetCharacterLibraryEnabledQuery,
+  useUpdateCharacterLibraryEnabledMutation,
 } from "@src/api";
+import { TooltipIcon } from "@src/assets";
 import { ToggleSwitch } from "@src/components/toggle-switch";
 import { en } from "@src/constants";
 import { CreateTenantBody } from "@src/types";
@@ -25,6 +29,34 @@ const SimulationsSettings = ({
   const { data: tenant } = useGetTenantByIdQuery(organizationId);
   const [enabledDashboardIds, setEnabledDashboardIds] = useState<string[]>([]);
   const [updateTenant] = useUpdateTenantMutation();
+
+  // Org-level Character Library switch. Stored as a `preference` row rather
+  // than on the tenant, so it has its own query/mutation pair.
+  const { data: characterLibraryEnabled } = useGetCharacterLibraryEnabledQuery(organizationId);
+  const [updateCharacterLibraryEnabled] = useUpdateCharacterLibraryEnabledMutation();
+  const [localCharacterLibraryEnabled, setLocalCharacterLibraryEnabled] = useState(false);
+
+  useEffect(() => {
+    if (characterLibraryEnabled !== undefined) {
+      setLocalCharacterLibraryEnabled(characterLibraryEnabled);
+    }
+  }, [characterLibraryEnabled]);
+
+  const handleCharacterLibraryToggle = async () => {
+    const next = !localCharacterLibraryEnabled;
+    setLocalCharacterLibraryEnabled(next);
+    try {
+      await updateCharacterLibraryEnabled({
+        tenantId: organizationId,
+        enabled: next,
+      }).unwrap();
+    } catch (error: any) {
+      // Roll the switch back rather than leaving the UI claiming a state the
+      // server never accepted.
+      setLocalCharacterLibraryEnabled(!next);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
 
   useEffect(() => {
     if (tenant && dashboardSettingsAll) {
@@ -99,6 +131,27 @@ const SimulationsSettings = ({
           </div>
         </div>
       ))}
+
+      <div className="flex h-9 flex-row justify-between items-center font-primary">
+        <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
+          {en.userManagement.characterLibraryEnabled}
+          <Tooltip label={en.userManagement.characterLibraryEnabledHint} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={localCharacterLibraryEnabled}
+            onChange={handleCharacterLibraryToggle}
+            label={en.userManagement.characterLibraryEnabled}
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {localCharacterLibraryEnabled ? en.common.enabled : en.common.disabled}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

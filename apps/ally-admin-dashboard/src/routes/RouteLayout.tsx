@@ -9,6 +9,7 @@ import {
   SUPER_ADMIN_ROLES,
   SUPER_DUPER_ADMIN_ROLES,
   FeatureToggleKey,
+  OrgToggle,
 } from "@constants";
 import {
   CreateSimulation,
@@ -197,9 +198,14 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
+            /* Platform admins get here on the role/feature-toggle path. A
+               tenant's own ADMINs get here on the org-toggle path, and see
+               only the characters their org created. */
             <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_CHARACTER_LIBRARY]}
               requiredRole={SUPER_DUPER_ADMIN_ROLES}
               requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
+              requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
             >
               <CharacterLibrary />
             </PrivateLayout>
@@ -209,8 +215,10 @@ export const RouteLayout: React.FC = () => {
           path={ROUTES.CHARACTER_LIBRARY_INTERVIEW}
           element={
             <PrivateLayout
+              requiredPermissions={[Permissions.CREATE_CHARACTER_LIBRARY]}
               requiredRole={SUPER_DUPER_ADMIN_ROLES}
               requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
+              requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
             >
               <CharacterInterview />
             </PrivateLayout>

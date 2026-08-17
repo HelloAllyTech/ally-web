@@ -11,12 +11,29 @@ import {
 import { Trash, WandStars } from "@assets";
 import { NotionTable, ListToolbar, ActionConfirmationPopup, CharacterSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
-import { CHARACTER_LIBRARY_TABLE_COLUMNS, en, ROUTES } from "@constants";
+import {
+  CHARACTER_LIBRARY_TABLE_COLUMNS,
+  CHARACTER_LIBRARY_OWNER_COLUMNS,
+  en,
+  Permissions,
+  ROUTES,
+} from "@constants";
+import { useUser } from "@hooks";
 import { CharacterData } from "@types";
 
 export const CharacterLibrary: React.FC = () => {
   const navigate = useNavigate();
   const limit = 30;
+
+  // Two audiences share this page. A platform admin gets the full library and
+  // full CRUD. A tenant admin gets only characters their own org created, and
+  // may create but not change or remove one — so the inline-edit, select and
+  // delete affordances are withheld rather than shown and then rejected by the
+  // API. `edit`/`delete` are the discriminator because the backend grants a
+  // tenant ADMIN view+create only.
+  const { permissions } = useUser();
+  const canEdit = Boolean(permissions?.includes(Permissions.EDIT_CHARACTER_LIBRARY));
+  const canDelete = Boolean(permissions?.includes(Permissions.DELETE_CHARACTER_LIBRARY));
 
   const [offset, setOffset] = useState<number>(0);
   const [characters, setCharacters] = useState<any[]>([]);
@@ -162,15 +179,31 @@ export const CharacterLibrary: React.FC = () => {
         disabled: true,
         rowId: character.id,
       },
+      createdByName: {
+        value: character.createdByName || "",
+        disabled: true,
+        rowId: character.id,
+      },
+      // Blank means Ally-owned rather than unknown — spell that out, since an
+      // empty org cell would otherwise read as missing data.
+      tenantName: {
+        value: character.tenantName || en.simulation.allyOwnedCharacter,
+        disabled: true,
+        rowId: character.id,
+      },
     };
   }, []);
 
   const tableData = useMemo(() => {
     return {
       data: characters?.map(character => createCharacterObject(character)),
-      columns: CHARACTER_LIBRARY_TABLE_COLUMNS,
+      // "Created by" / "Organisation" only mean something when the list spans
+      // orgs, so they ride along with the platform-admin view.
+      columns: canEdit
+        ? [...CHARACTER_LIBRARY_TABLE_COLUMNS, ...CHARACTER_LIBRARY_OWNER_COLUMNS]
+        : CHARACTER_LIBRARY_TABLE_COLUMNS,
     };
-  }, [characters, createCharacterObject]);
+  }, [characters, createCharacterObject, canEdit]);
 
   const tableFooter = (
     <button
@@ -246,7 +279,7 @@ export const CharacterLibrary: React.FC = () => {
   };
 
   const listToolbarAction = useMemo(() => {
-    return selectedCharacters.length > 0
+    return canDelete && selectedCharacters.length > 0
       ? {
           label: en.common.delete,
           variant: ButtonVariant.SECONDARY,
@@ -262,10 +295,10 @@ export const CharacterLibrary: React.FC = () => {
           variant: ButtonVariant.PRIMARY,
           onClick: handleNewCharacterClick,
         };
-  }, [selectedCharacters, handleNewCharacterClick]);
+  }, [selectedCharacters, handleNewCharacterClick, canDelete]);
 
   const listToolbarSecondaryAction = useMemo(() => {
-    if (selectedCharacters.length > 0) return undefined;
+    if (canDelete && selectedCharacters.length > 0) return undefined;
     return {
       label: en.simulation.createWithInterviewAgent,
       variant: ButtonVariant.SECONDARY,
@@ -276,7 +309,7 @@ export const CharacterLibrary: React.FC = () => {
       ),
       onClick: () => navigate(ROUTES.CHARACTER_LIBRARY_INTERVIEW),
     };
-  }, [selectedCharacters, navigate]);
+  }, [selectedCharacters, navigate, canDelete]);
 
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
@@ -293,10 +326,11 @@ export const CharacterLibrary: React.FC = () => {
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable
             tableData={tableData}
-            onRowChange={handleUpdateCharacterTable}
+            onRowChange={canEdit ? handleUpdateCharacterTable : undefined}
             onRowClick={handleCharacterSelect}
             tableFooter={tableFooter}
-            onSelectionChange={handleSelectionChange}
+            onSelectionChange={canDelete ? handleSelectionChange : undefined}
+            hideSelectionColumn={!canDelete}
           />
         </div>
         {showDeleteConfirmationPopup && (
@@ -324,9 +358,11 @@ export const CharacterLibrary: React.FC = () => {
           selectedCharacter={selectedCharacter}
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
-          onDelete={handleDeleteCharacter}
+          onDelete={canDelete ? handleDeleteCharacter : undefined}
           onSave={handleSaveCharacter}
           isNewCharacter={isNewCharacter}
+          // Creating is always allowed here; only editing an existing one is not.
+          readOnly={!canEdit && !isNewCharacter}
         />
       </div>
     </div>
