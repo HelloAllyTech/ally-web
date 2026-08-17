@@ -8,7 +8,7 @@ interface TrackTypeIconProps {
 }
 
 /**
- * Inline stroke icons for the six track item types. Uses currentColor so the
+ * Inline stroke icons for the track item types. Uses currentColor so the
  * parent's text-* theme token drives the colour.
  */
 export const TrackTypeIcon: FC<TrackTypeIconProps> = ({ type, className = "w-5 h-5" }) => {
@@ -75,6 +75,16 @@ export const TrackTypeIcon: FC<TrackTypeIconProps> = ({ type, className = "w-5 h
           <path d="M4 20V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14" />
           <path d="M4 20h16" />
           <path d="M9 13l6-6 2 2-6 6H9z" />
+        </svg>
+      );
+    case TrackItemType.ANNOTATED_ARTIFACT:
+      // Highlighter over marked lines
+      return (
+        <svg {...common}>
+          <path d="M4 6h9M4 10h6" />
+          <path d="M4 18h7" />
+          <path d="M13.5 16.5l5-5 2.5 2.5-5 5H13.5z" />
+          <path d="M13.5 19.5h3" />
         </svg>
       );
     default:

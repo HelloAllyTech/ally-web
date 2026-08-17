@@ -12,12 +12,13 @@ const TYPE_ORDER: TrackItemType[] = [
   TrackItemType.ROLEPLAY,
   TrackItemType.CASE,
   TrackItemType.QUIZ,
+  TrackItemType.ANNOTATED_ARTIFACT,
   TrackItemType.ARTICLE,
   TrackItemType.VIDEO,
   TrackItemType.JOURNAL,
 ];
 
-/** Popover with the six component-type tiles for adding an item to a section. */
+/** Popover with the component-type tiles for adding an item to a section. */
 export const ComponentTypePicker: FC<ComponentTypePickerProps> = ({ onSelect, onClose }) => {
   const ref = useRef<HTMLDivElement>(null);
 

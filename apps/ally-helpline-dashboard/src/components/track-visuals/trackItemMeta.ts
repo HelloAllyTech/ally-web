@@ -45,6 +45,16 @@ export const getTrackItemMeta = (item: TrackDetailItem, t: TFunction): string =>
     }
     case TrackItemType.CASE:
       return t("tracks2.meta.case");
+    case TrackItemType.ANNOTATED_ARTIFACT: {
+      const parts: string[] = [
+        meta?.kind === "DOCUMENT"
+          ? t("tracks2.meta.annotationDocument")
+          : t("tracks2.meta.annotationTranscript"),
+      ];
+      if (meta?.unitCount) parts.push(t("tracks2.meta.lines", { count: meta.unitCount }));
+      if (meta?.labelCount) parts.push(t("tracks2.meta.labels", { count: meta.labelCount }));
+      return parts.join(" · ");
+    }
     default:
       return "";
   }

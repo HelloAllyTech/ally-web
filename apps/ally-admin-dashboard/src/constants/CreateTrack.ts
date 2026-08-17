@@ -1,4 +1,7 @@
 import {
+  AnnotationArtifactKind,
+  AnnotationRevealKey,
+  AnnotationSettings,
   CompletionCriteria,
   QuizQuestionType,
   QuizSettings,
@@ -28,6 +31,7 @@ export const TRACK_ITEM_TYPE_LABELS: Record<TrackItemType, string> = {
   [TrackItemType.ARTICLE]: "Article",
   [TrackItemType.VIDEO]: "Video",
   [TrackItemType.JOURNAL]: "Journal",
+  [TrackItemType.ANNOTATED_ARTIFACT]: "Annotation",
 };
 
 export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
@@ -37,6 +41,7 @@ export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
   [TrackItemType.ARTICLE]: "Written content authored inline",
   [TrackItemType.VIDEO]: "Upload a video or embed a link",
   [TrackItemType.JOURNAL]: "Reflection prompts for the learner",
+  [TrackItemType.ANNOTATED_ARTIFACT]: "Mark up a real transcript or note",
 };
 
 export const QUIZ_QUESTION_TYPE_LABELS: Record<QuizQuestionType, string> = {
@@ -70,6 +75,56 @@ export const DEFAULT_COMPLETION_CRITERIA: Record<TrackItemType, CompletionCriter
   [TrackItemType.ARTICLE]: {},
   [TrackItemType.VIDEO]: { watchPct: DEFAULT_VIDEO_WATCH_PCT },
   [TrackItemType.JOURNAL]: {},
+  [TrackItemType.ANNOTATED_ARTIFACT]: {},
+};
+
+/* ---- Annotation (ANNOTATED_ARTIFACT) ---- */
+
+export const MAX_ANNOTATION_UNITS = 300;
+export const MAX_ANNOTATION_LABELS = 8;
+export const MIN_ANNOTATION_LABELS = 1;
+export const DEFAULT_ANNOTATION_PASS_SCORE = 70;
+export const DEFAULT_ANNOTATION_FALSE_POSITIVE_PENALTY = 1;
+
+export const ANNOTATION_KIND_OPTIONS: Array<{
+  value: AnnotationArtifactKind;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: "TRANSCRIPT",
+    label: "Transcript",
+    hint: "One line per speaker turn. Paste as `Speaker: what they said`.",
+  },
+  {
+    value: "DOCUMENT",
+    label: "Document",
+    hint: "One line per paragraph. Separate paragraphs with a blank line.",
+  },
+];
+
+export const ANNOTATION_REVEAL_OPTIONS: Array<{
+  value: AnnotationRevealKey;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: "after_pass_or_last_attempt",
+    label: "After they pass or run out of attempts",
+    hint: "Learners see their own marks scored after every attempt, but the lines they missed stay hidden until the end.",
+  },
+  {
+    value: "after_each_attempt",
+    label: "After every attempt",
+    hint: "The full answer key shows every time. Best with a single attempt — otherwise attempt two is a copying exercise.",
+  },
+];
+
+export const DEFAULT_ANNOTATION_SETTINGS: AnnotationSettings = {
+  passScore: DEFAULT_ANNOTATION_PASS_SCORE,
+  maxAttempts: 2,
+  falsePositivePenalty: DEFAULT_ANNOTATION_FALSE_POSITIVE_PENALTY,
+  revealKey: "after_pass_or_last_attempt",
 };
 
 export const DEFAULT_TRACK_FORM_VALUES: TrackFormValues = {

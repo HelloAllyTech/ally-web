@@ -1,8 +1,9 @@
 /**
- * Track 2.0 learner types — multi-component learning tracks
- * (sections of roleplay/case/quiz/article/video/journal items).
+ * Track 2.0 learner types — multi-component learning tracks (sections of
+ * roleplay/case/quiz/article/video/journal/annotation items).
  * Mirrors the ally-be `v1/learn/tracks` learner API contract.
  */
+import type { ArtifactSwatch } from "@ally-ui-mono/ui-shared";
 
 export enum TrackItemType {
   ROLEPLAY = "ROLEPLAY",
@@ -11,6 +12,7 @@ export enum TrackItemType {
   ARTICLE = "ARTICLE",
   VIDEO = "VIDEO",
   JOURNAL = "JOURNAL",
+  ANNOTATED_ARTIFACT = "ANNOTATED_ARTIFACT",
 }
 
 /**
@@ -62,6 +64,11 @@ export interface TrackItemContentMeta {
   source?: TrackVideoSource;
   // JOURNAL
   promptCount?: number;
+  // ANNOTATED_ARTIFACT — deliberately no target count, that would give the
+  // answer away before the learner has looked.
+  kind?: AnnotationArtifactKind;
+  unitCount?: number;
+  labelCount?: number;
 }
 
 export interface TrackDetailItem {
@@ -210,6 +217,78 @@ export interface QuizAttemptResult {
 // Journal
 // ---------------------------------------------------------------------------
 
+/* -------------------------------------------------------------------------- */
+/* Annotation (ANNOTATED_ARTIFACT)                                            */
+/* -------------------------------------------------------------------------- */
+
+export type AnnotationArtifactKind = "TRANSCRIPT" | "DOCUMENT";
+
+export type AnnotationRevealKey = "after_each_attempt" | "after_pass_or_last_attempt";
+
+export type AnnotationVerdict = "FOUND" | "MISSED" | "NOT_HERE";
+
+export interface AnnotationUnit {
+  id: string;
+  speaker?: string;
+  text: string;
+}
+
+export interface AnnotationLabel {
+  id: string;
+  text: string;
+  description?: string;
+  color: ArtifactSwatch;
+}
+
+/** What the server sends the player — the answer key is never in here. */
+export interface SanitizedAnnotation {
+  kind: AnnotationArtifactKind;
+  intro?: string;
+  units: AnnotationUnit[];
+  labels: AnnotationLabel[];
+  settings: {
+    passScore: number;
+    maxAttempts: number | null;
+    /** Points lost per wrong mark. Told to the learner before they start. */
+    falsePositivePenalty: number;
+    revealKey: AnnotationRevealKey;
+  };
+}
+
+export interface AnnotationMarkInput {
+  unitId: string;
+  labelId: string;
+}
+
+export interface AnnotationResultEntry {
+  unitId: string;
+  labelId: string;
+  verdict: AnnotationVerdict;
+  points: number;
+  /** The author's teaching note. Only present once the key is revealed. */
+  note?: string;
+}
+
+export interface AnnotationAttemptResult extends TrackItemCompletionResult {
+  attemptId: string;
+  attemptNumber: number;
+  scorePct: number;
+  passed: boolean;
+  passScore: number;
+  attemptsUsed: number;
+  maxAttempts: number | null;
+  /** Whether misses and author notes are included below. */
+  revealed: boolean;
+  found: number;
+  notHere: number;
+  /** Present only when `revealed` — otherwise it would leak the target count. */
+  missed?: number;
+  pointsAwarded?: number;
+  pointsPossible?: number;
+  entries: AnnotationResultEntry[];
+  itemCompleted: boolean;
+}
+
 export interface JournalPrompt {
   id: string;
   prompt: string;
@@ -274,13 +353,23 @@ export interface StartJournalItemPayload extends StartTrackItemBase {
   savedResponses: JournalSavedResponse[];
 }
 
+export interface StartAnnotationItemPayload extends StartTrackItemBase {
+  type: TrackItemType.ANNOTATED_ARTIFACT;
+  annotation: SanitizedAnnotation;
+  attemptsUsed: number;
+  maxAttempts: number | null;
+  /** The last graded attempt, so reopening a finished item shows the reveal. */
+  lastResult: AnnotationAttemptResult | null;
+}
+
 export type StartTrackItemResponse =
   | StartRoleplayItemPayload
   | StartCaseItemPayload
   | StartQuizItemPayload
   | StartArticleItemPayload
   | StartVideoItemPayload
-  | StartJournalItemPayload;
+  | StartJournalItemPayload
+  | StartAnnotationItemPayload;
 
 // ---------------------------------------------------------------------------
 // Completion results

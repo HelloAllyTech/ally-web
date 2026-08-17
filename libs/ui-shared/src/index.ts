@@ -47,6 +47,22 @@ export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
 export type { SimulationTranslations, TurnIndicatorTranslations } from "./lib/simulation";
 export type { ProgressVideoPlayerProps, ProgressVideoPlayerProgress } from "./lib/progress-video";
+export type {
+  ArtifactUnit,
+  ArtifactLabel,
+  ArtifactMark,
+  ArtifactVerdict,
+  ArtifactMarkerProps,
+} from "./lib/artifact-marker/ArtifactMarker";
+export type { ArtifactLabelPaletteProps } from "./lib/artifact-marker/ArtifactLabelPalette";
+export type { ArtifactSwatch, SwatchTokens } from "./lib/artifact-marker/artifactSwatches";
+export { ArtifactMarker, markKey } from "./lib/artifact-marker/ArtifactMarker";
+export { ArtifactLabelPalette } from "./lib/artifact-marker/ArtifactLabelPalette";
+export {
+  ARTIFACT_SWATCHES,
+  ARTIFACT_SWATCH_ORDER,
+  ARTIFACT_VERDICT_TOKENS,
+} from "./lib/artifact-marker/artifactSwatches";
 
 export {
   Badge,

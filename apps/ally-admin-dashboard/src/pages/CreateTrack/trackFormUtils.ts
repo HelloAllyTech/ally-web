@@ -1,8 +1,11 @@
 import {
+  DEFAULT_ANNOTATION_SETTINGS,
   DEFAULT_COMPLETION_CRITERIA,
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_VIDEO_WATCH_PCT,
   itemNodeKey,
+  MAX_ANNOTATION_LABELS,
+  MAX_ANNOTATION_UNITS,
   MAX_JOURNAL_PROMPTS,
   MAX_MCQ_OPTIONS,
   MIN_MCQ_OPTIONS,
@@ -11,6 +14,8 @@ import {
   TRACK_SETTINGS_NODE_KEY,
 } from "@constants";
 import {
+  AnnotationContent,
+  AnnotationFormValue,
   ArticleContent,
   CompletionCriteria,
   FillBlankQuestion,
@@ -36,6 +41,8 @@ import {
   VideoContent,
   VideoSource,
 } from "@types";
+
+import { unitsToSourceText } from "./annotationSegmentation";
 
 const newId = () => crypto.randomUUID();
 
@@ -71,6 +78,19 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
       };
     case TrackItemType.QUIZ:
       return { ...base, quiz: { settings: { ...DEFAULT_QUIZ_SETTINGS }, questions: [] } };
+    case TrackItemType.ANNOTATED_ARTIFACT:
+      return {
+        ...base,
+        annotation: {
+          kind: "TRANSCRIPT",
+          intro: "",
+          units: [],
+          labels: [{ id: newId(), text: "", description: "", color: "amber" }],
+          targets: [],
+          settings: { ...DEFAULT_ANNOTATION_SETTINGS },
+          sourceText: "",
+        },
+      };
     case TrackItemType.ROLEPLAY:
       return { ...base, scenarioId: null };
     case TrackItemType.CASE:
@@ -352,6 +372,43 @@ const validateItem = (item: TrackItemFormValue): string[] => {
       });
       break;
     }
+    case TrackItemType.ANNOTATED_ARTIFACT: {
+      const annotation = item.annotation;
+      const units = annotation?.units ?? [];
+      if (units.length === 0) {
+        errors.push("Annotation: paste a transcript or note");
+      }
+      if (units.length > MAX_ANNOTATION_UNITS) {
+        errors.push(`Annotation: at most ${MAX_ANNOTATION_UNITS} lines`);
+      }
+      const namedLabels = (annotation?.labels ?? []).filter(label => !isBlank(label.text));
+      if (namedLabels.length === 0) {
+        errors.push("Annotation: name at least one label");
+      }
+      if (namedLabels.length > MAX_ANNOTATION_LABELS) {
+        errors.push(`Annotation: at most ${MAX_ANNOTATION_LABELS} labels`);
+      }
+      const labelIds = new Set(namedLabels.map(label => label.id));
+      const liveTargets = (annotation?.targets ?? []).filter(target =>
+        labelIds.has(target.labelId),
+      );
+      if (liveTargets.length === 0) {
+        errors.push("Annotation: mark at least one line as part of the answer");
+      }
+      const passScore = annotation?.settings?.passScore;
+      if (passScore == null || passScore < 0 || passScore > 100) {
+        errors.push("Annotation: pass score must be between 0 and 100");
+      }
+      const penalty = annotation?.settings?.falsePositivePenalty;
+      if (penalty == null || penalty < 0) {
+        errors.push("Annotation: the cost of a wrong mark cannot be negative");
+      }
+      const maxAttempts = annotation?.settings?.maxAttempts;
+      if (maxAttempts != null && (!Number.isInteger(maxAttempts) || maxAttempts < 1)) {
+        errors.push("Annotation: attempts must be a whole number of 1 or more");
+      }
+      break;
+    }
   }
   return errors;
 };
@@ -412,6 +469,31 @@ const compactCriteria = (criteria?: CompletionCriteria): CompletionCriteria | un
   return Object.keys(compact).length > 0 ? compact : undefined;
 };
 
+/**
+ * `sourceText` is editor-only — the units are the persisted source of truth, so
+ * it is dropped here rather than round-tripped through the server. Labels with
+ * no text never made it into the key, so they're dropped too.
+ */
+const serializeAnnotation = (annotation: AnnotationFormValue): AnnotationContent => {
+  const labels = annotation.labels.filter(label => label.text.trim());
+  const labelIds = new Set(labels.map(label => label.id));
+  return {
+    kind: annotation.kind,
+    ...(annotation.intro?.trim() ? { intro: annotation.intro.trim() } : {}),
+    units: annotation.units,
+    labels,
+    targets: annotation.targets
+      .filter(target => labelIds.has(target.labelId))
+      .map(target => ({
+        unitId: target.unitId,
+        labelId: target.labelId,
+        ...(target.points ? { points: target.points } : {}),
+        ...(target.note?.trim() ? { note: target.note.trim() } : {}),
+      })),
+    settings: { ...annotation.settings },
+  };
+};
+
 const serializeQuiz = (quiz: QuizContent): QuizContent => ({
   settings: { ...quiz.settings },
   questions: quiz.questions.map(question => {
@@ -467,6 +549,9 @@ const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureI
       break;
     case TrackItemType.QUIZ:
       payload.content = item.quiz ? serializeQuiz(item.quiz) : undefined;
+      break;
+    case TrackItemType.ANNOTATED_ARTIFACT:
+      payload.content = item.annotation ? serializeAnnotation(item.annotation) : undefined;
       break;
   }
 
@@ -545,6 +630,22 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
             case TrackItemType.QUIZ: {
               const quiz = item.content as QuizContent | undefined;
               formItem.quiz = quiz ?? { settings: { ...DEFAULT_QUIZ_SETTINGS }, questions: [] };
+              break;
+            }
+            case TrackItemType.ANNOTATED_ARTIFACT: {
+              const annotation = item.content as AnnotationContent | undefined;
+              const units = annotation?.units ?? [];
+              formItem.annotation = {
+                kind: annotation?.kind ?? "TRANSCRIPT",
+                intro: annotation?.intro ?? "",
+                units,
+                labels: annotation?.labels ?? [],
+                targets: annotation?.targets ?? [],
+                settings: annotation?.settings ?? { ...DEFAULT_ANNOTATION_SETTINGS },
+                // Rebuilt from the stored units so the author edits the same
+                // text they pasted, and re-segmentation keeps the unit ids.
+                sourceText: unitsToSourceText(units, annotation?.kind ?? "TRANSCRIPT"),
+              };
               break;
             }
           }

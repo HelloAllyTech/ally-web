@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { TrackItemType } from "@types";
 
+import { AnnotationItemEditor } from "./editors/annotation/AnnotationItemEditor";
 import { ArticleItemEditor } from "./editors/ArticleItemEditor";
 import { CaseItemEditor } from "./editors/CaseItemEditor";
 import { JournalItemEditor } from "./editors/JournalItemEditor";
@@ -38,6 +39,8 @@ export const ItemEditorCanvas: FC<ItemEditorCanvasProps> = ({
       return <JournalItemEditor {...props} />;
     case TrackItemType.QUIZ:
       return <QuizItemEditor {...props} />;
+    case TrackItemType.ANNOTATED_ARTIFACT:
+      return <AnnotationItemEditor {...props} />;
     default:
       return null;
   }
