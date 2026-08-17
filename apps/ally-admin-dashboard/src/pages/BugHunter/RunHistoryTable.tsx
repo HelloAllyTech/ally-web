@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
 
 import {
   Table,
@@ -155,10 +155,24 @@ export const RunHistoryTable: FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
+            {/* Keyed on the Fragment, not on the TableRow inside it: the
+                fragment is what this map returns, so it is the list child React
+                reconciles — a key on its children is invisible to that, which
+                is why this warned about missing keys while looking keyed. The
+                spelled-out React.Fragment is required because the `<>` shorthand
+                takes no props.
+
+                The key is the run id, not the index, because this table polls
+                and a run can arrive at the top. Cells are pure functions of
+                their run, so index reconciliation still rendered the right
+                values — what it cost was identity: every row below the newcomer
+                shifted, so an expanded RunDetailRow was destroyed and rebuilt
+                one position down, re-subscribing its own request and flashing
+                its loading state on each poll. Keyed by id, React moves the
+                existing rows instead. */}
             {runs.map(run => (
-              <>
+              <React.Fragment key={run.id}>
                 <TableRow
-                  key={run.id}
                   className="border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-neutral-50"
                   onClick={() => setExpandedRunId(prev => (prev === run.id ? null : run.id))}
                 >
@@ -176,10 +190,8 @@ export const RunHistoryTable: FC = () => {
                     {formatDate(run.createdAt)}
                   </TableCell>
                 </TableRow>
-                {expandedRunId === run.id && (
-                  <RunDetailRow key={`${run.id}-detail`} runId={run.id} />
-                )}
-              </>
+                {expandedRunId === run.id && <RunDetailRow runId={run.id} />}
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
