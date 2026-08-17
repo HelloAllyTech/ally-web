@@ -128,7 +128,7 @@ vi.mock("@components/action-confirmation-popup", () => ({
 }));
 
 import * as api from "@api";
-import { BugHunterMode } from "@types";
+import { BugHunterMode, BugHuntRunStatus } from "@types";
 import { BugHunter } from "../BugHunter";
 
 const mockSettingsQuery = (overrides: Record<string, unknown> = {}) => {
@@ -160,17 +160,19 @@ const mockFindingsQuery = (overrides: Record<string, unknown> = {}) => {
   });
 };
 
+/**
+ * This file covers the page as a *layout*: who is at the top of it, what order
+ * the surfaces come in, and which of them appear at all. The working-style
+ * control moved onto the profile card and is tested in AgentProfileCard.test.
+ */
 describe("BugHunter", () => {
-  const updateSettings = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
-
   beforeEach(() => {
     vi.clearAllMocks();
-    updateSettings.mockClear();
     mockSettingsQuery();
     mockRunsQuery();
     mockFindingsQuery();
     (api.useUpdateBugHunterSettingsMutation as any).mockReturnValue([
-      updateSettings,
+      vi.fn(() => ({ unwrap: () => Promise.resolve({}) })),
       { isLoading: false },
     ]);
     (api.useGetBugHuntRunQuery as any).mockReturnValue({
@@ -180,61 +182,87 @@ describe("BugHunter", () => {
     });
   });
 
-  it("renders off by default", () => {
+  it("leads with the character rather than a page heading", () => {
     render(<BugHunter />);
-    expect(screen.getByTestId("mode-switcher")).toHaveAttribute("data-selected-index", "0");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
+    expect(screen.getByText(/Software test engineer/)).toBeInTheDocument();
   });
 
-  it("renders every FAQ question so a reader can find them before switching modes", () => {
+  it("renders every About-me question, so a reader can find them before putting it on duty", () => {
     render(<BugHunter />);
-    expect(screen.getByText("What does this do?")).toBeInTheDocument();
-    expect(screen.getByText("What's the difference between Manual and AI mode?")).toBeInTheDocument();
+    expect(screen.getByText("What do you do?")).toBeInTheDocument();
     expect(
-      screen.getByText("What can it fix on its own vs. what does it just propose?"),
+      screen.getByText("What's the difference between the two working styles?"),
     ).toBeInTheDocument();
-    expect(screen.getByText("How do I turn it off?")).toBeInTheDocument();
+    expect(
+      screen.getByText("What do you fix on your own, and what do you just propose?"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("How do I stop you?")).toBeInTheDocument();
   });
 
-  it("asks for confirmation before switching modes, and does not call the mutation until confirmed", () => {
+  it("names both old mode names in About me, so logs and docs still join up", () => {
     render(<BugHunter />);
-    fireEvent.click(screen.getByText("Manual"));
-
-    expect(screen.getByTestId("confirm-popup")).toHaveTextContent("Switch Bug Hunter to Manual?");
-    expect(updateSettings).not.toHaveBeenCalled();
+    expect(screen.getByText(/Works solo \(AI mode\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Checks with you \(Manual mode\)/)).toBeInTheDocument();
   });
 
-  it("calls the mutation with the target mode only after the confirmation is accepted", async () => {
+  // Position, not presence: while nobody has put Bug Hunter on duty there is
+  // nothing in any of the tables, and the introduction is the most useful thing
+  // on the page. Once it is working, eleven accordions above the work are noise.
+  const aboutComesBeforeTheBugsTable = () => {
+    const about = screen.getByText("About me");
+    const bugs = screen.getByText("Bugs I'm tracking");
+    return Boolean(about.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING);
+  };
+
+  it("puts About me directly under the card while it is off duty", () => {
     render(<BugHunter />);
-    fireEvent.click(screen.getByText("Manual"));
-    fireEvent.click(screen.getByText("Switch"));
-
-    await waitFor(() => expect(updateSettings).toHaveBeenCalledWith({ mode: BugHunterMode.MANUAL }));
+    expect(aboutComesBeforeTheBugsTable()).toBe(true);
   });
 
-  it("cancelling the confirmation leaves the mode unchanged and calls no mutation", () => {
-    render(<BugHunter />);
-    fireEvent.click(screen.getByText("Manual"));
-    fireEvent.click(screen.getByText("Cancel"));
-
-    expect(screen.queryByTestId("confirm-popup")).not.toBeInTheDocument();
-    expect(updateSettings).not.toHaveBeenCalled();
-  });
-
-  it("confirms switching to AI with different copy than switching to Manual", () => {
+  it("moves About me below the work once it is on duty", () => {
     mockSettingsQuery({
-      data: { mode: BugHunterMode.MANUAL, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+    });
+    render(<BugHunter />);
+    expect(aboutComesBeforeTheBugsTable()).toBe(false);
+  });
+
+  it("shows what it is doing right now, above its messages, while a run is live", () => {
+    mockRunsQuery({
+      data: {
+        items: [
+          {
+            id: "run-1",
+            trigger: "scheduled",
+            repo: "ally-be",
+            status: BugHuntRunStatus.RUNNING,
+            finishedAt: null,
+            foundCount: 0,
+            autoMergedCount: 0,
+            prOpenedCount: 0,
+            dismissedCount: 0,
+            totalTokenCostUsd: "0",
+            createdAt: "2026-08-17T00:00:00.000Z",
+          },
+        ],
+      },
     });
     render(<BugHunter />);
 
-    expect(screen.getByTestId("mode-switcher")).toHaveAttribute("data-selected-index", "1");
-    fireEvent.click(screen.getByText("AI"));
-    expect(screen.getByTestId("confirm-popup")).toHaveTextContent("Switch Bug Hunter to AI?");
+    expect(screen.getByText("What I'm doing right now")).toBeInTheDocument();
+    expect(screen.getByText("I'm sweeping ally-be")).toBeInTheDocument();
   });
 
-  it("shows the empty state for both the bugs table and the run history when neither has data yet", () => {
+  it("says nothing about a live run when none is in progress", () => {
+    render(<BugHunter />);
+    expect(screen.queryByText("What I'm doing right now")).not.toBeInTheDocument();
+  });
+
+  it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {
     render(<BugHunter />);
     const emptyStates = screen.getAllByTestId("empty-state");
     expect(emptyStates.some(el => el.textContent?.includes("No bugs yet"))).toBe(true);
-    expect(emptyStates.some(el => el.textContent?.includes("No runs yet"))).toBe(true);
+    expect(emptyStates.some(el => el.textContent?.includes("No shifts yet"))).toBe(true);
   });
 });

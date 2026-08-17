@@ -73,13 +73,13 @@ describe("NotificationInbox", () => {
     renderInbox([note()], 1);
     expect(screen.queryByText("Live in production: Terms link")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("Bug Hunter says"));
+    fireEvent.click(screen.getByText("Messages from Bug Hunter"));
     expect(screen.getByText("Live in production: Terms link")).toBeInTheDocument();
   });
 
   it("opens the bug and marks the notification read in one click", () => {
     const onOpen = renderInbox([note()], 1);
-    fireEvent.click(screen.getByText("Bug Hunter says"));
+    fireEvent.click(screen.getByText("Messages from Bug Hunter"));
     fireEvent.click(screen.getByText("Live in production: Terms link"));
 
     expect(markRead).toHaveBeenCalledWith("n-1");
@@ -88,7 +88,7 @@ describe("NotificationInbox", () => {
 
   it("does not re-mark something already read", () => {
     renderInbox([note({ readAt: "2026-08-17" })], 0);
-    fireEvent.click(screen.getByText("Bug Hunter says"));
+    fireEvent.click(screen.getByText("Messages from Bug Hunter"));
     fireEvent.click(screen.getByText("Live in production: Terms link"));
 
     expect(markRead).not.toHaveBeenCalled();
@@ -107,7 +107,7 @@ describe("NotificationInbox", () => {
 
   it("explains what the inbox is for when it is empty", () => {
     renderInbox([], 0);
-    fireEvent.click(screen.getByText("Bug Hunter says"));
-    expect(screen.getByText(/Bug Hunter posts here when it needs an answer/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Messages from Bug Hunter"));
+    expect(screen.getByText(/I post here when I need an answer/)).toBeInTheDocument();
   });
 });

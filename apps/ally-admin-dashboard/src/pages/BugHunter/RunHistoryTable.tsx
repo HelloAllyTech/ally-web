@@ -13,12 +13,11 @@ import { useGetBugHuntRunQuery, useGetBugHuntRunsQuery } from "@api";
 import { TooltipIcon } from "@assets";
 import { EmptyState } from "@components";
 import { en } from "@constants";
-import { BugHuntRun, BugHuntRunStatus, BugHuntTrigger } from "@types";
+import { BugHuntRun, BugHuntTrigger } from "@types";
 import { formatDate } from "@utils";
 
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
 import { BugHuntStatusBadge } from "./BugHuntStatusBadge";
-import { LiveRunCard } from "./LiveRunCard";
 
 const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.SCHEDULED]: en.bugHunter.triggerScheduled,
@@ -82,15 +81,14 @@ export const RunHistoryTable: FC = () => {
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 
   const runs: BugHuntRun[] = data?.items ?? [];
-  const liveRun = runs.find(run => run.status === BugHuntRunStatus.RUNNING);
 
   return (
     <div>
-      {liveRun && <LiveRunCard run={liveRun} />}
-
-      <h2 className="text-sm font-semibold text-typography-900 mb-3">
-        {en.bugHunter.historyTitle}
-      </h2>
+      {/* The live run is no longer rendered here: watching Bug Hunter work is
+          the top of the page now, next to what it's saying, rather than
+          buried above a history table two screens down. */}
+      <h2 className="text-sm font-semibold text-typography-900">{en.bugHunter.historyTitle}</h2>
+      <p className="text-xs text-typography-600 mb-3">{en.bugHunter.historySubtitle}</p>
 
       {isLoading ? (
         <p className="text-typography-700">…</p>

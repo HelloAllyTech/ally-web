@@ -14,7 +14,6 @@ import {
   Branch,
   Chat,
   Chemistry,
-  Debug,
   MachineLearningModel,
   Roadmap,
   Close,
@@ -51,9 +50,13 @@ import {
   Badge,
 } from "@assets";
 import { UserModal } from "@components";
+// Direct path, not the @components barrel: this file is the barrel's own
+// neighbour and several suites mock it wholesale.
+import { AgentAvatar } from "@components/agent-avatar";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 
+import { BugHunterNavBadge } from "./BugHunterNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
 
 const EXPANDED_WIDTH = 1200;
@@ -225,10 +228,32 @@ export const Sidebar: React.FC = () => {
         return <Terminal size={20} />;
       case SIDEBAR_ITEMS.WHATSAPP_BOT:
         return <Chat size={20} />;
+      // Bug Hunter is the one tab that is a *someone* rather than a section:
+      // its own page presents it as a test engineer on the team, and the nav
+      // carries the same face so it is recognisable from anywhere. The Debug
+      // glyph it used to have said "bugs live here", which is what every other
+      // tab's icon says about its subject — this one says who is working on
+      // them.
       case SIDEBAR_ITEMS.BUG_HUNTER:
-        return <Debug size={20} />;
+        return <AgentAvatar size="xs" label={en.bugHunter.agentName} />;
       default:
         return null;
+    }
+  };
+
+  /**
+   * Trailing status for a tab, for the rare one that has something waiting on
+   * you elsewhere in the console. Only Bug Hunter has one today; keeping it a
+   * switch rather than a prop on NavigationItem keeps the data-fetching in a
+   * component that can be mounted conditionally, so a user without the
+   * permission never issues the request.
+   */
+  const renderBadge = (id: string): React.ReactNode | undefined => {
+    switch (id) {
+      case SIDEBAR_ITEMS.BUG_HUNTER:
+        return <BugHunterNavBadge />;
+      default:
+        return undefined;
     }
   };
 
@@ -330,6 +355,7 @@ export const Sidebar: React.FC = () => {
                   isExpanded={isExpanded}
                   canReorder={canReorder && !isSearching}
                   onNavigate={handleNavigation}
+                  badge={renderBadge(item.id)}
                 />
               ))}
             </ul>

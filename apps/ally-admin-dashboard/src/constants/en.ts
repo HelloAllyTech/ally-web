@@ -2221,68 +2221,120 @@ export const en = {
   },
   bugHunter: {
     tabLabel: "Bug Hunter",
-    heading: "Bug Hunter",
-    subtitle:
-      "An agent that finds and fixes bugs across the Ally repos. Off by default — read the FAQ before turning it on.",
-    // ── Kill switch: a three-way mode, not a boolean ──────────────────────────
-    modeLabel: "Mode",
-    modeOff: "Off",
-    modeManual: "Manual",
-    modeAi: "AI",
+    // ── The character ────────────────────────────────────────────────────────
+    // Bug Hunter is presented as a colleague — a test engineer you check in on
+    // — rather than as a pipeline you configure. Everything it says is first
+    // person, plain, and ends with what happens next. The full voice rules,
+    // and why they exist, are in pages/BugHunter/agentPersona.ts.
+    //
+    // One line to hold: the character speaks about *the work*; the app speaks
+    // about *itself*. "I couldn't reproduce that bug" is Bug Hunter. "Couldn't
+    // load the bugs table" is this console failing, and stays in app voice —
+    // having the character apologise for a failed fetch would be a lie about
+    // where the fault is.
+    agentName: "Bug Hunter",
+    agentRole: "Software test engineer",
+    agentTeam: "Ally platform · ally-be, ally-web, ally-ai, ally-ai-learn, ally-mobile",
+    agentHours: "Nightly sweep, plus whenever you ask",
+    agentIntro:
+      "I read the Ally repos every night, reproduce what I find with a failing test, fix it and open the PR. When a call isn't mine to make, I stop and ask you.",
+    agentStatusOffDuty: "Off duty",
+    agentStatusOffDutyDetail:
+      "I'm not picking anything up. Nightly sweeps and fix sessions are both paused until you put me back on.",
+    agentStatusWaiting: "Waiting on you",
+    agentStatusWaitingDetailOne:
+      "One bug is waiting on your call. I'll carry on as soon as you decide.",
+    agentStatusWaitingDetail:
+      "{count} bugs are waiting on your call. I'll carry on as soon as you decide.",
+    agentStatusProblem: "Hit a problem",
+    agentStatusProblemDetailOne:
+      "One of my jobs went red. Open it and I'll show you what happened.",
+    agentStatusProblemDetail:
+      "{count} of my jobs went red. Open them and I'll show you what happened.",
+    agentStatusWorking: "Working",
+    agentStatusWorkingSweeping: "I'm sweeping {repo} right now.",
+    agentStatusWorkingDetailOne: "I'm working on one fix right now.",
+    agentStatusWorkingDetail: "I'm working on {count} fixes right now.",
+    agentStatusOnShift: "On shift",
+    agentStatusOnShiftDetail: "Nothing on my desk. My next sweep runs tonight.",
+    agentStatusOnShiftDetailManual:
+      "Nothing on my desk. My next sweep runs tonight — I'll check with you before I fix anything.",
+    // ── What's on the desk ───────────────────────────────────────────────────
+    workloadInFlight: "In progress",
+    // Not "Waiting on you" — that is the status pill's wording, and the same
+    // phrase twice in one card reads as one thing said twice rather than a
+    // status and a count. This matches the detail line's "waiting on your call".
+    workloadWaiting: "Waiting on your call",
+    workloadInReview: "In review",
+    workloadShipped: "Shipped this week",
+    workloadFootnote:
+      "From my {count} most recent bugs — a picture of this week, not an all-time total.",
+    // ── Working style: how much rope, not on/off ─────────────────────────────
+    modeLabel: "Working style",
+    modeOff: "Off duty",
+    modeManual: "Checks with you",
+    modeAi: "Works solo",
     modeTooltip:
-      "Off blocks every trigger, nightly and on-demand alike — there is no separate pause. Manual and AI both keep finding bugs on schedule; only Manual holds the fix stage for your approval on each one, in the table below. Switching mid-run lets the current run finish under its old mode.",
-    modeConfirmTitle: "Switch Bug Hunter to {mode}?",
+      "Off duty blocks every trigger, nightly and on-demand alike — there is no separate pause. Checks with you (Manual mode) and Works solo (AI mode) both keep it finding bugs on schedule; only Checks with you holds the fix stage for your approval on each bug, in the table below. Changing this mid-run lets the current run finish under the old setting.",
+    modeOffConfirmTitle: "Send Bug Hunter off duty?",
+    modeManualConfirmTitle: "Ask Bug Hunter to check with you first?",
+    modeAiConfirmTitle: "Let Bug Hunter work solo?",
     modeOffConfirmBody:
-      "Every trigger — nightly and on-demand — will refuse to start until it's moved off Off. Nothing already in the table changes.",
+      "I'll stop picking anything up — nightly sweeps and fix sessions both — until you put me back on. Nothing already in my table changes, and anything mid-run finishes first.",
     modeManualConfirmBody:
-      "It will keep finding bugs on its usual schedule, but every new finding waits in the table below for you to approve before it's fixed. Read the FAQ if you haven't yet.",
+      "I'll keep finding bugs on my usual schedule, but I won't fix anything until you approve it in my table below. This is Manual mode.",
     modeAiConfirmBody:
-      "Verify-confirmed findings will go straight to the fix stage with no approval step — its original, fully-automatic behaviour. Read the FAQ if you haven't yet.",
-    modeConfirm: "Switch",
+      "Anything I've verified goes straight to the fix stage without waiting for you — my original, fully automatic behaviour. I still never merge a migration, auth or payment change myself. This is AI mode.",
+    modeConfirm: "Confirm",
     cancel: "Cancel",
     updateFailed: "Couldn't update the setting. Try again.",
-    lastChangedBy: "Last changed by user #{userId}",
-    // ── FAQ ──────────────────────────────────────────────────────────────────
-    faqTitle: "Frequently asked questions",
-    faqWhatTitle: "What does this do?",
+    lastChangedBy: "Working style last set by user #{userId}",
+    // ── About me (was the FAQ) ───────────────────────────────────────────────
+    // Questions in the second person, answers in the first: this reads as
+    // asking a colleague how they work, not as product documentation. Both
+    // mode names are stated verbatim, because logs, docs and the API still use
+    // them and a reader has to be able to join the two vocabularies up.
+    faqTitle: "About me",
+    faqWhatTitle: "What do you do?",
     faqWhatBody:
-      "On a nightly schedule (and whenever triggered on demand), an agent scans the Ally repos for bugs — failing or flaky tests, an LLM code-review pass, production error signals, and bugs your team already reported on the product roadmap. Every bug it finds — and every bug your team reports — lands in the table below, from any source, with its current status.",
-    faqModesTitle: "What's the difference between Manual and AI mode?",
+      "Every night — and whenever you ask — I go through the Ally repos looking for bugs: failing or flaky tests, an LLM code-review pass over recent changes, production error signals, and the bugs your team has already reported on the product roadmap. Everything I find, and everything your team reports, lands in my bugs table below with its current status.",
+    faqModesTitle: "What's the difference between the two working styles?",
     faqModesBody:
-      'Both modes discover and verify bugs identically, on the same schedule. In AI mode a verify-confirmed bug goes straight to the fix stage. In Manual mode it waits at "Pending approval" in the table until you approve it — nothing gets fixed without a click first.',
-    faqTrivialTitle: "What can it fix on its own vs. what does it just propose?",
+      'I discover and verify bugs the same way in both, on the same schedule. On Works solo (AI mode) a bug I\'ve verified goes straight to the fix stage. On Checks with you (Manual mode) it waits at "Pending approval" in my table until you approve it — I fix nothing without a click from you first.',
+    faqTrivialTitle: "What do you fix on your own, and what do you just propose?",
     faqTrivialBody:
-      "Only a narrow, pre-approved category auto-merges: a lint/type-only fix, or a single-file fix backed by a new regression test that fails before the fix and passes after. It never touches migrations, auth/permission code, payment paths, or other security-sensitive services, no matter how small the diff looks — those always go to review.",
+      "I merge my own fix only in a narrow, pre-approved set of cases: a lint or type-only change, or a single-file fix backed by a new regression test that fails before it and passes after. I never touch migrations, auth and permission code, payment paths or other security-sensitive services on my own, however small the diff looks — those always come to you as a PR.",
     faqFixNowTitle: "Can I get one specific bug fixed right now?",
     faqFixNowBody:
-      "Yes — open the bug and press \"Start fix session\". An agent works on that one bug immediately instead of waiting for the nightly sweep: it writes a test that reproduces the bug, fixes it, checks the whole suite is still green, and opens a PR, merging it if nothing guarded is involved. If the bug hasn't been matched to a codebase yet, you'll be asked which repo to work in. Bug Hunter has to be on Manual or AI first.",
+      "Yes — open the bug and press \"Put me on it\". I'll work on that one immediately instead of waiting for tonight's sweep: I write a test that reproduces it, fix it, check the whole suite is still green, and open a PR — merging it myself only if nothing guarded is involved. If nobody has matched the bug to a codebase yet, I'll ask you which repo to open. I have to be on duty first.",
     faqMultiRepoTitle: "What if a bug needs changes in more than one repo?",
     faqMultiRepoBody:
-      'It handles it. A fix session only has one repo checked out, so when it finds that a complete fix needs work elsewhere too, it stops without committing anything and hands back a plan — one step per repo, in the order they have to ship. Bug Hunter then works through them itself: one session at a time, each waiting for the one before it to merge. When they\'re all merged you get one "Release to production" button, and it deploys them in that same order, waiting for each to go green before starting the next. If a step gets stuck the whole plan stops there rather than building on something that never landed.',
-    faqReleaseTitle: "How does a fix actually reach users?",
+      'I handle it. I only have one repo checked out per session, so when I find that a complete fix needs work elsewhere too, I stop without committing anything and hand back a plan — one step per repo, in the order they have to ship. Then I work through it myself, one session at a time, each waiting for the one before it to merge. Once they\'re all merged you get one "Release to production" button, and I deploy them in that same order, waiting for each to go green before I start the next. If a step gets stuck I stop the whole plan there rather than building on something that never landed.',
+    faqReleaseTitle: "How does a fix of yours reach users?",
     faqReleaseBody:
-      'Once a fix is merged, a "Release to production" button appears on the bug. Pressing it cuts the next patch version and runs that service\'s normal production release pipeline — the same one a person would trigger by hand, database migration and all. That step is deliberately never automatic: an agent can take a fix as far as master on its own, but putting it in front of real users stays a decision someone makes, and we record who made it.',
-    faqReviewTitle: "Where do I review what it found?",
+      "Once it's merged, a \"Release to production\" button appears on the bug. Pressing it cuts the next patch version and runs that service's normal production release pipeline — the same one you'd trigger by hand, database migration and all. I never take that step myself: I can carry a fix as far as master, but putting it in front of real users stays your decision, and we record who made it.",
+    faqReviewTitle: "Where do I review what you've found?",
     faqReviewBody:
-      "Right in the table below — click any row to open its details, approve or reject it (Manual mode), or answer a question it's asked. There's no separate review screen anymore.",
-    faqEscalationTitle: "Where does it tell me it's stuck?",
+      "In my bugs table below — click any row to open it, approve or reject it, or answer a question I've asked. There's no separate review screen.",
+    faqEscalationTitle: "Where do you tell me you're stuck?",
     faqEscalationBody:
-      'In the "Bug Hunter says" inbox at the top of this page — that\'s the only place it speaks. It posts there when it needs an answer from you, when something went wrong, and when a fix reaches production. The count next to the title is what\'s unread; it turns orange when something is actually blocked waiting on you. A bug at "Needs input" has an open question — open it to read and answer. A quiet, successful night posts nothing at all, on purpose.',
-    faqReposTitle: "Which repos does it touch?",
-    faqReposBody: "ally-be, ally-web, ally-ai, ally-ai-learn, and ally-mobile.",
-    faqCostTitle: "How much does a run cost?",
+      "In my messages at the top of this page — that's the only place I speak. I post there when I need an answer from you, when something has gone wrong, and when a fix reaches production. The count beside them is what's unread; it turns orange when I'm actually blocked waiting on you. A bug at \"Needs input\" has an open question — open it to read and answer. A quiet, successful night gets no message at all, on purpose.",
+    faqReposTitle: "Which repos do you touch?",
+    faqReposBody: "ally-be, ally-web, ally-ai, ally-ai-learn and ally-mobile.",
+    faqCostTitle: "What does a night of your work cost?",
     faqCostBody:
-      "Every run's estimated token cost is shown in the run history table below, derived from the same LLM usage data the platform's cost analytics use.",
-    faqOffTitle: "How do I turn it off?",
+      "Every sweep's estimated token cost is in my shift log below, from the same LLM usage data the platform's cost analytics use.",
+    faqOffTitle: "How do I stop you?",
     faqOffBody:
-      "Use the switch above. Off blocks every trigger immediately — nightly and on-demand alike.",
-    // ── Live run card ────────────────────────────────────────────────────────
-    liveRunTitle: "Run in progress — {repo}",
-    liveRunConnecting: "Connecting to the live run…",
-    liveRunNoEventsYet: "Waiting for the first update…",
+      "Set my working style to Off duty above. That blocks every trigger immediately — nightly and on-demand alike.",
+    // ── What I'm doing right now ─────────────────────────────────────────────
+    liveRunSectionTitle: "What I'm doing right now",
+    liveRunTitle: "I'm sweeping {repo}",
+    liveRunConnecting: "Catching you up on what I'm doing…",
+    liveRunNoEventsYet: "I've just started — nothing to report yet.",
     // ── Findings table (the comprehensive bug table) ──────────────────────────
-    findingsTitle: "Bugs",
-    findingsSubtitle: "Every bug Bug Hunter knows about, from any source, newest first.",
+    findingsTitle: "Bugs I'm tracking",
+    findingsSubtitle: "Everything I know about, from any source, newest first.",
     findingColumnTitle: "Bug",
     findingColumnSource: "Source",
     findingColumnRepo: "Repo",
@@ -2319,64 +2371,67 @@ export const en = {
     findingStatusFailed: "Failed",
     findingsEmptyTitle: "No bugs yet",
     findingsEmptySubtitle:
-      "Once Bug Hunter is Manual or AI, anything it finds — or your team reports — will show up here.",
+      "Once I'm on duty, anything I find — or your team reports — shows up here.",
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
     drawerEvidenceTitle: "Evidence",
-    drawerTimelineTitle: "Timeline",
-    drawerTimelineEmpty: "No activity yet.",
+    drawerTimelineTitle: "My work log",
+    drawerTimelineEmpty: "I haven't touched this one yet.",
     drawerLoadFailed: "Couldn't load this bug's details.",
-    drawerReportedBugNotice: "Reported by your team, not yet triaged by a hunt run.",
+    drawerReportedBugNotice: "Your team reported this. I haven't triaged it yet.",
     drawerGuardedPathNotice:
-      "Touches a guarded path (migrations, auth, or payments) — never eligible for auto-merge.",
-    drawerApprove: "Approve to fix",
+      "This touches a guarded path — migrations, auth or payments — so I'll never merge it myself, however small the fix turns out to be.",
+    drawerApprove: "Approve — go fix it",
     drawerReject: "Reject",
-    drawerApproveConfirmTitle: "Approve this bug for fixing?",
-    drawerApproveConfirmBody: "The next hunt run for this repo will pick it up in its Fix stage.",
+    drawerApproveConfirmTitle: "Approve this bug for me to fix?",
+    drawerApproveConfirmBody:
+      'I\'ll pick it up in the fix stage of my next sweep for this repo. If you want it done now, use "Put me on it" instead.',
     drawerRejectConfirmTitle: "Reject this bug?",
-    drawerRejectConfirmBody: "It will never be picked up by a hunt run. This can't be undone.",
+    drawerRejectConfirmBody: "I'll never pick it up. This can't be undone.",
     drawerDecisionFailed: "Couldn't record that decision. Try again.",
-    drawerEscalationQuestionTitle: "Open question",
+    drawerEscalationQuestionTitle: "I need your answer",
     drawerAnswerLabel: "Your answer",
-    drawerAnswerPlaceholder: "Answer the question above…",
+    drawerAnswerPlaceholder: "Answer my question…",
     drawerAnswerSubmit: "Send answer",
     drawerAnswerFailed: "Couldn't send that answer. Try again.",
     drawerAnsweredBy: "Answered by user #{userId}",
     drawerDecidedBy: "Decided by user #{userId}",
-    // ── Notification inbox (Bug Hunter's only channel) ───────────────────────
-    inboxTitle: "Bug Hunter says",
+    // ── Messages (Bug Hunter's only channel) ─────────────────────────────────
+    inboxTitle: "Messages from Bug Hunter",
     inboxWaitingOnYou: "{count} waiting on you",
     inboxNothingBlocked: "Nothing blocked — just updates",
     inboxAllClear: "Nothing new",
     inboxMarkAllRead: "Mark all read",
-    inboxEmpty:
-      "Nothing yet. Bug Hunter posts here when it needs an answer, hits a problem, or ships something.",
+    inboxEmpty: "Nothing yet. I post here when I need an answer, hit a problem, or ship something.",
     notificationLevelActionNeeded: "Needs you",
     notificationLevelProblem: "Problem",
     notificationLevelInfo: "Update",
     // ── Multi-repo plan ──────────────────────────────────────────────────────
     planTitle: "This fix spans {count} repos",
     planSubtitle:
-      "Bug Hunter works through them in this order and releases them in the same order — each one waits for the one before it.",
+      "I work through them in this order and release them in the same order — each one waits for the one before it.",
     planStepLabel: "Step {n}",
     // ── Fix session (on-demand) ──────────────────────────────────────────────
-    drawerStartFixSession: "Start fix session",
-    drawerRetryFixSession: "Try fixing again",
+    drawerStartFixSession: "Put me on it",
+    drawerRetryFixSession: "Ask me to try again",
     drawerFixSessionTooltip:
-      "Puts an agent on this one bug now, instead of waiting for the nightly sweep. It writes a failing test that reproduces the bug, fixes it, checks the whole suite is still green, and opens a PR — merging it only if nothing guarded is involved. It does not deploy: releasing is a separate button once it's merged.",
-    drawerFixSessionConfirmTitle: "Start a fix session for this bug?",
+      "Puts me on this one bug now, instead of waiting for tonight's sweep. I write a failing test that reproduces it, fix it, check the whole suite is still green, and open a PR — merging it myself only if nothing guarded is involved. I don't deploy: releasing is a separate button once the fix is merged.",
+    drawerFixSessionConfirmTitle: "Put Bug Hunter on this bug?",
     drawerFixSessionConfirmBody:
-      "An agent will work on this bug in {repo} on its own: a regression test first, then the smallest fix that makes it pass, then the full test suite. If everything is green it opens a PR and merges it — unless the fix touches migrations, auth or payments, which always stay a PR for review. Nothing is deployed to production by this step.",
-    drawerFixSessionRepoLabel: "Which repo should it work in?",
+      "I'll work on this in {repo} on my own: a regression test first, then the smallest fix that makes it pass, then the full suite. If everything is green I open a PR and merge it — unless the fix touches migrations, auth or payments, which always stay a PR for you to review. I won't deploy anything in this step.",
+    drawerFixSessionRepoLabel: "Which repo should I open?",
     drawerFixSessionRepoHelp:
-      "This bug hasn't been matched to a codebase yet, so pick the one the agent should open. It'll be remembered for this bug.",
-    drawerFixSessionStart: "Start session",
+      "Nobody has matched this bug to a codebase yet, so pick the one I should work in. I'll remember it for this bug.",
+    // Deliberately not "Put me on it" again — the button that opened this
+    // dialog says that, and two identical labels on screen at once make it
+    // ambiguous which one you're confirming.
+    drawerFixSessionStart: "Start now",
     drawerFixSessionFailed: "Couldn't start the fix session.",
     drawerFixSessionQueued:
-      "Waiting for the runner to pick this up. It usually starts within a minute or two.",
-    drawerWatchSession: "Watch it work",
+      "I'm waiting for a runner to pick this up. It usually starts within a minute or two.",
+    drawerWatchSession: "Watch me work",
     // ── Release to production ────────────────────────────────────────────────
     drawerRelease: "Release to production",
     drawerReleaseRetry: "Retry release",
@@ -2388,15 +2443,16 @@ export const en = {
     drawerReleaseConfirm: "Release",
     drawerReleaseFailed: "Couldn't start the release.",
     drawerReleasingNotice:
-      "Release {tag} is running. This page updates as it progresses — a backend release takes around 15 minutes.",
-    drawerReleasedNotice: "Live in production as {tag}.",
+      "I'm running release {tag} now. This page updates as it goes — a backend release takes around 15 minutes.",
+    drawerReleasedNotice: "This is live in production as {tag}.",
     drawerReleaseFailedNotice:
-      "Release {tag} failed. The fix is still merged to master — it just isn't deployed. Check the run, then retry.",
-    drawerReleaseBlocked: "Can't release from here",
+      "Release {tag} went red. The fix is still merged to master — it just isn't deployed. Check the run, then ask me to retry.",
+    drawerReleaseBlocked: "Why I can't release this from here",
     drawerReleasedBy: "Released by user #{userId}",
     drawerViewReleaseRun: "View release run",
-    // ── Run history ──────────────────────────────────────────────────────────
-    historyTitle: "Run history",
+    // ── Shift log (was run history) ──────────────────────────────────────────
+    historyTitle: "My shift log",
+    historySubtitle: "Every sweep I've run, newest first. Open one to see what I did.",
     columnRepo: "Repo",
     columnTrigger: "Trigger",
     columnStatus: "Status",
@@ -2407,27 +2463,27 @@ export const en = {
     columnCost: "Est. cost",
     columnStarted: "Started",
     columnFoundTooltip:
-      "Bugs the run identified, across all four sources — tests, code review, logs, and reported bugs. See the Bugs table above for the individual findings.",
+      "Bugs I identified on that sweep, across all four sources — tests, code review, logs and bugs your team reported. The individual ones are in my bugs table above.",
     columnAutoMergedTooltip:
-      "Trivial fixes the agent merged itself: lint/type-only, or backed by a new red-then-green regression test.",
+      "Trivial fixes I merged myself: lint or type-only, or backed by a new red-then-green regression test.",
     columnPrPendingTooltip:
-      "Everything else it found — opened as a pull request, awaiting your review. See the Bugs table above for each one.",
+      "Everything else I found — opened as a pull request and waiting on your review. Each one is in my bugs table above.",
     columnCostTooltip:
-      "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the run is still going.",
+      "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the sweep is still going.",
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
     triggerFixSession: "Fix session",
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",
-    statusSkippedDisabled: "Skipped (off)",
-    emptyTitle: "No runs yet",
-    emptySubtitle: "Move Bug Hunter to Manual or AI above, and its first run will appear here.",
-    loadFailed: "Couldn't load the run history.",
+    statusSkippedDisabled: "Skipped (off duty)",
+    emptyTitle: "No shifts yet",
+    emptySubtitle: "Put me on duty above and my first sweep will show up here.",
+    loadFailed: "Couldn't load the shift log.",
     retry: "Try again",
     // ── Run detail (expanded row) ────────────────────────────────────────────
-    detailEventsTitle: "Timeline",
-    detailLoadFailed: "Couldn't load this run's timeline.",
+    detailEventsTitle: "What I did",
+    detailLoadFailed: "Couldn't load this sweep's timeline.",
   },
   evaluate: {
     title: "Ally Evaluation",

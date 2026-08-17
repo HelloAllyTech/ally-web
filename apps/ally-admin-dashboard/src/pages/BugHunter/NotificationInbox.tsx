@@ -6,6 +6,7 @@ import {
   useMarkAllBugHunterNotificationsReadMutation,
   useMarkBugHunterNotificationReadMutation,
 } from "@api";
+import { AgentAvatar } from "@components/agent-avatar";
 import { en } from "@constants";
 import { BugHunterNotification, BugHunterNotificationLevel } from "@types";
 import { formatDate } from "@utils";
@@ -28,11 +29,15 @@ interface NotificationInboxProps {
 }
 
 /**
- * Everything Bug Hunter has to say, at the top of its own tab.
+ * Everything Bug Hunter has said to you, near the top of its own tab.
  *
  * This is the only channel it speaks on — escalations, run summaries and
  * release outcomes used to post to Slack and now land here instead. One place
  * to look, and nothing to keep in sync between two.
+ *
+ * Presented as messages from a person: an avatar on the header and on every
+ * row, and copy written in its own voice (the message bodies themselves come
+ * from ally-be's bug-hunter-voice module, first person for the same reason).
  *
  * Collapsed to a summary line by default. An inbox that is always open turns
  * into wallpaper, and the thing that actually needs to catch an eye is the
@@ -72,6 +77,11 @@ export const NotificationInbox: FC<NotificationInboxProps> = ({ onOpenFinding })
           className="flex items-center gap-2 text-sm font-semibold text-typography-900 cursor-pointer"
           aria-expanded={open}
         >
+          <AgentAvatar
+            size="sm"
+            presence={actionNeeded > 0 ? "waiting_on_you" : undefined}
+            label={en.bugHunter.agentName}
+          />
           {en.bugHunter.inboxTitle}
           {unreadCount > 0 && (
             <span
@@ -113,20 +123,27 @@ export const NotificationInbox: FC<NotificationInboxProps> = ({ onOpenFinding })
                     LEVEL_STYLES[notification.level]
                   } ${notification.readAt ? "opacity-60" : ""}`}
                 >
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-typography-600">
-                      {LEVEL_LABELS[notification.level]}
-                    </span>
-                    <span className="text-xs text-typography-500 ml-auto whitespace-nowrap tabular-nums">
-                      {formatDate(notification.createdAt)}
-                    </span>
+                  {/* The avatar on every row is what makes this read as a
+                      message from someone rather than a log line. */}
+                  <div className="flex gap-3">
+                    <AgentAvatar size="sm" label={en.bugHunter.agentName} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-typography-600">
+                          {LEVEL_LABELS[notification.level]}
+                        </span>
+                        <span className="text-xs text-typography-500 ml-auto whitespace-nowrap tabular-nums">
+                          {formatDate(notification.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-typography-900 font-medium mt-0.5">
+                        {notification.title}
+                      </p>
+                      {notification.body && (
+                        <p className="text-xs text-typography-700 mt-0.5">{notification.body}</p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-typography-900 font-medium mt-0.5">
-                    {notification.title}
-                  </p>
-                  {notification.body && (
-                    <p className="text-xs text-typography-700 mt-0.5">{notification.body}</p>
-                  )}
                 </button>
               </li>
             ))

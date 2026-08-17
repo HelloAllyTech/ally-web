@@ -13,6 +13,12 @@ interface SortableNavItemProps {
   /** When true the row is draggable; clicking still navigates (press-and-drag). */
   canReorder: boolean;
   onNavigate: (path: string) => void;
+  /**
+   * Optional trailing status for the tab — a count of things waiting on you.
+   * Rendered only in the expanded sidebar: a legible pill needs more room than
+   * a 20px icon rail has, and a bare dot next to a glyph reads as decoration.
+   */
+  badge?: ReactNode;
 }
 
 /**
@@ -30,6 +36,7 @@ export const SortableNavItem: FC<SortableNavItemProps> = ({
   isExpanded,
   canReorder,
   onNavigate,
+  badge,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -67,10 +74,11 @@ export const SortableNavItem: FC<SortableNavItemProps> = ({
           {icon}
         </span>
         {isExpanded && (
-          <span className="flex items-center gap-1.5 min-w-0">
+          <span className="flex items-center gap-1.5 min-w-0 flex-1">
             <span className="text-base text-ellipsis overflow-hidden whitespace-nowrap">
               {item.label}
             </span>
+            {badge && <span className="ml-auto shrink-0">{badge}</span>}
           </span>
         )}
       </button>

@@ -13,6 +13,7 @@ import {
 } from "@api";
 import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
+import { AgentAvatar } from "@components/agent-avatar";
 import { en } from "@constants";
 import {
   BUG_FINDING_FIX_SESSION_START_STATUSES,
@@ -401,9 +402,14 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
           {finding.escalationQuestion && (
             <div className="border border-orange-200 bg-orange-50 rounded p-3">
-              <h3 className="text-xs font-semibold text-typography-700 mb-1">
-                {en.bugHunter.drawerEscalationQuestionTitle}
-              </h3>
+              {/* Bug Hunter asked this, and it is blocked until you answer —
+                  so it is signed, the way a message from a person would be. */}
+              <div className="flex items-center gap-2 mb-1">
+                <AgentAvatar size="sm" presence="waiting_on_you" label={en.bugHunter.agentName} />
+                <h3 className="text-xs font-semibold text-typography-700">
+                  {en.bugHunter.drawerEscalationQuestionTitle}
+                </h3>
+              </div>
               <p className="text-sm text-typography-900 mb-3">{finding.escalationQuestion}</p>
 
               {finding.escalationAnswer ? (
