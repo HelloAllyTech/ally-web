@@ -711,12 +711,28 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     if (!formData.name || !formData.description || !promptCode || !formData.prompt) {
       return null;
     }
+    // Did the body itself change, or is this a metadata-only save (a rename, a
+    // model pick, the studio-visibility switch)?
+    //
+    // The backend versions the prompt whenever the payload carries `prompt` and
+    // useDashboardOverride is true — it does not compare the text — so sending
+    // an unchanged body mints a duplicate version on every metadata edit. That
+    // burns through PROMPT_VERSION_RETENTION_LIMIT and can evict real content
+    // history. Worse, unconditionally asserting useDashboardOverride=true would
+    // silently move a file-backed prompt onto its DB copy just because someone
+    // flipped a switch. So on a metadata-only save we omit the body and leave
+    // the override flag exactly as it was.
+    const bodyChanged = (formData.prompt ?? "") !== (selectedPrompt?.prompt ?? "");
     return {
       name: formData.name || "",
       description: formData.description || "",
       promptCode,
-      prompt: formData.prompt || "",
-      useDashboardOverride: true, // Automatically enable override when saved
+      ...(bodyChanged
+        ? {
+            prompt: formData.prompt || "",
+            useDashboardOverride: true, // Automatically enable override when saved
+          }
+        : { useDashboardOverride: selectedPrompt?.useDashboardOverride ?? false }),
       // Preserve promptType (role tag, immutable after creation in this UI).
       // hasStates is intentionally NOT in the payload — it's set at create
       // time by either the file-sync (meta JSON) or the duplicate endpoint,
