@@ -9,6 +9,7 @@ import {
   TableRow,
   TableHeader,
   TableCell,
+  Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
   useAssignPlatformAdminMutation,
@@ -16,6 +17,7 @@ import {
   useListPlatformAdminsQuery,
   useRemovePlatformAdminMutation,
 } from "@api";
+import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, Button, EmptyState, ListToolbar, StatusBadge } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -141,7 +143,19 @@ export const SuperAdmins: React.FC = () => {
             <TableHeader className="py-3 pr-4 font-medium">{strings.name}</TableHeader>
             <TableHeader className="py-3 pr-4 font-medium">{strings.email}</TableHeader>
             <TableHeader className="py-3 pr-4 font-medium">{strings.status}</TableHeader>
-            <TableHeader className="py-3 pr-4 font-medium">{strings.addedOn}</TableHeader>
+            <TableHeader className="py-3 pr-4 font-medium">
+              {/* The date is the role grant, not the account — worth spelling
+                  out, since the two are years apart for long-time users and
+                  this column is what people read when auditing grants. */}
+              <span className="inline-flex items-center gap-1">
+                {strings.addedOn}
+                <Tooltip label={strings.addedOnTooltip} align="top">
+                  <button type="button" className="cursor-pointer inline-flex items-center">
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </span>
+            </TableHeader>
             <TableHeader className="py-3" />
           </TableRow>
         </TableHead>
@@ -158,7 +172,7 @@ export const SuperAdmins: React.FC = () => {
               <TableCell className="py-3 pr-4">
                 <StatusBadge status={admin.status} />
               </TableCell>
-              <TableCell className="py-3 pr-4">{formatDate(admin.createdAt)}</TableCell>
+              <TableCell className="py-3 pr-4">{formatDate(admin.roleGrantedAt)}</TableCell>
               <TableCell className="py-3 text-right">
                 <Button
                   variant={ButtonVariant.DESTRUCTIVE}

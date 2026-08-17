@@ -578,6 +578,8 @@ export const en = {
     tierSuperAdmin: "Super admin",
     tierSuperDuperAdmin: "Super duper admin",
     addedOn: "Added on",
+    addedOnTooltip:
+      "When this person was granted platform admin access — not when their Ally account was created. Grants made before the single-role rollout are dated from their original super-admin grant, which for a few of the earliest admins is accurate to the day it was applied rather than the day it was decided.",
     searchPlaceholder: "Search by name or email",
     noAdminsFound: "No super admins found",
     noAdminsSubtitle: "Add a super admin to get started",
