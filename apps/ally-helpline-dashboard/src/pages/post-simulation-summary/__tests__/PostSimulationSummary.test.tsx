@@ -96,6 +96,24 @@ vi.mock("../../calls/components", () => ({
   ),
 }));
 
+// Stub SkillsTab only. It leads the tab order, so it is what the page renders
+// on open — and unlike the other tabs it drives its own query, so left real it
+// renders a loading skeleton on one render and an error on the next, making
+// both the snapshots and the render-consistency assertion timing-dependent.
+// Everything else in the barrel stays real (the star rating and footer button
+// are asserted against directly).
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    SkillsTab: ({ sessionId, retryMaxReached }: any) => (
+      <div data-testid="skills-tab" data-retry-max={String(retryMaxReached)}>
+        <div data-testid="skills-session-id">{sessionId}</div>
+      </div>
+    ),
+  };
+});
+
 // Mock calls constants (use importOriginal so reducer still gets CALL_LOGS_PAGINATION_LIMIT)
 vi.mock("../../calls/constants", async importOriginal => {
   const actual = await importOriginal<typeof import("../../calls/constants")>();
@@ -152,6 +170,10 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 
 const hasNormalizedText = (element: Element | null, expectedText: string) =>
   element?.textContent?.replace(/\s+/g, " ").trim() === expectedText;
+
+// Skills Demonstrated (id 5) leads the shared tab order, so the page no longer
+// opens on Session Review. Tests asserting SimulationSummary content select it.
+const selectSessionReviewTab = () => fireEvent.click(screen.getByTestId("tab-1"));
 
 describe("PostSimulationSummary Component", () => {
   beforeEach(() => {
@@ -268,6 +290,7 @@ describe("PostSimulationSummary Component", () => {
           <PostSimulationSummary />
         </TestWrapper>,
       );
+      selectSessionReviewTab();
 
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
     });
@@ -286,6 +309,8 @@ describe("PostSimulationSummary Component", () => {
           <PostSimulationSummary />
         </TestWrapper>,
       );
+
+      selectSessionReviewTab();
 
       expect(screen.getByTestId("summary-session-id")).toHaveTextContent("456");
     });
@@ -412,6 +437,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
+      selectSessionReviewTab();
+
       const simulationSummary = screen.getByTestId("simulation-summary");
       expect(simulationSummary).toHaveClass("h-full");
       expect(simulationSummary).toHaveClass("min-h-0");
@@ -425,6 +452,8 @@ describe("PostSimulationSummary Component", () => {
           <PostSimulationSummary />
         </TestWrapper>,
       );
+
+      selectSessionReviewTab();
 
       const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
       expect(lastCallArgs[0]).toMatchObject({
@@ -473,7 +502,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
     });
 
-    it("should have Summary tab selected by default", () => {
+    it("should have Skills tab selected by default", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -481,17 +510,20 @@ describe("PostSimulationSummary Component", () => {
       );
 
       // Carbon Tabs marks the active tab via styling rather than a data-value
-      // attribute; the Summary tab (id 1) is highlighted by default.
-      const summaryTab = screen.getByTestId("tab-1");
-      expect(summaryTab.className).toContain("text-primary-500");
+      // attribute; Skills Demonstrated (id 5) leads the shared tab order and so
+      // is highlighted by default.
+      const skillsTab = screen.getByTestId("tab-5");
+      expect(skillsTab.className).toContain("text-primary-500");
     });
 
-    it("should display SimulationSummary content by default", () => {
+    it("should display SimulationSummary content when the Session Review tab is selected", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
+
+      fireEvent.click(screen.getByTestId("tab-1"));
 
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
     });
@@ -517,7 +549,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      // Initially Summary is visible
+      // Select Session Review first — Skills Demonstrated is the landing tab.
+      fireEvent.click(screen.getByTestId("tab-1"));
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
 
       // Click Transcription tab
@@ -858,6 +891,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
+      selectSessionReviewTab();
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
     });
 
@@ -1016,8 +1050,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
+      selectSessionReviewTab();
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
     });
   });
 
@@ -1036,6 +1071,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
+      selectSessionReviewTab();
+
       expect(screen.getByTestId("summary-session-id")).toHaveTextContent(longSessionId);
     });
 
@@ -1048,6 +1085,8 @@ describe("PostSimulationSummary Component", () => {
           <PostSimulationSummary />
         </TestWrapper>,
       );
+
+      selectSessionReviewTab();
 
       expect(screen.getByTestId("summary-session-id")).toHaveTextContent(specialSessionId);
     });

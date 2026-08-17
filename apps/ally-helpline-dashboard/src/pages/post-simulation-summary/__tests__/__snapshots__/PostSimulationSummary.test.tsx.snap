@@ -255,19 +255,13 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
-              data-testid="tab-1"
+              data-testid="tab-5"
             >
-              Session Review 
+              Skills  Demonstrated 
               <span
                 aria-hidden="true"
                 class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
               />
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-4"
-            >
-              Ask AI 
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
@@ -277,9 +271,15 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
+              data-testid="tab-4"
             >
-              Skills  Demonstrated 
+              Ask AI 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-1"
+            >
+              Session Review 
             </button>
           </nav>
         </div>
@@ -288,13 +288,11 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           data-testid="post-sim-tab-panel"
         >
           <div
-            class="h-full min-h-0 flex flex-col overflow-hidden"
-            data-has-summary="false"
             data-retry-max="false"
-            data-testid="simulation-summary"
+            data-testid="skills-tab"
           >
             <div
-              data-testid="summary-session-id"
+              data-testid="skills-session-id"
             >
               123
             </div>
@@ -572,19 +570,13 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
-              data-testid="tab-1"
+              data-testid="tab-5"
             >
-              Session Review 
+              Skills  Demonstrated 
               <span
                 aria-hidden="true"
                 class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
               />
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-4"
-            >
-              Ask AI 
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
@@ -594,9 +586,15 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
+              data-testid="tab-4"
             >
-              Skills  Demonstrated 
+              Ask AI 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-1"
+            >
+              Session Review 
             </button>
           </nav>
         </div>
@@ -605,13 +603,11 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           data-testid="post-sim-tab-panel"
         >
           <div
-            class="h-full min-h-0 flex flex-col overflow-hidden"
-            data-has-summary="false"
             data-retry-max="false"
-            data-testid="simulation-summary"
+            data-testid="skills-tab"
           >
             <div
-              data-testid="summary-session-id"
+              data-testid="skills-session-id"
             >
               789
             </div>
