@@ -204,14 +204,15 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       content: <SkillsTab sessionId={summaryId} retryMaxReached={retryMaxReached} />,
     },
     {
-      id: 1,
-      label: t("postSim.tabs.sessionReview", "Session Review"),
+      id: 3,
+      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
       content: (
-        <SimulationSummary
+        <SimulationTranscriptTab
           sessionId={summaryId}
-          summaryData={summaryData}
-          retryMaxReached={retryMaxReached}
-          className="h-full min-h-0 flex flex-col overflow-hidden"
+          councellorName={councellorName}
+          agentName={summary?.scenario?.metadata?.name}
+          originalLanguageCode={originalLanguageCode}
+          className=" px-4 pt-[10px]"
         />
       ),
     },
@@ -227,15 +228,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       ),
     },
     {
-      id: 3,
-      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
+      id: 1,
+      label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
-        <SimulationTranscriptTab
+        <SimulationSummary
           sessionId={summaryId}
-          councellorName={councellorName}
-          agentName={summary?.scenario?.metadata?.name}
-          originalLanguageCode={originalLanguageCode}
-          className=" px-4 pt-[10px]"
+          summaryData={summaryData}
+          retryMaxReached={retryMaxReached}
+          className="h-full min-h-0 flex flex-col overflow-hidden"
         />
       ),
     },
