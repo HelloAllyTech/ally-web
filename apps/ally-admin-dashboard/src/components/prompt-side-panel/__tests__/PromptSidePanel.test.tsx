@@ -33,6 +33,13 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       {...props}
     />
   ),
+  // Carbon's Tooltip needs no real behaviour here — the help copy is asserted
+  // via its `label`, not by hovering.
+  Tooltip: ({ children, label }: any) => (
+    <span data-testid="tooltip" aria-label={label}>
+      {children}
+    </span>
+  ),
 }));
 
 // Mock assets
@@ -43,6 +50,7 @@ vi.mock("@assets", () => ({
   Delete: () => <div data-testid="icon-delete" />,
   CheckCircle: () => <div data-testid="icon-check-circle" />,
   ArrowDown: () => <div data-testid="icon-arrow-down" />,
+  TooltipIcon: () => <div data-testid="icon-tooltip" />,
 }));
 
 // Mock components
@@ -70,12 +78,18 @@ vi.mock("@components", () => ({
 // Mock API
 const mockRevertPrompt = vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 const mockDeletePrompt = vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) });
+/** How many scenarios the mocked usage query reports; reset in beforeEach. */
+let mockUsageCount = 0;
 vi.mock("@api", () => ({
   useRevertPromptMutation: () => [mockRevertPrompt, { isLoading: false }],
   useDeletePromptMutation: () => [mockDeletePrompt, { isLoading: false }],
-  // Side panel queries an in-use count for duplicates to gate the
-  // "Delete variant" button. Tests mount with no in-use scenarios.
-  useGetPromptUsageQuery: () => ({ data: { count: 0, scenarios: [] }, isFetching: false }),
+  // Side panel queries an in-use count to gate the "Delete variant" button and
+  // to warn under the studio-visibility switch. Defaults to no in-use
+  // scenarios; tests that care set `mockUsageCount` first.
+  useGetPromptUsageQuery: () => ({
+    data: { count: mockUsageCount, scenarios: [] },
+    isFetching: false,
+  }),
   // Model picker is driven by the backend registry. Provide a small OpenAI +
   // Gemini set including a no-temperature model (gpt-5) to exercise gating.
   useGetLlmModelsQuery: () => ({
@@ -178,6 +192,7 @@ describe("PromptSidePanel Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockOnAutoSave.mockResolvedValue(undefined);
+    mockUsageCount = 0;
   });
 
   /** Panel with auto-save wired up (the shape PromptManagement renders). */
@@ -754,6 +769,134 @@ describe("PromptSidePanel Component", () => {
           temperature: null,
         }),
       );
+    });
+  });
+
+  describe("Studio availability switch", () => {
+    /**
+     * A prompt that appears in a studio picker, so it can be hidden from one.
+     * `transcript_evaluator` rather than `main_agent` deliberately: the switch
+     * behaves identically for both, but a main_agent prompt also mounts
+     * PromptTranslationsSection, which pulls in translation queries this file's
+     * `@api` mock doesn't provide.
+     */
+    const variantPrompt: Prompt = {
+      ...mockPrompt,
+      promptType: "transcript_evaluator",
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    const getSwitch = () =>
+      screen.getByRole("checkbox", { name: /Offer this version in the studio picker/i });
+
+    it("is not rendered for a prompt that no picker offers", () => {
+      renderAutoSavePanel(mockPrompt); // no promptType
+      expect(
+        screen.queryByRole("checkbox", { name: /Offer this version in the studio picker/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("reads a row that predates the flag as visible", () => {
+      renderAutoSavePanel(variantPrompt); // visibleInStudio undefined
+      expect(getSwitch()).toBeChecked();
+      expect(screen.getByText("Authors can pick this version.")).toBeInTheDocument();
+    });
+
+    it("persists visibleInStudio=false when switched off", async () => {
+      renderAutoSavePanel(variantPrompt);
+      fireEvent.click(getSwitch());
+
+      await advancePastDebounce();
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({ visibleInStudio: false }),
+      );
+    });
+
+    it("sends visibleInStudio=true rather than undefined for a pre-flag row edited elsewhere", async () => {
+      renderAutoSavePanel(variantPrompt);
+      fireEvent.change(screen.getByPlaceholderText("Enter prompt name"), {
+        target: { value: "Renamed" },
+      });
+
+      await advancePastDebounce();
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "Renamed", visibleInStudio: true }),
+      );
+    });
+
+    it("does not auto-save on open when the row is already visible", async () => {
+      renderAutoSavePanel({ ...variantPrompt, visibleInStudio: true });
+      await advancePastDebounce();
+      expect(mockOnAutoSave).not.toHaveBeenCalled();
+    });
+
+    it("states that simulations already on a hidden version keep running on it", () => {
+      mockUsageCount = 3;
+      renderAutoSavePanel({ ...variantPrompt, visibleInStudio: false });
+
+      expect(getSwitch()).not.toBeChecked();
+      expect(
+        screen.getByText(/The 3 simulations already using it keep running on it, unchanged\./),
+      ).toBeInTheDocument();
+    });
+
+    it("singularises the in-use warning for one simulation", () => {
+      mockUsageCount = 1;
+      renderAutoSavePanel({ ...variantPrompt, visibleInStudio: false });
+
+      expect(
+        screen.getByText(/The 1 simulation already using it keeps running on it, unchanged\./),
+      ).toBeInTheDocument();
+    });
+
+    it("omits the body on a visibility-only save, so no duplicate version is minted", async () => {
+      // The backend versions the prompt whenever the payload carries `prompt`
+      // and useDashboardOverride is true, without comparing the text — so
+      // resending an unchanged body on a metadata edit churns version history.
+      renderAutoSavePanel({ ...variantPrompt, useDashboardOverride: false });
+      fireEvent.click(getSwitch());
+
+      await advancePastDebounce();
+
+      const [payload] = mockOnAutoSave.mock.calls[0];
+      expect(payload).not.toHaveProperty("prompt");
+      // And the override flag is left as-is rather than asserted true, which
+      // would move a file-backed prompt onto its DB copy as a side effect.
+      expect(payload.useDashboardOverride).toBe(false);
+      expect(payload.visibleInStudio).toBe(false);
+    });
+
+    it("still sends the body (and enables override) when the text itself changed", async () => {
+      renderAutoSavePanel({ ...variantPrompt, useDashboardOverride: false });
+      fireEvent.change(screen.getByTestId("auto-expandable-textarea"), {
+        target: { value: "Rewritten body" },
+      });
+
+      await advancePastDebounce();
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: "Rewritten body",
+          useDashboardOverride: true,
+        }),
+      );
+    });
+
+    it("says only that nothing new can use it when a hidden version is unused", () => {
+      renderAutoSavePanel({ ...variantPrompt, visibleInStudio: false });
+
+      expect(
+        screen.getByText("Hidden from the picker — no new simulation can be pointed at it."),
+      ).toBeInTheDocument();
     });
   });
 });
