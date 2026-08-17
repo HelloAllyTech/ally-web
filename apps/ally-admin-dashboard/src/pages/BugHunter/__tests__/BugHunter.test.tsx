@@ -12,6 +12,14 @@ vi.mock("@api", () => ({
   useApproveBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useRejectBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useAnswerBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useStartBugFixSessionMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useReleaseBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useGetBugHunterNotificationsQuery: vi.fn(() => ({
+    data: { items: [], unreadCount: 0 },
+    isLoading: false,
+  })),
+  useMarkBugHunterNotificationReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useMarkAllBugHunterNotificationsReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
 vi.mock("@hooks", () => ({

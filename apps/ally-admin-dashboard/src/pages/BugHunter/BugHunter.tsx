@@ -16,6 +16,7 @@ import { en } from "@constants";
 import { BugHunterMode } from "@types";
 
 import { BugFindingsTable } from "./BugFindingsTable";
+import { NotificationInbox } from "./NotificationInbox";
 import { RunHistoryTable } from "./RunHistoryTable";
 
 const MODE_ORDER: BugHunterMode[] = [BugHunterMode.OFF, BugHunterMode.MANUAL, BugHunterMode.AI];
@@ -48,6 +49,9 @@ export const BugHunter: FC = () => {
   // confirmed mode change lands and `settings.mode` updates) forces a remount
   // so the switcher always redraws from the real, current mode.
   const [resetToken, setResetToken] = useState(0);
+  // Clicking a notification opens that bug in the findings table's drawer,
+  // rather than the inbox carrying a second copy of it.
+  const [inboxFindingId, setInboxFindingId] = useState<string | null>(null);
 
   const closePending = () => {
     setPendingMode(null);
@@ -126,6 +130,15 @@ export const BugHunter: FC = () => {
           <AccordionItem title={en.bugHunter.faqTrivialTitle}>
             <p className="text-sm text-typography-700">{en.bugHunter.faqTrivialBody}</p>
           </AccordionItem>
+          <AccordionItem title={en.bugHunter.faqFixNowTitle}>
+            <p className="text-sm text-typography-700">{en.bugHunter.faqFixNowBody}</p>
+          </AccordionItem>
+          <AccordionItem title={en.bugHunter.faqMultiRepoTitle}>
+            <p className="text-sm text-typography-700">{en.bugHunter.faqMultiRepoBody}</p>
+          </AccordionItem>
+          <AccordionItem title={en.bugHunter.faqReleaseTitle}>
+            <p className="text-sm text-typography-700">{en.bugHunter.faqReleaseBody}</p>
+          </AccordionItem>
           <AccordionItem title={en.bugHunter.faqReviewTitle}>
             <p className="text-sm text-typography-700">{en.bugHunter.faqReviewBody}</p>
           </AccordionItem>
@@ -144,9 +157,17 @@ export const BugHunter: FC = () => {
         </Accordion>
       </div>
 
+      {/* ── Bug Hunter's inbox — its only channel ───────────────────────── */}
+      <div className="mt-6 shrink-0">
+        <NotificationInbox onOpenFinding={setInboxFindingId} />
+      </div>
+
       {/* ── The comprehensive bug table ─────────────────────────────────────── */}
       <div className="mt-8 shrink-0">
-        <BugFindingsTable />
+        <BugFindingsTable
+          focusFindingId={inboxFindingId}
+          onFocusHandled={() => setInboxFindingId(null)}
+        />
       </div>
 
       {/* ── Run history + live run ──────────────────────────────────────── */}

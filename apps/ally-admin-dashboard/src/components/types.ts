@@ -12,6 +12,8 @@ export interface PopupButtonProps {
   label: string;
   onClick: () => void;
   variant?: ButtonVariantType;
+  /** For a confirm that isn't answerable yet — e.g. a required choice inside the popup's own children. */
+  disabled?: boolean;
 }
 
 export const ButtonVariant = {

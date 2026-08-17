@@ -2228,12 +2228,21 @@ export const en = {
     faqTrivialTitle: "What can it fix on its own vs. what does it just propose?",
     faqTrivialBody:
       "Only a narrow, pre-approved category auto-merges: a lint/type-only fix, or a single-file fix backed by a new regression test that fails before the fix and passes after. It never touches migrations, auth/permission code, payment paths, or other security-sensitive services, no matter how small the diff looks — those always go to review.",
+    faqFixNowTitle: "Can I get one specific bug fixed right now?",
+    faqFixNowBody:
+      "Yes — open the bug and press \"Start fix session\". An agent works on that one bug immediately instead of waiting for the nightly sweep: it writes a test that reproduces the bug, fixes it, checks the whole suite is still green, and opens a PR, merging it if nothing guarded is involved. If the bug hasn't been matched to a codebase yet, you'll be asked which repo to work in. Bug Hunter has to be on Manual or AI first.",
+    faqMultiRepoTitle: "What if a bug needs changes in more than one repo?",
+    faqMultiRepoBody:
+      "It handles it. A fix session only has one repo checked out, so when it finds that a complete fix needs work elsewhere too, it stops without committing anything and hands back a plan — one step per repo, in the order they have to ship. Bug Hunter then works through them itself: one session at a time, each waiting for the one before it to merge. When they're all merged you get one \"Release to production\" button, and it deploys them in that same order, waiting for each to go green before starting the next. If a step gets stuck the whole plan stops there rather than building on something that never landed.",
+    faqReleaseTitle: "How does a fix actually reach users?",
+    faqReleaseBody:
+      "Once a fix is merged, a \"Release to production\" button appears on the bug. Pressing it cuts the next patch version and runs that service's normal production release pipeline — the same one a person would trigger by hand, database migration and all. That step is deliberately never automatic: an agent can take a fix as far as master on its own, but putting it in front of real users stays a decision someone makes, and we record who made it.",
     faqReviewTitle: "Where do I review what it found?",
     faqReviewBody:
       "Right in the table below — click any row to open its details, approve or reject it (Manual mode), or answer a question it's asked. There's no separate review screen anymore.",
     faqEscalationTitle: "Where does it tell me it's stuck?",
     faqEscalationBody:
-      "A finding with status \"Needs input\" is asking an open question it can't answer on its own — open its row to read and answer it. It also posts to the Slack channel configured for platform notifications for anything needing attention now: a fix whose tests won't go green, a finding that touches a guarded path, or a run that errored out. A quiet night posts nothing there on purpose.",
+      "In the \"Bug Hunter says\" inbox at the top of this page — that's the only place it speaks. It posts there when it needs an answer from you, when something went wrong, and when a fix reaches production. The count next to the title is what's unread; it turns orange when something is actually blocked waiting on you. A bug at \"Needs input\" has an open question — open it to read and answer. A quiet, successful night posts nothing at all, on purpose.",
     faqReposTitle: "Which repos does it touch?",
     faqReposBody: "ally-be, ally-web, ally-ai, ally-ai-learn, and ally-mobile.",
     faqCostTitle: "How much does a run cost?",
@@ -2270,10 +2279,16 @@ export const en = {
     findingStatusNew: "New",
     findingStatusPendingApproval: "Pending approval",
     findingStatusApproved: "Approved",
+    findingStatusQueued: "Starting…",
+    findingStatusBlocked: "Waiting its turn",
+    findingStatusCoordinating: "Fixing across repos",
     findingStatusFixing: "Fixing",
     findingStatusNeedsInput: "Needs input",
     findingStatusPrOpened: "PR open",
     findingStatusMerged: "Merged",
+    findingStatusReleasing: "Releasing…",
+    findingStatusReleased: "Live",
+    findingStatusReleaseFailed: "Release failed",
     findingStatusDismissed: "Dismissed",
     findingStatusRejected: "Rejected",
     findingStatusFailed: "Failed",
@@ -2303,6 +2318,54 @@ export const en = {
     drawerAnswerFailed: "Couldn't send that answer. Try again.",
     drawerAnsweredBy: "Answered by user #{userId}",
     drawerDecidedBy: "Decided by user #{userId}",
+    // ── Notification inbox (Bug Hunter's only channel) ───────────────────────
+    inboxTitle: "Bug Hunter says",
+    inboxWaitingOnYou: "{count} waiting on you",
+    inboxNothingBlocked: "Nothing blocked — just updates",
+    inboxAllClear: "Nothing new",
+    inboxMarkAllRead: "Mark all read",
+    inboxEmpty: "Nothing yet. Bug Hunter posts here when it needs an answer, hits a problem, or ships something.",
+    notificationLevelActionNeeded: "Needs you",
+    notificationLevelProblem: "Problem",
+    notificationLevelInfo: "Update",
+    // ── Multi-repo plan ──────────────────────────────────────────────────────
+    planTitle: "This fix spans {count} repos",
+    planSubtitle:
+      "Bug Hunter works through them in this order and releases them in the same order — each one waits for the one before it.",
+    planStepLabel: "Step {n}",
+    // ── Fix session (on-demand) ──────────────────────────────────────────────
+    drawerStartFixSession: "Start fix session",
+    drawerRetryFixSession: "Try fixing again",
+    drawerFixSessionTooltip:
+      "Puts an agent on this one bug now, instead of waiting for the nightly sweep. It writes a failing test that reproduces the bug, fixes it, checks the whole suite is still green, and opens a PR — merging it only if nothing guarded is involved. It does not deploy: releasing is a separate button once it's merged.",
+    drawerFixSessionConfirmTitle: "Start a fix session for this bug?",
+    drawerFixSessionConfirmBody:
+      "An agent will work on this bug in {repo} on its own: a regression test first, then the smallest fix that makes it pass, then the full test suite. If everything is green it opens a PR and merges it — unless the fix touches migrations, auth or payments, which always stay a PR for review. Nothing is deployed to production by this step.",
+    drawerFixSessionRepoLabel: "Which repo should it work in?",
+    drawerFixSessionRepoHelp:
+      "This bug hasn't been matched to a codebase yet, so pick the one the agent should open. It'll be remembered for this bug.",
+    drawerFixSessionStart: "Start session",
+    drawerFixSessionFailed: "Couldn't start the fix session.",
+    drawerFixSessionQueued: "Waiting for the runner to pick this up. It usually starts within a minute or two.",
+    drawerWatchSession: "Watch it work",
+    // ── Release to production ────────────────────────────────────────────────
+    drawerRelease: "Release to production",
+    drawerReleaseRetry: "Retry release",
+    drawerReleaseTooltip:
+      "Cuts the next patch version and runs that service's production release pipeline — for the backend that includes a database migration and an ECS rollout. This is the step where the fix actually reaches users.",
+    drawerReleaseConfirmTitle: "Release this fix to production?",
+    drawerReleaseConfirmBody:
+      "This deploys {target} to production at the next patch version, running its full release pipeline — tests, build, database migration where applicable, and rollout. It affects live users. The fix is already merged to master either way; releasing is what puts it in front of people.",
+    drawerReleaseConfirm: "Release",
+    drawerReleaseFailed: "Couldn't start the release.",
+    drawerReleasingNotice:
+      "Release {tag} is running. This page updates as it progresses — a backend release takes around 15 minutes.",
+    drawerReleasedNotice: "Live in production as {tag}.",
+    drawerReleaseFailedNotice:
+      "Release {tag} failed. The fix is still merged to master — it just isn't deployed. Check the run, then retry.",
+    drawerReleaseBlocked: "Can't release from here",
+    drawerReleasedBy: "Released by user #{userId}",
+    drawerViewReleaseRun: "View release run",
     // ── Run history ──────────────────────────────────────────────────────────
     historyTitle: "Run history",
     columnRepo: "Repo",
@@ -2324,6 +2387,7 @@ export const en = {
       "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the run is still going.",
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
+    triggerFixSession: "Fix session",
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",

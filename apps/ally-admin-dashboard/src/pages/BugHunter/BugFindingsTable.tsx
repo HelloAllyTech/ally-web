@@ -30,10 +30,16 @@ const STATUS_FILTER_LABELS: Record<BugFindingStatus | "all", string> = {
   [BugFindingStatus.NEW]: en.bugHunter.findingStatusNew,
   [BugFindingStatus.PENDING_APPROVAL]: en.bugHunter.findingStatusPendingApproval,
   [BugFindingStatus.APPROVED]: en.bugHunter.findingStatusApproved,
+  [BugFindingStatus.QUEUED]: en.bugHunter.findingStatusQueued,
+  [BugFindingStatus.BLOCKED]: en.bugHunter.findingStatusBlocked,
+  [BugFindingStatus.COORDINATING]: en.bugHunter.findingStatusCoordinating,
   [BugFindingStatus.FIXING]: en.bugHunter.findingStatusFixing,
   [BugFindingStatus.NEEDS_INPUT]: en.bugHunter.findingStatusNeedsInput,
   [BugFindingStatus.PR_OPENED]: en.bugHunter.findingStatusPrOpened,
   [BugFindingStatus.MERGED]: en.bugHunter.findingStatusMerged,
+  [BugFindingStatus.RELEASING]: en.bugHunter.findingStatusReleasing,
+  [BugFindingStatus.RELEASED]: en.bugHunter.findingStatusReleased,
+  [BugFindingStatus.RELEASE_FAILED]: en.bugHunter.findingStatusReleaseFailed,
   [BugFindingStatus.DISMISSED]: en.bugHunter.findingStatusDismissed,
   [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
   [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
@@ -45,9 +51,24 @@ const STATUS_FILTER_LABELS: Record<BugFindingStatus | "all", string> = {
  * design where a hunt run's findings were only ever shown as run-level
  * aggregates, and a human report only lived on the product roadmap.
  */
-export const BugFindingsTable: FC = () => {
+interface BugFindingsTableProps {
+  /**
+   * A bug to open the drawer on, chosen somewhere else on the page — clicking
+   * a notification in the inbox. The drawer lives here rather than being
+   * duplicated up there, so both entry points land on the same one.
+   */
+  focusFindingId?: string | null;
+  onFocusHandled?: () => void;
+}
+
+export const BugFindingsTable: FC<BugFindingsTableProps> = ({ focusFindingId, onFocusHandled }) => {
   const [statusFilter, setStatusFilter] = useState<BugFindingStatus | "all">("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [ownSelectedId, setOwnSelectedId] = useState<string | null>(null);
+  const selectedId = focusFindingId ?? ownSelectedId;
+  const setSelectedId = (id: string | null) => {
+    setOwnSelectedId(id);
+    if (!id) onFocusHandled?.();
+  };
 
   const { data, isLoading, isError, refetch } = useGetBugFindingsQuery(
     { status: statusFilter, limit: 100 },

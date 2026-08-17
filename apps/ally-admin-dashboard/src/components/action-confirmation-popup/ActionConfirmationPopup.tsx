@@ -83,6 +83,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       {secondaryButton && (
         <Button
           onClick={secondaryButton.onClick}
+          disabled={secondaryButton.disabled}
           variant={secondaryButton.variant || ButtonVariant.SECONDARY}
           className="text-typography-900 text-base border w-full border-border-dark rounded-none p-2"
         >
@@ -91,6 +92,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       )}
       <Button
         onClick={primaryButton.onClick}
+        disabled={primaryButton.disabled}
         variant={primaryButton.variant || ButtonVariant.PRIMARY}
         className={`text-white text-base rounded-none p-2 ${secondaryButton ? "w-full" : "w-1/3"}`}
       >
