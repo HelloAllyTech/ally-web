@@ -7,6 +7,9 @@ const mockAssignPlatformAdmin = vi.fn();
 const mockRemovePlatformAdmin = vi.fn();
 const mockSetUserFeatureToggles = vi.fn();
 
+// `createdAt` and `roleGrantedAt` are deliberately months apart on every
+// fixture: the "Added on" column must show the role grant, and rendering the
+// account date there is the bug this pair of dates guards against.
 const platformAdmins = [
   {
     id: 1,
@@ -14,6 +17,7 @@ const platformAdmins = [
     email: "me@helloally.ai",
     status: "ACTIVE",
     createdAt: "2026-01-01T00:00:00Z",
+    roleGrantedAt: "2026-07-15T00:00:00Z",
   },
   {
     id: 2,
@@ -21,6 +25,7 @@ const platformAdmins = [
     email: "other@helloally.ai",
     status: "ACTIVE",
     createdAt: "2026-02-01T00:00:00Z",
+    roleGrantedAt: "2026-08-02T00:00:00Z",
   },
 ];
 
@@ -31,8 +36,12 @@ const candidates = [
     email: "eligible@helloally.ai",
     status: "ACTIVE",
     createdAt: "2026-04-01T00:00:00Z",
+    roleGrantedAt: "2026-04-01T00:00:00Z",
   },
 ];
+
+/** Same formatting the component uses, so the assertion is locale-agnostic. */
+const asDisplayed = (iso: string) => new Date(iso).toLocaleDateString();
 
 // Labels deliberately differ from their section names ("Analytics" /
 // "Platform Config") so assertions on one can't accidentally match the other.
@@ -96,6 +105,7 @@ vi.mock("@components", () => ({
 
 vi.mock("@assets", () => ({
   ArrowDown: () => <svg data-testid="arrow-down" />,
+  TooltipIcon: () => <svg data-testid="tooltip-icon" />,
 }));
 
 vi.mock("@api", () => ({
@@ -133,6 +143,16 @@ describe("SuperAdmins", () => {
     expect(screen.getAllByTestId("sa-row")).toHaveLength(2);
     expect(screen.getByText("Current Admin")).toBeInTheDocument();
     expect(screen.getByText("Other Admin")).toBeInTheDocument();
+  });
+
+  it("dates the 'Added on' column from the role grant, not the account", () => {
+    render(<SuperAdmins />);
+    expect(screen.getByText(asDisplayed("2026-07-15T00:00:00Z"))).toBeInTheDocument();
+    expect(screen.getByText(asDisplayed("2026-08-02T00:00:00Z"))).toBeInTheDocument();
+    // The account-creation dates must not appear — showing them here is what
+    // made the column read as an admin-grant audit trail when it wasn't.
+    expect(screen.queryByText(asDisplayed("2026-01-01T00:00:00Z"))).not.toBeInTheDocument();
+    expect(screen.queryByText(asDisplayed("2026-02-01T00:00:00Z"))).not.toBeInTheDocument();
   });
 
   it("removes a platform admin after confirmation", () => {

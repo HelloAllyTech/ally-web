@@ -21,7 +21,14 @@ export interface PlatformAdmin {
   name: string;
   email: string;
   status: string;
+  /** When the *account* was created — not when admin access was granted. */
   createdAt: string;
+  /**
+   * When the PLATFORM_ADMIN role was granted (`user_groups."createdAt"`). This
+   * is the one an admin auditing grants wants; `createdAt` predates it for
+   * anyone who used Ally before being made an admin.
+   */
+  roleGrantedAt: string;
 }
 
 export interface GetPlatformAdminsResponse {
