@@ -322,6 +322,33 @@ export const isSuperAdminRole = (role?: UserRole | string | null): boolean =>
   role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
 
 /**
+ * Every role this console's login admits, sent as `allowedRoles` on all four
+ * auth entry points (OTP request, OTP verify, Google sign-in, magic link).
+ *
+ * One list, referenced everywhere, because the four call sites each hardcoding
+ * their own is exactly how PLATFORM_ADMIN got missed: the collapse shipped the
+ * Ally admins screen — which grants PLATFORM_ADMIN and *only* PLATFORM_ADMIN —
+ * while login still listed the three retired tiers, so every admin added after
+ * that deploy was created into the list and then refused at the door with
+ * "This account does not have the required role". Migrated admins never hit it,
+ * because the migration left their old `user_groups` rows in place.
+ *
+ * The retired tiers stay listed: their groups still carry live permissions for
+ * rollback safety, and `allowedRoles` is a filter the server intersects with
+ * the groups an account actually holds — a name nobody holds admits nobody, so
+ * keeping them costs nothing and dropping them would strand any account the
+ * collapse migration hasn't reached.
+ *
+ * Adding a platform-tier role? Add it here, and check whether it also belongs
+ * in ADMIN_ROLE_PRECEDENCE below.
+ */
+export const ADMIN_PORTAL_LOGIN_ROLES: UserRole[] = [
+  UserRole.PLATFORM_ADMIN,
+  ...SUPER_ADMIN_ROLES,
+  UserRole.MULTI_TENANT_ADMIN,
+];
+
+/**
  * The elevated super-admin tier. SUPER_DUPER_ADMIN sits above SUPER_ADMIN: gate
  * the most privileged admin surfaces (Settings, Guardrails, Characters, Speech
  * Recognition, Tooltips, Badges, Agent Test Cases, Super Duper Admins) on this —

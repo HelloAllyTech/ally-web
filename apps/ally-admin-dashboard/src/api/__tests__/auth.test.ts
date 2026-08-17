@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { ApiEndpoints, HttpMethod, UserRole } from "@constants";
+import { ADMIN_PORTAL_LOGIN_ROLES, ApiEndpoints, HttpMethod, UserRole } from "@constants";
 
 // Mock the store to avoid initialization issues
 vi.mock("@store", () => ({
@@ -370,28 +370,29 @@ describe("auth API", () => {
       expect(UserRole.SUPER_ADMIN).toBeDefined();
     });
 
-    it("should use correct role in OTP generation", () => {
-      const otpRequest = {
-        phone: "+1234567890",
-        email: "user@example.com",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
-      };
-
-      expect(otpRequest.allowedRoles).toContain(UserRole.SUPER_ADMIN);
-      expect(otpRequest.allowedRoles).toContain(UserRole.MULTI_TENANT_ADMIN);
-      expect(Array.isArray(otpRequest.allowedRoles)).toBe(true);
+    /**
+     * These assert the real ADMIN_PORTAL_LOGIN_ROLES that all four auth entry
+     * points send — the predecessors of these tests asserted a literal built
+     * inside the test itself, which is why nothing failed when the console
+     * started granting PLATFORM_ADMIN while login still listed only the three
+     * retired tiers, locking out every admin added after that deploy.
+     */
+    it("admits the current platform-tier role", () => {
+      expect(ADMIN_PORTAL_LOGIN_ROLES).toContain(UserRole.PLATFORM_ADMIN);
     });
 
-    it("should use correct role in OTP verification", () => {
-      const verifyRequest = {
-        phone: "+1234567890",
-        email: "user@example.com",
-        otp: "123456",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
-      };
+    it("still admits the retired tiers, for accounts the collapse hasn't reached", () => {
+      expect(ADMIN_PORTAL_LOGIN_ROLES).toContain(UserRole.SUPER_ADMIN);
+      expect(ADMIN_PORTAL_LOGIN_ROLES).toContain(UserRole.SUPER_DUPER_ADMIN);
+      expect(ADMIN_PORTAL_LOGIN_ROLES).toContain(UserRole.MULTI_TENANT_ADMIN);
+    });
 
-      expect(verifyRequest.allowedRoles).toContain(UserRole.SUPER_ADMIN);
-      expect(verifyRequest.allowedRoles).toContain(UserRole.MULTI_TENANT_ADMIN);
+    it("admits no tenant-scoped role", () => {
+      // A filter the server intersects with real group membership — but this
+      // console is not the portal for org admins, counsellors or learners.
+      expect(ADMIN_PORTAL_LOGIN_ROLES).not.toContain(UserRole.ADMIN);
+      expect(ADMIN_PORTAL_LOGIN_ROLES).not.toContain(UserRole.COUNSELLOR);
+      expect(ADMIN_PORTAL_LOGIN_ROLES).not.toContain(UserRole.LEARNER);
     });
   });
 });
