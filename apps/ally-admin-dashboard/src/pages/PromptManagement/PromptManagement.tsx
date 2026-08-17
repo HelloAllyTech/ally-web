@@ -305,6 +305,9 @@ export const PromptManagement: React.FC = () => {
         translationCoverage: prompt.translationEnabled
           ? `🌐 ${prompt.translationsReady ?? 0} ready`
           : "",
+        // Only typed prompts appear in a studio picker, so only they can be
+        // hidden from one. Blank for the visible (normal) case.
+        studioVisibility: prompt.promptType && prompt.visibleInStudio === false ? "Hidden" : "",
       })),
     [filteredPrompts],
   );

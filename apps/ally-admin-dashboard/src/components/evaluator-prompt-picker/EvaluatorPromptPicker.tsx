@@ -29,6 +29,12 @@ interface EvaluatorPromptPickerProps {
  *
  * Renders nothing until at least one transcript_evaluator prompt exists, so the
  * report page stays unchanged in environments where the prompt hasn't synced.
+ *
+ * Variants switched off in Prompt Management (`visibleInStudio: false`) are
+ * dropped, except the one this report is already configured with — it stays,
+ * marked "(hidden)", so an existing configuration is never silently reassigned.
+ * Hiding governs future selections only; a report already pointing at a hidden
+ * evaluator keeps being scored by it.
  */
 export const EvaluatorPromptPicker: React.FC<EvaluatorPromptPickerProps> = ({
   value,
@@ -37,13 +43,17 @@ export const EvaluatorPromptPicker: React.FC<EvaluatorPromptPickerProps> = ({
 }) => {
   const { data: prompts } = useGetPromptsByTypeQuery("transcript_evaluator");
 
+  // `visibleInStudio === false` is the only hiding signal — undefined means
+  // visible, so rows predating the flag still appear.
   const options = useMemo(
     () =>
-      (prompts ?? []).map(prompt => ({
-        label: prompt.name,
-        value: prompt.promptCode,
-      })),
-    [prompts],
+      (prompts ?? [])
+        .filter(prompt => prompt.visibleInStudio !== false || prompt.promptCode === value)
+        .map(prompt => ({
+          label: prompt.visibleInStudio === false ? `${prompt.name} (hidden)` : prompt.name,
+          value: prompt.promptCode,
+        })),
+    [prompts, value],
   );
 
   if (options.length === 0) return null;

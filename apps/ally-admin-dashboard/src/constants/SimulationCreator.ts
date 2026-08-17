@@ -1160,6 +1160,20 @@ export const PROMPT_COLUMNS = [
     editable: false,
   },
   {
+    // Read-only marker for versions switched off in the studio picker; blank
+    // for the normal (visible) case so the column is quiet until something is
+    // actually hidden. Populated in PromptManagement.formatTableData. The
+    // switch itself lives in the prompt side panel — this column exists only
+    // so an admin can see at a glance which versions they've turned off,
+    // without opening each one.
+    id: "studioVisibility",
+    label: "Studio",
+    accessor: "studioVisibility",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+    editable: false,
+  },
+  {
     // Coverage badge for translation-enabled main_agent/branching prompts;
     // blank for everything else. Populated in PromptManagement.formatTableData.
     id: "translationCoverage",

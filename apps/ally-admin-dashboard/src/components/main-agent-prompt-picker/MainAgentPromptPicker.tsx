@@ -34,6 +34,13 @@ interface MainAgentPromptPickerProps {
  *
  * Variants share the same branching + multilingual prompts — those are
  * not selectable here.
+ *
+ * Variants an admin has switched off in Prompt Management (`visibleInStudio:
+ * false`) are dropped from the list, with one exception: the variant this
+ * simulation is ALREADY on stays, marked "(hidden)". Hiding is a
+ * future-visibility switch, not a kill switch — an existing simulation must
+ * keep running on its chosen skill, and dropping the option outright would
+ * silently reassign it to a different skill the next time an author saved.
  */
 export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   id,
@@ -44,15 +51,6 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
 }) => {
   const { data: prompts, isFetching } = useGetPromptsByTypeQuery("main_agent");
 
-  const options = useMemo(
-    () =>
-      (prompts ?? []).map(prompt => ({
-        label: prompt.name,
-        value: prompt.promptCode,
-      })),
-    [prompts],
-  );
-
   // Subscribe to the field value so this re-runs whenever it changes —
   // crucially after the parent form's reset() (when editing a scenario that
   // loaded without a saved selectedMainPromptCode). Keying the effect only
@@ -62,6 +60,34 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   // showed "Select" until a hard refresh happened to fetch the list *after*
   // the reset. Watching the value closes that race in both orderings.
   const currentValue = formMethods.watch(id);
+
+  // `visibleInStudio === false` is the only hiding signal — undefined means
+  // visible, so a cached response from before the flag existed still lists
+  // everything rather than emptying the dropdown.
+  const options = useMemo(
+    () =>
+      (prompts ?? [])
+        .filter(prompt => prompt.visibleInStudio !== false || prompt.promptCode === currentValue)
+        .map(prompt => ({
+          label: prompt.visibleInStudio === false ? `${prompt.name} (hidden)` : prompt.name,
+          value: prompt.promptCode,
+        })),
+    [prompts, currentValue],
+  );
+
+  // True when this simulation sits on a variant that has since been switched
+  // off — worth saying out loud, because the author needs to know the skill
+  // still runs but is no longer on offer for anything new.
+  const isOnHiddenVariant = useMemo(
+    () =>
+      Boolean(
+        currentValue &&
+          (prompts ?? []).some(
+            prompt => prompt.promptCode === currentValue && prompt.visibleInStudio === false,
+          ),
+      ),
+    [prompts, currentValue],
+  );
 
   // Auto-select the default prompt by its stable promptCode whenever none is chosen yet.
   useEffect(() => {
@@ -86,6 +112,18 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
         options={options}
         isMandatory={isMandatory}
       />
+      {isOnHiddenVariant && (
+        <p className="text-sm text-typography-600">
+          This simulation runs on a skill version that’s been switched off for new simulations. It
+          keeps working exactly as before — switch away only if you want to move it.
+        </p>
+      )}
+      {!isFetching && options.length === 0 && (
+        <p className="text-sm text-typography-600">
+          No skill versions are switched on. New simulations will run on the default main agent
+          prompt until one is turned back on in Prompt Management.
+        </p>
+      )}
     </div>
   );
 };

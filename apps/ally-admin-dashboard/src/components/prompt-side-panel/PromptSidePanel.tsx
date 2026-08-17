@@ -3,9 +3,17 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetPromptUsageQuery, useGetLlmModelsQuery } from "@api";
-import { Refresh, DoubleArrowRight, Copy, Delete, CheckCircle, ArrowDown } from "@assets";
+import {
+  Refresh,
+  DoubleArrowRight,
+  Copy,
+  Delete,
+  CheckCircle,
+  ArrowDown,
+  TooltipIcon,
+} from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
@@ -455,6 +463,9 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         model: d.model ?? "",
         temperature: typeof d.temperature === "number" ? d.temperature : null,
         translationEnabled: !!d.translationEnabled,
+        // Normalized to a boolean so undefined (pre-flag rows) and true — both
+        // meaning "visible" — don't read as a change and trigger a no-op save.
+        visibleInStudio: d.visibleInStudio !== false,
       }),
     [],
   );
@@ -715,6 +726,10 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       // edit; enabling it kicks off an initial translation server-side.
       translationEnabled:
         formData.translationEnabled ?? selectedPrompt?.translationEnabled ?? false,
+      // Studio-picker visibility. Never sent as undefined — a prompt whose row
+      // predates the flag must round-trip as visible rather than as "unset",
+      // which the DTO would drop and leave the switch looking un-persisted.
+      visibleInStudio: (formData.visibleInStudio ?? selectedPrompt?.visibleInStudio) !== false,
       // Prompt-level LLM overrides. Empty model / non-numeric temperature are
       // sent as explicit clears ("" / null) so the runtime falls back to the
       // code/language default. Provider is derived from the model. Temperature
@@ -828,15 +843,25 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     [selectedPrompt?.promptCode],
   );
 
-  // Fetch in-use count only for duplicates (the only deletable rows) — file-
-  // backed prompts can't be removed via this panel, so the usage info would
-  // be noise. `skip` avoids firing the query for everything else.
+  // Only prompts with a promptType are offered in a studio picker, so they're
+  // the only ones for which "show in studio" means anything. Blocks and
+  // untyped prompts don't get the switch.
+  const isPickerVariant = Boolean(selectedPrompt?.promptType);
+
+  // Fetch in-use count for duplicates (the only deletable rows, where it gates
+  // the Delete button) and for anything carrying the visibility switch (where
+  // it tells the admin how many simulations are already committed to this
+  // version before they hide it). `skip` avoids firing for everything else —
+  // file-backed prompts with no promptType can neither be deleted nor hidden.
   const { data: usageData, isFetching: isUsageLoading } = useGetPromptUsageQuery(
     selectedPrompt?.id ?? "",
-    { skip: !selectedPrompt?.id || !isDuplicate },
+    { skip: !selectedPrompt?.id || (!isDuplicate && !isPickerVariant) },
   );
   const inUseCount = usageData?.count ?? 0;
   const isInUse = inUseCount > 0;
+
+  // Undefined (row predates the flag) reads as visible.
+  const isVisibleInStudio = (formData.visibleInStudio ?? selectedPrompt?.visibleInStudio) !== false;
 
   const handleDeleteClick = useCallback(() => {
     if (!selectedPrompt?.id || !onDelete || isDeleting || isInUse) return;
@@ -984,6 +1009,53 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 {selectedPrompt?.promptCode ?? formData.promptCode ?? "—"}
               </div>
             </Field>
+
+            {/*
+              Studio-picker visibility. Deliberately worded around *new*
+              simulations: this is a future-visibility switch, not an
+              enable/disable of the prompt itself. Nothing in the runtime reads
+              the flag, so switching it off cannot affect a simulation already
+              pointing at this version — the usage line below states that
+              outright rather than leaving the admin to guess, and the count is
+              shown instead of blocking the switch.
+            */}
+            {isPickerVariant && (
+              <Field label="Studio availability">
+                <div className="w-full flex flex-col gap-2 py-1">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 text-base text-typography-900 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isVisibleInStudio}
+                        onChange={event =>
+                          handleFieldChange("visibleInStudio", event.target.checked)
+                        }
+                      />
+                      Offer this version in the studio picker
+                    </label>
+                    <Tooltip
+                      label="Controls whether authors can choose this version for new simulations. Switching it off changes nothing for simulations that already use it — they keep running on this exact prompt."
+                      align="top"
+                    >
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  <span className="text-typography-500 text-sm">
+                    {isUsageLoading
+                      ? "Checking usage…"
+                      : isVisibleInStudio
+                        ? isInUse
+                          ? `Authors can pick this version. Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"}.`
+                          : "Authors can pick this version."
+                        : isInUse
+                          ? `Hidden from the picker — no new simulation can be pointed at it. The ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} already using it ${inUseCount === 1 ? "keeps" : "keep"} running on it, unchanged.`
+                          : "Hidden from the picker — no new simulation can be pointed at it."}
+                  </span>
+                </div>
+              </Field>
+            )}
 
             <Field label={en.simulation.promptName}>
               <input
