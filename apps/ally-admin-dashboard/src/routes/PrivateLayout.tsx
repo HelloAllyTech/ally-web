@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 import { useDispatch } from "react-redux";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 import {
   useGetUserQuery,
@@ -9,7 +9,7 @@ import {
   useGetFeatureTogglesQuery,
   useGetCharacterLibraryEnabledQuery,
 } from "@api";
-import { Sidebar, AccessDenied } from "@components";
+import { Sidebar, AccessDenied, ErrorBoundary } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import {
@@ -78,6 +78,10 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     });
 
   const dispatch = useDispatch();
+  // Only used to reset the crash barrier below: React Router reuses this
+  // element position across routes, so without a per-route key a page that
+  // crashed would keep showing its error panel on the next page you opened.
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (userData) dispatch(setUser(userData));
@@ -153,7 +157,9 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   const hasAccess =
     hasPermission && (hasRole || hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
 
-  if (hasAccess && isPreview) return children;
+  // The preview routes render bare, with no shell to preserve — but a crash
+  // there used to blank the page just the same, so they get the barrier too.
+  if (hasAccess && isPreview) return <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>;
 
   return (
     <ScenarioReportsSocketProvider>
@@ -170,8 +176,13 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
             scroll height far past the content, producing a phantom second
             scrollbar and empty white space you can scroll into below the page. */}
         <main className="flex-1 overflow-hidden">
+          {/* The barrier sits inside the shell, not around it: a page that
+              throws during render should cost the admin that page, not the
+              sidebar, the nav and their way out of it. */}
           <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
-            {hasAccess ? children : <AccessDenied />}
+            <ErrorBoundary resetKey={pathname}>
+              {hasAccess ? children : <AccessDenied />}
+            </ErrorBoundary>
           </div>
         </main>
         <ReportUploadProgressDialog />

@@ -75,11 +75,19 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const [answerText, setAnswerText] = useState("");
   const [sessionRepo, setSessionRepo] = useState<string | null>(null);
 
+  // Both arrays are defaulted rather than read straight off the response. A
+  // backend one release behind this build omits `steps` entirely, and reading
+  // `.some` off that undefined threw during render — which, with no error
+  // boundary above this drawer, blanked the whole admin console on every row.
+  // An absent array means the same thing as an empty one here, so treat it so.
+  const steps = finding?.steps ?? [];
+  const events = finding?.events ?? [];
+
   const inFlight = finding
     ? IN_FLIGHT_STATUSES.includes(finding.status) ||
       // A coordinating parent's own status doesn't change between steps, but
       // its steps do — so poll while any of them is still moving.
-      finding.steps.some(step => IN_FLIGHT_STATUSES.includes(step.status))
+      steps.some(step => IN_FLIGHT_STATUSES.includes(step.status))
     : false;
   useEffect(() => {
     setPollingInterval(inFlight ? 15_000 : 0);
@@ -205,14 +213,14 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
           )}
 
           {/* ── The plan, when this bug needs more than one repo ────────────── */}
-          {finding.steps.length > 0 && (
+          {steps.length > 0 && (
             <div className="border border-border-light rounded p-3">
               <h3 className="text-xs font-semibold text-typography-900">
-                {en.bugHunter.planTitle.replace("{count}", String(finding.steps.length))}
+                {en.bugHunter.planTitle.replace("{count}", String(steps.length))}
               </h3>
               <p className="text-xs text-typography-600 mt-0.5 mb-3">{en.bugHunter.planSubtitle}</p>
               <ol className="flex flex-col gap-2">
-                {finding.steps.map(step => (
+                {steps.map(step => (
                   <li key={step.id} className="flex items-start gap-2">
                     <span className="text-xs text-typography-500 whitespace-nowrap mt-0.5 tabular-nums">
                       {en.bugHunter.planStepLabel.replace("{n}", String(step.stepIndex + 1))}
@@ -444,11 +452,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             <h3 className="text-xs font-semibold text-typography-700 mb-2">
               {en.bugHunter.drawerTimelineTitle}
             </h3>
-            {finding.events.length === 0 ? (
+            {events.length === 0 ? (
               <p className="text-sm text-typography-500">{en.bugHunter.drawerTimelineEmpty}</p>
             ) : (
               <ul className="flex flex-col gap-1">
-                {finding.events.map(event => (
+                {events.map(event => (
                   <li key={event.id} className="text-sm text-typography-800 flex gap-2">
                     <span className="text-typography-500 whitespace-nowrap tabular-nums">
                       {formatDate(event.createdAt)}
