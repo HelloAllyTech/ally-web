@@ -1,7 +1,10 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  BugFinding,
   BugFindingDetail,
   BugHunterMode,
+  BugHunterNotification,
+  ListBugHunterNotificationsResponse,
   BugHunterSettings,
   BugHuntRunDetail,
   ListBugFindingsQuery,
@@ -91,6 +94,73 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       ],
     }),
 
+    /**
+     * Start a fix session for one bug. `repo` is only sent when the finding
+     * doesn't already have one — the usual case for a bug a human reported as
+     * free text, where the admin picks the codebase in the confirm dialog.
+     */
+    startBugFixSession: builder.mutation<BugFinding, { id: string; repo?: string }>({
+      query: ({ id, repo }) => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_FIX_SESSION(id),
+        method: HttpMethod.POST,
+        body: repo ? { repo } : {},
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+        // A fix session opens a bug_hunt_runs row, so run history is stale too.
+        { type: TAG_TYPES.BUG_HUNTER_RUNS, id: "LIST" },
+      ],
+    }),
+
+    /**
+     * Promote a merged fix to production. The response only confirms the
+     * release was *dispatched* — the outcome lands minutes later, reconciled
+     * from the GitHub run, so the UI must not present this as "released".
+     */
+    releaseBugFinding: builder.mutation<BugFinding, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_RELEASE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+      ],
+    }),
+
+    /**
+     * Bug Hunter's inbox. This is the ONLY channel it speaks on — escalations,
+     * run summaries and release outcomes used to go to Slack and now land here.
+     */
+    getBugHunterNotifications: builder.query<
+      ListBugHunterNotificationsResponse,
+      { unreadOnly?: boolean } | void
+    >({
+      query: params => ({
+        url: ApiEndpoints.BUG_HUNTER.NOTIFICATIONS,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_NOTIFICATIONS, id: "LIST" }],
+    }),
+
+    markBugHunterNotificationRead: builder.mutation<BugHunterNotification, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.NOTIFICATION_READ(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_NOTIFICATIONS, id: "LIST" }],
+    }),
+
+    markAllBugHunterNotificationsRead: builder.mutation<{ unreadCount: number }, void>({
+      query: () => ({
+        url: ApiEndpoints.BUG_HUNTER.NOTIFICATIONS_READ_ALL,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_NOTIFICATIONS, id: "LIST" }],
+    }),
+
     answerBugFinding: builder.mutation<BugFindingDetail, { id: string; answer: string }>({
       query: ({ id, answer }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_ANSWER(id),
@@ -115,4 +185,9 @@ export const {
   useApproveBugFindingMutation,
   useRejectBugFindingMutation,
   useAnswerBugFindingMutation,
+  useStartBugFixSessionMutation,
+  useReleaseBugFindingMutation,
+  useGetBugHunterNotificationsQuery,
+  useMarkBugHunterNotificationReadMutation,
+  useMarkAllBugHunterNotificationsReadMutation,
 } = bugHunterAPI;

@@ -23,6 +23,7 @@ import { LiveRunCard } from "./LiveRunCard";
 const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.SCHEDULED]: en.bugHunter.triggerScheduled,
   [BugHuntTrigger.MANUAL]: en.bugHunter.triggerManual,
+  [BugHuntTrigger.FIX_SESSION]: en.bugHunter.triggerFixSession,
 };
 
 /** A column header with a help tooltip — the pattern from the ally-web admin tooltip convention, applied per-column instead of per-field. */

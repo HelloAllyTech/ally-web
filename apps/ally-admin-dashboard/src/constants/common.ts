@@ -268,6 +268,8 @@ export const ApiEndpoints = {
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
     OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
     COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
+    BOARD: "/v1/product-roadmap/board",
+    BOARD_LANE: "/v1/product-roadmap/board/lane",
     ALLOCATIONS: "/v1/product-roadmap/allocations",
     COIN_BUDGET: "/v1/product-roadmap/me/coin-budget",
     FACETS: "/v1/product-roadmap/facets",
@@ -397,6 +399,11 @@ export const ApiEndpoints = {
     FINDING_APPROVE: (id: string) => `/v1/bug-hunter/findings/${id}/approve`,
     FINDING_REJECT: (id: string) => `/v1/bug-hunter/findings/${id}/reject`,
     FINDING_ANSWER: (id: string) => `/v1/bug-hunter/findings/${id}/answer`,
+    FINDING_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/fix-session`,
+    FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,
+    NOTIFICATIONS: "/v1/bug-hunter/notifications",
+    NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: "/v1/bug-hunter/notifications/read-all",
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -674,6 +681,7 @@ export const TAG_TYPES = {
   BUG_HUNTER_SETTINGS: "bugHunterSettings",
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
+  BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",

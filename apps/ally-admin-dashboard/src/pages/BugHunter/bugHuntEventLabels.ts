@@ -13,4 +13,10 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.ESCALATED]: "Escalated",
   [BugHuntEventStage.ERROR]: "Error",
   [BugHuntEventStage.SETTINGS_CHANGED]: "Setting changed",
+  [BugHuntEventStage.SESSION_DISPATCHED]: "Fix session started",
+  [BugHuntEventStage.PLAN_CREATED]: "Multi-repo plan created",
+  [BugHuntEventStage.STEP_STARTED]: "Step started",
+  [BugHuntEventStage.RELEASE_DISPATCHED]: "Release started",
+  [BugHuntEventStage.RELEASED]: "Released",
+  [BugHuntEventStage.RELEASE_FAILED]: "Release failed",
 };
