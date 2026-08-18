@@ -1928,8 +1928,19 @@ proto.loadText = function (text) {
 };
 
 function getFrontMatter(text) {
+  /*
+    [Ally] Return an empty map, not undefined.
+
+    A board with no front matter still opens with `---`, so the section before
+    it is the empty string and the pen's early return handed back undefined —
+    which loadText then read `.instruction` off, throwing. That aborted the
+    load before the maze was built and, because the throw unwound out of
+    animate(), stopped requestAnimationFrame for good: the canvas froze on the
+    half-drawn frame (the axle and nothing else) until the page was reloaded.
+    Thirteen of the sixty-one boards have no instruction line.
+  */
   if (!text) {
-    return;
+    return {};
   }
   var frontMatter = {};
   text.split('\n').forEach(function (line) {
