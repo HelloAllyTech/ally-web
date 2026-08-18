@@ -1069,6 +1069,67 @@ export interface LanguageObjectiveMetrics {
   roundTripWerPct: number | null;
 }
 
+/** How far a weak-metric series can be trusted. */
+export type WeakMetricState = "measured" | "partial" | "none";
+
+export interface WeakMetricPoint {
+  bucket: string;
+  numerator: number;
+  denominator: number;
+  /** null when the denominator is 0 — an empty bucket, not a clean one. */
+  value: number | null;
+}
+
+export interface WeakMetricSeries {
+  id: string;
+  label: string;
+  unit: "percent" | "per100turns" | "ratio" | "count" | string;
+  state: WeakMetricState;
+  lowerIsBetter: boolean;
+  /** The caveat needed to read this series honestly; rendered, not hidden. */
+  caveat: string | null;
+  points: WeakMetricPoint[];
+  latest: number | null;
+  previous: number | null;
+}
+
+export interface WeakMetricGroup {
+  id: string;
+  label: string;
+  description: string;
+  state: WeakMetricState;
+  series: WeakMetricSeries[];
+}
+
+export interface WeakMetricScenarioRow {
+  scenarioId: number;
+  title: string | null;
+  language: string | null;
+  sessions: number;
+  turns: number;
+  slips: number;
+  rate: number;
+}
+
+export interface WeakMetricsResponse {
+  metricsVersion: string;
+  parameters: Record<string, number>;
+  judgeModel: string | null;
+  judgePromptVersion: string | null;
+  bucket: string;
+  start: string;
+  groups: WeakMetricGroup[];
+  worstScenarios: WeakMetricScenarioRow[];
+  scoreLengthCorrelation: number | null;
+  filterOptions: {
+    languages: string[];
+    models: string[];
+    /** Only versions with judged data behind them — see the backend note. */
+    promptVersions: string[];
+    scenarios: Array<{ id: number; title: string | null }>;
+  };
+}
+
 export interface LanguageQualityResponse {
   judgeModel: string | null;
   judgePromptVersion: string | null;

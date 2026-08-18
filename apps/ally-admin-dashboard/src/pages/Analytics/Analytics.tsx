@@ -23,6 +23,7 @@ import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
+import { TabControlsSlotProvider } from "./tabControlsSlot";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
@@ -32,6 +33,7 @@ import { ProductManagementTab } from "./tabs/ProductManagementTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
 import { TestingTab } from "./tabs/TestingTab";
+import { WeakPerformingMetricsTab } from "./tabs/WeakPerformingMetricsTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
@@ -88,6 +90,21 @@ const TABS: TabDef[] = [
     label: "Highlights",
     uses: { language: false, range: false },
     render: f => <HighlightsTab {...f} />,
+  },
+  {
+    // The five simulator-quality metrics under active repair, on one filter
+    // tuple. Placed directly after Highlights because it is the working view
+    // for the current quality push, not a reference tab.
+    //
+    // It takes BOTH pickers, and unusually the tab adds two more of its own
+    // (model, scenario) rather than leaving them to a drill-in: three findings
+    // in this data turned out to be composition artefacts rather than
+    // regressions, so segmentation here is part of the metric rather than a
+    // convenience.
+    id: "weak-metrics",
+    label: "Weak performing metrics",
+    uses: { language: true, range: true },
+    render: f => <WeakPerformingMetricsTab {...f} />,
   },
   {
     id: "latency",
@@ -238,6 +255,10 @@ export const Analytics = () => {
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
   const activeTab = tabs[tabIndex] ?? tabs[0];
 
+  // Callback ref into state, not a plain ref: a portal needs a re-render once
+  // its target node exists, and a ref mutation does not trigger one.
+  const [controlsSlot, setControlsSlot] = useState<HTMLDivElement | null>(null);
+
   // A tab with no range picker reads all-time data. Derived from the same flag
   // that hides the picker, so the two cannot disagree.
   const query: AnalyticsWindowQuery = useMemo(
@@ -253,7 +274,11 @@ export const Analytics = () => {
     <div className="font-primary pr-1">
       <Theme theme="white">
         <Section>
-          <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+          {/* Heading, then filters on their own full-width line. They used to
+              sit beside the heading, which fits four controls and breaks at
+              six: a tab that adds its own slice dimensions pushed the row into
+              two ragged lines split across the middle of the filter set. */}
+          <div className="flex flex-col gap-4 mb-6">
             <div>
               <Heading className="text-2xl">Analytics</Heading>
               <p className="text-sm text-typography-500 mt-1">
@@ -265,9 +290,13 @@ export const Analytics = () => {
                   " This tab covers all of the platform's history; each chart carries its own day/week/month/year grouping."}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            {/* Wraps rather than overflows: with a tab's own pickers portalled
+                in, the group is wider than a 1000px viewport, and an unwrapped
+                flex row puts the last control off-screen with no scrollbar to
+                reach it. Wrapped, it stays one contiguous block of filters. */}
+            <div className="flex flex-wrap items-end gap-3">
               {activeTab.uses.language && (
-                <div className="w-48">
+                <div className="w-44">
                   <Dropdown
                     id="analytics-language"
                     size="md"
@@ -284,7 +313,7 @@ export const Analytics = () => {
                 </div>
               )}
               {activeTab.uses.range && (
-                <div className="w-56">
+                <div className="w-48">
                   <Dropdown
                     id="analytics-range"
                     size="md"
@@ -300,6 +329,11 @@ export const Analytics = () => {
                   />
                 </div>
               )}
+              {/* Tabs with slice dimensions of their own portal them here, so
+                  the whole filter bar stays one row above the content it
+                  scopes. Page-wide filters first, then the tab's own. Empty for
+                  tabs that add nothing. */}
+              <div ref={setControlsSlot} className="flex flex-wrap items-end gap-3" />
             </div>
           </div>
 
@@ -321,7 +355,13 @@ export const Analytics = () => {
                 just is not all fetched up front.
               */}
               {tabs.map((t, i) => (
-                <TabPanel key={t.id}>{i === tabIndex ? t.render(filters) : null}</TabPanel>
+                <TabPanel key={t.id}>
+                  {i === tabIndex ? (
+                    <TabControlsSlotProvider value={controlsSlot}>
+                      {t.render(filters)}
+                    </TabControlsSlotProvider>
+                  ) : null}
+                </TabPanel>
               ))}
             </TabPanels>
           </Tabs>

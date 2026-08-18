@@ -15,6 +15,7 @@ import {
   LanguageEvalReference,
   LanguageMixResponse,
   LanguageQualityResponse,
+  WeakMetricsResponse,
   LearnerKpisResponse,
   OrgHealthResponse,
   OrgSessionDistributionResponse,
@@ -312,6 +313,28 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
+    // The five weak-performing metrics on one filter tuple. Deliberately a
+    // single request: reading them apart invites the composition mistake this
+    // tab exists to prevent.
+    getWeakPerformingMetrics: builder.query<
+      WeakMetricsResponse,
+      {
+        range?: string;
+        bucket?: "week" | "month";
+        language?: string;
+        llmModel?: string;
+        scenarioId?: number;
+        promptVersion?: string;
+      }
+    >({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.WEAK_PERFORMING_METRICS,
+        method: HttpMethod.GET,
+        params: Object.fromEntries(
+          Object.entries(q).filter(([, v]) => v !== undefined && v !== ""),
+        ),
+      }),
+    }),
     /* ------------------------- Testing-tab endpoints ------------------------ */
     //
     // Windowed like /highlights (range + per-chart bucket), except the four whose
@@ -464,6 +487,7 @@ export const {
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
   useGetLanguageQualityQuery,
+  useGetWeakPerformingMetricsQuery,
   useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
