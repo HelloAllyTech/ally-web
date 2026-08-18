@@ -696,8 +696,10 @@ export interface VoiceLatencyResponse {
   window: AnalyticsWindow;
   /** Bucket granularity for this range ('day' | 'week' | 'month'). */
   bucket: string;
-  /** Latency target line for reference (ms). */
+  /** Voice-to-voice latency target line for reference (ms). */
   targetMs: number;
+  /** LLM time-to-first-token target line for reference (ms). */
+  llmTtftTargetMs: number;
   points: VoiceLatencyPoint[];
   /** Live-pipeline latency by language, independent of the `language` filter. */
   byLanguage: VoiceLatencyByLanguageRow[];
