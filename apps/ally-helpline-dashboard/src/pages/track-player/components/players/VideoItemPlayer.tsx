@@ -19,6 +19,7 @@ interface VideoItemPlayerProps {
 /** Minimal shape of the YouTube IFrame API we touch. */
 interface YTPlayer {
   getCurrentTime: () => number;
+  getDuration: () => number;
   destroy: () => void;
 }
 interface YTNamespace {
@@ -85,9 +86,13 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
   const [reportVideoProgress] = useReportVideoProgressMutation();
   const [completed, setCompleted] = useState(alreadyCompleted);
   const requiredPct = Math.round(payload.requiredWatchPct ?? 0);
+  // YouTube/Vimeo embeds rarely have a stored durationSeconds (the admin
+  // editor has no way to set one) — prefer the real duration the player
+  // itself reports once ready, falling back to the stored value until then.
+  const [duration, setDuration] = useState(payload.durationSeconds ?? 0);
 
   const { recordTime, recordPct, flush, watchedPct } = useVideoWatchProgress({
-    durationSeconds: payload.durationSeconds,
+    durationSeconds: duration,
     initialMaxWatchedPct: payload.maxWatchedPct ?? 0,
     disabled: completed,
     onReport: async pct => {
@@ -147,12 +152,24 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
 
   if (payload.source === "youtube") {
     return (
-      <YouTubeVideo url={payload.url} onTime={recordTime} controls={renderTrackedControls()} />
+      <YouTubeVideo
+        url={payload.url}
+        onTime={recordTime}
+        onDuration={setDuration}
+        controls={renderTrackedControls()}
+      />
     );
   }
 
   if (payload.source === "vimeo") {
-    return <VimeoVideo url={payload.url} onTime={recordTime} controls={renderTrackedControls()} />;
+    return (
+      <VimeoVideo
+        url={payload.url}
+        onTime={recordTime}
+        onDuration={setDuration}
+        controls={renderTrackedControls()}
+      />
+    );
   }
 
   // loom / unknown — no reliable time API; foreground timer + explicit button.
@@ -175,12 +192,15 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
 const YouTubeVideo: FC<{
   url: string;
   onTime: (t: number) => void;
+  onDuration: (d: number) => void;
   controls: React.ReactNode;
-}> = ({ url, onTime, controls }) => {
+}> = ({ url, onTime, onDuration, controls }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const onTimeRef = useRef(onTime);
   onTimeRef.current = onTime;
+  const onDurationRef = useRef(onDuration);
+  onDurationRef.current = onDuration;
 
   useEffect(() => {
     const id = youtubeId(url);
@@ -196,6 +216,13 @@ const YouTubeVideo: FC<{
         playerVars: { rel: 0, modestbranding: 1 },
         events: {
           onReady: () => {
+            // The stored durationSeconds is usually absent for embeds (the
+            // admin editor has no field for it) — the player itself is the
+            // authoritative source once its metadata has loaded.
+            const duration = playerRef.current?.getDuration?.();
+            if (typeof duration === "number" && duration > 0) {
+              onDurationRef.current(duration);
+            }
             poll = setInterval(() => {
               const time = playerRef.current?.getCurrentTime?.();
               if (typeof time === "number") onTimeRef.current(time);
@@ -230,17 +257,28 @@ const YouTubeVideo: FC<{
 const VimeoVideo: FC<{
   url: string;
   onTime: (t: number) => void;
+  onDuration: (d: number) => void;
   controls: React.ReactNode;
-}> = ({ url, onTime, controls }) => {
+}> = ({ url, onTime, onDuration, controls }) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const onTimeRef = useRef(onTime);
   onTimeRef.current = onTime;
+  const onDurationRef = useRef(onDuration);
+  onDurationRef.current = onDuration;
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
     // `id` accepts a full video URL (VideoId = string | number | VimeoUrl).
     const player = new Vimeo(host, { id: url, responsive: true });
+    // Same reasoning as YouTube: the player's own duration is authoritative
+    // since embeds are rarely saved with a stored durationSeconds.
+    player
+      .getDuration()
+      .then(d => {
+        if (typeof d === "number" && d > 0) onDurationRef.current(d);
+      })
+      .catch(() => undefined);
     const handler = (data: { seconds: number }) => onTimeRef.current(data.seconds);
     player.on("timeupdate", handler);
     return () => {

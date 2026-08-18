@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VideoItemPlayer } from "../VideoItemPlayer";
 import { StartVideoItemPayload, TrackItemType } from "../../../../../types/tracks";
@@ -93,5 +93,101 @@ describe("VideoItemPlayer", () => {
     );
 
     expect(screen.getByText("Mark as watched")).toBeDisabled();
+  });
+});
+
+describe("VideoItemPlayer — YouTube embed with no stored durationSeconds", () => {
+  // Regression test: embedded (YouTube/Vimeo) videos are almost never saved
+  // with a durationSeconds (the admin editor has no field for it), which
+  // used to leave watchedPct permanently stuck at 0 — the player must fall
+  // back to the duration the YouTube IFrame API itself reports.
+  class MockYTPlayer {
+    static instances: MockYTPlayer[] = [];
+    currentTime = 0;
+    duration: number;
+    onReady?: () => void;
+
+    constructor(_el: HTMLElement, opts: { events?: { onReady?: () => void } }, duration: number) {
+      this.duration = duration;
+      this.onReady = opts.events?.onReady;
+      MockYTPlayer.instances.push(this);
+    }
+
+    getCurrentTime() {
+      return this.currentTime;
+    }
+
+    getDuration() {
+      return this.duration;
+    }
+
+    destroy() {
+      // no-op
+    }
+  }
+
+  beforeEach(() => {
+    MockYTPlayer.instances = [];
+    (window as unknown as { YT: unknown }).YT = {
+      Player: class extends MockYTPlayer {
+        constructor(el: HTMLElement, opts: { events?: { onReady?: () => void } }) {
+          super(el, opts, 176);
+        }
+      },
+    };
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { YT?: unknown }).YT;
+    vi.useRealTimers();
+  });
+
+  it("recovers a nonzero watched percentage from the player's own duration", async () => {
+    const payload: StartVideoItemPayload = {
+      type: TrackItemType.VIDEO,
+      trackItemProgressId: "progress-2",
+      source: "youtube",
+      url: "https://www.youtube.com/watch?v=abc123",
+      durationSeconds: 0,
+      requiredWatchPct: 90,
+      maxWatchedPct: 0,
+    };
+
+    const { container } = render(
+      <VideoItemPlayer
+        payload={payload}
+        itemId="item-2"
+        trackId="track-1"
+        alreadyCompleted={false}
+      />,
+    );
+
+    // Let the loadYouTubeApi().then(...) microtask construct the player.
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const instance = MockYTPlayer.instances[0];
+    expect(instance).toBeDefined();
+
+    vi.useFakeTimers();
+    act(() => {
+      instance.onReady?.();
+    });
+
+    // Simulate watching ~91% of the 176s video via the 1s poll.
+    for (let t = 0; t <= 160; t += 1) {
+      instance.currentTime = t;
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+    }
+
+    const bar = container.querySelector<HTMLDivElement>(".bg-primary-500");
+    expect(bar).not.toBeNull();
+    // Before the fix this stayed "0%" forever because durationSeconds was
+    // undefined, so watchedPctFromSeconds always returned 0.
+    expect(bar?.style.width).not.toBe("0%");
+    expect(parseInt(bar?.style.width ?? "0", 10)).toBeGreaterThanOrEqual(90);
   });
 });
