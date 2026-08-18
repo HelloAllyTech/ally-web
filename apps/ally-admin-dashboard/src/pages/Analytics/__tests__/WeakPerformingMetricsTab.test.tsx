@@ -85,6 +85,11 @@ const response = (o: Partial<WeakMetricsResponse> = {}): WeakMetricsResponse => 
   parameters: { loopRunLength: 3 },
   judgeModel: "gemini-2.5-pro",
   judgePromptVersion: "v2",
+  judgeVersions: {
+    drift: { judgeModel: "gemini-2.5-pro", judgePromptVersion: "v2" },
+    language: { judgeModel: "gemini-2.5-pro", judgePromptVersion: "v1" },
+    groundedness: null,
+  },
   bucket: "month",
   start: "2025-08-01T00:00:00.000Z",
   groups: [group()],
@@ -497,5 +502,18 @@ describe("WeakPerformingMetricsTab", () => {
     await userEvent.click(screen.getByRole("option", { name: "Prompt v17" }));
 
     expect(queryMock).toHaveBeenLastCalledWith(expect.objectContaining({ promptVersion: "17" }));
+  });
+
+  /**
+   * A single judge version on screen was how the language series came to be
+   * read through the drift judge's pin. The tab must name each family, and must
+   * say "not run" rather than silently omitting one that has no rows yet.
+   */
+  it("names the judge version of every family, including one not yet run", () => {
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/drift gemini-2\.5-pro\/v2/)).toBeInTheDocument();
+    expect(screen.getByText(/language gemini-2\.5-pro\/v1/)).toBeInTheDocument();
+    expect(screen.getByText(/groundedness not run/)).toBeInTheDocument();
   });
 });

@@ -1113,11 +1113,26 @@ export interface WeakMetricScenarioRow {
   rate: number;
 }
 
+export interface JudgeVersionPin {
+  judgeModel: string;
+  judgePromptVersion: string;
+}
+
 export interface WeakMetricsResponse {
   metricsVersion: string;
   parameters: Record<string, number>;
+  /** Drift pin, kept for compatibility — prefer judgeVersions. */
   judgeModel: string | null;
   judgePromptVersion: string | null;
+  /**
+   * One pin per judge family. Three judges feed this tab and they version
+   * independently, so a single number cannot describe all of them.
+   */
+  judgeVersions: {
+    drift: JudgeVersionPin | null;
+    language: JudgeVersionPin | null;
+    groundedness: JudgeVersionPin | null;
+  };
   bucket: string;
   start: string;
   groups: WeakMetricGroup[];

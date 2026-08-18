@@ -384,13 +384,21 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
       <Tile style={{ marginBottom: "1.5rem" }}>
         <p style={{ margin: 0, opacity: 0.75, fontSize: "0.875rem" }}>
           Repetition differs 6.6× between models and role-slip is concentrated in a handful of
-          scenarios — an unsegmented read of either tracks traffic mix rather than quality. Judge{" "}
-          <code>
-            {data?.judgeModel ?? "—"}/{data?.judgePromptVersion ?? "—"}
-          </code>
-          , deterministic parameters <code>{data?.metricsVersion ?? "—"}</code>. Thresholds define
+          scenarios — an unsegmented read of either tracks traffic mix rather than quality.
+          Deterministic parameters <code>{data?.metricsVersion ?? "—"}</code>. Thresholds define
           these metrics: if one changes, every historical point moves, so the version is pinned here
           rather than left implicit.
+          {/* One pin per judge family, not one number for all three. They
+              version independently, and reporting a single version is how the
+              language series came to be read through the drift judge's. */}
+          <br />
+          Judges:{" "}
+          {(["drift", "language", "groundedness"] as const)
+            .map(family => {
+              const pin = data?.judgeVersions?.[family];
+              return `${family} ${pin ? `${pin.judgeModel}/${pin.judgePromptVersion}` : "not run"}`;
+            })
+            .join(" · ")}
         </p>
       </Tile>
 
