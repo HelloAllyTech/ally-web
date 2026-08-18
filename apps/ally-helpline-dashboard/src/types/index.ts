@@ -21,3 +21,4 @@ export * from "./customFields";
 export * from "./tooltip";
 export * from "./organizationSettings";
 export * from "./tracks";
+export * from "./bugReport";

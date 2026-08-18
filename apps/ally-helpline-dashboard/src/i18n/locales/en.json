@@ -210,7 +210,13 @@
     "creditUsage": "Credit usage",
     "logout": "Logout",
     "profileAlt": "Profile",
-    "dataPolicy": "Data policy"
+    "dataPolicy": "Data policy",
+    "reportProblem": "Report a problem"
+  },
+  "bugReport": {
+    "success": "Thanks — we've got your report.",
+    "rateLimited": "You've submitted a few reports recently — please try again in a bit.",
+    "genericError": "Something went wrong sending that. Please try again."
   },
   "learn": {
     "tabs": {

@@ -4,6 +4,7 @@ import { Button, ListToolbar } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   RoadmapFacets,
+  RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
@@ -15,7 +16,7 @@ import {
   RoadmapAdvancedFilterValues,
   countActiveAdvancedFilters,
 } from "./utils/filters";
-import { STAGE_LABEL, typeLabel } from "./utils/stages";
+import { SOURCE_LABEL, STAGE_LABEL, typeLabel } from "./utils/stages";
 
 export interface RoadmapFilterBarProps {
   search: string;
@@ -24,6 +25,9 @@ export interface RoadmapFilterBarProps {
   onTypeFilterChange: (value: RoadmapOpportunityType[]) => void;
   stageFilter: RoadmapOpportunityStage[];
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
+  /** Who filed it — staff (admin) or consumer (in-app "Report a problem"). */
+  sourceFilter: RoadmapOpportunitySource[];
+  onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
@@ -46,11 +50,12 @@ export interface RoadmapFilterBarProps {
 export const hasActiveFilters = (
   props: Pick<
     RoadmapFilterBarProps,
-    "typeFilter" | "stageFilter" | "goalFilter" | "ownerFilter" | "advanced"
+    "typeFilter" | "stageFilter" | "sourceFilter" | "goalFilter" | "ownerFilter" | "advanced"
   >,
 ): boolean =>
   props.typeFilter.length +
     props.stageFilter.length +
+    props.sourceFilter.length +
     props.goalFilter.length +
     props.ownerFilter.length +
     countActiveAdvancedFilters(props.advanced) >
@@ -77,6 +82,8 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     onTypeFilterChange,
     stageFilter,
     onStageFilterChange,
+    sourceFilter,
+    onSourceFilterChange,
     goalFilter,
     onGoalFilterChange,
     ownerFilter,
@@ -97,7 +104,9 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
 
   const chipClass = (isActive: boolean) =>
     `border px-2 py-1 ${
-      isActive ? "border-primary-500 text-primary-600" : "border-border-light text-typography-secondary"
+      isActive
+        ? "border-primary-500 text-primary-600"
+        : "border-border-light text-typography-secondary"
     }`;
 
   return (
@@ -141,6 +150,18 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
             className={chipClass(stageFilter.includes(value))}
           >
             {STAGE_LABEL[value]}
+          </button>
+        ))}
+
+        <span className="text-typography-secondary ml-3">Source</span>
+        {Object.values(RoadmapOpportunitySource).map(value => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onSourceFilterChange(toggle(sourceFilter, value))}
+            className={chipClass(sourceFilter.includes(value))}
+          >
+            {SOURCE_LABEL[value] ?? value}
           </button>
         ))}
 
@@ -188,6 +209,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
             onClick={() => {
               onTypeFilterChange([]);
               onStageFilterChange([]);
+              onSourceFilterChange([]);
               onGoalFilterChange([]);
               onOwnerFilterChange([]);
               // Must include the collapsed panel: "Clear filters" that leaves a hidden date range

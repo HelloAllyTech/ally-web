@@ -1,9 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import {
   RoadmapOpportunitiesResponse,
   RoadmapOpportunity,
+  RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
 } from "@types";
@@ -63,7 +64,7 @@ import { EMPTY_ADVANCED_FILTERS } from "../utils/filters";
 
 const PAGE_SIZE = 50;
 
-const row = (n: number): RoadmapOpportunity => ({
+const row = (n: number, source: RoadmapOpportunitySource = RoadmapOpportunitySource.STAFF): RoadmapOpportunity => ({
   id: `opp-${n}`,
   description: `Opportunity ${n}`,
   type: RoadmapOpportunityType.IDEA,
@@ -76,13 +77,18 @@ const row = (n: number): RoadmapOpportunity => ({
   priorityScore: n,
   myCoins: 0,
   commentCount: 0,
+  source,
   createdAt: "2026-08-01T00:00:00.000Z",
   updatedAt: "2026-08-01T00:00:00.000Z",
   creator: null,
 });
 
-const response = (items: number, count: number): RoadmapOpportunitiesResponse => ({
-  items: Array.from({ length: items }, (_, i) => row(i + 1)),
+const response = (
+  items: number,
+  count: number,
+  sources?: RoadmapOpportunitySource[],
+): RoadmapOpportunitiesResponse => ({
+  items: Array.from({ length: items }, (_, i) => row(i + 1, sources?.[i])),
   count,
   maxScore: 12,
   periodKey: "2026-08",
@@ -103,6 +109,8 @@ const renderBoard = (overrides: Partial<React.ComponentProps<typeof Opportunitie
       onTypeFilterChange={vi.fn()}
       stageFilter={[]}
       onStageFilterChange={vi.fn()}
+      sourceFilter={[]}
+      onSourceFilterChange={vi.fn()}
       goalFilter={[]}
       onGoalFilterChange={vi.fn()}
       ownerFilter={[]}
@@ -178,5 +186,27 @@ describe("OpportunitiesBoard pagination", () => {
     renderBoard({ data: response(0, 0) });
     expect(screen.getByText("No opportunities yet")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "New opportunity" })).toBeInTheDocument();
+  });
+});
+
+describe("OpportunitiesBoard source filter/badge", () => {
+  it("toggles the source filter chip", () => {
+    const onSourceFilterChange = vi.fn();
+    renderBoard({ onSourceFilterChange });
+
+    fireEvent.click(screen.getByRole("button", { name: "Consumer" }));
+    expect(onSourceFilterChange).toHaveBeenCalledWith([RoadmapOpportunitySource.CONSUMER]);
+  });
+
+  it("badges a consumer-filed row but not a staff-filed one", () => {
+    renderBoard({
+      data: response(2, 2, [RoadmapOpportunitySource.CONSUMER, RoadmapOpportunitySource.STAFF]),
+    });
+
+    // Exactly one badge in the table — the consumer row's, not the staff row's (the common case
+    // stays unbadged). Scoped to the table so the Source filter chip's own "Consumer" label,
+    // rendered above it, isn't counted.
+    const table = screen.getByRole("table");
+    expect(within(table).getAllByText("Consumer")).toHaveLength(1);
   });
 });

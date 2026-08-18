@@ -64,6 +64,17 @@ export {
   ARTIFACT_VERDICT_TOKENS,
 } from "./lib/artifact-marker/artifactSwatches";
 
+export type {
+  BugReportFormProps,
+  BugReportFormLabels,
+  BugReportSubmitError,
+} from "./lib/bug-report-form/BugReportForm";
+export {
+  BugReportForm,
+  BUG_REPORT_DESCRIPTION_MAX,
+  DEFAULT_BUG_REPORT_LABELS,
+} from "./lib/bug-report-form/BugReportForm";
+
 export {
   Badge,
   ButtonGroup,

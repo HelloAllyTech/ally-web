@@ -19,6 +19,7 @@ import {
   RoadmapBoardQuery,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunity,
+  RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapViewState,
@@ -93,6 +94,7 @@ export const ProductRoadmap: React.FC = () => {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<RoadmapOpportunityType[]>([]);
   const [stageFilter, setStageFilter] = useState<RoadmapOpportunityStage[]>([]);
+  const [sourceFilter, setSourceFilter] = useState<RoadmapOpportunitySource[]>([]);
   const [goalFilter, setGoalFilter] = useState<string[]>([]);
   const [ownerFilter, setOwnerFilter] = useState<string[]>([]);
   /** Creator + the three range filters, grouped so one setter drives the whole panel. */
@@ -151,6 +153,7 @@ export const ProductRoadmap: React.FC = () => {
       search: search.trim() || undefined,
       type: typeFilter.length ? typeFilter : undefined,
       stage: stageFilter.length ? stageFilter : undefined,
+      source: sourceFilter.length ? sourceFilter : undefined,
       productGoal: goalFilter.length ? goalFilter : undefined,
       owner: ownerFilter.length ? ownerFilter : undefined,
       createdBy: advanced.createdBy.length ? advanced.createdBy : undefined,
@@ -166,7 +169,18 @@ export const ProductRoadmap: React.FC = () => {
       limit: PAGE_SIZE,
       offset,
     }),
-    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order, offset],
+    [
+      search,
+      typeFilter,
+      stageFilter,
+      sourceFilter,
+      goalFilter,
+      ownerFilter,
+      advanced,
+      sortBy,
+      order,
+      offset,
+    ],
   );
 
   /**
@@ -221,6 +235,7 @@ export const ProductRoadmap: React.FC = () => {
       searchQuery: search.trim() || undefined,
       typeFilter,
       stageFilter,
+      sourceFilter,
       goalFilter,
       ownerFilter,
       // Same key names the standalone app used, so a view saved here and a view migrated from
@@ -238,13 +253,28 @@ export const ProductRoadmap: React.FC = () => {
       // permanent unsaved-changes dot.
       layout: layout === RoadmapBoardLayout.TABLE ? undefined : layout,
     }),
-    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order, layout],
+    [
+      search,
+      typeFilter,
+      stageFilter,
+      sourceFilter,
+      goalFilter,
+      ownerFilter,
+      advanced,
+      sortBy,
+      order,
+      layout,
+    ],
   );
 
   const applyViewState = (state: RoadmapViewState) => {
     setSearch(state.searchQuery ?? "");
     setTypeFilter((state.typeFilter ?? []) as RoadmapOpportunityType[]);
     setStageFilter((state.stageFilter ?? []) as RoadmapOpportunityStage[]);
+    // Absent on every view saved before this filter existed — undefined must mean "no filter",
+    // not "leave whatever was previously selected", or applying an old view would leave a stale
+    // source filter from whatever the user had picked before switching views.
+    setSourceFilter((state.sourceFilter ?? []) as RoadmapOpportunitySource[]);
     setGoalFilter(state.goalFilter ?? []);
     setOwnerFilter(state.ownerFilter ?? []);
     // These four keys were previously DROPPED on apply: the board had no controls for them, so a
@@ -452,6 +482,8 @@ export const ProductRoadmap: React.FC = () => {
           onTypeFilterChange={withPagingReset(setTypeFilter)}
           stageFilter={stageFilter}
           onStageFilterChange={withPagingReset(setStageFilter)}
+          sourceFilter={sourceFilter}
+          onSourceFilterChange={withPagingReset(setSourceFilter)}
           goalFilter={goalFilter}
           onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}
@@ -484,6 +516,8 @@ export const ProductRoadmap: React.FC = () => {
           onTypeFilterChange={withPagingReset(setTypeFilter)}
           stageFilter={stageFilter}
           onStageFilterChange={withPagingReset(setStageFilter)}
+          sourceFilter={sourceFilter}
+          onSourceFilterChange={withPagingReset(setSourceFilter)}
           goalFilter={goalFilter}
           onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}

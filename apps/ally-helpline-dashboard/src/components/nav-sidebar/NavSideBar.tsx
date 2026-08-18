@@ -7,8 +7,15 @@ import { useNavigate } from "react-router-dom";
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
-import { DockToRight, LogoutIllustration, RedirectIcon } from "@assets";
-import { AppTooltip, ConfirmationDialog, ProfileSettings, StreakPill, UserInfo } from "@components";
+import { DockToRight, LogoutIllustration, RedirectIcon, WarningTriangle } from "@assets";
+import {
+  AppTooltip,
+  ConfirmationDialog,
+  ProfileSettings,
+  ReportProblemModal,
+  StreakPill,
+  UserInfo,
+} from "@components";
 import {
   navBarOptions,
   TabId,
@@ -132,6 +139,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   );
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
+  const [openReportProblem, setOpenReportProblem] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {
     // Organization Settings is gated by ADMIN role + a temporary email
     // allowlist, not by a permission (see canViewOrganizationSettings).
@@ -215,6 +223,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     setOpenSettings(false);
   };
 
+  const handleReportProblemClick = () => {
+    setOpenReportProblem(true);
+  };
+
+  const closeReportProblem = () => {
+    setOpenReportProblem(false);
+  };
+
   const renderTabs = () => {
     const tabTooltipLocations = getTabTooltipLocations();
 
@@ -278,6 +294,24 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             <div key={id}>{tab}</div>
           );
         })}
+
+        {/* Report a problem is deliberately not in navBarOptions: it opens the
+            modal in place rather than routing anywhere, so activeTab can never
+            match it (never highlighted, same as Ally Admin below). Always
+            visible — not permission-gated — and closes the mobile drawer
+            first so the modal isn't left rendering behind it. */}
+        <Tab
+          id={TabId.REPORT_PROBLEM}
+          Icon={WarningTriangle}
+          title="Report a problem"
+          tKey="user.reportProblem"
+          activeTab={activeTab}
+          isExpanded={isExpanded}
+          onClick={() => {
+            handleReportProblemClick();
+            onClose();
+          }}
+        />
 
         {/* Ally Admin is deliberately not in navBarOptions: it routes nowhere in
             this app, can never be the active tab, and would force routes.ts to
@@ -428,6 +462,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         onButtonClick={handleProfileUpload}
         getProfileUrl={getProfileUrl}
       />
+      <ReportProblemModal open={openReportProblem} onClose={closeReportProblem} />
     </>
   );
 };

@@ -7,7 +7,14 @@ import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { RoadmapCoinBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
 
 import { CoinAllocator } from "./CoinAllocator";
-import { stageLabel, stageStyle, typeLabel } from "./utils/stages";
+import {
+  isConsumerSourced,
+  SOURCE_BADGE_STYLE,
+  SOURCE_LABEL,
+  stageLabel,
+  stageStyle,
+  typeLabel,
+} from "./utils/stages";
 
 interface MonthOpportunityCardProps {
   opportunity: RoadmapOpportunity;
@@ -84,6 +91,11 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
         <span className="text-typography-secondary truncate">{opportunity.productGoal}</span>
         {!!opportunity.owner && (
           <span className="text-typography-secondary truncate">· {opportunity.owner}</span>
+        )}
+        {isConsumerSourced(opportunity.source) && (
+          <span className={`px-1.5 py-0.5 ${SOURCE_BADGE_STYLE}`}>
+            {SOURCE_LABEL[opportunity.source]}
+          </span>
         )}
       </div>
 

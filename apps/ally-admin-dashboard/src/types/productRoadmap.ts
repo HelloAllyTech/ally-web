@@ -13,6 +13,16 @@ export enum RoadmapOpportunityStage {
   ARCHIVED = "archived",
 }
 
+/**
+ * Who filed it — 'staff' (the admin New Opportunity path, and every pre-existing row) or
+ * 'consumer' (a logged-in app user's "Report a problem" form). Admin-side display/filtering
+ * only, mirrors ally-be's RoadmapOpportunitySource.
+ */
+export enum RoadmapOpportunitySource {
+  STAFF = "staff",
+  CONSUMER = "consumer",
+}
+
 export interface RoadmapUserRef {
   id: number;
   email: string;
@@ -51,6 +61,8 @@ export interface RoadmapOpportunity {
   /** The CALLER's coins on this opportunity in the CURRENT period only. */
   myCoins: number;
   commentCount: number;
+  /** Who filed it — see RoadmapOpportunitySource. Admin display only. */
+  source: RoadmapOpportunitySource;
   createdAt: string;
   updatedAt: string;
   creator: RoadmapUserRef | null;
@@ -72,6 +84,7 @@ export interface RoadmapOpportunitiesQuery {
   search?: string;
   type?: string[];
   stage?: string[];
+  source?: string[];
   productGoal?: string[];
   owner?: string[];
   createdBy?: number[];
@@ -212,6 +225,8 @@ export interface RoadmapViewState {
   searchQuery?: string;
   typeFilter?: string[];
   stageFilter?: string[];
+  /** New filter, absent on every view saved before it existed — treat undefined as "no filter". */
+  sourceFilter?: string[];
   goalFilter?: string[];
   ownerFilter?: string[];
   creatorFilter?: string[];

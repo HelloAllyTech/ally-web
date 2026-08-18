@@ -18,3 +18,4 @@ export * from "./legalContent";
 export * from "./organizationSettings";
 export * from "./tracks";
 export * from "./blog";
+export * from "./bugReport";

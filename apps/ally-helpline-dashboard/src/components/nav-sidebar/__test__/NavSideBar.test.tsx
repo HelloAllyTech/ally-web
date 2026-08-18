@@ -64,6 +64,7 @@ vi.mock("@assets", () => ({
   DockToRight: (props: any) => <svg {...props} data-testid="dock-to-right" />,
   RedirectIcon: (props: any) => <svg {...props} data-testid="redirect-icon" />,
   LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
+  WarningTriangle: (props: any) => <svg {...props} data-testid="warning-triangle-icon" />,
 }));
 
 vi.mock("@components", () => ({
@@ -98,6 +99,9 @@ vi.mock("@components", () => ({
   ProfileSettings: vi.fn(({ isOpen }: any) =>
     isOpen ? <div data-testid="mock-profile-settings">Profile Settings</div> : null,
   ),
+  ReportProblemModal: vi.fn(({ open }: any) =>
+    open ? <div data-testid="mock-report-problem-modal">Report a problem</div> : null,
+  ),
   CarouselVariant: { LIGHT: "LIGHT", DARK: "DARK" },
   CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
 }));
@@ -115,6 +119,7 @@ vi.mock("@constants", () => {
     ANALYTICS: "ANALYTICS",
     SEARCH: "SEARCH",
     ALLY_ADMIN: "ALLY_ADMIN",
+    REPORT_PROBLEM: "REPORT_PROBLEM",
   };
   return {
     TabId,
@@ -224,6 +229,7 @@ enum TabId {
   SETTINGS = "SETTINGS",
   STRESS_BUSTERS = "STRESS BUSTERS",
   ALLY_ADMIN = "ALLY_ADMIN",
+  REPORT_PROBLEM = "REPORT_PROBLEM",
 }
 
 const mockOnTabChange = vi.fn();
@@ -479,6 +485,30 @@ describe("NavSideBar", () => {
     expect(screen.getByTestId("dialog-confirm-button")).toHaveTextContent(
       "Logout & lock my Ally account",
     );
+  });
+
+  // --- Report a problem tab ---
+
+  describe("Report a problem tab", () => {
+    const reportProblemTab = () => screen.getByTestId(`nav-tab-${TabId.REPORT_PROBLEM}`);
+
+    it("is always visible, in the primary tab list", () => {
+      renderComponent();
+      expect(reportProblemTab()).toBeInTheDocument();
+      expect(screen.getByTestId(`nav-tab-title-${TabId.REPORT_PROBLEM}`)).toHaveTextContent(
+        "Report a problem",
+      );
+    });
+
+    it("opens the modal on click without routing, and dismisses the mobile drawer", () => {
+      renderComponent({ isOpen: true });
+
+      fireEvent.click(reportProblemTab());
+
+      expect(mockOnTabChange).not.toHaveBeenCalled();
+      expect(mockOnClose).toHaveBeenCalled();
+      expect(screen.getByTestId("mock-report-problem-modal")).toBeInTheDocument();
+    });
   });
 
   // --- Ally Admin external link ---
