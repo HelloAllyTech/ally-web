@@ -3,9 +3,11 @@ import {
   AnnotationRevealKey,
   AnnotationSettings,
   CompletionCriteria,
+  GameContent,
   QuizQuestionType,
   QuizSettings,
   TrackFormValues,
+  TrackGameKey,
   TrackItemType,
 } from "@types";
 
@@ -32,6 +34,7 @@ export const TRACK_ITEM_TYPE_LABELS: Record<TrackItemType, string> = {
   [TrackItemType.VIDEO]: "Video",
   [TrackItemType.JOURNAL]: "Journal",
   [TrackItemType.ANNOTATED_ARTIFACT]: "Annotation",
+  [TrackItemType.GAME]: "Game",
 };
 
 export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
@@ -42,6 +45,7 @@ export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
   [TrackItemType.VIDEO]: "Upload a video or embed a link",
   [TrackItemType.JOURNAL]: "Reflection prompts for the learner",
   [TrackItemType.ANNOTATED_ARTIFACT]: "Mark up a real transcript or note",
+  [TrackItemType.GAME]: "A short arcade break between heavier components",
 };
 
 export const QUIZ_QUESTION_TYPE_LABELS: Record<QuizQuestionType, string> = {
@@ -76,6 +80,56 @@ export const DEFAULT_COMPLETION_CRITERIA: Record<TrackItemType, CompletionCriter
   [TrackItemType.VIDEO]: { watchPct: DEFAULT_VIDEO_WATCH_PCT },
   [TrackItemType.JOURNAL]: {},
   [TrackItemType.ANNOTATED_ARTIFACT]: {},
+  // Games never gate progression, so there is nothing to configure.
+  [TrackItemType.GAME]: {},
+};
+
+/* ---- Games (GAME) ---- */
+
+/**
+ * The games an author can pick from. `key` must match a bundle the learner app
+ * serves from `public/games/<key>/`.
+ */
+export const TRACK_GAME_CATALOG: Array<{
+  key: TrackGameKey;
+  name: string;
+  description: string;
+  /** Roughly how long one run lasts, so an author can pace the section. */
+  typicalPlay: string;
+}> = [
+  {
+    key: TrackGameKey.TREX_RUNNER,
+    name: "T-Rex Runner",
+    description:
+      "The offline dinosaur game. Press space or tap to jump the cactus. Nothing to learn, which is the point — it is a breather.",
+    typicalPlay: "under a minute a run",
+  },
+  {
+    key: TrackGameKey.TIC_TAC_TOE,
+    name: "Tic-Tac-Toe",
+    description:
+      "Nine squares against the computer. Starts on Easy so it is winnable, with a Hard toggle for anyone who wants a real fight.",
+    typicalPlay: "about half a minute a game",
+  },
+  {
+    key: TrackGameKey.MEMORY_MATCH,
+    name: "Memory Match",
+    description:
+      "Sixteen cards face down, eight pairs to find. Quiet and unhurried — the one to reach for after a heavy roleplay rather than before one.",
+    typicalPlay: "a minute or two a round",
+  },
+  {
+    key: TrackGameKey.CUB_N_PUP,
+    name: "Cub n Pup",
+    description:
+      "A peg-and-link puzzle: walk the cub along the links to the star, turning the whole grid when the links do not reach. Sixty-one boards that start as a ten-second tutorial and end genuinely hard — the thinking one, so put it where a learner has room to stop when they want to.",
+    typicalPlay: "a minute a board, and it does not run out",
+  },
+];
+
+export const DEFAULT_GAME_CONTENT: GameContent = {
+  gameKey: TrackGameKey.TREX_RUNNER,
+  intro: "",
 };
 
 /* ---- Annotation (ANNOTATED_ARTIFACT) ---- */

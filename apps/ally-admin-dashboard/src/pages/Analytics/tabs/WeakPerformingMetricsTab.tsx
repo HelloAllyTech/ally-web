@@ -1,0 +1,488 @@
+import { FC, useMemo, useState } from "react";
+
+import { LineChart, SimpleBarChart } from "@carbon/charts-react";
+import { Link } from "react-router-dom";
+
+import "@carbon/charts/styles.css";
+import "../analytics-carbon.scss";
+
+import {
+  CarbonDropdown as Dropdown,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tag,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
+import { useGetWeakPerformingMetricsQuery } from "@api";
+import { ROUTES } from "@constants";
+import { WeakMetricGroup, WeakMetricSeries, WeakMetricState } from "@types";
+
+import { AnalyticsTabFilters } from "../analyticsFilters";
+import { ChartCard, buildSource, lineOpts, single, timeBarOpts } from "../chartKit";
+import { PALETTE } from "../chartScales";
+import { TabControls } from "../tabControlsSlot";
+
+/**
+ * Weak performing metrics — the five simulator-quality metrics under active
+ * repair, on one filter tuple.
+ *
+ * Three rules this tab is built around, each learned from a number that misled
+ * us:
+ *
+ * 1. NEVER SHOW A BARE RATE. Every series carries a `state` and a `caveat` from
+ *    the API, both rendered on the face of the card. Several of these signals
+ *    are honest-but-partial — a near-zero dialect-lexicon line means the
+ *    detector is blind, and a zero barge-in line means nothing writes the flag.
+ *    Rendered as plain numbers they would read as good news.
+ *
+ * 2. SEGMENTATION IS PART OF THE METRIC, NOT A GARNISH. Three separate findings
+ *    in this data turned out to be composition artefacts rather than
+ *    regressions. So the model / language / scenario pickers sit at the top of
+ *    the tab, and the per-scenario table is on the page by default rather than
+ *    behind a drill-in.
+ *
+ * 3. THE UNIT OF ACTION IS THE SCENARIO. A quarter of all role-slips sit in
+ *    three scenarios, and an English one is among the worst. The worst-scenario
+ *    table links straight into session logs so a bad row can be opened and read
+ *    turn by turn.
+ */
+
+type TagType = "green" | "warm-gray" | "red";
+
+const STATE_TAG: Record<WeakMetricState, { type: TagType; label: string }> = {
+  measured: { type: "green", label: "Measured" },
+  partial: { type: "warm-gray", label: "Partial" },
+  none: { type: "red", label: "Not measured" },
+};
+
+const UNIT_SUFFIX: Record<string, string> = {
+  percent: "%",
+  per100turns: " /100 turns",
+  ratio: "×",
+  count: "",
+};
+
+/** Series values are stored as fractions; only `percent` is scaled for display. */
+const toDisplay = (value: number, unit: string): number =>
+  unit === "percent" ? value * 100 : unit === "per100turns" ? value * 100 : value;
+
+const formatValue = (value: number | null, unit: string): string => {
+  if (value === null || Number.isNaN(value)) return "—";
+  const shown = toDisplay(value, unit);
+  const digits = unit === "ratio" ? 2 : shown >= 10 ? 1 : 2;
+  return `${shown.toFixed(digits)}${UNIT_SUFFIX[unit] ?? ""}`;
+};
+
+/**
+ * Direction of travel between the last two non-empty buckets.
+ *
+ * Returns null rather than "0%" when there is nothing to compare: on a sparse
+ * series the absence of a prior bucket and a genuinely flat metric are
+ * different statements.
+ */
+const deltaLabel = (s: WeakMetricSeries): string | null => {
+  // An uninstrumented metric has no trend to report. Barge-in reads 0 because
+  // nothing writes the flag, so its denominator moving between buckets produced
+  // "↓ 4.3% — improving" on screen: a confident verdict about a signal nobody
+  // is recording. Numbers exist; a direction would be a claim.
+  if (s.state === "none") return null;
+  if (s.latest === null || s.previous === null) return null;
+  const diff = toDisplay(s.latest, s.unit) - toDisplay(s.previous, s.unit);
+  if (Math.abs(diff) < 0.005) return "flat vs previous bucket";
+  const better = s.lowerIsBetter ? diff < 0 : diff > 0;
+  const arrow = diff < 0 ? "↓" : "↑";
+  const digits = s.unit === "ratio" ? 2 : 1;
+  return `${arrow} ${Math.abs(diff).toFixed(digits)}${
+    UNIT_SUFFIX[s.unit] ?? ""
+  } vs previous bucket — ${better ? "improving" : "worsening"}`;
+};
+
+/**
+ * Form follows the data's shape, not the series' identity.
+ *
+ * These 21 series have very different densities over the same window:
+ * feedback-derived ones have 12 monthly buckets, drift-derived 6, and
+ * language-derived only 2 (that judge started in July). A line drawn through
+ * two observations *looks* like a direction and isn't one. Per the dataviz
+ * form heuristic, a current value plus a delta is a stat, not a chart.
+ *
+ *   0 valued buckets -> empty state, no axes
+ *   1-4              -> COLUMNS, one per bucket
+ *   5+               -> line chart
+ *
+ * Columns rather than a line for the sparse case because a column compares
+ * magnitudes without asserting anything about what happens between them — which
+ * is exactly the claim two points cannot support. Not a pie: these are rates
+ * over time, not parts of a whole, and a pie of two slices is the form the
+ * dataviz reference names as the wrong answer to a single ratio.
+ */
+const MIN_BUCKETS_FOR_A_LINE = 5;
+
+type SeriesForm = "empty" | "stat" | "line";
+
+const seriesForm = (valuedBuckets: number): SeriesForm => {
+  if (valuedBuckets === 0) return "empty";
+  if (valuedBuckets < MIN_BUCKETS_FOR_A_LINE) return "stat";
+  return "line";
+};
+
+const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, bucket }) => {
+  const points = useMemo(
+    () =>
+      series.points
+        .filter(p => p.value !== null)
+        .map(p => ({
+          group: series.label,
+          key: p.bucket,
+          value: toDisplay(p.value as number, series.unit),
+        })),
+    [series],
+  );
+
+  const totalDenominator = series.points.reduce((a, p) => a + p.denominator, 0);
+  const tag = STATE_TAG[series.state];
+
+  // A "none" series still renders its chart — but captioned as an
+  // instrumentation gap, so an empty or flat line is read as "we are not
+  // measuring this" rather than "this never happens".
+  const caption = [series.caveat, series.state === "none" ? null : null].filter(Boolean).join(" ");
+  // A `none` series is one the reader has been told not to read: its headline
+  // is "—" and its caveat explains why. Plotting it anyway invites exactly the
+  // reading the caveat forbids — barge-in drew a 4.3% column sourced from a
+  // flag nothing writes. No value, no plot, just the explanation.
+  const form = series.state === "none" ? "empty" : seriesForm(points.length);
+
+  return (
+    <ChartCard
+      title={series.label}
+      caption={caption || undefined}
+      takeaway={
+        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <Tag type={tag.type} size="sm">
+            {tag.label}
+          </Tag>
+          <strong>{series.state === "none" ? "—" : formatValue(series.latest, series.unit)}</strong>
+          {deltaLabel(series) && <span style={{ opacity: 0.75 }}>{deltaLabel(series)}</span>}
+        </span>
+      }
+      source={buildSource({
+        derivation:
+          series.state === "measured"
+            ? "judge labels + deterministic counts"
+            : "partial signal — read the caption",
+        window: `by ${bucket}`,
+        n: totalDenominator,
+        nUnit: "denominator",
+      })}
+      empty={points.length === 0}
+      emptyText={
+        series.state === "none"
+          ? "Not instrumented — nothing is being recorded for this metric yet."
+          : "No data in this window."
+      }
+    >
+      {form === "line" ? (
+        <LineChart
+          data={points}
+          options={lineOpts({
+            leftTitle: UNIT_SUFFIX[series.unit]?.trim() || "Value",
+            bottomTitle: bucket === "week" ? "Week" : "Month",
+            colorScale: single(series.label, series.state === "none" ? PALETTE.gray : PALETTE.blue),
+            legend: false,
+          })}
+        />
+      ) : form === "stat" ? (
+        <>
+          <SimpleBarChart
+            data={points}
+            options={timeBarOpts({
+              leftTitle: UNIT_SUFFIX[series.unit]?.trim() || "Value",
+              bottomTitle: bucket === "week" ? "Week" : "Month",
+              colorScale: single(
+                series.label,
+                series.state === "none" ? PALETTE.gray : PALETTE.blue,
+              ),
+              legend: false,
+            })}
+          />
+          <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", opacity: 0.7 }}>
+            {points.length === 1
+              ? "One measured bucket — compared, not trended."
+              : `${points.length} measured buckets — compared, not trended: too few points to read a direction.`}
+          </p>
+        </>
+      ) : null}
+    </ChartCard>
+  );
+};
+
+const GroupSection: FC<{ group: WeakMetricGroup; bucket: string }> = ({ group, bucket }) => {
+  const tag = STATE_TAG[group.state];
+  return (
+    <section style={{ marginBottom: "2.5rem" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: "0.75rem",
+          marginBottom: "0.25rem",
+        }}
+      >
+        <h3 style={{ margin: 0 }}>{group.label}</h3>
+        <Tag type={tag.type} size="sm">
+          {tag.label}
+        </Tag>
+      </div>
+      <p style={{ margin: "0 0 1rem", opacity: 0.75 }}>{group.description}</p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+          gap: "1rem",
+        }}
+      >
+        {group.series.map(s => (
+          <SeriesCard key={s.id} series={s} bucket={bucket} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, language }) => {
+  const [llmModel, setLlmModel] = useState<string>("");
+  const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
+  const [promptVersion, setPromptVersion] = useState<string>("");
+  const [bucket, setBucket] = useState<"week" | "month">("month");
+
+  const { data, isFetching, isError, refetch } = useGetWeakPerformingMetricsQuery({
+    range: query.range,
+    bucket,
+    language: language || undefined,
+    llmModel: llmModel || undefined,
+    scenarioId,
+    promptVersion: promptVersion || undefined,
+  });
+
+  /**
+   * Scenario picker items are ids (with "" for "all") rather than objects: the
+   * shared Dropdown infers one item type, and a mixed id/label object trips it.
+   * Labels are resolved through a lookup instead.
+   */
+  const scenarioLabels = useMemo(() => {
+    const map = new Map<string, string>([["", "All scenarios"]]);
+    for (const sc of data?.filterOptions.scenarios ?? []) {
+      map.set(String(sc.id), sc.title ? `${sc.id} · ${sc.title}` : `Scenario ${sc.id}`);
+    }
+    return map;
+  }, [data]);
+
+  const scenarioItems = useMemo(
+    () => ["", ...(data?.filterOptions.scenarios ?? []).map(sc => String(sc.id))],
+    [data],
+  );
+
+  if (isError) {
+    return (
+      <ChartCard
+        title="Weak performing metrics"
+        error
+        onRetry={() => refetch()}
+        errorTitle="Could not load weak performing metrics"
+      >
+        <span />
+      </ChartCard>
+    );
+  }
+
+  return (
+    <div>
+      {/* Segmentation controls. On the page rather than in a drawer: reading
+          these metrics unsegmented is the specific mistake this tab exists to
+          prevent. */}
+      {/* Model / scenario / granularity are slice dimensions like language and
+          time range, so they belong in the SAME row as those — not in a second
+          control group below the tab strip, which reads as scoping less than it
+          does. Portalled up; the note below stays here with the charts.
+
+          Labels are hidden to match the page's own pickers — a row where three
+          controls carry captions and two do not reads as two groups again. Each
+          value is self-describing instead, which is why granularity reads "By
+          month" rather than "Month". */}
+      <TabControls>
+        <div className="w-40">
+          <Dropdown
+            id="weak-metrics-model"
+            size="md"
+            titleText="Model"
+            hideLabel
+            label="All models"
+            items={["", ...(data?.filterOptions.models ?? [])]}
+            selectedItem={llmModel}
+            itemToString={(i: string) => i || "All models"}
+            onChange={({ selectedItem }: { selectedItem: string }) =>
+              setLlmModel(selectedItem ?? "")
+            }
+          />
+        </div>
+        <div className="w-56">
+          <Dropdown
+            id="weak-metrics-scenario"
+            size="md"
+            titleText="Scenario"
+            hideLabel
+            label="All scenarios"
+            items={scenarioItems}
+            selectedItem={scenarioId === undefined ? "" : String(scenarioId)}
+            itemToString={(i: string) => scenarioLabels.get(i) ?? i}
+            onChange={({ selectedItem }: { selectedItem: string }) =>
+              setScenarioId(selectedItem ? Number(selectedItem) : undefined)
+            }
+          />
+        </div>
+        {/* The hypothesis slice: comparing two prompt versions over the SAME
+            window separates the change from everything else that moved that
+            month. Only versions with judged data are offered — one with none
+            behind it would empty the tab and read as "this prompt fixed
+            everything". */}
+        <div className="w-40">
+          <Dropdown
+            id="weak-metrics-prompt-version"
+            size="md"
+            titleText="Prompt version"
+            hideLabel
+            label="All prompt versions"
+            items={["", ...(data?.filterOptions.promptVersions ?? [])]}
+            selectedItem={promptVersion}
+            itemToString={(i: string) => (i ? `Prompt v${i}` : "All prompt versions")}
+            onChange={({ selectedItem }: { selectedItem: string }) =>
+              setPromptVersion(selectedItem ?? "")
+            }
+          />
+        </div>
+        <div className="w-36">
+          <Dropdown
+            id="weak-metrics-bucket"
+            size="md"
+            titleText="Granularity"
+            hideLabel
+            label="By month"
+            items={["month", "week"]}
+            selectedItem={bucket}
+            itemToString={(i: string) => (i === "week" ? "By week" : "By month")}
+            onChange={({ selectedItem }: { selectedItem: "week" | "month" }) =>
+              setBucket(selectedItem ?? "month")
+            }
+          />
+        </div>
+      </TabControls>
+
+      <Tile style={{ marginBottom: "1.5rem" }}>
+        <p style={{ margin: 0, opacity: 0.75, fontSize: "0.875rem" }}>
+          Repetition differs 6.6× between models and role-slip is concentrated in a handful of
+          scenarios — an unsegmented read of either tracks traffic mix rather than quality. Judge{" "}
+          <code>
+            {data?.judgeModel ?? "—"}/{data?.judgePromptVersion ?? "—"}
+          </code>
+          , deterministic parameters <code>{data?.metricsVersion ?? "—"}</code>. Thresholds define
+          these metrics: if one changes, every historical point moves, so the version is pinned here
+          rather than left implicit.
+        </p>
+      </Tile>
+
+      {isFetching && !data ? (
+        <ChartCard title="Weak performing metrics" loading>
+          <span />
+        </ChartCard>
+      ) : (
+        <>
+          {(data?.groups ?? []).map(g => (
+            <GroupSection key={g.id} group={g} bucket={bucket} />
+          ))}
+
+          {/* The action list. Kept on the page rather than behind a drill-in:
+              the fix for clienthood is a scenario-brief edit, and this is the
+              only view that says which brief. */}
+          <section style={{ marginBottom: "2.5rem" }}>
+            <h3 style={{ margin: "0 0 0.25rem" }}>Worst scenarios by role-slip rate</h3>
+            <p style={{ margin: "0 0 1rem", opacity: 0.75 }}>
+              Role-slip is concentrated, not diffuse — a small number of scenarios carry a quarter
+              of every slip, and an English scenario sits among the worst. The aggregate language
+              gradient is largely a composition artefact of which scenarios ran in which language,
+              so the brief is the thing to fix.
+            </p>
+            <Tile>
+              <Table size="sm">
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Scenario</TableHeader>
+                    <TableHeader>Language</TableHeader>
+                    <TableHeader>Sessions</TableHeader>
+                    <TableHeader>Turns</TableHeader>
+                    <TableHeader>Slips</TableHeader>
+                    <TableHeader>Rate</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(data?.worstScenarios ?? []).map(r => (
+                    <TableRow key={`${r.scenarioId}-${r.language ?? "all"}`}>
+                      <TableCell>
+                        <Link to={`${ROUTES.ROLEPLAY_SESSION_LOGS}?search=${r.scenarioId}`}>
+                          {r.title ? `${r.scenarioId} · ${r.title}` : r.scenarioId}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{r.language ?? "—"}</TableCell>
+                      <TableCell>{r.sessions}</TableCell>
+                      <TableCell>{r.turns}</TableCell>
+                      <TableCell>{r.slips}</TableCell>
+                      <TableCell>
+                        <strong>{(r.rate * 100).toFixed(2)}%</strong>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {!data?.worstScenarios?.length && (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        No scenario has enough judged turns in this window.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Tile>
+          </section>
+
+          {/* Not a trend: one number that says whether the learner-facing score
+              is measuring skill or session length. */}
+          {data?.scoreLengthCorrelation !== null && data?.scoreLengthCorrelation !== undefined && (
+            <section>
+              <ChartCard
+                title="Score vs session length"
+                caption={
+                  "Pearson r of the learner's skill score against log(turn count). " +
+                  "A high value means the score is substantially measuring how long " +
+                  "the learner talked rather than how well they did — which is a " +
+                  "feedback-quality problem, not a learner one."
+                }
+                takeaway={
+                  <strong>
+                    r = {data.scoreLengthCorrelation.toFixed(3)}
+                    {Math.abs(data.scoreLengthCorrelation) > 0.5
+                      ? " — the score is substantially session length"
+                      : ""}
+                  </strong>
+                }
+              >
+                <span />
+              </ChartCard>
+            </section>
+          )}
+        </>
+      )}
+    </div>
+  );
+};

@@ -369,6 +369,10 @@ export const ApiEndpoints = {
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
     LANGUAGE_QUALITY: "/v1/analytics/language-quality",
     LANGUAGE_QUALITY_REFERENCE: "/v1/analytics/language-quality/reference",
+    // The five simulator-quality metrics under active repair. One endpoint
+    // rather than five: they share a filter tuple, and reading them apart is
+    // how a composition artefact gets mistaken for a regression.
+    WEAK_PERFORMING_METRICS: "/v1/analytics/weak-performing-metrics",
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
     SCRIBE_OVERVIEW: "/v1/analytics/scribe/overview",
     SCRIBE_SUMMARY_FAILURES: "/v1/analytics/scribe/summary-failures",
@@ -408,6 +412,7 @@ export const ApiEndpoints = {
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
     RUNS: "/v1/bug-hunter/runs",
+    RUNS_TRIGGER: "/v1/bug-hunter/runs/trigger",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
     RUN_STREAM: (id: string) => `/v1/bug-hunter/runs/${id}/stream`,
     FINDINGS: "/v1/bug-hunter/findings",

@@ -16,6 +16,7 @@ const TYPE_ORDER: TrackItemType[] = [
   TrackItemType.ARTICLE,
   TrackItemType.VIDEO,
   TrackItemType.JOURNAL,
+  TrackItemType.GAME,
 ];
 
 /** Popover with the component-type tiles for adding an item to a section. */

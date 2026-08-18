@@ -2,11 +2,19 @@ import { FC, useState } from "react";
 
 import { toast } from "sonner";
 
-import { ContentSwitcher, Switch, Tooltip } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  ContentSwitcher,
+  Select,
+  SelectItem,
+  Switch,
+  Tooltip,
+} from "@ally-ui-mono/ui-shared";
 import {
   useGetBugFindingsQuery,
   useGetBugHunterSettingsQuery,
   useGetBugHuntRunsQuery,
+  useTriggerBugHuntSweepMutation,
   useUpdateBugHunterSettingsMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
@@ -20,8 +28,19 @@ import { BugFinding, BugHunterMode, BugHuntRun, BugHuntRunStatus } from "@types"
 
 import { AgentStatusKind, deriveAgentStatus } from "./agentPersona";
 import { AgentWorkloadStrip } from "./AgentWorkloadStrip";
+import { LiveClock } from "./LiveClock";
 
 const MODE_ORDER: BugHunterMode[] = [BugHunterMode.OFF, BugHunterMode.MANUAL, BugHunterMode.AI];
+
+/**
+ * Repos an admin can sweep on demand. Mirrors ally-be's `BUG_HUNT_REPOS`, which
+ * remains the authority — it rejects anything not in its own map, so a drift
+ * here surfaces as a clear 400 rather than a silent misfire. Held as a literal
+ * rather than fetched because it changes about once a year, and a control that
+ * cannot be used until a round-trip lands is worse than one that occasionally
+ * needs a line added.
+ */
+const SWEEPABLE_REPOS = ["ally-be", "ally-web", "ally-ai", "ally-ai-learn", "ally-mobile"] as const;
 
 const MODE_LABELS: Record<BugHunterMode, string> = {
   [BugHunterMode.OFF]: en.bugHunter.modeOff,
@@ -65,7 +84,7 @@ const STATUS_PILL_STYLES: Record<AgentStatusKind, string> = {
  * to find, and landing on the wrong one shouldn't be a single misclick.
  */
 export const AgentProfileCard: FC = () => {
-  const { data: settings, isLoading, isError } = useGetBugHunterSettingsQuery();
+  const { data: settings, isLoading, isError, fulfilledTimeStamp } = useGetBugHunterSettingsQuery();
   const [updateSettings, { isLoading: isUpdating }] = useUpdateBugHunterSettingsMutation();
 
   // Identical query args to BugFindingsTable's initial state and to
@@ -86,6 +105,11 @@ export const AgentProfileCard: FC = () => {
   // so the switcher always redraws from the real, current mode.
   const [resetToken, setResetToken] = useState(0);
 
+  const [triggerSweep, { isLoading: isSweeping }] = useTriggerBugHuntSweepMutation();
+  const [sweepRepo, setSweepRepo] = useState<string>(SWEEPABLE_REPOS[0]);
+  const [sweepDeep, setSweepDeep] = useState(false);
+  const [sweepPending, setSweepPending] = useState(false);
+
   const findings: BugFinding[] = findingsData?.items ?? [];
   const runs: BugHuntRun[] = runsData?.items ?? [];
   const liveRun = runs.find(run => run.status === BugHuntRunStatus.RUNNING) ?? null;
@@ -104,6 +128,21 @@ export const AgentProfileCard: FC = () => {
       toast.error(en.bugHunter.updateFailed);
     } finally {
       closePending();
+    }
+  };
+
+  const handleSweep = async () => {
+    try {
+      const result = await triggerSweep({ repo: sweepRepo, deep: sweepDeep }).unwrap();
+      // Off duty is a recorded skip, not a failure — the backend writes a
+      // skipped_disabled run. Saying "couldn't start" for a switch the admin set
+      // themselves would read as a bug in the tab.
+      if (result && "skipped" in result) toast.info(en.bugHunter.sweepSkipped);
+      else toast.success(en.bugHunter.sweepStarted.replace("{repo}", sweepRepo));
+    } catch {
+      toast.error(en.bugHunter.sweepFailed);
+    } finally {
+      setSweepPending(false);
     }
   };
 
@@ -131,6 +170,9 @@ export const AgentProfileCard: FC = () => {
             >
               {status.label}
             </span>
+            {!isLoading && !isError && fulfilledTimeStamp != null && (
+              <LiveClock since={fulfilledTimeStamp} />
+            )}
           </div>
 
           <p className="text-sm text-typography-700">
@@ -184,12 +226,65 @@ export const AgentProfileCard: FC = () => {
             )}
           </div>
           <p className="text-xs text-typography-600 mt-2">{en.bugHunter.agentHours}</p>
+
+          {/* ── Sweep on demand: the "whenever you ask" half of agentHours,
+              which until now nothing could actually do. ── */}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="text-sm text-typography-700">{en.bugHunter.sweepLabel}</span>
+            <div className="w-[180px]">
+              <Select
+                id="bug-hunter-sweep-repo"
+                labelText={en.bugHunter.sweepLabel}
+                hideLabel
+                value={sweepRepo}
+                onChange={e => setSweepRepo(e.target.value)}
+              >
+                {SWEEPABLE_REPOS.map(repo => (
+                  <SelectItem key={repo} value={repo} text={repo} />
+                ))}
+              </Select>
+            </div>
+            <Button
+              size="sm"
+              kind="secondary"
+              disabled={isSweeping || settings?.mode === BugHunterMode.OFF}
+              onClick={() => setSweepPending(true)}
+            >
+              {isSweeping ? en.bugHunter.sweepButtonBusy : en.bugHunter.sweepButton}
+            </Button>
+            <label className="inline-flex items-center gap-2 text-sm text-typography-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={sweepDeep}
+                onChange={e => setSweepDeep(e.target.checked)}
+                className="cursor-pointer"
+              />
+              {en.bugHunter.sweepDeepLabel}
+            </label>
+            <Tooltip label={en.bugHunter.sweepDeepTooltip} align="right">
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          </div>
+          <p className="text-xs text-typography-600 mt-2">{en.bugHunter.sweepTooltip}</p>
         </div>
       )}
 
       <div className="mt-5">
         <AgentWorkloadStrip findings={findings} />
       </div>
+
+      {sweepPending && (
+        <ActionConfirmationPopup
+          isOpen
+          onClose={() => setSweepPending(false)}
+          title={en.bugHunter.sweepConfirmTitle.replace("{repo}", sweepRepo)}
+          description={en.bugHunter.sweepConfirmBody}
+          primaryButton={{ label: en.bugHunter.sweepConfirm, onClick: handleSweep }}
+          secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setSweepPending(false) }}
+        />
+      )}
 
       {pendingMode !== null && (
         <ActionConfirmationPopup

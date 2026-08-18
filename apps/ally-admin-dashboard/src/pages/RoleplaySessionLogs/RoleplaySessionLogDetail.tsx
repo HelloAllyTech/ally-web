@@ -6,6 +6,7 @@ import { useGetRoleplaySessionLogQuery } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
+import { RoleplaySessionWeakMetric } from "@types";
 import { formatDate } from "@utils";
 
 /** Seconds offset -> "m:ss" for transcript turn timestamps. */
@@ -85,6 +86,46 @@ const SectionCard: FC<{ children: ReactNode }> = ({ children }) => (
     {children}
   </div>
 );
+
+/**
+ * Weak-performing-metric grouping and presentation.
+ *
+ * Values arrive as fractions; only `percent`/`per100turns` are scaled for
+ * display. A `count` renders as "n of ceiling" rather than a percentage,
+ * because "4 solutions offered against a ceiling of 2" is the readable form and
+ * "200%" is not.
+ */
+const WEAK_METRIC_GROUP_LABEL: Record<string, string> = {
+  responsiveness: "Actor responsiveness",
+  progression: "Conversational progression",
+  language_realism: "Language realism",
+  feedback_groundedness: "Feedback groundedness",
+  clienthood: "Actor clienthood",
+};
+
+const WEAK_METRIC_STATE_CLASS: Record<string, string> = {
+  measured: "bg-green-100 text-green-900",
+  partial: "bg-yellow-100 text-yellow-900",
+  none: "bg-neutral-200 text-typography-700",
+};
+
+const WEAK_METRIC_STATE_LABEL: Record<string, string> = {
+  measured: "measured",
+  partial: "partial",
+  none: "not measured",
+};
+
+const formatWeakMetric = (m: RoleplaySessionWeakMetric): string => {
+  // An unmeasured metric has no value to show. Barge-in and dialect-lexicon
+  // both compute to 0 because nothing records them — printing "0.00%" reads as
+  // "this never happened", which is the opposite of what the badge says.
+  if (m.state === "none") return "—";
+  if (m.unit === "count") return `${m.numerator} of ${m.denominator}`;
+  if (m.value === null) return "no data";
+  if (m.unit === "ratio") return `${m.value.toFixed(2)}×`;
+  const pct = m.value * 100;
+  return `${pct.toFixed(pct >= 10 ? 1 : 2)}%`;
+};
 
 /** Severity chip classes for language-quality annotations. */
 const LANGUAGE_SEVERITY_CLASS: Record<string, string> = {
@@ -509,6 +550,63 @@ export const RoleplaySessionLogDetail: FC = () => {
             <Field label="Interruptions" value={formatNumber(data.latency.interruptedTurns)} />
             <Field label="LLM timeouts" value={formatNumber(data.latency.llmTimedOutTurns)} />
           </SectionCard>
+        </section>
+      )}
+
+      {/* Weak performing metrics — the five under active repair, for this
+          session. Same measures the analytics tab trends, so a bad bucket there
+          can be opened here and read turn by turn. */}
+      {data.weakMetrics && (
+        <section className="mt-6">
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">
+            Weak performing metrics
+          </h2>
+          <p className="text-xs text-typography-500 mb-2">
+            Parameters {data.weakMetrics.metricsVersion}
+            {data.weakMetrics.judged
+              ? ""
+              : " · this session was never judged, so judge-derived lines read as no data rather than as clean"}
+            . Counts are shown alongside rates: on a single session the denominator is what tells
+            you whether to trust the number.
+          </p>
+          {Object.keys(WEAK_METRIC_GROUP_LABEL).map(groupId => {
+            const metrics = data.weakMetrics!.metrics.filter(m => m.group === groupId);
+            if (metrics.length === 0) return null;
+            return (
+              <div key={groupId} className="mb-4">
+                <h3 className="text-sm font-secondary text-typography-800 mb-2">
+                  {WEAK_METRIC_GROUP_LABEL[groupId]}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {metrics.map(m => (
+                    <div key={m.id} className="p-3 rounded-lg border border-border-light bg-white">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="text-xs text-typography-700">{m.label}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded ${
+                            WEAK_METRIC_STATE_CLASS[m.state] ?? ""
+                          }`}
+                        >
+                          {WEAK_METRIC_STATE_LABEL[m.state] ?? m.state}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-baseline gap-2">
+                        <span className="text-sm text-typography-900 font-secondary">
+                          {formatWeakMetric(m)}
+                        </span>
+                        {m.unit !== "count" && m.state !== "none" && (
+                          <span className="text-xs text-typography-500">
+                            {m.numerator} of {m.denominator}
+                          </span>
+                        )}
+                      </div>
+                      {m.detail && <p className="mt-1 text-xs text-typography-500">{m.detail}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </section>
       )}
 

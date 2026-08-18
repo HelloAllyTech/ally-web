@@ -195,6 +195,37 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   drift: RoleplaySessionDrift | null;
   /** Glossary delivery/retrieval/adherence; null for non-glossary sessions. */
   languageGlossary: RoleplaySessionGlossary | null;
+  /**
+   * The five weak-performing metrics for THIS session — the same ones the
+   * analytics tab trends, so a bad bucket there can be opened and read turn
+   * by turn. Carries raw counts as well as rates: on one session "1 of 3
+   * turns" and "33%" are very different statements.
+   */
+  weakMetrics: RoleplaySessionWeakMetrics | null;
+}
+
+/** One weak-performing metric, as it stands for a single session. */
+export interface RoleplaySessionWeakMetric {
+  id: string;
+  label: string;
+  /** Which of the five metrics this belongs to. */
+  group: string;
+  numerator: number;
+  denominator: number;
+  /** null when the denominator is 0 — no data, as distinct from a clean zero. */
+  value: number | null;
+  unit: "percent" | "per100turns" | "ratio" | "count" | string;
+  /** measured | partial | none — how far to trust this line. */
+  state: string;
+  /** Why this session tripped the metric, when it did. */
+  detail: string | null;
+}
+
+export interface RoleplaySessionWeakMetrics {
+  metricsVersion: string;
+  /** False when this session carries no judge rows. */
+  judged: boolean;
+  metrics: RoleplaySessionWeakMetric[];
 }
 
 export interface RoleplaySessionLogsResponse {

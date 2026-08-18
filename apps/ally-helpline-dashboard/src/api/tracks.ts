@@ -4,7 +4,8 @@
  * Caching strategy: mutations invalidate detail + list + next EXCEPT
  * `reportVideoProgress`, which fires every ~10s — that one optimistically
  * patches the cached track detail and only invalidates when the response
- * flips `completed: true`.
+ * flips `completed: true` — and `recordGameResult`, which changes no progress
+ * state at all.
  */
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
@@ -220,6 +221,22 @@ const tracksAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: ALL_TRACK_TAGS,
     }),
+
+    /**
+     * Personal best for a game run. A game item is already complete by the
+     * time this fires, so it unlocks nothing and invalidates nothing — the
+     * player treats a failure as a non-event.
+     */
+    recordGameResult: builder.mutation<
+      { bestScore: number; playCount: number; score: number },
+      { itemId: string; score: number }
+    >({
+      query: ({ itemId, score }) => ({
+        url: ApiEndpoints.TRACKS.GAME_RESULT(itemId),
+        method: HttpMethod.POST,
+        body: { score },
+      }),
+    }),
   }),
 });
 
@@ -237,6 +254,7 @@ export const {
   useSaveJournalDraftMutation,
   useSubmitJournalMutation,
   useSubmitAnnotationAttemptMutation,
+  useRecordGameResultMutation,
 } = tracksAPI;
 
 export { tracksAPI };

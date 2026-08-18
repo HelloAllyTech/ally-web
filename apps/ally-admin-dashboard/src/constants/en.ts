@@ -2236,6 +2236,25 @@ export const en = {
     agentRole: "Software test engineer",
     agentTeam: "Ally platform · ally-be, ally-web, ally-ai, ally-ai-learn, ally-mobile",
     agentHours: "Nightly sweep, plus whenever you ask",
+    // The "whenever you ask" half of agentHours, which until now was not true:
+    // nothing could ask.
+    sweepLabel: "Sweep a repo",
+    sweepButton: "Start a sweep",
+    sweepButtonBusy: "Starting…",
+    sweepDeepLabel: "Read the whole repo",
+    sweepDeepTooltip:
+      "By default a sweep only reads what changed in the last day. Reading everything finds more, costs considerably more, and is worth doing occasionally rather than nightly.",
+    sweepTooltip:
+      "Bug Hunter sweeps every repo overnight. Use this when you would rather not wait — for instance just after a release, or when someone has reported something you want chased down now.",
+    sweepConfirmTitle: "Start a sweep of {repo}?",
+    sweepConfirmBody:
+      "Bug Hunter will run that repo's tests, review recent changes, read production errors and check reported bugs. In Works-solo mode it may also open pull requests. It never deploys anything.",
+    sweepConfirm: "Start it",
+    sweepStarted: "Bug Hunter is sweeping {repo}.",
+    sweepFailed: "Could not start the sweep.",
+    // Pressing it while off duty is not an error — the backend records the
+    // skipped run — so say what happened rather than showing a failure.
+    sweepSkipped: "Bug Hunter is off duty, so nothing was swept.",
     agentIntro:
       "I read the Ally repos every night, reproduce what I find with a failing test, fix it and open the PR. When a call isn't mine to make, I stop and ask you.",
     agentStatusOffDuty: "Off duty",
@@ -2494,6 +2513,8 @@ export const en = {
     // ── Live clock (freshness readout next to the status pill) ──────────────
     updatedJustNow: "Updated just now",
     updatedSecondsAgo: "Updated {count}s ago",
+    updatedMinutesAgo: "Updated {count}m ago",
+    updatedHoursAgo: "Updated {count}h ago",
   },
   evaluate: {
     title: "Ally Evaluation",

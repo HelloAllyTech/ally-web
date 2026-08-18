@@ -71,6 +71,7 @@ const baseDetail = {
   languageQuality: null,
   drift: null,
   languageGlossary: null,
+  weakMetrics: null,
 };
 
 describe("RoleplaySessionLogDetail — language glossary card", () => {
@@ -208,5 +209,155 @@ describe("RoleplaySessionLogDetail — actor evaluation applicability", () => {
     expect(screen.queryByText("N/A")).not.toBeInTheDocument();
     expect(screen.getByText("10")).toBeInTheDocument();
     expect(screen.queryByText(/goals were not applicable/)).not.toBeInTheDocument();
+  });
+});
+
+describe("RoleplaySessionLogDetail — weak performing metrics card", () => {
+  const metric = (o: Record<string, unknown> = {}) => ({
+    id: "role_inversion",
+    label: "Turns where the actor took the counsellor’s chair",
+    group: "clienthood",
+    numerator: 2,
+    denominator: 20,
+    value: 0.1,
+    unit: "percent",
+    state: "measured",
+    detail: null,
+    ...o,
+  });
+
+  const withMetrics = (metrics: unknown[], judged = true) => ({
+    data: {
+      ...baseDetail,
+      weakMetrics: { metricsVersion: "v1", judged, metrics },
+    },
+    isLoading: false,
+    isError: false,
+  });
+
+  it("renders nothing when the session carries no panel", () => {
+    getQueryMock.mockReturnValue({
+      data: baseDetail,
+      isLoading: false,
+      isError: false,
+    });
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.queryByText("Weak performing metrics")).not.toBeInTheDocument();
+  });
+
+  it("groups metrics under their metric heading", () => {
+    getQueryMock.mockReturnValue(
+      withMetrics([
+        metric(),
+        metric({
+          id: "repetition_turns",
+          group: "progression",
+          label: "Turns repeating an earlier turn",
+        }),
+      ]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("Weak performing metrics")).toBeInTheDocument();
+    expect(screen.getByText("Actor clienthood")).toBeInTheDocument();
+    expect(screen.getByText("Conversational progression")).toBeInTheDocument();
+  });
+
+  it("shows the raw counts beside the rate, because n matters on one session", () => {
+    getQueryMock.mockReturnValue(withMetrics([metric()]));
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("10.0%")).toBeInTheDocument();
+    // "2 of 20" is what tells the reader whether 10% is worth acting on.
+    expect(screen.getByText("2 of 20")).toBeInTheDocument();
+  });
+
+  it("renders a count metric as n-of-ceiling, not as a percentage", () => {
+    getQueryMock.mockReturnValue(
+      withMetrics([
+        metric({
+          id: "over_compliance",
+          label: "Solutions the actor offered for its own problem",
+          unit: "count",
+          numerator: 4,
+          denominator: 2,
+          value: 2,
+        }),
+      ]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    // 4 solutions against a ceiling of 2 — rendering "200%" would be nonsense.
+    expect(screen.getByText("4 of 2")).toBeInTheDocument();
+    expect(screen.queryByText("200.0%")).not.toBeInTheDocument();
+  });
+
+  it("says no data rather than 0% when the denominator is empty", () => {
+    getQueryMock.mockReturnValue(
+      withMetrics([metric({ numerator: 0, denominator: 0, value: null })]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("no data")).toBeInTheDocument();
+    expect(screen.queryByText("0.00%")).not.toBeInTheDocument();
+  });
+
+  it("shows a dash, not 0%, for an unmeasured metric", () => {
+    // Regression: barge-in rendered "not measured · 0.00% · 0 of 2". The badge
+    // said one thing and the number said the opposite.
+    getQueryMock.mockReturnValue(
+      withMetrics([
+        metric({
+          id: "barge_in",
+          label: "Turns interrupted by the learner",
+          state: "none",
+          numerator: 0,
+          denominator: 2,
+          value: 0,
+        }),
+      ]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.queryByText("0.00%")).not.toBeInTheDocument();
+    expect(screen.queryByText("0 of 2")).not.toBeInTheDocument();
+    expect(screen.getByText("—")).toBeInTheDocument();
+  });
+
+  it("badges a not-measured line so an empty value is not read as clean", () => {
+    getQueryMock.mockReturnValue(
+      withMetrics([
+        metric({
+          id: "barge_in",
+          label: "Turns interrupted by the learner",
+          state: "none",
+          numerator: 0,
+          denominator: 0,
+          value: null,
+          detail: "Not instrumented — the flag is never written",
+        }),
+      ]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("not measured")).toBeInTheDocument();
+    expect(screen.getByText(/Not instrumented/)).toBeInTheDocument();
+  });
+
+  it("warns when the session was never judged", () => {
+    getQueryMock.mockReturnValue(withMetrics([metric()], false));
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText(/never judged/)).toBeInTheDocument();
+  });
+
+  it("renders a ratio without multiplying it by a hundred", () => {
+    getQueryMock.mockReturnValue(
+      withMetrics([
+        metric({
+          id: "criticism_ratio",
+          label: "Criticisms per compliment",
+          unit: "ratio",
+          numerator: 3,
+          denominator: 2,
+          value: 1.5,
+        }),
+      ]),
+    );
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("1.50×")).toBeInTheDocument();
   });
 });

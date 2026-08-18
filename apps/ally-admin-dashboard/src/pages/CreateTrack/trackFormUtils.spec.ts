@@ -6,6 +6,7 @@ import {
   QuizContent,
   TrackDetail,
   TrackFormValues,
+  TrackGameKey,
   TrackItemType,
 } from "@types";
 
@@ -171,5 +172,51 @@ describe("serializeTrackForm <-> deserializeTrack round-trip", () => {
     const reserialized = serializeTrackForm(roundTripped);
     expect(reserialized.sections[0].id).toBe("section-server-1");
     expect(reserialized.sections[0].items.map(item => item.order)).toEqual([1, 2]);
+  });
+});
+
+describe("game components", () => {
+  const gameForm = (intro: string): TrackFormValues => ({
+    title: "Course",
+    description: "d",
+    coverImageUrl: "https://example.com/c.png",
+    isGlobal: false,
+    estimatedDurationMinutes: 10,
+    sections: [
+      {
+        localId: "s1",
+        title: "Section 1",
+        description: "",
+        items: [
+          {
+            ...createItemOfType(TrackItemType.GAME),
+            title: "Breather",
+            game: { gameKey: TrackGameKey.TREX_RUNNER, intro },
+          },
+        ],
+      },
+    ],
+  });
+
+  it("publishes with only a title — a game has nothing else to fill in", () => {
+    expect(validateTrackForPublish(gameForm("")).length).toBe(0);
+  });
+
+  it("omits a blank intro from the payload rather than sending an empty string", () => {
+    const [item] = serializeTrackForm(gameForm("")).sections[0].items;
+    expect(item.content).toEqual({ gameKey: TrackGameKey.TREX_RUNNER });
+  });
+
+  it("keeps the intro when the author wrote one", () => {
+    const [item] = serializeTrackForm(gameForm("Shake it off.")).sections[0].items;
+    expect(item.content).toEqual({
+      gameKey: TrackGameKey.TREX_RUNNER,
+      intro: "Shake it off.",
+    });
+  });
+
+  it("never sends a completion rule — games do not gate", () => {
+    const [item] = serializeTrackForm(gameForm("")).sections[0].items;
+    expect(item.completionCriteria).toBeUndefined();
   });
 });

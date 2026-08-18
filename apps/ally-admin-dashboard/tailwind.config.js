@@ -177,6 +177,11 @@ module.exports = {
         fadeIn: "fadeIn 0.2s ease-in-out",
         slideInFromRight: "slideInFromRight 0.2s ease-out",
         fadeInOut: "fadeInOut 1.5s ease-in-out infinite",
+        // Slow idle "on shift, nothing outstanding" pulse for AgentAvatar —
+        // deliberately much slower than the existing `animate-ping` used for
+        // "working", so the two presences read as different rhythms rather
+        // than the same animation in a different colour.
+        breathe: "breathe 3s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -190,6 +195,10 @@ module.exports = {
         fadeInOut: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.1" },
+        },
+        breathe: {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "0.15", transform: "scale(1.4)" },
         },
       },
     },

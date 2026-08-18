@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 
 import {
   Table,
@@ -81,6 +81,29 @@ export const RunHistoryTable: FC = () => {
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 
   const runs: BugHuntRun[] = data?.items ?? [];
+
+  // Same "new since last poll" tracking as the bugs table: never flashes on
+  // the first successful load, only on a poll that actually grew the list.
+  const seenIdsRef = useRef<Set<string> | null>(null);
+  const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!data) return undefined;
+    const currentIds = new Set(runs.map(run => run.id));
+    if (seenIdsRef.current === null) {
+      seenIdsRef.current = currentIds;
+      return undefined;
+    }
+    const fresh = new Set<string>();
+    currentIds.forEach(id => {
+      if (!seenIdsRef.current!.has(id)) fresh.add(id);
+    });
+    seenIdsRef.current = currentIds;
+    if (fresh.size === 0) return undefined;
+    setFreshIds(fresh);
+    const timer = setTimeout(() => setFreshIds(new Set()), 250);
+    return () => clearTimeout(timer);
+  }, [data]);
 
   return (
     <div>
@@ -171,7 +194,9 @@ export const RunHistoryTable: FC = () => {
             {runs.map(run => (
               <React.Fragment key={run.id}>
                 <TableRow
-                  className="border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-neutral-50"
+                  className={`border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-neutral-50 ${
+                    freshIds.has(run.id) ? "animate-fadeIn motion-reduce:animate-none" : ""
+                  }`}
                   onClick={() => setExpandedRunId(prev => (prev === run.id ? null : run.id))}
                 >
                   <TableCell className="py-3 pr-4">{run.repo}</TableCell>

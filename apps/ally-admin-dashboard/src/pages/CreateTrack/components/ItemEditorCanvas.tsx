@@ -5,6 +5,7 @@ import { TrackItemType } from "@types";
 import { AnnotationItemEditor } from "./editors/annotation/AnnotationItemEditor";
 import { ArticleItemEditor } from "./editors/ArticleItemEditor";
 import { CaseItemEditor } from "./editors/CaseItemEditor";
+import { GameItemEditor } from "./editors/GameItemEditor";
 import { JournalItemEditor } from "./editors/JournalItemEditor";
 import { QuizItemEditor } from "./editors/quiz/QuizItemEditor";
 import { RoleplayItemEditor } from "./editors/RoleplayItemEditor";
@@ -41,6 +42,8 @@ export const ItemEditorCanvas: FC<ItemEditorCanvasProps> = ({
       return <QuizItemEditor {...props} />;
     case TrackItemType.ANNOTATED_ARTIFACT:
       return <AnnotationItemEditor {...props} />;
+    case TrackItemType.GAME:
+      return <GameItemEditor {...props} />;
     default:
       return null;
   }
