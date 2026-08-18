@@ -18,9 +18,12 @@ import { en } from "@constants";
 import { BUG_FINDING_FIX_SESSION_START_STATUSES, BugFindingStatus } from "@types";
 import { formatDate } from "@utils";
 
+import { BrailleSpinner } from "./BrailleSpinner";
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
+import { PipelineRail } from "./PipelineRail";
+import { stageFromFindingStatus } from "./pipelineStage";
 
 interface BugFindingDrawerProps {
   id: string;
@@ -34,6 +37,24 @@ const IN_FLIGHT_STATUSES: BugFindingStatus[] = [
   BugFindingStatus.RELEASING,
   BugFindingStatus.COORDINATING,
 ];
+
+/**
+ * The rail's colour override for a finding stuck at the same stage for two
+ * different reasons: an outright failure, or an open question it's waiting
+ * on you to answer. Everything else stays plain "working" amber.
+ */
+const railVariantForStatus = (status: BugFindingStatus): "error" | "waiting" | undefined => {
+  switch (status) {
+    case BugFindingStatus.FAILED:
+    case BugFindingStatus.RELEASE_FAILED:
+      return "error";
+    case BugFindingStatus.NEEDS_INPUT:
+    case BugFindingStatus.PENDING_APPROVAL:
+      return "waiting";
+    default:
+      return undefined;
+  }
+};
 
 /**
  * The comprehensive table's row detail: full description/evidence, its event
@@ -153,6 +174,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-2">
             <BugFindingStatusBadge status={finding.status} />
+            {IN_FLIGHT_STATUSES.includes(finding.status) && (
+              <BrailleSpinner className="text-amber-600" />
+            )}
             <span className="text-xs text-typography-600">
               {BUG_FINDING_SOURCE_LABELS[finding.source]}
             </span>
@@ -163,6 +187,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               </span>
             )}
           </div>
+
+          <PipelineRail
+            stage={stageFromFindingStatus(finding.status)}
+            variant={railVariantForStatus(finding.status)}
+          />
 
           {finding.source === "reported_bug" && finding.status === BugFindingStatus.NEW && (
             <p className="text-xs text-typography-500 italic">
@@ -219,6 +248,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-typography-900">{step.repo}</span>
                         <BugFindingStatusBadge status={step.status} />
+                        {IN_FLIGHT_STATUSES.includes(step.status) && (
+                          <BrailleSpinner className="text-amber-600" />
+                        )}
                         {step.releaseTag && (
                           <span className="text-xs text-typography-600">{step.releaseTag}</span>
                         )}

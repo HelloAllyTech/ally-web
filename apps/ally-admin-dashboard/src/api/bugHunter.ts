@@ -6,6 +6,7 @@ import {
   BugHunterNotification,
   ListBugHunterNotificationsResponse,
   BugHunterSettings,
+  BugHuntRun,
   BugHuntRunDetail,
   ListBugFindingsQuery,
   ListBugFindingsResponse,
@@ -37,6 +38,24 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.BUG_HUNTER_SETTINGS],
+    }),
+
+    /**
+     * Ask Bug Hunter to sweep a repo now. Returns the opened run, or
+     * `{skipped:true}` when the kill switch is off — the backend records a
+     * `skipped_disabled` run in that case, so an off-duty press still leaves an
+     * audit trail rather than appearing to do nothing.
+     */
+    triggerBugHuntSweep: builder.mutation<
+      BugHuntRun | { skipped: true; reason: string },
+      { repo: string; deep?: boolean }
+    >({
+      query: body => ({
+        url: ApiEndpoints.BUG_HUNTER.RUNS_TRIGGER,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_RUNS, id: "LIST" }],
     }),
 
     getBugHuntRuns: builder.query<ListBugHuntRunsResponse, void>({
@@ -179,6 +198,7 @@ export const {
   useGetBugHunterSettingsQuery,
   useUpdateBugHunterSettingsMutation,
   useGetBugHuntRunsQuery,
+  useTriggerBugHuntSweepMutation,
   useGetBugHuntRunQuery,
   useGetBugFindingsQuery,
   useGetBugFindingQuery,

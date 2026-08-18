@@ -6,6 +6,7 @@ vi.mock("@api", () => ({
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
+  useTriggerBugHuntSweepMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useGetBugHuntRunQuery: vi.fn(),
   useGetBugFindingsQuery: vi.fn(),
   useGetBugFindingQuery: vi.fn(),

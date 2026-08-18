@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { motion, useReducedMotion } from "framer-motion";
+
 import { en } from "@constants";
 import { BugFinding } from "@types";
 
@@ -15,6 +17,7 @@ import { summariseWorkload } from "./agentPersona";
  * would bury it.
  */
 export const AgentWorkloadStrip: FC<{ findings: BugFinding[] }> = ({ findings }) => {
+  const shouldReduceMotion = useReducedMotion();
   // Four zeroes tell a reader nothing the empty bugs table below doesn't
   // already say, so a desk with nothing on it shows nothing at all.
   if (findings.length === 0) return null;
@@ -45,7 +48,19 @@ export const AgentWorkloadStrip: FC<{ findings: BugFinding[] }> = ({ findings })
                 tile.emphasis && tile.value > 0 ? "text-orange-700" : "text-typography-900"
               }`}
             >
-              {tile.value}
+              {/* Re-keyed on the value itself, so a poll that changes a count
+                  remounts this wrapper and replays a small pop-in — the same
+                  idiom as `SpecPatchFlash`, applied to a single number rather
+                  than a whole section. */}
+              <motion.span
+                key={tile.value}
+                initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="inline-block"
+              >
+                {tile.value}
+              </motion.span>
             </dd>
           </div>
         ))}

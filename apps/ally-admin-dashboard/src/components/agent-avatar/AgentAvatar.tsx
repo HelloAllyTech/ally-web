@@ -97,7 +97,15 @@ export const AgentAvatar: FC<AgentAvatarProps> = ({
         <span className="absolute -bottom-0.5 -right-0.5 flex">
           {animate && presence === "working" && (
             <span
-              className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${PRESENCE_COLORS[presence]}`}
+              className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping motion-reduce:animate-none ${PRESENCE_COLORS[presence]}`}
+            />
+          )}
+          {/* A slower, softer pulse for "on shift, nothing outstanding" —
+              distinct from the fast working ping so the two presences read
+              as different rhythms rather than the same animation recoloured. */}
+          {animate && presence === "on_shift" && (
+            <span
+              className={`absolute inline-flex h-full w-full rounded-full opacity-60 animate-breathe motion-reduce:animate-none ${PRESENCE_COLORS[presence]}`}
             />
           )}
           <span
