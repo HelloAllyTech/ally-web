@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +13,54 @@ interface GameItemPlayerProps {
 
 /** A game bundle is a static page served from the app's own public dir. */
 const gameUrl = (key: TrackGameKey) => `/games/${key.toLowerCase()}/index.html`;
+
+/**
+ * How tall a frame each game needs. A bundle sizes itself to whatever viewport
+ * it is given, so this is the one thing about a game the host has to know: the
+ * runner is a 150px canvas, a board game needs room for a board.
+ */
+const FRAME_HEIGHT: Record<TrackGameKey, string> = {
+  [TrackGameKey.TREX_RUNNER]: "h-[200px] sm:h-[280px]",
+  [TrackGameKey.TIC_TAC_TOE]: "h-[420px] sm:h-[440px]",
+  [TrackGameKey.MEMORY_MATCH]: "h-[380px] sm:h-[470px]",
+  // Taller than the rest: the puzzle spins, so the board needs the room its
+  // corners sweep through, and the level list opens into the same frame.
+  [TrackGameKey.CUB_N_PUP]: "h-[440px] sm:h-[560px]",
+};
+
+/**
+ * Words a bundle draws inside its own frame, by game.
+ *
+ * A bundle is a static page with no reach into the app, so it cannot read the
+ * learner's language for itself — anything it renders in words has to be handed
+ * to it on the `focus` message. The runner and the tic-tac-toe board are pure
+ * canvas and need nothing; the memory deck has a move counter and an
+ * end-of-round card, and the puzzle has a level list, a solved count and the
+ * lines that teach it, so those two get these. A bundle falls back to its own
+ * baked-in English if the host sends nothing, which keeps this list optional.
+ */
+const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
+  [TrackGameKey.MEMORY_MATCH]: [
+    "moves",
+    "restart",
+    "wonTitle",
+    "wonDetail",
+    "playAgain",
+    "cardLabel",
+  ],
+  [TrackGameKey.CUB_N_PUP]: [
+    "levels",
+    "close",
+    "nextLevel",
+    "solved",
+    "tutorial",
+    "hintDragToStar",
+    "hintRotate",
+    "hintFree",
+    "hintPivot",
+    "hintRotateLink",
+  ],
+};
 
 /** Messages a game bundle posts to us. Mirrors the bridge in each bundle. */
 interface GameMessage {
@@ -41,6 +89,23 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
   const [bestScore, setBestScore] = useState<number | null>(payload.bestScore);
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [recordGameResult] = useRecordGameResultMutation();
+
+  /**
+   * `skipInterpolation` because these are templates for the bundle to fill in,
+   * not finished sentences — without it i18next would resolve `{{moves}}` here
+   * against nothing and hand the frame a string with the number cut out.
+   */
+  const gameKey = payload.gameKey;
+  const frameStrings = useMemo(() => {
+    const names = FRAME_STRING_NAMES[gameKey];
+    if (!names) return undefined;
+    return Object.fromEntries(
+      names.map(name => [
+        name,
+        t(`tracks2.game.frameStrings.${gameKey}.${name}`, { skipInterpolation: true }),
+      ]),
+    );
+  }, [gameKey, t]);
 
   // The server already completed this item; tell the player so Next unlocks.
   const completion = payload.completion;
@@ -75,9 +140,10 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
 
       if (data.type === "ready") {
         // '*' because the frame's opaque origin matches no concrete target.
-        // The payload is a focus nudge and carries nothing worth protecting.
+        // The payload is a focus nudge plus display copy, neither of which is
+        // worth protecting.
         frameRef.current?.contentWindow?.postMessage(
-          { source: "ally-game-host", type: "focus" },
+          { source: "ally-game-host", type: "focus", strings: frameStrings },
           "*",
         );
       }
@@ -87,7 +153,7 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [handleRunFinished]);
+  }, [frameStrings, handleRunFinished]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -105,23 +171,23 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
               // No allow-same-origin: the bundle needs no storage or cookies,
               // and without it the frame cannot touch anything of ours.
               sandbox="allow-scripts"
-              // The canvas itself is 150px tall; the rest is breathing room,
-              // which a phone can spare less of.
-              className="block h-[200px] w-full border-0 sm:h-[280px]"
+              className={`block w-full border-0 ${FRAME_HEIGHT[payload.gameKey]}`}
             />
           </div>
 
-          <p className="text-center text-xs text-typography-500">{t("tracks2.game.controls")}</p>
+          <p className="text-center text-xs text-typography-500">
+            {t(`tracks2.game.controls.${payload.gameKey}`)}
+          </p>
 
           <div className="flex items-center justify-center gap-6 text-sm">
             {lastScore != null && (
               <span className="text-typography-600">
-                {t("tracks2.game.lastScore", { score: lastScore })}
+                {t(`tracks2.game.lastScore.${payload.gameKey}`, { score: lastScore })}
               </span>
             )}
             {bestScore != null && (
               <span className="font-medium text-typography-800">
-                {t("tracks2.game.bestScore", { score: bestScore })}
+                {t(`tracks2.game.bestScore.${payload.gameKey}`, { score: bestScore })}
               </span>
             )}
           </div>
