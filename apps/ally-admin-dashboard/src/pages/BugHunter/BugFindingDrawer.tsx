@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Button, DropdownField, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Button, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
@@ -15,11 +15,7 @@ import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { AgentAvatar } from "@components/agent-avatar";
 import { en } from "@constants";
-import {
-  BUG_FINDING_FIX_SESSION_START_STATUSES,
-  BUG_FIX_SESSION_REPOS,
-  BugFindingStatus,
-} from "@types";
+import { BUG_FINDING_FIX_SESSION_START_STATUSES, BugFindingStatus } from "@types";
 import { formatDate } from "@utils";
 
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
@@ -74,7 +70,6 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
     "approve" | "reject" | "fixSession" | "release" | null
   >(null);
   const [answerText, setAnswerText] = useState("");
-  const [sessionRepo, setSessionRepo] = useState<string | null>(null);
 
   // Both arrays are defaulted rather than read straight off the response. A
   // backend one release behind this build omits `steps` entirely, and reading
@@ -97,11 +92,6 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const canStartSession = finding
     ? BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
     : false;
-  // A bug nobody has matched to a codebase yet — the usual shape of a
-  // team-reported one. The agent needs to be told where to work, and guessing
-  // that from free text isn't a call to make on the admin's behalf.
-  const needsRepoChoice = Boolean(finding && !finding.repo);
-  const chosenRepo = finding?.repo ?? sessionRepo;
 
   const handleDecision = async () => {
     if (!confirmAction) return;
@@ -117,9 +107,8 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
   const handleStartFixSession = async () => {
     try {
-      await startFixSession({ id, repo: sessionRepo ?? undefined }).unwrap();
+      await startFixSession({ id }).unwrap();
       setConfirmAction(null);
-      setSessionRepo(null);
     } catch (error) {
       // The backend's own message is the useful one here — "Bug Hunter is
       // OFF", "not set up for fix sessions", a GitHub error verbatim — so it
@@ -505,45 +494,20 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
       {confirmAction === "fixSession" && (
         <ActionConfirmationPopup
           isOpen
-          onClose={() => {
-            setConfirmAction(null);
-            setSessionRepo(null);
-          }}
+          onClose={() => setConfirmAction(null)}
           title={en.bugHunter.drawerFixSessionConfirmTitle}
-          description={en.bugHunter.drawerFixSessionConfirmBody.replace(
-            "{repo}",
-            chosenRepo ?? "…",
-          )}
+          description={
+            finding?.repo
+              ? en.bugHunter.drawerFixSessionConfirmBody.replace("{repo}", finding.repo)
+              : en.bugHunter.drawerFixSessionConfirmBodyUnknownRepo
+          }
           primaryButton={{
             label: en.bugHunter.drawerFixSessionStart,
             onClick: handleStartFixSession,
-            // Without a repo there is nowhere to send the agent, so the
-            // confirm stays inert until one is picked.
-            disabled: isStartingSession || !chosenRepo,
+            disabled: isStartingSession,
           }}
-          secondaryButton={{
-            label: en.bugHunter.cancel,
-            onClick: () => {
-              setConfirmAction(null);
-              setSessionRepo(null);
-            },
-          }}
-        >
-          {needsRepoChoice && (
-            <div className="mt-4 text-left">
-              <DropdownField
-                label={sessionRepo ?? en.bugHunter.drawerFixSessionRepoLabel}
-                value={sessionRepo ?? ""}
-                options={[...BUG_FIX_SESSION_REPOS]}
-                onChange={value => setSessionRepo(value)}
-                hideSearch
-              />
-              <p className="text-xs text-typography-600 mt-1">
-                {en.bugHunter.drawerFixSessionRepoHelp}
-              </p>
-            </div>
-          )}
-        </ActionConfirmationPopup>
+          secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
+        />
       )}
 
       {confirmAction === "release" && (
