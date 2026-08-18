@@ -13,6 +13,12 @@ export enum TrackItemType {
   VIDEO = "VIDEO",
   JOURNAL = "JOURNAL",
   ANNOTATED_ARTIFACT = "ANNOTATED_ARTIFACT",
+  GAME = "GAME",
+}
+
+/** Games the app can serve; each maps to `public/games/<key>/index.html`. */
+export enum TrackGameKey {
+  TREX_RUNNER = "TREX_RUNNER",
 }
 
 /**
@@ -69,6 +75,8 @@ export interface TrackItemContentMeta {
   kind?: AnnotationArtifactKind;
   unitCount?: number;
   labelCount?: number;
+  // GAME
+  gameKey?: TrackGameKey;
 }
 
 export interface TrackDetailItem {
@@ -362,6 +370,21 @@ export interface StartAnnotationItemPayload extends StartTrackItemBase {
   lastResult: AnnotationAttemptResult | null;
 }
 
+/**
+ * A game completes the moment it is opened, so the payload carries the
+ * completion result the other players get back from a submit — the player
+ * reports it on mount and Next is live immediately.
+ */
+export interface StartGameItemPayload extends StartTrackItemBase {
+  type: TrackItemType.GAME;
+  gameKey: TrackGameKey;
+  intro: string | null;
+  /** Personal best across every run so far, or null before the first. */
+  bestScore: number | null;
+  playCount: number;
+  completion: TrackItemCompletionResult;
+}
+
 export type StartTrackItemResponse =
   | StartRoleplayItemPayload
   | StartCaseItemPayload
@@ -369,7 +392,8 @@ export type StartTrackItemResponse =
   | StartArticleItemPayload
   | StartVideoItemPayload
   | StartJournalItemPayload
-  | StartAnnotationItemPayload;
+  | StartAnnotationItemPayload
+  | StartGameItemPayload;
 
 // ---------------------------------------------------------------------------
 // Completion results

@@ -3,9 +3,11 @@ import {
   AnnotationRevealKey,
   AnnotationSettings,
   CompletionCriteria,
+  GameContent,
   QuizQuestionType,
   QuizSettings,
   TrackFormValues,
+  TrackGameKey,
   TrackItemType,
 } from "@types";
 
@@ -32,6 +34,7 @@ export const TRACK_ITEM_TYPE_LABELS: Record<TrackItemType, string> = {
   [TrackItemType.VIDEO]: "Video",
   [TrackItemType.JOURNAL]: "Journal",
   [TrackItemType.ANNOTATED_ARTIFACT]: "Annotation",
+  [TrackItemType.GAME]: "Game",
 };
 
 export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
@@ -42,6 +45,7 @@ export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
   [TrackItemType.VIDEO]: "Upload a video or embed a link",
   [TrackItemType.JOURNAL]: "Reflection prompts for the learner",
   [TrackItemType.ANNOTATED_ARTIFACT]: "Mark up a real transcript or note",
+  [TrackItemType.GAME]: "A short arcade break between heavier components",
 };
 
 export const QUIZ_QUESTION_TYPE_LABELS: Record<QuizQuestionType, string> = {
@@ -76,6 +80,35 @@ export const DEFAULT_COMPLETION_CRITERIA: Record<TrackItemType, CompletionCriter
   [TrackItemType.VIDEO]: { watchPct: DEFAULT_VIDEO_WATCH_PCT },
   [TrackItemType.JOURNAL]: {},
   [TrackItemType.ANNOTATED_ARTIFACT]: {},
+  // Games never gate progression, so there is nothing to configure.
+  [TrackItemType.GAME]: {},
+};
+
+/* ---- Games (GAME) ---- */
+
+/**
+ * The games an author can pick from. `key` must match a bundle the learner app
+ * serves from `public/games/<key>/`.
+ */
+export const TRACK_GAME_CATALOG: Array<{
+  key: TrackGameKey;
+  name: string;
+  description: string;
+  /** Roughly how long one run lasts, so an author can pace the section. */
+  typicalPlay: string;
+}> = [
+  {
+    key: TrackGameKey.TREX_RUNNER,
+    name: "T-Rex Runner",
+    description:
+      "The offline dinosaur game. Press space or tap to jump the cactus. Nothing to learn, which is the point — it is a breather.",
+    typicalPlay: "under a minute a run",
+  },
+];
+
+export const DEFAULT_GAME_CONTENT: GameContent = {
+  gameKey: TrackGameKey.TREX_RUNNER,
+  intro: "",
 };
 
 /* ---- Annotation (ANNOTATED_ARTIFACT) ---- */

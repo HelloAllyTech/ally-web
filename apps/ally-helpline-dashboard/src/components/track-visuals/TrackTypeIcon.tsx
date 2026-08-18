@@ -87,6 +87,15 @@ export const TrackTypeIcon: FC<TrackTypeIconProps> = ({ type, className = "w-5 h
           <path d="M13.5 19.5h3" />
         </svg>
       );
+    case TrackItemType.GAME:
+      // Gamepad
+      return (
+        <svg {...common}>
+          <path d="M7 12h4M9 10v4" />
+          <path d="M15.5 11.5h.01M17.5 13.5h.01" />
+          <path d="M17 7H7a5 5 0 0 0-5 5v1a4 4 0 0 0 7 2.6h6A4 4 0 0 0 22 13v-1a5 5 0 0 0-5-5z" />
+        </svg>
+      );
     default:
       return null;
   }

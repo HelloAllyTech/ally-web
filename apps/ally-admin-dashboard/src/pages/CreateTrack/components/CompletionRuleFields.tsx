@@ -21,7 +21,8 @@ const numberInput =
 /**
  * Per-item completion criteria editor. Renders only the fields the given item
  * type supports; quiz and annotation pass-scores live in their own settings
- * blocks (mirrored server-side) so they are intentionally absent here.
+ * blocks (mirrored server-side) so they are intentionally absent here, and a
+ * game has no completion rule at all — it completes the moment it is opened.
  */
 export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
   sectionIndex,
@@ -41,7 +42,8 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
   if (
     type === TrackItemType.CASE ||
     type === TrackItemType.QUIZ ||
-    type === TrackItemType.ANNOTATED_ARTIFACT
+    type === TrackItemType.ANNOTATED_ARTIFACT ||
+    type === TrackItemType.GAME
   ) {
     return null;
   }
