@@ -44,16 +44,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     <textarea value={value} onChange={onChange} placeholder={placeholder} />
   ),
   Tooltip: ({ children }: any) => <>{children}</>,
-  DropdownField: ({ options, onChange }: any) => (
-    <select data-testid="repo-picker" onChange={e => onChange(e.target.value)}>
-      <option value="">—</option>
-      {options.map((option: string) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  ),
   SidePanel: ({ open, title, children }: any) =>
     open ? (
       <div data-testid="side-panel">
@@ -129,29 +119,26 @@ describe("BugFindingDrawer — fix session", () => {
     expect(screen.getByText("Put me on it")).toBeInTheDocument();
   });
 
-  it("starts the session on confirm, with no repo when the bug already has one", async () => {
+  it("starts the session on confirm, without asking for a repo", async () => {
     renderDrawer(finding());
     fireEvent.click(screen.getByText("Put me on it"));
     fireEvent.click(screen.getByText("Start now"));
 
     await waitFor(() =>
-      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: undefined }),
+      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }),
     );
   });
 
-  it("makes the admin pick a repo when the bug has none, and blocks confirm until they do", async () => {
+  it("starts the session immediately even when the bug has no repo yet — Bug Hunter classifies it, not the admin", async () => {
     renderDrawer(finding({ repo: null }));
     fireEvent.click(screen.getByText("Put me on it"));
 
-    const confirm = screen.getByText("Start now");
-    expect(confirm).toBeDisabled();
-
-    fireEvent.change(screen.getByTestId("repo-picker"), { target: { value: "ally-web" } });
     expect(screen.getByText("Start now")).not.toBeDisabled();
+    expect(screen.queryByTestId("repo-picker")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Start now"));
     await waitFor(() =>
-      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: "ally-web" }),
+      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }),
     );
   });
 

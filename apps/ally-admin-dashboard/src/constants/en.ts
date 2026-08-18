@@ -2421,9 +2421,8 @@ export const en = {
     drawerFixSessionConfirmTitle: "Put Bug Hunter on this bug?",
     drawerFixSessionConfirmBody:
       "I'll work on this in {repo} on my own: a regression test first, then the smallest fix that makes it pass, then the full suite. If everything is green I open a PR and merge it — unless the fix touches migrations, auth or payments, which always stay a PR for you to review. I won't deploy anything in this step.",
-    drawerFixSessionRepoLabel: "Which repo should I open?",
-    drawerFixSessionRepoHelp:
-      "Nobody has matched this bug to a codebase yet, so pick the one I should work in. I'll remember it for this bug.",
+    drawerFixSessionConfirmBodyUnknownRepo:
+      "Nobody has matched this bug to a codebase yet — I'll figure out which repo it needs, then work on it there on my own: a regression test first, then the smallest fix that makes it pass, then the full suite. If everything is green I open a PR and merge it — unless the fix touches migrations, auth or payments, which always stay a PR for you to review. I won't deploy anything in this step.",
     // Deliberately not "Put me on it" again — the button that opened this
     // dialog says that, and two identical labels on screen at once make it
     // ambiguous which one you're confirming.
@@ -2484,6 +2483,17 @@ export const en = {
     // ── Run detail (expanded row) ────────────────────────────────────────────
     detailEventsTitle: "What I did",
     detailLoadFailed: "Couldn't load this sweep's timeline.",
+    // ── Pipeline rail (scan → verify → fix → review → merged → ship) ────────
+    pipelineRailLabel: "Pipeline stage",
+    pipelineStageScan: "Scan",
+    pipelineStageVerify: "Verify",
+    pipelineStageFix: "Fix",
+    pipelineStageReview: "Review",
+    pipelineStageMerged: "Merged",
+    pipelineStageShip: "Ship",
+    // ── Live clock (freshness readout next to the status pill) ──────────────
+    updatedJustNow: "Updated just now",
+    updatedSecondsAgo: "Updated {count}s ago",
   },
   evaluate: {
     title: "Ally Evaluation",
