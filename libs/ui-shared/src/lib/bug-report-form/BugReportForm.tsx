@@ -1,3 +1,9 @@
+"use client";
+
+// Stateful form, so client-only — and exported from the ui-shared barrel that
+// `apps/ally-web`'s server components import, which makes the directive
+// required rather than optional. See ArtifactLabelPalette for the same note.
+
 import { FC, useState } from "react";
 
 import {
