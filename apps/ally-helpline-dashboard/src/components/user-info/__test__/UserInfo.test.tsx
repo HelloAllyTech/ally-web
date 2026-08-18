@@ -33,6 +33,7 @@ vi.mock("@assets", () => ({
   Ally: (props: any) => <svg data-testid="ally-logo" {...props} />,
   DataPolicy: (props: any) => <svg data-testid="data-policy" {...props} />,
   ManageAccount: (props: any) => <svg data-testid="manage-account" {...props} />,
+  WarningTriangle: (props: any) => <svg data-testid="warning-triangle" {...props} />,
 }));
 
 // Mock constants

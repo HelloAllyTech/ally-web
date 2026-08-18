@@ -42,6 +42,9 @@ const STATE_KEYS: (keyof RoadmapViewState)[] = [
   // and serializeViewState skips undefined — so an old view does not become permanently dirty
   // just because this key now exists.
   "layout",
+  // Same reasoning: absent on every view saved before the source filter existed, and skipped
+  // when undefined, so it doesn't mark a pre-existing view dirty either.
+  "sourceFilter",
 ];
 
 /**

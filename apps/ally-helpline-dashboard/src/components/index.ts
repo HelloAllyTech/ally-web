@@ -47,6 +47,7 @@ import PracticeStreakHeatmap from "./practice-streak-heatmap";
 import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
+import ReportProblemModal from "./report-problem";
 import {
   ReviewCommentsSidepanel,
   ThreadsToShow,
@@ -144,6 +145,7 @@ export {
   SelectableText,
   LeaderboardUser,
   ReactionSelector,
+  ReportProblemModal,
   ThreadCard,
   CommentCard,
   EmojiStack,

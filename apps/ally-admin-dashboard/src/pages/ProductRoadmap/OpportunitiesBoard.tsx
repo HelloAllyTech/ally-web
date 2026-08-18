@@ -20,6 +20,7 @@ import {
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
   RoadmapOpportunity,
+  RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
@@ -30,7 +31,14 @@ import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
 import { useAllocateCoins } from "./useAllocateCoins";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
 import { pageRange } from "./utils/paging";
-import { STAGE_LABEL, STAGE_STYLE, typeLabel } from "./utils/stages";
+import {
+  isConsumerSourced,
+  SOURCE_BADGE_STYLE,
+  SOURCE_LABEL,
+  STAGE_LABEL,
+  STAGE_STYLE,
+  typeLabel,
+} from "./utils/stages";
 
 interface OpportunitiesBoardProps {
   listArgs: RoadmapOpportunitiesQuery;
@@ -46,6 +54,8 @@ interface OpportunitiesBoardProps {
   onTypeFilterChange: (value: RoadmapOpportunityType[]) => void;
   stageFilter: RoadmapOpportunityStage[];
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
+  sourceFilter: RoadmapOpportunitySource[];
+  onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
@@ -103,6 +113,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onTypeFilterChange,
   stageFilter,
   onStageFilterChange,
+  sourceFilter,
+  onSourceFilterChange,
   goalFilter,
   onGoalFilterChange,
   ownerFilter,
@@ -154,6 +166,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   const activeFilters = hasActiveFilters({
     typeFilter,
     stageFilter,
+    sourceFilter,
     goalFilter,
     ownerFilter,
     advanced,
@@ -168,6 +181,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         onTypeFilterChange={onTypeFilterChange}
         stageFilter={stageFilter}
         onStageFilterChange={onStageFilterChange}
+        sourceFilter={sourceFilter}
+        onSourceFilterChange={onSourceFilterChange}
         goalFilter={goalFilter}
         onGoalFilterChange={onGoalFilterChange}
         ownerFilter={ownerFilter}
@@ -277,9 +292,12 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                       {opportunity.description}
                     </div>
                     <div className="text-typography-secondary text-xs mt-1 flex gap-2">
-                      <span>
-                        {typeLabel(opportunity.type)}
-                      </span>
+                      <span>{typeLabel(opportunity.type)}</span>
+                      {isConsumerSourced(opportunity.source) && (
+                        <span className={`px-1.5 py-0.5 ${SOURCE_BADGE_STYLE}`}>
+                          {SOURCE_LABEL[opportunity.source]}
+                        </span>
+                      )}
                       {opportunity.commentCount > 0 && (
                         <span>· {opportunity.commentCount} comments</span>
                       )}

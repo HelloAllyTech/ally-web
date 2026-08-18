@@ -168,7 +168,6 @@ const UserInfo: FC<{
               <DataPolicy />
               {t("user.dataPolicy")}
             </button>
-            <button></button>
             <AppTooltip location={TooltipLocation.LOGOUT_BUTTON}>
               <button
                 data-testid="user-info-logout-button"

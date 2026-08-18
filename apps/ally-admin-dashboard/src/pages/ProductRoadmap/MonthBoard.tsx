@@ -19,6 +19,7 @@ import {
   RoadmapBoardResponse,
   RoadmapCoinBudget,
   RoadmapFacets,
+  RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
@@ -48,6 +49,8 @@ interface MonthBoardProps {
   onTypeFilterChange: (value: RoadmapOpportunityType[]) => void;
   stageFilter: RoadmapOpportunityStage[];
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
+  sourceFilter: RoadmapOpportunitySource[];
+  onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   ownerFilter: string[];
@@ -96,6 +99,8 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     onTypeFilterChange,
     stageFilter,
     onStageFilterChange,
+    sourceFilter,
+    onSourceFilterChange,
     goalFilter,
     onGoalFilterChange,
     ownerFilter,
@@ -123,6 +128,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
   const activeFilters = hasActiveFilters({
     typeFilter,
     stageFilter,
+    sourceFilter,
     goalFilter,
     ownerFilter,
     advanced,
@@ -178,6 +184,8 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
         onTypeFilterChange={onTypeFilterChange}
         stageFilter={stageFilter}
         onStageFilterChange={onStageFilterChange}
+        sourceFilter={sourceFilter}
+        onSourceFilterChange={onSourceFilterChange}
         goalFilter={goalFilter}
         onGoalFilterChange={onGoalFilterChange}
         ownerFilter={ownerFilter}
