@@ -16,6 +16,16 @@ export enum TrackItemType {
   VIDEO = "VIDEO",
   JOURNAL = "JOURNAL",
   ANNOTATED_ARTIFACT = "ANNOTATED_ARTIFACT",
+  GAME = "GAME",
+}
+
+/**
+ * Games available to drop into a course. Each key maps to a self-contained
+ * bundle the learner app serves from `public/games/<key>/`; adding one here
+ * without adding that folder gives the learner an empty frame.
+ */
+export enum TrackGameKey {
+  TREX_RUNNER = "TREX_RUNNER",
 }
 
 /* -------------------------------------------------------------------------- */
@@ -198,12 +208,24 @@ export interface AnnotationContent {
   settings: AnnotationSettings;
 }
 
+/**
+ * A game has no settings beyond which game it is: games are a break between
+ * the demanding parts of a course and deliberately never gate progression, so
+ * there is no score, threshold or attempt limit to configure.
+ */
+export interface GameContent {
+  gameKey: TrackGameKey;
+  /** Optional framing shown above the game. */
+  intro?: string;
+}
+
 export type TrackItemContent =
   | ArticleContent
   | VideoContent
   | JournalContent
   | QuizContent
-  | AnnotationContent;
+  | AnnotationContent
+  | GameContent;
 
 export interface CompletionCriteria {
   /** Roleplay, 0 or above (score depends on configured behaviours and can exceed 100). */
@@ -380,6 +402,7 @@ export interface TrackItemFormValue {
   journal?: JournalContent;
   quiz?: QuizContent;
   annotation?: AnnotationFormValue;
+  game?: GameContent;
   completionCriteria: CompletionCriteria;
 }
 

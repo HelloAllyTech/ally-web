@@ -1443,7 +1443,8 @@
       "lines": "{{count}} line",
       "lines_other": "{{count}} lines",
       "labels": "{{count}} label",
-      "labels_other": "{{count}} labels"
+      "labels_other": "{{count}} labels",
+      "game": "Game · just for fun"
     },
     "continueLearning": {
       "label": "Continue learning"
@@ -1563,6 +1564,13 @@
         "notHere": "{{count}} marked in error",
         "notHere_other": "{{count}} marked in error"
       }
+    },
+    "game": {
+      "frameTitle": "Game",
+      "controls": "Press space or tap to jump. Nothing here is scored.",
+      "lastScore": "This run: {{score}}",
+      "bestScore": "Your best: {{score}}",
+      "optional": "Play as long as you like, or skip straight on — either way you're good to continue."
     }
   }
 }

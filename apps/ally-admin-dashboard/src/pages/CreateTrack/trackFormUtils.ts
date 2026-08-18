@@ -1,6 +1,7 @@
 import {
   DEFAULT_ANNOTATION_SETTINGS,
   DEFAULT_COMPLETION_CRITERIA,
+  DEFAULT_GAME_CONTENT,
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_VIDEO_WATCH_PCT,
   itemNodeKey,
@@ -19,6 +20,7 @@ import {
   ArticleContent,
   CompletionCriteria,
   FillBlankQuestion,
+  GameContent,
   JournalContent,
   MatchingQuestion,
   McqMultiQuestion,
@@ -91,6 +93,8 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
           sourceText: "",
         },
       };
+    case TrackItemType.GAME:
+      return { ...base, game: { ...DEFAULT_GAME_CONTENT } };
     case TrackItemType.ROLEPLAY:
       return { ...base, scenarioId: null };
     case TrackItemType.CASE:
@@ -553,6 +557,14 @@ const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureI
     case TrackItemType.ANNOTATED_ARTIFACT:
       payload.content = item.annotation ? serializeAnnotation(item.annotation) : undefined;
       break;
+    case TrackItemType.GAME:
+      payload.content = item.game
+        ? {
+            gameKey: item.game.gameKey,
+            ...(isBlank(item.game.intro) ? {} : { intro: item.game.intro }),
+          }
+        : undefined;
+      break;
   }
 
   const criteria = compactCriteria(item.completionCriteria);
@@ -630,6 +642,14 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
             case TrackItemType.QUIZ: {
               const quiz = item.content as QuizContent | undefined;
               formItem.quiz = quiz ?? { settings: { ...DEFAULT_QUIZ_SETTINGS }, questions: [] };
+              break;
+            }
+            case TrackItemType.GAME: {
+              const game = item.content as GameContent | undefined;
+              formItem.game = {
+                gameKey: game?.gameKey ?? DEFAULT_GAME_CONTENT.gameKey,
+                intro: game?.intro ?? "",
+              };
               break;
             }
             case TrackItemType.ANNOTATED_ARTIFACT: {

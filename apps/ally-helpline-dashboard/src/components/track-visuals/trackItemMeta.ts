@@ -45,6 +45,10 @@ export const getTrackItemMeta = (item: TrackDetailItem, t: TFunction): string =>
     }
     case TrackItemType.CASE:
       return t("tracks2.meta.case");
+    case TrackItemType.GAME:
+      // No score or threshold in the meta line — there isn't one, and hinting
+      // at one would make an optional break look like another hurdle.
+      return t("tracks2.meta.game");
     case TrackItemType.ANNOTATED_ARTIFACT: {
       const parts: string[] = [
         meta?.kind === "DOCUMENT"

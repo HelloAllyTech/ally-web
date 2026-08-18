@@ -119,6 +119,7 @@ export const ApiEndpoints = {
     QUIZ_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/quiz-attempts`,
     QUIZ_REGRADE: (itemId: string, attemptId: string) =>
       `/v1/learn/tracks/items/${itemId}/quiz-attempts/${attemptId}/regrade`,
+    GAME_RESULT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/game-result`,
     JOURNAL_DRAFT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal`,
     JOURNAL_SUBMIT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal/submit`,
     ANNOTATION_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/annotation-attempts`,
