@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { en } from "@constants";
 import { BugFindingStatus } from "@types";
+
+/** Matches `fadeInOut`'s configured duration in tailwind.config.js — the class loops infinite, so the flash is capped to one cycle by removing it after this long. */
+const STATUS_FLASH_DURATION_MS = 1500;
 
 const STYLES: Record<BugFindingStatus, string> = {
   [BugFindingStatus.NEW]: "bg-neutral-100 text-typography-700 border-border-light",
@@ -44,10 +47,36 @@ const LABELS: Record<BugFindingStatus, string> = {
   [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
 };
 
-export const BugFindingStatusBadge: React.FC<{ status: BugFindingStatus }> = ({ status }) => (
-  <span
-    className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border ${STYLES[status]}`}
-  >
-    {LABELS[status]}
-  </span>
-);
+/**
+ * The status pill, plus a one-cycle flash whenever `status` actually changes
+ * (not on mount — a table full of badges shouldn't flash on first load, only
+ * a row that just moved).
+ */
+export const BugFindingStatusBadge: React.FC<{ status: BugFindingStatus }> = ({ status }) => {
+  const [flash, setFlash] = useState(false);
+  const hasMountedRef = useRef(false);
+  const prevStatusRef = useRef(status);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      prevStatusRef.current = status;
+      return undefined;
+    }
+    if (prevStatusRef.current === status) return undefined;
+    prevStatusRef.current = status;
+    setFlash(true);
+    const timer = setTimeout(() => setFlash(false), STATUS_FLASH_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  return (
+    <span
+      className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border ${
+        STYLES[status]
+      } ${flash ? "animate-fadeInOut motion-reduce:animate-none" : ""}`}
+    >
+      {LABELS[status]}
+    </span>
+  );
+};

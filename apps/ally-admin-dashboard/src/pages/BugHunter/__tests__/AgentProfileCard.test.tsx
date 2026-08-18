@@ -6,6 +6,7 @@ vi.mock("@api", () => ({
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugFindingsQuery: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
+  useTriggerBugHuntSweepMutation: vi.fn(),
 }));
 
 vi.mock("@assets", () => ({
@@ -41,6 +42,17 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
   Switch: ({ text }: any) => <span>{text}</span>,
   Tooltip: ({ children }: any) => <>{children}</>,
+  Button: ({ children, onClick, disabled }: any) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+  Select: ({ id, value, onChange, children, labelText }: any) => (
+    <select id={id} aria-label={labelText} value={value} onChange={onChange}>
+      {children}
+    </select>
+  ),
+  SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
 }));
 
 import * as api from "@api";
@@ -49,6 +61,7 @@ import { BugFinding, BugFindingStatus, BugHunterMode, BugHuntRunStatus } from "@
 import { AgentProfileCard } from "../AgentProfileCard";
 
 const updateSettings = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+const triggerSweep = vi.fn(() => ({ unwrap: () => Promise.resolve({ id: "run-1" }) }));
 
 const mockSettings = (mode = BugHunterMode.OFF, overrides: Record<string, unknown> = {}) => {
   (api.useGetBugHunterSettingsQuery as any).mockReturnValue({
@@ -83,6 +96,10 @@ describe("AgentProfileCard", () => {
     mockRuns();
     (api.useUpdateBugHunterSettingsMutation as any).mockReturnValue([
       updateSettings,
+      { isLoading: false },
+    ]);
+    (api.useTriggerBugHuntSweepMutation as any).mockReturnValue([
+      triggerSweep,
       { isLoading: false },
     ]);
   });
@@ -187,5 +204,66 @@ describe("AgentProfileCard", () => {
     render(<AgentProfileCard />);
 
     expect(screen.queryByTestId("mode-switcher")).not.toBeInTheDocument();
+  });
+
+  // ── Sweeping on demand ───────────────────────────────────────────────────
+  // The card has always claimed Bug Hunter works "whenever you ask". Until this
+  // control existed, nothing could ask: there was no cron, and the only route
+  // that opened a run was api-key-only.
+  describe("asking for a sweep", () => {
+    it("asks before starting one, and starts nothing until confirmed", () => {
+      mockSettings(BugHunterMode.MANUAL);
+      render(<AgentProfileCard />);
+
+      fireEvent.click(screen.getByText("Start a sweep"));
+      expect(screen.getByTestId("confirm-popup")).toHaveTextContent(
+        "Start a sweep of ally-be?",
+      );
+      expect(triggerSweep).not.toHaveBeenCalled();
+    });
+
+    it("sweeps the repo the admin picked, not always the first one", async () => {
+      mockSettings(BugHunterMode.MANUAL);
+      render(<AgentProfileCard />);
+
+      fireEvent.change(screen.getByLabelText("Sweep a repo"), {
+        target: { value: "ally-ai-learn" },
+      });
+      fireEvent.click(screen.getByText("Start a sweep"));
+      fireEvent.click(screen.getByText("Start it"));
+
+      await waitFor(() =>
+        expect(triggerSweep).toHaveBeenCalledWith({ repo: "ally-ai-learn", deep: false }),
+      );
+    });
+
+    it("passes the deep flag only when asked, since it costs much more", async () => {
+      mockSettings(BugHunterMode.AI);
+      render(<AgentProfileCard />);
+
+      fireEvent.click(screen.getByLabelText("Read the whole repo"));
+      fireEvent.click(screen.getByText("Start a sweep"));
+      fireEvent.click(screen.getByText("Start it"));
+
+      await waitFor(() =>
+        expect(triggerSweep).toHaveBeenCalledWith({ repo: "ally-be", deep: true }),
+      );
+    });
+
+    it("cannot be pressed while Bug Hunter is off duty", () => {
+      // The backend refuses too, recording a skipped run — this just avoids
+      // offering an action that cannot happen.
+      mockSettings(BugHunterMode.OFF);
+      render(<AgentProfileCard />);
+
+      expect(screen.getByText("Start a sweep")).toBeDisabled();
+    });
+
+    it("is hidden entirely when settings failed to load", () => {
+      mockSettings(BugHunterMode.OFF, { data: undefined, isError: true });
+      render(<AgentProfileCard />);
+
+      expect(screen.queryByText("Start a sweep")).not.toBeInTheDocument();
+    });
   });
 });

@@ -408,6 +408,7 @@ export const ApiEndpoints = {
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
     RUNS: "/v1/bug-hunter/runs",
+    RUNS_TRIGGER: "/v1/bug-hunter/runs/trigger",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
     RUN_STREAM: (id: string) => `/v1/bug-hunter/runs/${id}/stream`,
     FINDINGS: "/v1/bug-hunter/findings",

@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import {
   Select,
@@ -21,9 +21,18 @@ import { en } from "@constants";
 import { BugFinding, BugFindingStatus } from "@types";
 import { formatDate } from "@utils";
 
+import { BrailleSpinner } from "./BrailleSpinner";
 import { BugFindingDrawer } from "./BugFindingDrawer";
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
+
+/** Statuses where Bug Hunter is actively moving the bug right now — the spinner rides along wherever this shows up. */
+const MID_FLIGHT_STATUSES: BugFindingStatus[] = [
+  BugFindingStatus.QUEUED,
+  BugFindingStatus.FIXING,
+  BugFindingStatus.COORDINATING,
+  BugFindingStatus.RELEASING,
+];
 
 const STATUS_FILTER_VALUES: (BugFindingStatus | "all")[] = [
   "all",
@@ -83,6 +92,31 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ focusFindingId, on
   );
 
   const findings: BugFinding[] = data?.items ?? [];
+
+  // Which rows just showed up, so they can get a one-time fade-in — never on
+  // the first successful load, only on a poll that grew the list. `null`
+  // means "haven't seen a real response yet"; once set, it's the id set from
+  // the previous render to diff the new one against.
+  const seenIdsRef = useRef<Set<string> | null>(null);
+  const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!data) return undefined;
+    const currentIds = new Set(findings.map(finding => finding.id));
+    if (seenIdsRef.current === null) {
+      seenIdsRef.current = currentIds;
+      return undefined;
+    }
+    const fresh = new Set<string>();
+    currentIds.forEach(id => {
+      if (!seenIdsRef.current!.has(id)) fresh.add(id);
+    });
+    seenIdsRef.current = currentIds;
+    if (fresh.size === 0) return undefined;
+    setFreshIds(fresh);
+    const timer = setTimeout(() => setFreshIds(new Set()), 250);
+    return () => clearTimeout(timer);
+  }, [data]);
 
   return (
     <div>
@@ -158,7 +192,9 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ focusFindingId, on
             {findings.map(finding => (
               <TableRow
                 key={finding.id}
-                className="border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-neutral-50"
+                className={`border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-neutral-50 ${
+                  freshIds.has(finding.id) ? "animate-fadeIn motion-reduce:animate-none" : ""
+                }`}
                 onClick={() => setSelectedId(finding.id)}
               >
                 <TableCell className="py-3 pr-4 max-w-[360px] truncate">{finding.title}</TableCell>
@@ -172,7 +208,12 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ focusFindingId, on
                     : en.bugHunter.findingSeverityNone}
                 </TableCell>
                 <TableCell className="py-3 pr-4">
-                  <BugFindingStatusBadge status={finding.status} />
+                  <span className="inline-flex items-center gap-1.5">
+                    <BugFindingStatusBadge status={finding.status} />
+                    {MID_FLIGHT_STATUSES.includes(finding.status) && (
+                      <BrailleSpinner className="text-amber-600" />
+                    )}
+                  </span>
                 </TableCell>
                 <TableCell className="py-3 pr-4 whitespace-nowrap">
                   {formatDate(finding.createdAt)}
