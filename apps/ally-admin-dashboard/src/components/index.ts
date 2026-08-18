@@ -1,3 +1,4 @@
+export * from "./agent-avatar";
 export * from "./app-tooltip";
 export * from "./button";
 export * from "./input";

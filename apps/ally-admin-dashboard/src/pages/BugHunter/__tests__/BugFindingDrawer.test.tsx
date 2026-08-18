@@ -126,13 +126,13 @@ describe("BugFindingDrawer — fix session", () => {
 
   it("offers a fix session on a new, untriaged bug — the whole point of the button", () => {
     renderDrawer(finding());
-    expect(screen.getByText("Start fix session")).toBeInTheDocument();
+    expect(screen.getByText("Put me on it")).toBeInTheDocument();
   });
 
   it("starts the session on confirm, with no repo when the bug already has one", async () => {
     renderDrawer(finding());
-    fireEvent.click(screen.getByText("Start fix session"));
-    fireEvent.click(screen.getByText("Start session"));
+    fireEvent.click(screen.getByText("Put me on it"));
+    fireEvent.click(screen.getByText("Start now"));
 
     await waitFor(() =>
       expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: undefined }),
@@ -141,15 +141,15 @@ describe("BugFindingDrawer — fix session", () => {
 
   it("makes the admin pick a repo when the bug has none, and blocks confirm until they do", async () => {
     renderDrawer(finding({ repo: null }));
-    fireEvent.click(screen.getByText("Start fix session"));
+    fireEvent.click(screen.getByText("Put me on it"));
 
-    const confirm = screen.getByText("Start session");
+    const confirm = screen.getByText("Start now");
     expect(confirm).toBeDisabled();
 
     fireEvent.change(screen.getByTestId("repo-picker"), { target: { value: "ally-web" } });
-    expect(screen.getByText("Start session")).not.toBeDisabled();
+    expect(screen.getByText("Start now")).not.toBeDisabled();
 
-    fireEvent.click(screen.getByText("Start session"));
+    fireEvent.click(screen.getByText("Start now"));
     await waitFor(() =>
       expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: "ally-web" }),
     );
@@ -157,24 +157,24 @@ describe("BugFindingDrawer — fix session", () => {
 
   it("hides the button while a session is already in flight", () => {
     renderDrawer(finding({ status: BugFindingStatus.FIXING }));
-    expect(screen.queryByText("Start fix session")).not.toBeInTheDocument();
+    expect(screen.queryByText("Put me on it")).not.toBeInTheDocument();
   });
 
   it("offers a retry, worded as such, after a failed attempt", () => {
     renderDrawer(finding({ status: BugFindingStatus.FAILED }));
-    expect(screen.getByText("Try fixing again")).toBeInTheDocument();
+    expect(screen.getByText("Ask me to try again")).toBeInTheDocument();
   });
 
   it("explains the wait while queued rather than showing an idle drawer", () => {
     renderDrawer(finding({ status: BugFindingStatus.QUEUED }));
-    expect(screen.getByText(/waiting for the runner/i)).toBeInTheDocument();
+    expect(screen.getByText(/waiting for a runner/i)).toBeInTheDocument();
   });
 
   it("links to the running session once the backend has correlated it", () => {
     renderDrawer(
       finding({ status: BugFindingStatus.FIXING, sessionRunUrl: "https://github.com/run/1" }),
     );
-    expect(screen.getByText("Watch it work")).toHaveAttribute("href", "https://github.com/run/1");
+    expect(screen.getByText("Watch me work")).toHaveAttribute("href", "https://github.com/run/1");
   });
 
   it("surfaces the backend's own refusal message rather than a generic one", async () => {
@@ -184,8 +184,8 @@ describe("BugFindingDrawer — fix session", () => {
     });
     renderDrawer(finding());
 
-    fireEvent.click(screen.getByText("Start fix session"));
-    fireEvent.click(screen.getByText("Start session"));
+    fireEvent.click(screen.getByText("Put me on it"));
+    fireEvent.click(screen.getByText("Start now"));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Bug Hunter is OFF."));
   });
@@ -270,7 +270,7 @@ describe("BugFindingDrawer — release to production", () => {
         releasedAt: "2026-08-17",
       }),
     );
-    expect(screen.getByText(/Live in production as v1\.4\.2/)).toBeInTheDocument();
+    expect(screen.getByText(/live in production as v1\.4\.2/i)).toBeInTheDocument();
     expect(screen.getByText(/Released by user #7/)).toBeInTheDocument();
   });
 });
@@ -316,12 +316,12 @@ describe("BugFindingDrawer — multi-repo plan", () => {
 
   it("says the order matters, since that is the whole reason for the plan", () => {
     renderDrawer(finding({ status: BugFindingStatus.COORDINATING, steps }));
-    expect(screen.getByText(/releases them in the same order/i)).toBeInTheDocument();
+    expect(screen.getByText(/release them in the same order/i)).toBeInTheDocument();
   });
 
   it("offers no fix-session button on a coordinated parent — Bug Hunter drives it", () => {
     renderDrawer(finding({ status: BugFindingStatus.COORDINATING, steps }));
-    expect(screen.queryByText("Start fix session")).not.toBeInTheDocument();
+    expect(screen.queryByText("Put me on it")).not.toBeInTheDocument();
   });
 
   it("offers one release for the whole sequence once every step is merged", () => {
@@ -374,7 +374,7 @@ describe("BugFindingDrawer — a backend older than this build", () => {
       screen.getByText("The external emergency-services link renders unstyled."),
     ).toBeInTheDocument();
     // The timeline degrades to its empty state rather than taking the page down.
-    expect(screen.getByText(/No activity yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/haven.t touched this one yet/i)).toBeInTheDocument();
     // And no plan block, since an absent step list means the same as an empty one.
     expect(screen.queryByText(/This fix spans/)).not.toBeInTheDocument();
   });

@@ -21,6 +21,10 @@ vi.mock("@api", () => ({
     reducer: (state = {}) => state,
     middleware: () => (next: any) => (action: any) => next(action),
   },
+  // The Bug Hunter tab carries a waiting-on-you badge that queries this. It is
+  // not in this test's nav items, so nothing renders it today — stubbed anyway
+  // so adding that tab to the list here doesn't fail on a missing mock export.
+  useGetBugHunterNotificationsQuery: () => ({ data: undefined }),
 }));
 
 import { store } from "../../../store";
@@ -247,5 +251,4 @@ describe("Sidebar", () => {
     expect(screen.getByText("Translations")).toBeInTheDocument();
     expect(screen.getByText("Users")).toBeInTheDocument();
   });
-
 });

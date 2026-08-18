@@ -18,8 +18,18 @@ import sidebarSource from "../Sidebar.tsx?raw";
  * touched.
  */
 describe("sidebar icons", () => {
+  // Scoped to renderIcon's own body. Sidebar.tsx now holds a second switch over the same
+  // SIDEBAR_ITEMS keys (renderBadge, for the Bug Hunter waiting-on-you count), and matching
+  // the whole file would let a badge case satisfy the "this item has an icon" invariant — the
+  // exact silent-omission bug this file exists to catch.
+  const renderIconSource = (() => {
+    const start = sidebarSource.indexOf("const renderIcon");
+    const end = sidebarSource.indexOf("const renderBadge", start);
+    return sidebarSource.slice(start, end === -1 ? undefined : end);
+  })();
+
   const iconCases = new Set(
-    [...sidebarSource.matchAll(/case SIDEBAR_ITEMS\.([A-Z_0-9]+):/g)].map(m => m[1]),
+    [...renderIconSource.matchAll(/case SIDEBAR_ITEMS\.([A-Z_0-9]+):/g)].map(m => m[1]),
   );
 
   const declaredItems = (() => {
@@ -46,7 +56,9 @@ describe("sidebar icons", () => {
   it("uses a different icon for CloudWatch logs than for roleplay session logs", () => {
     // Two log surfaces sharing one glyph are indistinguishable in the collapsed sidebar.
     const iconFor = (id: string) =>
-      sidebarSource.match(new RegExp(`case SIDEBAR_ITEMS\\.${id}:\\s*\\n\\s*return <(\\w+)`))?.[1];
+      renderIconSource.match(
+        new RegExp(`case SIDEBAR_ITEMS\\.${id}:\\s*\\n\\s*return <(\\w+)`),
+      )?.[1];
 
     expect(iconFor("LOGS")).toBeTruthy();
     expect(iconFor("ROLEPLAY_SESSION_LOGS")).toBeTruthy();
