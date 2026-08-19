@@ -26,6 +26,7 @@ const FRAME_HEIGHT: Record<TrackGameKey, string> = {
   // Taller than the rest: the puzzle spins, so the board needs the room its
   // corners sweep through, and the level list opens into the same frame.
   [TrackGameKey.CUB_N_PUP]: "h-[440px] sm:h-[560px]",
+  [TrackGameKey.SNAKE]: "h-[400px] sm:h-[440px]",
 };
 
 /**

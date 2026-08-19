@@ -29,6 +29,7 @@ export enum TrackGameKey {
   TIC_TAC_TOE = "TIC_TAC_TOE",
   MEMORY_MATCH = "MEMORY_MATCH",
   CUB_N_PUP = "CUB_N_PUP",
+  SNAKE = "SNAKE",
 }
 
 /* -------------------------------------------------------------------------- */

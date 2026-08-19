@@ -1544,19 +1544,22 @@
         "TREX_RUNNER": "Press space or tap to jump. Nothing here is scored.",
         "TIC_TAC_TOE": "Click or tap a square to play. Nothing here is scored.",
         "MEMORY_MATCH": "Flip two cards to find a pair. The fewer moves it takes, the closer you get to a perfect eight-move round — which is all the score is, and it counts towards nothing.",
-        "CUB_N_PUP": "Drag the cub along the links to the star. Drag anywhere else to turn the whole grid. Boards you solve are counted, and the count goes nowhere."
+        "CUB_N_PUP": "Drag the cub along the links to the star. Drag anywhere else to turn the whole grid. Boards you solve are counted, and the count goes nowhere.",
+        "SNAKE": "Swipe or use arrow keys to steer. Nothing here is scored."
       },
       "lastScoreByGame": {
         "TREX_RUNNER": "This run: {{score}}",
         "TIC_TAC_TOE": "Wins this sitting: {{score}}",
         "MEMORY_MATCH": "This round: {{score}}% of a perfect round",
-        "CUB_N_PUP": "Solved this sitting: {{score}}"
+        "CUB_N_PUP": "Solved this sitting: {{score}}",
+        "SNAKE": "This run: {{score}}"
       },
       "bestScoreByGame": {
         "TREX_RUNNER": "Your best: {{score}}",
         "TIC_TAC_TOE": "Your best: {{score}}",
         "MEMORY_MATCH": "Your best: {{score}}%",
-        "CUB_N_PUP": "Your best: {{score}} boards"
+        "CUB_N_PUP": "Your best: {{score}} boards",
+        "SNAKE": "Your best: {{score}}"
       },
       "optional": "Play as long as you like, or skip straight on — either way you're good to continue.",
       "frameStrings": {
