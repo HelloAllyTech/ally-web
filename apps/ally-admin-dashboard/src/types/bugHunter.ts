@@ -13,10 +13,10 @@ export enum BugHuntTrigger {
 /**
  * Repos a fix session can run in — i.e. those carrying `bug-fix-session.yml`.
  * Mirrors ally-be's BUG_FIX_SESSION_REPOS; the admin picks from these when the
- * bug has no repo of its own yet. ally-mobile is absent on purpose: it has no
- * dispatchable fix-session workflow.
+ * bug has no repo of its own yet. ally-mobile is included but never
+ * auto-merges — Bug Hunter opens a PR there and a human always merges it.
  */
-export const BUG_FIX_SESSION_REPOS = ["ally-be", "ally-web", "ally-ai", "ally-ai-learn"] as const;
+export const BUG_FIX_SESSION_REPOS = ["ally-be", "ally-web", "ally-ai", "ally-ai-learn", "ally-mobile"] as const;
 
 export enum BugHuntRunStatus {
   RUNNING = "running",
