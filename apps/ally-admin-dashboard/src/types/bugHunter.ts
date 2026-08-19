@@ -243,6 +243,9 @@ export interface BugHuntRun {
   dismissedCount: number;
   /** USD, snapshotted from llm_usage at close time — not a live figure while RUNNING. */
   totalTokenCostUsd: string;
+  /** Raw token counts behind totalTokenCostUsd. Null for runs closed before this was tracked. */
+  totalInputTokens: number | null;
+  totalOutputTokens: number | null;
   createdAt: string;
 }
 

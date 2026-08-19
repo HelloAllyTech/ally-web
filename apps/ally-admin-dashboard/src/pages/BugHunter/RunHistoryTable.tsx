@@ -25,6 +25,12 @@ const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.FIX_SESSION]: en.bugHunter.triggerFixSession,
 };
 
+/** "—" for runs closed before token counts were tracked, not just cost. */
+const formatTokens = (input: number | null, output: number | null): string =>
+  input == null || output == null
+    ? "—"
+    : `${input.toLocaleString()} in / ${output.toLocaleString()} out`;
+
 /** A column header with a help tooltip — the pattern from the ally-web admin tooltip convention, applied per-column instead of per-field. */
 const HeaderWithTooltip: FC<{ label: string; tooltip: string }> = ({ label, tooltip }) => (
   <span className="inline-flex items-center gap-1">
@@ -42,7 +48,7 @@ const RunDetailRow: FC<{ runId: string }> = ({ runId }) => {
 
   return (
     <TableRow className="bg-neutral-50">
-      <TableCell colSpan={9} className="py-3 px-4">
+      <TableCell colSpan={10} className="py-3 px-4">
         <p className="text-xs font-semibold text-typography-700 mb-2">
           {en.bugHunter.detailEventsTitle}
         </p>
@@ -171,6 +177,12 @@ export const RunHistoryTable: FC = () => {
                 />
               </TableHeader>
               <TableHeader className="py-3 pr-4 font-medium">
+                <HeaderWithTooltip
+                  label={en.bugHunter.columnTokens}
+                  tooltip={en.bugHunter.columnTokensTooltip}
+                />
+              </TableHeader>
+              <TableHeader className="py-3 pr-4 font-medium">
                 {en.bugHunter.columnStarted}
               </TableHeader>
             </TableRow>
@@ -209,6 +221,9 @@ export const RunHistoryTable: FC = () => {
                   <TableCell className="py-3 pr-4">{run.prOpenedCount}</TableCell>
                   <TableCell className="py-3 pr-4">{run.dismissedCount}</TableCell>
                   <TableCell className="py-3 pr-4">${run.totalTokenCostUsd}</TableCell>
+                  <TableCell className="py-3 pr-4 whitespace-nowrap">
+                    {formatTokens(run.totalInputTokens, run.totalOutputTokens)}
+                  </TableCell>
                   <TableCell className="py-3 pr-4 whitespace-nowrap">
                     {formatDate(run.createdAt)}
                   </TableCell>
