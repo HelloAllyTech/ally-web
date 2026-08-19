@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { RoadmapCoinBudget, RoadmapOpportunity } from "@types";
+import { RoadmapCoinBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
 
 import { clampCoins, isAllocatable, remainingWithPending } from "./utils/coins";
 
@@ -87,9 +87,11 @@ export const CoinAllocator: React.FC<CoinAllocatorProps> = ({
   if (locked) {
     const reason = isAllocatable(opportunity)
       ? "You do not have permission to allocate coins"
-      : `Coins can only go to new opportunities — this one is ${
-          STAGE_LABEL[opportunity.stage] ?? opportunity.stage
-        }. Existing votes are kept.`;
+      : opportunity.type === RoadmapOpportunityType.BUG
+        ? "Coins can't be allocated to bug reports. Existing votes are kept."
+        : `Coins can only go to new opportunities — this one is ${
+            STAGE_LABEL[opportunity.stage] ?? opportunity.stage
+          }. Existing votes are kept.`;
     return (
       // align="bottom" because the plain Carbon Tooltip has no autoAlign and renders inline;
       // top-aligned it clips inside the table's scroll container.
