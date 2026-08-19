@@ -1,6 +1,8 @@
 import { en } from "@constants";
 import { BugFinding, BugFindingStatus, BugHunterMode, BugHuntRun, BugHuntRunStatus } from "@types";
 
+import { IN_FLIGHT_STATUSES, PROBLEM_STATUSES, WAITING_ON_YOU_STATUSES } from "./lifecycleBucket";
+
 /**
  * Who Bug Hunter is, and how it speaks.
  *
@@ -53,31 +55,13 @@ export interface AgentStatus {
   detail: string;
 }
 
-/** Findings that have stopped and are waiting on a person. */
-const WAITING_ON_YOU_STATUSES: BugFindingStatus[] = [
-  BugFindingStatus.PENDING_APPROVAL,
-  BugFindingStatus.NEEDS_INPUT,
-];
-
-/** Findings whose last job went red. */
-const PROBLEM_STATUSES: BugFindingStatus[] = [
-  BugFindingStatus.FAILED,
-  BugFindingStatus.RELEASE_FAILED,
-];
-
-/** Findings it is actively moving right now. */
-const IN_FLIGHT_STATUSES: BugFindingStatus[] = [
-  BugFindingStatus.QUEUED,
-  BugFindingStatus.FIXING,
-  BugFindingStatus.COORDINATING,
-  BugFindingStatus.RELEASING,
-];
-
-/** Merged or in review — done with, but not yet in front of users. */
-const IN_REVIEW_STATUSES: BugFindingStatus[] = [
-  BugFindingStatus.PR_OPENED,
-  BugFindingStatus.MERGED,
-];
+/**
+ * The status groups these functions classify by now live in
+ * `lifecycleBucket.ts`, which the bugs table and the workload strip read the
+ * same definitions from. They used to be four private arrays in this file, and
+ * a second copy grew next to the table's filter — which is how a status pill
+ * and a workload tile end up disagreeing about the same number.
+ */
 
 const countOf = (findings: BugFinding[], statuses: BugFindingStatus[]) =>
   findings.filter(finding => statuses.includes(finding.status)).length;
@@ -169,44 +153,21 @@ export const deriveAgentStatus = ({
   };
 };
 
-export interface AgentWorkload {
-  /** Bugs it is moving right now. */
-  inFlight: number;
-  /** Bugs stopped on a human decision. */
-  waitingOnYou: number;
-  /** Fixes written and awaiting review, or merged and awaiting release. */
-  inReview: number;
-  /** Fixes that reached production inside the window. */
-  shipped: number;
-}
-
-/** How far back "shipped" looks. A week is the span of a standup answer. */
-export const SHIPPED_WINDOW_DAYS = 7;
-
 /**
- * The four numbers on the character's desk.
+ * The four-number workload summary that used to live here (`summariseWorkload`,
+ * `AgentWorkload`, `SHIPPED_WINDOW_DAYS`) is gone. `countByBucket` in
+ * `lifecycleBucket.ts` replaced it.
  *
- * Counted client-side from the findings the page has already loaded rather
- * than from a new endpoint — which means they describe the most recent 100
- * findings (`BugFindingsTable`'s existing cap), not all history. That is the
- * right window for "what's on your plate this week" and wrong for anything
- * cumulative, so nothing here is labelled as a lifetime total.
+ * The difference is not just where it lives. The old summary counted four
+ * groups that between them did not cover all seventeen statuses, so its four
+ * tiles summed to less than the list they were drawn from — hence the footnote
+ * conceding it was "a picture of this week, not an all-time total". The bucket
+ * counts partition every finding into exactly one group, so the chip row sums
+ * to the total and can be read as a breakdown.
+ *
+ * The one thing genuinely lost is the seven-day window on "shipped": the chip
+ * counts every RELEASED finding in the loaded window rather than only those
+ * released in the last week. That window is what made the old tile
+ * un-sum-able, and "Live" is a fact about a bug that does not expire after
+ * seven days.
  */
-export const summariseWorkload = (
-  findings: BugFinding[],
-  now: Date = new Date(),
-): AgentWorkload => {
-  const since = now.getTime() - SHIPPED_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-
-  return {
-    inFlight: countOf(findings, IN_FLIGHT_STATUSES),
-    waitingOnYou: countOf(findings, WAITING_ON_YOU_STATUSES),
-    inReview: countOf(findings, IN_REVIEW_STATUSES),
-    shipped: findings.filter(
-      finding =>
-        finding.status === BugFindingStatus.RELEASED &&
-        finding.releasedAt != null &&
-        new Date(finding.releasedAt).getTime() >= since,
-    ).length,
-  };
-};

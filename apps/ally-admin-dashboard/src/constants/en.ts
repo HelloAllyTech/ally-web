@@ -2255,6 +2255,10 @@ export const en = {
     // Pressing it while off duty is not an error — the backend records the
     // skipped run — so say what happened rather than showing a failure.
     sweepSkipped: "Bug Hunter is off duty, so nothing was swept.",
+    // The sweep controls fold behind this. See SweepPanel.tsx for why these
+    // fold and the working-style switcher does not.
+    sweepPanelShow: "Sweep a repo now",
+    sweepPanelHide: "Hide sweep controls",
     agentIntro:
       "I read the Ally repos every night, reproduce what I find with a failing test, fix it and open the PR. When a call isn't mine to make, I stop and ask you.",
     agentStatusOffDuty: "Off duty",
@@ -2278,16 +2282,58 @@ export const en = {
     agentStatusOnShiftDetail: "Nothing on my desk. My next sweep runs tonight.",
     agentStatusOnShiftDetailManual:
       "Nothing on my desk. My next sweep runs tonight — I'll check with you before I fix anything.",
-    // ── What's on the desk ───────────────────────────────────────────────────
-    workloadInFlight: "In progress",
-    // Not "Waiting on you" — that is the status pill's wording, and the same
-    // phrase twice in one card reads as one thing said twice rather than a
-    // status and a count. This matches the detail line's "waiting on your call".
-    workloadWaiting: "Waiting on your call",
-    workloadInReview: "In review",
-    workloadShipped: "Shipped this week",
-    workloadFootnote:
-      "From my {count} most recent bugs — a picture of this week, not an all-time total.",
+    // ── Lifecycle buckets (the chip row above the bugs table) ────────────────
+    // Seventeen statuses collapsed into the seven groups an admin scans for,
+    // named by whose move it is next. These replace both the four-tile workload
+    // strip on the card and the flat seventeen-item status <Select>; see
+    // lifecycleBucket.ts for why the groups are cut this way.
+    //
+    // "In progress" and "In review" keep the workload tiles' exact wording on
+    // purpose — the numbers moved, the vocabulary shouldn't.
+    bucketGroupLabel: "Filter bugs by what needs to happen next",
+    bucketAll: "Everything",
+    bucketNeedsYou: "Needs your call",
+    // Not "Failed": the bucket holds a failed fix and a failed release, and the
+    // shared fact is that a job went red, which is also how the status line
+    // says it ("{count} of my jobs went red").
+    bucketProblem: "Went red",
+    // NEW, APPROVED and BLOCKED — recorded, accepted, nobody blocked, not
+    // started. "Queued" would collide with the QUEUED status pill ("Starting…").
+    bucketQueued: "On the list",
+    bucketInFlight: "In progress",
+    bucketInReview: "In review",
+    // Matches the RELEASED status pill's own label rather than inventing a
+    // second word for production.
+    bucketShipped: "Live",
+    bucketClosed: "Closed",
+
+    // ── What I need from you (the decision queue) ────────────────────────────
+    // First person, and it ends with what happens next — the voice rules in
+    // agentPersona.ts. "What I need from you" rather than "Waiting on you"
+    // because the status pill already says the latter, and the same phrase
+    // twice on one screen reads as one thing said twice.
+    queueTitle: "What I need from you",
+    // Broken into its two kinds rather than one total, because the card above it
+    // says "3 bugs are waiting on your call" (agentPersona counts only
+    // PENDING_APPROVAL and NEEDS_INPUT) while this queue also holds the red
+    // jobs. One total here read as a contradiction with the header sentence
+    // twelve pixels above it — "3" and "5" describing the same page. Split, the
+    // two numbers reconcile and each keeps the vocabulary of the chip it matches.
+    //
+    // Numerals rather than "one", so a single-item line does not have to start a
+    // sentence with a lowercase word.
+    queuePartWaiting: "{count} waiting on your call",
+    queuePartProblem: "{count} went red",
+    queueTailOne: "Decide it and I'll carry on.",
+    queueTail: "Decide them and I'll carry on.",
+    queueOpen: "Open",
+    queueAnswer: "Answer",
+    // Not "Retry": what to do about a red job is a decision that needs the work
+    // log, and the drawer is where that is. See NeedsYouCard.tsx.
+    queueSeeWhatHappened: "See what happened",
+    queueShowAll: "Show {count} more",
+    queueShowFewer: "Show fewer",
+
     // ── Working style: how much rope, not on/off ─────────────────────────────
     modeLabel: "Working style",
     modeOff: "Off duty",
@@ -2348,7 +2394,11 @@ export const en = {
       "Set my working style to Off duty above. That blocks every trigger immediately — nightly and on-demand alike.",
     // ── Findings table (the comprehensive bug table) ──────────────────────────
     findingsTitle: "Bugs I'm tracking",
-    findingsSubtitle: "Everything I know about, from any source, newest first.",
+    // No longer "newest first": the table sorts by three columns now, so stating
+    // one order as a property of the list would be wrong the moment anyone
+    // clicks a header. Newest-first is still the default.
+    findingsSubtitle:
+      "Everything I know about, from any source. Search it, or filter by what needs doing.",
     findingColumnTitle: "Bug",
     findingColumnSource: "Source",
     findingColumnRepo: "Repo",
@@ -2389,6 +2439,37 @@ export const en = {
       "Once I'm on duty, anything I find — or your team reports — shows up here.",
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
+    searchLabel: "Search bugs",
+    searchPlaceholder: "Search by title, file or repo…",
+    filterRepoLabel: "Repo",
+    filterRepoAll: "All repos",
+    filterSeverityLabel: "Severity",
+    filterSeverityAll: "Any severity",
+    filterSourceLabel: "Source",
+    filterSourceAll: "Any source",
+    clearFilters: "Clear filters",
+    // Distinct from findingsEmptyTitle on purpose: "Once I'm on duty, anything
+    // I find shows up here" is the wrong thing to tell someone who has just
+    // typed a typo into the search box.
+    noMatchTitle: "Nothing here matches those filters",
+    noMatchSubtitle: "Clear them, or pick a different group above.",
+    // "Showing 1 of 1 bugs" is both ungrammatical and redundant, so a single
+    // match gets its own line rather than a template with a plural stuck on it.
+    resultSummaryOne: "Showing 1 bug",
+    resultSummary: "Showing {shown} of {matched} bugs",
+    // Replaces the workload strip's footnote, which apologised for a
+    // denominator ("a picture of this week, not an all-time total") next to
+    // numbers that could not be filtered. Said here instead, where the filters
+    // are, and only when the window is actually smaller than the table.
+    windowNotice:
+      "These filters search my {loaded} most recent bugs, of {total} I've tracked in total.",
+    rowOpenLabel: "Open bug: {title}",
+    duplicateTag: "×{count}",
+    duplicateTooltip:
+      "{count} bugs in this list share a title, repo and status. I keep them as separate records rather than merging them, so a decision on one never silently applies to the others.",
+    pagePrev: "Previous",
+    pageNext: "Next",
+    pageStatus: "Page {page} of {pages}",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
     drawerEvidenceTitle: "Evidence",
