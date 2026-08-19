@@ -31,6 +31,7 @@ export const Simulation = () => {
     dataSafe: t("simulationPage.dataSafe"),
     waitingForAgent: t("simulationPage.waitingForAgent"),
     connectingToSession: t("simulationPage.connectingToSession"),
+    simulationCountdownLabel: t("simulationPage.simulationCountdownLabel"),
     allowMicrophone: t("simulationPage.allowMicrophone"),
     microphonePromptBrowser: t("simulationPage.microphonePromptBrowser"),
     microphonePrompt: t("simulationPage.microphonePrompt"),

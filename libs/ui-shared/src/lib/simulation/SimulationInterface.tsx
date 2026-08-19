@@ -7,7 +7,7 @@ import {
   useLocalParticipant,
   useRemoteParticipants,
 } from "@livekit/components-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { SessionSidebar } from "./SessionSidebar";
 import { TurnState } from "./TurnIndicator";
@@ -28,6 +28,13 @@ export enum RoomStatus {
   DISCONNECTING = "disconnecting",
   AGENT_JOINED = "agent_joined",
 }
+
+// Visual 3-2-1 countdown shown the moment this component mounts, matching the
+// start-simulation audio cue which also starts unconditionally on mount
+// (SimulationPage.tsx). One second per number, fixed length regardless of how
+// long the room actually takes to connect — see COUNTDOWN_STEPS below.
+const COUNTDOWN_STEPS = [3, 2, 1] as const;
+const COUNTDOWN_STEP_MS = 1000;
 
 export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
 
@@ -77,6 +84,27 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
+
+  // `null` once the countdown has finished. Runs once on mount, unconditional
+  // of connection/microphone state — same trigger as the audio cue — and
+  // gates the switch into the live call UI below so the learner is never
+  // shown (or expected to respond to) the agent before it completes, even if
+  // the agent joins and starts speaking faster than 3 seconds.
+  const [countdownStep, setCountdownStep] = useState<(typeof COUNTDOWN_STEPS)[number] | null>(
+    COUNTDOWN_STEPS[0],
+  );
+
+  useEffect(() => {
+    const timers = COUNTDOWN_STEPS.slice(1).map((step, index) =>
+      setTimeout(() => setCountdownStep(step), (index + 1) * COUNTDOWN_STEP_MS),
+    );
+    timers.push(
+      setTimeout(() => setCountdownStep(null), COUNTDOWN_STEPS.length * COUNTDOWN_STEP_MS),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const isCountingDown = countdownStep !== null;
 
   // Debounce remote speaking to avoid flickering on natural pauses
   const [debouncedRemoteSpeaking, setDebouncedRemoteSpeaking] = useState(false);
@@ -154,6 +182,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 
   const renderConnectedContent = () => (
     <>
+      {/* Not mounted until roomStatus/countdown both clear (see isCountingDown
+          below): this is the earliest point the learner should be able to
+          hear the agent. If the agent starts speaking mid-countdown, its
+          opening words are inaudible rather than played early — a deliberate
+          trade so the countdown can't be skipped by a fast agent join. */}
       <RoomAudioRenderer />
       <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
         {showSidebar && (
@@ -265,9 +298,42 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     </div>
   );
 
+  // Fixed-length overlay, independent of connection progress: it always runs
+  // the full 3 seconds it started with, whatever else is happening
+  // underneath (mic prompt, connecting, or the agent already having joined).
+  const renderCountdownContent = () => (
+    <div
+      data-testid="simulation-interface-countdown"
+      role="status"
+      aria-live="assertive"
+      className="flex flex-col items-center text-center gap-4"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={countdownStep}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.3 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="flex items-center justify-center w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] rounded-full border-2 border-primary-500 bg-[#1D2020] text-white font-['IBM_Plex_Serif'] font-medium text-[56px] sm:text-[64px]"
+        >
+          {countdownStep}
+        </motion.div>
+      </AnimatePresence>
+      <p className="text-[14px] text-[#B6B5B9] font-['Roboto']">
+        {translations?.simulationCountdownLabel ?? "Your simulation is about to begin…"}
+      </p>
+    </div>
+  );
+
   const renderContent = () => {
+    if (isCountingDown) return renderCountdownContent();
     if (!isMicrophoneGranted) return renderPendingStartContent();
 
+    // Even if the agent already joined during the countdown, hold the switch
+    // into the live call UI until the countdown above has fully played out —
+    // isCountingDown covers that window, so by the time we reach here it's
+    // safe to key purely off roomStatus.
     switch (roomStatus) {
       case RoomStatus.AGENT_JOINED:
         return renderConnectedContent();
