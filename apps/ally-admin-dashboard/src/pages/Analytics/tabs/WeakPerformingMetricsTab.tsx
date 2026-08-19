@@ -226,7 +226,7 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
         n: totalDenominator,
         nUnit: "denominator",
       })}
-      empty={points.length === 0}
+      empty={form === "empty"}
       emptyText={
         series.state === "none"
           ? "Not instrumented — nothing is being recorded for this metric yet."
