@@ -30,6 +30,7 @@ import {
   StartLatencyResponse,
   TokenConsumptionResponse,
   TrackDropoffResponse,
+  CertificationResponse,
   UsageLevelResponse,
   VoiceLatencyResponse,
   ListVoiceLatencySessionsResponse,
@@ -105,6 +106,13 @@ type CohortRetentionQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 /** Usage levels are fixed to 12 complete months + the current one, same reason. */
 type UsageLevelQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
+/**
+ * Certification is all-time for a stronger reason than the other fixed-window
+ * charts: the threshold is a LIFETIME total, so a window would not narrow the
+ * metric, it would change it.
+ */
+type CertificationQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
 /** Roleplay volume is a lifetime distribution; only the org filter applies. */
 type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
@@ -164,6 +172,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getUsageLevels: builder.query<UsageLevelResponse, UsageLevelQuery>({
       query: ({ tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.USAGE_LEVELS,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Ally Certification attainment — the platform's hero metric. Takes ONLY
+    // `tenantId`: the threshold is a LIFETIME minute total, so a window param
+    // would truncate each learner's history, move their crossing later or hide
+    // it, and make the cumulative line fall — which it can never really do.
+    getCertification: builder.query<CertificationResponse, CertificationQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CERTIFICATION,
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
       }),
@@ -475,6 +494,7 @@ export const {
   useGetAnalyticsOverviewQuery,
   useGetAnalyticsHighlightsQuery,
   useGetCohortRetentionQuery,
+  useGetCertificationQuery,
   useGetUsageLevelsQuery,
   useGetRoleplayVolumeQuery,
   useGetRoadmapDeliveryQuery,

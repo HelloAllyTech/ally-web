@@ -21,6 +21,7 @@ import {
   useChartGrouping,
   withoutInProgress,
 } from "../analyticsGrouping";
+import { CertificationCard } from "../CertificationCard";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
@@ -684,6 +685,18 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* The hero card, ABOVE the KPI strip and alone in its row.
+          
+          Ally Certification is the platform's top-level outcome metric; every
+          tile below it — practice minutes, sessions, retention — is an enabler
+          of this one, and an enabler is only worth optimising because of what it
+          enables. Salience has to be budgeted across the whole screen, so the
+          ranking is expressed in the layout (first, full width, alone) rather
+          than asserted in a caption nobody reads. It carries its own request:
+          the threshold is a lifetime total, so it shares no window or grain with
+          the endpoints feeding the rest of the tab. */}
+      <CertificationCard tenantId={query.tenantId} />
+
       {/* KPI strip. Definitions and sample sizes live on the tiles, not in
           tooltips — a caveat that only appears on hover never reaches the
           screenshot that ends up in a board deck. No change-vs-previous on an
