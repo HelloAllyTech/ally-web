@@ -71,9 +71,34 @@ interface AxisOptsBase {
    *  rating, a 0–100 score) so the plot shows where the value sits on the scale
    *  the reader knows, instead of against an arbitrary data-driven ceiling. */
   domain?: [number, number];
+  /**
+   * Explicit tick values for the value axis. Build with
+   * {@link integerTickValues} for any axis counting PEOPLE or events: left to
+   * itself, D3 subdivides a 0–3 range into halves, and "1.5 learners certified"
+   * is not a quantity that exists.
+   */
+  valueTicks?: number[];
   /** Extra options merged last for special cases (e.g. axis thresholds). */
   extra?: Record<string, unknown>;
 }
+
+/**
+ * Whole-number tick values from 0 to `max`, at most `maxTicks` of them.
+ *
+ * For count axes. A count has no fractional values, so an axis that offers them
+ * is inviting the reader to read one — and on the small ranges these charts
+ * often have (three certified learners, two orgs), D3's default subdivision
+ * produces nothing but fractions. Always spans zero, and always includes `max`
+ * so the tallest bar has a labelled tick to sit against.
+ */
+export const integerTickValues = (max: number, maxTicks = 8): number[] => {
+  const top = Math.max(1, Math.ceil(max));
+  const step = Math.max(1, Math.ceil(top / maxTicks));
+  const values: number[] = [];
+  for (let v = 0; v <= top; v += step) values.push(v);
+  if (values[values.length - 1] !== top) values.push(top);
+  return values;
+};
 
 /** One-measure colour scale: the chart's single series in the focal accent. */
 export const single = (label: string, color: string = PALETTE.blue): ColorScale => ({
@@ -95,12 +120,18 @@ export const context = (label: string): ColorScale => ({ [label]: CONTEXT.line }
  * An explicit `domain` wins, which is how the bounded score/rating charts get
  * their full rubric range and how the detail modal offers a zoomed view.
  */
-const valueAxis = (title: string, domain?: [number, number], stacked = false) => ({
+const valueAxis = (
+  title: string,
+  domain?: [number, number],
+  stacked = false,
+  valueTicks?: number[],
+) => ({
   mapsTo: "value",
   scaleType: ScaleTypes.LINEAR,
   title,
   ...(stacked ? { stacked: true } : {}),
   ...(domain ? { domain } : { includeZero: true }),
+  ...(valueTicks ? { ticks: { values: valueTicks } } : {}),
 });
 
 const labelAxis = (title: string, mapsTo: string) => ({
@@ -205,12 +236,13 @@ export const hBarOpts = ({
   legend = false,
   height = CHART_HEIGHT,
   domain,
+  valueTicks,
   extra = {},
 }: AxisOptsBase) => ({
   height,
   axes: {
     left: labelAxis(leftTitle, "group"),
-    bottom: valueAxis(bottomTitle, domain),
+    bottom: valueAxis(bottomTitle, domain, false, valueTicks),
   },
   color: { scale: colorScale },
   legend: { enabled: legend },
@@ -233,6 +265,79 @@ export const stackedBarOpts = ({
     left: valueAxis(leftTitle, domain, true),
     bottom: labelAxis(bottomTitle, "key"),
   },
+  color: { scale: colorScale },
+  legend: { enabled: legend },
+  toolbar: { enabled: false },
+  ...extra,
+});
+
+/**
+ * Dual-axis combo: bars on the left axis, a line on the right (x = `key`).
+ *
+ * **A second value axis is normally a lie**, and the rest of this kit does not
+ * offer one: two series on two scales can be made to cross wherever the author
+ * wants, so the reader sees a relationship that the numbers do not contain. The
+ * cumulative-users chart on the Highlights tab is deliberately a SEPARATE tile
+ * for exactly this reason.
+ *
+ * This factory exists for the one case where the objection does not apply: when
+ * the right-axis series is the RUNNING TOTAL of the left-axis one. They are then
+ * the same quantity at two aggregations, not two quantities being implicitly
+ * correlated, and the only thing the second scale does is stop a total that is
+ * two orders of magnitude larger from flattening the per-period bars into the
+ * axis. Do not reach for it otherwise — if the two series could in principle
+ * move independently, they belong in two tiles.
+ *
+ * Both axis titles are required rather than defaulted: an unlabelled second axis
+ * is the specific failure this whole comment is about.
+ */
+export const comboOpts = ({
+  barGroup,
+  lineGroup,
+  leftTitle,
+  rightTitle,
+  bottomTitle = "",
+  colorScale,
+  legend = true,
+  height = CHART_HEIGHT,
+  valueTicks,
+  rightTicks,
+  extra = {},
+}: Omit<AxisOptsBase, "leftTitle" | "domain"> & {
+  /** Series name plotted as bars against the left axis. */
+  barGroup: string;
+  /** Series name plotted as a line against the right axis. */
+  lineGroup: string;
+  leftTitle: string;
+  rightTitle: string;
+  /** Explicit ticks for the RIGHT axis; `valueTicks` covers the left one. */
+  rightTicks?: number[];
+}) => ({
+  height,
+  axes: {
+    left: {
+      ...valueAxis(leftTitle, undefined, false, valueTicks),
+      correspondingDatasets: [barGroup],
+      // Carbon needs one axis flagged as primary; the bars are the subject.
+      main: true,
+    },
+    right: {
+      ...valueAxis(rightTitle, undefined, false, rightTicks),
+      correspondingDatasets: [lineGroup],
+    },
+    bottom: labelAxis(bottomTitle, "key"),
+  },
+  comboChartTypes: [
+    { type: "simple-bar", correspondingDatasets: [barGroup] },
+    {
+      type: "line",
+      // Points on: the line is monthly, and without markers a reader cannot
+      // tell a flat stretch from a segment drawn across missing months.
+      options: { points: { enabled: true } },
+      correspondingDatasets: [lineGroup],
+    },
+  ],
+  curve: "curveLinear",
   color: { scale: colorScale },
   legend: { enabled: legend },
   toolbar: { enabled: false },

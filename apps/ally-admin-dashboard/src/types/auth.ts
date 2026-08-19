@@ -483,6 +483,64 @@ export interface UsageLevelResponse {
   computedAt: string;
 }
 
+// Ally Certification attainment — mirrors CertificationResponseDto from
+// GET /api/v1/analytics/certification. The platform's hero metric: distinct
+// learners who have accumulated enough LIFETIME roleplay practice to hold a
+// level (L1 = 5,000 minutes), by the month they earned it and cumulatively.
+// All-time and month-grained; takes no window, because the threshold is a
+// lifetime total and a window would change the metric rather than narrow it.
+export interface CertificationLevel {
+  /** Stable id / series key, e.g. "L1". */
+  id: string;
+  /** Server-owned name, e.g. "L1 Ally Certified". */
+  label: string;
+  /** Lifetime roleplay minutes required, inclusive. */
+  minMinutes: number;
+}
+
+export interface CertificationPipelineBand {
+  /** Server-built label, e.g. "1,500–3,000 min". */
+  label: string;
+  minMinutes: number;
+  maxMinutes: number;
+  /** Fraction of the threshold this band starts at, 0–1. */
+  minFraction: number;
+  /** Uncertified learners currently in this band. */
+  learners: number;
+}
+
+export interface CertificationMonth {
+  /** First day of the month (yyyy-mm-01). */
+  month: string;
+  /** Learners whose lifetime minutes FIRST reached the threshold this month. */
+  newlyCertified: number;
+  /** Running total — monotonic, since a level is never lost. */
+  cumulativeCertified: number;
+  /** True for the current, unfinished month: more can still cross into it. */
+  partial: boolean;
+}
+
+export interface CertificationResponse {
+  /** Every level, lowest first. Only `level` is plotted today. */
+  levels: CertificationLevel[];
+  /** The level this response reports on. */
+  level: CertificationLevel;
+  /** Oldest first, gap-free; at least 12 months even if attainment is younger. */
+  months: CertificationMonth[];
+  /** First day of the current, incomplete month (yyyy-mm-01). */
+  currentMonth: string;
+  /** Learners holding the level right now — the headline figure. */
+  certified: number;
+  /** Every learner in scope, including those who have never practised. */
+  learners: number;
+  /** The not-yet-certified population by how far along it is, lowest first. */
+  pipeline: CertificationPipelineBand[];
+  /** Lifetime minutes of the furthest-along uncertified learner. Names nobody. */
+  nearestMinutes: number;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Coin-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
 // from GET /api/v1/analytics/roadmap-delivery. All-time and month-grained; takes
 // no window and no tenant (the roadmap tables carry no tenant — it is Ally's own
