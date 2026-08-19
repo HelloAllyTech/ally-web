@@ -1,4 +1,9 @@
-import { RoadmapCoinBudget, RoadmapOpportunity, RoadmapOpportunityStage } from "@types";
+import {
+  RoadmapCoinBudget,
+  RoadmapOpportunity,
+  RoadmapOpportunityStage,
+  RoadmapOpportunityType,
+} from "@types";
 
 /**
  * THE SINGLE SOURCE OF TRUTH for the coin cap and the stage rule.
@@ -28,12 +33,18 @@ export const clampCoins = (raw: unknown, budget: RoadmapCoinBudget, myCoins: num
 };
 
 /**
- * Coins may only be allocated to a `new` opportunity. A missing stage counts as `new` so a
- * partially-hydrated row never renders as locked.
+ * Coins may only be allocated to a `new`, non-bug opportunity. A missing stage counts as `new`
+ * so a partially-hydrated row never renders as locked. Bug reports are triaged and fixed, not
+ * coin-prioritised, so they're excluded regardless of stage — mirrors the backend gate in
+ * RoadmapAllocationService.setCoins.
  */
 export const isAllocatable = (
-  opportunity: Pick<RoadmapOpportunity, "stage"> | { stage?: string },
-): boolean => (opportunity.stage ?? RoadmapOpportunityStage.NEW) === RoadmapOpportunityStage.NEW;
+  opportunity:
+    | Pick<RoadmapOpportunity, "stage" | "type">
+    | { stage?: string; type?: string },
+): boolean =>
+  (opportunity.stage ?? RoadmapOpportunityStage.NEW) === RoadmapOpportunityStage.NEW &&
+  opportunity.type !== RoadmapOpportunityType.BUG;
 
 /**
  * Remaining coins accounting for a local, not-yet-committed edit.

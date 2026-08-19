@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RoadmapCoinBudget, RoadmapOpportunityStage } from "@types";
+import { RoadmapCoinBudget, RoadmapOpportunityStage, RoadmapOpportunityType } from "@types";
 
 import { clampCoins, isAllocatable, maxFor, remainingWithPending } from "../utils/coins";
 
@@ -68,6 +68,18 @@ describe("isAllocatable", () => {
 
   it("treats a missing stage as new, so a partial row never renders as locked", () => {
     expect(isAllocatable({})).toBe(true);
+  });
+
+  it("is false for a bug opportunity, even in the new stage", () => {
+    expect(
+      isAllocatable({ stage: RoadmapOpportunityStage.NEW, type: RoadmapOpportunityType.BUG }),
+    ).toBe(false);
+  });
+
+  it("is true for a non-bug opportunity in the new stage", () => {
+    expect(
+      isAllocatable({ stage: RoadmapOpportunityStage.NEW, type: RoadmapOpportunityType.IDEA }),
+    ).toBe(true);
   });
 });
 
