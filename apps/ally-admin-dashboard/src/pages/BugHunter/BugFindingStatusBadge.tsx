@@ -26,6 +26,9 @@ const STYLES: Record<BugFindingStatus, string> = {
   [BugFindingStatus.DISMISSED]: "bg-neutral-100 text-typography-600 border-border-light",
   [BugFindingStatus.REJECTED]: "bg-neutral-100 text-typography-600 border-border-light",
   [BugFindingStatus.FAILED]: "bg-destructive-50 text-destructive-700 border-destructive-200",
+  // Deliberately the same neutral grey as DISMISSED/REJECTED, not the FAILED
+  // red — a human stopped this on purpose, it didn't give up on its own.
+  [BugFindingStatus.CANCELLED]: "bg-neutral-100 text-typography-600 border-border-light",
 };
 
 const LABELS: Record<BugFindingStatus, string> = {
@@ -45,6 +48,7 @@ const LABELS: Record<BugFindingStatus, string> = {
   [BugFindingStatus.DISMISSED]: en.bugHunter.findingStatusDismissed,
   [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
   [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
+  [BugFindingStatus.CANCELLED]: en.bugHunter.findingStatusCancelled,
 };
 
 /**

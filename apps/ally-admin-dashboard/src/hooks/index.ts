@@ -15,6 +15,7 @@ import { useSimulations } from "./useSimulations";
 import { useSpecAutosave } from "./useSpecAutosave";
 import { useTracks } from "./useTracks";
 import { useTrackTranslationsSocket } from "./useTrackTranslationsSocket";
+import { useTranscriptDisclaimer } from "./useTranscriptDisclaimer";
 import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
 
@@ -34,6 +35,7 @@ export {
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
   useCopilotStream,
+  useTranscriptDisclaimer,
   useTryRoleplayLive,
   useSpecAutosave,
   useTracks,

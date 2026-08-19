@@ -40,6 +40,11 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
         </div>
       </div>
     </div>
+    <p
+      class="text-xs text-typography-500 mt-1"
+    >
+      Transcription may not always be fully accurate.
+    </p>
     <hr
       class="mb-5 mt-2 border-border-light"
     />

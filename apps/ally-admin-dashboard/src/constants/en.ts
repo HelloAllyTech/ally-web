@@ -2388,6 +2388,7 @@ export const en = {
     findingStatusDismissed: "Dismissed",
     findingStatusRejected: "Rejected",
     findingStatusFailed: "Failed",
+    findingStatusCancelled: "Cancelled",
     findingsEmptyTitle: "No bugs yet",
     findingsEmptySubtitle:
       "Once I'm on duty, anything I find — or your team reports — shows up here.",
@@ -2450,6 +2451,19 @@ export const en = {
     drawerFixSessionQueued:
       "I'm waiting for a runner to pick this up. It usually starts within a minute or two.",
     drawerWatchSession: "Watch me work",
+    // ── Stop fix session (manual kill switch) ────────────────────────────────
+    drawerStopFixSession: "Stop fix session",
+    drawerStopFixSessionTooltip:
+      "Cancels the running GitHub Actions job right away instead of waiting out its 60-minute cap — real compute and token savings, not just a status change. Use this when a session is clearly stuck or looping. You can put me on this bug again afterward, the same as after a failed attempt.",
+    drawerStopFixSessionConfirmTitle: "Stop this fix session?",
+    drawerStopFixSessionConfirmBody:
+      "I'll cancel the GitHub Actions run in progress right away. Whatever I've done so far is lost — nothing partial gets merged. You can put me back on this bug afterward, the same as after a failed attempt.",
+    // Deliberately not "Stop fix session" again — the button that opened this
+    // dialog says that, and two identical labels on screen at once make it
+    // ambiguous which one you're confirming.
+    drawerStopFixSessionConfirm: "Stop it",
+    drawerStopFixSessionFailed: "Couldn't stop the fix session.",
+    drawerCancelledBy: "Stopped by user #{userId}",
     // ── Release to production ────────────────────────────────────────────────
     drawerRelease: "Release to production",
     drawerReleaseRetry: "Retry release",

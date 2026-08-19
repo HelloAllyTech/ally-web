@@ -1,15 +1,17 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { useGetScenarioCaseDetailsQuery, useGetScenarioQuery } from "@api";
+import { DropdownField, RichTextRenderer } from "@ally-ui-mono/ui-shared";
+import { useGetScenarioCaseDetailsQuery, useGetScenarioQuery, useGetScenariosQuery } from "@api";
 import { ArrowDownFilled, PlayIcon, Refresh, TickGreenBackground } from "@assets";
 import { ScenarioCard } from "@components";
 import { useStartSimulation } from "@hooks";
 import {
   ACTIVE_TRACK_CONTEXT_KEY,
   ActiveTrackContext,
+  LanguageOption,
   StartCaseItemPayload,
   StartRoleplayItemPayload,
   TrackDetailItem,
@@ -48,26 +50,62 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   trackId,
   alreadyCompleted,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { startSimulation, isStarting } = useStartSimulation();
   const [logExpanded, setLogExpanded] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
 
   const isCase = payload.type === "CASE";
+  const scenarioId = payload.type === "ROLEPLAY" ? payload.scenarioId : 0;
   const lastScenarioSessionId = payload.type === "ROLEPLAY" ? payload.lastScenarioSessionId : null;
 
-  const { data: scenario } = useGetScenarioQuery(
-    { scenarioId: payload.type === "ROLEPLAY" ? payload.scenarioId : 0, isPrivate: true },
-    { skip: isCase },
-  );
+  const { data: scenario } = useGetScenarioQuery({ scenarioId, isPrivate: true }, { skip: isCase });
   const { data: caseDetails } = useGetScenarioCaseDetailsQuery(
     { caseId: payload.type === "CASE" ? payload.caseId : "" },
     { skip: !isCase },
   );
 
+  // A roleplay's enabled languages are carried by the scenarios list (v2)
+  // response — the same source the standalone scenario page reads — so fall
+  // back to it when the detail payload doesn't include them.
+  const { catalogLanguages } = useGetScenariosQuery(
+    { isPrivate: true, languageCode: i18n.language },
+    {
+      skip: isCase,
+      selectFromResult: ({ data }) => ({
+        catalogLanguages: data?.data?.find(s => s.id === scenarioId)?.availableLanguages ?? [],
+      }),
+    },
+  );
+  const availableLanguages = scenario?.availableLanguages?.length
+    ? scenario.availableLanguages
+    : catalogLanguages;
+
+  // Default to the first offered language, but only while there is no valid
+  // selection: `availableLanguages` is a fresh array on every render, so an
+  // unconditional reset would silently revert a learner's pick to English on
+  // the next refetch (the same trap already fixed on the scenario page).
+  useEffect(() => {
+    if (!availableLanguages?.length) return;
+    const isSelectionStillOffered =
+      selectedLanguage != null &&
+      availableLanguages.some(lang => lang.label === selectedLanguage.label);
+    if (!isSelectionStillOffered) {
+      setSelectedLanguage(availableLanguages[0]);
+    }
+  }, [availableLanguages, selectedLanguage]);
+
+  const handleLanguageChange = (label: string) => {
+    setSelectedLanguage(availableLanguages?.find(lang => lang.label === label) || null);
+  };
+
   const coverImage = isCase ? caseDetails?.coverImageUrl : scenario?.coverImageUrl;
-  const cardDescription =
-    item.description || (isCase ? caseDetails?.description : scenario?.description);
+  // The full brief, rendered under the card. The card itself clamps its blurb
+  // to two lines and drops it entirely when trigger warnings are present, so
+  // it can't be the only place the challenge description lives.
+  const challengeDescription =
+    (isCase ? caseDetails?.description : scenario?.description) || item.description;
 
   const launch = async () => {
     persistTrackContext({ trackId, itemId: item.id });
@@ -81,6 +119,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
       params: {
         scenarioId: payload.scenarioId,
         trackItemProgressId: payload.trackItemProgressId,
+        languageId: selectedLanguage?.language_id,
       },
       metadata: { title: item.title, coverImageUrl: undefined },
     });
@@ -98,13 +137,22 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
         <ScenarioCard
           coverImage={coverImage || ""}
           title={item.title}
-          description={cardDescription || ""}
+          description=""
           triggerWarnings={isCase ? undefined : scenario?.triggerWarnings}
           onClick={launch}
         />
       </div>
 
       <p className="mt-5 max-w-md text-sm text-typography-700">{t("tracks2.roleplay.intro")}</p>
+
+      {challengeDescription && (
+        <div className="mt-5 w-full max-w-sm text-left">
+          <div className="text-base font-semibold text-typography-900">
+            {t("learn.scenario.scenarioLabel")}
+          </div>
+          <RichTextRenderer content={challengeDescription} />
+        </div>
+      )}
 
       {alreadyCompleted && lastScenarioSessionId && item.completedAt ? (
         <button
@@ -143,6 +191,18 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
 
       {logExpanded && lastScenarioSessionId && (
         <RoleplaySessionLogPanel sessionId={lastScenarioSessionId} />
+      )}
+
+      {availableLanguages.length > 0 && (
+        <div className="mt-6 w-full max-w-sm text-left">
+          <DropdownField
+            label={t("tracks2.roleplay.language")}
+            options={availableLanguages.map(lang => lang.label)}
+            value={selectedLanguage?.label || ""}
+            onChange={handleLanguageChange}
+            valueClassName="text-typography-900 font-primary"
+          />
+        </div>
       )}
 
       <div className="mt-6 flex items-center gap-3">

@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 
 import { useGetRoleplayTestReportQuery } from "@api";
 import { en } from "@constants";
+import { useTranscriptDisclaimer } from "@hooks/useTranscriptDisclaimer";
 import { RoleplayReportImproveStatus } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
@@ -55,6 +56,7 @@ export const TestReportDetail: React.FC<TestReportDetailProps> = ({
   const strings = en.roleplayStudio.improve;
   const { data, isLoading, isError, refetch } = useGetRoleplayTestReportQuery(reportId);
   const [showTranscript, setShowTranscript] = useState(false);
+  const transcriptDisclaimer = useTranscriptDisclaimer();
 
   // A card expanded while PENDING only gets list-poll updates — when the
   // polled status/improveStatus moves (report landed, improve finished),
@@ -161,6 +163,7 @@ export const TestReportDetail: React.FC<TestReportDetailProps> = ({
           >
             {showTranscript ? strings.hideTranscript : strings.showTranscript}
           </button>
+          <p className="text-xs text-typography-500 mt-1">{transcriptDisclaimer}</p>
           {showTranscript && (
             <div className="mt-2 flex flex-col gap-2 max-h-80 overflow-y-auto custom-scrollbar">
               {transcript.map((turn, index) => (
