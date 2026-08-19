@@ -27,6 +27,9 @@ const FRAME_HEIGHT: Record<TrackGameKey, string> = {
   // corners sweep through, and the level list opens into the same frame.
   [TrackGameKey.CUB_N_PUP]: "h-[440px] sm:h-[560px]",
   [TrackGameKey.SNAKE]: "h-[400px] sm:h-[440px]",
+  // The plant grows upwards and the moisture meter runs the full height, so
+  // this one wants height more than width.
+  [TrackGameKey.SPROUT]: "h-[420px] sm:h-[520px]",
 };
 
 /**
@@ -36,9 +39,11 @@ const FRAME_HEIGHT: Record<TrackGameKey, string> = {
  * learner's language for itself — anything it renders in words has to be handed
  * to it on the `focus` message. The runner and the tic-tac-toe board are pure
  * canvas and need nothing; the memory deck has a move counter and an
- * end-of-round card, and the puzzle has a level list, a solved count and the
- * lines that teach it, so those two get these. A bundle falls back to its own
- * baked-in English if the host sends nothing, which keeps this list optional.
+ * end-of-round card, the puzzle has a level list, a solved count and the lines
+ * that teach it, and the plant has a picker, a running commentary and the whole
+ * of its screen-reader narration, so those three get these. A bundle falls back
+ * to its own baked-in English if the host sends nothing, which keeps this list
+ * optional.
  */
 const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
   [TrackGameKey.MEMORY_MATCH]: [
@@ -60,6 +65,40 @@ const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
     "hintFree",
     "hintPivot",
     "hintRotateLink",
+  ],
+  /*
+   * The longest list here by some way, and deliberately so: the plant's scene
+   * is aria-hidden, which makes the live region the entire game for a screen
+   * reader. Every one of these is read aloud to somebody.
+   */
+  [TrackGameKey.SPROUT]: [
+    "pickerLabel",
+    "plantSUCCULENT",
+    "plantMARIGOLD",
+    "plantFERN",
+    "plantTOMATO",
+    "visitorsLabel",
+    "hintStart",
+    "aimSoil",
+    "aimLeaves",
+    "aimAway",
+    "stateDry",
+    "stateGood",
+    "stateWet",
+    "stage0",
+    "stage1",
+    "stage2",
+    "stage3",
+    "stage4",
+    "stage5",
+    "leafDropped",
+    "leafScorched",
+    "bloomed",
+    "plantAnother",
+    "visitorArrived",
+    "visitorBEE",
+    "visitorBUTTERFLY",
+    "visitorLADYBIRD",
   ],
 };
 

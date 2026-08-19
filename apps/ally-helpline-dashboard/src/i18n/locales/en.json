@@ -1545,21 +1545,24 @@
         "TIC_TAC_TOE": "Click or tap a square to play. Nothing here is scored.",
         "MEMORY_MATCH": "Flip two cards to find a pair. The fewer moves it takes, the closer you get to a perfect eight-move round — which is all the score is, and it counts towards nothing.",
         "CUB_N_PUP": "Drag the cub along the links to the star. Drag anywhere else to turn the whole grid. Boards you solve are counted, and the count goes nowhere.",
-        "SNAKE": "Swipe or use arrow keys to steer. Nothing here is scored."
+        "SNAKE": "Swipe or use arrow keys to steer. Nothing here is scored.",
+        "SPROUT": "Press and drag the can over the soil, or use the arrow keys and hold space. Keep the level inside the green band — too much water is as bad as too little. Nothing here is scored towards the course."
       },
       "lastScoreByGame": {
         "TREX_RUNNER": "This run: {{score}}",
         "TIC_TAC_TOE": "Wins this sitting: {{score}}",
         "MEMORY_MATCH": "This round: {{score}}% of a perfect round",
         "CUB_N_PUP": "Solved this sitting: {{score}}",
-        "SNAKE": "This run: {{score}}"
+        "SNAKE": "This run: {{score}}",
+        "SPROUT": "This sitting: {{score}} growth"
       },
       "bestScoreByGame": {
         "TREX_RUNNER": "Your best: {{score}}",
         "TIC_TAC_TOE": "Your best: {{score}}",
         "MEMORY_MATCH": "Your best: {{score}}%",
         "CUB_N_PUP": "Your best: {{score}} boards",
-        "SNAKE": "Your best: {{score}}"
+        "SNAKE": "Your best: {{score}}",
+        "SPROUT": "Most growth in one sitting: {{score}}"
       },
       "optional": "Play as long as you like, or skip straight on — either way you're good to continue.",
       "frameStrings": {
@@ -1582,6 +1585,35 @@
           "hintFree": "Blue links turn with the grid. Turn it to join blue and grey links up in different ways.",
           "hintPivot": "Green links swing round with the grid but keep pointing the same way.",
           "hintRotateLink": "Red links stay where they are but spin with the grid."
+        },
+        "SPROUT": {
+          "pickerLabel": "Choose a plant",
+          "plantSUCCULENT": "Succulent",
+          "plantMARIGOLD": "Marigold",
+          "plantFERN": "Fern",
+          "plantTOMATO": "Tomato",
+          "visitorsLabel": "Visitors",
+          "hintStart": "Hold the can over the soil. Keep the water level inside the green band — too much is as bad as too little.",
+          "aimSoil": "Aiming at the soil.",
+          "aimLeaves": "Aiming at the leaves. Water on the leaves does not reach the roots.",
+          "aimAway": "Aiming past the pot.",
+          "stateDry": "Thirsty. The soil has dried out and growing has stopped.",
+          "stateGood": "Just right. It is growing.",
+          "stateWet": "Too wet. The saucer is flooding — ease off and let it drink.",
+          "stage0": "Seed",
+          "stage1": "Sprout",
+          "stage2": "Stem",
+          "stage3": "Leaves",
+          "stage4": "Bud",
+          "stage5": "Bloom",
+          "leafDropped": "A leaf yellowed and dropped from the wet soil.",
+          "leafScorched": "Water sat on a leaf in full sun and scorched it.",
+          "bloomed": "It bloomed. {{blooms}} so far this sitting.",
+          "plantAnother": "Plant another",
+          "visitorArrived": "A {{visitor}} came by.",
+          "visitorBEE": "bee",
+          "visitorBUTTERFLY": "butterfly",
+          "visitorLADYBIRD": "ladybird"
         }
       }
     }

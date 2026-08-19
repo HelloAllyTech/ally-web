@@ -132,6 +132,13 @@ export const TRACK_GAME_CATALOG: Array<{
       "Steer a growing line around the board to reach the food without running into your own tail. Speeds up the longer you get, and the walls wrap around rather than ending the run — the forgiving one in the set.",
     typicalPlay: "a minute or two a run, and it does not run out",
   },
+  {
+    key: TrackGameKey.SPROUT,
+    name: "Sprout",
+    description:
+      "Water a plant and grow it to bloom. More water is not better — the soil has a sweet spot that narrows as the plant grows, and flooding it costs a leaf. The gentlest one here, and the plant cannot die.",
+    typicalPlay: "about a minute and a half to a bloom",
+  },
 ];
 
 export const DEFAULT_GAME_CONTENT: GameContent = {
