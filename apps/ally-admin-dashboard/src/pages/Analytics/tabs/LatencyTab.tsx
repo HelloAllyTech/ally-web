@@ -31,10 +31,12 @@ import {
   reliabilityBucketTitle,
 } from "../joinReliabilityChart";
 import {
+  CACHE_HIT_RATE_SCALE,
   LATENCY_STAT_SCALE,
   START_SEGMENT_SCALE,
   START_TOTAL_SCALE,
   buildLlmTtftSeries,
+  buildPromptCacheHitRateSeries,
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
@@ -147,6 +149,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   // param and no separate turn count (same `turns` field as liveTurns above,
   // it's per-bucket, not per-metric).
   const llmTtftSeries = useMemo(() => buildLlmTtftSeries(points), [points]);
+  // Same live-only caveat as llmTtftSeries — no transcript counterpart exists
+  // for a provider prompt-cache stat.
+  const cacheHitRateSeries = useMemo(() => buildPromptCacheHitRateSeries(points), [points]);
   const byLanguageBars = useMemo(
     () => buildVoiceLatencyByLanguageBars(data?.byLanguage ?? []),
     [data],
@@ -188,6 +193,19 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         }),
       }),
     [axisTitle, llmTtftTargetSec],
+  );
+
+  // No threshold line yet — same posture the LLM TTFT chart itself shipped
+  // with before a target was set. Add one via axesWithThreshold, the same
+  // way llmTtftTargetMs does, once product sets a target hit-rate.
+  const cacheHitRateOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Percent of turns",
+        bottomTitle: axisTitle,
+        colorScale: CACHE_HIT_RATE_SCALE,
+      }),
+    [axisTitle],
   );
 
   // Historical is context, so its own chart is drawn in greys rather than
@@ -328,6 +346,16 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     asOf: asOf(data?.window),
   });
 
+  // Same window/turn count as llmTtftSource — ratio-of-sums over the same
+  // per-turn rows, just a different column.
+  const cacheHitRateSource = buildSource({
+    derivation: "Live pipeline turn metrics, OpenAI prompt-cache hit rate",
+    window: `${voiceWindow}${languageNote}`,
+    n: liveTurns,
+    nUnit: "turns",
+    asOf: asOf(data?.window),
+  });
+
   const bucketPicker = (
     <div className="flex justify-end">
       <div className="w-44">
@@ -397,6 +425,23 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
       >
         <ScrollableChart data={llmTtftSeries}>
           <LineChart data={llmTtftSeries} options={llmTtftOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      <ChartCard
+        title="Prompt cache hit rate — live pipeline"
+        caption="Share of prompt tokens served from OpenAI's cache, ratio-of-sums per bucket."
+        source={cacheHitRateSource}
+        loading={isLoading && !data}
+        error={isError}
+        onRetry={refetch}
+        onExpand={() => setExpanded("cacheHitRate")}
+        errorTitle="Couldn't load prompt cache hit rate"
+        errorSubtitle="There was a problem fetching turn-latency metrics."
+        empty={!isLoading && cacheHitRateSeries.length === 0}
+      >
+        <ScrollableChart data={cacheHitRateSeries}>
+          <LineChart data={cacheHitRateSeries} options={cacheHitRateOptions} />
         </ScrollableChart>
       </ChartCard>
 
@@ -607,6 +652,23 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           render={({ height }) => (
             <ScrollableChart data={llmTtftSeries}>
               <LineChart data={llmTtftSeries} options={{ ...llmTtftOptions, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "cacheHitRate" && (
+        <ChartDetailModal
+          open={expanded === "cacheHitRate"}
+          onClose={() => setExpanded(null)}
+          title="Prompt cache hit rate — live pipeline"
+          caption="Share of prompt tokens served from OpenAI's cache, ratio-of-sums per bucket."
+          source={cacheHitRateSource}
+          table={seriesTable(cacheHitRateSeries, axisTitle)}
+          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
+          render={({ height }) => (
+            <ScrollableChart data={cacheHitRateSeries}>
+              <LineChart data={cacheHitRateSeries} options={{ ...cacheHitRateOptions, height }} />
             </ScrollableChart>
           )}
         />

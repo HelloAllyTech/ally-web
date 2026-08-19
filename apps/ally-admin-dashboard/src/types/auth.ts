@@ -679,6 +679,12 @@ export interface VoiceLatencyPoint {
   p50LlmTtftMs: number | null;
   /** Live-instrumentation only; null for 'transcript' buckets. */
   p95LlmTtftMs: number | null;
+  /**
+   * Prompt-cache hit rate (%), ratio-of-sums per bucket. Live-instrumentation
+   * only; null for 'transcript' buckets and for turns predating this being
+   * instrumented.
+   */
+  avgCacheHitRatePct: number | null;
 }
 
 /** One language's live-pipeline latency over the whole window (no time bucketing). */

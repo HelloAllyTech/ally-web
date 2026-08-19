@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import { StartLatencyPoint, VoiceLatencyByLanguageRow, VoiceLatencyPoint } from "@types";
 
 import {
+  CACHE_HIT_RATE_GROUP,
   LATENCY_GROUPS,
   START_LATENCY_GROUPS,
   START_TOTAL_GROUPS,
   buildLlmTtftSeries,
+  buildPromptCacheHitRateSeries,
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
@@ -26,6 +28,7 @@ const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   avgLlmTtftMs: null,
   p50LlmTtftMs: null,
   p95LlmTtftMs: null,
+  avgCacheHitRatePct: null,
   ...over,
 });
 
@@ -117,6 +120,40 @@ describe("buildLlmTtftSeries", () => {
 
   it("returns an empty series for no points", () => {
     expect(buildLlmTtftSeries([])).toEqual([]);
+  });
+});
+
+describe("buildPromptCacheHitRateSeries", () => {
+  it("plots one line — a ratio-of-sums has no percentile family", () => {
+    const series = buildPromptCacheHitRateSeries([
+      point({ source: "pipeline", avgCacheHitRatePct: 78 }),
+    ]);
+
+    expect(series).toEqual([{ group: CACHE_HIT_RATE_GROUP, key: "2024-06-10", value: 78 }]);
+  });
+
+  it("is live-pipeline only — transcript points never appear, even if populated", () => {
+    const points = [
+      point({ source: "pipeline", avgCacheHitRatePct: 78 }),
+      point({ source: "transcript", avgCacheHitRatePct: 12 }),
+    ];
+
+    expect(buildPromptCacheHitRateSeries(points)).toHaveLength(1);
+  });
+
+  it("omits a null value rather than plotting a zero hit rate", () => {
+    const points = [
+      point({ source: "pipeline", avgCacheHitRatePct: null }),
+      point({ bucket: "2024-06-11", source: "pipeline", avgCacheHitRatePct: 85 }),
+    ];
+
+    expect(buildPromptCacheHitRateSeries(points)).toEqual([
+      { group: CACHE_HIT_RATE_GROUP, key: "2024-06-11", value: 85 },
+    ]);
+  });
+
+  it("returns an empty series for no points", () => {
+    expect(buildPromptCacheHitRateSeries([])).toEqual([]);
   });
 });
 

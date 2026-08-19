@@ -6,7 +6,8 @@ import {
 } from "@types";
 
 import { bucketTitle } from "./analyticsGrouping";
-import { CONTEXT, ColorScale, STAT } from "./chartScales";
+import { single } from "./chartKit";
+import { CONTEXT, ColorScale, PALETTE, STAT } from "./chartScales";
 
 /**
  * Latency series labels, keyed so the colour scale and data groups stay in sync.
@@ -110,6 +111,28 @@ export function buildLlmTtftSeries(points: VoiceLatencyPoint[]): LatencyDatum[] 
       }
       return datums;
     });
+}
+
+/** Single-measure chart — no percentile family, so one hue via `single()` (§8.1), not a scale. */
+export const CACHE_HIT_RATE_GROUP = "Cache hit rate";
+export const CACHE_HIT_RATE_SCALE: ColorScale = single(CACHE_HIT_RATE_GROUP, PALETTE.teal);
+
+/**
+ * Per-bucket OpenAI prompt-cache hit rate (%), one line, ratio-of-sums per
+ * bucket (computed server-side, not averaged client-side across turns).
+ *
+ * Live-pipeline only, same as {@link buildLlmTtftSeries} — no transcript
+ * counterpart exists for this field. Omitted (not zeroed) when null: a
+ * bucket predating this being instrumented is a gap, not a real 0% turn.
+ */
+export function buildPromptCacheHitRateSeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point =>
+      point.avgCacheHitRatePct != null
+        ? [{ group: CACHE_HIT_RATE_GROUP, key: point.bucket, value: point.avgCacheHitRatePct }]
+        : [],
+    );
 }
 
 export type LanguageBarDatum = { group: string; value: number };
