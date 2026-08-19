@@ -241,8 +241,10 @@ export interface BugHuntRun {
   autoMergedCount: number;
   prOpenedCount: number;
   dismissedCount: number;
-  /** USD, snapshotted from llm_usage at close time — not a live figure while RUNNING. */
+  /** USD, snapshotted from llm_usage at close time — not a live figure while RUNNING. Cache-blind; prefer cliReportedCostUsd when present. */
   totalTokenCostUsd: string;
+  /** USD, from the Claude Code CLI's own total_cost_usd — prices cache reads/writes at their real rate. Null for runs closed before this was captured. */
+  cliReportedCostUsd: number | null;
   /** Raw token counts behind totalTokenCostUsd. Null for runs closed before this was tracked. */
   totalInputTokens: number | null;
   totalOutputTokens: number | null;

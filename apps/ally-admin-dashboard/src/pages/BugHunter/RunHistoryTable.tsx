@@ -31,6 +31,10 @@ const formatTokens = (input: number | null, output: number | null): string =>
     ? "—"
     : `${input.toLocaleString()} in / ${output.toLocaleString()} out`;
 
+/** Prefers the CLI's own reported cost (prices prompt-cache correctly) over the cache-blind token estimate. */
+const formatCost = (run: BugHuntRun): string =>
+  `$${run.cliReportedCostUsd != null ? run.cliReportedCostUsd.toFixed(4) : run.totalTokenCostUsd}`;
+
 /** A column header with a help tooltip — the pattern from the ally-web admin tooltip convention, applied per-column instead of per-field. */
 const HeaderWithTooltip: FC<{ label: string; tooltip: string }> = ({ label, tooltip }) => (
   <span className="inline-flex items-center gap-1">
@@ -220,7 +224,7 @@ export const RunHistoryTable: FC = () => {
                   <TableCell className="py-3 pr-4">{run.autoMergedCount}</TableCell>
                   <TableCell className="py-3 pr-4">{run.prOpenedCount}</TableCell>
                   <TableCell className="py-3 pr-4">{run.dismissedCount}</TableCell>
-                  <TableCell className="py-3 pr-4">${run.totalTokenCostUsd}</TableCell>
+                  <TableCell className="py-3 pr-4">{formatCost(run)}</TableCell>
                   <TableCell className="py-3 pr-4 whitespace-nowrap">
                     {formatTokens(run.totalInputTokens, run.totalOutputTokens)}
                   </TableCell>
