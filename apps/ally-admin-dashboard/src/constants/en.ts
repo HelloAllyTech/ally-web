@@ -2502,7 +2502,7 @@ export const en = {
     columnPrPendingTooltip:
       "Everything else I found — opened as a pull request and waiting on your review. Each one is in my bugs table above.",
     columnCostTooltip:
-      "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the sweep is still going.",
+      "USD reported by the Claude Code CLI for that run, including prompt-cache pricing — falls back to a cache-blind token estimate for older runs. Not a live figure while the sweep is still going.",
     columnTokensTooltip:
       "Raw input/output tokens behind the estimated cost. Shown as — for runs from before this was tracked.",
     triggerScheduled: "Nightly",

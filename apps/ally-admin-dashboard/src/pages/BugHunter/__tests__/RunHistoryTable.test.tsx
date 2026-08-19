@@ -51,6 +51,7 @@ const run = (id: string, repo: string) => ({
   prOpenedCount: 0,
   dismissedCount: 0,
   totalTokenCostUsd: "0.0000",
+  cliReportedCostUsd: null,
   totalInputTokens: null,
   totalOutputTokens: null,
   createdAt: "13 Aug 2026",
