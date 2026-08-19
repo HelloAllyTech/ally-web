@@ -265,7 +265,7 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
     // Columns, with a caption that says what the reader may and may not infer.
-    expect(screen.getByText(/compared, not trended/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough to show a trend/i)).toBeInTheDocument();
   });
 
   it("draws a line once there are five or more buckets", () => {
@@ -525,9 +525,12 @@ describe("WeakPerformingMetricsTab", () => {
   it("names the judge version of every family, including one not yet run", () => {
     render(<WeakPerformingMetricsTab {...filters} />);
 
-    expect(screen.getByText(/drift gemini-2\.5-pro\/v2/)).toBeInTheDocument();
-    expect(screen.getByText(/language gemini-2\.5-pro\/v1/)).toBeInTheDocument();
-    expect(screen.getByText(/groundedness not run/)).toBeInTheDocument();
+    // The versions moved out of the header and into the provenance tooltip —
+    // still one per family, still saying "not run" rather than omitting one.
+    const provenance = screen.getByRole("button", { name: /Judge \(drift\)/ });
+    expect(provenance).toHaveAccessibleName(/Judge \(drift\): gemini-2\.5-pro\/v2/);
+    expect(provenance).toHaveAccessibleName(/Judge \(language\): gemini-2\.5-pro\/v1/);
+    expect(provenance).toHaveAccessibleName(/Judge \(groundedness\): not run/);
   });
 
   /**
@@ -570,18 +573,36 @@ describe("WeakPerformingMetricsTab", () => {
     expect(caveat.className).toContain("tooltip-content");
   });
 
-  it("says which direction is good, without needing two buckets", () => {
+
+
+  /**
+   * Direction is carried by the metric's NAME, not by a caption repeating it.
+   * "Comprehension errors" is plainly a thing you want less of; printing
+   * "lower is better" underneath restated the title on all 22 cards. What still
+   * has to work is the delta, which describes the movement that happened.
+   */
+  it("does not caption cards with a standing direction rule", () => {
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.queryByText("lower is better")).not.toBeInTheDocument();
+    expect(screen.queryByText("higher is better")).not.toBeInTheDocument();
+    // The movement is still described, using lowerIsBetter under the hood.
+    expect(screen.getByText(/worsening/)).toBeInTheDocument();
+  });
+
+  it("says how much data there is in words a reader already knows", () => {
+    // Was: "2 measured buckets — compared, not trended: too few points to read
+    // a direction." Reported as not understandable, and it is jargon twice over.
     queryMock.mockReturnValue({
       data: response({
         groups: [
           group({
             series: [
               series({
-                // One bucket: no delta sentence, so this is the ONLY thing on
-                // the card that can tell the reader which way is good.
-                points: [{ bucket: "2026-07-01", numerator: 3, denominator: 100, value: 0.03 }],
-                latest: 0.03,
-                previous: null,
+                points: [
+                  { bucket: "2026-06-01", numerator: 10, denominator: 500, value: 0.02 },
+                  { bucket: "2026-07-01", numerator: 30, denominator: 500, value: 0.06 },
+                ],
               }),
             ],
           }),
@@ -593,14 +614,48 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
 
-    expect(screen.getByText("lower is better")).toBeInTheDocument();
-    expect(screen.queryByText(/vs previous bucket/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText("2 months of data so far — not enough to show a trend."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/compared, not trended/)).not.toBeInTheDocument();
   });
 
-  it("says higher is better where that is true", () => {
+  it("keeps provenance out of the header and behind an affordance", () => {
+    // The header was six lines: mix warning, parameter version, the reasoning
+    // for pinning it, and three judge versions — above the numbers.
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/Segment before reading/)).toBeInTheDocument();
+    expect(screen.queryByText(/Thresholds define these metrics/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Parameters v1/ })).toBeInTheDocument();
+  });
+
+  /**
+   * A metric with no good direction must report the movement and stop.
+   *
+   * Barge-in is the case that forced this. Interruption is ordinary
+   * conversation, and its rate turned out flat at 2.5-2.8% across every actor
+   * turn length above 100 characters, dropping only on turns too short to
+   * interrupt — so it measures the opportunity to cut in, not whether the actor
+   * deserved it. Calling a rise "worsening" there is a verdict we cannot
+   * support.
+   */
+  it("reports movement without a verdict when there is no good direction", () => {
     queryMock.mockReturnValue({
       data: response({
-        groups: [group({ series: [series({ lowerIsBetter: false })] })],
+        groups: [
+          group({
+            series: [
+              series({
+                id: "barge_in",
+                label: "Barge-ins",
+                lowerIsBetter: null,
+                latest: 0.03,
+                previous: 0.02,
+              }),
+            ],
+          }),
+        ],
       }),
       isFetching: false,
       isError: false,
@@ -608,6 +663,8 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
 
-    expect(screen.getByText("higher is better")).toBeInTheDocument();
+    expect(screen.getByText("↑ 1.0%")).toBeInTheDocument();
+    expect(screen.queryByText(/worsening/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/improving/)).not.toBeInTheDocument();
   });
 });

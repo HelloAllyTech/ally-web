@@ -94,13 +94,19 @@ const deltaLabel = (s: WeakMetricSeries): string | null => {
   if (s.state === "none") return null;
   if (s.latest === null || s.previous === null) return null;
   const diff = toDisplay(s.latest, s.unit) - toDisplay(s.previous, s.unit);
-  if (Math.abs(diff) < 0.005) return "flat vs previous bucket";
-  const better = s.lowerIsBetter ? diff < 0 : diff > 0;
+  if (Math.abs(diff) < 0.005) return "no change";
   const arrow = diff < 0 ? "↓" : "↑";
   const digits = s.unit === "ratio" ? 2 : 1;
-  return `${arrow} ${Math.abs(diff).toFixed(digits)}${
-    UNIT_SUFFIX[s.unit] ?? ""
-  } vs previous bucket — ${better ? "improving" : "worsening"}`;
+  const movement = `${arrow} ${Math.abs(diff).toFixed(digits)}${UNIT_SUFFIX[s.unit] ?? ""}`;
+
+  // Some metrics have no good direction, and saying one anyway is a fabricated
+  // verdict. Barge-in is the case: interruption is ordinary conversation, and
+  // its rate turned out flat across every actor turn length above 100
+  // characters — it tracks the opportunity to cut in, not whether the actor
+  // deserved it. Those report the movement and stop there.
+  if (s.lowerIsBetter === null) return movement;
+  const better = s.lowerIsBetter ? diff < 0 : diff > 0;
+  return `${movement} — ${better ? "improving" : "worsening"}`;
 };
 
 /**
@@ -158,11 +164,11 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   // carries the one line that says what is being counted.
   const caption = series.description || undefined;
 
-  // Direction, stated rather than inferred. `lowerIsBetter` was only ever
-  // visible inside the delta sentence, which needs two buckets to appear — so
-  // on a single-bucket card nothing on screen said whether a rise was good or
-  // bad, and the reader had to work it out from the metric's name.
-  const direction = series.lowerIsBetter ? "lower is better" : "higher is better";
+  // No "lower is better" caption. Every metric here is NAMED as the thing you
+  // want less of — comprehension errors, unfair criticism, wrong language — so
+  // spelling out the direction restates the title. `lowerIsBetter` still drives
+  // the delta's improving/worsening wording, which says the same thing about
+  // the movement that actually happened rather than as a standing rule.
   // A `none` series is one the reader has been told not to read: its headline
   // is "—" and its caveat explains why. Plotting it anyway invites exactly the
   // reading the caveat forbids — barge-in drew a 4.3% column sourced from a
@@ -194,7 +200,6 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
             {tag.label}
           </Tag>
           <strong>{series.state === "none" ? "—" : formatValue(series.latest, series.unit)}</strong>
-          <span style={{ opacity: 0.6, fontSize: "0.75rem" }}>{direction}</span>
           {deltaLabel(series) && <span style={{ opacity: 0.75 }}>{deltaLabel(series)}</span>}
         </span>
       }
@@ -241,7 +246,7 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", opacity: 0.7 }}>
             {points.length === 1
               ? "One measured bucket — compared, not trended."
-              : `${points.length} measured buckets — compared, not trended: too few points to read a direction.`}
+              : `${points.length} ${bucket === "week" ? "weeks" : "months"} of data so far — not enough to show a trend.`}
           </p>
         </>
       ) : null}
@@ -314,6 +319,18 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
     () => ["", ...(data?.filterOptions.scenarios ?? []).map(sc => String(sc.id))],
     [data],
   );
+
+  // Everything a reader might need to audit a number, in one string behind an
+  // icon: which thresholds produced it, and which judge version each family was
+  // read through. Kept because "the version is pinned" matters when a chart
+  // moves; relegated because it is not what anyone opens the tab to see.
+  const provenance = [
+    `Parameters ${data?.metricsVersion ?? "—"} — thresholds define these metrics, so changing one moves every historical point.`,
+    ...(["drift", "language", "groundedness"] as const).map(family => {
+      const pin = data?.judgeVersions?.[family];
+      return `Judge (${family}): ${pin ? `${pin.judgeModel}/${pin.judgePromptVersion}` : "not run"}`;
+    }),
+  ].join(" · ");
 
   if (isError) {
     return (
@@ -410,24 +427,33 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         </div>
       </TabControls>
 
+      {/* One line, not a paragraph. The provenance this replaced — parameter
+          version, three judge versions, the reasoning behind pinning them — is
+          real and occasionally load-bearing, but it was six lines of preamble
+          above the numbers a reader came for. It moves into the tooltip; the
+          sentence that changes how you READ the page stays out. */}
       <Tile style={{ marginBottom: "1.5rem" }}>
-        <p style={{ margin: 0, opacity: 0.75, fontSize: "0.875rem" }}>
-          Repetition differs 6.6× between models and role-slip is concentrated in a handful of
-          scenarios — an unsegmented read of either tracks traffic mix rather than quality.
-          Deterministic parameters <code>{data?.metricsVersion ?? "—"}</code>. Thresholds define
-          these metrics: if one changes, every historical point moves, so the version is pinned here
-          rather than left implicit.
-          {/* One pin per judge family, not one number for all three. They
-              version independently, and reporting a single version is how the
-              language series came to be read through the drift judge's. */}
-          <br />
-          Judges:{" "}
-          {(["drift", "language", "groundedness"] as const)
-            .map(family => {
-              const pin = data?.judgeVersions?.[family];
-              return `${family} ${pin ? `${pin.judgeModel}/${pin.judgePromptVersion}` : "not run"}`;
-            })
-            .join(" · ")}
+        <p
+          style={{
+            margin: 0,
+            opacity: 0.75,
+            fontSize: "0.875rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.375rem",
+          }}
+        >
+          Segment before reading — repetition differs 6.6× between models, so an unsegmented number
+          often tracks traffic mix rather than quality.
+          <Tooltip label={provenance} align="top">
+            <button
+              type="button"
+              className="cursor-pointer inline-flex items-center"
+              aria-label="Data provenance"
+            >
+              <TooltipIcon />
+            </button>
+          </Tooltip>
         </p>
       </Tile>
 

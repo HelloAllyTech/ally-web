@@ -1089,7 +1089,8 @@ export interface WeakMetricSeries {
   label: string;
   unit: "percent" | "per100turns" | "ratio" | "count" | string;
   state: WeakMetricState;
-  lowerIsBetter: boolean;
+  /** null = no good direction; report movement without a verdict. */
+  lowerIsBetter: boolean | null;
   /** The caveat needed to read this series honestly; rendered, not hidden. */
   caveat: string | null;
   points: WeakMetricPoint[];
