@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sprout</title>
+<!--
+  Ally course component: GAME / SPROUT.
+
+  Water a plant and grow it to bloom. The mechanic is not "fill a bar": soil
+  moisture is a *band*, and it decays. In the band the plant grows; below it the
+  plant droops; above it the saucer floods and a leaf yellows and drops. The
+  band narrows as the plant grows, which is the difficulty curve. Four plants
+  give the band four different personalities, so choosing one changes how the
+  game plays rather than how it looks.
+
+  Nothing here can kill the plant and nothing here gates the course. Setbacks
+  cost progress and are always recoverable within seconds — a dead plant in a
+  wellbeing product is not a joke worth making. There is also deliberately no
+  decay while the learner is away and no guilt copy anywhere: this is a break
+  for people who spend their day absorbing other people's distress, so the pull
+  comes from the plant responding well to care, never from it suffering without
+  it.
+
+  Written from scratch (no pen to port). The scene is one SVG with a fixed
+  viewBox, which is what lets it scale to any frame the host gives it without a
+  single JS measurement — the flexbox measuring traps the tic-tac-toe bundle hit
+  simply do not arise.
+
+  This page is loaded in a sandboxed iframe by GameItemPlayer and in a WebView
+  by the mobile GamePlayer, and talks to either only through postMessage — see
+  the bridge at the bottom of this file for the contract.
+-->
+<style>
+/*
+  Ally tokens, copied as literals.
+
+  The host's palette lives in CSS variables on its own document; a sandboxed
+  iframe cannot see them and the mobile WebView has no host document at all.
+  These are the daylight (default) theme's values from the helpline app's
+  index.css, plus a few garden greens that are this bundle's own. A learner on
+  another theme gets Ally blue rather than their theme's accent, the same trade
+  every other bundle makes.
+*/
+:root {
+  --primary-50: #EBF0FA;
+  --primary-100: #D7E2F4;
+  --primary-400: #4A7DCF;
+  --primary-500: #264D8E;
+
+  --success-50: #E8F5E9;
+  --success-200: #A5D6A7;
+  --success-600: #43A047;
+  --success-700: #388E3C;
+
+  --warning-100: #FFECB3;
+  --warning-500: #F5A623;
+
+  --destructive-50: #FFCDD2;
+  --destructive-400: #F93535;
+
+  --background: #FFFFFF;
+  --background-secondary: #F4F4F4;
+  --border-light: #E0E0E0;
+  --border-medium: #C6C6C6;
+
+  --typography-500: rgba(0, 0, 0, 0.32);
+  --typography-700: rgba(0, 0, 0, 0.54);
+  --typography-900: rgba(0, 0, 0, 0.87);
+
+  /* This bundle's own garden palette. */
+  --leaf: #4C9A5B;
+  --leaf-dark: #35713F;
+  --leaf-sick: #C9A227;
+  --soil: #7A5C43;
+  --soil-wet: #5C4331;
+  --pot: #C0724A;
+  --pot-dark: #A15C39;
+  --water: #6FB7E8;
+  --sky: #F7FBF8;
+
+  /*
+    IBM Plex Serif is Ally's face but it is served by the host app, and a font
+    fetched from an opaque origin (or from an inlined WebView document) will not
+    arrive. Georgia is the closest thing every platform already has.
+  */
+  --font: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+/*
+  UA margins on <p> are real space flexbox will not collapse and a layout
+  cannot see. Zero them everywhere rather than remembering to per element.
+*/
+html, body, p, h1, h2, ul, li, dl, dd, dt, figure {
+  margin: 0;
+  padding: 0;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--sky);
+  color: var(--typography-900);
+  font-family: var(--font);
+  /* No text selection or long-press menus while dragging a watering can. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  overflow: hidden;
+}
+
+.page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+/* ---- Plant picker ------------------------------------------------------- */
+
+/*
+  Inline and switchable mid-game, never an opening modal: a thirty-second
+  breather cannot open with a form. Marigold is preselected so a learner who
+  touches nothing is already playing.
+*/
+.plants {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.plant-button {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: var(--background);
+  color: var(--typography-700);
+  cursor: pointer;
+}
+
+.plant-button:hover { background: var(--background-secondary); }
+
+.plant-button[aria-pressed="true"] {
+  border-color: var(--success-600);
+  background: var(--success-50);
+  color: var(--typography-900);
+  font-weight: 700;
+}
+
+.plant-button:focus-visible,
+.again:focus-visible,
+.stage:focus-visible {
+  outline: 2px solid var(--primary-400);
+  outline-offset: 2px;
+}
+
+/* ---- Scene -------------------------------------------------------------- */
+
+/*
+  The whole scene is one SVG with a fixed viewBox, so it scales itself to
+  whatever box it lands in. `min-height: 0` is what stops a flex column from
+  refusing to shrink it, and the aspect-ratio keeps it from going letterbox.
+*/
+.stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* Cursor is the affordance for a press-and-drag mechanic. */
+  cursor: grab;
+  touch-action: none;
+}
+
+.stage.watering { cursor: grabbing; }
+
+.stage svg {
+  height: 100%;
+  width: 100%;
+  max-width: 420px;
+  display: block;
+}
+
+.leaf { fill: var(--leaf); }
+.leaf-back { fill: var(--leaf-dark); }
+.stem { stroke: var(--leaf-dark); fill: none; stroke-linecap: round; }
+
+/* ---- Footer ------------------------------------------------------------- */
+
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.visitors {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--typography-500);
+}
+
+.visitor-slots { display: flex; gap: 4px; }
+
+.visitor-slot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  color: transparent;
+}
+
+.visitor-slot.seen {
+  border-style: solid;
+  border-color: var(--warning-500);
+  background: var(--warning-100);
+  color: var(--typography-900);
+}
+
+.status {
+  font-size: 12px;
+  line-height: 1.35;
+  min-height: 2.7em;
+  text-align: center;
+  color: var(--typography-700);
+  max-width: 44ch;
+}
+
+.status.good { color: var(--success-700); }
+.status.wet { color: var(--destructive-400); }
+
+.again {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--primary-500);
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.again[hidden] { display: none; }
+
+/*
+  A learner who has turned motion down gets the same game with the growth
+  snapping between stages and the water stream still, not a different one.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .visitor-slot { transition: none; }
+}
+
+/* Screen-reader-only live region: the game is visual, the commentary is not. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="plants" id="plants" role="group" aria-label="Choose a plant"></div>
+
+  <!--
+    tabindex on the scene, not on a button: the keyboard path is arrow keys to
+    aim and space to water, so the scene itself has to be the focus target. A
+    drag-only mechanic would be a keyboard and screen-reader dead end, and every
+    other bundle here got that right.
+  -->
+  <div class="stage" id="stage" tabindex="0" role="application" aria-label="Watering can and plant. Arrow keys aim, hold space to water.">
+    <svg id="scene" viewBox="0 0 320 250" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <!-- Saucer puddle: grows while the pot is overwatered. -->
+      <ellipse id="puddle" cx="160" cy="232" rx="0" ry="4" fill="var(--water)" opacity="0.55"/>
+
+      <!-- Pot -->
+      <path d="M110 182 L210 182 L200 230 L120 230 Z" fill="var(--pot)"/>
+      <rect x="106" y="174" width="108" height="10" rx="3" fill="var(--pot-dark)"/>
+      <!-- Soil, darkening as it wets -->
+      <rect id="soil" x="112" y="176" width="96" height="8" rx="2" fill="var(--soil)"/>
+
+      <!-- The plant, drawn by render() -->
+      <g id="plant"></g>
+
+      <!-- Water droplets -->
+      <g id="drops"></g>
+
+      <!-- Visitor (bee / butterfly / ladybird) sitting on a leaf -->
+      <g id="visitor" opacity="0"></g>
+
+      <!-- Watering can: follows the pointer, or the arrow keys -->
+      <g id="can">
+        <path d="M-14 -8 L10 -8 L8 8 L-12 8 Z" fill="var(--primary-400)"/>
+        <path d="M10 -4 L22 4 L20 8 L9 3 Z" fill="var(--primary-500)"/>
+        <path d="M-14 -4 Q-24 0 -14 6" stroke="var(--primary-500)" stroke-width="3" fill="none"/>
+        <rect x="-10" y="-12" width="14" height="4" rx="2" fill="var(--primary-500)"/>
+      </g>
+
+      <!-- Moisture meter -->
+      <g id="meter">
+        <rect x="252" y="34" width="20" height="180" rx="10" fill="var(--background-secondary)" stroke="var(--border-light)"/>
+        <rect id="band" x="252" y="100" width="20" height="40" fill="var(--success-200)"/>
+        <rect id="level" x="255" y="200" width="14" height="11" rx="6" fill="var(--water)"/>
+        <rect x="252" y="34" width="20" height="180" rx="10" fill="none" stroke="var(--border-medium)"/>
+      </g>
+
+      <!-- Growth bar -->
+      <g id="growth">
+        <rect x="44" y="238" width="232" height="6" rx="3" fill="var(--background-secondary)" stroke="var(--border-light)"/>
+        <rect id="growth-fill" x="44" y="238" width="0" height="6" rx="3" fill="var(--success-600)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="footer">
+    <div class="visitors">
+      <span id="visitors-label">Visitors</span>
+      <div class="visitor-slots" id="visitor-slots"></div>
+    </div>
+    <p class="status" id="status"></p>
+    <button type="button" class="again" id="again" hidden></button>
+  </div>
+</div>
+
+<p class="sr" id="live" role="status" aria-live="polite" aria-atomic="true"></p>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---- Copy ------------------------------------------------------------- */
+
+  /**
+   * Everything a learner reads here. Baked in English and overridden by the
+   * host, which is the side that knows their language: the web app sends these
+   * with its `focus` message, the mobile app sets `window.__allyGameStrings`
+   * before this document loads. English is the fallback either way, so a host
+   * that sends nothing still gets a working game.
+   */
+  var STRINGS = {
+    pickerLabel: 'Choose a plant',
+    plantSUCCULENT: 'Succulent',
+    plantMARIGOLD: 'Marigold',
+    plantFERN: 'Fern',
+    plantTOMATO: 'Tomato',
+    visitorsLabel: 'Visitors',
+    hintStart: 'Hold the can over the soil. Keep the water level inside the green band — too much is as bad as too little.',
+    aimSoil: 'Aiming at the soil.',
+    aimLeaves: 'Aiming at the leaves. Water on the leaves does not reach the roots.',
+    aimAway: 'Aiming past the pot.',
+    stateDry: 'Thirsty. The soil has dried out and growing has stopped.',
+    stateGood: 'Just right. It is growing.',
+    stateWet: 'Too wet. The saucer is flooding — ease off and let it drink.',
+    stage0: 'Seed',
+    stage1: 'Sprout',
+    stage2: 'Stem',
+    stage3: 'Leaves',
+    stage4: 'Bud',
+    stage5: 'Bloom',
+    leafDropped: 'A leaf yellowed and dropped from the wet soil.',
+    leafScorched: 'Water sat on a leaf in full sun and scorched it.',
+    bloomed: 'It bloomed. {{blooms}} so far this sitting.',
+    plantAnother: 'Plant another',
+    visitorArrived: 'A {{visitor}} came by.',
+    visitorBEE: 'bee',
+    visitorBUTTERFLY: 'butterfly',
+    visitorLADYBIRD: 'ladybird'
+  };
+
+  if (window.__allyGameStrings) applyStrings(window.__allyGameStrings);
+
+  function applyStrings(next) {
+    for (var key in STRINGS) {
+      if (Object.prototype.hasOwnProperty.call(next, key) &&
+          typeof next[key] === 'string') {
+        STRINGS[key] = next[key];
+      }
+    }
+  }
+
+  function fill(template, values) {
+    return String(template).replace(/\{\{(\w+)\}\}/g, function (match, name) {
+      return Object.prototype.hasOwnProperty.call(values, name)
+        ? String(values[name])
+        : match;
+    });
+  }
+
+  /* ---- Plants ----------------------------------------------------------- */
+
+  /**
+   * Four plants, four different moisture personalities. This is the whole
+   * reason the picker exists: if the plants differed only in sprite the choice
+   * would be decoration and the game would be identical either way.
+   *
+   *   band(stage) -> the window the level has to stay inside to grow.
+   *                  It NARROWS as the plant grows — that is the difficulty
+   *                  curve, and it comes out of the fiction rather than being
+   *                  bolted on as a level.
+   *   soak        -> how fast the level rises while watering.
+   *   dry         -> how fast it falls when you stop. Sets the rhythm: a
+   *                  succulent gives long calm gaps, a fern needs near
+   *                  continuous attention.
+   */
+  var PLANTS = {
+    // Narrow window, barely dries out. The hardest, and the calmest.
+    SUCCULENT: { centre: 42, width: 26, narrow: 3.6, soak: 26, dry: 2.2, hue: '#6FA96B' },
+    // The default. Wide window, middling thirst — forgiving.
+    MARIGOLD: { centre: 45, width: 40, narrow: 4.6, soak: 30, dry: 4.5, hue: '#4C9A5B' },
+    // Wants to be wet and dries fast. The busiest, and the easiest to keep in band.
+    FERN: { centre: 62, width: 46, narrow: 5.0, soak: 34, dry: 8.0, hue: '#3F8F55' },
+    // The band does not just narrow, it CLIMBS: a fruiting plant wants more as
+    // it grows, so what worked at stage one starves it at stage four.
+    TOMATO: { centre: 34, width: 30, narrow: 2.6, soak: 30, dry: 5.0, hue: '#559A4E', climb: 7 }
+  };
+
+  var PLANT_ORDER = ['SUCCULENT', 'MARIGOLD', 'FERN', 'TOMATO'];
+
+  function bandFor(plant, stage) {
+    var spec = PLANTS[plant];
+    var width = Math.max(8, spec.width - spec.narrow * stage);
+    var centre = spec.centre + (spec.climb || 0) * stage;
+    return { lo: centre - width / 2, hi: centre + width / 2 };
+  }
+
+  /** Stem height and leaf count at each of the six growth stages. */
+  var STAGE_HEIGHT = [4, 20, 46, 76, 100, 116];
+  var STAGE_LEAVES = [0, 2, 2, 4, 4, 6];
+  var LAST_STAGE = 5;
+
+  /** Bloom colours, purely cosmetic and rolled at random. */
+  var BLOOM_COLOURS = ['#E4572E', '#F5A623', '#E0578E', '#8E6BC4', '#F2F0E6'];
+
+  /** The one thing a learner can actually collect in a sitting. */
+  var VISITORS = ['BEE', 'BUTTERFLY', 'LADYBIRD'];
+
+  /* ---- Rules ------------------------------------------------------------ */
+
+  var GROW_RATE = 12;      // growth per second while the level is in band
+  var OVERFLOW_GRACE = 2.2; // seconds of flooding before a leaf goes
+  var SCORCH_GRACE = 2.2;   // seconds of water on the leaves before one scorches
+  var DROP_COST = 25;       // growth lost when a leaf drops
+  var SCORCH_COST = 15;
+  var VISITOR_CHANCE = 0.35; // per stage reached — a variable, not fixed, payoff
+
+  /* ---- Geometry --------------------------------------------------------- */
+
+  var BASE_X = 160, BASE_Y = 180;      // where the stem leaves the soil
+  var SOIL_L = 112, SOIL_R = 208;      // the soil's x range
+  var METER_TOP = 34, METER_H = 180;   // the moisture meter
+  var BAR_X = 44, BAR_W = 232;         // the growth bar
+  var VIEW_W = 320, VIEW_H = 250;
+
+  /* ---- State ------------------------------------------------------------ */
+
+  var plant = 'MARIGOLD';
+  var stage = 0;
+  var growth = 0;          // 0..100 within the current stage
+  var level = 30;          // moisture, 0..100
+  var blooms = 0;
+  var bloomColour = BLOOM_COLOURS[0];
+  var seen = {};           // visitors collected this sitting
+
+  var canX = 118, canY = 120;
+  var watering = false;
+  var pointerWatering = false;
+  var keyWatering = false;
+  var overflowFor = 0, scorchFor = 0;
+  var droop = 0;           // 0..1, how far the stem is leaning from thirst
+  var lostLeafAt = -1;     // timestamp of the last leaf drop, for the flash
+  var drops = [];
+  var visitorNow = null, visitorUntil = 0;
+  var dropCarry = 0;
+  var bloomedAt = -1;
+  var announcedStart = false;
+  var lastTick = 0;
+  var lastState = '', lastAim = '';
+
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Elements --------------------------------------------------------- */
+
+  var plantsEl = document.getElementById('plants');
+  var stageEl = document.getElementById('stage');
+  var sceneEl = document.getElementById('scene');
+  var plantGroup = document.getElementById('plant');
+  var dropsGroup = document.getElementById('drops');
+  var visitorGroup = document.getElementById('visitor');
+  var canEl = document.getElementById('can');
+  var soilEl = document.getElementById('soil');
+  var puddleEl = document.getElementById('puddle');
+  var bandEl = document.getElementById('band');
+  var levelEl = document.getElementById('level');
+  var growthFillEl = document.getElementById('growth-fill');
+  var statusEl = document.getElementById('status');
+  var againEl = document.getElementById('again');
+  var slotsEl = document.getElementById('visitor-slots');
+  var visitorsLabelEl = document.getElementById('visitors-label');
+  var liveEl = document.getElementById('live');
+
+  function svg(name, attrs) {
+    var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+    for (var key in attrs) {
+      if (Object.prototype.hasOwnProperty.call(attrs, key)) {
+        node.setAttribute(key, attrs[key]);
+      }
+    }
+    return node;
+  }
+
+  /* ---- Chrome ----------------------------------------------------------- */
+
+  var plantButtons = {};
+
+  function buildChrome() {
+    plantsEl.setAttribute('aria-label', STRINGS.pickerLabel);
+    plantsEl.textContent = '';
+    plantButtons = {};
+    PLANT_ORDER.forEach(function (key) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'plant-button';
+      // textContent, never innerHTML: a translation file must not be able to
+      // inject markup into the frame.
+      button.textContent = STRINGS['plant' + key];
+      button.setAttribute('aria-pressed', String(key === plant));
+      button.addEventListener('click', function () { choosePlant(key); });
+      plantsEl.appendChild(button);
+      plantButtons[key] = button;
+    });
+
+    visitorsLabelEl.textContent = STRINGS.visitorsLabel;
+    slotsEl.textContent = '';
+    VISITORS.forEach(function (key) {
+      var slot = document.createElement('span');
+      slot.className = 'visitor-slot' + (seen[key] ? ' seen' : '');
+      slot.textContent = seen[key] ? visitorGlyph(key) : '';
+      slot.setAttribute('title', STRINGS['visitor' + key]);
+      slot.setAttribute('aria-label', STRINGS['visitor' + key]);
+      slotsEl.appendChild(slot);
+      slot.dataset.visitor = key;
+    });
+
+    againEl.textContent = STRINGS.plantAnother;
+  }
+
+  function visitorGlyph(key) {
+    if (key === 'BEE') return '\uD83D\uDC1D';
+    if (key === 'BUTTERFLY') return '\uD83E\uDD8B';
+    return '\uD83D\uDC1E';
+  }
+
+  function refreshSlots() {
+    Array.prototype.forEach.call(slotsEl.children, function (slot) {
+      var key = slot.dataset.visitor;
+      var has = !!seen[key];
+      slot.className = 'visitor-slot' + (has ? ' seen' : '');
+      slot.textContent = has ? visitorGlyph(key) : '';
+    });
+  }
+
+  function choosePlant(key) {
+    if (!PLANTS[key]) return;
+    plant = key;
+    PLANT_ORDER.forEach(function (other) {
+      plantButtons[other].setAttribute('aria-pressed', String(other === key));
+    });
+    reseed();
+    // Switching plant is a fresh start, so say which one is now in the pot.
+    announce(STRINGS['plant' + key] + '. ' + STRINGS.hintStart);
+  }
+
+  function reseed() {
+    stage = 0;
+    growth = 0;
+    level = Math.min(level, bandFor(plant, 0).hi);
+    overflowFor = 0;
+    scorchFor = 0;
+    droop = 0;
+    drops = [];
+    visitorNow = null;
+    bloomedAt = -1;
+    againEl.hidden = true;
+    lastState = '';
+  }
+
+  /* ---- Announcements ---------------------------------------------------- */
+
+  /**
+   * The scene is `aria-hidden` and everything meaningful about it is a colour
+   * or a shape, so the live region is the whole game for a screen reader. It is
+   * throttled and only speaks on a real transition — a moisture reading every
+   * frame would be unusable.
+   */
+  var lastAnnounce = 0;
+  function announce(text, force) {
+    var now = Date.now();
+    if (!force && now - lastAnnounce < 900) return;
+    lastAnnounce = now;
+    liveEl.textContent = text;
+  }
+
+  function bandState() {
+    var band = bandFor(plant, stage);
+    if (level < band.lo) return 'dry';
+    if (level > band.hi) return 'wet';
+    return 'good';
+  }
+
+  /* ---- Aim -------------------------------------------------------------- */
+
+  /**
+   * The can waters whatever is directly under its spout. That single rule is
+   * what gives the gesture a right and a wrong target: early on the soil is
+   * wide open, but a grown plant's canopy is in the way, so reaching the roots
+   * means coming in low or from the side. Learnable, and true of real plants.
+   */
+  function spout() {
+    return { x: canX + 20, y: canY + 6 };
+  }
+
+  function aim() {
+    var tip = spout();
+    var leaves = leafPositions();
+    for (var i = 0; i < leaves.length; i++) {
+      var leaf = leaves[i];
+      if (leaf.y > tip.y &&
+          Math.abs(leaf.x - tip.x) < leaf.rx + 4 &&
+          leaf.y - tip.y < 150) {
+        return 'leaves';
+      }
+    }
+    if (tip.x > SOIL_L - 6 && tip.x < SOIL_R + 6 && tip.y < BASE_Y + 40) return 'soil';
+    return 'away';
+  }
+
+  /* ---- Plant shape ------------------------------------------------------ */
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function currentHeight() {
+    var t = reduceMotion ? 0 : growth / 100;
+    return lerp(STAGE_HEIGHT[stage], STAGE_HEIGHT[Math.min(stage + 1, LAST_STAGE)], t);
+  }
+
+  function currentLeafCount() {
+    var t = reduceMotion ? 0 : growth / 100;
+    return lerp(STAGE_LEAVES[stage], STAGE_LEAVES[Math.min(stage + 1, LAST_STAGE)], t);
+  }
+
+  /** A point at fraction t along the stem's quadratic. */
+  function stemPoint(t, height, lean) {
+    var p0x = BASE_X, p0y = BASE_Y;
+    var cx = BASE_X + lean * 0.35, cy = BASE_Y - height * 0.55;
+    var p2x = BASE_X + lean, p2y = BASE_Y - height;
+    var u = 1 - t;
+    return {
+      x: u * u * p0x + 2 * u * t * cx + t * t * p2x,
+      y: u * u * p0y + 2 * u * t * cy + t * t * p2y
+    };
+  }
+
+  function leafPositions() {
+    var height = currentHeight();
+    var lean = droop * 26;
+    var count = Math.floor(currentLeafCount());
+    var out = [];
+    for (var i = 0; i < count; i++) {
+      // Leaves climb the stem in pairs, alternating sides.
+      var t = 0.32 + 0.6 * (i / Math.max(1, STAGE_LEAVES[LAST_STAGE] - 1));
+      var point = stemPoint(Math.min(0.95, t), height, lean);
+      var side = i % 2 === 0 ? -1 : 1;
+      var rx = 13 + 2 * (i % 3);
+      out.push({ x: point.x + side * (rx * 0.8), y: point.y, rx: rx, ry: 7, side: side, index: i });
+    }
+    return out;
+  }
+
+  function renderPlant() {
+    var height = currentHeight();
+    var lean = droop * 26;
+    var top = stemPoint(1, height, lean);
+    var mid = { x: BASE_X + lean * 0.35, y: BASE_Y - height * 0.55 };
+    var hue = PLANTS[plant].hue;
+
+    plantGroup.textContent = '';
+
+    if (stage === 0 && growth < 40) {
+      // A seed under the soil, and nothing else to see yet.
+      plantGroup.appendChild(svg('ellipse', {
+        cx: BASE_X, cy: BASE_Y - 1, rx: 4, ry: 3, fill: 'var(--soil-wet)'
+      }));
+      return;
+    }
+
+    plantGroup.appendChild(svg('path', {
+      d: 'M' + BASE_X + ' ' + BASE_Y + ' Q' + mid.x.toFixed(1) + ' ' + mid.y.toFixed(1) +
+         ' ' + top.x.toFixed(1) + ' ' + top.y.toFixed(1),
+      stroke: hue, 'stroke-width': Math.max(2, 2 + height / 40).toFixed(1),
+      fill: 'none', 'stroke-linecap': 'round'
+    }));
+
+    var leaves = leafPositions();
+    var partial = currentLeafCount() - Math.floor(currentLeafCount());
+    leaves.forEach(function (leaf) {
+      plantGroup.appendChild(svg('ellipse', {
+        cx: leaf.x.toFixed(1), cy: leaf.y.toFixed(1),
+        rx: leaf.rx, ry: leaf.ry,
+        fill: hue,
+        transform: 'rotate(' + (leaf.side * -18) + ' ' + leaf.x.toFixed(1) + ' ' + leaf.y.toFixed(1) + ')'
+      }));
+    });
+
+    // The leaf currently unfurling, so growth is visible between stages too.
+    if (partial > 0.15 && leaves.length < STAGE_LEAVES[LAST_STAGE]) {
+      var next = stemPoint(0.9, height, lean);
+      plantGroup.appendChild(svg('ellipse', {
+        cx: next.x.toFixed(1), cy: next.y.toFixed(1),
+        rx: (13 * partial).toFixed(1), ry: (7 * partial).toFixed(1),
+        fill: hue, opacity: 0.8
+      }));
+    }
+
+    // Bud from stage 4, opening into a flower at bloom.
+    if (stage >= 4) {
+      var open = stage >= LAST_STAGE ? 1 : growth / 100;
+      if (open > 0.02) {
+        if (stage >= LAST_STAGE) {
+          for (var p = 0; p < 6; p++) {
+            var angle = (p / 6) * Math.PI * 2;
+            plantGroup.appendChild(svg('ellipse', {
+              cx: (top.x + Math.cos(angle) * 7).toFixed(1),
+              cy: (top.y + Math.sin(angle) * 7).toFixed(1),
+              rx: 6, ry: 6, fill: bloomColour
+            }));
+          }
+          plantGroup.appendChild(svg('circle', {
+            cx: top.x.toFixed(1), cy: top.y.toFixed(1), r: 4.5, fill: 'var(--warning-500)'
+          }));
+        } else {
+          plantGroup.appendChild(svg('ellipse', {
+            cx: top.x.toFixed(1), cy: (top.y - 3).toFixed(1),
+            rx: (3 + 3 * open).toFixed(1), ry: (5 + 4 * open).toFixed(1),
+            fill: open > 0.6 ? bloomColour : hue
+          }));
+        }
+      }
+    }
+
+    // A dropping leaf: yellow, falling, for a second and a half after the loss.
+    if (lostLeafAt > 0) {
+      var age = (Date.now() - lostLeafAt) / 1000;
+      if (age < 1.5) {
+        plantGroup.appendChild(svg('ellipse', {
+          cx: (BASE_X + 22 + age * 10).toFixed(1),
+          cy: (BASE_Y - 40 + age * 60).toFixed(1),
+          rx: 12, ry: 6, fill: 'var(--leaf-sick)',
+          opacity: Math.max(0, 1 - age / 1.5).toFixed(2),
+          transform: 'rotate(' + (age * 120).toFixed(0) + ' ' + (BASE_X + 22) + ' ' + (BASE_Y - 40) + ')'
+        }));
+      } else {
+        lostLeafAt = -1;
+      }
+    }
+  }
+
+  function renderVisitor() {
+    visitorGroup.textContent = '';
+    if (!visitorNow) { visitorGroup.setAttribute('opacity', '0'); return; }
+    visitorGroup.setAttribute('opacity', '1');
+    var leaves = leafPositions();
+    var perch = leaves.length ? leaves[leaves.length - 1] : { x: BASE_X, y: BASE_Y - 30 };
+    var bob = reduceMotion ? 0 : Math.sin(Date.now() / 220) * 2;
+    var x = perch.x, y = perch.y - 8 + bob;
+    if (visitorNow === 'BEE') {
+      visitorGroup.appendChild(svg('ellipse', { cx: x, cy: y, rx: 5, ry: 3.5, fill: 'var(--warning-500)' }));
+      visitorGroup.appendChild(svg('rect', { x: x - 1.5, y: y - 3.5, width: 2, height: 7, fill: '#3B2F14' }));
+      visitorGroup.appendChild(svg('ellipse', { cx: x, cy: y - 4, rx: 4, ry: 2, fill: '#FFFFFF', opacity: 0.75 }));
+    } else if (visitorNow === 'BUTTERFLY') {
+      visitorGroup.appendChild(svg('ellipse', { cx: x - 4, cy: y - 2, rx: 4.5, ry: 5.5, fill: '#8E6BC4' }));
+      visitorGroup.appendChild(svg('ellipse', { cx: x + 4, cy: y - 2, rx: 4.5, ry: 5.5, fill: '#B79BE0' }));
+      visitorGroup.appendChild(svg('rect', { x: x - 0.8, y: y - 5, width: 1.6, height: 9, fill: '#3B2F14' }));
+    } else {
+      visitorGroup.appendChild(svg('ellipse', { cx: x, cy: y, rx: 4.5, ry: 4, fill: 'var(--destructive-400)' }));
+      visitorGroup.appendChild(svg('rect', { x: x - 0.6, y: y - 4, width: 1.2, height: 8, fill: '#2A1A1A' }));
+      visitorGroup.appendChild(svg('circle', { cx: x - 2, cy: y - 1, r: 0.9, fill: '#2A1A1A' }));
+      visitorGroup.appendChild(svg('circle', { cx: x + 2, cy: y + 1, r: 0.9, fill: '#2A1A1A' }));
+    }
+  }
+
+  function renderMeter() {
+    var band = bandFor(plant, stage);
+    var top = METER_TOP + METER_H * (1 - band.hi / 100);
+    var height = METER_H * (band.hi - band.lo) / 100;
+    bandEl.setAttribute('y', top.toFixed(1));
+    bandEl.setAttribute('height', Math.max(3, height).toFixed(1));
+    var levelY = METER_TOP + METER_H * (1 - level / 100) - 5.5;
+    levelEl.setAttribute('y', Math.max(METER_TOP, Math.min(METER_TOP + METER_H - 11, levelY)).toFixed(1));
+
+    var state = bandState();
+    levelEl.setAttribute('fill', state === 'wet' ? 'var(--destructive-400)' : 'var(--water)');
+
+    // Wet soil goes dark, which is the second, ambient read on the same number.
+    var wetness = Math.min(1, level / 100);
+    soilEl.setAttribute('fill', wetness > 0.55 ? 'var(--soil-wet)' : 'var(--soil)');
+    soilEl.setAttribute('opacity', (0.7 + wetness * 0.3).toFixed(2));
+
+    puddleEl.setAttribute('rx', (overflowFor > 0 ? Math.min(38, overflowFor * 20) : 0).toFixed(1));
+  }
+
+  function renderGrowth() {
+    var overall = (stage * 100 + growth) / (LAST_STAGE * 100);
+    growthFillEl.setAttribute('width', (BAR_W * Math.min(1, overall)).toFixed(1));
+  }
+
+  function renderCan() {
+    canEl.setAttribute('transform', 'translate(' + canX.toFixed(1) + ' ' + canY.toFixed(1) + ') rotate(' + (watering ? 24 : 0) + ')');
+  }
+
+  function renderDrops() {
+    dropsGroup.textContent = '';
+    if (reduceMotion) return;
+    drops.forEach(function (drop) {
+      dropsGroup.appendChild(svg('ellipse', {
+        cx: drop.x.toFixed(1), cy: drop.y.toFixed(1), rx: 1.6, ry: 3.2,
+        fill: 'var(--water)', opacity: 0.85
+      }));
+    });
+  }
+
+  function renderStatus() {
+    var state = bandState();
+    var text;
+    if (stage === 0 && growth < 1 && !announcedStart) text = STRINGS.hintStart;
+    else if (state === 'dry') text = STRINGS.stateDry;
+    else if (state === 'wet') text = STRINGS.stateWet;
+    else text = STRINGS.stateGood;
+    statusEl.textContent = STRINGS['stage' + stage] + ' · ' + text;
+    statusEl.className = 'status ' + (state === 'good' ? 'good' : state === 'wet' ? 'wet' : '');
+  }
+
+  function render() {
+    renderPlant();
+    renderVisitor();
+    renderMeter();
+    renderGrowth();
+    renderCan();
+    renderDrops();
+    renderStatus();
+  }
+
+  /* ---- Simulation ------------------------------------------------------- */
+
+  function stageUp() {
+    if (stage >= LAST_STAGE) return;
+    stage += 1;
+    growth = 0;
+    post('over', { score: score() });
+
+    if (stage >= LAST_STAGE) {
+      blooms += 1;
+      bloomedAt = Date.now();
+      againEl.hidden = false;
+      announce(fill(STRINGS.bloomed, { blooms: blooms }), true);
+      post('over', { score: score() });
+      return;
+    }
+
+    /*
+      A variable payoff, not a fixed one: most stages give only the growth, and
+      sometimes something comes to visit. Cosmetic and per-sitting — there is no
+      currency here and nothing to lose by leaving.
+    */
+    if (Math.random() < VISITOR_CHANCE) {
+      var pick = VISITORS[Math.floor(Math.random() * VISITORS.length)];
+      visitorNow = pick;
+      visitorUntil = Date.now() + 5200;
+      if (!seen[pick]) { seen[pick] = true; refreshSlots(); }
+      announce(fill(STRINGS.visitorArrived, { visitor: STRINGS['visitor' + pick] }) + ' ' +
+               STRINGS['stage' + stage], true);
+    } else {
+      announce(STRINGS['stage' + stage], true);
+    }
+  }
+
+  function loseLeaf(reason) {
+    growth = Math.max(0, growth - (reason === 'scorch' ? SCORCH_COST : DROP_COST));
+    lostLeafAt = Date.now();
+    announce(reason === 'scorch' ? STRINGS.leafScorched : STRINGS.leafDropped, true);
+  }
+
+  function tick(now) {
+    var dt = lastTick ? Math.min(0.05, (now - lastTick) / 1000) : 0;
+    lastTick = now;
+
+    var spec = PLANTS[plant];
+    var target = aim();
+    var bloomed = stage >= LAST_STAGE;
+
+    if (watering && !bloomed) {
+      markStarted();
+      if (target === 'soil') {
+        level = Math.min(100, level + spec.soak * dt);
+        scorchFor = 0;
+      } else if (target === 'leaves') {
+        // Nothing reaches the roots, and from stage 3 the sun does the rest.
+        scorchFor += dt;
+        if (stage >= 3 && scorchFor >= SCORCH_GRACE) {
+          scorchFor = 0;
+          loseLeaf('scorch');
+        }
+      } else {
+        scorchFor = 0;
+      }
+      if (!reduceMotion) spawnDrops(dt);
+    } else {
+      scorchFor = 0;
+    }
+
+    level = Math.max(0, level - spec.dry * dt);
+
+    var band = bandFor(plant, stage);
+    if (!bloomed) {
+      if (level >= band.lo && level <= band.hi) {
+        growth += GROW_RATE * dt;
+        overflowFor = 0;
+        droop = Math.max(0, droop - dt * 1.6);
+        if (growth >= 100) stageUp();
+      } else if (level > band.hi) {
+        overflowFor += dt;
+        droop = Math.max(0, droop - dt * 1.6);
+        if (overflowFor >= OVERFLOW_GRACE) {
+          overflowFor = 0;
+          loseLeaf('flood');
+        }
+      } else {
+        overflowFor = 0;
+        droop = Math.min(1, droop + dt * 0.5);
+      }
+    } else {
+      overflowFor = 0;
+      droop = Math.max(0, droop - dt * 1.6);
+    }
+
+    stepDrops(dt);
+
+    if (visitorNow && Date.now() > visitorUntil) visitorNow = null;
+
+    // Speak transitions only. A moisture reading every frame is unusable.
+    var state = bandState();
+    if (state !== lastState) {
+      lastState = state;
+      announce(state === 'dry' ? STRINGS.stateDry
+             : state === 'wet' ? STRINGS.stateWet
+             : STRINGS.stateGood);
+    }
+    if (watering && target !== lastAim) {
+      lastAim = target;
+      announce(target === 'soil' ? STRINGS.aimSoil
+             : target === 'leaves' ? STRINGS.aimLeaves
+             : STRINGS.aimAway);
+    }
+    if (!watering) lastAim = '';
+
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  function spawnDrops(dt) {
+    var tip = spout();
+    // Carry the fraction over between frames, or a short frame emits nothing
+    // and the stream stutters at high refresh rates.
+    dropCarry += dt * 40;
+    while (dropCarry >= 1 && drops.length < 90) {
+      dropCarry -= 1;
+      drops.push({
+        x: tip.x + (Math.random() - 0.5) * 5,
+        y: tip.y + Math.random() * 4,
+        vy: 90 + Math.random() * 50
+      });
+    }
+    // A backgrounded frame can hand us a big dt; don't hoard it.
+    if (dropCarry > 4) dropCarry = 0;
+  }
+
+  function stepDrops(dt) {
+    var kept = [];
+    for (var i = 0; i < drops.length; i++) {
+      var drop = drops[i];
+      drop.vy += 320 * dt;
+      drop.y += drop.vy * dt;
+      if (drop.y < BASE_Y + 46) kept.push(drop);
+    }
+    drops = kept;
+  }
+
+  /**
+   * Score = blooms this sitting, plus how far the current plant has come.
+   *
+   * The shape is not cosmetic. The host keeps the personal best as a maximum,
+   * so a lower-is-better number would make the WORST sitting the best score.
+   * This only ever rises within a sitting — a flooded pot or a dropped leaf can
+   * slow it but can never take a best away — and it reads as "most growth in
+   * one sitting".
+   */
+  function score() {
+    var progress = Math.round((stage * 100 + growth) / LAST_STAGE);
+    return blooms * 100 + Math.min(100, progress);
+  }
+
+  /* ---- Input ------------------------------------------------------------ */
+
+  function setWatering(next) {
+    watering = next;
+    stageEl.classList.toggle('watering', next);
+  }
+
+  /** Pointer coordinates -> the SVG's own coordinates, at any scale. */
+  function toScene(event) {
+    var box = sceneEl.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+    // preserveAspectRatio defaults to centred and uniform, so undo the letterbox.
+    var scale = Math.min(box.width / VIEW_W, box.height / VIEW_H);
+    var offsetX = (box.width - VIEW_W * scale) / 2;
+    var offsetY = (box.height - VIEW_H * scale) / 2;
+    return {
+      x: (event.clientX - box.left - offsetX) / scale,
+      y: (event.clientY - box.top - offsetY) / scale
+    };
+  }
+
+  function moveCanTo(x, y) {
+    canX = Math.max(6, Math.min(VIEW_W - 60, x - 20));
+    canY = Math.max(10, Math.min(BASE_Y + 20, y - 6));
+  }
+
+  stageEl.addEventListener('pointerdown', function (event) {
+    var point = toScene(event);
+    if (!point) return;
+    pointerWatering = true;
+    moveCanTo(point.x, point.y);
+    setWatering(true);
+    stageEl.focus({ preventScroll: true });
+    // Keep receiving moves even if the finger leaves the scene mid-drag.
+    if (stageEl.setPointerCapture && event.pointerId != null) {
+      try { stageEl.setPointerCapture(event.pointerId); } catch (error) { /* not fatal */ }
+    }
+    event.preventDefault();
+  });
+
+  stageEl.addEventListener('pointermove', function (event) {
+    var point = toScene(event);
+    if (!point) return;
+    moveCanTo(point.x, point.y);
+  });
+
+  function releasePointer() {
+    pointerWatering = false;
+    if (!keyWatering) setWatering(false);
+  }
+
+  stageEl.addEventListener('pointerup', releasePointer);
+  stageEl.addEventListener('pointercancel', releasePointer);
+  stageEl.addEventListener('pointerleave', function () {
+    // A mouse that leaves the scene stops watering; a captured touch does not.
+    if (pointerWatering) return;
+    setWatering(false);
+  });
+
+  /*
+    The keyboard path is not a fallback, it is the same game: arrows aim, space
+    waters. A press-and-drag mechanic with no keyboard route would shut out
+    anyone not using a pointer.
+  */
+  var STEP = 12;
+  stageEl.addEventListener('keydown', function (event) {
+    var key = event.key;
+    if (key === 'ArrowLeft') { canX = Math.max(6, canX - STEP); }
+    else if (key === 'ArrowRight') { canX = Math.min(VIEW_W - 60, canX + STEP); }
+    else if (key === 'ArrowUp') { canY = Math.max(10, canY - STEP); }
+    else if (key === 'ArrowDown') { canY = Math.min(BASE_Y + 20, canY + STEP); }
+    else if (key === ' ' || key === 'Spacebar' || key === 'Enter') {
+      keyWatering = true;
+      setWatering(true);
+    } else { return; }
+    event.preventDefault();
+    if (key !== ' ' && key !== 'Spacebar' && key !== 'Enter') {
+      var target = aim();
+      announce(target === 'soil' ? STRINGS.aimSoil
+             : target === 'leaves' ? STRINGS.aimLeaves
+             : STRINGS.aimAway, true);
+    }
+  });
+
+  stageEl.addEventListener('keyup', function (event) {
+    if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
+      keyWatering = false;
+      if (!pointerWatering) setWatering(false);
+      event.preventDefault();
+    }
+  });
+
+  // Losing focus must not leave the can stuck on.
+  stageEl.addEventListener('blur', function () {
+    keyWatering = false;
+    pointerWatering = false;
+    setWatering(false);
+  });
+
+  againEl.addEventListener('click', function () {
+    bloomColour = BLOOM_COLOURS[Math.floor(Math.random() * BLOOM_COLOURS.length)];
+    reseed();
+    stageEl.focus({ preventScroll: true });
+  });
+
+  /* ---- Host bridge ------------------------------------------------------ */
+
+  /**
+   * [Ally] Host bridge — the whole contract between a game bundle and the app.
+   *
+   * A game folder under /games/<key>/ is a self-contained page. It never
+   * imports from the app and the app never reaches into it; they exchange
+   * three messages. The same file runs in two hosts: an <iframe> in the web app
+   * (messages go to window.parent) and a react-native-webview in the mobile app
+   * (messages go to window.ReactNativeWebView as a JSON string).
+   *
+   *   game -> host  { source:'ally-game', game, type:'ready' }
+   *   game -> host  { source:'ally-game', game, type:'started' }
+   *   game -> host  { source:'ally-game', game, type:'over', score, highScore }
+   *
+   *   host -> game  { source:'ally-game-host', type:'focus', strings? }
+   *
+   * Scores are reported for the learner's personal best only. Games in a course
+   * never gate progression, so nothing here blocks, unlocks or grades anything.
+   */
+  var GAME = 'SPROUT';
+  var iframeHost = window.parent !== window ? window.parent : null;
+
+  function post(type, extra) {
+    var message = { source: 'ally-game', game: GAME, type: type };
+    for (var key in extra) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) message[key] = extra[key];
+    }
+    if (window.ReactNativeWebView) {
+      // WebView bridge only speaks strings.
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      return;
+    }
+    // '*' because a sandboxed iframe has an opaque origin that matches no
+    // concrete target. Nothing here is worth protecting from the parent.
+    if (iframeHost) iframeHost.postMessage(message, '*');
+  }
+
+  function markStarted() {
+    if (announcedStart) return;
+    announcedStart = true;
+    post('started');
+  }
+
+  window.addEventListener('message', function (event) {
+    var data = event.data;
+    if (!data || data.source !== 'ally-game-host') return;
+    if (data.strings) {
+      applyStrings(data.strings);
+      // Words are already on screen by the time this lands, so rebuild them
+      // rather than waiting for something to change.
+      buildChrome();
+      render();
+    }
+    if (data.type === 'focus') window.focus();
+  });
+
+  /*
+    Built once at startup as well as on the host message: the web app sends
+    strings in its `focus` reply to `ready`, but the mobile app sets
+    window.__allyGameStrings before this document loads and sends nothing at
+    all. Anything built only on the message stays English on mobile only.
+  */
+  bloomColour = BLOOM_COLOURS[Math.floor(Math.random() * BLOOM_COLOURS.length)];
+  buildChrome();
+  render();
+  requestAnimationFrame(tick);
+  post('ready');
+})();
+</script>
+</body>
+</html>
