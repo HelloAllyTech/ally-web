@@ -38,8 +38,7 @@ export const ACCEPT_ATTRIBUTES = {
   // application/octet-stream on some platforms, so a MIME-only accept attribute (and a MIME-only
   // validation check) rejects perfectly valid EPUBs.
   PDF: "application/pdf,.pdf",
-  DOCX:
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx",
+  DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx",
   EPUB: "application/epub+zip,.epub",
 };
 

@@ -540,9 +540,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     // runtimes. Per-prompt runtime metadata would let this narrow to exactly
     // the consuming runtime; see the LLM-config ADR.
     const runtimeCount = new Set(llmModels.flatMap(m => m.runtimes)).size;
-    const eligible = llmModels.filter(
-      m => new Set(m.runtimes).size === runtimeCount,
-    );
+    const eligible = llmModels.filter(m => new Set(m.runtimes).size === runtimeCount);
 
     return PROVIDER_ORDER.map(({ provider, label }) => ({
       provider,

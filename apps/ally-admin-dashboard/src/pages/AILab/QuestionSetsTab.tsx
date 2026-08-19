@@ -71,7 +71,9 @@ export const QuestionSetsTab: React.FC = () => {
         );
       } catch {
         toast.error(
-          nextArchived ? en.aiLab.questionSets.archiveFailed : en.aiLab.questionSets.unarchiveFailed,
+          nextArchived
+            ? en.aiLab.questionSets.archiveFailed
+            : en.aiLab.questionSets.unarchiveFailed,
         );
       } finally {
         setBusyId(null);
@@ -93,9 +95,7 @@ export const QuestionSetsTab: React.FC = () => {
 
   return (
     <div className="mt-4">
-      <p className="text-typography-600 text-sm mb-4 max-w-3xl">
-        {en.aiLab.questionSets.subtitle}
-      </p>
+      <p className="text-typography-600 text-sm mb-4 max-w-3xl">{en.aiLab.questionSets.subtitle}</p>
       <ListToolbar
         searchValue={search}
         onSearchChange={setSearch}

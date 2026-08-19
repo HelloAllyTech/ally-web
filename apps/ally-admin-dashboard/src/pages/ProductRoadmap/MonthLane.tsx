@@ -52,9 +52,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
         }`}
       >
         <h3
-          className={`text-sm ${
-            isCurrentMonth ? "text-primary-600" : "text-typography-primary"
-          }`}
+          className={`text-sm ${isCurrentMonth ? "text-primary-600" : "text-typography-primary"}`}
         >
           {monthLabel(lane.month)}
           {isCurrentMonth && (
@@ -72,10 +70,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
           isOver ? "bg-primary-50" : "bg-transparent"
         }`}
       >
-        <SortableContext
-          items={lane.items.map(o => o.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={lane.items.map(o => o.id)} strategy={verticalListSortingStrategy}>
           {lane.items.map(opportunity => (
             <MonthOpportunityCard
               key={opportunity.id}

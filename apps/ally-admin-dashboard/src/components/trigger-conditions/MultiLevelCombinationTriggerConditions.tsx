@@ -123,16 +123,17 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
   };
 
   const config = getTriggerConditionConfig(EVENT_DETECTION_TYPES.COMBINATION);
-  if (!config) return null;
-
-  const statusField = config.fields.find(field => field.id === FIELD_IDS.STATUS);
-  const operatorField = config.fields.find(field => field.id === FIELD_IDS.OPERATOR);
 
   const leafNodePaths = useMemo(() => {
     return flattenExpression(expression)
       .filter(n => isLeafNode(n.node))
       .map(n => n.path);
   }, [expression]);
+
+  if (!config) return null;
+
+  const statusField = config.fields.find(field => field.id === FIELD_IDS.STATUS);
+  const operatorField = config.fields.find(field => field.id === FIELD_IDS.OPERATOR);
 
   // Handle event selection change
   const handleEventChange = (path: string, eventId: string, eventName?: string) => {

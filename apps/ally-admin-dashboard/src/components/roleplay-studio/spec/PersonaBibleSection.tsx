@@ -11,8 +11,8 @@ import { removePersonaChunk, updatePersona, upsertPersonaChunk } from "@reducer"
 import { RoleplayPersona, RoleplayPersonaChunk } from "@src/types/roleplayStudio";
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
-import { SpecSectionCard } from "./SpecSectionCard";
 import { SpecTagList, SpecValue } from "./SpecField";
+import { SpecSectionCard } from "./SpecSectionCard";
 
 interface PersonaBibleSectionProps {
   persona: RoleplayPersona;

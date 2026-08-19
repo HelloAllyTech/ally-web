@@ -192,6 +192,7 @@ export const ProductRoadmap: React.FC = () => {
    * this exact cache entry, and a fresh object each render would patch one nobody is rendering.
    */
   const boardArgs = useMemo<RoadmapBoardQuery>(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sortBy: _sortBy, order: _order, limit: _limit, offset: _offset, ...filters } = listArgs;
     return { ...filters, from: monthWindow.from, to: monthWindow.to };
   }, [listArgs, monthWindow]);

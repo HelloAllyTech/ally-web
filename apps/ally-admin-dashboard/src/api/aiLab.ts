@@ -292,19 +292,20 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_QUESTION_SETS],
     }),
-    updateQuestionSet: builder.mutation<QuestionSet, { id: string; data: UpdateQuestionSetRequest }>(
-      {
-        query: ({ id, data }) => ({
-          url: ApiEndpoints.AI_LAB.QUESTION_SET_BY_ID(id),
-          method: HttpMethod.PATCH,
-          body: data,
-        }),
-        invalidatesTags: (result, error, { id }) => [
-          { type: TAG_TYPES.AI_LAB_QUESTION_SETS, id },
-          TAG_TYPES.AI_LAB_QUESTION_SETS,
-        ],
-      },
-    ),
+    updateQuestionSet: builder.mutation<
+      QuestionSet,
+      { id: string; data: UpdateQuestionSetRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SET_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: TAG_TYPES.AI_LAB_QUESTION_SETS, id },
+        TAG_TYPES.AI_LAB_QUESTION_SETS,
+      ],
+    }),
     publishQuestionSet: builder.mutation<QuestionSet, string>({
       query: id => ({
         url: ApiEndpoints.AI_LAB.QUESTION_SET_PUBLISH(id),

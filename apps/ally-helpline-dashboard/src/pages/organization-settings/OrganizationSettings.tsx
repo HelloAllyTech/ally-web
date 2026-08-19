@@ -11,8 +11,8 @@ import { OrgBadgesAccess } from "../../components/organization-settings/OrgBadge
 import { OrgCasesAccess } from "../../components/organization-settings/OrgCasesAccess";
 import { OrgPathsAccess } from "../../components/organization-settings/OrgPathsAccess";
 import { OrgScribeSettings } from "../../components/organization-settings/OrgScribeSettings";
-import { OrgSimulationSettings } from "../../components/organization-settings/OrgSimulationSettings";
 import { OrgSimulationsAccess } from "../../components/organization-settings/OrgSimulationsAccess";
+import { OrgSimulationSettings } from "../../components/organization-settings/OrgSimulationSettings";
 // Import AccessDenied from its leaf module (not the @pages barrel) so this page
 // can live in the barrel without a self-referential import cycle.
 import { AccessDenied } from "../access-denied/AccessDenied";

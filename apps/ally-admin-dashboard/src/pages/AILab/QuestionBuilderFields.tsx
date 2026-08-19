@@ -56,7 +56,9 @@ export const QuestionBuilderFields: React.FC<QuestionBuilderFieldsProps> = ({
         sourceQuestionSetId: set.id,
       }));
       const isPristineDefault =
-        questions.length === 1 && !questions[0].question.trim() && !questions[0].sourceQuestionSetId;
+        questions.length === 1 &&
+        !questions[0].question.trim() &&
+        !questions[0].sourceQuestionSetId;
       onChange(isPristineDefault ? imported : [...questions, ...imported]);
       toast.success(en.aiLab.questionSets.importedNote);
     } catch {
@@ -153,7 +155,9 @@ export const QuestionBuilderFields: React.FC<QuestionBuilderFieldsProps> = ({
                 labelText={en.aiLab.publish.typeLabel}
                 hideLabel
                 value={question.type}
-                onChange={e => updateQuestion(index, { type: e.target.value as LabEvalQuestionType })}
+                onChange={e =>
+                  updateQuestion(index, { type: e.target.value as LabEvalQuestionType })
+                }
               >
                 <SelectItem value="RATING" text={en.aiLab.publish.typeRating} />
                 <SelectItem value="YES_NO" text={en.aiLab.publish.typeYesNo} />
