@@ -6,6 +6,7 @@ import { Button, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
+  useCancelBugFixSessionMutation,
   useGetBugFindingQuery,
   useRejectBugFindingMutation,
   useReleaseBugFindingMutation,
@@ -85,10 +86,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const [reject, { isLoading: isRejecting }] = useRejectBugFindingMutation();
   const [answer, { isLoading: isAnswering }] = useAnswerBugFindingMutation();
   const [startFixSession, { isLoading: isStartingSession }] = useStartBugFixSessionMutation();
+  const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
 
   const [confirmAction, setConfirmAction] = useState<
-    "approve" | "reject" | "fixSession" | "release" | null
+    "approve" | "reject" | "fixSession" | "stopFixSession" | "release" | null
   >(null);
   const [answerText, setAnswerText] = useState("");
 
@@ -112,6 +114,13 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
   const canStartSession = finding
     ? BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
+    : false;
+
+  // Mirrors the backend's own gate (QUEUED or FIXING) so a stale click never
+  // makes a round trip just to be told 403 — the same reasoning as
+  // `canStartSession` above.
+  const canStopSession = finding
+    ? finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING
     : false;
 
   const handleDecision = async () => {
@@ -138,6 +147,20 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
       toast.error(
         (error as { data?: { message?: string } })?.data?.message ??
           en.bugHunter.drawerFixSessionFailed,
+      );
+    }
+  };
+
+  const handleStopFixSession = async () => {
+    try {
+      await cancelFixSession(id).unwrap();
+      setConfirmAction(null);
+    } catch (error) {
+      // Same reasoning as handleStartFixSession: the backend's own refusal
+      // (e.g. the session already finished) is more useful than a generic line.
+      toast.error(
+        (error as { data?: { message?: string } })?.data?.message ??
+          en.bugHunter.drawerStopFixSessionFailed,
       );
     }
   };
@@ -365,11 +388,32 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                   disabled={isStartingSession}
                   onClick={() => setConfirmAction("fixSession")}
                 >
-                  {finding.status === BugFindingStatus.FAILED
+                  {/* CANCELLED reads as a retry too — same story as FAILED,
+                      just stopped on purpose rather than given up on. */}
+                  {finding.status === BugFindingStatus.FAILED ||
+                  finding.status === BugFindingStatus.CANCELLED
                     ? en.bugHunter.drawerRetryFixSession
                     : en.bugHunter.drawerStartFixSession}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerFixSessionTooltip} align="top">
+                  <button type="button" className="cursor-pointer inline-flex items-center">
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </>
+            )}
+
+            {canStopSession && (
+              <>
+                <Button
+                  size="sm"
+                  kind="danger--tertiary"
+                  disabled={isCancellingSession}
+                  onClick={() => setConfirmAction("stopFixSession")}
+                >
+                  {en.bugHunter.drawerStopFixSession}
+                </Button>
+                <Tooltip label={en.bugHunter.drawerStopFixSessionTooltip} align="top">
                   <button type="button" className="cursor-pointer inline-flex items-center">
                     <TooltipIcon />
                   </button>
@@ -418,6 +462,13 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerDecidedBy.replace("{userId}", String(finding.decidedBy))}
               {finding.decidedAt ? ` · ${formatDate(finding.decidedAt)}` : ""}
+            </p>
+          )}
+
+          {finding.cancelledBy != null && (
+            <p className="text-xs text-typography-500">
+              {en.bugHunter.drawerCancelledBy.replace("{userId}", String(finding.cancelledBy))}
+              {finding.cancelledAt ? ` · ${formatDate(finding.cancelledAt)}` : ""}
             </p>
           )}
 
@@ -537,6 +588,21 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             label: en.bugHunter.drawerFixSessionStart,
             onClick: handleStartFixSession,
             disabled: isStartingSession,
+          }}
+          secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
+        />
+      )}
+
+      {confirmAction === "stopFixSession" && (
+        <ActionConfirmationPopup
+          isOpen
+          onClose={() => setConfirmAction(null)}
+          title={en.bugHunter.drawerStopFixSessionConfirmTitle}
+          description={en.bugHunter.drawerStopFixSessionConfirmBody}
+          primaryButton={{
+            label: en.bugHunter.drawerStopFixSessionConfirm,
+            onClick: handleStopFixSession,
+            disabled: isCancellingSession,
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
         />
