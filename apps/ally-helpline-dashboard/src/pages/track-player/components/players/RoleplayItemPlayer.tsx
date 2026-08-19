@@ -54,8 +54,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   const [logExpanded, setLogExpanded] = useState(false);
 
   const isCase = payload.type === "CASE";
-  const lastScenarioSessionId =
-    payload.type === "ROLEPLAY" ? payload.lastScenarioSessionId : null;
+  const lastScenarioSessionId = payload.type === "ROLEPLAY" ? payload.lastScenarioSessionId : null;
 
   const { data: scenario } = useGetScenarioQuery(
     { scenarioId: payload.type === "ROLEPLAY" ? payload.scenarioId : 0, isPrivate: true },

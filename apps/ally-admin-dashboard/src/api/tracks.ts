@@ -154,10 +154,7 @@ const tracksApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
     }),
 
-    getTrackTranslation: builder.query<
-      TrackTranslationDetail,
-      { id: string; languageId: number }
-    >({
+    getTrackTranslation: builder.query<TrackTranslationDetail, { id: string; languageId: number }>({
       query: ({ id, languageId }) => ({
         url: ApiEndpoints.TRACKS.TRANSLATION(id, languageId),
         method: HttpMethod.GET,

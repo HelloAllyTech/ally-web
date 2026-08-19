@@ -76,11 +76,14 @@ export const RunsTab: React.FC = () => {
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   // Reset to the first page whenever the search term changes.
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value);
-    setOffset(0);
-    clearSelection();
-  }, [clearSelection]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+      setOffset(0);
+      clearSelection();
+    },
+    [clearSelection],
+  );
 
   // Enable polling only while runs are in-flight; stop once all are terminal.
   useEffect(() => {
@@ -205,7 +208,10 @@ export const RunsTab: React.FC = () => {
                 </span>
                 <div className="flex items-center gap-4">
                   {selectedKind === "unpublished" && (
-                    <Button variant={ButtonVariant.PRIMARY} onClick={() => setBulkPublishOpen(true)}>
+                    <Button
+                      variant={ButtonVariant.PRIMARY}
+                      onClick={() => setBulkPublishOpen(true)}
+                    >
                       {en.aiLab.runs.bulkPublishAction}
                     </Button>
                   )}
@@ -264,141 +270,142 @@ export const RunsTab: React.FC = () => {
                 <TableBody>
                   {runs.map(run => {
                     const kind = rowBulkKind(run);
-                    const checkboxDisabled = !kind || (selectedKind !== null && selectedKind !== kind);
+                    const checkboxDisabled =
+                      !kind || (selectedKind !== null && selectedKind !== kind);
                     return (
-                    <TableRow
-                      key={run.id}
-                      onClick={() => setDetailRun(run)}
-                      className="border-t border-border-light hover:bg-background-secondary/50 transition-colors cursor-pointer"
-                    >
-                      <TableCell
-                        className="px-4 py-3 align-top"
-                        onClick={e => e.stopPropagation()}
+                      <TableRow
+                        key={run.id}
+                        onClick={() => setDetailRun(run)}
+                        className="border-t border-border-light hover:bg-background-secondary/50 transition-colors cursor-pointer"
                       >
-                        {kind && (
-                          <input
-                            type="checkbox"
-                            className="w-4 h-4"
-                            checked={selectedIds.has(run.id)}
-                            disabled={checkboxDisabled}
-                            onChange={() => toggleSelectRow(run)}
-                            aria-label={en.common.select}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top font-medium text-typography-900">
-                        {run.skillName}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top">
-                        <VariableSummary run={run} />
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top">
-                        <div className="flex flex-col items-start gap-1">
-                          <RunStatusBadge status={run.status} />
-                          {run.publishedAt && (
-                            <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border bg-primary-50 text-primary-700 border-primary-200">
-                              {en.aiLab.publish.publishedBadge}
-                            </span>
+                        <TableCell
+                          className="px-4 py-3 align-top"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {kind && (
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4"
+                              checked={selectedIds.has(run.id)}
+                              disabled={checkboxDisabled}
+                              onChange={() => toggleSelectRow(run)}
+                              aria-label={en.common.select}
+                            />
                           )}
-                          {run.publishedAt && run.evalStats && run.evalStats.assigned > 0 && (
-                            <span className="text-xs text-typography-500">
-                              {en.aiLab.assign.responses(
-                                run.evalStats.submitted,
-                                run.evalStats.assigned,
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top text-typography-700">
-                        <span className="line-clamp-2">
-                          {run.status === "FAILED" ? run.error : run.output}
-                        </span>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top text-typography-500 text-sm">
-                        {new Date(run.createdAt).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 align-top">
-                        <div className="flex items-center justify-end gap-3 text-typography-600">
-                          {!!run.batchId && (batchCounts.get(run.batchId) ?? 0) > 1 && (
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                setCompareRun(run);
-                              }}
-                              className="hover:text-primary-600"
-                              aria-label={en.aiLab.compare.action}
-                              title={en.aiLab.compare.action}
-                            >
-                              <Copy size={18} />
-                            </button>
-                          )}
-                          {run.status === "COMPLETED" && (
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                setAutoEvalRun(run);
-                              }}
-                              className="hover:text-primary-600"
-                              aria-label={en.aiLab.autoEval.action}
-                              title={en.aiLab.autoEval.action}
-                            >
-                              <WandStars width={18} height={18} />
-                            </button>
-                          )}
-                          {run.status === "COMPLETED" && !run.publishedAt && (
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                setPublishRun(run);
-                              }}
-                              className="hover:text-primary-600"
-                              aria-label={en.aiLab.publish.action}
-                              title={en.aiLab.publish.action}
-                            >
-                              <Upload size={18} />
-                            </button>
-                          )}
-                          {run.publishedAt && (
-                            <>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top font-medium text-typography-900">
+                          {run.skillName}
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top">
+                          <VariableSummary run={run} />
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top">
+                          <div className="flex flex-col items-start gap-1">
+                            <RunStatusBadge status={run.status} />
+                            {run.publishedAt && (
+                              <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border bg-primary-50 text-primary-700 border-primary-200">
+                                {en.aiLab.publish.publishedBadge}
+                              </span>
+                            )}
+                            {run.publishedAt && run.evalStats && run.evalStats.assigned > 0 && (
+                              <span className="text-xs text-typography-500">
+                                {en.aiLab.assign.responses(
+                                  run.evalStats.submitted,
+                                  run.evalStats.assigned,
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top text-typography-700">
+                          <span className="line-clamp-2">
+                            {run.status === "FAILED" ? run.error : run.output}
+                          </span>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top text-typography-500 text-sm">
+                          {new Date(run.createdAt).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="px-4 py-3 align-top">
+                          <div className="flex items-center justify-end gap-3 text-typography-600">
+                            {!!run.batchId && (batchCounts.get(run.batchId) ?? 0) > 1 && (
                               <button
                                 onClick={e => {
                                   e.stopPropagation();
-                                  setAssignRun(run);
+                                  setCompareRun(run);
                                 }}
                                 className="hover:text-primary-600"
-                                aria-label={en.aiLab.assign.action}
-                                title={en.aiLab.assign.action}
+                                aria-label={en.aiLab.compare.action}
+                                title={en.aiLab.compare.action}
                               >
-                                <Users size={18} />
+                                <Copy size={18} />
                               </button>
+                            )}
+                            {run.status === "COMPLETED" && (
                               <button
                                 onClick={e => {
                                   e.stopPropagation();
-                                  setResultsRun(run);
+                                  setAutoEvalRun(run);
                                 }}
                                 className="hover:text-primary-600"
-                                aria-label={en.aiLab.results.action}
-                                title={en.aiLab.results.action}
+                                aria-label={en.aiLab.autoEval.action}
+                                title={en.aiLab.autoEval.action}
                               >
-                                <BarChart3 size={18} />
+                                <WandStars width={18} height={18} />
                               </button>
-                            </>
-                          )}
-                          <button
-                            onClick={e => {
-                              e.stopPropagation();
-                              setDeleteTarget(run);
-                            }}
-                            className="hover:text-destructive-600"
-                            aria-label="Delete"
-                            title="Delete"
-                          >
-                            <Delete size={18} />
-                          </button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                            )}
+                            {run.status === "COMPLETED" && !run.publishedAt && (
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setPublishRun(run);
+                                }}
+                                className="hover:text-primary-600"
+                                aria-label={en.aiLab.publish.action}
+                                title={en.aiLab.publish.action}
+                              >
+                                <Upload size={18} />
+                              </button>
+                            )}
+                            {run.publishedAt && (
+                              <>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    setAssignRun(run);
+                                  }}
+                                  className="hover:text-primary-600"
+                                  aria-label={en.aiLab.assign.action}
+                                  title={en.aiLab.assign.action}
+                                >
+                                  <Users size={18} />
+                                </button>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    setResultsRun(run);
+                                  }}
+                                  className="hover:text-primary-600"
+                                  aria-label={en.aiLab.results.action}
+                                  title={en.aiLab.results.action}
+                                >
+                                  <BarChart3 size={18} />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setDeleteTarget(run);
+                              }}
+                              className="hover:text-destructive-600"
+                              aria-label="Delete"
+                              title="Delete"
+                            >
+                              <Delete size={18} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
                 </TableBody>

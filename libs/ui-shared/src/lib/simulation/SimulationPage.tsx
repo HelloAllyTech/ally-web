@@ -235,8 +235,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     }
   };
 
-  if (!roomData) return null;
-
   const {
     triggerWarnings = [],
     title,
@@ -254,6 +252,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     if (checklistMode === ChecklistMode.OFF || !checklistEvents) return [];
     return checklistEvents;
   }, [checklistMode, checklistEvents]);
+
+  if (!roomData) return null;
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);

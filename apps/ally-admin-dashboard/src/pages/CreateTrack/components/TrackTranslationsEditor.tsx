@@ -3,10 +3,6 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { TooltipIcon, WarningAlt } from "@assets";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
-import { useTrackTranslationsSocket } from "@hooks";
 import {
   useGetTrackTranslationQuery,
   useGetTrackTranslationsQuery,
@@ -18,6 +14,10 @@ import {
   useUnpublishTrackTranslationMutation,
   useUpdateTrackTranslationFieldsMutation,
 } from "@api";
+import { TooltipIcon, WarningAlt } from "@assets";
+import { Button } from "@components";
+import { ButtonVariant } from "@components/types";
+import { useTrackTranslationsSocket } from "@hooks";
 import {
   TrackItemType,
   TrackTranslationField,
@@ -91,10 +91,7 @@ interface TrackTranslationsEditorProps {
  * a language cannot go live until every field that feeds scoring has been
  * confirmed by a human.
  */
-export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
-  trackId,
-  isDirty,
-}) => {
+export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trackId, isDirty }) => {
   const [editingLanguageId, setEditingLanguageId] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [progress, setProgress] = useState<TrackTranslationProgress | null>(null);
@@ -110,8 +107,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
 
   const [setLanguages, { isLoading: isSavingLanguages }] = useSetTrackLanguagesMutation();
   const [translateTrack, { isLoading: isStartingRun }] = useTranslateTrackMutation();
-  const [updateFields, { isLoading: isSavingFields }] =
-    useUpdateTrackTranslationFieldsMutation();
+  const [updateFields, { isLoading: isSavingFields }] = useUpdateTrackTranslationFieldsMutation();
   const [reviewTranslation] = useReviewTrackTranslationMutation();
   const [setMedia] = useSetTrackTranslationMediaMutation();
   const [publish] = usePublishTrackTranslationMutation();
@@ -207,12 +203,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
   const draftKey = (scope: string, entityId: string, path: string) =>
     `${scope}|${entityId}|${path}`;
 
-  const handleDraftChange = (
-    scope: string,
-    entityId: string,
-    path: string,
-    value: string,
-  ) => {
+  const handleDraftChange = (scope: string, entityId: string, path: string, value: string) => {
     setDrafts(previous => ({ ...previous, [draftKey(scope, entityId, path)]: value }));
   };
 
@@ -264,16 +255,14 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
       <div className="max-w-2xl">
         <h2 className="text-lg font-semibold text-typography-900">Languages</h2>
         <p className="mt-2 text-sm text-typography-600">
-          Save this course as a draft first. Translation works from the saved English content,
-          so there is nothing to translate yet.
+          Save this course as a draft first. Translation works from the saved English content, so
+          there is nothing to translate yet.
         </p>
       </div>
     );
   }
 
-  const editingSummary = summaries.find(
-    summary => summary.languageId === editingLanguageId,
-  );
+  const editingSummary = summaries.find(summary => summary.languageId === editingLanguageId);
   const draftCount = Object.keys(drafts).length;
 
   return (
@@ -291,16 +280,16 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
           </Tooltip>
         </div>
         <p className="mt-1 text-sm text-typography-600">
-          English is always available. Pick the other languages this course should be offered
-          in — each one starts translating as soon as you add it.
+          English is always available. Pick the other languages this course should be offered in —
+          each one starts translating as soon as you add it.
         </p>
       </div>
 
       {isDirty && (
         <div className="flex gap-2 rounded-md border border-warning-200 bg-warning-50 p-3 text-xs text-warning-800">
           <WarningAlt className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          You have unsaved changes to the English content. Save the course first — translation
-          works from the saved version.
+          You have unsaved changes to the English content. Save the course first — translation works
+          from the saved version.
         </div>
       )}
 
@@ -416,9 +405,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
                 </div>
               </div>
 
-              {summary.error && (
-                <p className="text-xs text-destructive-700">{summary.error}</p>
-              )}
+              {summary.error && <p className="text-xs text-destructive-700">{summary.error}</p>}
 
               {summary.fallbackItems.length > 0 && (
                 <ul className="flex flex-col gap-0.5">
@@ -450,9 +437,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
               value={editingLanguageId ?? SOURCE_LANGUAGE_CODE}
               onChange={event =>
                 setEditingLanguageId(
-                  event.target.value === SOURCE_LANGUAGE_CODE
-                    ? null
-                    : Number(event.target.value),
+                  event.target.value === SOURCE_LANGUAGE_CODE ? null : Number(event.target.value),
                 )
               }
             >
@@ -490,9 +475,8 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({
 
           {editingLanguageId === null ? (
             <p className="text-sm text-typography-600">
-              Switch the dropdown to a language to read what Ally produced and correct anything
-              that reads wrong. Your corrections are never overwritten by a later translation
-              run.
+              Switch the dropdown to a language to read what Ally produced and correct anything that
+              reads wrong. Your corrections are never overwritten by a later translation run.
             </p>
           ) : isFetchingDetail ? (
             <p className="text-sm text-typography-500">Loading {detail?.label ?? "translation"}…</p>
@@ -624,9 +608,7 @@ const FieldGroup: FC<FieldGroupProps> = ({
                     </Tooltip>
                   )}
                 </div>
-                <p className="whitespace-pre-wrap text-xs text-typography-600">
-                  {field.english}
-                </p>
+                <p className="whitespace-pre-wrap text-xs text-typography-600">{field.english}</p>
               </div>
               <textarea
                 className={`${inputClass} min-h-[64px] resize-y`}

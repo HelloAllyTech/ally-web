@@ -50,9 +50,9 @@ export const BulkAssignEvaluatorsDrawer: React.FC<BulkAssignEvaluatorsDrawerProp
   const [assignRun] = useAssignLabRunMutation();
   const [unassignRun] = useUnassignLabRunMutation();
 
-  const [assignmentsByRun, setAssignmentsByRun] = useState<Map<string, Map<string, AssignmentInfo>>>(
-    new Map(),
-  );
+  const [assignmentsByRun, setAssignmentsByRun] = useState<
+    Map<string, Map<string, AssignmentInfo>>
+  >(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [desired, setDesired] = useState<Map<string, boolean>>(new Map());
@@ -131,7 +131,10 @@ export const BulkAssignEvaluatorsDrawer: React.FC<BulkAssignEvaluatorsDrawerProp
     [aggregateStateFor],
   );
 
-  const previewNames = useMemo(() => runs.slice(0, RUN_PREVIEW_LIMIT).map(r => r.skillName), [runs]);
+  const previewNames = useMemo(
+    () => runs.slice(0, RUN_PREVIEW_LIMIT).map(r => r.skillName),
+    [runs],
+  );
   const previewExtra = runs.length - previewNames.length;
 
   const handleApply = useCallback(async () => {
@@ -165,9 +168,13 @@ export const BulkAssignEvaluatorsDrawer: React.FC<BulkAssignEvaluatorsDrawerProp
 
     setIsApplying(true);
     const [addResults, removeResults] = await Promise.all([
-      Promise.allSettled(addCalls.map(c => assignRun({ runId: c.runId, evaluatorIds: c.evaluatorIds }).unwrap())),
       Promise.allSettled(
-        removeCalls.map(c => unassignRun({ assignmentId: c.assignmentId, runId: c.runId }).unwrap()),
+        addCalls.map(c => assignRun({ runId: c.runId, evaluatorIds: c.evaluatorIds }).unwrap()),
+      ),
+      Promise.allSettled(
+        removeCalls.map(c =>
+          unassignRun({ assignmentId: c.assignmentId, runId: c.runId }).unwrap(),
+        ),
       ),
     ]);
     setIsApplying(false);

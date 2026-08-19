@@ -7,9 +7,8 @@ export type TrackSelection =
 export const isSettingsSelection = (selection: TrackSelection): selection is "settings" =>
   selection === "settings";
 
-export const isTranslationsSelection = (
-  selection: TrackSelection,
-): selection is "translations" => selection === "translations";
+export const isTranslationsSelection = (selection: TrackSelection): selection is "translations" =>
+  selection === "translations";
 
 export const isSameItemSelection = (
   selection: TrackSelection,

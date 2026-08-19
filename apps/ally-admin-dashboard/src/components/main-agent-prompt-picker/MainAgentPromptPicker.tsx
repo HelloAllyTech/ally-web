@@ -82,9 +82,9 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
     () =>
       Boolean(
         currentValue &&
-          (prompts ?? []).some(
-            prompt => prompt.promptCode === currentValue && prompt.visibleInStudio === false,
-          ),
+        (prompts ?? []).some(
+          prompt => prompt.promptCode === currentValue && prompt.visibleInStudio === false,
+        ),
       ),
     [prompts, currentValue],
   );

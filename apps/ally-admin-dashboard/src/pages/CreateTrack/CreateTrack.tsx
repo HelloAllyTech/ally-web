@@ -21,11 +21,7 @@ import { ItemEditorCanvas } from "./components/ItemEditorCanvas";
 import { TrackOutlineRail } from "./components/TrackOutlineRail";
 import { TrackSettingsEditor } from "./components/TrackSettingsEditor";
 import { TrackTranslationsEditor } from "./components/TrackTranslationsEditor";
-import {
-  TrackSelection,
-  isSettingsSelection,
-  isTranslationsSelection,
-} from "./components/types";
+import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./components/types";
 import {
   createEmptySection,
   createItemOfType,

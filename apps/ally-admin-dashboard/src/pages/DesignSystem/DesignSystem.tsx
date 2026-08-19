@@ -276,10 +276,7 @@ export const DesignSystem: React.FC = () => {
         <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="flex items-baseline gap-3">
-              <span
-                className="text-lg font-semibold"
-                style={{ color: carbonTokens.primary }}
-              >
+              <span className="text-lg font-semibold" style={{ color: carbonTokens.primary }}>
                 Ally Design System
               </span>
               <span className="text-sm text-gray-400">Carbon · White · IBM Plex Serif</span>
@@ -302,8 +299,8 @@ export const DesignSystem: React.FC = () => {
           <h1 className="text-4xl font-semibold text-gray-900">Component library</h1>
           <p className="mt-3 max-w-2xl text-gray-500">
             A live gallery of every component in Ally&apos;s centralised design system. Each app in
-            the monorepo consumes these from a single shared package, so what you see here is exactly
-            what ships across Admin, Helpline and Web.
+            the monorepo consumes these from a single shared package, so what you see here is
+            exactly what ships across Admin, Helpline and Web.
           </p>
         </div>
 
@@ -361,7 +358,11 @@ export const DesignSystem: React.FC = () => {
         {/* ---------------------------------------------------------------- */}
         {/* Buttons & actions                                                */}
         {/* ---------------------------------------------------------------- */}
-        <Section id="buttons" title="Buttons & actions" description="Button kinds, sizes and icons.">
+        <Section
+          id="buttons"
+          title="Buttons & actions"
+          description="Button kinds, sizes and icons."
+        >
           <Example label="Kinds">
             <Button kind="primary">Primary</Button>
             <Button kind="secondary">Secondary</Button>
@@ -527,11 +528,7 @@ export const DesignSystem: React.FC = () => {
         <Section id="datetime" title="Date & time" description="Date and time entry.">
           <Example label="Pickers">
             <DatePicker datePickerType="single">
-              <DatePickerInput
-                id="ds-datepicker"
-                labelText="Start date"
-                placeholder="mm/dd/yyyy"
-              />
+              <DatePickerInput id="ds-datepicker" labelText="Start date" placeholder="mm/dd/yyyy" />
             </DatePicker>
             <div className="w-40">
               <TimePicker id="ds-timepicker" labelText="Start time" />
@@ -549,9 +546,17 @@ export const DesignSystem: React.FC = () => {
         >
           <Example label="Inline notifications">
             <div className="flex w-full flex-col gap-3">
-              <InlineNotification kind="info" title="Info" subtitle="A neutral, informational message." />
+              <InlineNotification
+                kind="info"
+                title="Info"
+                subtitle="A neutral, informational message."
+              />
               <InlineNotification kind="success" title="Success" subtitle="The action completed." />
-              <InlineNotification kind="warning" title="Warning" subtitle="Something needs attention." />
+              <InlineNotification
+                kind="warning"
+                title="Warning"
+                subtitle="Something needs attention."
+              />
               <InlineNotification kind="error" title="Error" subtitle="The action failed." />
             </div>
           </Example>
@@ -624,11 +629,7 @@ export const DesignSystem: React.FC = () => {
         {/* ---------------------------------------------------------------- */}
         {/* Data display                                                     */}
         {/* ---------------------------------------------------------------- */}
-        <Section
-          id="data"
-          title="Data display"
-          description="Tables, tabs, tiles and navigation."
-        >
+        <Section id="data" title="Data display" description="Tables, tabs, tiles and navigation.">
           <Example label="Table">
             <div className="w-full">
               <TableContainer title="Simulations" description="A sample data table.">
@@ -775,7 +776,8 @@ export const DesignSystem: React.FC = () => {
         </Section>
 
         <footer className="border-t border-gray-200 py-10 text-sm text-gray-400">
-          Ally Design System — rendered live from <span className="font-mono">@ally-ui-mono/ui-shared</span>.
+          Ally Design System — rendered live from{" "}
+          <span className="font-mono">@ally-ui-mono/ui-shared</span>.
         </footer>
       </main>
     </div>

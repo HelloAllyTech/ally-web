@@ -112,7 +112,7 @@ export const monthFromLaneDomId = (id: string): string | null | undefined => {
 // ── the drop resolver ────────────────────────────────────────────────────────
 
 /** Local arrayMove, so this module needs no dnd-kit import to be tested. */
-const arrayMove = <T,>(items: T[], from: number, to: number): T[] => {
+const arrayMove = <T>(items: T[], from: number, to: number): T[] => {
   const next = [...items];
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved);
@@ -168,11 +168,7 @@ export const resolveDrop = (
 
   return {
     month: to.month,
-    orderedIds: [
-      ...withoutActive.slice(0, insertAt),
-      activeId,
-      ...withoutActive.slice(insertAt),
-    ],
+    orderedIds: [...withoutActive.slice(0, insertAt), activeId, ...withoutActive.slice(insertAt)],
     withinLane: false,
   };
 };

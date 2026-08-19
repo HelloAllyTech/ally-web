@@ -12,6 +12,7 @@ export default [
   {
     ignores: [
       ".github/**",
+      ".claude/**",
       ".next/**",
       "node_modules/**",
       "dist/**",

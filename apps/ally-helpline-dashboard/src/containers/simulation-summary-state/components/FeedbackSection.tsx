@@ -120,8 +120,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
   // enabled, so Checklist Mode alone is not enough to surface it here. The
   // in-session checklist panel is unaffected and still follows the mode.
   const isChecklistMode =
-    simulationMode === "CHECKLIST" &&
-    props?.scenario?.metadata?.summaryChecklistEnabled === true;
+    simulationMode === "CHECKLIST" && props?.scenario?.metadata?.summaryChecklistEnabled === true;
   const isFeedbackMode = simulationMode === "FEEDBACK";
   return (
     <motion.div className="flex flex-col gap-6 w-full">

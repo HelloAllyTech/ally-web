@@ -38,7 +38,10 @@ export const BulkPublishDrawer: React.FC<BulkPublishDrawerProps> = ({ runs, onCl
 
   const isValid = questions.length >= 1 && questions.every(q => q.question.trim().length > 0);
 
-  const previewNames = useMemo(() => runs.slice(0, RUN_PREVIEW_LIMIT).map(r => r.skillName), [runs]);
+  const previewNames = useMemo(
+    () => runs.slice(0, RUN_PREVIEW_LIMIT).map(r => r.skillName),
+    [runs],
+  );
   const previewExtra = runs.length - previewNames.length;
 
   const handlePublishAll = useCallback(async () => {
