@@ -825,7 +825,6 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     }
     return cleanup;
     // doSaveRef is a stable ref; isDirty derives from currentSerialized.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSerialized, isDirty, isFormValid, selectedPrompt?.id, onAutoSave]);
 
   // Persist any pending edit immediately (used on close and Cmd/Ctrl+Enter).
