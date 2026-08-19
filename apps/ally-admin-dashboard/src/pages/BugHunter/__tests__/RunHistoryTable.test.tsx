@@ -13,10 +13,6 @@ vi.mock("@api", () => ({
   useGetBugHuntRunQuery: (id: string) => getRun(id),
 }));
 
-vi.mock("@hooks", () => ({
-  useBugHuntStream: () => ({ events: [], status: null, isConnected: false }),
-}));
-
 vi.mock("@utils", () => ({ formatDate: (d: string) => d }));
 vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /> }));
 

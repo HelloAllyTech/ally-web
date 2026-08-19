@@ -2346,11 +2346,6 @@ export const en = {
     faqOffTitle: "How do I stop you?",
     faqOffBody:
       "Set my working style to Off duty above. That blocks every trigger immediately — nightly and on-demand alike.",
-    // ── What I'm doing right now ─────────────────────────────────────────────
-    liveRunSectionTitle: "What I'm doing right now",
-    liveRunTitle: "I'm sweeping {repo}",
-    liveRunConnecting: "Catching you up on what I'm doing…",
-    liveRunNoEventsYet: "I've just started — nothing to report yet.",
     // ── Findings table (the comprehensive bug table) ──────────────────────────
     findingsTitle: "Bugs I'm tracking",
     findingsSubtitle: "Everything I know about, from any source, newest first.",

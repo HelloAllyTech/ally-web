@@ -8,7 +8,7 @@ import { en } from "@constants";
 import { PIPELINE_STAGES, PipelineStage } from "./pipelineStage";
 
 export interface PipelineRailProps {
-  /** Where the bug/run currently stands, derived by `stageFromEventStage`/`stageFromFindingStatus`. */
+  /** Where the finding currently stands, derived by `stageFromFindingStatus`. */
   stage: PipelineStage;
   /**
    * Overrides the current node's colour without moving its position on the

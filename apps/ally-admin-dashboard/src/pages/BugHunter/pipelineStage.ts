@@ -1,4 +1,4 @@
-import { BugFindingStatus, BugHuntEventStage } from "@types";
+import { BugFindingStatus } from "@types";
 
 /**
  * The six macro-stages `PipelineRail` visualizes for one bug/run, chosen to
@@ -19,50 +19,6 @@ export const PIPELINE_STAGES: PipelineStage[] = [
   "merged",
   "ship",
 ];
-
-/**
- * Maps the latest progression-relevant `BugHuntEvent` stage to a rail
- * position, for `LiveRunCard`.
- *
- * `SETTINGS_CHANGED` never represents the pipeline moving — it is a
- * working-style change that happened to land mid-run — and `ERROR`/
- * `ESCALATED` stop progress rather than advance it, so `LiveRunCard` applies
- * its error/waiting overlay for those instead of asking this function to
- * invent a stage for them. Callers are expected to skip all three when
- * picking "the latest event" to feed in here; the "scan" returned for them
- * below is just an inert fallback if one slips through.
- */
-export const stageFromEventStage = (stage: BugHuntEventStage): PipelineStage => {
-  switch (stage) {
-    case BugHuntEventStage.SKIPPED_DISABLED:
-    case BugHuntEventStage.FINDER_RESULT:
-      return "scan";
-    case BugHuntEventStage.VERIFY:
-      return "verify";
-    case BugHuntEventStage.FIX_ATTEMPT:
-    case BugHuntEventStage.TEST_WRITTEN:
-    case BugHuntEventStage.DOC_UPDATED:
-    case BugHuntEventStage.SESSION_DISPATCHED:
-    case BugHuntEventStage.PLAN_CREATED:
-    case BugHuntEventStage.STEP_STARTED:
-    case BugHuntEventStage.CANCELLED:
-      return "fix";
-    case BugHuntEventStage.PR_OPENED:
-      return "review";
-    case BugHuntEventStage.MERGED:
-      return "merged";
-    case BugHuntEventStage.RELEASE_DISPATCHED:
-    case BugHuntEventStage.RELEASED:
-    case BugHuntEventStage.RELEASE_FAILED:
-      return "ship";
-    case BugHuntEventStage.ESCALATED:
-    case BugHuntEventStage.ERROR:
-    case BugHuntEventStage.SETTINGS_CHANGED:
-      return "scan";
-    default:
-      return "scan";
-  }
-};
 
 /**
  * Maps a finding's lifecycle status to a rail position, for `BugFindingDrawer`.
