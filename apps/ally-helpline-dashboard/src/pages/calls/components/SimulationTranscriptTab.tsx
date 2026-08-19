@@ -160,6 +160,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
           />
         </div>
       </div>
+      <p className="text-xs text-typography-500 mt-1">{t("transcription.accuracyDisclaimer")}</p>
       <hr className="mb-5 mt-2 border-border-light" />
       <TranscriptListing
         transcriptList={transcriptList}

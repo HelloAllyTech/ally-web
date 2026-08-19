@@ -25,6 +25,7 @@ vi.mock("@utils", () => ({
 const getQueryMock = vi.fn();
 vi.mock("@api", () => ({
   useGetRoleplaySessionLogQuery: (...args: unknown[]) => getQueryMock(...args),
+  useGetI18nTranslationsQuery: () => ({ data: undefined }),
 }));
 
 import { RoleplaySessionLogDetail } from "../RoleplaySessionLogDetail";
