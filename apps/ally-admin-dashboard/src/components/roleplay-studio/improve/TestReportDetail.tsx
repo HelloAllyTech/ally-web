@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 
 import { useGetRoleplayTestReportQuery } from "@api";
 import { en } from "@constants";
-import { useTranscriptDisclaimer } from "@hooks";
+import { useTranscriptDisclaimer } from "@hooks/useTranscriptDisclaimer";
 import { RoleplayReportImproveStatus } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";

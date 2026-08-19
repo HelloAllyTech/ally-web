@@ -6,7 +6,7 @@ import { useGetRoleplaySessionLogQuery } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
-import { useTranscriptDisclaimer } from "@hooks";
+import { useTranscriptDisclaimer } from "@hooks/useTranscriptDisclaimer";
 import { RoleplaySessionWeakMetric } from "@types";
 import { formatDate } from "@utils";
 
