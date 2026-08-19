@@ -61,6 +61,7 @@ const series = (o: Partial<WeakMetricSeries> = {}): WeakMetricSeries => ({
   unit: "percent",
   state: "measured",
   lowerIsBetter: true,
+  description: "Actor turns that repeat something the actor already said.",
   caveat: null,
   points: [
     { bucket: "2026-06-01", numerator: 10, denominator: 500, value: 0.02 },
@@ -85,6 +86,11 @@ const response = (o: Partial<WeakMetricsResponse> = {}): WeakMetricsResponse => 
   parameters: { loopRunLength: 3 },
   judgeModel: "gemini-2.5-pro",
   judgePromptVersion: "v2",
+  judgeVersions: {
+    drift: { judgeModel: "gemini-2.5-pro", judgePromptVersion: "v2" },
+    language: { judgeModel: "gemini-2.5-pro", judgePromptVersion: "v1" },
+    groundedness: null,
+  },
   bucket: "month",
   start: "2025-08-01T00:00:00.000Z",
   groups: [group()],
@@ -166,13 +172,20 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.getByText(/improving/)).toBeInTheDocument();
   });
 
-  it("renders the caveat on the card rather than hiding it", () => {
+  it("keeps the caveat reachable without putting it in the reader's way", () => {
+    // This test previously asserted the opposite — that the caveat rendered as
+    // body text on the card. That was the original intent and it did not
+    // survive contact with the live tab: four lines of weighting rules sat
+    // above a two-bar chart on every one of 22 cards. The rule it protected
+    // still holds — a reader must be able to find out how a number is
+    // weighted — so the caveat moved behind an affordance rather than away.
     queryMock.mockReturnValue({
       data: response({
         groups: [
           group({
             series: [
               series({
+                label: "Repeated turns",
                 caveat: "Segment by model or this misleads.",
               }),
             ],
@@ -184,7 +197,12 @@ describe("WeakPerformingMetricsTab", () => {
       refetch: refetchMock,
     });
     render(<WeakPerformingMetricsTab {...filters} />);
-    expect(screen.getByText(/Segment by model or this misleads/)).toBeInTheDocument();
+
+    // Carbon names the trigger from the tooltip's own content, so the caveat is
+    // what a screen reader announces on the help control.
+    expect(
+      screen.getByRole("button", { name: /Segment by model or this misleads/ }),
+    ).toBeInTheDocument();
   });
 
   it("marks a not-measured series so an empty line is not read as good news", () => {
@@ -247,7 +265,7 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
     // Columns, with a caption that says what the reader may and may not infer.
-    expect(screen.getByText(/compared, not trended/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough to show a trend/i)).toBeInTheDocument();
   });
 
   it("draws a line once there are five or more buckets", () => {
@@ -497,5 +515,226 @@ describe("WeakPerformingMetricsTab", () => {
     await userEvent.click(screen.getByRole("option", { name: "Prompt v17" }));
 
     expect(queryMock).toHaveBeenLastCalledWith(expect.objectContaining({ promptVersion: "17" }));
+  });
+
+  /**
+   * A single judge version on screen was how the language series came to be
+   * read through the drift judge's pin. The tab must name each family, and must
+   * say "not run" rather than silently omitting one that has no rows yet.
+   */
+  it("names the judge version of every family, including one not yet run", () => {
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    // The versions moved out of the header and into the provenance tooltip —
+    // still one per family, still saying "not run" rather than omitting one.
+    const provenance = screen.getByRole("button", { name: /Judge \(drift\)/ });
+    expect(provenance).toHaveAccessibleName(/Judge \(drift\): gemini-2\.5-pro\/v2/);
+    expect(provenance).toHaveAccessibleName(/Judge \(language\): gemini-2\.5-pro\/v1/);
+    expect(provenance).toHaveAccessibleName(/Judge \(groundedness\): not run/);
+  });
+
+  /**
+   * Two readability failures this pins, both reported from the live tab.
+   *
+   * The caveat was the card's caption — three or four lines of weighting rules
+   * above a two-bar chart, crowding out the number it qualified. And direction
+   * only ever appeared inside the delta sentence, which needs two buckets, so a
+   * single-bucket card said nothing about whether a rise was good or bad.
+   */
+  it("captions the card with what it counts, not with the caveat", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                description: "Actor turns that repeat something the actor already said.",
+                caveat: "Segment by model or this misleads: repetition differs 6.6x.",
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    // The caption is the one plain line saying what is counted.
+    const caption = screen.getByText("Actor turns that repeat something the actor already said.");
+    expect(caption.tagName).toBe("P");
+
+    // The caveat is still in the document — Carbon renders tooltip content
+    // inline — but inside the popover rather than as the card's caption.
+    const caveat = screen.getByText(/Segment by model or this misleads/);
+    expect(caveat.className).toContain("tooltip-content");
+  });
+
+  /**
+   * Direction is carried by the metric's NAME, not by a caption repeating it.
+   * "Comprehension errors" is plainly a thing you want less of; printing
+   * "lower is better" underneath restated the title on all 22 cards. What still
+   * has to work is the delta, which describes the movement that happened.
+   */
+  it("does not caption cards with a standing direction rule", () => {
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.queryByText("lower is better")).not.toBeInTheDocument();
+    expect(screen.queryByText("higher is better")).not.toBeInTheDocument();
+    // The movement is still described, using lowerIsBetter under the hood.
+    expect(screen.getByText(/worsening/)).toBeInTheDocument();
+  });
+
+  it("says how much data there is in words a reader already knows", () => {
+    // Was: "2 measured buckets — compared, not trended: too few points to read
+    // a direction." Reported as not understandable, and it is jargon twice over.
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                points: [
+                  { bucket: "2026-06-01", numerator: 10, denominator: 500, value: 0.02 },
+                  { bucket: "2026-07-01", numerator: 30, denominator: 500, value: 0.06 },
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(
+      screen.getByText("2 months of data so far — not enough to show a trend."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/compared, not trended/)).not.toBeInTheDocument();
+  });
+
+  it("carries no banner, and keeps provenance at the foot", () => {
+    // The header was six lines: mix warning, parameter version, the reasoning
+    // for pinning it, and three judge versions — above the numbers.
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    // No standing banner at all now: the mix warning it carried lives on the
+    // repetition card's own caveat, where it is actionable rather than furniture.
+    expect(screen.queryByText(/Segment before reading/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Thresholds define these metrics/)).not.toBeInTheDocument();
+    // Provenance stays reachable, at the foot rather than above the numbers.
+    expect(screen.getByRole("button", { name: /Parameters v1/ })).toBeInTheDocument();
+  });
+
+  /**
+   * A metric with no good direction must report the movement and stop.
+   *
+   * Barge-in is the case that forced this. Interruption is ordinary
+   * conversation, and its rate turned out flat at 2.5-2.8% across every actor
+   * turn length above 100 characters, dropping only on turns too short to
+   * interrupt — so it measures the opportunity to cut in, not whether the actor
+   * deserved it. Calling a rise "worsening" there is a verdict we cannot
+   * support.
+   */
+  it("reports movement without a verdict when there is no good direction", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                id: "barge_in",
+                label: "Barge-ins",
+                lowerIsBetter: null,
+                latest: 0.03,
+                previous: 0.02,
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText("↑ 1.0%")).toBeInTheDocument();
+    expect(screen.queryByText(/worsening/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/improving/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * The state that sent us hunting for a bug that was not there.
+   *
+   * Filtering to Hindi blanked the whole Language realism group. It had 437
+   * judged turns behind it and had found zero register, translationese and
+   * lexicon errors — but zero-height bars look exactly like no bars, so a real
+   * clean result read as a broken chart. "Not measured" and "measured, nothing
+   * found" must never render the same, which is the rule the rest of this tab
+   * already follows.
+   */
+  it("says nothing was found rather than drawing invisible zero bars", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                label: "Over-formal speech",
+                unit: "per100turns",
+                points: [
+                  { bucket: "2026-07-01", numerator: 0, denominator: 297, value: 0 },
+                  { bucket: "2026-08-01", numerator: 0, denominator: 140, value: 0 },
+                ],
+                latest: 0,
+                previous: 0,
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/None found across 437 turns judged/)).toBeInTheDocument();
+    // Still measured, and still showing the zero as its headline.
+    expect(screen.getAllByText("Measured").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText("Not instrumented — nothing is being recorded for this metric yet."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps drawing a chart when a zero sits alongside real values", () => {
+    // Only an ALL-zero series is a "nothing found" result. One empty month
+    // among real ones is part of a trend and must still plot.
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                points: [
+                  { bucket: "2026-06-01", numerator: 0, denominator: 500, value: 0 },
+                  { bucket: "2026-07-01", numerator: 30, denominator: 500, value: 0.06 },
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.queryByText(/None found across/)).not.toBeInTheDocument();
   });
 });

@@ -1,0 +1,3055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Cub n Pup</title>
+<!--
+  Ally course component: GAME / CUB_N_PUP.
+
+  A grid of pegs joined by links, a cub on one peg and a star on another. Drag
+  the cub along the links; drag anywhere else to spin the whole grid, which
+  moves some links and leaves others where they are. Sixty-one boards, from a
+  five-second tutorial to something that takes real thought.
+
+  Adapted from the "Cub n Pup" puzzle demo by David DeSandro
+  (https://codepen.io/desandro/pen/ezNawy). The geometry — segments, pivots,
+  flywheel physics, the drag solver — is his and is vendored close to verbatim
+  below, along with his EvEmitter and Unipointer. Every change is marked
+  [Ally]; the substantive ones are:
+
+    * no localStorage. The web host sandboxes this page without
+      allow-same-origin, where reading it throws, and the mobile host inlines
+      the file into a WebView with no origin at all. Progress is per sitting.
+    * sized to the frame rather than the window, and re-fitted on resize, with
+      the grid pitch derived from each level's own size so a 6x6 board and a
+      3x3 one both fill the same small frame.
+    * the Ally palette in place of the pen's, and its chrome rebuilt against
+      Ally's tokens.
+    * words come from the host, so the page speaks the learner's language.
+
+  This page is loaded in a sandboxed iframe by GameItemPlayer and in a WebView
+  by the mobile GamePlayer, and talks to either only through postMessage — see
+  the bridge near the top of this file for the contract.
+-->
+<style>
+/*
+  Ally tokens, copied as literals.
+
+  The host's palette lives in CSS variables on its own document; a sandboxed
+  iframe cannot see them, and the mobile WebView has no host document at all.
+  These are the daylight (default) theme's values from the helpline app's
+  index.css. A learner on another theme gets Ally blue rather than their
+  theme's accent, the same trade every bundle here makes.
+*/
+:root {
+  --primary-50: #EBF0FA;
+  --primary-100: #D7E2F4;
+  --primary-500: #264D8E;
+  --primary-600: #1F3F75;
+
+  --background: #FFFFFF;
+  --background-secondary: #F4F4F4;
+  --border-light: #E0E0E0;
+  --border-medium: #C6C6C6;
+
+  --typography-500: rgba(0, 0, 0, 0.32);
+  --typography-700: rgba(0, 0, 0, 0.54);
+  --typography-900: rgba(0, 0, 0, 0.87);
+
+  /*
+    IBM Plex Serif is Ally's face but it is served by the host app, and a font
+    fetched from an opaque origin (or from an inlined WebView document) will
+    not load. Georgia is the closest serif every target platform already has.
+  */
+  --font: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+
+  /* Kept in step with TOP_BAR / BOTTOM_BAR in the script. */
+  --top-bar: 44px;
+  --bottom-bar: 52px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--typography-900);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 24px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The board fills the frame and the chrome floats over it, so the maze can be
+   centred on the whole area and dragged from anywhere the chrome is not. */
+canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  cursor: move;
+  touch-action: none;
+}
+
+.is-cub-hovered canvas { cursor: grab; }
+.is-cub-dragging canvas { cursor: grabbing; }
+
+/* ---- Buttons ----------------------------------------------------------- */
+
+.btn {
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 20px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.btn--ghost {
+  background: var(--background);
+  border-color: var(--border-medium);
+  color: var(--typography-900);
+}
+
+.btn--ghost:hover { background: var(--background-secondary); }
+
+.btn--primary {
+  background: var(--primary-500);
+  color: #FFFFFF;
+}
+
+.btn--primary:hover { background: var(--primary-600); }
+
+/* ---- Top bar ----------------------------------------------------------- */
+
+.top-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--top-bar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  /* Only the controls take the pointer; a drag started on the empty stretch
+     between them should still spin the grid. */
+  pointer-events: none;
+}
+
+.top-bar > * { pointer-events: auto; }
+
+.solved {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--typography-700);
+}
+
+/* ---- Hint line --------------------------------------------------------- */
+
+.instruction {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  min-height: var(--bottom-bar);
+  margin: 0;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--typography-700);
+  pointer-events: none;
+}
+
+/* ---- Next level -------------------------------------------------------- */
+
+/* Sits just above the hint line so a solved board is never covered by it. */
+.next-level-button {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--bottom-bar) + 8px);
+  transform: translateX(-50%) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+  padding: 8px 20px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.next-level-button.is-open {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---- Level panel ------------------------------------------------------- */
+
+.level-panel {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+}
+
+.level-panel[hidden] { display: none; }
+
+.level-panel__head {
+  flex: none;
+  height: var(--top-bar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.level-panel__title {
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.level-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.level-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.level-list__item:hover { background: var(--background-secondary); }
+
+.level-list__item.is-playing {
+  background: var(--primary-50);
+  border-left-color: var(--primary-500);
+}
+
+.level-list__item__number {
+  flex: none;
+  width: 24px;
+  font-size: 12px;
+  color: var(--typography-500);
+  text-align: right;
+}
+
+.level-list__item__blurb {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--typography-900);
+}
+
+/* The tick is the only mark of progress this page keeps, so it stays invisible
+   rather than greyed until the board it belongs to is actually solved. */
+.level-list__item__check {
+  flex: none;
+  color: var(--primary-500);
+  visibility: hidden;
+}
+
+.level-list__item.did-complete .level-list__item__check { visibility: visible; }
+
+/* ---- Level source ------------------------------------------------------ */
+
+/* The boards themselves: plain text the script parses, never displayed. */
+.levels { display: none; }
+</style>
+</head>
+<body>
+
+<canvas></canvas>
+
+<div class="top-bar">
+  <button type="button" class="btn btn--ghost level-select-button">Levels</button>
+  <span class="solved" aria-live="polite"></span>
+</div>
+
+<p class="instruction"></p>
+
+<button type="button" class="btn btn--primary next-level-button">Next level</button>
+
+<div class="level-panel" hidden>
+  <div class="level-panel__head">
+    <span class="level-panel__title">Levels</span>
+    <button type="button" class="btn btn--ghost level-close-button">Close</button>
+  </div>
+  <ol class="level-list"></ol>
+</div>
+
+<div class="levels">
+<pre id="intro-fixed1" data-blurb="tutorial">
+instruction: hintDragToStar
+---
+*=.=.
+    !
+. . .
+    !
+@=.=.
+</pre>
+<pre id="intro-fixed2" data-blurb="tutorial">
+instruction: hintRotate
+---
+* . .
+    !
+. . .
+    !
+@=.=.
+</pre>
+<pre id="intro-fixed3" data-blurb="★">
+---
+@=. .
+
+. . .
+    !
+*=. .
+</pre>
+<pre id="intro-free1" data-blurb="tutorial">
+instruction: hintFree
+---
+@-. .
+!   | 
+. . .
+    |
+*-.-.
+</pre>
+<pre id="m3x3-2-med" data-blurb="★">
+---
+. . *
+| | | 
+. . .
+| | | 
+@ .=.
+</pre>
+<pre id="m3x3-fixed-switch" data-blurb="★">
+---
+*=.-.
+ 
+. . .
+    | 
+@-. .
+</pre>
+<pre id="m4x4-2" data-blurb="★">
+---
+. .=. .
+  | !  
+. . .-*
+  |    
+. . . .
+       
+. @-. .
+</pre>
+<pre id="m4x4-1" data-blurb="★">
+---
+. . . .
+       
+* . . @
+  | ! |
+. . . .
+  !    
+. . . .
+</pre>
+<pre id="m4x4-3" data-blurb="★">
+---
+. @ . .
+! |    
+. . . .
+      |
+.=.=.-.
+|       
+. * . .
+</pre>
+<pre id="m4x4-4" data-blurb="★">
+---
+. . . .
+       
+* . . .
+    !  
+. . .-.
+!      
+.=.=. @
+</pre>
+<pre id="m4x4-5" data-blurb="★">
+---
+.-.-.-.
+|       
+@ .-.-.
+       
+* .=. .
+!   |   
+.-.-. .
+</pre>
+<pre id="m4x4-6-med" data-blurb="★">
+---
+. * . .
+
+.-.=. .
+  |
+. . . .
+!   |
+.=. @ .
+</pre>
+<pre id="m4x4-7-hard1" data-blurb="★★">
+---
+. . *-.
+       
+.-.=. .
+      |
+.=. . .
+  | |  
+@-.-.=.
+</pre>
+<pre id="m4x4-8-hard2" data-blurb="★★">
+---
+.-@ .=.
+       
+. . . .
+    |  
+.-. .-*
+  |    
+. .=.-.
+</pre>
+<pre id="m4x4-9-hard1" data-blurb="★★">
+---
+. . .=.
+  !    
+@-. .-.
+     
+. .=. .
+       
+. . * .
+</pre>
+<pre id="m4x4-10-hard1" data-blurb="★★">
+---
+. @=. .
+  |   
+. .-.-.
+       
+.-.-.-.
+!     ! 
+. * . .
+</pre>
+<pre id="m5x5-3" data-blurb="★">
+. . . . .
+  | !   
+. . .-. .
+  |     
+. . . . *
+  |     
+. . .=. .
+  |     
+. @ . . .
+</pre>
+<pre id="m5x5-1" data-blurb="★">
+@-.-. .-.
+    |    
+. . . . .
+         
+. . .=. .
+         
+. . . .=.
+    |    
+. .=.-* .
+</pre>
+<pre id="m5x5-2" data-blurb="★★">
+. . . . .
+        
+. .=.-. @
+|       !
+. . . .-.
+        
+.=. . .=.
+!       
+* . . . .
+</pre>
+<pre id="m5x5-4" data-blurb="★★">
+. . . .-.
+      ! 
+. .-. . .
+  !     |
+.=. . . .
+|        
+. . . . *
+|        
+.-@=. .=.
+</pre>
+<pre id="m5x5-5" data-blurb="★★">
+. . . . .
+
+. . .-. *
+    !
+. . .-. .
+
+.=. . . .
+    |
+. @-. . .
+</pre>
+<pre id="m5x5-6" data-blurb="★★">
+. . .-.-.
+!   !    
+. .=.-. .
+|   
+. .-. .-@
+!
+* .=. . .
+      |
+.=. .-.=.
+</pre>
+<pre id="m5x5-7" data-blurb="★★★">
+.=* . @=.
+|
+. .=. . .
+|   | |
+.=. . .-.
+        |
+. . . .=.
+!    
+. .-.-. .
+</pre>
+<pre id="m5x5-8" data-blurb="★★★">
+. * . .-.
+  |     
+. . .=.-.
+!       | 
+. . . . .
+        
+. .-. .=.
+        |
+. . .=.-@
+</pre>
+<pre id="m5x5-9" data-blurb="★★★">
+.-.-. . .
+    |    
+. . . .-@
+  !      
+* . .-. .
+|   !    
+.-. . .=.
+    |   !
+. . .=. .
+</pre>
+<pre id="m5x5-10" data-blurb="★★">
+. . . . .
+         
+. . . .-@
+  !      
+* . .=. .
+|   !    
+.-. . . .
+         
+. . . . .
+</pre>
+<pre id="m5x5-11" data-blurb="★★★">
+. . . .=.
+  |     
+. . . .=.
+|        
+. . .-. .
+! |     
+. .=. . .
+|   !   !
+.-@ . * .
+</pre>
+<pre id="m5x5-12" data-blurb="★★">
+. . .=.=.
+        
+. . . . .
+        
+. . . . @
+        
+. . . . .
+        
+* . .=.=.
+</pre>
+<pre id="m6x6-1-hard1" data-blurb="★★★">
+. . * . . .
+  ! | |  
+. .-. .-. .
+          |
+. . . . .-.
+      | ! |
+. . .=. . .
+    |
+@-.-. .-. .
+          |
+. .=. . .-.
+</pre>
+<pre id="m6x6-2" data-blurb="★★★">
+@ .=. . .=.
+  | | !
+. . . .=. .
+  |     |
+. . . .-. .
+|   !
+. . . . . *
+|     |
+.=. .-. . .
+  |   | |
+.-. . . .=.
+</pre>
+<pre id="m6x6-3" data-blurb="★★★">
+.=. .=.-.-*
+  |        
+.-. . . . .
+        | !
+. . .-.-. .
+!          
+.-. .=.=. .
+           
+@ .=. . . .
+  |     !
+. .-. .-. .
+</pre>
+<pre id="pivot-4x4-intro" data-blurb="tutorial">
+instruction: hintPivot
+---
+. .-* .
+  |    
+. . . .
+       
+. .>. .
+       
+. @ . .
+</pre>
+<pre id="pivot-5x5-2" data-blurb="★★">
+. . .-.-@
+        
+. .<. . .
+        
+.>. . . .
+| !      
+.-.-. . *
+  !     
+. . . . .
+</pre>
+<pre id="pivot-5x5-swirly" data-blurb="★★★">
+. . . . .
+      ^ 
+.<. . . *
+        
+. . . . .
+        
+@ . . .>.
+  v     
+. . . . .
+</pre>
+<pre id="pivot-5x5-1" data-blurb="★★★">
+. .-. . .
+      ^ 
+. .<.=.=.
+        
+.>. . .-@
+        
+* . . .=.
+        
+. . . . .
+</pre>
+<pre id="pivot-5x5-3" data-blurb="★★">
+.=. . .-*
+    v   
+. . . . .
+         
+. . .-.J.
+         
+@-. . . .
+    v   
+.<. . . .
+</pre>
+<pre id="pivot-5x5-4" data-blurb="★★★">
+.-.-. @>.
+!     ^ 
+. . . . .
+  |      
+. . . . .
+  |     
+. . . .=*
+    ^    
+. . .-. .>
+</pre>
+<pre id="pivot-5x5-5" data-blurb="★★★">
+.-. . . *
+        
+. .>. . .
+|       v
+.-. . . .
+  ^      
+. . .-. .
+      v 
+@=.=. . .
+</pre>
+<pre id="pivot-5x5-6" data-blurb="★★★">
+. . .>. .
+  ! |    
+@=. .-. .
+        
+. . . .=.>
+         
+. . . . .
+         
+. *>.<. .
+</pre>
+<pre id="pivot-5x5-7" data-blurb="★★★">
+* . @ . .
+v   |   
+. . . . .
+      !  
+. . . . .
+^     ! !
+. .-. . .
+  !     
+. . . . .
+    v
+</pre>
+<pre id="pivot-6x6-1" data-blurb="★★★">
+. . . . . .
+| v         
+@ . . . . *
+  | |      
+. . . . . .
+| !   ^ | K
+. . . .-.=.
+|          
+. .-. . . .
+v          
+.>. . . . .
+</pre>
+<pre id="pivot-6x6-3" data-blurb="★★★">
+. @-. .>.-.
+          
+. . . . . .
+          |
+* .>. .=. .
+    !      
+. . . . . .>
+      |   ^
+. . . .=. .
+           
+. .=. . .=.>
+</pre>
+<pre id="pivot-6x6-2" data-blurb="★★★">
+. .-.-. .=.
+      v   
+. . . . . .
+  |     ! v
+.>. . . . *
+    ^      
+. . . . . .
+|          
+. .-.<. . .
+! |       |
+. . . .>.-@
+</pre>
+<pre id="m44" data-blurb="★★">
+. .=. *-.
+        
+. . .=. .
+!        
+. . . . .
+  |   ! 
+. . . . .
+  |     |
+. @ . .=.
+</pre>
+<pre id="m45" data-blurb="★★">
+@ * .>. .
+        
+. .=.=. .
+|     | 
+.>. . . .
+        
+. . . .>.
+|       
+.=. . .-.
+</pre>
+<pre id="m46" data-blurb="★★★">
+.-. . .
+    ^ 
+. . . .
+       
+.L. . .
+      !
+@ . .-*
+</pre>
+<pre id="m47" data-blurb="★★">
+@ . . . . .
+v v v v v v
+. . . . . .
+ 
+. . . . . .
+           
+. . . . . .
+  v v v v v
+. . . . . .
+           
+. . . .=. *
+v v v v   v
+</pre>
+<pre id="m48" data-blurb="★">
+.-.<.>.=. .
+W !       |
+. . .A. . *
+    |   |  
+. .=. . . .
+^ !        
+. .D.-.=.=@
+          | 
+. . .-.-. .
+|          
+.#.=. .<. .
+    v     v
+</pre>
+<pre id="m49" data-blurb="★★★">
+. . .-@ .
+    |   
+. . . .J.
+        
+* . . . .
+| !     !
+. . . . .
+    v   !
+. . . .-.
+</pre>
+<pre id="m50" data-blurb="★★★">
+*=. . .
+    v  
+. . . .
+^     |
+. . . .
+  ^   |
+@ .>. .
+</pre>
+<pre id="rotate-tut" data-blurb="tutorial">
+instruction: hintRotateLink
+---
+. . . .
+       
+@ .4. .
+  |    
+. . .-*
+       
+. . . .
+</pre>
+<pre id="rotate1" data-blurb="★">
+. . .-*
+    |  
+. . . .
+    5  
+.4. . .
+|      
+@ . . .
+</pre>
+<pre id="rotate2" data-blurb="★★">
+@ .-.=.
+    |  
+. . .4.
+    |  
+* . . .
+|   |  
+. . . . 
+</pre>
+<pre id="rotate3" data-blurb="★★">
+. . * .
+! 5 v  
+. . . @
+  |    
+. .4. .
+  !    
+. . . .
+</pre>
+<pre id="rotate3b" data-blurb="★★">
+* . . .
+! 5    
+. . . @
+  |    
+. .4. .
+  !    
+. . . .
+</pre>
+<pre id="rotate-5x5-1" data-blurb="★★">
+. . . .-@
+      8 
+. .=. . .
+        
+*=. . . .
+        
+. .-. . .
+        
+. . . . .
+</pre>
+<pre id="rotate-5x5-2" data-blurb="★★">
+. . . . .
+        
+. . . .6*
+  |     
+. . . .=.
+  |     
+.4. . . .
+        |
+. . . .-@
+</pre>
+<pre id="rotate-5x5-2b" data-blurb="★★★">
+. . . . .
+  !   | 
+.-.-. . .
+  v   |
+. . .-. .
+        
+@ . . . .
+    5   
+. . .=* .
+</pre>
+<pre id="rotate-6x6-1" data-blurb="★★★">
+@4.=. . . .
+          
+. . . . . .
+      v 8 |
+.-.-. . . .
+!   !   ^   
+. . . . . .
+           
+. .>. . . .
+!          
+* . .4. . .
+</pre>
+<pre id="rotate-6x6-2" data-blurb="★★★">
+. . *<. . .
+          
+.=. .-. . .
+        5
+. . . .-. .
+        |   
+. . . . . .
+           
+. . . . . .
+    5     | 
+. .=. . @-.
+</pre>
+<pre id="rotate-6x6-3" data-blurb="★★★">
+.4. . . . @
+!          
+.-. . .=. .
+! 
+. . . . . .
+!           
+.>.6. . . .
+!          
+. . . .=.-.
+      ^    
+. . . . * .
+</pre>
+</div>
+
+<script>
+/**
+ * [Ally] Host bridge — the whole contract between a game bundle and the app.
+ *
+ * A game folder under /games/<key>/ is a self-contained page. It never imports
+ * from the app and the app never reaches into it; they exchange three messages.
+ * The same file runs in two hosts: an <iframe> in the web app (messages go to
+ * window.parent) and a react-native-webview in the mobile app (messages go to
+ * window.ReactNativeWebView as a JSON string).
+ *
+ *   game -> host  { source:'ally-game', game, type:'ready' }
+ *   game -> host  { source:'ally-game', game, type:'started' }
+ *   game -> host  { source:'ally-game', game, type:'over', score, highScore }
+ *
+ *   host -> game  { source:'ally-game-host', type:'focus', strings? }
+ *
+ * Scores are reported for the learner's personal best only. Games in a course
+ * never gate progression, so nothing here blocks, unlocks or grades anything.
+ *
+ * This file is deliberately not wrapped in an IIFE: the vendored engine below
+ * is a single non-strict top-level script and calls post(), setHint() and
+ * renderSolved() directly.
+ */
+
+var GAME = 'CUB_N_PUP';
+var iframeHost = window.parent !== window ? window.parent : null;
+
+function post(type, extra) {
+  var message = { source: 'ally-game', game: GAME, type: type };
+  for (var key in extra) {
+    if (Object.prototype.hasOwnProperty.call(extra, key)) message[key] = extra[key];
+  }
+  if (window.ReactNativeWebView) {
+    // WebView bridge only speaks strings.
+    window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    return;
+  }
+  // '*' because a sandboxed iframe has an opaque origin that matches no
+  // concrete target. Nothing here is worth protecting from the parent.
+  if (iframeHost) iframeHost.postMessage(message, '*');
+}
+
+var announcedStart = false;
+function markStarted() {
+  if (announcedStart) return;
+  announcedStart = true;
+  post('started');
+}
+
+/* ---- Words ------------------------------------------------------------- */
+
+/**
+ * Every word this page draws, in English.
+ *
+ * A bundle is a static page with no reach into the app, so it cannot read the
+ * learner's language for itself. The web app sends these with its `focus`
+ * message and the page redraws; the mobile app has no window to post to before
+ * the document loads, so it sets `window.__allyGameStrings` instead. English is
+ * the fallback either way, so a host that sends nothing still gets a working
+ * game.
+ *
+ * The five hints are the tutorial boards' teaching text. They live here rather
+ * than in the level data (where the original pen kept them) precisely so they
+ * can be translated, and they name the link colours, so a change to the
+ * palette below is a change to these sentences too.
+ */
+var STRINGS = {
+  levels: 'Levels',
+  close: 'Close',
+  nextLevel: 'Next level',
+  solved: '{{solved}} of {{total}} solved',
+  tutorial: 'Tutorial',
+  hintDragToStar: 'Drag the cub to the star.',
+  hintRotate:
+    'Drag anywhere else to turn the grid. The cub and the star turn with it — grey links stay put.',
+  hintFree:
+    'Blue links turn with the grid. Turn it to join blue and grey links up in different ways.',
+  hintPivot: 'Green links swing round with the grid but keep pointing the same way.',
+  hintRotateLink: 'Red links stay where they are but spin with the grid.',
+};
+
+/*
+  Merged before anything is drawn, so on mobile the level list and the first
+  hint come out in the learner's language rather than in English and then
+  redrawn a frame later.
+*/
+if (window.__allyGameStrings) applyStrings(window.__allyGameStrings);
+
+function applyStrings(next) {
+  for (var key in STRINGS) {
+    if (next[key]) STRINGS[key] = next[key];
+  }
+}
+
+function fill(template, values) {
+  return String(template).replace(/\{\{(\w+)\}\}/g, function (match, name) {
+    return Object.prototype.hasOwnProperty.call(values, name) ? values[name] : match;
+  });
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"]/g, function (character) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character];
+  });
+}
+
+/* ---- Palette ----------------------------------------------------------- */
+
+/**
+ * The board's colours, in Ally's palette.
+ *
+ * Colour is how a player tells the four kinds of link apart, so these are not
+ * interchangeable: the cub and the links it rides are two shades of the brand
+ * blue, the links that stay put are grey because grey reads as inert, and the
+ * two that behave oddly borrow the semantic green and red. Link thickness
+ * differs as well, so the board is not read by hue alone.
+ */
+var ALLY = {
+  cub: '#264D8E', //  primary-500  — the piece you drag
+  start: 'rgba(38, 77, 142, 0.28)', //  where it started
+  goal: '#FF9800', //  warning-500  — the star
+  free: 'rgba(126, 162, 221, 0.95)', //  primary-300  — turns with the grid
+  fixed: 'rgba(82, 82, 82, 0.55)', //  neutral-600  — stays put
+  pivot: 'rgba(67, 160, 71, 0.75)', //  success-600  — swings, keeps its heading
+  rotate: 'rgba(224, 32, 32, 0.6)', //  destructive-500 — spins in place
+  peg: 'rgba(141, 141, 141, 0.45)',
+  axle: 'rgba(141, 141, 141, 0.25)',
+  handle: '#F4F4F4', //  background-secondary — the turn arc
+};
+
+/* ---- Chrome ------------------------------------------------------------ */
+
+var levelSelectButton = document.querySelector('.level-select-button');
+var levelCloseButton = document.querySelector('.level-close-button');
+var levelPanel = document.querySelector('.level-panel');
+var levelPanelTitle = document.querySelector('.level-panel__title');
+var solvedElem = document.querySelector('.solved');
+var currentHintKey = '';
+
+/** The teaching line under the board. Blank on every board that needs none. */
+function setHint(key) {
+  currentHintKey = key;
+  document.querySelector('.instruction').textContent = key ? STRINGS[key] || '' : '';
+}
+
+/**
+ * Boards solved this sitting.
+ *
+ * It is the same number the host is told as a score, so it is the one thing on
+ * screen that carries over — worth showing even at nought, because it tells a
+ * learner returning to the game what it is counting before they solve anything.
+ */
+function renderSolved() {
+  solvedElem.textContent = fill(STRINGS.solved, {
+    solved: completedLevels.length,
+    total: levels.length,
+  });
+}
+
+/** Re-draw every word on the page. Called once the host sends its strings. */
+function refreshStrings() {
+  levelSelectButton.textContent = STRINGS.levels;
+  levelCloseButton.textContent = STRINGS.close;
+  levelPanelTitle.textContent = STRINGS.levels;
+  document.querySelector('.next-level-button').textContent = STRINGS.nextLevel;
+  setHint(currentHintKey);
+  renderSolved();
+
+  var items = document.querySelectorAll('.level-list__item');
+  for (var i = 0; i < items.length; i++) {
+    var source = levelsElem.querySelector('#' + items[i].getAttribute('data-id'));
+    var blurb = source.getAttribute('data-blurb');
+    items[i].querySelector('.level-list__item__blurb').textContent =
+      blurb === 'tutorial' ? STRINGS.tutorial : blurb;
+  }
+}
+
+window.addEventListener('message', function (event) {
+  var data = event.data;
+  if (!data || data.source !== 'ally-game-host') return;
+  if (data.strings) {
+    applyStrings(data.strings);
+    refreshStrings();
+  }
+  if (data.type === 'focus') window.focus();
+});
+</script>
+
+<script>
+/* [Ally] Vendored engine — see the note at the top of this file. */
+/**
+ * EvEmitter v1.0.2
+ * Lil' event emitter
+ * MIT License
+ */
+
+/* jshint unused: true, undef: true, strict: true */
+
+(function (global, factory) {
+  // universal module definition
+  /* jshint strict: false */ /* globals define, module */
+  if (typeof define == 'function' && define.amd) {
+    // AMD - RequireJS
+    define(factory);
+  } else if (typeof module == 'object' && module.exports) {
+    // CommonJS - Browserify, Webpack
+    module.exports = factory();
+  } else {
+    // Browser globals
+    global.EvEmitter = factory();
+  }
+
+})(this, function () {
+
+  "use strict";
+
+  function EvEmitter() {}
+
+  var proto = EvEmitter.prototype;
+
+  proto.on = function (eventName, listener) {
+    if (!eventName || !listener) {
+      return;
+    }
+    // set events hash
+    var events = this._events = this._events || {};
+    // set listeners array
+    var listeners = events[eventName] = events[eventName] || [];
+    // only add once
+    if (listeners.indexOf(listener) == -1) {
+      listeners.push(listener);
+    }
+
+    return this;
+  };
+
+  proto.once = function (eventName, listener) {
+    if (!eventName || !listener) {
+      return;
+    }
+    // add event
+    this.on(eventName, listener);
+    // set once flag
+    // set onceEvents hash
+    var onceEvents = this._onceEvents = this._onceEvents || {};
+    // set onceListeners object
+    var onceListeners = onceEvents[eventName] = onceEvents[eventName] || {};
+    // set flag
+    onceListeners[listener] = true;
+
+    return this;
+  };
+
+  proto.off = function (eventName, listener) {
+    var listeners = this._events && this._events[eventName];
+    if (!listeners || !listeners.length) {
+      return;
+    }
+    var index = listeners.indexOf(listener);
+    if (index != -1) {
+      listeners.splice(index, 1);
+    }
+
+    return this;
+  };
+
+  proto.emitEvent = function (eventName, args) {
+    var listeners = this._events && this._events[eventName];
+    if (!listeners || !listeners.length) {
+      return;
+    }
+    var i = 0;
+    var listener = listeners[i];
+    args = args || [];
+    // once stuff
+    var onceListeners = this._onceEvents && this._onceEvents[eventName];
+
+    while (listener) {
+      var isOnce = onceListeners && onceListeners[listener];
+      if (isOnce) {
+        // remove listener
+        // remove before trigger to prevent recursion
+        this.off(eventName, listener);
+        // unset once flag
+        delete onceListeners[listener];
+      }
+      // trigger listener
+      listener.apply(this, args);
+      // get next listener
+      i += isOnce ? 0 : 1;
+      listener = listeners[i];
+    }
+
+    return this;
+  };
+
+  return EvEmitter;
+
+});
+
+/*!
+ * Unipointer v2.1.0
+ * base class for doing one thing with pointer event
+ * MIT license
+ */
+
+/*jshint browser: true, undef: true, unused: true, strict: true */
+
+(function (window, factory) {
+  // universal module definition
+  /* jshint strict: false */ /*global define, module, require */
+  if (typeof define == 'function' && define.amd) {
+    // AMD
+    define([
+    'ev-emitter/ev-emitter'],
+    function (EvEmitter) {
+      return factory(window, EvEmitter);
+    });
+  } else if (typeof module == 'object' && module.exports) {
+    // CommonJS
+    module.exports = factory(
+    window,
+    require('ev-emitter'));
+
+  } else {
+    // browser global
+    window.Unipointer = factory(
+    window,
+    window.EvEmitter);
+
+  }
+
+})(window, function factory(window, EvEmitter) {
+
+  'use strict';
+
+  function noop() {}
+
+  function Unipointer() {}
+
+  // inherit EvEmitter
+  var proto = Unipointer.prototype = Object.create(EvEmitter.prototype);
+
+  proto.bindStartEvent = function (elem) {
+    this._bindStartEvent(elem, true);
+  };
+
+  proto.unbindStartEvent = function (elem) {
+    this._bindStartEvent(elem, false);
+  };
+
+  /**
+   * works as unbinder, as you can ._bindStart( false ) to unbind
+   * @param {Boolean} isBind - will unbind if falsey
+   */
+  proto._bindStartEvent = function (elem, isBind) {
+    // munge isBind, default to true
+    isBind = isBind === undefined ? true : !!isBind;
+    var bindMethod = isBind ? 'addEventListener' : 'removeEventListener';
+
+    if (window.navigator.pointerEnabled) {
+      // W3C Pointer Events, IE11. See https://coderwall.com/p/mfreca
+      elem[bindMethod]('pointerdown', this);
+    } else if (window.navigator.msPointerEnabled) {
+      // IE10 Pointer Events
+      elem[bindMethod]('MSPointerDown', this);
+    } else {
+      // listen for both, for devices like Chrome Pixel
+      elem[bindMethod]('mousedown', this);
+      elem[bindMethod]('touchstart', this);
+    }
+  };
+
+  // trigger handler methods for events
+  proto.handleEvent = function (event) {
+    var method = 'on' + event.type;
+    if (this[method]) {
+      this[method](event);
+    }
+  };
+
+  // returns the touch that we're keeping track of
+  proto.getTouch = function (touches) {
+    for (var i = 0; i < touches.length; i++) {
+      var touch = touches[i];
+      if (touch.identifier == this.pointerIdentifier) {
+        return touch;
+      }
+    }
+  };
+
+  // ----- start event ----- //
+
+  proto.onmousedown = function (event) {
+    // dismiss clicks from right or middle buttons
+    var button = event.button;
+    if (button && button !== 0 && button !== 1) {
+      return;
+    }
+    this._pointerDown(event, event);
+  };
+
+  proto.ontouchstart = function (event) {
+    this._pointerDown(event, event.changedTouches[0]);
+  };
+
+  proto.onMSPointerDown =
+  proto.onpointerdown = function (event) {
+    this._pointerDown(event, event);
+  };
+
+  /**
+   * pointer start
+   * @param {Event} event
+   * @param {Event or Touch} pointer
+   */
+  proto._pointerDown = function (event, pointer) {
+    // dismiss other pointers
+    if (this.isPointerDown) {
+      return;
+    }
+
+    this.isPointerDown = true;
+    // save pointer identifier to match up touch events
+    this.pointerIdentifier = pointer.pointerId !== undefined ?
+    // pointerId for pointer events, touch.indentifier for touch events
+    pointer.pointerId : pointer.identifier;
+
+    this.pointerDown(event, pointer);
+  };
+
+  proto.pointerDown = function (event, pointer) {
+    this._bindPostStartEvents(event);
+    this.emitEvent('pointerDown', [event, pointer]);
+  };
+
+  // hash of events to be bound after start event
+  var postStartEvents = {
+    mousedown: ['mousemove', 'mouseup'],
+    touchstart: ['touchmove', 'touchend', 'touchcancel'],
+    pointerdown: ['pointermove', 'pointerup', 'pointercancel'],
+    MSPointerDown: ['MSPointerMove', 'MSPointerUp', 'MSPointerCancel'] };
+
+
+  proto._bindPostStartEvents = function (event) {
+    if (!event) {
+      return;
+    }
+    // get proper events to match start event
+    var events = postStartEvents[event.type];
+    // bind events to node
+    events.forEach(function (eventName) {
+      window.addEventListener(eventName, this);
+    }, this);
+    // save these arguments
+    this._boundPointerEvents = events;
+  };
+
+  proto._unbindPostStartEvents = function () {
+    // check for _boundEvents, in case dragEnd triggered twice (old IE8 bug)
+    if (!this._boundPointerEvents) {
+      return;
+    }
+    this._boundPointerEvents.forEach(function (eventName) {
+      window.removeEventListener(eventName, this);
+    }, this);
+
+    delete this._boundPointerEvents;
+  };
+
+  // ----- move event ----- //
+
+  proto.onmousemove = function (event) {
+    this._pointerMove(event, event);
+  };
+
+  proto.onMSPointerMove =
+  proto.onpointermove = function (event) {
+    if (event.pointerId == this.pointerIdentifier) {
+      this._pointerMove(event, event);
+    }
+  };
+
+  proto.ontouchmove = function (event) {
+    var touch = this.getTouch(event.changedTouches);
+    if (touch) {
+      this._pointerMove(event, touch);
+    }
+  };
+
+  /**
+   * pointer move
+   * @param {Event} event
+   * @param {Event or Touch} pointer
+   * @private
+   */
+  proto._pointerMove = function (event, pointer) {
+    this.pointerMove(event, pointer);
+  };
+
+  // public
+  proto.pointerMove = function (event, pointer) {
+    this.emitEvent('pointerMove', [event, pointer]);
+  };
+
+  // ----- end event ----- //
+
+
+  proto.onmouseup = function (event) {
+    this._pointerUp(event, event);
+  };
+
+  proto.onMSPointerUp =
+  proto.onpointerup = function (event) {
+    if (event.pointerId == this.pointerIdentifier) {
+      this._pointerUp(event, event);
+    }
+  };
+
+  proto.ontouchend = function (event) {
+    var touch = this.getTouch(event.changedTouches);
+    if (touch) {
+      this._pointerUp(event, touch);
+    }
+  };
+
+  /**
+   * pointer up
+   * @param {Event} event
+   * @param {Event or Touch} pointer
+   * @private
+   */
+  proto._pointerUp = function (event, pointer) {
+    this._pointerDone();
+    this.pointerUp(event, pointer);
+  };
+
+  // public
+  proto.pointerUp = function (event, pointer) {
+    this.emitEvent('pointerUp', [event, pointer]);
+  };
+
+  // ----- pointer done ----- //
+
+  // triggered on pointer up & pointer cancel
+  proto._pointerDone = function () {
+    // reset properties
+    this.isPointerDown = false;
+    delete this.pointerIdentifier;
+    // remove events
+    this._unbindPostStartEvents();
+    this.pointerDone();
+  };
+
+  proto.pointerDone = noop;
+
+  // ----- pointer cancel ----- //
+
+  proto.onMSPointerCancel =
+  proto.onpointercancel = function (event) {
+    if (event.pointerId == this.pointerIdentifier) {
+      this._pointerCancel(event, event);
+    }
+  };
+
+  proto.ontouchcancel = function (event) {
+    var touch = this.getTouch(event.changedTouches);
+    if (touch) {
+      this._pointerCancel(event, touch);
+    }
+  };
+
+  /**
+   * pointer cancel
+   * @param {Event} event
+   * @param {Event or Touch} pointer
+   * @private
+   */
+  proto._pointerCancel = function (event, pointer) {
+    this._pointerDone();
+    this.pointerCancel(event, pointer);
+  };
+
+  // public
+  proto.pointerCancel = function (event, pointer) {
+    this.emitEvent('pointerCancel', [event, pointer]);
+  };
+
+  // -----  ----- //
+
+  // utility function for getting x/y coords from event
+  Unipointer.getPointerPoint = function (pointer) {
+    return {
+      x: pointer.pageX,
+      y: pointer.pageY };
+
+  };
+
+  // -----  ----- //
+
+  return Unipointer;
+
+});
+
+function FreeSegment(a, b) {
+  this.type = 'FreeSegment';
+  this.a = a;
+  this.b = b;
+  // orientations
+  this.noon = {
+    a: a,
+    b: b };
+
+  this.three = {
+    a: { x: -a.y, y: a.x },
+    b: { x: -b.y, y: b.x } };
+
+  this.six = {
+    a: { x: -a.x, y: -a.y },
+    b: { x: -b.x, y: -b.y } };
+
+  this.nine = {
+    a: { x: a.y, y: -a.x },
+    b: { x: b.y, y: -b.x } };
+
+}
+
+
+var proto = FreeSegment.prototype;
+
+proto.render = function (ctx, center, gridSize) {
+  var ax = this.a.x * gridSize;
+  var ay = this.a.y * gridSize;
+  var bx = this.b.x * gridSize;
+  var by = this.b.y * gridSize;
+  ctx.strokeStyle = ALLY.free;
+  ctx.lineWidth = gridSize * 0.6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+  ctx.closePath();
+};
+
+
+function FixedSegment(a, b) {
+  this.type = 'FixedSegment';
+  this.a = a;
+  this.b = b;
+  // orientations
+  this.noon = { a: a, b: b };
+  this.three = { a: a, b: b };
+  this.six = { a: a, b: b };
+  this.nine = { a: a, b: b };
+}
+
+var proto = FixedSegment.prototype;
+
+proto.render = function (ctx, center, gridSize) {
+  var ax = this.a.x * gridSize;
+  var ay = this.a.y * gridSize;
+  var bx = this.b.x * gridSize;
+  var by = this.b.y * gridSize;
+  ctx.strokeStyle = ALLY.fixed;
+  ctx.lineWidth = gridSize * 0.8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+  ctx.closePath();
+};
+
+function PivotSegment(a, b) {
+  this.type = 'FreeSegment';
+  this.a = a;
+  this.b = b;
+  var dx = b.x - a.x;
+  var dy = b.y - a.y;
+  this.delta = { x: dx, y: dy };
+  // orientations
+  this.noon = {
+    a: a,
+    b: b };
+
+  this.three = {
+    a: { x: -a.y, y: a.x },
+    b: { x: -a.y + dx, y: a.x + dy } };
+
+  this.six = {
+    a: { x: -a.x, y: -a.y },
+    b: { x: -a.x + dx, y: -a.y + dy } };
+
+  this.nine = {
+    a: { x: a.y, y: -a.x },
+    b: { x: a.y + dx, y: -a.x + dy } };
+
+}
+
+
+var proto = PivotSegment.prototype;
+
+proto.render = function (ctx, center, gridSize, mazeAngle) {
+  var ax = this.a.x * gridSize;
+  var ay = this.a.y * gridSize;
+  var bx = this.delta.x * gridSize;
+  var by = this.delta.y * gridSize;
+  ctx.save();
+
+  ctx.translate(ax, ay);
+  ctx.rotate(-mazeAngle);
+  var color = ALLY.pivot;
+  // line
+  ctx.strokeStyle = color;
+  ctx.lineWidth = gridSize * 0.4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+  ctx.closePath();
+  // circle
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(0, 0, gridSize * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.closePath();
+
+  ctx.restore();
+};
+
+var TAU = Math.PI * 2;
+
+function RotateSegment(a, b) {
+  this.type = 'RotateSegment';
+  this.a = a;
+  this.b = b;
+  // orientations
+  var dx = b.x - a.x;
+  var dy = b.y - a.y;
+  this.delta = { x: dx, y: dy };
+  this.theta = Math.atan2(dy, dx);
+  this.noon = { a: a, b: b };
+  this.three = { a: a, b: this.getB(TAU / 4) };
+  this.six = { a: a, b: this.getB(TAU / 2) };
+  this.nine = { a: a, b: this.getB(TAU * 3 / 4) };
+}
+
+var proto = RotateSegment.prototype;
+
+proto.getB = function (angle) {
+  return {
+    x: Math.round(this.a.x + Math.cos(this.theta + angle) * 2),
+    y: Math.round(this.a.y + Math.sin(this.theta + angle) * 2) };
+
+};
+
+proto.render = function (ctx, center, gridSize, mazeAngle) {
+  var ax = this.a.x * gridSize;
+  var ay = this.a.y * gridSize;
+  ctx.save();
+  ctx.translate(ax, ay);
+  ctx.rotate(mazeAngle);
+  var color = ALLY.rotate;
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  // axle
+  ctx.lineWidth = gridSize * 0.8;
+  ctx.lineJoin = 'round';
+  ctx.rotate(TAU / 8);
+  ctx.strokeRect(-gridSize * 0.2, -gridSize * 0.2, gridSize * 0.4, gridSize * 0.4);
+  ctx.rotate(-TAU / 8);
+  // line
+  ctx.lineWidth = gridSize * 0.8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+
+  var bx = this.delta.x * gridSize;
+  var by = this.delta.y * gridSize;
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+  ctx.closePath();
+  ctx.restore();
+};
+
+// rotational physics model
+
+var TAU = Math.PI * 2;
+
+function FlyWheel(props) {
+  this.angle = 0;
+  this.friction = 0.95;
+  this.velocity = 0;
+
+  for (var prop in props) {
+    this[prop] = props[prop];
+  }
+}
+
+var proto = FlyWheel.prototype;
+
+proto.integrate = function () {
+  this.velocity *= this.friction;
+  this.angle += this.velocity;
+  this.normalizeAngle();
+};
+
+proto.applyForce = function (force) {
+  this.velocity += force;
+};
+
+proto.normalizeAngle = function () {
+  this.angle = (this.angle % TAU + TAU) % TAU;
+};
+
+proto.setAngle = function (theta) {
+  var velo = theta - this.angle;
+  if (velo > TAU / 2) {
+    velo -= TAU;
+  } else if (velo < -TAU / 2) {
+    velo += TAU;
+  }
+  var force = velo - this.velocity;
+  this.applyForce(force);
+};
+
+
+var cub = {
+  offset: { x: 0, y: 0 } };
+
+
+var pegOrienter = {
+  noon: function (peg) {
+    return peg;
+  },
+  three: function (peg) {
+    return { x: peg.y, y: -peg.x };
+  },
+  six: function (peg) {
+    return { x: -peg.x, y: -peg.y };
+  },
+  nine: function (peg) {
+    return { x: -peg.y, y: peg.x };
+  } };
+
+
+cub.setPeg = function (peg, orientation) {
+  peg = pegOrienter[orientation](peg);
+  this.peg = peg;
+
+  this.noon = { x: peg.x, y: peg.y };
+  this.three = { x: -peg.y, y: peg.x };
+  this.six = { x: -peg.x, y: -peg.y };
+  this.nine = { x: peg.y, y: -peg.x };
+};
+
+var offsetOrienter = {
+  noon: function (offset) {
+    return offset;
+  },
+  three: function (offset) {
+    // flip y because its rendering
+    return { x: offset.y, y: -offset.x };
+  },
+  six: function (offset) {
+    return { x: -offset.x, y: -offset.y };
+  },
+  nine: function (offset) {
+    // flip y because its rendering
+    return { x: -offset.y, y: offset.x };
+  } };
+
+
+cub.setOffset = function (offset, orientation) {
+  this.offset = offsetOrienter[orientation](offset);
+};
+
+// ----- render ----- //
+
+cub.render = function (ctx, mazeCenter, gridSize, angle, isHovered) {
+  function circle(x, y, radius) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  var x = this.peg.x * gridSize + this.offset.x;
+  var y = this.peg.y * gridSize + this.offset.y;
+  ctx.save();
+  ctx.translate(mazeCenter.x, mazeCenter.y);
+  ctx.rotate(angle);
+  ctx.translate(x, y);
+  ctx.rotate(-angle);
+  ctx.fillStyle = ALLY.cub;
+  var scale = isHovered ? 1.15 : 1;
+  ctx.scale(scale, scale);
+  circle(0, 0, gridSize * 0.6);
+  circle(gridSize * -0.45, gridSize * -0.35, gridSize * 0.3);
+  circle(gridSize * 0.45, gridSize * -0.35, gridSize * 0.3);
+
+  ctx.restore();
+};
+
+
+/* globals FlyWheel, FreeSegment, FixedSegment, PivotSegment, RotateSegment, cub */
+
+function Maze() {
+  this.freeSegments = [];
+  this.fixedSegments = [];
+  this.pivotSegments = [];
+  this.rotateSegments = [];
+  this.flyWheel = new FlyWheel({
+    friction: 0.8 });
+
+  this.connections = {};
+}
+
+var proto = Maze.prototype;
+
+proto.loadText = function (text) {
+  // separate --- sections, YAML front matter first, maze source second;
+  var sections = text.split('---\n');
+  // YAML front matter
+  var frontMatter = {};
+  if (sections.length > 1) {
+    frontMatter = getFrontMatter(sections[0]);
+  }
+  // [Ally] Front matter carries a string key, not a sentence — see setHint.
+  this.hintKey = frontMatter.instruction || '';
+  setHint(this.hintKey);
+
+  var mazeSrc = sections[sections.length - 1];
+  var lines = mazeSrc.split('\n');
+  var gridCount = this.gridCount = lines[0].length;
+  var gridMax = this.gridMax = (gridCount - 1) / 2;
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var chars = line.split('');
+    for (var j = 0; j < chars.length; j++) {
+      var character = chars[j];
+      var pegX = j - gridMax;
+      var pegY = i - gridMax;
+      var parseMethod = 'parse' + character;
+      if (this[parseMethod]) {
+        this[parseMethod](pegX, pegY);
+      }
+    }
+  }
+};
+
+function getFrontMatter(text) {
+  /*
+    [Ally] Return an empty map, not undefined.
+
+    A board with no front matter still opens with `---`, so the section before
+    it is the empty string and the pen's early return handed back undefined —
+    which loadText then read `.instruction` off, throwing. That aborted the
+    load before the maze was built and, because the throw unwound out of
+    animate(), stopped requestAnimationFrame for good: the canvas froze on the
+    half-drawn frame (the axle and nothing else) until the page was reloaded.
+    Thirteen of the sixty-one boards have no instruction line.
+  */
+  if (!text) {
+    return {};
+  }
+  var frontMatter = {};
+  text.split('\n').forEach(function (line) {
+    if (!line) {
+      return;
+    }
+    var parts = line.split(':');
+    var key = parts[0].trim();
+    var value = parts[1].trim();
+    if (value === 'true') {
+      value = true; // boolean true
+    } else if (value === 'false') {
+      value = false; // boolean false
+    } else if (value.match(/$\d+(\.\d+)?^/)) {
+      value = parseFloat(value, 10); // number
+    } else if (value.match(/$\d+\.\d+^/)) {
+      value = parseFloat(value); // float
+    }
+    frontMatter[key] = value;
+  });
+  return frontMatter;
+}
+
+
+// -------------------------- parsers -------------------------- //
+
+// horizontal free segment
+proto['parse-'] = proto.addFreeHorizSegment = function (pegX, pegY) {
+  var segment = getHorizSegment(pegX, pegY, FreeSegment);
+  this.connectSegment(segment);
+  this.freeSegments.push(segment);
+};
+
+// vertical free segment
+proto['parse|'] = proto.addFreeVertSegment = function (pegX, pegY) {
+  var segment = getVertSegment(pegX, pegY, FreeSegment);
+  this.connectSegment(segment);
+  this.freeSegments.push(segment);
+};
+
+// horizontal fixed segment
+proto['parse='] = proto.addFixedHorizSegment = function (pegX, pegY) {
+  var segment = getHorizSegment(pegX, pegY, FixedSegment);
+  this.connectSegment(segment);
+  this.fixedSegments.push(segment);
+};
+
+// vertical fixed segment
+proto['parse!'] = proto.addFixedVertSegment = function (pegX, pegY) {
+  var segment = getVertSegment(pegX, pegY, FixedSegment);
+  this.connectSegment(segment);
+  this.fixedSegments.push(segment);
+};
+
+function getHorizSegment(pegX, pegY, Segment) {
+  var a = { x: pegX + 1, y: pegY };
+  var b = { x: pegX - 1, y: pegY };
+  return new Segment(a, b);
+}
+
+function getVertSegment(pegX, pegY, Segment) {
+  var a = { x: pegX, y: pegY + 1 };
+  var b = { x: pegX, y: pegY - 1 };
+  return new Segment(a, b);
+}
+
+// ----- pivot ----- //
+
+// pivot up segment
+proto['parse^'] = proto.addPivotUpSegment = function (pegX, pegY) {
+  var a = { x: pegX, y: pegY + 1 };
+  var b = { x: pegX, y: pegY - 1 };
+  var segment = new PivotSegment(a, b);
+  this.connectSegment(segment);
+  this.pivotSegments.push(segment);
+};
+
+// pivot down segment
+proto.parsev = proto.addPivotDownSegment = function (pegX, pegY) {
+  var a = { x: pegX, y: pegY - 1 };
+  var b = { x: pegX, y: pegY + 1 };
+  var segment = new PivotSegment(a, b);
+  this.connectSegment(segment);
+  this.pivotSegments.push(segment);
+};
+
+// pivot left segment
+proto['parse<'] = proto.addPivotLeftSegment = function (pegX, pegY) {
+  var a = { x: pegX + 1, y: pegY };
+  var b = { x: pegX - 1, y: pegY };
+  var segment = new PivotSegment(a, b);
+  this.connectSegment(segment);
+  this.pivotSegments.push(segment);
+};
+
+// pivot right segment
+proto['parse>'] = proto.addPivotRightSegment = function (pegX, pegY) {
+  var a = { x: pegX - 1, y: pegY };
+  var b = { x: pegX + 1, y: pegY };
+  var segment = new PivotSegment(a, b);
+  this.connectSegment(segment);
+  this.pivotSegments.push(segment);
+};
+
+// ----- rotate ----- //
+
+proto.parse8 = proto.addRotateUpSegment = function (pegX, pegY) {
+  var a = { x: pegX, y: pegY + 1 };
+  var b = { x: pegX, y: pegY - 1 };
+  var segment = new RotateSegment(a, b);
+  this.connectSegment(segment);
+  this.rotateSegments.push(segment);
+};
+
+proto.parse4 = proto.addRotateLeftSegment = function (pegX, pegY) {
+  var a = { x: pegX + 1, y: pegY };
+  var b = { x: pegX - 1, y: pegY };
+  var segment = new RotateSegment(a, b);
+  this.connectSegment(segment);
+  this.rotateSegments.push(segment);
+};
+
+proto.parse5 = proto.addRotateUpSegment = function (pegX, pegY) {
+  var a = { x: pegX, y: pegY - 1 };
+  var b = { x: pegX, y: pegY + 1 };
+  var segment = new RotateSegment(a, b);
+  this.connectSegment(segment);
+  this.rotateSegments.push(segment);
+};
+
+proto.parse6 = proto.addRotateRightSegment = function (pegX, pegY) {
+  var a = { x: pegX - 1, y: pegY };
+  var b = { x: pegX + 1, y: pegY };
+  var segment = new RotateSegment(a, b);
+  this.connectSegment(segment);
+  this.rotateSegments.push(segment);
+};
+
+// ----- combos ----- //
+
+// free & fixed horizontal
+proto['parse#'] = function (pegX, pegY) {
+  this.addFreeHorizSegment(pegX, pegY);
+  this.addFixedHorizSegment(pegX, pegY);
+};
+
+// free & fixed vertical
+proto.parse$ = function (pegX, pegY) {
+  this.addFreeVertSegment(pegX, pegY);
+  this.addFixedVertSegment(pegX, pegY);
+};
+
+// pivot up + fixed vertical
+proto.parseI = function (pegX, pegY) {
+  this.addPivotUpSegment(pegX, pegY);
+  this.addFixedVertSegment(pegX, pegY);
+};
+
+// pivot left + fixed horizontal
+proto.parseJ = function (pegX, pegY) {
+  this.addPivotLeftSegment(pegX, pegY);
+  this.addFixedHorizSegment(pegX, pegY);
+};
+
+// pivot down + fixed vertical
+proto.parseK = function (pegX, pegY) {
+  this.addPivotDownSegment(pegX, pegY);
+  this.addFixedVertSegment(pegX, pegY);
+};
+
+// pivot right + fixed horizontal
+proto.parseL = function (pegX, pegY) {
+  this.addPivotRightSegment(pegX, pegY);
+  this.addFixedHorizSegment(pegX, pegY);
+};
+
+// pivot up + free vertical
+proto.parseW = function (pegX, pegY) {
+  this.addPivotUpSegment(pegX, pegY);
+  this.addFreeVertSegment(pegX, pegY);
+};
+
+// pivot left + free horizontal
+proto.parseA = function (pegX, pegY) {
+  this.addPivotLeftSegment(pegX, pegY);
+  this.addFreeHorizSegment(pegX, pegY);
+};
+
+// pivot down + free vertical
+proto.parseS = function (pegX, pegY) {
+  this.addPivotDownSegment(pegX, pegY);
+  this.addFreeVertSegment(pegX, pegY);
+};
+
+// pivot right + free horizontal
+proto.parseD = function (pegX, pegY) {
+  this.addPivotRightSegment(pegX, pegY);
+  this.addFreeHorizSegment(pegX, pegY);
+};
+
+// start position
+proto['parse@'] = function (pegX, pegY) {
+  this.startPosition = { x: pegX, y: pegY };
+  cub.setPeg(this.startPosition, 'noon');
+};
+
+// goal position
+proto['parse*'] = function (pegX, pegY) {
+  this.goalPosition = { x: pegX, y: pegY };
+};
+
+// --------------------------  -------------------------- //
+
+proto.updateItemGroups = function () {
+  var itemGroups = {};
+  this.items.forEach(function (item) {
+    if (itemGroups[item.type] === undefined) {
+      itemGroups[item.type] = [];
+    }
+    itemGroups[item.type].push(item);
+  });
+  this.itemGroups = itemGroups;
+};
+
+var orientations = ['noon', 'three', 'six', 'nine'];
+
+proto.connectSegment = function (segment) {
+  orientations.forEach(function (orientation) {
+    var line = segment[orientation];
+    // check that pegs are not out of maze
+    if (this.getIsPegOut(line.a) || this.getIsPegOut(line.b)) {
+      return;
+    }
+    this.connectPeg(segment, orientation, line.a);
+    this.connectPeg(segment, orientation, line.b);
+  }, this);
+};
+
+proto.getIsPegOut = function (peg) {
+  return Math.abs(peg.x) > this.gridMax ||
+  Math.abs(peg.y) > this.gridMax;
+};
+
+proto.connectPeg = function (segment, orientation, peg) {
+  // flatten the key
+  var key = orientation + ':' + peg.x + ',' + peg.y;
+  var connection = this.connections[key];
+  // create connections array if not already there
+  if (!connection) {
+    connection = this.connections[key] = [];
+  }
+  if (connection.indexOf(segment) == -1) {
+    connection.push(segment);
+  }
+};
+
+// --------------------------  -------------------------- //
+
+proto.update = function () {
+  this.flyWheel.integrate();
+  var angle = this.flyWheel.angle;
+  if (angle < TAU / 8) {
+    this.orientation = 'noon';
+  } else if (angle < TAU * 3 / 8) {
+    this.orientation = 'three';
+  } else if (angle < TAU * 5 / 8) {
+    this.orientation = 'six';
+  } else if (angle < TAU * 7 / 8) {
+    this.orientation = 'nine';
+  } else {
+    this.orientation = 'noon';
+  }
+};
+
+proto.attractAlignFlyWheel = function () {
+  // attract towards
+  var angle = this.flyWheel.angle;
+  var target;
+  if (angle < TAU / 8) {
+    target = 0;
+  } else if (angle < TAU * 3 / 8) {
+    target = TAU / 4;
+  } else if (angle < TAU * 5 / 8) {
+    target = TAU / 2;
+  } else if (angle < TAU * 7 / 8) {
+    target = TAU * 3 / 4;
+  } else {
+    target = TAU;
+  }
+  var attraction = (target - angle) * 0.03;
+  this.flyWheel.applyForce(attraction);
+};
+
+var TAU = Math.PI * 2;
+
+var orientationAngles = {
+  noon: 0,
+  three: TAU / 4,
+  six: TAU / 2,
+  nine: TAU * 3 / 4 };
+
+
+proto.render = function (ctx, center, gridSize, angle) {
+  var orientationAngle = orientationAngles[angle];
+  var gridMax = this.gridMax;
+  angle = orientationAngle !== undefined ? orientationAngle : angle || 0;
+
+
+  ctx.save();
+  ctx.translate(center.x, center.y);
+  // fixed segments
+  this.fixedSegments.forEach(function (segment) {
+    segment.render(ctx, center, gridSize);
+  });
+  // rotate segments
+  this.rotateSegments.forEach(function (segment) {
+    segment.render(ctx, center, gridSize, angle);
+  });
+  // rotation
+  ctx.rotate(angle);
+
+  ctx.lineWidth = gridSize * 0.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // axle
+  ctx.lineWidth = gridSize * 0.2;
+  ctx.strokeStyle = ALLY.axle;
+  // strokeCircle( ctx, 0, 0, gridSize/2 );
+  ctx.save();
+  ctx.rotate(Math.PI / 4);
+  ctx.strokeRect(-gridSize / 5, -gridSize / 5, gridSize * 2 / 5, gridSize * 2 / 5);
+  ctx.restore();
+  // start position
+  ctx.strokeStyle = ALLY.start;
+  ctx.lineWidth = gridSize * 0.15;
+  var startX = this.startPosition.x * gridSize;
+  var startY = this.startPosition.y * gridSize;
+  strokeCircle(ctx, startX, startY, gridSize * 0.5);
+
+  // pegs
+  for (var pegY = -gridMax; pegY <= gridMax; pegY += 2) {
+    for (var pegX = -gridMax; pegX <= gridMax; pegX += 2) {
+      var pegXX = pegX * gridSize;
+      var pegYY = pegY * gridSize;
+      ctx.fillStyle = ALLY.peg;
+      fillCircle(ctx, pegXX, pegYY, gridSize * 0.15);
+    }
+  }
+  // free segments
+  this.freeSegments.forEach(function (segment) {
+    segment.render(ctx, center, gridSize);
+  });
+  // pivot segments
+  this.pivotSegments.forEach(function (segment) {
+    segment.render(ctx, center, gridSize, angle);
+  });
+  // goal position
+  var goalX = this.goalPosition.x * gridSize;
+  var goalY = this.goalPosition.y * gridSize;
+  ctx.lineWidth = gridSize * 0.3;
+  ctx.fillStyle = ALLY.goal;
+  ctx.strokeStyle = ALLY.goal;
+  renderGoal(ctx, goalX, goalY, angle, gridSize * 0.6, gridSize * 0.3);
+
+  ctx.restore();
+};
+
+function fillCircle(ctx, x, y, radius) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.closePath();
+}
+
+function strokeCircle(ctx, x, y, radius) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.closePath();
+}
+
+function renderGoal(ctx, x, y, mazeAngle, radiusA, radiusB) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-mazeAngle);
+  ctx.beginPath();
+  for (var i = 0; i < 11; i++) {
+    var theta = Math.PI * 2 * i / 10 + Math.PI / 2;
+    var radius = i % 2 ? radiusA : radiusB;
+    var dx = Math.cos(theta) * radius;
+    var dy = Math.sin(theta) * radius;
+    ctx[i ? 'lineTo' : 'moveTo'](dx, dy);
+  }
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+  ctx.restore();
+}
+
+
+function WinAnimation(x, y) {
+  this.x = x;
+  this.y = y;
+  this.startTime = new Date();
+  this.isPlaying = true;
+}
+
+// length of animation in milliseconds
+var duration = 1000;
+
+var proto = WinAnimation.prototype;
+
+proto.update = function () {
+  if (!this.isPlaying) {
+    return;
+  }
+  this.t = (new Date() - this.startTime) / duration;
+  this.isPlaying = this.t <= 1;
+};
+
+proto.render = function (ctx) {
+  if (!this.isPlaying) {
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(this.x, this.y);
+
+  // big burst
+  this.renderBurst(ctx);
+  // small burst
+  ctx.save();
+  ctx.scale(0.5, -0.5);
+  this.renderBurst(ctx);
+  ctx.restore();
+
+  ctx.restore();
+};
+
+proto.renderBurst = function (ctx) {
+
+  var t = this.t;
+  var dt = 1 - t;
+  var easeT = 1 - dt * dt * dt * dt * dt * dt * dt * dt;
+  var dy = easeT * -100;
+  // scale math
+  var st = 2 - this.t * 2;
+  var scale = (1 - t * t * t) * 1.5;
+  var spin = Math.PI * 1 * t * t * t;
+
+  for (var i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.rotate(Math.PI * 2 / 5 * i);
+    ctx.translate(0, dy);
+    ctx.scale(scale, scale);
+    ctx.rotate(spin);
+    renderStar(ctx);
+    ctx.restore();
+  }
+};
+
+function renderStar(ctx) {
+  ctx.lineWidth = 8;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.fillStyle = ALLY.goal;
+  ctx.strokeStyle = ALLY.goal;
+  ctx.beginPath();
+  for (var i = 0; i < 11; i++) {
+    var theta = Math.PI * 2 * i / 10 + Math.PI / 2;
+    var radius = i % 2 ? 20 : 10;
+    var dx = Math.cos(theta) * radius;
+    var dy = Math.sin(theta) * radius;
+    ctx[i ? 'lineTo' : 'moveTo'](dx, dy);
+  }
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+}
+
+/* globals cub, WinAnimation, Unipointer, Maze */
+
+var docElem = document.documentElement;
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+/*
+  [Ally] Size to the frame, not the window.
+
+  The pen ran full-page on a desktop and could hard-code a 2x backing store and
+  a maze centred on the window. Here the page is whatever box the course player
+  gives it — an iframe a few hundred pixels tall on the web, a WebView on a
+  phone — and that box changes when the device rotates. Everything below is
+  therefore recomputed by layout(): the backing store, the maze centre, and the
+  grid pitch, which now comes from the level's own size so a 6x6 board fits the
+  same frame a 3x3 one does. render() still draws in CSS pixels via scale(2, 2).
+*/
+var canvasWidth = 0;
+var canvasHeight = 0;
+var canvasLeft = 0;
+var canvasTop = 0;
+var maze;
+var PI = Math.PI;
+var TAU = PI * 2;
+var dragAngle = null;
+var cubDragMove = null;
+var isCubHovered = false;
+var isCubDragging = false;
+var winAnim;
+var unipointer = new Unipointer();
+
+// ----- config ----- //
+
+/* Room the chrome takes out of the frame, in CSS pixels: the Levels bar above
+   and the hint line below. The board is centred in what is left. */
+var TOP_BAR = 44;
+var BOTTOM_BAR = 52;
+/* The pitch a board is drawn at, in CSS pixels. It is capped so a three-by-three
+   board does not blow up into a cartoon, and floored so a six-by-six one stays
+   playable on a phone; between the two it grows to fill whatever frame there is. */
+var MAX_GRID = 56;
+var MIN_GRID = 11;
+
+var gridSize = MAX_GRID;
+var mazeCenter = { x: 0, y: 0 };
+
+function layout() {
+  var width = docElem.clientWidth;
+  var height = docElem.clientHeight;
+  /*
+    A frame that is not on screen — the course player between items, a
+    background tab — measures zero. Re-fitting to that would centre the board
+    on nothing and drop it to the minimum pitch, and it would stay that way
+    until something resized the frame again, so keep the last good fit instead.
+  */
+  if (!width || !height) return;
+  canvasWidth = canvas.width = width * 2;
+  canvasHeight = canvas.height = height * 2;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
+  var playHeight = Math.max(80, height - TOP_BAR - BOTTOM_BAR);
+  mazeCenter.x = width / 2;
+  mazeCenter.y = TOP_BAR + playHeight / 2;
+
+  /*
+    A board is square but it spins, so what has to fit is the circle its corner
+    pegs sweep: gridMax * root-two grid units, plus about three-quarters of a
+    unit for the cub, the star and the rounded ends of the links.
+  */
+  var gridMax = maze ? maze.gridMax : 5;
+  var room = Math.min(width, playHeight) / 2;
+  gridSize = Math.max(MIN_GRID, Math.min(MAX_GRID, room / (gridMax * Math.SQRT2 + 0.75)));
+
+  var rect = canvas.getBoundingClientRect();
+  canvasLeft = rect.left + window.pageXOffset;
+  canvasTop = rect.top + window.pageYOffset;
+}
+
+// ----- instruction ----- //
+
+var instructElem = document.querySelector('.instruction');
+
+// ----- build level select, levels array ----- //
+
+var levelList = document.querySelector('.level-list');
+var levelsElem = document.querySelector('.levels');
+var levels = [];
+
+(function () {
+  var levelPres = levelsElem.querySelectorAll('pre');
+  var fragment = document.createDocumentFragment();
+  for (var i = 0; i < levelPres.length; i++) {
+    var pre = levelPres[i];
+    var listItem = document.createElement('li');
+    listItem.className = 'level-list__item';
+    var id = pre.id;
+    // [Ally] The stars are a difficulty rating and read in any language; only
+    // the word "Tutorial" needs the host's copy, so blurbs are keys now.
+    var blurb = pre.getAttribute('data-blurb');
+    listItem.innerHTML = '<span class="level-list__item__number">' + (i + 1) +
+    '</span> <span class="level-list__item__blurb">' +
+    (blurb === 'tutorial' ? escapeHtml(STRINGS.tutorial) : blurb) + '</span>' +
+    '<span class="level-list__item__check" aria-hidden="true">✔</span>';
+    listItem.setAttribute('data-id', id);
+    fragment.appendChild(listItem);
+    levels.push(id);
+  }
+
+  levelList.appendChild(fragment);
+
+})();
+
+// ----- levels button ----- //
+
+var levelSelectButton = document.querySelector('.level-select-button');
+var nextLevelButton = document.querySelector('.next-level-button');
+
+levelSelectButton.addEventListener('click', openLevelList);
+levelCloseButton.addEventListener('click', closeLevelList);
+
+function openLevelList() {
+  levelPanel.hidden = false;
+  levelCloseButton.focus();
+}
+
+function closeLevelList() {
+  levelPanel.hidden = true;
+}
+
+// ----- level list ----- //
+
+levelList.addEventListener('click', function (event) {
+  var item = getParent(event.target, '.level-list__item');
+  if (!item) {
+    return;
+  }
+  // load level from id
+  var id = item.getAttribute('data-id');
+  loadLevel(id);
+});
+
+function getParent(elem, selector) {
+  var parent = elem;
+  while (parent != document.body) {
+    if (parent.matches(selector)) {
+      return parent;
+    }
+    parent = parent.parentNode;
+  }
+}
+
+// ----- load level ----- //
+
+function loadLevel(id) {
+  var pre = levelsElem.querySelector('#' + id);
+
+  maze = new Maze();
+  maze.id = id;
+
+  if (!pre) {
+    console.error('pre not found for ' + id);
+    return;
+  }
+
+  // load maze level from pre text
+  maze.loadText(pre.textContent);
+  // [Ally] The pitch depends on how big this board is, so re-fit the frame.
+  layout();
+  winAnim = null;
+  // close ui
+  closeLevelList();
+  nextLevelButton.classList.remove('is-open');
+  // highlight list
+  var previousItem = levelList.querySelector('.is-playing');
+  if (previousItem) {
+    previousItem.classList.remove('is-playing');
+  }
+  levelList.querySelector('[data-id="' + id + '"]').classList.add('is-playing');
+}
+
+// ----- init ----- //
+
+/*
+  [Ally] No localStorage.
+
+  The pen remembered the level you were on and the ones you had solved. This
+  page runs in an iframe sandboxed without allow-same-origin, where touching
+  localStorage throws outright, and inside a WebView with no origin to store
+  against — so progress lives for the sitting and the count of solved boards is
+  what gets posted to the host as a score.
+*/
+layout();
+loadLevel(levels[0]);
+
+unipointer.bindStartEvent(canvas);
+window.addEventListener('mousemove', onHoverMousemove);
+window.addEventListener('resize', layout);
+animate();
+
+// -------------------------- drag rotation -------------------------- //
+
+var pointerBehavior;
+
+// ----- pointerBehavior ----- //
+
+var cubDrag = {};
+var mazeRotate = {};
+
+// -----  ----- //
+
+unipointer.pointerDown = function (event, pointer) {
+  event.preventDefault();
+  var isInsideCub = getIsInsideCub(pointer);
+  pointerBehavior = isInsideCub ? cubDrag : mazeRotate;
+
+  pointerBehavior.pointerDown(event, pointer);
+
+  this._bindPostStartEvents(event);
+};
+
+function getIsInsideCub(pointer) {
+  var position = getCanvasMazePosition(pointer);
+  var cubDeltaX = Math.abs(position.x - cub[maze.orientation].x * gridSize);
+  var cubDeltaY = Math.abs(position.y - cub[maze.orientation].y * gridSize);
+  var bound = gridSize * 1.5;
+  return cubDeltaX <= bound && cubDeltaY <= bound;
+}
+
+function getCanvasMazePosition(pointer) {
+  var canvasX = pointer.pageX - canvasLeft;
+  var canvasY = pointer.pageY - canvasTop;
+  return {
+    x: canvasX - mazeCenter.x,
+    y: canvasY - mazeCenter.y };
+
+}
+
+// ----- unipointer ----- //
+
+unipointer.pointerMove = function (event, pointer) {
+  pointerBehavior.pointerMove(event, pointer);
+};
+
+unipointer.pointerUp = function (event, pointer) {
+  pointerBehavior.pointerUp(event, pointer);
+  this._unbindPostStartEvents();
+};
+
+// ----- cubDrag ----- //
+
+var dragStartPosition, dragStartPegPosition, rotatePointer;
+
+cubDrag.pointerDown = function (event, pointer) {
+  var segments = getCubConnections();
+  if (!segments || !segments.length) {
+    return;
+  }
+  isCubDragging = true;
+  dragStartPosition = { x: pointer.pageX, y: pointer.pageY };
+  dragStartPegPosition = {
+    x: cub[maze.orientation].x * gridSize + mazeCenter.x,
+    y: cub[maze.orientation].y * gridSize + mazeCenter.y };
+
+  docElem.classList.add('is-cub-dragging');
+};
+
+cubDrag.pointerMove = function (event, pointer) {
+  if (!isCubDragging) {
+    return;
+  }
+  cubDragMove = {
+    x: pointer.pageX - dragStartPosition.x,
+    y: pointer.pageY - dragStartPosition.y };
+
+};
+
+cubDrag.pointerUp = function () {
+  cubDragMove = null;
+  docElem.classList.remove('is-cub-dragging');
+  isCubDragging = false;
+  // set at peg
+  cub.setOffset({ x: 0, y: 0 }, maze.orientation);
+  // check level complete
+  if (cub.peg.x == maze.goalPosition.x && cub.peg.y == maze.goalPosition.y) {
+    completeLevel();
+  }
+};
+
+// ----- rotate ----- //
+
+var dragStartAngle, dragStartMazeAngle, moveAngle;
+var mazeRotate = {};
+
+
+mazeRotate.pointerDown = function (event, pointer) {
+  dragStartAngle = moveAngle = getDragAngle(pointer);
+  dragStartMazeAngle = maze.flyWheel.angle;
+  dragAngle = dragStartMazeAngle;
+  rotatePointer = pointer;
+};
+
+function getDragAngle(pointer) {
+  var position = getCanvasMazePosition(pointer);
+  return normalizeAngle(Math.atan2(position.y, position.x));
+}
+
+mazeRotate.pointerMove = function (event, pointer) {
+  rotatePointer = pointer;
+  moveAngle = getDragAngle(pointer);
+  var deltaAngle = moveAngle - dragStartAngle;
+  dragAngle = normalizeAngle(dragStartMazeAngle + deltaAngle);
+};
+
+mazeRotate.pointerUp = function () {
+  dragAngle = null;
+  rotatePointer = null;
+};
+
+
+// ----- animate ----- //
+
+function animate() {
+  update();
+  render();
+  requestAnimationFrame(animate);
+}
+
+// ----- update ----- //
+
+function update() {
+  // drag cub
+  dragCub();
+  // rotate grid
+  if (dragAngle) {
+    maze.flyWheel.setAngle(dragAngle);
+  } else {
+    maze.attractAlignFlyWheel();
+  }
+  maze.update();
+  if (winAnim) {
+    winAnim.update();
+  }
+}
+
+function dragCub() {
+  if (!cubDragMove) {
+    return;
+  }
+
+  var segments = getCubConnections();
+
+  var dragPosition = {
+    x: dragStartPegPosition.x + cubDragMove.x,
+    y: dragStartPegPosition.y + cubDragMove.y };
+
+
+  // set peg position
+  var dragPeg = getDragPeg(segments, dragPosition);
+  cub.setPeg(dragPeg, maze.orientation);
+
+  // set drag offset
+  var cubDragPosition = getDragPosition(segments, dragPosition);
+
+  var cubPosition = getCubPosition();
+  var offset = {
+    x: cubDragPosition.x - cubPosition.x,
+    y: cubDragPosition.y - cubPosition.y };
+
+  cub.setOffset(offset, maze.orientation);
+
+}
+
+function getCubPosition() {
+  return {
+    x: cub[maze.orientation].x * gridSize + mazeCenter.x,
+    y: cub[maze.orientation].y * gridSize + mazeCenter.y };
+
+}
+
+function getCubConnections() {
+  var pegX = cub[maze.orientation].x;
+  var pegY = cub[maze.orientation].y;
+  var key = maze.orientation + ':' + pegX + ',' + pegY;
+  return maze.connections[key];
+}
+
+function getDragPosition(segments, dragPosition) {
+  if (segments.length == 1) {
+    return getSegmentDragPosition(segments[0], dragPosition);
+  }
+
+  // get closest segments positions
+  var dragCandidates = segments.map(function (segment) {
+    var position = getSegmentDragPosition(segment, dragPosition);
+    return {
+      position: position,
+      distance: getDistance(dragPosition, position) };
+
+  });
+
+  dragCandidates.sort(distanceSorter);
+
+  return dragCandidates[0].position;
+}
+
+function getSegmentDragPosition(segment, dragPosition) {
+  var line = segment[maze.orientation];
+  var isHorizontal = line.a.y == line.b.y;
+  var x, y;
+  if (isHorizontal) {
+    x = getSegmentDragCoord(line, 'x', dragPosition);
+    y = line.a.y * gridSize + mazeCenter.y;
+  } else {
+    x = line.a.x * gridSize + mazeCenter.x;
+    y = getSegmentDragCoord(line, 'y', dragPosition);
+  }
+  return { x: x, y: y };
+}
+
+function getSegmentDragCoord(line, axis, dragPosition) {
+  var a = line.a[axis];
+  var b = line.b[axis];
+  var min = a < b ? a : b;
+  var max = a > b ? a : b;
+  min = min * gridSize + mazeCenter[axis];
+  max = max * gridSize + mazeCenter[axis];
+  return Math.max(min, Math.min(max, dragPosition[axis]));
+}
+
+function distanceSorter(a, b) {
+  return a.distance - b.distance;
+}
+
+function getDragPeg(segments, dragPosition) {
+  var pegs = [];
+  segments.forEach(function (segment) {
+    var line = segment[maze.orientation];
+    addPegPoint(line.a, pegs);
+    addPegPoint(line.b, pegs);
+  });
+
+  var pegCandidates = pegs.map(function (pegKey) {
+    // revert string back to object with integers
+    var parts = pegKey.split(',');
+    var peg = {
+      x: parseInt(parts[0], 10),
+      y: parseInt(parts[1], 10) };
+
+    var pegPosition = {
+      x: peg.x * gridSize + mazeCenter.x,
+      y: peg.y * gridSize + mazeCenter.y };
+
+    return {
+      peg: peg,
+      distance: getDistance(dragPosition, pegPosition) };
+
+  });
+
+  pegCandidates.sort(distanceSorter);
+
+  return pegCandidates[0].peg;
+}
+
+function getDistance(a, b) {
+  var dx = b.x - a.x;
+  var dy = b.y - a.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function addPegPoint(point, pegs) {
+  // use strings to prevent dupes
+  var key = point.x + ',' + point.y;
+  if (pegs.indexOf(key) == -1) {
+    pegs.push(key);
+  }
+}
+
+// ----- hover ----- //
+
+function onHoverMousemove(event) {
+  var isInsideCub = getIsInsideCub(event);
+  if (isInsideCub == isCubHovered) {
+    return;
+  }
+  // change
+  isCubHovered = isInsideCub;
+  var changeClass = isInsideCub ? 'add' : 'remove';
+  docElem.classList[changeClass]('is-cub-hovered');
+}
+
+// ----- render ----- //
+
+function render() {
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.save();
+  ctx.scale(2, 2);
+  renderRotateHandle();
+  // maze
+  maze.render(ctx, mazeCenter, gridSize, maze.flyWheel.angle);
+  // win animation
+  if (winAnim) {
+    winAnim.render(ctx);
+  }
+  // cub
+  var isHovered = isCubHovered || isCubDragging;
+  cub.render(ctx, mazeCenter, gridSize, maze.flyWheel.angle, isHovered);
+  ctx.restore();
+}
+
+function renderRotateHandle() {
+  // rotate handle
+  if (!rotatePointer) {
+    return;
+  }
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = gridSize * 0.5;
+  var color = ALLY.handle;
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+
+  // pie slice
+  ctx.beginPath();
+  var pieRadius = maze.gridMax * gridSize;
+  ctx.moveTo(mazeCenter.x, mazeCenter.y);
+  var pieDirection = normalizeAngle(normalizeAngle(moveAngle) -
+  normalizeAngle(dragStartAngle)) > TAU / 2;
+  ctx.arc(mazeCenter.x, mazeCenter.y, pieRadius, dragStartAngle, moveAngle, pieDirection);
+  ctx.lineTo(mazeCenter.x, mazeCenter.y);
+  ctx.stroke();
+  ctx.fill();
+  ctx.closePath();
+}
+
+// -------------------------- completeLevel -------------------------- //
+
+var completedLevels = [];
+
+function completeLevel() {
+  var cubPosition = getCubPosition();
+  winAnim = new WinAnimation(cubPosition.x, cubPosition.y);
+  levelList.querySelector('[data-id="' + maze.id + '"]').classList.add('did-complete');
+  if (completedLevels.indexOf(maze.id) == -1) {
+    completedLevels.push(maze.id);
+  }
+  renderSolved();
+  /*
+    [Ally] One board solved is one unit of progress, so the score posted is how
+    many the learner has cleared this sitting. It is recorded as a personal best
+    and shown back to them; like every game here it gates nothing.
+  */
+  post('over', { score: completedLevels.length, highScore: completedLevels.length });
+  if (getNextLevel()) {
+    setTimeout(function () {
+      nextLevelButton.classList.add('is-open');
+    }, 1000);
+  }
+}
+
+function getNextLevel() {
+  var index = levels.indexOf(maze.id);
+  return levels[index + 1];
+}
+
+// -------------------------- next level -------------------------- //
+
+nextLevelButton.addEventListener('click', function () {
+  var nextLevel = getNextLevel();
+  if (nextLevel) {
+    loadLevel(nextLevel);
+  }
+});
+
+// -------------------------- utils -------------------------- //
+
+function normalizeAngle(angle) {
+  return (angle % TAU + TAU) % TAU;
+}
+//# sourceURL=pen.js
+</script>
+
+<script>
+/**
+ * [Ally] Wiring that has to run after the vendored engine has built the DOM.
+ */
+
+/*
+  The board is a canvas driven by pointer events, so there is no control to tab
+  to — but the level list is a list of <li>, and picking a board is the one
+  thing on this page a keyboard should be able to do. The engine builds those
+  items, so they are decorated here rather than in its markup.
+*/
+(function () {
+  var items = document.querySelectorAll('.level-list__item');
+  for (var i = 0; i < items.length; i++) {
+    items[i].setAttribute('role', 'button');
+    items[i].setAttribute('tabindex', '0');
+  }
+})();
+
+document.querySelector('.level-list').addEventListener('keydown', function (event) {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  var item = event.target.closest ? event.target.closest('.level-list__item') : null;
+  if (!item) return;
+  // Space scrolls the panel otherwise, which moves the list out from under the
+  // board the learner just chose.
+  event.preventDefault();
+  loadLevel(item.getAttribute('data-id'));
+});
+
+/*
+  "Started" means the learner touched the board, not that the page loaded — a
+  game opened and walked past should not report a run. Capture phase because
+  the engine calls preventDefault() on its own handler.
+*/
+canvas.addEventListener('pointerdown', markStarted, true);
+canvas.addEventListener('touchstart', markStarted, true);
+canvas.addEventListener('mousedown', markStarted, true);
+
+/*
+  Draw every label once before the first frame. The web host will send its
+  strings on the `focus` message and this runs again; the mobile host has
+  already set them on window, and this is the only thing that puts them on the
+  buttons — the markup ships English so the page works opened on its own.
+*/
+refreshStrings();
+post('ready');
+</script>
+
+</body>
+</html>

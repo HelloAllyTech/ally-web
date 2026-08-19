@@ -16,8 +16,10 @@ import {
   TableRow,
   Tag,
   Tile,
+  Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import { useGetWeakPerformingMetricsQuery } from "@api";
+import { TooltipIcon } from "@assets";
 import { ROUTES } from "@constants";
 import { WeakMetricGroup, WeakMetricSeries, WeakMetricState } from "@types";
 
@@ -92,13 +94,19 @@ const deltaLabel = (s: WeakMetricSeries): string | null => {
   if (s.state === "none") return null;
   if (s.latest === null || s.previous === null) return null;
   const diff = toDisplay(s.latest, s.unit) - toDisplay(s.previous, s.unit);
-  if (Math.abs(diff) < 0.005) return "flat vs previous bucket";
-  const better = s.lowerIsBetter ? diff < 0 : diff > 0;
+  if (Math.abs(diff) < 0.005) return "no change";
   const arrow = diff < 0 ? "↓" : "↑";
   const digits = s.unit === "ratio" ? 2 : 1;
-  return `${arrow} ${Math.abs(diff).toFixed(digits)}${
-    UNIT_SUFFIX[s.unit] ?? ""
-  } vs previous bucket — ${better ? "improving" : "worsening"}`;
+  const movement = `${arrow} ${Math.abs(diff).toFixed(digits)}${UNIT_SUFFIX[s.unit] ?? ""}`;
+
+  // Some metrics have no good direction, and saying one anyway is a fabricated
+  // verdict. Barge-in is the case: interruption is ordinary conversation, and
+  // its rate turned out flat across every actor turn length above 100
+  // characters — it tracks the opportunity to cut in, not whether the actor
+  // deserved it. Those report the movement and stop there.
+  if (s.lowerIsBetter === null) return movement;
+  const better = s.lowerIsBetter ? diff < 0 : diff > 0;
+  return `${movement} — ${better ? "improving" : "worsening"}`;
 };
 
 /**
@@ -122,10 +130,21 @@ const deltaLabel = (s: WeakMetricSeries): string | null => {
  */
 const MIN_BUCKETS_FOR_A_LINE = 5;
 
-type SeriesForm = "empty" | "stat" | "line";
+type SeriesForm = "empty" | "clean" | "stat" | "line";
 
-const seriesForm = (valuedBuckets: number): SeriesForm => {
+/**
+ * A measured zero is not an empty chart, and until now it drew like one.
+ *
+ * Filter the tab to Hindi and the whole Language realism group went blank. It
+ * had 437 judged turns behind it and had found zero register, translationese
+ * and lexicon errors — a real, hard-won result — but zero-height bars are
+ * indistinguishable from no bars, so it read as "this is broken" rather than
+ * "this is clean". That is precisely the confusion between "not measured" and
+ * "measured, nothing found" the rest of this tab works to prevent.
+ */
+const seriesForm = (valuedBuckets: number, allZero: boolean): SeriesForm => {
   if (valuedBuckets === 0) return "empty";
+  if (allZero) return "clean";
   if (valuedBuckets < MIN_BUCKETS_FOR_A_LINE) return "stat";
   return "line";
 };
@@ -149,19 +168,48 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   // A "none" series still renders its chart — but captioned as an
   // instrumentation gap, so an empty or flat line is read as "we are not
   // measuring this" rather than "this never happens".
-  const caption = [series.caveat, series.state === "none" ? null : null].filter(Boolean).join(" ");
+  // The caveat used to be the card's caption — body text on every card, three
+  // or four lines of weighting rules and exclusions above a two-bar chart. It
+  // crowded out the number it was there to qualify. It is reference material a
+  // reader reaches for once, so it moves behind a tooltip and the caption
+  // carries the one line that says what is being counted.
+  const caption = series.description || undefined;
+
+  // No "lower is better" caption. Every metric here is NAMED as the thing you
+  // want less of — comprehension errors, unfair criticism, wrong language — so
+  // spelling out the direction restates the title. `lowerIsBetter` still drives
+  // the delta's improving/worsening wording, which says the same thing about
+  // the movement that actually happened rather than as a standing rule.
   // A `none` series is one the reader has been told not to read: its headline
   // is "—" and its caveat explains why. Plotting it anyway invites exactly the
   // reading the caveat forbids — barge-in drew a 4.3% column sourced from a
   // flag nothing writes. No value, no plot, just the explanation.
-  const form = series.state === "none" ? "empty" : seriesForm(points.length);
+  // Every bucket zero, with a real denominator behind it — nothing was found,
+  // which is a finding rather than an absence.
+  const allZero = points.length > 0 && points.every(p => p.value === 0);
+  const form = series.state === "none" ? "empty" : seriesForm(points.length, allZero);
 
   return (
     <ChartCard
-      title={series.label}
-      caption={caption || undefined}
+      title={
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem" }}>
+          {series.label}
+          {series.caveat && (
+            <Tooltip label={series.caveat} align="top">
+              <button
+                type="button"
+                className="cursor-pointer inline-flex items-center"
+                aria-label={`How ${series.label} is measured`}
+              >
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          )}
+        </span>
+      }
+      caption={caption}
       takeaway={
-        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
           <Tag type={tag.type} size="sm">
             {tag.label}
           </Tag>
@@ -185,7 +233,13 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
           : "No data in this window."
       }
     >
-      {form === "line" ? (
+      {form === "clean" ? (
+        <p style={{ margin: "0.5rem 0", fontSize: "0.875rem", opacity: 0.75 }}>
+          None found across {totalDenominator.toLocaleString()}{" "}
+          {series.unit === "percent" || series.unit === "per100turns" ? "turns" : "items"} judged in
+          this window.
+        </p>
+      ) : form === "line" ? (
         <LineChart
           data={points}
           options={lineOpts({
@@ -212,7 +266,7 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", opacity: 0.7 }}>
             {points.length === 1
               ? "One measured bucket — compared, not trended."
-              : `${points.length} measured buckets — compared, not trended: too few points to read a direction.`}
+              : `${points.length} ${bucket === "week" ? "weeks" : "months"} of data so far — not enough to show a trend.`}
           </p>
         </>
       ) : null}
@@ -285,6 +339,18 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
     () => ["", ...(data?.filterOptions.scenarios ?? []).map(sc => String(sc.id))],
     [data],
   );
+
+  // Everything a reader might need to audit a number, in one string behind an
+  // icon: which thresholds produced it, and which judge version each family was
+  // read through. Kept because "the version is pinned" matters when a chart
+  // moves; relegated because it is not what anyone opens the tab to see.
+  const provenance = [
+    `Parameters ${data?.metricsVersion ?? "—"} — thresholds define these metrics, so changing one moves every historical point.`,
+    ...(["drift", "language", "groundedness"] as const).map(family => {
+      const pin = data?.judgeVersions?.[family];
+      return `Judge (${family}): ${pin ? `${pin.judgeModel}/${pin.judgePromptVersion}` : "not run"}`;
+    }),
+  ].join(" · ");
 
   if (isError) {
     return (
@@ -381,18 +447,11 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         </div>
       </TabControls>
 
-      <Tile style={{ marginBottom: "1.5rem" }}>
-        <p style={{ margin: 0, opacity: 0.75, fontSize: "0.875rem" }}>
-          Repetition differs 6.6× between models and role-slip is concentrated in a handful of
-          scenarios — an unsegmented read of either tracks traffic mix rather than quality. Judge{" "}
-          <code>
-            {data?.judgeModel ?? "—"}/{data?.judgePromptVersion ?? "—"}
-          </code>
-          , deterministic parameters <code>{data?.metricsVersion ?? "—"}</code>. Thresholds define
-          these metrics: if one changes, every historical point moves, so the version is pinned here
-          rather than left implicit.
-        </p>
-      </Tile>
+      {/* No banner. The mix warning that stood here — repetition differs 6.6x
+          between models — is real, but as a standing line above every read it
+          became furniture, and it already sits on the repetition card's own
+          caveat where it is actionable. Provenance moved to the foot of the
+          tab, which is where a reader goes looking for it rather than past it. */}
 
       {isFetching && !data ? (
         <ChartCard title="Weak performing metrics" loading>
@@ -483,6 +542,31 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           )}
         </>
       )}
+
+      {/* Provenance at the foot, not the head. A reader who wants to know which
+          thresholds and judge versions produced these numbers comes looking for
+          it; a reader who wants the numbers should not have to scroll past it. */}
+      <p
+        style={{
+          marginTop: "2rem",
+          opacity: 0.55,
+          fontSize: "0.75rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.375rem",
+        }}
+      >
+        Parameters {data?.metricsVersion ?? "—"}
+        <Tooltip label={provenance} align="top">
+          <button
+            type="button"
+            className="cursor-pointer inline-flex items-center"
+            aria-label="Data provenance"
+          >
+            <TooltipIcon />
+          </button>
+        </Tooltip>
+      </p>
     </div>
   );
 };

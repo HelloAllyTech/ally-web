@@ -1,3 +1,11 @@
+"use client";
+
+// Binds window keydown listeners, so it can only ever run on the client. The
+// directive is load-bearing rather than decorative: this component is exported
+// from the ui-shared barrel, and `apps/ally-web` is a Next.js App Router app
+// whose server components import that barrel — without it, every page there
+// fails to render.
+
 import { FC, useEffect } from "react";
 
 import { ArtifactLabel } from "./ArtifactMarker";

@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tic-Tac-Toe</title>
+<!--
+  Ally course component: GAME / TIC_TAC_TOE.
+
+  Gameplay and opponent strategy are a port of Jan Schreiber's "Tic-tac-toe in
+  JavaScript" (https://codepen.io/janschreiber/pen/xZbEvM). The move-selection
+  logic — win, else block, else the centre/corner traps that stop a fork — is
+  kept faithfully; everything the learner sees is rewritten in Ally UI, and the
+  original's opening modal, chalkboard skin and confirm() prompts are gone (see
+  "Departures from the original" below).
+
+  This page is loaded in a sandboxed iframe by GameItemPlayer (web) and in a
+  WebView by GamePlayer (mobile). It talks to its host only through the three
+  postMessage events documented in the bridge at the bottom of this file — the
+  same contract the T-Rex bundle speaks.
+
+  Departures from the original, all deliberate:
+
+  - No opening dialog. The original gates play behind a modal asking for
+    difficulty and X-or-O. A component that exists to be a 30-second breather
+    between a roleplay and a case cannot open with a form: the learner is X,
+    they move first, and the board is live the moment the frame loads.
+  - Difficulty sits inline and can be changed mid-game, because a learner has
+    no way to know upfront which of "easy" and "hard" fits them. It defaults to
+    Easy: the hard opponent is effectively unbeatable, and losing eight in a row
+    to a computer is not the break this component is here to provide.
+  - No confirm() before a reset, and no modal to dismiss on a result. Both are
+    ceremony on a game with nine squares; the result is announced in the status
+    line and the board clears itself a beat later.
+  - Real <button> cells rather than clickable divs, so the board is keyboard-
+    and screen-reader-navigable.
+
+  The font stack asks for IBM Plex Serif and expects not to get it: this page is
+  served from public/ with no @font-face of its own and is inlined offline on
+  mobile, so it lands on a serif fallback that still reads as Ally UI. Colours
+  are the daylight theme's literal values (index.css) — an iframe cannot see the
+  app's CSS variables.
+-->
+<style>
+  :root {
+    /* Ally daylight palette (src/index.css) — literals, since the iframe has
+       no access to the app's --color-* variables. */
+    --ally-primary-50: #ebf0fa;
+    --ally-primary-100: #d7e2f4;
+    --ally-primary-200: #aec5ea;
+    --ally-primary-500: #264d8e;
+    --ally-primary-600: #1f3f75;
+    --ally-secondary-50: #f4f4f4;
+    --ally-border-light: #e0e0e0;
+    --ally-border-medium: #c6c6c6;
+    --ally-neutral-500: #6f6f6f;
+    --ally-neutral-700: #393939;
+    --ally-white: #ffffff;
+    --ally-type-900: rgba(0, 0, 0, 0.87);
+    --ally-type-800: rgba(0, 0, 0, 0.6);
+    --ally-type-700: rgba(0, 0, 0, 0.54);
+    --ally-type-600: rgba(0, 0, 0, 0.38);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--ally-white);
+    color: var(--ally-type-900);
+    font-family: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    line-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* No text selection: a double-tap on a square should play a move, not
+       select the letter sitting in it. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    width: 100%;
+    height: 100%;
+    max-width: 340px;
+  }
+
+  /* ---- Difficulty (segmented control) ---- */
+
+  /* Every row but the board refuses to shrink. Without this, a frame one pixel
+     too short makes flexbox squash whichever row can give — and since
+     sizeBoard() measures those rows to decide how much is left for the board, a
+     squashed row feeds it a smaller chrome, which grows the board, which
+     squashes the row further. The observable end of that loop was a difficulty
+     control 2px tall. */
+  .difficulty,
+  #status,
+  .footer {
+    flex: 0 0 auto;
+  }
+
+  .difficulty {
+    display: inline-flex;
+    border: 1px solid var(--ally-border-light);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .difficulty button {
+    appearance: none;
+    border: 0;
+    background: var(--ally-white);
+    color: var(--ally-type-800);
+    font: inherit;
+    font-size: 12px;
+    line-height: 16px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+
+  .difficulty button + button {
+    border-left: 1px solid var(--ally-border-light);
+  }
+
+  .difficulty button[aria-pressed="true"] {
+    background: var(--ally-primary-50);
+    color: var(--ally-primary-600);
+    font-weight: 600;
+  }
+
+  .difficulty button:focus-visible {
+    outline: 2px solid var(--ally-primary-500);
+    outline-offset: -2px;
+  }
+
+  /* ---- Status line ---- */
+
+  #status {
+    /* Flex does not collapse margins, and a <p>'s UA margin is real vertical
+       space that sizeBoard() has no way to see — it would come out of the
+       page's padding. Same reason .tally kills the <dl> margin below. */
+    margin: 0;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--ally-type-700);
+    min-height: 20px;
+    text-align: center;
+  }
+
+  #status.is-result {
+    color: var(--ally-type-900);
+    font-weight: 600;
+  }
+
+  /* ---- Board ---- */
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--ally-border-light);
+    border: 1px solid var(--ally-border-light);
+    border-radius: 8px;
+    overflow: hidden;
+    /* Square, and sized in JS from the space actually left over — see
+       sizeBoard(). Starts at full width so the board is never invisible if
+       that measurement has not run yet.
+
+       `flex: 0 0 auto` matters: as a shrinkable flex item in a frame too short
+       for it, the board keeps its cell size and loses its bottom row to
+       `overflow: hidden` — a board that silently becomes 3x2. Refusing to
+       shrink means a sizing mistake shows up as a scrollbar instead. */
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .cell {
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: var(--ally-white);
+    /* Square cells at whatever width the host frame gives us. */
+    aspect-ratio: 1 / 1;
+    font-family: inherit;
+    font-size: 44px;
+    line-height: 1;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 120ms ease-out;
+  }
+
+  .cell:hover:not(:disabled) { background: var(--ally-secondary-50); }
+  .cell:disabled { cursor: default; }
+
+  .cell:focus-visible {
+    outline: 2px solid var(--ally-primary-500);
+    outline-offset: -3px;
+  }
+
+  .cell.mark-x { color: var(--ally-primary-500); }
+  .cell.mark-o { color: var(--ally-neutral-500); }
+
+  /* The three squares that ended it. Tinted by who took the line, so the
+     outcome is legible without reading the status text. */
+  .cell.win-player { background: var(--ally-primary-50); }
+  .cell.win-computer { background: var(--ally-secondary-50); }
+
+  .cell span {
+    display: block;
+    animation: mark-in 140ms ease-out;
+  }
+
+  @keyframes mark-in {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cell span { animation: none; }
+    .cell { transition: none; }
+  }
+
+  /* ---- Tally + reset ---- */
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .tally {
+    display: flex;
+    gap: 16px;
+    margin: 0;
+  }
+
+  .tally div {
+    text-align: center;
+  }
+
+  .tally dt {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--ally-type-600);
+  }
+
+  .tally dd {
+    margin: 0;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ally-type-900);
+  }
+
+  #reset {
+    appearance: none;
+    background: var(--ally-white);
+    border: 1px solid var(--ally-border-medium);
+    border-radius: 6px;
+    color: var(--ally-type-800);
+    font: inherit;
+    font-size: 12px;
+    line-height: 16px;
+    padding: 7px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  #reset:hover { background: var(--ally-secondary-50); }
+
+  #reset:focus-visible {
+    outline: 2px solid var(--ally-primary-500);
+    outline-offset: 1px;
+  }
+
+  /* In a short frame the board has already shrunk itself; pull the chrome in
+     to match so the marks are not swimming in a small square. */
+  @media (max-height: 380px) {
+    .wrap { gap: 8px; }
+    .cell { font-size: 32px; }
+    .tally dd { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="difficulty" role="group" aria-label="Difficulty">
+      <button type="button" id="diff-easy" aria-pressed="true">Easy</button>
+      <button type="button" id="diff-hard" aria-pressed="false">Hard</button>
+    </div>
+
+    <!-- Announced to screen readers as it changes: this is the only place the
+         result of a game is stated. -->
+    <p id="status" role="status" aria-live="polite">Your move — you're X.</p>
+
+    <div class="board" id="board" role="grid" aria-label="Tic-tac-toe board"></div>
+
+    <div class="footer">
+      <dl class="tally">
+        <div><dt>You</dt><dd id="tally-player">0</dd></div>
+        <div><dt>Draws</dt><dd id="tally-draw">0</dd></div>
+        <div><dt>Computer</dt><dd id="tally-computer">0</dd></div>
+      </dl>
+      <button type="button" id="reset">New game</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     Host bridge — identical contract to the T-Rex bundle.
+
+       game -> host  { source:'ally-game', game, type:'ready' }
+       game -> host  { source:'ally-game', game, type:'started' }
+       game -> host  { source:'ally-game', game, type:'over', score, highScore }
+
+       host -> game  { source:'ally-game-host', type:'focus' }
+
+     One file, two hosts: an <iframe> in the web app (post to window.parent)
+     and a react-native-webview on mobile (post a JSON string to
+     window.ReactNativeWebView). Scores are a personal best and nothing more —
+     a game in a course never gates, unlocks or grades anything.
+     ===================================================================== */
+
+  var GAME = 'TIC_TAC_TOE';
+  var iframeHost = window.parent !== window ? window.parent : null;
+
+  function post(type, extra) {
+    var message = { source: 'ally-game', game: GAME, type: type };
+    for (var key in extra) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) message[key] = extra[key];
+    }
+    if (window.ReactNativeWebView) {
+      // WebView bridge only speaks strings.
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      return;
+    }
+    // '*' because a sandboxed iframe has an opaque origin that matches no
+    // concrete target, and the payload carries nothing worth protecting.
+    if (iframeHost) iframeHost.postMessage(message, '*');
+  }
+
+  var announcedStart = false;
+  function markStarted() {
+    if (announcedStart) return;
+    announcedStart = true;
+    post('started');
+  }
+
+  /* =====================================================================
+     Game state
+
+     The board is nine cells holding 0 (free), PLAYER (1) or COMPUTER (3).
+     Those particular numbers are what make the opponent cheap to write: a
+     line summing to 6 is two of the learner's marks, 9 is three of the
+     computer's, and so on, so "am I one move from winning?" is one addition
+     rather than a pattern match. That trick is the original's.
+     ===================================================================== */
+
+  var PLAYER = 1;
+  var COMPUTER = 3;
+
+  var LINES = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6],            // diagonals
+  ];
+
+  var CORNERS = [0, 2, 6, 8];
+
+  var cells = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  var moves = 0;
+  var hard = false;          // Easy by default; see the header note.
+  var busy = false;          // true while the computer "thinks" or a result sits
+  var gameOver = false;
+  var wins = 0;              // learner wins this sitting — the reported score
+  var draws = 0;
+  var losses = 0;
+  var resetTimer = null;
+
+  var boardEl = document.getElementById('board');
+  var statusEl = document.getElementById('status');
+  var cellEls = [];
+
+  /* ---- Helpers ---- */
+
+  function randomInt(min, max) {
+    return min + Math.floor(Math.random() * (max + 1 - min));
+  }
+
+  function shuffled(array) {
+    var copy = array.slice();
+    for (var i = copy.length - 1; i > 0; i--) {
+      var j = randomInt(0, i);
+      var tmp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = tmp;
+    }
+    return copy;
+  }
+
+  function freeCells() {
+    var free = [];
+    for (var i = 0; i < cells.length; i++) {
+      if (cells[i] === 0) free.push(i);
+    }
+    return free;
+  }
+
+  /**
+   * A free square that completes a line already holding two of `agent`'s
+   * marks — the move that wins for the computer, or blocks the learner.
+   * Free squares are shuffled first so the opponent does not always take the
+   * lowest-numbered option and read as mechanical.
+   */
+  function completingCell(agent) {
+    var target = agent * 2;
+    var free = shuffled(freeCells());
+    for (var i = 0; i < free.length; i++) {
+      for (var j = 0; j < LINES.length; j++) {
+        var line = LINES[j];
+        var sum = cells[line[0]] + cells[line[1]] + cells[line[2]];
+        if (sum === target && line.indexOf(free[i]) > -1) return free[i];
+      }
+    }
+    return -1;
+  }
+
+  /* ---- The opponent ----
+     Win if it can, block if it must, then fall back on the centre and the
+     corner answers that stop a fork. Only that last group is gated on Hard;
+     on Easy the computer still refuses to hand you a win but otherwise plays
+     an open square at random, which is what makes it beatable. */
+
+  function chooseComputerCell() {
+    var cell = completingCell(COMPUTER);
+    if (cell > -1) return cell;
+
+    cell = completingCell(PLAYER);
+    if (cell > -1) return cell;
+
+    if (!hard) {
+      var open = freeCells();
+      return open[randomInt(0, open.length - 1)];
+    }
+
+    // Opening replies. Answering a centre opening with a corner (and a corner
+    // opening with the centre) is what keeps the learner from forking on
+    // move three.
+    if (moves === 1) {
+      if (cells[4] === PLAYER) return CORNERS[randomInt(0, 3)];
+      if (cells[4] === 0) return 4;
+    }
+
+    // Move three, computer holds the centre: the learner has an edge plus an
+    // adjacent corner and is one move from two threats at once. Taking a
+    // corner on the far side is the only reply that survives it.
+    if (moves === 3 && cells[4] === COMPUTER) {
+      var traps = [
+        { edge: 7, corners: [0, 2], answers: [6, 8] },
+        { edge: 5, corners: [0, 6], answers: [2, 8] },
+        { edge: 3, corners: [2, 8], answers: [0, 6] },
+        { edge: 1, corners: [6, 8], answers: [0, 2] },
+      ];
+      for (var t = 0; t < traps.length; t++) {
+        var trap = traps[t];
+        if (cells[trap.edge] !== PLAYER) continue;
+        if (cells[trap.corners[0]] !== PLAYER && cells[trap.corners[1]] !== PLAYER) continue;
+        var free = trap.answers.filter(function (index) { return cells[index] === 0; });
+        if (free.length) return free[randomInt(0, free.length - 1)];
+      }
+    }
+
+    // Move three, learner holds the centre and both opposite corners are in
+    // play: take the corner that breaks the diagonal.
+    if (moves === 3 && cells[4] === PLAYER) {
+      var opposites = [[2, 6, 8], [0, 8, 6], [8, 0, 2], [6, 2, 0]];
+      for (var o = 0; o < opposites.length; o++) {
+        var pair = opposites[o];
+        if (cells[pair[0]] === PLAYER && cells[pair[1]] === COMPUTER && cells[pair[2]] === 0) {
+          return pair[2];
+        }
+      }
+    }
+
+    if (cells[4] === 0) return 4;
+
+    var remaining = freeCells();
+    return remaining[randomInt(0, remaining.length - 1)];
+  }
+
+  /* ---- Rendering ---- */
+
+  function buildBoard() {
+    for (var i = 0; i < 9; i++) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'cell';
+      button.setAttribute('role', 'gridcell');
+      button.setAttribute('data-index', String(i));
+      button.setAttribute('aria-label', 'Square ' + (i + 1) + ', empty');
+      button.addEventListener('click', onCellClick);
+      boardEl.appendChild(button);
+      cellEls.push(button);
+    }
+  }
+
+  function drawMark(index, owner) {
+    var button = cellEls[index];
+    var isPlayer = owner === PLAYER;
+    button.innerHTML = '';
+    var span = document.createElement('span');
+    // × rather than the letter x: it is the mark, not a letter, and it sits
+    // on the optical centre of the square.
+    span.textContent = isPlayer ? '×' : 'O';
+    button.appendChild(span);
+    button.classList.add(isPlayer ? 'mark-x' : 'mark-o');
+    button.disabled = true;
+    button.setAttribute(
+      'aria-label',
+      'Square ' + (index + 1) + ', ' + (isPlayer ? 'your X' : "computer's O"),
+    );
+  }
+
+  function setStatus(text, isResult) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle('is-result', !!isResult);
+  }
+
+  function renderTally() {
+    document.getElementById('tally-player').textContent = String(wins);
+    document.getElementById('tally-draw').textContent = String(draws);
+    document.getElementById('tally-computer').textContent = String(losses);
+  }
+
+  function lockBoard() {
+    for (var i = 0; i < cellEls.length; i++) cellEls[i].disabled = true;
+  }
+
+  /* ---- Turn handling ---- */
+
+  function onCellClick(event) {
+    var index = Number(event.currentTarget.getAttribute('data-index'));
+    if (busy || gameOver || cells[index] !== 0) return;
+
+    markStarted();
+    play(index, PLAYER);
+    if (finish()) return;
+
+    busy = true;
+    setStatus('Computer’s move…');
+    // A beat before the reply: an instant answer reads as the board fighting
+    // back rather than someone taking a turn.
+    window.setTimeout(computerTurn, 420);
+  }
+
+  function computerTurn() {
+    if (gameOver) return;
+    play(chooseComputerCell(), COMPUTER);
+    busy = false;
+    if (finish()) return;
+    setStatus('Your move.');
+  }
+
+  function play(index, owner) {
+    cells[index] = owner;
+    moves += 1;
+    drawMark(index, owner);
+  }
+
+  /** Returns true if that move ended the game. */
+  function finish() {
+    if (moves < 5) return false;
+
+    for (var i = 0; i < LINES.length; i++) {
+      var line = LINES[i];
+      var first = cells[line[0]];
+      if (first === 0) continue;
+      if (cells[line[1]] !== first || cells[line[2]] !== first) continue;
+
+      var playerWon = first === PLAYER;
+      for (var j = 0; j < line.length; j++) {
+        cellEls[line[j]].classList.add(playerWon ? 'win-player' : 'win-computer');
+      }
+      if (playerWon) {
+        wins += 1;
+        setStatus('You won that one.', true);
+      } else {
+        losses += 1;
+        setStatus('Computer takes it.', true);
+      }
+      endGame();
+      return true;
+    }
+
+    if (freeCells().length === 0) {
+      draws += 1;
+      setStatus('Draw.', true);
+      endGame();
+      return true;
+    }
+
+    return false;
+  }
+
+  function endGame() {
+    gameOver = true;
+    busy = true;
+    lockBoard();
+    renderTally();
+
+    /**
+     * Wins accumulated this sitting, reported after every finished game. The
+     * host keeps the maximum, so a loss or a draw re-posting the same number
+     * is a no-op and a bad run can never take a learner's best away — which
+     * is the whole point of a component that does not grade anyone.
+     */
+    post('over', { score: wins, highScore: wins });
+
+    // Clear itself, so playing again costs nothing. Long enough to read the
+    // result and see the winning line.
+    resetTimer = window.setTimeout(function () { newGame(false); }, 1600);
+  }
+
+  function newGame(announce) {
+    if (resetTimer !== null) {
+      window.clearTimeout(resetTimer);
+      resetTimer = null;
+    }
+    cells = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    moves = 0;
+    gameOver = false;
+    busy = false;
+    for (var i = 0; i < cellEls.length; i++) {
+      var button = cellEls[i];
+      button.innerHTML = '';
+      button.disabled = false;
+      button.className = 'cell';
+      button.setAttribute('aria-label', 'Square ' + (i + 1) + ', empty');
+    }
+    setStatus(announce ? 'New game — your move.' : 'Your move.');
+  }
+
+  /* ---- Controls ---- */
+
+  function setDifficulty(next) {
+    hard = next;
+    document.getElementById('diff-easy').setAttribute('aria-pressed', String(!hard));
+    document.getElementById('diff-hard').setAttribute('aria-pressed', String(hard));
+    // Applies from the computer's next move: nobody can tell upfront which of
+    // these two labels fits them, so switching has to be possible mid-game
+    // rather than only between games.
+  }
+
+  document.getElementById('diff-easy').addEventListener('click', function () {
+    setDifficulty(false);
+  });
+  document.getElementById('diff-hard').addEventListener('click', function () {
+    setDifficulty(true);
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    newGame(true);
+  });
+
+  window.addEventListener('message', function (event) {
+    var data = event.data;
+    if (!data || data.source !== 'ally-game-host') return;
+    if (data.type === 'focus') window.focus();
+  });
+
+  /* ---- Fitting the board to the frame ----
+
+     The board is square, so its width is also its height, and the frame's
+     height is what actually constrains it. CSS can nearly express that —
+     `min(100%, calc(100vh - <chrome>))` — but only by hard-coding the chrome
+     and trusting 100vh, and 100vh is not the frame in either host: a WebView
+     resolves it against its own idea of the viewport, and the number moves when
+     a keyboard or an address bar appears. Measuring is one function and is
+     right in both. */
+
+  var wrapEl = document.querySelector('.wrap');
+  var difficultyEl = document.querySelector('.difficulty');
+  var footerEl = document.querySelector('.footer');
+
+  function sizeBoard() {
+    var styles = window.getComputedStyle(wrapEl);
+    var gap = parseFloat(styles.rowGap) || 0;
+    var padding = parseFloat(styles.paddingTop) || 0;
+    var chrome =
+      difficultyEl.offsetHeight + statusEl.offsetHeight + footerEl.offsetHeight +
+      gap * 3 + padding * 2;
+    // clientHeight/Width include the padding that `chrome` already counts.
+    var byHeight = wrapEl.clientHeight - chrome;
+    var byWidth = wrapEl.clientWidth - padding * 2;
+    // Never below 150px: a frame too short for a playable board is better
+    // scrolled than shrunk into something nobody can tap.
+    // 2px of slack: offsetHeight rounds each measured row up to a whole pixel,
+    // so a board that fits exactly on paper can overflow by a pixel or two.
+    var size = Math.max(150, Math.floor(Math.min(byWidth, byHeight)) - 2);
+    // Height as well as width. The cells are square, so width alone looks
+    // sufficient — until the flex column runs out of room and compresses the
+    // grid's rows behind `overflow: hidden`.
+    boardEl.style.width = size + 'px';
+    boardEl.style.height = size + 'px';
+  }
+
+  /**
+   * Sizing twice is not belt-and-braces: the first pass changes the board's
+   * height, which is what decides whether the `max-height` rules apply, which
+   * changes the chrome the second pass measures.
+   */
+  function fit() {
+    sizeBoard();
+    window.requestAnimationFrame(sizeBoard);
+  }
+
+  buildBoard();
+  renderTally();
+  fit();
+
+  // Both, deliberately. ResizeObserver catches a frame resized by its host
+  // without a window resize event (a drawer opening, an iframe re-laid out);
+  // the window events catch a rotation or a keyboard in a WebView, where the
+  // observer has been seen not to fire.
+  if (window.ResizeObserver) {
+    new ResizeObserver(fit).observe(document.documentElement);
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+
+  post('ready');
+})();
+</script>
+</body>
+</html>

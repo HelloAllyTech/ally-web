@@ -696,8 +696,10 @@ export interface VoiceLatencyResponse {
   window: AnalyticsWindow;
   /** Bucket granularity for this range ('day' | 'week' | 'month'). */
   bucket: string;
-  /** Latency target line for reference (ms). */
+  /** Voice-to-voice latency target line for reference (ms). */
   targetMs: number;
+  /** LLM time-to-first-token target line for reference (ms). */
+  llmTtftTargetMs: number;
   points: VoiceLatencyPoint[];
   /** Live-pipeline latency by language, independent of the `language` filter. */
   byLanguage: VoiceLatencyByLanguageRow[];
@@ -1081,11 +1083,14 @@ export interface WeakMetricPoint {
 }
 
 export interface WeakMetricSeries {
+  /** One plain line saying what this counts — the card's caption. */
+  description: string;
   id: string;
   label: string;
   unit: "percent" | "per100turns" | "ratio" | "count" | string;
   state: WeakMetricState;
-  lowerIsBetter: boolean;
+  /** null = no good direction; report movement without a verdict. */
+  lowerIsBetter: boolean | null;
   /** The caveat needed to read this series honestly; rendered, not hidden. */
   caveat: string | null;
   points: WeakMetricPoint[];
@@ -1111,11 +1116,26 @@ export interface WeakMetricScenarioRow {
   rate: number;
 }
 
+export interface JudgeVersionPin {
+  judgeModel: string;
+  judgePromptVersion: string;
+}
+
 export interface WeakMetricsResponse {
   metricsVersion: string;
   parameters: Record<string, number>;
+  /** Drift pin, kept for compatibility — prefer judgeVersions. */
   judgeModel: string | null;
   judgePromptVersion: string | null;
+  /**
+   * One pin per judge family. Three judges feed this tab and they version
+   * independently, so a single number cannot describe all of them.
+   */
+  judgeVersions: {
+    drift: JudgeVersionPin | null;
+    language: JudgeVersionPin | null;
+    groundedness: JudgeVersionPin | null;
+  };
   bucket: string;
   start: string;
   groups: WeakMetricGroup[];

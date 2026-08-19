@@ -19,6 +19,9 @@ export enum TrackItemType {
 /** Games the app can serve; each maps to `public/games/<key>/index.html`. */
 export enum TrackGameKey {
   TREX_RUNNER = "TREX_RUNNER",
+  TIC_TAC_TOE = "TIC_TAC_TOE",
+  MEMORY_MATCH = "MEMORY_MATCH",
+  CUB_N_PUP = "CUB_N_PUP",
 }
 
 /**

@@ -650,41 +650,11 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": [
-              "Poor",
-              "Not helpful",
-              "Very bad",
-              "Disappointing",
-              "Unhelpful"
-            ],
-            "2": [
-              "Below average",
-              "Lacking",
-              "Unsatisfying",
-              "Weak",
-              "Needs improvement"
-            ],
-            "3": [
-              "Neutral",
-              "Okay",
-              "Average",
-              "Moderate",
-              "Acceptable"
-            ],
-            "4": [
-              "Good",
-              "Helpful",
-              "Satisfying",
-              "Effective",
-              "Worthwhile"
-            ],
-            "5": [
-              "Excellent",
-              "Amazing",
-              "Highly useful",
-              "Outstanding",
-              "Very effective"
-            ]
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
           }
         }
       }
@@ -1567,10 +1537,47 @@
     },
     "game": {
       "frameTitle": "Game",
-      "controls": "Press space or tap to jump. Nothing here is scored.",
-      "lastScore": "This run: {{score}}",
-      "bestScore": "Your best: {{score}}",
-      "optional": "Play as long as you like, or skip straight on — either way you're good to continue."
+      "controlsByGame": {
+        "TREX_RUNNER": "Press space or tap to jump. Nothing here is scored.",
+        "TIC_TAC_TOE": "Click or tap a square to play. Nothing here is scored.",
+        "MEMORY_MATCH": "Flip two cards to find a pair. The fewer moves it takes, the closer you get to a perfect eight-move round — which is all the score is, and it counts towards nothing.",
+        "CUB_N_PUP": "Drag the cub along the links to the star. Drag anywhere else to turn the whole grid. Boards you solve are counted, and the count goes nowhere."
+      },
+      "lastScoreByGame": {
+        "TREX_RUNNER": "This run: {{score}}",
+        "TIC_TAC_TOE": "Wins this sitting: {{score}}",
+        "MEMORY_MATCH": "This round: {{score}}% of a perfect round",
+        "CUB_N_PUP": "Solved this sitting: {{score}}"
+      },
+      "bestScoreByGame": {
+        "TREX_RUNNER": "Your best: {{score}}",
+        "TIC_TAC_TOE": "Your best: {{score}}",
+        "MEMORY_MATCH": "Your best: {{score}}%",
+        "CUB_N_PUP": "Your best: {{score}} boards"
+      },
+      "optional": "Play as long as you like, or skip straight on — either way you're good to continue.",
+      "frameStrings": {
+        "MEMORY_MATCH": {
+          "moves": "{{moves}} moves",
+          "restart": "Start over",
+          "wonTitle": "Board cleared",
+          "wonDetail": "{{moves}} moves — {{score}}% of a perfect round",
+          "playAgain": "Play again",
+          "cardLabel": "Card {{number}}"
+        },
+        "CUB_N_PUP": {
+          "levels": "Levels",
+          "close": "Close",
+          "nextLevel": "Next level",
+          "solved": "{{solved}} of {{total}} solved",
+          "tutorial": "Tutorial",
+          "hintDragToStar": "Drag the cub to the star.",
+          "hintRotate": "Drag anywhere else to turn the grid. The cub and the star turn with it — grey links stay put.",
+          "hintFree": "Blue links turn with the grid. Turn it to join blue and grey links up in different ways.",
+          "hintPivot": "Green links swing round with the grid but keep pointing the same way.",
+          "hintRotateLink": "Red links stay where they are but spin with the grid."
+        }
+      }
     }
   }
 }

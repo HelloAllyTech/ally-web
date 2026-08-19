@@ -58,10 +58,14 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
   );
 
   // Enhance treats the active language's non-empty samples as a newline-joined
-  // blob; the improved text is split back into the fixed sample slots.
+  // blob; the improved text is split back into that language's sample slots.
   const activeSamples: string[] = activeLanguageId
     ? (linguisticStyleSamples[activeLanguageId] ?? [])
     : [];
+  // However many rows this language actually shows — matching the render below,
+  // which uses `samples.length || DEFAULT_SAMPLE_COUNT`. A flat DEFAULT here
+  // would silently drop samples 6+ for a language that has more than five.
+  const activeSlotCount = activeSamples.length || DEFAULT_SAMPLE_COUNT;
   const enhanceCurrentValue = activeSamples.filter(s => s?.trim()).join("\n");
   const handleEnhanceApply = useCallback(
     (improved: string) => {
@@ -70,11 +74,11 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
         .split("\n")
         .map(l => l.trim())
         .filter(Boolean)
-        .slice(0, SAMPLE_COUNT);
-      const padded = Array.from({ length: SAMPLE_COUNT }, (_, i) => lines[i] ?? "");
+        .slice(0, activeSlotCount);
+      const padded = Array.from({ length: activeSlotCount }, (_, i) => lines[i] ?? "");
       setValue(id, { ...linguisticStyleSamples, [activeLanguageId]: padded });
     },
-    [activeLanguageId, id, linguisticStyleSamples, setValue],
+    [activeLanguageId, activeSlotCount, id, linguisticStyleSamples, setValue],
   );
 
   if (isLoading || languagesToShow.length === 0) {

@@ -153,7 +153,8 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   );
   const selectedBucket = BUCKET_ITEMS.find(b => b.id === bucket) ?? BUCKET_ITEMS[0];
 
-  const targetSec = (data?.targetMs ?? 1500) / 1000;
+  const targetSec = (data?.targetMs ?? 4000) / 1000;
+  const llmTtftTargetSec = (data?.llmTtftTargetMs ?? 1500) / 1000;
   const startTargetSec = (startData?.targetMs ?? 4000) / 1000;
   const languageNote = languageParam ? ` · language: ${languageParam}` : " · all languages";
 
@@ -173,17 +174,20 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     [axisTitle, targetSec],
   );
 
-  // No threshold line yet — unlike responseLatencyMs's targetMs, there's no
-  // established service objective for this metric specifically. Add one via
-  // axesWithThreshold the same way voiceOptions does, once product sets one.
   const llmTtftOptions = useMemo(
     () =>
       lineOpts({
         leftTitle: "Seconds",
         bottomTitle: axisTitle,
         colorScale: LATENCY_STAT_SCALE,
+        extra: axesWithThreshold({
+          leftTitle: "Seconds",
+          bottomTitle: axisTitle,
+          thresholdValue: llmTtftTargetSec,
+          thresholdLabel: `Target ${llmTtftTargetSec}s or under`,
+        }),
       }),
-    [axisTitle],
+    [axisTitle, llmTtftTargetSec],
   );
 
   // Historical is context, so its own chart is drawn in greys rather than

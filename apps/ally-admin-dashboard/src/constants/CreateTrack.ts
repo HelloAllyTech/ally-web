@@ -104,6 +104,27 @@ export const TRACK_GAME_CATALOG: Array<{
       "The offline dinosaur game. Press space or tap to jump the cactus. Nothing to learn, which is the point — it is a breather.",
     typicalPlay: "under a minute a run",
   },
+  {
+    key: TrackGameKey.TIC_TAC_TOE,
+    name: "Tic-Tac-Toe",
+    description:
+      "Nine squares against the computer. Starts on Easy so it is winnable, with a Hard toggle for anyone who wants a real fight.",
+    typicalPlay: "about half a minute a game",
+  },
+  {
+    key: TrackGameKey.MEMORY_MATCH,
+    name: "Memory Match",
+    description:
+      "Sixteen cards face down, eight pairs to find. Quiet and unhurried — the one to reach for after a heavy roleplay rather than before one.",
+    typicalPlay: "a minute or two a round",
+  },
+  {
+    key: TrackGameKey.CUB_N_PUP,
+    name: "Cub n Pup",
+    description:
+      "A peg-and-link puzzle: walk the cub along the links to the star, turning the whole grid when the links do not reach. Sixty-one boards that start as a ten-second tutorial and end genuinely hard — the thinking one, so put it where a learner has room to stop when they want to.",
+    typicalPlay: "a minute a board, and it does not run out",
+  },
 ];
 
 export const DEFAULT_GAME_CONTENT: GameContent = {
