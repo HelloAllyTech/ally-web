@@ -337,7 +337,45 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
     expect(screen.queryByText(/compared, not trended/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Not instrumented/)).toBeInTheDocument();
+    // Twice over: this fixture's caveat is itself "Not instrumented.", and the
+    // suppressed plot now says so in the plot area as well.
+    expect(screen.getAllByText(/Not instrumented/).length).toBeGreaterThan(0);
+  });
+
+  /**
+   * The card above only ever looked right because its fixture caveat happened
+   * to read "Not instrumented." too, and a caveat renders as the caption. With
+   * any other caveat the visual field went blank: a not-measured series is
+   * suppressed from plotting, but the card's empty state was decided from the
+   * row count, which is not zero here. The explanation has to come from the
+   * same decision that suppressed the plot.
+   */
+  it("explains the instrumentation gap in the plot area, not just in the caption", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                id: "barge_in",
+                state: "none",
+                caveat: "Segment by model or this misleads.",
+                points: [
+                  { bucket: "2026-07-01", numerator: 4, denominator: 93, value: 0.043 },
+                  { bucket: "2026-08-01", numerator: 0, denominator: 97, value: 0 },
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+    expect(screen.queryByText(/compared, not trended/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/nothing is being recorded for this metric yet/i)).toBeInTheDocument();
   });
 
   it("reports no direction for an uninstrumented metric", () => {
