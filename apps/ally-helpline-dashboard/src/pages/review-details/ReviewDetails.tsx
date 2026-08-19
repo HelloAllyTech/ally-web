@@ -560,6 +560,11 @@ export const ReviewDetails = () => {
               <AudioTranscriptPlayer audioUrl={reviewDetails.scenarioSession.audioUrl} />
             </div>
           )}
+          {!isScribeReview && (
+            <p className="text-xs text-typography-500 pb-3">
+              {t("transcription.accuracyDisclaimer")}
+            </p>
+          )}
           <Transcription
             councellorName={isFeedOwner ? t("review.details.you") : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}

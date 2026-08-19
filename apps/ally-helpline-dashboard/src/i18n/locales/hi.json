@@ -862,7 +862,8 @@
     "clientLabel": "क्लायंट",
     "counsellorLabel": "काउंसलर",
     "aiAgentName": "एआई एजेंट",
-    "aiClientSuffix": "एआई क्लायंट"
+    "aiClientSuffix": "एआई क्लायंट",
+    "accuracyDisclaimer": "Transcription may not always be fully accurate."
   },
   "summary": {
     "disclaimer": "यह सारांश AI द्वारा बनाया गया है। Ally AI गलतियाँ कर सकता है। सारांश सेव करने से पहले महत्वपूर्ण जानकारी जाँचें और संपादित करें",
