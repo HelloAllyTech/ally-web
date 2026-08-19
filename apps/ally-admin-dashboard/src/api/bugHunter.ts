@@ -17,9 +17,7 @@ import { baseAPI } from "./baseApi";
 
 /**
  * Bug Hunter admin surface: the kill switch, the comprehensive findings
- * table, and run history/detail. The live event stream (SSE) is NOT an RTK
- * Query endpoint — see `useBugHuntStream` — because RTK Query's cache model
- * doesn't fit a long-lived server-push connection.
+ * table, and run history/detail.
  */
 export const bugHunterAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

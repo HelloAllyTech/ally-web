@@ -23,10 +23,6 @@ vi.mock("@api", () => ({
   useMarkAllBugHunterNotificationsReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
-vi.mock("@hooks", () => ({
-  useBugHuntStream: vi.fn(() => ({ events: [], status: null, isConnected: false })),
-}));
-
 vi.mock("@utils", () => ({
   formatDate: (d: string) => d,
 }));
@@ -129,7 +125,7 @@ vi.mock("@components/action-confirmation-popup", () => ({
 }));
 
 import * as api from "@api";
-import { BugHunterMode, BugHuntRunStatus } from "@types";
+import { BugHunterMode } from "@types";
 import { BugHunter } from "../BugHunter";
 
 const mockSettingsQuery = (overrides: Record<string, unknown> = {}) => {
@@ -227,37 +223,6 @@ describe("BugHunter", () => {
     });
     render(<BugHunter />);
     expect(aboutComesBeforeTheBugsTable()).toBe(false);
-  });
-
-  it("shows what it is doing right now, above its messages, while a run is live", () => {
-    mockRunsQuery({
-      data: {
-        items: [
-          {
-            id: "run-1",
-            trigger: "scheduled",
-            repo: "ally-be",
-            status: BugHuntRunStatus.RUNNING,
-            finishedAt: null,
-            foundCount: 0,
-            autoMergedCount: 0,
-            prOpenedCount: 0,
-            dismissedCount: 0,
-            totalTokenCostUsd: "0",
-            createdAt: "2026-08-17T00:00:00.000Z",
-          },
-        ],
-      },
-    });
-    render(<BugHunter />);
-
-    expect(screen.getByText("What I'm doing right now")).toBeInTheDocument();
-    expect(screen.getByText("I'm sweeping ally-be")).toBeInTheDocument();
-  });
-
-  it("says nothing about a live run when none is in progress", () => {
-    render(<BugHunter />);
-    expect(screen.queryByText("What I'm doing right now")).not.toBeInTheDocument();
   });
 
   it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {
