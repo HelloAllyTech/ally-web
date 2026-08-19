@@ -22,7 +22,12 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   attemptCount = 0,
 }) => {
   const { t } = useTranslation();
-  const [imageError, setImageError] = useState(false);
+  // Tracked per URL rather than as a sticky boolean: the course player renders
+  // this card before its scenario request resolves, so the first paint has no
+  // cover. Handing "" to <img> makes the browser fire `error`, which used to
+  // latch the fallback for good — the real cover then never appeared.
+  const [failedCoverImage, setFailedCoverImage] = useState<string | null>(null);
+  const imageError = !(coverImage?.length > 0) || failedCoverImage === coverImage;
   const isPathway = totalScenarios !== undefined;
   // Standalone scenarios only: pathways/cases/courses already carry their own
   // progress ring. A COMING_SOON scenario can't have been played, so the two
@@ -46,7 +51,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           })}
           className={`w-full h-full object-cover rounded-[12px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
           loading="lazy"
-          onError={() => setImageError(true)}
+          onError={() => setFailedCoverImage(coverImage)}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-typography-800 bg-gray-100">
