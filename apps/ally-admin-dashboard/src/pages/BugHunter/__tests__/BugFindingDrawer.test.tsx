@@ -6,6 +6,7 @@ import { BugFindingStatus } from "@types";
 import { BugFindingDrawer } from "../BugFindingDrawer";
 
 const startFixSession = vi.fn();
+const cancelFixSession = vi.fn();
 const releaseFinding = vi.fn();
 const getBugFinding = vi.fn();
 
@@ -15,6 +16,7 @@ vi.mock("@api", () => ({
   useRejectBugFindingMutation: () => [vi.fn(), { isLoading: false }],
   useAnswerBugFindingMutation: () => [vi.fn(), { isLoading: false }],
   useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
+  useCancelBugFixSessionMutation: () => [cancelFixSession, { isLoading: false }],
   useReleaseBugFindingMutation: () => [releaseFinding, { isLoading: false }],
 }));
 
@@ -88,10 +90,13 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   decidedBy: null,
   decidedAt: null,
   sessionRunUrl: null,
+  sessionRunId: null,
   releaseTag: null,
   releaseRunUrl: null,
   releasedBy: null,
   releasedAt: null,
+  cancelledBy: null,
+  cancelledAt: null,
   createdAt: "2026-08-17",
   updatedAt: "2026-08-17",
   events: [],
@@ -175,6 +180,91 @@ describe("BugFindingDrawer — fix session", () => {
     fireEvent.click(screen.getByText("Start now"));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Bug Hunter is OFF."));
+  });
+});
+
+describe("BugFindingDrawer — stop fix session", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cancelFixSession.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+  });
+
+  it("offers to stop a session that's queued", () => {
+    renderDrawer(finding({ status: BugFindingStatus.QUEUED }));
+    expect(screen.getByText("Stop fix session")).toBeInTheDocument();
+  });
+
+  it("offers to stop a session that's actively fixing", () => {
+    renderDrawer(finding({ status: BugFindingStatus.FIXING }));
+    expect(screen.getByText("Stop fix session")).toBeInTheDocument();
+  });
+
+  it("hides the stop button once nothing is running — the whole point is stopping something in flight", () => {
+    renderDrawer(finding({ status: BugFindingStatus.NEW }));
+    expect(screen.queryByText("Stop fix session")).not.toBeInTheDocument();
+  });
+
+  it("hides the stop button once the session has already settled", () => {
+    renderDrawer(finding({ status: BugFindingStatus.MERGED }));
+    expect(screen.queryByText("Stop fix session")).not.toBeInTheDocument();
+  });
+
+  it("asks for confirmation before cancelling, rather than stopping on the first click", () => {
+    renderDrawer(finding({ status: BugFindingStatus.FIXING }));
+    fireEvent.click(screen.getByText("Stop fix session"));
+
+    expect(screen.getByTestId("confirm-popup")).toBeInTheDocument();
+    expect(screen.getByText("Stop this fix session?")).toBeInTheDocument();
+    expect(cancelFixSession).not.toHaveBeenCalled();
+  });
+
+  it("cancels the session only once the confirm dialog is accepted", async () => {
+    renderDrawer(finding({ status: BugFindingStatus.FIXING }));
+    fireEvent.click(screen.getByText("Stop fix session"));
+    fireEvent.click(screen.getByText("Stop it"));
+
+    await waitFor(() => expect(cancelFixSession).toHaveBeenCalledWith("finding-1"));
+  });
+
+  it("surfaces the backend's own refusal message rather than a generic one", async () => {
+    const { toast } = await import("sonner");
+    cancelFixSession.mockReturnValue({
+      unwrap: () => Promise.reject({ data: { message: "Session already finished." } }),
+    });
+    renderDrawer(finding({ status: BugFindingStatus.QUEUED }));
+
+    fireEvent.click(screen.getByText("Stop fix session"));
+    fireEvent.click(screen.getByText("Stop it"));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Session already finished."));
+  });
+
+  it("falls back to a generic failure message when the backend gives none", async () => {
+    const { toast } = await import("sonner");
+    cancelFixSession.mockReturnValue({ unwrap: () => Promise.reject({}) });
+    renderDrawer(finding({ status: BugFindingStatus.QUEUED }));
+
+    fireEvent.click(screen.getByText("Stop fix session"));
+    fireEvent.click(screen.getByText("Stop it"));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't stop the fix session."));
+  });
+
+  it("offers a retry worded the same as a failed attempt once cancelled, not a fresh 'put me on it'", () => {
+    renderDrawer(finding({ status: BugFindingStatus.CANCELLED }));
+    expect(screen.getByText("Ask me to try again")).toBeInTheDocument();
+    expect(screen.queryByText("Stop fix session")).not.toBeInTheDocument();
+  });
+
+  it("credits who stopped it, the same way a release or a decision is signed", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.CANCELLED,
+        cancelledBy: 9,
+        cancelledAt: "2026-08-19",
+      }),
+    );
+    expect(screen.getByText(/Stopped by user #9/)).toBeInTheDocument();
   });
 });
 
