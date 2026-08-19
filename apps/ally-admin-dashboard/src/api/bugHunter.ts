@@ -133,6 +133,24 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * The manual kill switch for a fix session that's clearly stuck or
+     * looping: cancels the actual GitHub Actions run — real compute/token
+     * savings, not just a status change — and lands the finding at
+     * CANCELLED. Only valid from QUEUED or FIXING; the backend 403s
+     * otherwise, which is why the button gates on the same condition.
+     */
+    cancelBugFixSession: builder.mutation<BugFinding, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_CANCEL_FIX_SESSION(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+      ],
+    }),
+
+    /**
      * Promote a merged fix to production. The response only confirms the
      * release was *dispatched* — the outcome lands minutes later, reconciled
      * from the GitHub run, so the UI must not present this as "released".
@@ -206,6 +224,7 @@ export const {
   useRejectBugFindingMutation,
   useAnswerBugFindingMutation,
   useStartBugFixSessionMutation,
+  useCancelBugFixSessionMutation,
   useReleaseBugFindingMutation,
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,

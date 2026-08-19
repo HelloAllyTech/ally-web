@@ -45,6 +45,7 @@ export const stageFromEventStage = (stage: BugHuntEventStage): PipelineStage => 
     case BugHuntEventStage.SESSION_DISPATCHED:
     case BugHuntEventStage.PLAN_CREATED:
     case BugHuntEventStage.STEP_STARTED:
+    case BugHuntEventStage.CANCELLED:
       return "fix";
     case BugHuntEventStage.PR_OPENED:
       return "review";
@@ -77,7 +78,9 @@ export const stageFromEventStage = (stage: BugHuntEventStage): PipelineStage => 
  * FAILED sits at "fix" (a fix attempt is what failed); RELEASE_FAILED sits at
  * "ship" (a release attempt is what failed). Both pair with the drawer's own
  * `error` variant override rather than this function inventing a seventh
- * stage for them.
+ * stage for them. CANCELLED sits at "fix" too — a fix session in progress is
+ * what an admin stopped — but pairs with no variant override, the same as
+ * DISMISSED/REJECTED: it is a deliberate human stop, not a failure.
  */
 export const stageFromFindingStatus = (status: BugFindingStatus): PipelineStage => {
   switch (status) {
@@ -93,6 +96,7 @@ export const stageFromFindingStatus = (status: BugFindingStatus): PipelineStage 
     case BugFindingStatus.FIXING:
     case BugFindingStatus.NEEDS_INPUT:
     case BugFindingStatus.FAILED:
+    case BugFindingStatus.CANCELLED:
       return "fix";
     case BugFindingStatus.PR_OPENED:
       return "review";

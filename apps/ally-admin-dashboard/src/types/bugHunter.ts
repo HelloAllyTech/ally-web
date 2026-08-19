@@ -44,6 +44,8 @@ export enum BugHuntEventStage {
   RELEASE_DISPATCHED = "release_dispatched",
   RELEASED = "released",
   RELEASE_FAILED = "release_failed",
+  /** An admin pressed "Stop fix session" — see ally-be's BugFixSessionService.cancelFixSession. */
+  CANCELLED = "cancelled",
 }
 
 /**
@@ -94,6 +96,8 @@ export enum BugFindingStatus {
   DISMISSED = "dismissed",
   REJECTED = "rejected",
   FAILED = "failed",
+  /** An admin stopped a running fix session. Distinct from FAILED: a human decision, not the agent giving up — see ally-be's BugFixSessionService.cancelFixSession. */
+  CANCELLED = "cancelled",
 }
 
 /** Statuses the "Start fix session" button is offered from. Mirrors ally-be's BUG_FINDING_FIX_SESSION_START_STATUSES. */
@@ -104,6 +108,9 @@ export const BUG_FINDING_FIX_SESSION_START_STATUSES: BugFindingStatus[] = [
   BugFindingStatus.NEEDS_INPUT,
   BugFindingStatus.PR_OPENED,
   BugFindingStatus.FAILED,
+  // A human stopped a stuck session, but the bug still needs fixing — same
+  // retry story as FAILED.
+  BugFindingStatus.CANCELLED,
 ];
 
 export interface BugHunterSettings {
@@ -147,10 +154,15 @@ export interface BugFinding {
   decidedAt: string | null;
   /** GitHub Actions run doing the fixing. Null until the backend correlates the dispatch to a run. */
   sessionRunUrl: string | null;
+  /** GitHub Actions run id for the fix session, once resolved. What "Stop fix session" cancels. */
+  sessionRunId: string | null;
   releaseTag: string | null;
   releaseRunUrl: string | null;
   releasedBy: number | null;
   releasedAt: string | null;
+  /** The admin who pressed "Stop fix session". */
+  cancelledBy: number | null;
+  cancelledAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

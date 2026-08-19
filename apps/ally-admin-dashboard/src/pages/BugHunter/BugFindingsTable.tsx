@@ -57,6 +57,7 @@ const STATUS_FILTER_LABELS: Record<BugFindingStatus | "all", string> = {
   [BugFindingStatus.DISMISSED]: en.bugHunter.findingStatusDismissed,
   [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
   [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
+  [BugFindingStatus.CANCELLED]: en.bugHunter.findingStatusCancelled,
 };
 
 /**

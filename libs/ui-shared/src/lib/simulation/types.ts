@@ -51,6 +51,9 @@ export interface SimulationTranslations {
   dataSafe: string;
   waitingForAgent: string;
   connectingToSession: string;
+  /** Shown under the 3-2-1 start countdown. Optional so existing consumers
+   * (admin previews) compile without providing it. */
+  simulationCountdownLabel?: string;
   allowMicrophone: string;
   microphonePromptBrowser: string;
   microphonePrompt: string;
