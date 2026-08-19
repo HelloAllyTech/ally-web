@@ -1417,7 +1417,8 @@
       "start": "ரோல் பிளேயைத் தொடங்கு",
       "openCase": "வழக்கைத் திற",
       "replay": "மீண்டும் செய்",
-      "completed": "நிறைவு"
+      "completed": "நிறைவு",
+      "language": "மொழி"
     },
     "quiz": {
       "intro": {
