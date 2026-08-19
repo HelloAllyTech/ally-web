@@ -1463,7 +1463,8 @@
       "openCase": "Open case",
       "replay": "Replay",
       "completed": "Completed",
-      "completedOn": "Completed {{date}}"
+      "completedOn": "Completed {{date}}",
+      "language": "Language"
     },
     "quiz": {
       "intro": {
