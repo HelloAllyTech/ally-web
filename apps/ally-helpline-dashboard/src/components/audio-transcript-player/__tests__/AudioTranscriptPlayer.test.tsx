@@ -11,6 +11,7 @@ const mockHandleLoadedMetadata = vi.fn();
 const mockHandleEnded = vi.fn();
 const mockSeekToFraction = vi.fn();
 const mockSeekTo = vi.fn();
+const mockSetPlaybackRate = vi.fn();
 
 vi.mock("../useAudioPlayer", () => ({
   useAudioPlayer: vi.fn(() => ({
@@ -19,6 +20,7 @@ vi.mock("../useAudioPlayer", () => ({
     currentTime: 0,
     duration: 120,
     progress: 0,
+    playbackRate: 1,
     togglePlay: mockTogglePlay,
     seekTo: mockSeekTo,
     handleTimeUpdate: mockHandleTimeUpdate,
@@ -26,6 +28,7 @@ vi.mock("../useAudioPlayer", () => ({
     handleEnded: mockHandleEnded,
     handleProgressClick: vi.fn(),
     seekToFraction: mockSeekToFraction,
+    setPlaybackRate: mockSetPlaybackRate,
   })),
 }));
 
@@ -55,6 +58,7 @@ describe("AudioTranscriptPlayer", () => {
       currentTime: 0,
       duration: 120,
       progress: 0,
+      playbackRate: 1,
       togglePlay: mockTogglePlay,
       seekTo: mockSeekTo,
       handleTimeUpdate: mockHandleTimeUpdate,
@@ -62,6 +66,7 @@ describe("AudioTranscriptPlayer", () => {
       handleEnded: mockHandleEnded,
       handleProgressClick: vi.fn(),
       seekToFraction: mockSeekToFraction,
+      setPlaybackRate: mockSetPlaybackRate,
     });
   });
 

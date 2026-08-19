@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { ChangeEvent, FC, ReactNode, useEffect, useRef, useState } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -6,6 +6,7 @@ import { useGetRoleplaySessionLogQuery } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
+import { useTranscriptDisclaimer } from "@hooks";
 import { RoleplaySessionWeakMetric } from "@types";
 import { formatDate } from "@utils";
 
@@ -86,6 +87,66 @@ const SectionCard: FC<{ children: ReactNode }> = ({ children }) => (
     {children}
   </div>
 );
+
+/** Same key the helpline dashboard's audio player uses, for naming consistency. */
+const AUDIO_PLAYBACK_RATE_KEY = "ally-audio-playback-rate";
+const PLAYBACK_RATES = [1, 1.5, 2, 2.5] as const;
+type PlaybackRate = (typeof PLAYBACK_RATES)[number];
+
+const isPlaybackRate = (value: number): value is PlaybackRate =>
+  PLAYBACK_RATES.includes(value as PlaybackRate);
+
+const getStoredPlaybackRate = (): PlaybackRate => {
+  const stored = Number(window.localStorage.getItem(AUDIO_PLAYBACK_RATE_KEY));
+  return isPlaybackRate(stored) ? stored : 1;
+};
+
+/** Native `<audio>` for playback/seek/volume, plus a speed control synced to localStorage. */
+const RecordingPlayer: FC<{ url: string }> = ({ url }) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(getStoredPlaybackRate);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+    // Only on mount: applies the stored/default rate before the user touches the control.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRateChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const rate = Number(event.target.value);
+    if (!isPlaybackRate(rate)) return;
+    setPlaybackRate(rate);
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+    window.localStorage.setItem(AUDIO_PLAYBACK_RATE_KEY, String(rate));
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <audio
+        ref={audioRef}
+        controls
+        preload="none"
+        src={url}
+        className="w-full"
+        onLoadedMetadata={() => {
+          if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+        }}
+      />
+      <select
+        value={playbackRate}
+        onChange={handleRateChange}
+        aria-label="Playback speed"
+        className="shrink-0 rounded border border-border-light bg-white px-1.5 py-1 text-xs text-typography-700"
+      >
+        {PLAYBACK_RATES.map(rate => (
+          <option key={rate} value={rate}>
+            {rate}x
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
 /**
  * Weak-performing-metric grouping and presentation.
@@ -195,6 +256,7 @@ export const RoleplaySessionLogDetail: FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, isError } = useGetRoleplaySessionLogQuery(id, { skip: !id });
+  const transcriptDisclaimer = useTranscriptDisclaimer();
 
   const goBack = () => navigate(ROUTES.ROLEPLAY_SESSION_LOGS);
 
@@ -852,7 +914,7 @@ export const RoleplaySessionLogDetail: FC = () => {
               (data.recording.url ? (
                 <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
                   <span className="text-xs text-typography-700">Recording</span>
-                  <audio controls preload="none" src={data.recording.url} className="w-full" />
+                  <RecordingPlayer url={data.recording.url} />
                 </div>
               ) : (
                 <Field label="Recording" value={`Available (egress ${data.recording.egressId})`} />
@@ -959,6 +1021,7 @@ export const RoleplaySessionLogDetail: FC = () => {
         <h2 className="text-lg font-secondary text-typography-900 mb-2">
           Transcript{data.transcript.length > 0 ? ` (${data.transcript.length} turns)` : ""}
         </h2>
+        <p className="text-xs text-typography-500 mb-2">{transcriptDisclaimer}</p>
         {data.transcript.length === 0 ? (
           <p className="text-sm text-typography-700">No transcript available for this session.</p>
         ) : (
