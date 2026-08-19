@@ -104,6 +104,7 @@ import {
   ZoomIn as CZoomIn,
   MachineLearningModel as CMachineLearningModel,
   Catalog as CCatalog,
+  Security as CSecurity,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -200,6 +201,12 @@ export const UserSpeaker = createCarbonIcon(CUserSpeaker);
 export const MachineLearningModel = createCarbonIcon(CMachineLearningModel);
 /** Model Catalog tab — the list of models, distinct from Language Model configs. */
 export const Catalog = createCarbonIcon(CCatalog);
+/** Guardrails tab — Carbon's shield-with-a-checkmark, the same metaphor as the
+ *  Material Symbols glyph it replaces. Not left as a custom SVG: that one was
+ *  drawn on a 24-unit grid with 2-unit strokes and sized 21x23, so in the
+ *  sidebar it rendered visibly heavier than the thin-line Carbon glyphs around
+ *  it. */
+export const Guardrails = createCarbonIcon(CSecurity);
 export const GroupBranch = createCarbonIcon(CFlowConnection);
 export const HappyEmoji = createCarbonIcon(CFaceSatisfied);
 export const ImageIcon = createCarbonIcon(CImage);
@@ -305,7 +312,6 @@ export { default as CharacterLibrary } from "@assets/svg/characterLibrary.svg?re
 export { default as Contribution } from "@assets/svg/contribution.svg?react";
 export { default as DiamondShine } from "@assets/svg/diamond_shine.svg?react";
 export { default as FrameSource } from "@assets/svg/frameSource.svg?react";
-export { default as Guardrails } from "@assets/svg/guardrails.svg?react";
 export { default as Pathway } from "@assets/svg/pathway.svg?react";
 export { default as SemanticSimilarity } from "@assets/svg/semanticSimilarity.svg?react";
 export { default as Simulation } from "@assets/svg/simulation.svg?react";
