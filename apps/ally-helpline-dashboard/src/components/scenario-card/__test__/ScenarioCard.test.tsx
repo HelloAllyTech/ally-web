@@ -124,6 +124,29 @@ describe("ScenarioCard", () => {
     expect(screen.queryByAltText("Test Scenario scenario cover")).not.toBeInTheDocument();
   });
 
+  // The course player renders this card before its scenario request resolves,
+  // so the first paint has no cover URL at all.
+  it("should not hand an empty src to <img> while the cover is still loading", () => {
+    renderComponent({ coverImage: "" });
+
+    expect(screen.queryByAltText("Test Scenario scenario cover")).not.toBeInTheDocument();
+  });
+
+  it("should show a cover that arrives after an earlier one failed", () => {
+    const { rerender } = render(
+      <ScenarioCard {...defaultProps} coverImage="https://example.com/pending.jpg" />,
+    );
+    fireEvent.error(screen.getByAltText("Test Scenario scenario cover"));
+
+    rerender(<ScenarioCard {...defaultProps} coverImage="https://example.com/arrived.jpg" />);
+
+    expect(screen.getByAltText("Test Scenario scenario cover")).toHaveAttribute(
+      "src",
+      "https://example.com/arrived.jpg",
+    );
+    expect(screen.queryByText("Image not available")).not.toBeInTheDocument();
+  });
+
   it("should apply blur and grayscale styles when isComingSoon and image loaded", () => {
     renderComponent({ isComingSoon: true });
     const image = screen.getByAltText("Test Scenario scenario cover");
