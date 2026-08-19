@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Snake</title>
+<!--
+  Ally course component: GAME / SNAKE.
+
+  Gameplay is a port of Jack Rugile's "Snakely" pen
+  (https://codepen.io/jackrugile/pen/bGRWbK) — a CSS/DOM-rendered snake with no
+  canvas, which is why it fits this family of bundles at all. The rules (grow by
+  one per food, speed up as you grow, wrap at the walls instead of dying on
+  them) are kept faithfully; everything the learner sees is redrawn in Ally UI.
+
+  This page is loaded in a sandboxed iframe by GameItemPlayer (web) and in a
+  WebView by GamePlayer (mobile). It talks to its host only through the three
+  postMessage events documented in the bridge at the bottom of this file — the
+  same contract every other game bundle speaks.
+
+  Departures from the original, all deliberate:
+
+  - No arrow-hint overlay pointing at the food. It reads as a hint system on a
+    component whose whole job is to be a thirty-second breather, not a puzzle
+    to be coached through.
+  - The board is a fixed logical grid sized to whatever frame the host gives
+    it, not a viewport-filling stage — this runs inside a course item, not
+    full-screen.
+  - Speed still ramps with length (an interactive-learning-events principle:
+    challenge should track skill so the player stays in flow instead of
+    getting bored or dropping out), but it floors rather than climbing forever
+    — an escalation with no ceiling eventually beats anyone, which is the
+    opposite of a low-friction breather.
+  - The wraparound walls stay: dying only to your own tail, never to an edge,
+    is what keeps this the gentle game in the set rather than the punishing
+    one, and it is the original's defining trick.
+  - A death auto-restarts a beat later with no modal or confirm(), same as the
+    tic-tac-toe bundle — ceremony nobody asked for on a game that exists to
+    cost nothing to replay. A manual restart button covers a learner who wants
+    out of a boring run early.
+  - Touch swipes drive direction alongside arrow keys / WASD, since a WebView
+    has no keyboard.
+
+  The font stack asks for IBM Plex Serif and expects not to get it: this page
+  is served from public/ with no @font-face of its own and is inlined offline
+  on mobile, so it lands on a serif fallback that still reads as Ally UI.
+  Colours are the daylight theme's literal values (index.css) — an iframe
+  cannot see the app's CSS variables.
+-->
+<style>
+  :root {
+    /* Ally daylight palette (src/index.css) — literals, since the iframe has
+       no access to the app's --color-* variables. */
+    --primary-50: #ebf0fa;
+    --primary-100: #d7e2f4;
+    --primary-400: #4a7dcf;
+    --primary-500: #264d8e;
+    --primary-600: #1f3f75;
+    --success-50: #e8f5e9;
+    --success-200: #a5d6a7;
+    --success-700: #388e3c;
+    --background: #ffffff;
+    --background-secondary: #f4f4f4;
+    --border-light: #e0e0e0;
+    --border-medium: #c6c6c6;
+    --typography-500: rgba(0, 0, 0, 0.32);
+    --typography-700: rgba(0, 0, 0, 0.54);
+    --typography-900: rgba(0, 0, 0, 0.87);
+    --font: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--typography-900);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    width: 100%;
+    height: 100%;
+    max-width: 380px;
+  }
+
+  /* Every row but the board refuses to shrink. Without this, a frame one
+     pixel too short makes flexbox squash whichever row can give — and since
+     sizeBoard() measures those rows to decide how much is left for the board,
+     a squashed row feeds it a smaller chrome, which grows the board, which
+     squashes the row further. Same trap documented in the tic-tac-toe bundle. */
+  .panel,
+  #status,
+  .board {
+    flex: 0 0 auto;
+  }
+
+  /* ---- Score panel ---- */
+
+  .panel {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+  }
+
+  .stat { text-align: left; }
+
+  .stat dt {
+    margin: 0;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--typography-500);
+  }
+
+  .stat dd {
+    margin: 0;
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--typography-900);
+  }
+
+  .panel-spacer { flex: 1 1 auto; }
+
+  .icon-button {
+    appearance: none;
+    border: 1px solid var(--border-light);
+    background: var(--background);
+    color: var(--typography-700);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .icon-button:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-100);
+    color: var(--primary-500);
+  }
+
+  .icon-button:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 1px;
+  }
+
+  .icon-button svg { width: 16px; height: 16px; display: block; }
+
+  /* ---- Status line ---- */
+
+  #status {
+    margin: 0;
+    min-height: 18px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--typography-700);
+    text-align: center;
+  }
+
+  #status.is-result {
+    color: var(--typography-900);
+    font-weight: 600;
+  }
+
+  /* ---- Board ----
+
+     Square, and sized in JS from the space actually left over — see
+     sizeBoard(). `flex: 0 0 auto` matters for the same reason the tic-tac-toe
+     board pins it: a shrinkable board in too short a frame keeps its cell
+     size and loses its bottom rows behind `overflow: hidden` instead of
+     visibly overflowing, which is the failure that is easy to notice. */
+  .board {
+    position: relative;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--background);
+  }
+
+  .segment {
+    position: absolute;
+    border-radius: 3px;
+    background: var(--primary-400);
+  }
+
+  .segment.head {
+    background: var(--primary-500);
+    box-shadow: 0 0 6px rgba(38, 77, 142, 0.55);
+    z-index: 2;
+  }
+
+  .segment.food {
+    background: var(--success-700);
+    box-shadow: 0 0 6px rgba(56, 142, 60, 0.5);
+    animation: pulse 1.1s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(0.82); opacity: 0.88; }
+    50% { transform: scale(1.05); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .segment.food { animation: none; }
+  }
+
+  /* In a short frame the board has already shrunk itself; pull the chrome in
+     to match. */
+  @media (max-height: 380px) {
+    .wrap { gap: 6px; }
+    .stat dd { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <dl class="stat"><dt>Score</dt><dd id="score">0</dd></dl>
+      <dl class="stat"><dt>Best</dt><dd id="best">0</dd></dl>
+      <div class="panel-spacer"></div>
+      <button type="button" class="icon-button" id="restart" aria-label="Start over" title="Start over"></button>
+    </div>
+
+    <!-- Announced to screen readers as it changes: this is the only place a
+         run's result is stated. -->
+    <p id="status" role="status" aria-live="polite"></p>
+
+    <div class="board" id="board" role="img" aria-label="Snake board"></div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     Host bridge — identical contract to every other bundle in this family.
+
+       game -> host  { source:'ally-game', game, type:'ready' }
+       game -> host  { source:'ally-game', game, type:'started' }
+       game -> host  { source:'ally-game', game, type:'over', score, highScore }
+
+       host -> game  { source:'ally-game-host', type:'focus' }
+
+     One file, two hosts: an <iframe> in the web app (post to window.parent)
+     and a react-native-webview on mobile (post a JSON string to
+     window.ReactNativeWebView). Scores are a personal best and nothing more —
+     a game in a course never gates, unlocks or grades anything.
+     ===================================================================== */
+
+  var GAME = 'SNAKE';
+  var iframeHost = window.parent !== window ? window.parent : null;
+
+  function post(type, extra) {
+    var message = { source: 'ally-game', game: GAME, type: type };
+    for (var key in extra) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) message[key] = extra[key];
+    }
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      return;
+    }
+    // '*' because a sandboxed iframe has an opaque origin that matches no
+    // concrete target, and the payload carries nothing worth protecting.
+    if (iframeHost) iframeHost.postMessage(message, '*');
+  }
+
+  var announcedStart = false;
+  function markStarted() {
+    if (announcedStart) return;
+    announcedStart = true;
+    post('started');
+  }
+
+  window.addEventListener('message', function (event) {
+    var data = event.data;
+    if (!data || data.source !== 'ally-game-host') return;
+    if (data.type === 'focus') window.focus();
+  });
+
+  /* =====================================================================
+     Board + rules
+
+     A fixed logical grid (COLS x ROWS), independent of the pixel size the
+     frame actually gets — sizeBoard() maps grid cells to pixels each time the
+     frame resizes. The wall wraps: the only way to end a run is running into
+     your own tail.
+     ===================================================================== */
+
+  var COLS = 14;
+  var ROWS = 14;
+  var START_LENGTH = 4;
+  var START_INTERVAL_MS = 140;
+  var MIN_INTERVAL_MS = 60;
+  var SPEEDUP_PER_FOOD_MS = 4; // ramps difficulty with skill, then floors —
+                                // an unbounded ramp eventually beats anyone.
+  var RESTART_DELAY_MS = 1200;
+  var SWIPE_MIN_PX = 20;
+
+  var boardEl = document.getElementById('board');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+  var statusEl = document.getElementById('status');
+  var restartEl = document.getElementById('restart');
+
+  var cellSize = 0;
+  var segments = [];      // [{col,row}, ...] index 0 is the head
+  var segmentEls = [];
+  var food = null;        // {col,row}
+  var foodEl = null;
+  var heading = 'right';  // last committed movement
+  var queuedDir = 'right'; // last accepted input, guarded against reversal
+  var score = 0;
+  var best = 0;
+  var tickIntervalMs = START_INTERVAL_MS;
+  var running = true;
+  var resetTimer = null;
+  var tickAccumMs = 0;
+  var lastFrameTime = null;
+
+  function randomInt(maxExclusive) {
+    return Math.floor(Math.random() * maxExclusive);
+  }
+
+  function occupied(col, row, cells) {
+    for (var i = 0; i < cells.length; i++) {
+      if (cells[i].col === col && cells[i].row === row) return true;
+    }
+    return false;
+  }
+
+  function placeFood() {
+    var col, row;
+    do {
+      col = randomInt(COLS);
+      row = randomInt(ROWS);
+    } while (occupied(col, row, segments));
+    food = { col: col, row: row };
+  }
+
+  function resetGame() {
+    var startRow = Math.floor(ROWS / 2);
+    var startCol = Math.floor(COLS / 2);
+    segments = [];
+    for (var i = 0; i < START_LENGTH; i++) {
+      segments.push({ col: startCol - i, row: startRow });
+    }
+    heading = 'right';
+    queuedDir = 'right';
+    score = 0;
+    tickIntervalMs = START_INTERVAL_MS;
+    tickAccumMs = 0;
+    announcedStart = false;
+    scoreEl.textContent = '0';
+    setStatus('', false);
+    placeFood();
+  }
+
+  /** Same double-guard the tic-tac-toe bundle uses for its own input: a new
+   * direction is only accepted if it conflicts with neither the last
+   * *requested* direction nor the last *committed* one. Without the second
+   * check, two key presses landing inside the same tick could queue a
+   * reversal that runs the head straight into the neck it just left. */
+  var OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  function requestDirection(next) {
+    if (OPPOSITE[next] === queuedDir || OPPOSITE[next] === heading) return;
+    queuedDir = next;
+    markStarted();
+  }
+
+  function step() {
+    var head = segments[0];
+    var next = { col: head.col, row: head.row };
+    if (queuedDir === 'up') next.row -= 1;
+    else if (queuedDir === 'down') next.row += 1;
+    else if (queuedDir === 'left') next.col -= 1;
+    else next.col += 1;
+
+    // Wrap at the walls instead of dying on them.
+    if (next.col < 0) next.col = COLS - 1;
+    if (next.col >= COLS) next.col = 0;
+    if (next.row < 0) next.row = ROWS - 1;
+    if (next.row >= ROWS) next.row = 0;
+
+    var ateFood = food && next.col === food.col && next.row === food.row;
+    // The tail cell is safe to enter unless this move also grows the snake
+    // into it (eating on the same tick the tail would have vacated it).
+    var bodyToCheck = ateFood ? segments : segments.slice(0, segments.length - 1);
+    if (occupied(next.col, next.row, bodyToCheck)) {
+      onGameOver();
+      return;
+    }
+
+    segments.unshift(next);
+    heading = queuedDir;
+
+    if (ateFood) {
+      score += 1;
+      scoreEl.textContent = String(score);
+      tickIntervalMs = Math.max(MIN_INTERVAL_MS, tickIntervalMs - SPEEDUP_PER_FOOD_MS);
+      placeFood();
+    } else {
+      segments.pop();
+    }
+  }
+
+  function onGameOver() {
+    running = false;
+    best = Math.max(best, score);
+    bestEl.textContent = String(best);
+    setStatus('Game over — ' + score, true);
+    post('over', { score: score, highScore: best });
+
+    if (resetTimer !== null) window.clearTimeout(resetTimer);
+    resetTimer = window.setTimeout(function () {
+      resetTimer = null;
+      resetGame();
+      running = true;
+    }, RESTART_DELAY_MS);
+  }
+
+  function setStatus(text, isResult) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle('is-result', !!isResult);
+  }
+
+  /* ---- Rendering ----
+
+     Segment/food elements are absolutely positioned divs, pooled and reused
+     as the snake grows rather than rebuilt every frame. */
+
+  function ensurePool(count) {
+    while (segmentEls.length < count) {
+      var el = document.createElement('div');
+      el.className = 'segment';
+      boardEl.appendChild(el);
+      segmentEls.push(el);
+    }
+    while (segmentEls.length > count) {
+      var extra = segmentEls.pop();
+      boardEl.removeChild(extra);
+    }
+  }
+
+  function placeCell(el, col, row) {
+    var inset = cellSize > 10 ? 1 : 0;
+    el.style.left = (col * cellSize + inset) + 'px';
+    el.style.top = (row * cellSize + inset) + 'px';
+    el.style.width = (cellSize - inset * 2) + 'px';
+    el.style.height = (cellSize - inset * 2) + 'px';
+  }
+
+  function render() {
+    if (!cellSize) return;
+    ensurePool(segments.length);
+    for (var i = 0; i < segments.length; i++) {
+      var el = segmentEls[i];
+      el.className = 'segment' + (i === 0 ? ' head' : '');
+      // Body fades toward the tail so the direction of travel reads at a
+      // glance, same idea as the original.
+      el.style.opacity = i === 0 ? '1' : String(1 - (i / segments.length) * 0.55);
+      placeCell(el, segments[i].col, segments[i].row);
+    }
+    if (food) {
+      if (!foodEl) {
+        foodEl = document.createElement('div');
+        foodEl.className = 'segment food';
+        boardEl.appendChild(foodEl);
+      }
+      placeCell(foodEl, food.col, food.row);
+    }
+  }
+
+  /* ---- Game loop ----
+
+     A requestAnimationFrame loop that keeps running even across a death, so
+     the frozen board stays visible while the "Game over" line shows; only
+     the grid-step logic pauses on `running`. */
+
+  function loop(now) {
+    if (lastFrameTime === null) lastFrameTime = now;
+    var delta = now - lastFrameTime;
+    lastFrameTime = now;
+
+    if (running) {
+      tickAccumMs += delta;
+      // A while loop, not an if: a frame dropped by the host (tab hidden,
+      // WebView backgrounded) must not let the accumulator fire dozens of
+      // steps back-to-back when it returns.
+      var guard = 0;
+      while (tickAccumMs >= tickIntervalMs && guard < 5) {
+        tickAccumMs -= tickIntervalMs;
+        step();
+        guard += 1;
+        if (!running) break;
+      }
+      if (guard >= 5) tickAccumMs = 0;
+    }
+    render();
+    window.requestAnimationFrame(loop);
+  }
+
+  /* ---- Fitting the board to the frame ----
+
+     Same measuring technique as the tic-tac-toe bundle: the board is square
+     in logical cells, so its pixel size is derived from whichever of the
+     frame's width/height is tighter, and the chrome rows are measured rather
+     than assumed. */
+
+  var wrapEl = document.querySelector('.wrap');
+  var panelEl = document.querySelector('.panel');
+
+  function sizeBoard() {
+    var styles = window.getComputedStyle(wrapEl);
+    var gap = parseFloat(styles.rowGap) || 0;
+    var padding = parseFloat(styles.paddingTop) || 0;
+    var chrome = panelEl.offsetHeight + statusEl.offsetHeight + gap * 2 + padding * 2;
+    var byHeight = wrapEl.clientHeight - chrome;
+    var byWidth = wrapEl.clientWidth - padding * 2;
+    var available = Math.max(140, Math.floor(Math.min(byWidth, byHeight)) - 2);
+    cellSize = Math.max(4, Math.floor(available / COLS));
+    boardEl.style.width = (cellSize * COLS) + 'px';
+    boardEl.style.height = (cellSize * ROWS) + 'px';
+    var checker = cellSize * 2;
+    boardEl.style.backgroundImage =
+      'linear-gradient(45deg, var(--background-secondary) 25%, transparent 25%, transparent 75%, var(--background-secondary) 75%),' +
+      'linear-gradient(45deg, var(--background-secondary) 25%, transparent 25%, transparent 75%, var(--background-secondary) 75%)';
+    boardEl.style.backgroundSize = checker + 'px ' + checker + 'px';
+    boardEl.style.backgroundPosition = '0 0, ' + cellSize + 'px ' + cellSize + 'px';
+    render();
+  }
+
+  /** Sizing twice: the first pass changes the board's height, which decides
+   * whether the max-height chrome rules apply, which changes what the second
+   * pass measures — same reasoning as the tic-tac-toe bundle. */
+  function fit() {
+    sizeBoard();
+    window.requestAnimationFrame(sizeBoard);
+  }
+
+  /* ---- Controls ---- */
+
+  window.addEventListener('keydown', function (event) {
+    var code = event.keyCode || event.which;
+    var dir = null;
+    if (code === 38 || code === 87) dir = 'up';        // Up / W
+    else if (code === 40 || code === 83) dir = 'down';  // Down / S
+    else if (code === 37 || code === 65) dir = 'left';  // Left / A
+    else if (code === 39 || code === 68) dir = 'right'; // Right / D
+    if (!dir) return;
+    event.preventDefault();
+    requestDirection(dir);
+  });
+
+  // Touch swipe: the one control a keyboard-based host doesn't need but a
+  // WebView has no keyboard to offer instead.
+  var touchStartX = 0;
+  var touchStartY = 0;
+  boardEl.addEventListener('touchstart', function (event) {
+    var touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }, { passive: true });
+
+  boardEl.addEventListener('touchend', function (event) {
+    var touch = event.changedTouches[0];
+    var dx = touch.clientX - touchStartX;
+    var dy = touch.clientY - touchStartY;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_MIN_PX) return;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      requestDirection(dx > 0 ? 'right' : 'left');
+    } else {
+      requestDirection(dy > 0 ? 'down' : 'up');
+    }
+  }, { passive: true });
+
+  restartEl.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true">' +
+    '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
+  restartEl.addEventListener('click', function () {
+    if (resetTimer !== null) {
+      window.clearTimeout(resetTimer);
+      resetTimer = null;
+    }
+    resetGame();
+    running = true;
+  });
+
+  resetGame();
+  fit();
+
+  // Both, deliberately. ResizeObserver catches a frame resized by its host
+  // without a window resize event (a drawer opening, an iframe re-laid out);
+  // the window events catch a rotation or a keyboard in a WebView, where the
+  // observer has been seen not to fire.
+  if (window.ResizeObserver) {
+    new ResizeObserver(fit).observe(document.documentElement);
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+
+  window.requestAnimationFrame(loop);
+  post('ready');
+})();
+</script>
+</body>
+</html>

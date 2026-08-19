@@ -125,6 +125,13 @@ export const TRACK_GAME_CATALOG: Array<{
       "A peg-and-link puzzle: walk the cub along the links to the star, turning the whole grid when the links do not reach. Sixty-one boards that start as a ten-second tutorial and end genuinely hard — the thinking one, so put it where a learner has room to stop when they want to.",
     typicalPlay: "a minute a board, and it does not run out",
   },
+  {
+    key: TrackGameKey.SNAKE,
+    name: "Snake",
+    description:
+      "Steer a growing line around the board to reach the food without running into your own tail. Speeds up the longer you get, and the walls wrap around rather than ending the run — the forgiving one in the set.",
+    typicalPlay: "a minute or two a run, and it does not run out",
+  },
 ];
 
 export const DEFAULT_GAME_CONTENT: GameContent = {
