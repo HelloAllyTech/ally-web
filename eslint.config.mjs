@@ -2,6 +2,7 @@ import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import prettier from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
 import importPlugin from "eslint-plugin-import";
@@ -74,6 +75,7 @@ export default [
     plugins: {
       prettier: prettierPlugin,
       import: importPlugin,
+      "react-hooks": reactHooks,
     },
     settings: {
       react: {
@@ -143,6 +145,14 @@ export default [
           },
         },
       ],
+
+      // Hook correctness. Only the two classic rules, at the severities the
+      // React team ships them at — the plugin's own `recommended` also turns on
+      // ~16 React Compiler rules, which is a separate decision. Without these
+      // two registered, the `eslint-disable-next-line react-hooks/exhaustive-deps`
+      // comments already in the codebase were hard errors for an unknown rule.
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
 
       // Project-specific overrides
       "no-multiple-empty-lines": "error",
