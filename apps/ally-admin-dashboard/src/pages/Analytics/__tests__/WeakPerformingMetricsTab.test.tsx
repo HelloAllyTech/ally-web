@@ -61,6 +61,7 @@ const series = (o: Partial<WeakMetricSeries> = {}): WeakMetricSeries => ({
   unit: "percent",
   state: "measured",
   lowerIsBetter: true,
+  description: "Actor turns that repeat something the actor already said.",
   caveat: null,
   points: [
     { bucket: "2026-06-01", numerator: 10, denominator: 500, value: 0.02 },
@@ -171,13 +172,20 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.getByText(/improving/)).toBeInTheDocument();
   });
 
-  it("renders the caveat on the card rather than hiding it", () => {
+  it("keeps the caveat reachable without putting it in the reader's way", () => {
+    // This test previously asserted the opposite — that the caveat rendered as
+    // body text on the card. That was the original intent and it did not
+    // survive contact with the live tab: four lines of weighting rules sat
+    // above a two-bar chart on every one of 22 cards. The rule it protected
+    // still holds — a reader must be able to find out how a number is
+    // weighted — so the caveat moved behind an affordance rather than away.
     queryMock.mockReturnValue({
       data: response({
         groups: [
           group({
             series: [
               series({
+                label: "Repeated turns",
                 caveat: "Segment by model or this misleads.",
               }),
             ],
@@ -189,7 +197,12 @@ describe("WeakPerformingMetricsTab", () => {
       refetch: refetchMock,
     });
     render(<WeakPerformingMetricsTab {...filters} />);
-    expect(screen.getByText(/Segment by model or this misleads/)).toBeInTheDocument();
+
+    // Carbon names the trigger from the tooltip's own content, so the caveat is
+    // what a screen reader announces on the help control.
+    expect(
+      screen.getByRole("button", { name: /Segment by model or this misleads/ }),
+    ).toBeInTheDocument();
   });
 
   it("marks a not-measured series so an empty line is not read as good news", () => {
@@ -515,5 +528,86 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.getByText(/drift gemini-2\.5-pro\/v2/)).toBeInTheDocument();
     expect(screen.getByText(/language gemini-2\.5-pro\/v1/)).toBeInTheDocument();
     expect(screen.getByText(/groundedness not run/)).toBeInTheDocument();
+  });
+
+  /**
+   * Two readability failures this pins, both reported from the live tab.
+   *
+   * The caveat was the card's caption — three or four lines of weighting rules
+   * above a two-bar chart, crowding out the number it qualified. And direction
+   * only ever appeared inside the delta sentence, which needs two buckets, so a
+   * single-bucket card said nothing about whether a rise was good or bad.
+   */
+  it("captions the card with what it counts, not with the caveat", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                description: "Actor turns that repeat something the actor already said.",
+                caveat: "Segment by model or this misleads: repetition differs 6.6x.",
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    // The caption is the one plain line saying what is counted.
+    const caption = screen.getByText(
+      "Actor turns that repeat something the actor already said.",
+    );
+    expect(caption.tagName).toBe("P");
+
+    // The caveat is still in the document — Carbon renders tooltip content
+    // inline — but inside the popover rather than as the card's caption.
+    const caveat = screen.getByText(/Segment by model or this misleads/);
+    expect(caveat.className).toContain("tooltip-content");
+  });
+
+  it("says which direction is good, without needing two buckets", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                // One bucket: no delta sentence, so this is the ONLY thing on
+                // the card that can tell the reader which way is good.
+                points: [{ bucket: "2026-07-01", numerator: 3, denominator: 100, value: 0.03 }],
+                latest: 0.03,
+                previous: null,
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText("lower is better")).toBeInTheDocument();
+    expect(screen.queryByText(/vs previous bucket/)).not.toBeInTheDocument();
+  });
+
+  it("says higher is better where that is true", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [group({ series: [series({ lowerIsBetter: false })] })],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText("higher is better")).toBeInTheDocument();
   });
 });

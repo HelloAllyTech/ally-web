@@ -16,8 +16,10 @@ import {
   TableRow,
   Tag,
   Tile,
+  Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import { useGetWeakPerformingMetricsQuery } from "@api";
+import { TooltipIcon } from "@assets";
 import { ROUTES } from "@constants";
 import { WeakMetricGroup, WeakMetricSeries, WeakMetricState } from "@types";
 
@@ -149,7 +151,18 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   // A "none" series still renders its chart — but captioned as an
   // instrumentation gap, so an empty or flat line is read as "we are not
   // measuring this" rather than "this never happens".
-  const caption = [series.caveat, series.state === "none" ? null : null].filter(Boolean).join(" ");
+  // The caveat used to be the card's caption — body text on every card, three
+  // or four lines of weighting rules and exclusions above a two-bar chart. It
+  // crowded out the number it was there to qualify. It is reference material a
+  // reader reaches for once, so it moves behind a tooltip and the caption
+  // carries the one line that says what is being counted.
+  const caption = series.description || undefined;
+
+  // Direction, stated rather than inferred. `lowerIsBetter` was only ever
+  // visible inside the delta sentence, which needs two buckets to appear — so
+  // on a single-bucket card nothing on screen said whether a rise was good or
+  // bad, and the reader had to work it out from the metric's name.
+  const direction = series.lowerIsBetter ? "lower is better" : "higher is better";
   // A `none` series is one the reader has been told not to read: its headline
   // is "—" and its caveat explains why. Plotting it anyway invites exactly the
   // reading the caveat forbids — barge-in drew a 4.3% column sourced from a
@@ -158,14 +171,30 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
 
   return (
     <ChartCard
-      title={series.label}
-      caption={caption || undefined}
+      title={
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem" }}>
+          {series.label}
+          {series.caveat && (
+            <Tooltip label={series.caveat} align="top">
+              <button
+                type="button"
+                className="cursor-pointer inline-flex items-center"
+                aria-label={`How ${series.label} is measured`}
+              >
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          )}
+        </span>
+      }
+      caption={caption}
       takeaway={
-        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
           <Tag type={tag.type} size="sm">
             {tag.label}
           </Tag>
           <strong>{series.state === "none" ? "—" : formatValue(series.latest, series.unit)}</strong>
+          <span style={{ opacity: 0.6, fontSize: "0.75rem" }}>{direction}</span>
           {deltaLabel(series) && <span style={{ opacity: 0.75 }}>{deltaLabel(series)}</span>}
         </span>
       }

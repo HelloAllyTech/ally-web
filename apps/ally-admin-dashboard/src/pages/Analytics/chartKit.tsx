@@ -705,8 +705,12 @@ export const GroupingPicker = ({
 
 interface ChartCardProps {
   /** Neutral metric name. The finding goes in `takeaway`, computed from the
-   *  data — a live tile whose direction changes cannot carry a fixed claim. */
-  title?: string;
+   *  data — a live tile whose direction changes cannot carry a fixed claim.
+   *
+   *  ReactNode rather than string so a title can carry an adornment — the help
+   *  tooltip that holds a metric's measurement caveats, for instance. Plain
+   *  strings still work and remain the common case. */
+  title?: React.ReactNode;
   /** Sub-text under the title: what the number means, caveats, denominators. */
   caption?: string;
   /**
@@ -825,7 +829,12 @@ export const ChartCard = ({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             {title && (
-              <h3 className="text-sm font-medium text-typography-900 truncate" title={title}>
+              /* The native `title` attribute only accepts a string; a node
+                 title carries its own affordance (a tooltip) and needs none. */
+              <h3
+                className="text-sm font-medium text-typography-900"
+                title={typeof title === "string" ? title : undefined}
+              >
                 {title}
               </h3>
             )}

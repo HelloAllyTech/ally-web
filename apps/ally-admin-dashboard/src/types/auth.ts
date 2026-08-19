@@ -1083,6 +1083,8 @@ export interface WeakMetricPoint {
 }
 
 export interface WeakMetricSeries {
+  /** One plain line saying what this counts — the card's caption. */
+  description: string;
   id: string;
   label: string;
   unit: "percent" | "per100turns" | "ratio" | "count" | string;
