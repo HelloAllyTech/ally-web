@@ -620,13 +620,16 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.queryByText(/compared, not trended/)).not.toBeInTheDocument();
   });
 
-  it("keeps provenance out of the header and behind an affordance", () => {
+  it("carries no banner, and keeps provenance at the foot", () => {
     // The header was six lines: mix warning, parameter version, the reasoning
     // for pinning it, and three judge versions — above the numbers.
     render(<WeakPerformingMetricsTab {...filters} />);
 
-    expect(screen.getByText(/Segment before reading/)).toBeInTheDocument();
+    // No standing banner at all now: the mix warning it carried lives on the
+    // repetition card's own caveat, where it is actionable rather than furniture.
+    expect(screen.queryByText(/Segment before reading/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Thresholds define these metrics/)).not.toBeInTheDocument();
+    // Provenance stays reachable, at the foot rather than above the numbers.
     expect(screen.getByRole("button", { name: /Parameters v1/ })).toBeInTheDocument();
   });
 

@@ -427,35 +427,11 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         </div>
       </TabControls>
 
-      {/* One line, not a paragraph. The provenance this replaced — parameter
-          version, three judge versions, the reasoning behind pinning them — is
-          real and occasionally load-bearing, but it was six lines of preamble
-          above the numbers a reader came for. It moves into the tooltip; the
-          sentence that changes how you READ the page stays out. */}
-      <Tile style={{ marginBottom: "1.5rem" }}>
-        <p
-          style={{
-            margin: 0,
-            opacity: 0.75,
-            fontSize: "0.875rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem",
-          }}
-        >
-          Segment before reading — repetition differs 6.6× between models, so an unsegmented number
-          often tracks traffic mix rather than quality.
-          <Tooltip label={provenance} align="top">
-            <button
-              type="button"
-              className="cursor-pointer inline-flex items-center"
-              aria-label="Data provenance"
-            >
-              <TooltipIcon />
-            </button>
-          </Tooltip>
-        </p>
-      </Tile>
+      {/* No banner. The mix warning that stood here — repetition differs 6.6x
+          between models — is real, but as a standing line above every read it
+          became furniture, and it already sits on the repetition card's own
+          caveat where it is actionable. Provenance moved to the foot of the
+          tab, which is where a reader goes looking for it rather than past it. */}
 
       {isFetching && !data ? (
         <ChartCard title="Weak performing metrics" loading>
@@ -546,6 +522,31 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           )}
         </>
       )}
+
+      {/* Provenance at the foot, not the head. A reader who wants to know which
+          thresholds and judge versions produced these numbers comes looking for
+          it; a reader who wants the numbers should not have to scroll past it. */}
+      <p
+        style={{
+          marginTop: "2rem",
+          opacity: 0.55,
+          fontSize: "0.75rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.375rem",
+        }}
+      >
+        Parameters {data?.metricsVersion ?? "—"}
+        <Tooltip label={provenance} align="top">
+          <button
+            type="button"
+            className="cursor-pointer inline-flex items-center"
+            aria-label="Data provenance"
+          >
+            <TooltipIcon />
+          </button>
+        </Tooltip>
+      </p>
     </div>
   );
 };
