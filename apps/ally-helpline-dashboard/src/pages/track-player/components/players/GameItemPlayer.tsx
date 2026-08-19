@@ -176,18 +176,18 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
           </div>
 
           <p className="text-center text-xs text-typography-500">
-            {t(`tracks2.game.controls.${payload.gameKey}`)}
+            {t(`tracks2.game.controlsByGame.${payload.gameKey}`)}
           </p>
 
           <div className="flex items-center justify-center gap-6 text-sm">
             {lastScore != null && (
               <span className="text-typography-600">
-                {t(`tracks2.game.lastScore.${payload.gameKey}`, { score: lastScore })}
+                {t(`tracks2.game.lastScoreByGame.${payload.gameKey}`, { score: lastScore })}
               </span>
             )}
             {bestScore != null && (
               <span className="font-medium text-typography-800">
-                {t(`tracks2.game.bestScore.${payload.gameKey}`, { score: bestScore })}
+                {t(`tracks2.game.bestScoreByGame.${payload.gameKey}`, { score: bestScore })}
               </span>
             )}
           </div>
