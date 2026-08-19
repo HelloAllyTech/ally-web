@@ -21,7 +21,14 @@ import {
 import { useGetWeakPerformingMetricsQuery } from "@api";
 import { TooltipIcon } from "@assets";
 import { ROUTES } from "@constants";
-import { WeakMetricGroup, WeakMetricSeries, WeakMetricState } from "@types";
+import {
+  WeakMetricGroup,
+  WeakMetricSeries,
+  WeakMetricState,
+  WeakMetricTurnBand,
+  WeakMetricTurnConditions,
+  WeakMetricTurnFactor,
+} from "@types";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
 import { ChartCard, buildSource, lineOpts, single, timeBarOpts } from "../chartKit";
@@ -307,6 +314,140 @@ const GroupSection: FC<{ group: WeakMetricGroup; bucket: string }> = ({ group, b
   );
 };
 
+/**
+ * Band edges come back as raw numbers because only the client knows how wide
+ * the column is. Milliseconds read as seconds once they pass a second — "5.8s"
+ * is a duration a person holds in their head, "5842ms" is a measurement.
+ */
+const formatEdge = (value: number, unit: string): string => {
+  if (unit !== "ms") return String(Math.round(value));
+  return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${Math.round(value)}ms`;
+};
+
+const FLAG_LABELS: Record<string, string> = {
+  yes: "Yes",
+  no: "No",
+  fired: "Ran",
+  skipped: "Did not run",
+};
+
+const bandLabel = (band: WeakMetricTurnBand, unit: string): string => {
+  if (band.lo === null || band.hi === null) return FLAG_LABELS[band.band] ?? band.band;
+  if (band.lo === band.hi) return formatEdge(band.lo, unit);
+  return `${formatEdge(band.lo, unit)} – ${formatEdge(band.hi, unit)}`;
+};
+
+/**
+ * How much a factor separates its bands, in the words a reader will repeat.
+ *
+ * A ratio is the sharper statement ("faults 3x as often") but it is undefined
+ * against a clean band, and reporting Infinity would be worse than saying
+ * nothing. So the gap in percentage points is the fallback — always defined,
+ * always honest, just less quotable.
+ */
+const spreadLabel = (factor: WeakMetricTurnFactor): string => {
+  const rates = factor.bands.map(b => b.rate);
+  const lo = Math.min(...rates);
+  const hi = Math.max(...rates);
+  if (lo > 0) return `worst band faults ${(hi / lo).toFixed(1)}× as often as the best`;
+  return `${((hi - lo) * 100).toFixed(1)} points between the worst band and the best`;
+};
+
+/**
+ * The panel that inverts the tab's question.
+ *
+ * Every other cut here compares populations — one language against another, one
+ * model against the next — and that shape is hostage to traffic mix. This
+ * compares turns against other turns in the SAME sessions, so who was using the
+ * product cannot move it. Ordered by how much each condition actually separates
+ * its bands, because a reader scans the top row and stops.
+ */
+const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data }) => {
+  const baseline = data.baselineRate;
+
+  return (
+    <section style={{ marginBottom: "2.5rem" }}>
+      <h3 style={{ margin: "0 0 0.25rem" }}>What was different about the turns that went wrong</h3>
+      <p style={{ margin: "0 0 1rem", opacity: 0.75 }}>
+        Turns compared against other turns in the same sessions, so a change in who was using the
+        product cannot move these. Association, not cause — a slow turn may be slow because the
+        input was hard, which is also why it was misread.
+      </p>
+
+      {data.factors.length === 0 ? (
+        <Tile>
+          <p style={{ margin: 0, opacity: 0.75 }}>
+            No condition has enough judged turns behind it in this window. Turn metrics start on 10
+            June 2026; sessions judged from before then join to nothing.
+          </p>
+        </Tile>
+      ) : (
+        <>
+          <p style={{ margin: "0 0 1rem", fontSize: "0.875rem", opacity: 0.75 }}>
+            {data.totalTurns.toLocaleString()} judged turns
+            {baseline !== null && <> · {(baseline * 100).toFixed(1)}% carried a judge fault</>}
+          </p>
+
+          {data.factors.map(factor => {
+            const worst = Math.max(...factor.bands.map(b => b.rate), 0);
+            return (
+              <Tile key={factor.id} style={{ marginBottom: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
+                  <strong>{factor.label}</strong>
+                  <Tooltip label={factor.description} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </div>
+                <p style={{ margin: "0.125rem 0 0.75rem", fontSize: "0.875rem", opacity: 0.75 }}>
+                  {spreadLabel(factor)}
+                </p>
+
+                {factor.bands.map(band => (
+                  <div
+                    key={band.band}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "9rem 1fr 4rem 5rem",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      padding: "0.25rem 0",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.875rem" }}>{bandLabel(band, factor.unit)}</span>
+                    {/* Bars are scaled to the worst band rather than to 100%:
+                        at these rates a full-width scale would render every bar
+                        as a stub and the comparison the panel exists for would
+                        be invisible. */}
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "block",
+                        height: "0.5rem",
+                        borderRadius: "0.25rem",
+                        background: PALETTE[0],
+                        opacity: 0.85,
+                        width: worst > 0 ? `${Math.max((band.rate / worst) * 100, 1)}%` : "1%",
+                      }}
+                    />
+                    <strong style={{ fontSize: "0.875rem", textAlign: "right" }}>
+                      {(band.rate * 100).toFixed(1)}%
+                    </strong>
+                    <span style={{ fontSize: "0.75rem", opacity: 0.7, textAlign: "right" }}>
+                      {band.turns.toLocaleString()} turns
+                    </span>
+                  </div>
+                ))}
+              </Tile>
+            );
+          })}
+        </>
+      )}
+    </section>
+  );
+};
+
 export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, language }) => {
   const [llmModel, setLlmModel] = useState<string>("");
   const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
@@ -462,6 +603,8 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           {(data?.groups ?? []).map(g => (
             <GroupSection key={g.id} group={g} bucket={bucket} />
           ))}
+
+          {data?.turnConditions && <TurnConditionsSection data={data.turnConditions} />}
 
           {/* The action list. Kept on the page rather than behind a drill-in:
               the fix for clienthood is a scenario-brief edit, and this is the

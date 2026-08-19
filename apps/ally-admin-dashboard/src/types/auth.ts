@@ -1121,6 +1121,39 @@ export interface JudgeVersionPin {
   judgePromptVersion: string;
 }
 
+export interface WeakMetricTurnBand {
+  /** A quartile key ("q1".."q4") or a flag value ("yes"/"fired"). */
+  band: string;
+  /**
+   * Observed range of the banded metric. Measured from the filtered data rather
+   * than a fixed threshold, so the edges move with the product instead of going
+   * stale. Null on a yes/no condition.
+   */
+  lo: number | null;
+  hi: number | null;
+  turns: number;
+  faults: number;
+  rate: number;
+}
+
+export interface WeakMetricTurnFactor {
+  id: string;
+  label: string;
+  description: string;
+  /** How to format a band edge. */
+  unit: "ms" | "count" | "flag" | string;
+  /** Worst band rate minus best. How much this condition discriminates. */
+  spread: number;
+  bands: WeakMetricTurnBand[];
+}
+
+export interface WeakMetricTurnConditions {
+  totalTurns: number;
+  baselineRate: number | null;
+  /** Most discriminating first. */
+  factors: WeakMetricTurnFactor[];
+}
+
 export interface WeakMetricsResponse {
   metricsVersion: string;
   parameters: Record<string, number>;
@@ -1140,6 +1173,12 @@ export interface WeakMetricsResponse {
   start: string;
   groups: WeakMetricGroup[];
   worstScenarios: WeakMetricScenarioRow[];
+  /**
+   * What was measurably different about the turns a judge faulted. Unlike every
+   * other cut on this tab it compares turns against other turns in the SAME
+   * sessions, so a shift in traffic mix cannot move it.
+   */
+  turnConditions: WeakMetricTurnConditions;
   scoreLengthCorrelation: number | null;
   filterOptions: {
     languages: string[];

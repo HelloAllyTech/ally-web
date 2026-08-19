@@ -45,7 +45,12 @@ vi.hoisted(() => {
 
 import { MemoryRouter } from "react-router-dom";
 
-import { WeakMetricGroup, WeakMetricSeries, WeakMetricsResponse } from "@types";
+import {
+  WeakMetricGroup,
+  WeakMetricSeries,
+  WeakMetricTurnFactor,
+  WeakMetricsResponse,
+} from "@types";
 
 import { WeakPerformingMetricsTab } from "../tabs/WeakPerformingMetricsTab";
 
@@ -105,6 +110,7 @@ const response = (o: Partial<WeakMetricsResponse> = {}): WeakMetricsResponse => 
       rate: 0.3099,
     },
   ],
+  turnConditions: { totalTurns: 0, baselineRate: null, factors: [] },
   scoreLengthCorrelation: 0.704,
   filterOptions: {
     languages: ["en-IN", "ta-IN"],
@@ -774,5 +780,124 @@ describe("WeakPerformingMetricsTab", () => {
     render(<WeakPerformingMetricsTab {...filters} />);
 
     expect(screen.queryByText(/None found across/)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * The turn-conditions panel is the only place on this tab that compares turns
+ * against other turns rather than one population against another. Its whole
+ * value is that a reader can scan it — so what it must get right is the order,
+ * the units, and never showing a raw key where a person expects a word.
+ */
+describe("WeakPerformingMetricsTab turn conditions", () => {
+  const factor = (o: Partial<WeakMetricTurnFactor> = {}): WeakMetricTurnFactor => ({
+    id: "responseLatencyMs",
+    label: "How long the actor took to reply",
+    description: "Wall-clock time from the learner finishing to the reply starting.",
+    unit: "ms",
+    spread: 0.33,
+    bands: [
+      { band: "q1", lo: 467, hi: 2979, turns: 694, faults: 197, rate: 0.284 },
+      { band: "q2", lo: 2983, hi: 5348, turns: 693, faults: 116, rate: 0.167 },
+      { band: "q4", lo: 8690, hi: 44331, turns: 693, faults: 345, rate: 0.498 },
+    ],
+    ...o,
+  });
+
+  const withConditions = (o: Partial<WeakMetricsResponse["turnConditions"]>) => {
+    queryMock.mockReturnValue({
+      data: response({
+        turnConditions: { totalTurns: 2080, baselineRate: 0.316, factors: [factor()], ...o },
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+  };
+
+  it("reads milliseconds back as seconds once they pass a second", () => {
+    // "5.8s" is a duration a person holds in their head; "5842ms" is a
+    // measurement they have to convert before it means anything.
+    withConditions({});
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText("3.0s – 5.3s")).toBeInTheDocument();
+    // Below a second it stays in milliseconds rather than reading "0.5s".
+    expect(screen.getByText("467ms – 3.0s")).toBeInTheDocument();
+  });
+
+  it("names a yes/no band instead of showing its key", () => {
+    withConditions({
+      factors: [
+        factor({
+          id: "knowledgeRetrieval",
+          unit: "flag",
+          bands: [
+            { band: "skipped", lo: null, hi: null, turns: 859, faults: 129, rate: 0.15 },
+            { band: "fired", lo: null, hi: null, turns: 1819, faults: 709, rate: 0.39 },
+          ],
+        }),
+      ],
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText("Did not run")).toBeInTheDocument();
+    expect(screen.getByText("Ran")).toBeInTheDocument();
+    expect(screen.queryByText("fired")).not.toBeInTheDocument();
+  });
+
+  it("states the separation as a ratio a reader can repeat", () => {
+    withConditions({});
+    render(<WeakPerformingMetricsTab {...filters} />);
+    // 0.498 / 0.167
+    expect(screen.getByText(/faults 3.0× as often as the best/)).toBeInTheDocument();
+  });
+
+  it("falls back to percentage points rather than reporting an infinite ratio", () => {
+    // A band with no faults at all is a real and common result — dividing by it
+    // would put "Infinity×" on the page.
+    withConditions({
+      factors: [
+        factor({
+          bands: [
+            { band: "q1", lo: 100, hi: 200, turns: 300, faults: 0, rate: 0 },
+            { band: "q2", lo: 201, hi: 400, turns: 300, faults: 60, rate: 0.2 },
+          ],
+        }),
+      ],
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/20.0 points between the worst band and the best/)).toBeInTheDocument();
+    expect(screen.queryByText(/Infinity/)).not.toBeInTheDocument();
+  });
+
+  it("keeps the server's ordering rather than re-sorting in the client", () => {
+    // The sort IS the finding — the backend ranks by how much each condition
+    // separates its bands. A client that re-sorted would quietly bury it.
+    withConditions({
+      factors: [
+        factor({ id: "a", label: "First by spread", spread: 0.4 }),
+        factor({ id: "b", label: "Second by spread", spread: 0.1 }),
+      ],
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    const body = document.body.textContent ?? "";
+    expect(body.indexOf("First by spread")).toBeLessThan(body.indexOf("Second by spread"));
+  });
+
+  it("explains an empty panel instead of rendering a blank section", () => {
+    withConditions({ totalTurns: 0, baselineRate: null, factors: [] });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/Turn metrics start on 10 June 2026/)).toBeInTheDocument();
+  });
+
+  it("shows the baseline the bands are read against", () => {
+    withConditions({});
+    render(<WeakPerformingMetricsTab {...filters} />);
+    expect(screen.getByText(/2,080 judged turns/)).toBeInTheDocument();
+    expect(screen.getByText(/31.6% carried a judge fault/)).toBeInTheDocument();
   });
 });
