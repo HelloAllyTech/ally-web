@@ -25,18 +25,39 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Select: ({ children, value, onChange }: any) => (
-    <select value={value} onChange={onChange}>
+  Search: ({ id, labelText, value, onChange, placeholder }: any) => (
+    <input id={id} aria-label={labelText} placeholder={placeholder} value={value} onChange={onChange} />
+  ),
+  Select: ({ id, children, value, onChange, labelText }: any) => (
+    <select id={id} aria-label={labelText} value={value} onChange={onChange}>
       {children}
     </select>
   ),
   SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
+  Button: ({ children, onClick, disabled }: any) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+  Tooltip: ({ children }: any) => <>{children}</>,
   Table: ({ children }: any) => <table>{children}</table>,
   TableHead: ({ children }: any) => <thead>{children}</thead>,
-  TableHeader: ({ children }: any) => <th>{children}</th>,
+  // `aria-sort` lands on the real header cell, so the stub has to keep it for
+  // the sorting assertions below to mean anything.
+  TableHeader: ({ children, ...rest }: any) => <th {...rest}>{children}</th>,
   TableBody: ({ children }: any) => <tbody>{children}</tbody>,
-  TableRow: ({ children, onClick }: any) => <tr onClick={onClick}>{children}</tr>,
-  TableCell: ({ children }: any) => <td>{children}</td>,
+  // Forwards everything: tabIndex, role, aria-label and onKeyDown are the
+  // difference between a row a keyboard user can open and one they cannot, and
+  // a mock that swallowed them would let that regress silently.
+  TableRow: ({ children, ...rest }: any) => <tr {...rest}>{children}</tr>,
+  TableCell: ({ children, ...rest }: any) => <td {...rest}>{children}</td>,
+}));
+
+// Real motion timing isn't what this suite is about; a pass-through keeps the
+// chip counts assertable while preserving the remount-on-change behaviour.
+vi.mock("framer-motion", () => ({
+  motion: { span: ({ children, ...props }: any) => <span {...props}>{children}</span> },
+  useReducedMotion: () => false,
 }));
 
 // The drawer is the thing under suspicion here, so it is replaced by one that
@@ -129,7 +150,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("keeps the bugs table on screen and reports the failure in place", () => {
-    render(<BugFindingsTable />);
+    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
 
     // The table survived — both rows are still there to click.
@@ -147,7 +168,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("dismisses back to the plain table", () => {
-    render(<BugFindingsTable />);
+    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
 
@@ -155,7 +176,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("starts clean on a different bug rather than inheriting the last one's error", () => {
-    render(<BugFindingsTable />);
+    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
     expect(screen.getByRole("alert")).toBeInTheDocument();
 

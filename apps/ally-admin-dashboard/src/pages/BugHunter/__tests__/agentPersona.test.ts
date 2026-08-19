@@ -8,7 +8,7 @@ vi.mock("@components", () => ({ cellTypes: {} }));
 
 import { BugFinding, BugFindingStatus, BugHunterMode, BugHuntRun, BugHuntRunStatus } from "@types";
 
-import { deriveAgentStatus, summariseWorkload } from "../agentPersona";
+import { deriveAgentStatus } from "../agentPersona";
 
 const finding = (status: BugFindingStatus, overrides: Partial<BugFinding> = {}): BugFinding =>
   ({ id: `f-${status}-${Math.random()}`, status, ...overrides }) as BugFinding;
@@ -112,43 +112,5 @@ describe("deriveAgentStatus", () => {
   it("mentions the approval step when idle in Manual mode, since that changes what happens next", () => {
     const status = deriveAgentStatus({ mode: BugHunterMode.MANUAL, findings: [] });
     expect(status.detail).toContain("check with you before I fix anything");
-  });
-});
-
-describe("summariseWorkload", () => {
-  const now = new Date("2026-08-17T12:00:00.000Z");
-
-  it("splits the desk into what it is doing, what is blocked, and what is in review", () => {
-    const workload = summariseWorkload(
-      [
-        finding(BugFindingStatus.FIXING),
-        finding(BugFindingStatus.COORDINATING),
-        finding(BugFindingStatus.NEEDS_INPUT),
-        finding(BugFindingStatus.PR_OPENED),
-        finding(BugFindingStatus.MERGED),
-        finding(BugFindingStatus.DISMISSED),
-      ],
-      now,
-    );
-
-    expect(workload).toMatchObject({ inFlight: 2, waitingOnYou: 1, inReview: 2 });
-  });
-
-  it("counts as shipped only what actually reached production inside the window", () => {
-    const workload = summariseWorkload(
-      [
-        finding(BugFindingStatus.RELEASED, { releasedAt: "2026-08-15T00:00:00.000Z" }),
-        // Released a fortnight ago: real, but not this week's work.
-        finding(BugFindingStatus.RELEASED, { releasedAt: "2026-08-01T00:00:00.000Z" }),
-        // Merged rather than released — not in front of users, so not shipped.
-        finding(BugFindingStatus.MERGED, { releasedAt: null }),
-        // Released by a build that never recorded when: counting it would put a
-        // date-less row in a by-date tile.
-        finding(BugFindingStatus.RELEASED, { releasedAt: null }),
-      ],
-      now,
-    );
-
-    expect(workload.shipped).toBe(1);
   });
 });

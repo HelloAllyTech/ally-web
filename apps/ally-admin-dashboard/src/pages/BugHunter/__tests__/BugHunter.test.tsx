@@ -15,6 +15,7 @@ vi.mock("@api", () => ({
   useAnswerBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useStartBugFixSessionMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useReleaseBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useCancelBugFixSessionMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useGetBugHunterNotificationsQuery: vi.fn(() => ({
     data: { items: [], unreadCount: 0 },
     isLoading: false,
@@ -34,7 +35,16 @@ vi.mock("@assets", () => ({
 // Carbon components stand in as their essential DOM shape — a real ContentSwitcher's
 // exact markup isn't what this test verifies, only that the tab wires the right
 // label/state/handler into it.
+// Real motion timing isn't what a layout test is about.
+vi.mock("framer-motion", () => ({
+  motion: { span: ({ children, ...props }: any) => <span {...props}>{children}</span> },
+  useReducedMotion: () => false,
+}));
+
 vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Search: ({ id, labelText, value, onChange, placeholder }: any) => (
+    <input id={id} aria-label={labelText} placeholder={placeholder} value={value} onChange={onChange} />
+  ),
   ContentSwitcher: ({ selectedIndex, onChange, children }: any) => (
     <div data-testid="mode-switcher" data-selected-index={selectedIndex}>
       {children.map((child: any, index: number) => (
@@ -56,11 +66,11 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   Table: ({ children }: any) => <table>{children}</table>,
   TableHead: ({ children }: any) => <thead>{children}</thead>,
   TableBody: ({ children }: any) => <tbody>{children}</tbody>,
-  TableRow: ({ children, onClick }: any) => <tr onClick={onClick}>{children}</tr>,
-  TableHeader: ({ children }: any) => <th>{children}</th>,
-  TableCell: ({ children }: any) => <td>{children}</td>,
-  Select: ({ value, onChange, children }: any) => (
-    <select data-testid="status-filter" value={value} onChange={onChange}>
+  TableRow: ({ children, ...rest }: any) => <tr {...rest}>{children}</tr>,
+  TableHeader: ({ children, ...rest }: any) => <th {...rest}>{children}</th>,
+  TableCell: ({ children, ...rest }: any) => <td {...rest}>{children}</td>,
+  Select: ({ id, value, onChange, children, labelText }: any) => (
+    <select id={id} aria-label={labelText} value={value} onChange={onChange}>
       {children}
     </select>
   ),
@@ -223,6 +233,48 @@ describe("BugHunter", () => {
     });
     render(<BugHunter />);
     expect(aboutComesBeforeTheBugsTable()).toBe(false);
+  });
+
+  // The queue is the reason the page was re-ordered: the old layout could state
+  // "4 bugs are waiting on your call" on the card and offer no way to act on any
+  // of them, two screens above the table where those four were hiding.
+  it("puts what it needs from you above the bugs table, once anything is blocked", () => {
+    mockSettingsQuery({
+      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+    });
+    mockFindingsQuery({
+      data: {
+        items: [
+          {
+            id: "f-1",
+            status: "pending_approval",
+            title: "A bug awaiting your call",
+            source: "code_review",
+            repo: "ally-be",
+            severity: null,
+            escalationQuestion: null,
+            createdAt: "2026-08-18",
+          },
+        ],
+        count: 1,
+      },
+    });
+    render(<BugHunter />);
+
+    const queue = screen.getByText("What I need from you");
+    const bugs = screen.getByText("Bugs I'm tracking");
+    expect(queue.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("says nothing at all about decisions on a quiet day", () => {
+    mockSettingsQuery({
+      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+    });
+    render(<BugHunter />);
+
+    // An always-present section headed "What I need from you" saying "nothing"
+    // trains a reader to skip the region where the urgent thing later appears.
+    expect(screen.queryByText("What I need from you")).not.toBeInTheDocument();
   });
 
   it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {

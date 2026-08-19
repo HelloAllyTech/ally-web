@@ -2,19 +2,11 @@ import { FC, useState } from "react";
 
 import { toast } from "sonner";
 
-import {
-  Button,
-  ContentSwitcher,
-  Select,
-  SelectItem,
-  Switch,
-  Tooltip,
-} from "@ally-ui-mono/ui-shared";
+import { Button, ContentSwitcher, Switch, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetBugFindingsQuery,
   useGetBugHunterSettingsQuery,
   useGetBugHuntRunsQuery,
-  useTriggerBugHuntSweepMutation,
   useUpdateBugHunterSettingsMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
@@ -27,20 +19,10 @@ import { en } from "@constants";
 import { BugFinding, BugHunterMode, BugHuntRun, BugHuntRunStatus } from "@types";
 
 import { AgentStatusKind, deriveAgentStatus } from "./agentPersona";
-import { AgentWorkloadStrip } from "./AgentWorkloadStrip";
 import { LiveClock } from "./LiveClock";
+import { SweepPanel } from "./SweepPanel";
 
 const MODE_ORDER: BugHunterMode[] = [BugHunterMode.OFF, BugHunterMode.MANUAL, BugHunterMode.AI];
-
-/**
- * Repos an admin can sweep on demand. Mirrors ally-be's `BUG_HUNT_REPOS`, which
- * remains the authority — it rejects anything not in its own map, so a drift
- * here surfaces as a clear 400 rather than a silent misfire. Held as a literal
- * rather than fetched because it changes about once a year, and a control that
- * cannot be used until a round-trip lands is worse than one that occasionally
- * needs a line added.
- */
-const SWEEPABLE_REPOS = ["ally-be", "ally-web", "ally-ai", "ally-ai-learn", "ally-mobile"] as const;
 
 const MODE_LABELS: Record<BugHunterMode, string> = {
   [BugHunterMode.OFF]: en.bugHunter.modeOff,
@@ -77,11 +59,32 @@ const STATUS_PILL_STYLES: Record<AgentStatusKind, string> = {
  * Bug Hunter's card: who it is, what it is doing right now, and how much rope
  * it has — the first thing on the tab, in place of a page heading.
  *
- * The working-style control lives inside the card on purpose. It is not a
- * global page setting; it is a fact about this one colleague, so it belongs
- * where the rest of their details are. It stays a confirm-before-flip control,
- * because the choice decides what happens to every bug the pipeline is about
- * to find, and landing on the wrong one shouldn't be a single misclick.
+ * ## What changed, and why the card got shorter
+ *
+ * This card used to be about 450px tall, which put the first actual bug below
+ * the fold on a 1000×600 viewport: an admin arriving to act on "4 bugs are
+ * waiting on your call" had to scroll past the sentence telling them so. Four
+ * things were competing for that space and only one of them was load-bearing.
+ *
+ * - **The status line is promoted** above the role/team line. It is the single
+ *   most informative sentence on the tab, and it was sitting third. Stacks'
+ *   *Visual Hierarchy: Controlling Perception Order* is the argument: relative
+ *   visibility should track importance, and ordering by "identity first" put
+ *   the least actionable text at the top.
+ * - **The working style stays open.** It is a state, not an action — whether
+ *   Bug Hunter may merge its own fixes tonight is not worth a click to read.
+ * - **The sweep controls fold** into `SweepPanel`. They are an action taken
+ *   rarely, and they carried two paragraphs of explanation that only matter
+ *   while you are using them.
+ * - **The workload numbers left the card entirely.** They are a filter now, so
+ *   they live next to the table they filter, as `LifecycleBucketChips`.
+ * - **The self-introduction shows only while off duty.** Nobody who has used
+ *   the feature needs re-introducing, and `AboutAgent` carries the same text at
+ *   more length for anyone who does.
+ *
+ * The working-style control stays a confirm-before-flip control, because the
+ * choice decides what happens to every bug the pipeline is about to find, and
+ * landing on the wrong one shouldn't be a single misclick.
  */
 export const AgentProfileCard: FC = () => {
   const { data: settings, isLoading, isError, fulfilledTimeStamp } = useGetBugHunterSettingsQuery();
@@ -104,16 +107,13 @@ export const AgentProfileCard: FC = () => {
   // confirmed mode change lands and `settings.mode` updates) forces a remount
   // so the switcher always redraws from the real, current mode.
   const [resetToken, setResetToken] = useState(0);
-
-  const [triggerSweep, { isLoading: isSweeping }] = useTriggerBugHuntSweepMutation();
-  const [sweepRepo, setSweepRepo] = useState<string>(SWEEPABLE_REPOS[0]);
-  const [sweepDeep, setSweepDeep] = useState(false);
-  const [sweepPending, setSweepPending] = useState(false);
+  const [sweepOpen, setSweepOpen] = useState(false);
 
   const findings: BugFinding[] = findingsData?.items ?? [];
   const runs: BugHuntRun[] = runsData?.items ?? [];
   const liveRun = runs.find(run => run.status === BugHuntRunStatus.RUNNING) ?? null;
   const status = deriveAgentStatus({ mode: settings?.mode, findings, liveRun });
+  const isOffDuty = settings?.mode === BugHunterMode.OFF;
 
   const closePending = () => {
     setPendingMode(null);
@@ -128,21 +128,6 @@ export const AgentProfileCard: FC = () => {
       toast.error(en.bugHunter.updateFailed);
     } finally {
       closePending();
-    }
-  };
-
-  const handleSweep = async () => {
-    try {
-      const result = await triggerSweep({ repo: sweepRepo, deep: sweepDeep }).unwrap();
-      // Off duty is a recorded skip, not a failure — the backend writes a
-      // skipped_disabled run. Saying "couldn't start" for a switch the admin set
-      // themselves would read as a bug in the tab.
-      if (result && "skipped" in result) toast.info(en.bugHunter.sweepSkipped);
-      else toast.success(en.bugHunter.sweepStarted.replace("{repo}", sweepRepo));
-    } catch {
-      toast.error(en.bugHunter.sweepFailed);
-    } finally {
-      setSweepPending(false);
     }
   };
 
@@ -175,115 +160,86 @@ export const AgentProfileCard: FC = () => {
             )}
           </div>
 
-          <p className="text-sm text-typography-700">
+          {/* What it is doing, in its own voice — the line this whole card
+              exists to carry, and now the line directly under its name.
+              Suppressed while settings are still loading rather than guessing
+              at a status from a half-loaded page. */}
+          {!isLoading && !isError && (
+            <p className="text-sm text-typography-900 font-medium mt-1.5">{status.detail}</p>
+          )}
+          {isError && (
+            <p className="text-sm text-destructive-600 mt-1.5">{en.bugHunter.updateFailed}</p>
+          )}
+
+          <p className="text-xs text-typography-600 mt-1">
             {en.bugHunter.agentRole} · {en.bugHunter.agentTeam}
           </p>
 
-          {/* What it is doing, in its own voice — the line this whole card
-              exists to carry. Suppressed while settings are still loading
-              rather than guessing at a status from a half-loaded page. */}
-          {!isLoading && !isError && (
-            <p className="text-sm text-typography-900 mt-3">{status.detail}</p>
+          {/* Only while nobody has put it on duty. At that moment there is
+              nothing else on the page and an introduction is the most useful
+              thing on it; once it is working, this is text you have read. */}
+          {isOffDuty && (
+            <p className="text-xs text-typography-600 mt-2 max-w-2xl">{en.bugHunter.agentIntro}</p>
           )}
-          {isError && (
-            <p className="text-sm text-destructive-600 mt-3">{en.bugHunter.updateFailed}</p>
-          )}
-
-          <p className="text-xs text-typography-600 mt-1">{en.bugHunter.agentIntro}</p>
         </div>
-      </div>
 
-      {/* ── Working style: the kill switch, as a fact about this colleague ── */}
-      {!isLoading && !isError && (
-        <div className="mt-5 pt-4 border-t border-border-light">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-typography-700">{en.bugHunter.modeLabel}</span>
-            <div className="w-[320px]">
-              <ContentSwitcher
-                key={`${settings?.mode}-${resetToken}`}
-                selectedIndex={currentIndex}
-                onChange={({ index }: { index?: number }) => {
-                  if (index === undefined) return;
-                  const mode = MODE_ORDER[index];
-                  if (mode !== settings?.mode) setPendingMode(mode);
-                }}
-                size="sm"
-              >
-                {MODE_ORDER.map(mode => (
-                  <Switch key={mode} text={MODE_LABELS[mode]} disabled={isUpdating} />
-                ))}
-              </ContentSwitcher>
-            </div>
-            <Tooltip label={en.bugHunter.modeTooltip} align="right">
-              <button type="button" className="cursor-pointer inline-flex items-center">
-                <TooltipIcon />
-              </button>
-            </Tooltip>
-            {settings?.updatedBy != null && (
-              <span className="text-xs text-typography-500">
-                {en.bugHunter.lastChangedBy.replace("{userId}", String(settings.updatedBy))}
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-typography-600 mt-2">{en.bugHunter.agentHours}</p>
-
-          {/* ── Sweep on demand: the "whenever you ask" half of agentHours,
-              which until now nothing could actually do. ── */}
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-typography-700">{en.bugHunter.sweepLabel}</span>
-            <div className="w-[180px]">
-              <Select
-                id="bug-hunter-sweep-repo"
-                labelText={en.bugHunter.sweepLabel}
-                hideLabel
-                value={sweepRepo}
-                onChange={e => setSweepRepo(e.target.value)}
-              >
-                {SWEEPABLE_REPOS.map(repo => (
-                  <SelectItem key={repo} value={repo} text={repo} />
-                ))}
-              </Select>
-            </div>
+        {!isLoading && !isError && (
+          <div className="shrink-0">
             <Button
               size="sm"
-              kind="secondary"
-              disabled={isSweeping || settings?.mode === BugHunterMode.OFF}
-              onClick={() => setSweepPending(true)}
+              kind="ghost"
+              onClick={() => setSweepOpen(open => !open)}
+              aria-expanded={sweepOpen}
+              aria-controls="bug-hunter-sweep-panel"
             >
-              {isSweeping ? en.bugHunter.sweepButtonBusy : en.bugHunter.sweepButton}
+              {sweepOpen ? en.bugHunter.sweepPanelHide : en.bugHunter.sweepPanelShow}
             </Button>
-            <label className="inline-flex items-center gap-2 text-sm text-typography-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={sweepDeep}
-                onChange={e => setSweepDeep(e.target.checked)}
-                className="cursor-pointer"
-              />
-              {en.bugHunter.sweepDeepLabel}
-            </label>
-            <Tooltip label={en.bugHunter.sweepDeepTooltip} align="right">
-              <button type="button" className="cursor-pointer inline-flex items-center">
-                <TooltipIcon />
-              </button>
-            </Tooltip>
           </div>
-          <p className="text-xs text-typography-600 mt-2">{en.bugHunter.sweepTooltip}</p>
+        )}
+      </div>
+
+      {sweepOpen && !isLoading && !isError && (
+        <div id="bug-hunter-sweep-panel" className="mt-4">
+          <SweepPanel mode={settings?.mode} />
         </div>
       )}
 
-      <div className="mt-5">
-        <AgentWorkloadStrip findings={findings} />
-      </div>
-
-      {sweepPending && (
-        <ActionConfirmationPopup
-          isOpen
-          onClose={() => setSweepPending(false)}
-          title={en.bugHunter.sweepConfirmTitle.replace("{repo}", sweepRepo)}
-          description={en.bugHunter.sweepConfirmBody}
-          primaryButton={{ label: en.bugHunter.sweepConfirm, onClick: handleSweep }}
-          secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setSweepPending(false) }}
-        />
+      {/* ── Working style: the kill switch, as a fact about this colleague ── */}
+      {!isLoading && !isError && (
+        <div className="mt-4 pt-4 border-t border-border-light flex flex-wrap items-center gap-3">
+          <span className="text-sm text-typography-700">{en.bugHunter.modeLabel}</span>
+          {/* Was a hard `w-[320px]`, which divided into three switches of about
+              106px and clipped the middle label to "Checks w…" — so the tab
+              could not tell you which working style you were on. Carbon splits
+              a ContentSwitcher's width evenly across its switches, so the
+              container has to fit the longest label, not the average one. */}
+          <div className="w-full max-w-[28rem]">
+            <ContentSwitcher
+              key={`${settings?.mode}-${resetToken}`}
+              selectedIndex={currentIndex}
+              onChange={({ index }: { index?: number }) => {
+                if (index === undefined) return;
+                const mode = MODE_ORDER[index];
+                if (mode !== settings?.mode) setPendingMode(mode);
+              }}
+              size="sm"
+            >
+              {MODE_ORDER.map(mode => (
+                <Switch key={mode} text={MODE_LABELS[mode]} disabled={isUpdating} />
+              ))}
+            </ContentSwitcher>
+          </div>
+          <Tooltip label={en.bugHunter.modeTooltip} align="right">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+          {settings?.updatedBy != null && (
+            <span className="text-xs text-typography-500">
+              {en.bugHunter.lastChangedBy.replace("{userId}", String(settings.updatedBy))}
+            </span>
+          )}
+        </div>
       )}
 
       {pendingMode !== null && (
