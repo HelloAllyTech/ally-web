@@ -2493,6 +2493,7 @@ export const en = {
     columnPrPending: "PR pending review",
     columnDismissed: "Dismissed",
     columnCost: "Est. cost",
+    columnTokens: "Tokens",
     columnStarted: "Started",
     columnFoundTooltip:
       "Bugs I identified on that sweep, across all four sources — tests, code review, logs and bugs your team reported. The individual ones are in my bugs table above.",
@@ -2502,6 +2503,8 @@ export const en = {
       "Everything else I found — opened as a pull request and waiting on your review. Each one is in my bugs table above.",
     columnCostTooltip:
       "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the sweep is still going.",
+    columnTokensTooltip:
+      "Raw input/output tokens behind the estimated cost. Shown as — for runs from before this was tracked.",
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
     triggerFixSession: "Fix session",

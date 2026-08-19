@@ -51,6 +51,8 @@ const run = (id: string, repo: string) => ({
   prOpenedCount: 0,
   dismissedCount: 0,
   totalTokenCostUsd: "0.0000",
+  totalInputTokens: null,
+  totalOutputTokens: null,
   createdAt: "13 Aug 2026",
 });
 
@@ -149,6 +151,17 @@ describe("RunHistoryTable — expanded run detail", () => {
   // component type, so the first render in this file consumes it and any later
   // assertion passes whether or not the key is there. The guard is the test
   // above, which fails on the reconciliation itself.
+
+  it("shows a dash for runs closed before token counts were tracked, and a formatted count otherwise", () => {
+    mockRuns([
+      run("run-a", "ally-be"),
+      { ...run("run-b", "ally-web"), totalInputTokens: 92100, totalOutputTokens: 36300 },
+    ]);
+    render(<RunHistoryTable />);
+
+    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("92,100 in / 36,300 out")).toBeInTheDocument();
+  });
 
   it("collapses on a second click", () => {
     mockRuns([run("run-a", "ally-be")]);
