@@ -2,13 +2,17 @@ import { useCallback, useRef, useState } from "react";
 
 import { Pause, Play } from "lucide-react";
 
+import { PLAYBACK_RATES, PlaybackRate } from "./useAudioPlayer";
+
 interface PlayerControlsProps {
   isPlaying: boolean;
   currentTime: number;
   duration: number;
   progress: number;
+  playbackRate: PlaybackRate;
   onTogglePlay: () => void;
   onSeekFraction: (fraction: number) => void;
+  onPlaybackRateChange: (rate: PlaybackRate) => void;
 }
 
 const formatTime = (seconds: number): string => {
@@ -30,8 +34,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   currentTime,
   duration,
   progress,
+  playbackRate,
   onTogglePlay,
   onSeekFraction,
+  onPlaybackRateChange,
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [hoverFraction, setHoverFraction] = useState<number | null>(null);
@@ -88,6 +94,12 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   const showSeekHint = canSeek && (hoverFraction !== null || isDragging);
   const showSeekTimestamp = canSeek && hoverFraction !== null && duration > 0;
+
+  const handleCyclePlaybackRate = useCallback(() => {
+    const currentIndex = PLAYBACK_RATES.indexOf(playbackRate);
+    const nextRate = PLAYBACK_RATES[(currentIndex + 1) % PLAYBACK_RATES.length];
+    onPlaybackRateChange(nextRate);
+  }, [playbackRate, onPlaybackRateChange]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-4 sticky top-6 z-10 w-full min-w-0">
@@ -162,6 +174,16 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         </div>
 
         <span className="text-sm font-mono text-gray-500 min-w-[48px]">{formatTime(duration)}</span>
+
+        <button
+          type="button"
+          onClick={handleCyclePlaybackRate}
+          title="Playback speed"
+          aria-label={`Playback speed, currently ${playbackRate}x. Click to change.`}
+          className="shrink-0 min-w-[44px] px-2 py-1 rounded-full text-xs font-semibold font-mono text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+        >
+          {playbackRate}x
+        </button>
       </div>
     </div>
   );

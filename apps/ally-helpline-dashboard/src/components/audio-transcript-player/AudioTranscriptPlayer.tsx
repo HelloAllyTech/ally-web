@@ -32,12 +32,14 @@ export const AudioTranscriptPlayer: FC<AudioTranscriptPlayerProps> = ({
     currentTime,
     duration,
     progress,
+    playbackRate,
     togglePlay,
     handleTimeUpdate,
     handleLoadedMetadata,
     handleEnded,
     seekToFraction,
     seekTo,
+    setPlaybackRate,
   } = useAudioPlayer();
 
   useEffect(() => {
@@ -82,8 +84,10 @@ export const AudioTranscriptPlayer: FC<AudioTranscriptPlayerProps> = ({
         currentTime={currentTime}
         duration={duration}
         progress={progress}
+        playbackRate={playbackRate}
         onTogglePlay={togglePlay}
         onSeekFraction={handleSeekFraction}
+        onPlaybackRateChange={setPlaybackRate}
       />
     </div>
   );
