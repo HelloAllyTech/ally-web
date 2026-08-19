@@ -130,10 +130,21 @@ const deltaLabel = (s: WeakMetricSeries): string | null => {
  */
 const MIN_BUCKETS_FOR_A_LINE = 5;
 
-type SeriesForm = "empty" | "stat" | "line";
+type SeriesForm = "empty" | "clean" | "stat" | "line";
 
-const seriesForm = (valuedBuckets: number): SeriesForm => {
+/**
+ * A measured zero is not an empty chart, and until now it drew like one.
+ *
+ * Filter the tab to Hindi and the whole Language realism group went blank. It
+ * had 437 judged turns behind it and had found zero register, translationese
+ * and lexicon errors — a real, hard-won result — but zero-height bars are
+ * indistinguishable from no bars, so it read as "this is broken" rather than
+ * "this is clean". That is precisely the confusion between "not measured" and
+ * "measured, nothing found" the rest of this tab works to prevent.
+ */
+const seriesForm = (valuedBuckets: number, allZero: boolean): SeriesForm => {
   if (valuedBuckets === 0) return "empty";
+  if (allZero) return "clean";
   if (valuedBuckets < MIN_BUCKETS_FOR_A_LINE) return "stat";
   return "line";
 };
@@ -173,7 +184,10 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   // is "—" and its caveat explains why. Plotting it anyway invites exactly the
   // reading the caveat forbids — barge-in drew a 4.3% column sourced from a
   // flag nothing writes. No value, no plot, just the explanation.
-  const form = series.state === "none" ? "empty" : seriesForm(points.length);
+  // Every bucket zero, with a real denominator behind it — nothing was found,
+  // which is a finding rather than an absence.
+  const allZero = points.length > 0 && points.every(p => p.value === 0);
+  const form = series.state === "none" ? "empty" : seriesForm(points.length, allZero);
 
   return (
     <ChartCard
@@ -219,7 +233,13 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
           : "No data in this window."
       }
     >
-      {form === "line" ? (
+      {form === "clean" ? (
+        <p style={{ margin: "0.5rem 0", fontSize: "0.875rem", opacity: 0.75 }}>
+          None found across {totalDenominator.toLocaleString()}{" "}
+          {series.unit === "percent" || series.unit === "per100turns" ? "turns" : "items"} judged in
+          this window.
+        </p>
+      ) : form === "line" ? (
         <LineChart
           data={points}
           options={lineOpts({

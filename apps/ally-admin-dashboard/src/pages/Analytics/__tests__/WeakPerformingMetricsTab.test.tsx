@@ -562,9 +562,7 @@ describe("WeakPerformingMetricsTab", () => {
     render(<WeakPerformingMetricsTab {...filters} />);
 
     // The caption is the one plain line saying what is counted.
-    const caption = screen.getByText(
-      "Actor turns that repeat something the actor already said.",
-    );
+    const caption = screen.getByText("Actor turns that repeat something the actor already said.");
     expect(caption.tagName).toBe("P");
 
     // The caveat is still in the document — Carbon renders tooltip content
@@ -572,8 +570,6 @@ describe("WeakPerformingMetricsTab", () => {
     const caveat = screen.getByText(/Segment by model or this misleads/);
     expect(caveat.className).toContain("tooltip-content");
   });
-
-
 
   /**
    * Direction is carried by the metric's NAME, not by a caption repeating it.
@@ -669,5 +665,76 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.getByText("↑ 1.0%")).toBeInTheDocument();
     expect(screen.queryByText(/worsening/)).not.toBeInTheDocument();
     expect(screen.queryByText(/improving/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * The state that sent us hunting for a bug that was not there.
+   *
+   * Filtering to Hindi blanked the whole Language realism group. It had 437
+   * judged turns behind it and had found zero register, translationese and
+   * lexicon errors — but zero-height bars look exactly like no bars, so a real
+   * clean result read as a broken chart. "Not measured" and "measured, nothing
+   * found" must never render the same, which is the rule the rest of this tab
+   * already follows.
+   */
+  it("says nothing was found rather than drawing invisible zero bars", () => {
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                label: "Over-formal speech",
+                unit: "per100turns",
+                points: [
+                  { bucket: "2026-07-01", numerator: 0, denominator: 297, value: 0 },
+                  { bucket: "2026-08-01", numerator: 0, denominator: 140, value: 0 },
+                ],
+                latest: 0,
+                previous: 0,
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.getByText(/None found across 437 turns judged/)).toBeInTheDocument();
+    // Still measured, and still showing the zero as its headline.
+    expect(screen.getAllByText("Measured").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText("Not instrumented — nothing is being recorded for this metric yet."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps drawing a chart when a zero sits alongside real values", () => {
+    // Only an ALL-zero series is a "nothing found" result. One empty month
+    // among real ones is part of a trend and must still plot.
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [
+          group({
+            series: [
+              series({
+                points: [
+                  { bucket: "2026-06-01", numerator: 0, denominator: 500, value: 0 },
+                  { bucket: "2026-07-01", numerator: 30, denominator: 500, value: 0.06 },
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+
+    expect(screen.queryByText(/None found across/)).not.toBeInTheDocument();
   });
 });
