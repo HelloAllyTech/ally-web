@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from "react";
 
+import { TooltipIcon } from "@icons";
 import { useSearchParams } from "react-router-dom";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetRoadmapBoardQuery,
   useGetRoadmapCoinBudgetQuery,
@@ -307,10 +308,13 @@ export const ProductRoadmap: React.FC = () => {
    *
    * Rendered here and passed down, so both layouts show the identical control in the identical
    * place — a toggle that moved when you used it would be its own bug.
+   *
+   * A joined segmented pair rather than two separate bordered buttons behind a "View" label: the
+   * two option names say what it is, so the label was a third element earning nothing, and it now
+   * shares the one control row instead of occupying a line of its own.
    */
   const layoutToggle = (
-    <div className="flex items-center gap-2 text-sm">
-      <span className="text-typography-secondary">View</span>
+    <div className="border-border-light flex items-center border text-sm">
       {[
         { id: RoadmapBoardLayout.TABLE, label: "Table" },
         { id: RoadmapBoardLayout.MONTH_BOARD, label: "Month board" },
@@ -320,10 +324,10 @@ export const ProductRoadmap: React.FC = () => {
           type="button"
           onClick={() => setLayout(option.id)}
           aria-pressed={layout === option.id}
-          className={`border px-2 py-1 ${
+          className={`px-2 py-1 ${
             layout === option.id
-              ? "border-primary-500 text-primary-600"
-              : "border-border-light text-typography-secondary"
+              ? "bg-primary-50 text-primary-600"
+              : "text-typography-secondary hover:text-typography-primary"
           }`}
         >
           {option.label}
@@ -395,24 +399,33 @@ export const ProductRoadmap: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-typography-primary text-2xl font-primary">Product Roadmap</h1>
-          <p className="text-typography-secondary text-sm mt-1">
-            Spend your monthly coins on what matters most. Coins go to new opportunities only, and
-            unspent coins lapse at the start of each month.
-          </p>
-        </div>
+      {/* The title row carries the coin balance inline. It used to spend four lines on a bordered
+          card plus a two-line paragraph explaining the coin economy — standing instructions that
+          every returning voter has already read, above a board where the first row of data started
+          roughly 900px down the page. The rule that actually has a consequence (unspent coins
+          lapse) is not deleted, just moved into the help tooltip, per the tooltip convention in
+          ally-web/CLAUDE.md. */}
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h1 className="text-typography-primary text-2xl font-primary">Product Roadmap</h1>
         {budget && (
-          <div className="border border-border-light px-4 py-3 text-right shrink-0">
-            <div className="text-typography-secondary text-xs uppercase tracking-wide">
-              Your coins · {budget.periodKey}
-            </div>
-            <div className="font-mono tabular-nums text-2xl text-typography-primary">
+          <div className="text-typography-secondary flex items-baseline gap-1.5 text-sm">
+            <span className="text-typography-primary font-mono tabular-nums text-base">
               {budget.remaining}
-              <span className="text-typography-secondary text-base"> / {budget.coinsPerMonth}</span>
-            </div>
-            <div className="text-typography-secondary text-xs">{budget.used} allocated</div>
+              <span className="text-typography-secondary"> / {budget.coinsPerMonth}</span>
+            </span>
+            <span>coins left · {budget.used} allocated</span>
+            {/* The trigger is a BUTTON wrapping only the icon, per the pattern in
+                ally-web/CLAUDE.md. Wrapping the whole readout in a <div> instead put the coin rule
+                behind a hover no keyboard could reach. `align="bottom"` because this sits at the
+                top of the page — a Tooltip pointing up from here renders off-screen. */}
+            <Tooltip
+              label={`Your coins for ${budget.periodKey}. Spend them on what matters most — coins go to new opportunities only, and anything unspent lapses at the start of next month.`}
+              align="bottom"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
           </div>
         )}
       </header>
