@@ -333,13 +333,6 @@ export interface PlayTimePoint {
   sessions: number;
 }
 
-export interface QualityTrendPoint {
-  /** Bucket start (yyyy-mm-dd). */
-  bucket: string;
-  avgCompositeScore: number | null;
-  evaluatedSessions: number;
-}
-
 export interface CsatTrendPoint {
   /** Bucket start (yyyy-mm-dd). */
   bucket: string;
@@ -388,8 +381,9 @@ export interface AnalyticsHighlightsResponse {
   practiceMinutes: PracticeMinutesPoint[];
   /** Contiguous axis, gap-filled with NULLs — an average has no zero. */
   playTime: PlayTimePoint[];
-  /** Sparse — buckets with no evaluated sessions are absent. */
-  qualityTrend: QualityTrendPoint[];
+  // `qualityTrend` was retired here: it plotted an unpinned judge composite
+  // with no coverage figures, superseded by the Roleplay Quality Index on
+  // GET /v1/analytics/quality-sentiment (see QualitySentimentResponse below).
   /** Sparse — buckets with no ratings are absent. */
   csatTrend: CsatTrendPoint[];
   trackFunnel: TrackFunnel;
@@ -539,6 +533,304 @@ export interface CertificationResponse {
   nearestMinutes: number;
   scoping: AnalyticsScoping;
   computedAt: string;
+}
+
+// Learner usage ladder L1-L5 — mirrors UsageLadderResponseDto from
+// GET /api/v1/analytics/usage-ladder. Five rungs defined by LIFETIME roleplay
+// minutes (60 / 300 / 1,200 / 3,000 / 6,000), reached and never lost. One
+// response feeds four charts — attainment per period, cumulative holders, the
+// funnel, and the ladder itself — so they cannot disagree.
+//
+// IMPORTANT: this is a SEPARATE scale from the Ally Certification (one rung at
+// 5,000 lifetime minutes), which the top rung brackets. Never label a rung a
+// certification or put the two on one axis.
+export type UsageLadderGrain = "month" | "quarter";
+
+export interface UsageLadderLevel {
+  /** Stable id / series key, e.g. "L3". */
+  id: string;
+  /** Server-owned name, e.g. "L3 · 20 hours". */
+  label: string;
+  /** Lifetime roleplay minutes required, inclusive. */
+  minMinutes: number;
+}
+
+export interface UsageLadderPeriod {
+  /** First day of the period (yyyy-mm-dd). */
+  period: string;
+  /**
+   * Learners FIRST reaching each rung this period, index-aligned with `levels`.
+   * A learner who climbed several rungs at once appears in each series, so these
+   * must NEVER be stacked — a stack would imply they sum to a population.
+   */
+  newlyReached: number[];
+  /** Learners at or past each rung by the period's end. Monotonic. */
+  cumulative: number[];
+  /** True for the period containing today: still accruing, so leave it off plots. */
+  partial: boolean;
+}
+
+export interface UsageLadderFunnelStep {
+  /** "accounts" for the top row, else the level id. */
+  id: string;
+  label: string;
+  learners: number;
+  /** Conversion from the step above; null on the top row. */
+  ofPreviousPct: number | null;
+  /** Share of all accounts; null when there are none. */
+  ofTopPct: number | null;
+}
+
+export interface UsageLadderResponse {
+  grain: UsageLadderGrain;
+  /** Lowest rung first. Every per-level array is index-aligned with this. */
+  levels: UsageLadderLevel[];
+  /** Oldest first, gap-free. */
+  periods: UsageLadderPeriod[];
+  currentPeriod: string;
+  /** Nested funnel as of now: accounts, then each rung. */
+  funnel: UsageLadderFunnelStep[];
+  accounts: number;
+  /** The certification threshold, for captioning only. NOT a rung. */
+  certificationMinMinutes: number;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Practice stickiness — mirrors StickinessResponseDto from
+// GET /api/v1/analytics/practice-stickiness. Of the learners who practised once,
+// how many came back. A step is a DAY carrying >= `qualifyingMinutes` of
+// practice, so several sessions in one evening count once. All-time: "did they
+// ever come back" cannot be asked of a window.
+export interface StickinessStep {
+  /** Minimum qualifying days for this rung. */
+  step: number;
+  /** Behavioural label, e.g. "Came back once". */
+  label: string;
+  learners: number;
+  ofPreviousPct: number | null;
+  ofTopPct: number | null;
+}
+
+export interface StickinessResponse {
+  qualifyingMinutes: number;
+  steps: StickinessStep[];
+  /** Learners past the last rung, so the funnel still reconciles. */
+  beyondLastStep: number;
+  medianActiveDays: number | null;
+  /** Below this population the server has already nulled every share. */
+  minPopulation: number;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Roleplay sessions long enough to be practice — mirrors
+// QualifiedSessionsResponseDto from GET /api/v1/analytics/qualified-sessions.
+export interface QualifiedSessionPoint {
+  bucket: string;
+  qualifiedSessions: number;
+  completedSessions: number;
+  /** null in a bucket with no completed session — 0/0 is not 0%. */
+  qualifiedSharePct: number | null;
+}
+
+export interface QualifiedSessionsResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  qualifyingMinutes: number;
+  points: QualifiedSessionPoint[];
+  totalQualifiedSessions: number;
+  totalCompletedSessions: number;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Org engagement — mirrors OrgEngagementResponseDto from
+// GET /api/v1/analytics/org-engagement. The org ladder is TOTAL practice minutes
+// summed across an org's learners, so it measures size as much as engagement —
+// caption it that way. `tenantId` is ignored by this endpoint: counting orgs
+// cannot be narrowed to one org.
+export interface OrgLadderLevel {
+  id: string;
+  label: string;
+  minMinutes: number;
+}
+
+export interface OrgFunnelStep {
+  /** "orgs" for the top row, else the level id. */
+  id: string;
+  label: string;
+  orgs: number;
+  ofPreviousPct: number | null;
+  ofTopPct: number | null;
+}
+
+export interface OrgActivityPoint {
+  month: string;
+  activeOrgs: number;
+  totalOrgs: number;
+  activeSharePct: number | null;
+}
+
+export interface OrgEngagementResponse {
+  levels: OrgLadderLevel[];
+  funnel: OrgFunnelStep[];
+  orgs: number;
+  /** The trailing window the headline covers. */
+  activityDays: number;
+  activeOrgs: number;
+  /** Orgs that existed BEFORE the window opened — the honest denominator. */
+  eligibleOrgs: number;
+  activeSharePct: number | null;
+  /**
+   * Monthly trend. NOTE the grain differs from the headline: a point is "active
+   * in that CALENDAR MONTH", not "active in a trailing window ending there".
+   */
+  activityTrend: OrgActivityPoint[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// AI cost per 10 minutes of roleplay — mirrors RoleplayCostResponseDto from
+// GET /api/v1/analytics/roleplay-cost. Only LEARNER-CAUSED spend is in the
+// ratio; judges, authoring and internal tooling come back as `excludedCostUsd`.
+// USD only. Every figure is an estimate priced at read time.
+export interface CostBreakdown {
+  roleplay: number;
+  feedback: number;
+  quiz: number;
+  llm: number;
+  stt: number;
+  tts: number;
+}
+
+export interface RoleplayCostPoint {
+  bucket: string;
+  practiceMinutes: number;
+  attributableCostUsd: number;
+  /** null in a bucket with no practice — a ratio with no denominator. */
+  costPer10MinUsd: number | null;
+  breakdown: CostBreakdown;
+  /** Platform AI spend a learner did not cause. */
+  excludedCostUsd: number;
+  /** Attributable calls with no pricing entry: the total understates by this. */
+  unpricedCalls: number;
+}
+
+export interface RoleplayCostResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  /** Minutes the unit cost is quoted per (10). */
+  perMinutes: number;
+  areas: string[];
+  areaLabels: Record<string, string>;
+  points: RoleplayCostPoint[];
+  overallCostPer10MinUsd: number | null;
+  totalAttributableCostUsd: number;
+  totalExcludedCostUsd: number;
+  totalPracticeMinutes: number;
+  totalUnpricedCalls: number;
+  /** Must be surfaced: these are estimates, not billed amounts. */
+  estimateNote: string;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
+// from GET /api/v1/analytics/quality-sentiment.
+//
+// IMPORTANT: `proxyNps` is NOT NPS. Ally has never asked the 0-10 "would you
+// recommend" question; it is derived from the 1-5 post-session rating (5 =
+// promoter, 4 = passive, <=3 = detractor). Every surface MUST render
+// `proxyNote` alongside it and must never label it a plain NPS.
+export interface QualitySentimentPoint {
+  bucket: string;
+  /** Still the raw actor-goal mean; the plotted quality series is now qualityIndex. */
+  avgCompositeScore: number | null;
+  evaluatedSessions: number;
+  /** Proxy NPS, -100..+100. Null below `minResponses`. */
+  proxyNps: number | null;
+  avgRating: number | null;
+  responses: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+
+  // --- Roleplay Quality Index (the series the card now plots) ---
+  /** 0-100 blend of whatever dimensions had data, renormalised. Null if none did. */
+  qualityIndex: number | null;
+  /** Per-dimension stack heights; present layers sum to qualityIndex. */
+  indexContributions: Record<string, number>;
+  /** Each dimension's raw value in its own unit — see indexCoverage[].unit. */
+  indexRaw: Record<string, number>;
+  /** Rows behind each dimension here — sessions, or turns for latency. */
+  indexSampleSizes: Record<string, number>;
+  /** Dimensions with no data in this bucket. */
+  indexMissing: string[];
+}
+
+/**
+ * One dimension's standing in the index — weight, coverage, and whether its
+ * 0-100 anchors are measured or still the shipped placeholder.
+ *
+ * `calibrated: false` is the field a client must never ignore: an index
+ * normalised against invented anchors looks identical to one normalised
+ * against measured ones, so the card carries the caveat, not the number.
+ */
+export interface QualityIndexCoverage {
+  dimension: string;
+  label: string;
+  unit: string;
+  weight: number;
+  bucketsCovered: number;
+  bucketsTotal: number;
+  calibrated: boolean;
+  target: number;
+  ceiling: number;
+  sampleSize: number | null;
+  measuredAt: string | null;
+}
+
+export interface QualitySentimentResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  points: QualitySentimentPoint[];
+  overallCompositeScore: number | null;
+  overallProxyNps: number | null;
+  totalEvaluatedSessions: number;
+  totalResponses: number;
+  minResponses: number;
+  /** Pearson r over paired buckets; null below three of them. Co-movement only. */
+  correlation: number | null;
+  pairedBuckets: number;
+  /** Mandatory caveat to render wherever proxyNps appears. */
+  proxyNote: string;
+  /** Bumped whenever a weight, direction or dimension's raw metric changes. */
+  indexVersion: string;
+  /** True only when EVERY dimension has measured (non-placeholder) anchors. */
+  indexCalibrated: boolean;
+  /** Per-dimension weight/coverage/calibration, in stacking order. */
+  indexCoverage: QualityIndexCoverage[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Per-user, per-chart saved window and grain — mirrors
+// ChartPreferencesResponseDto from GET/PUT /api/v1/analytics/chart-preferences.
+// The Highlights tab has no page-level range; each chart owns its controls, and
+// this is what makes that choice survive a reload.
+export interface ChartPreference {
+  /** Client-owned key, namespaced by tab, e.g. "highlights.practice". */
+  chartId: string;
+  range?: AnalyticsRange | null;
+  bucket?: AnalyticsBucket | null;
+}
+
+export interface ChartPreferencesResponse {
+  preferences: ChartPreference[];
 }
 
 // Coin-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto

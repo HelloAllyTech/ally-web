@@ -5,7 +5,6 @@ import {
   CsatTrendPoint,
   PlayTimePoint,
   PracticeMinutesPoint,
-  QualityTrendPoint,
   UsersByRolePoint,
 } from "@types";
 
@@ -16,7 +15,6 @@ import {
   buildCsatTrendSeries,
   buildPlayTimeSeries,
   buildPracticeMinutesSeries,
-  buildQualityTrendSeries,
   buildRoleBars,
   buildSimulationsSeries,
   buildTopOrgBars,
@@ -33,13 +31,6 @@ const practicePoint = (over: Partial<PracticeMinutesPoint> = {}): PracticeMinute
   bucket: "2024-06-10",
   minutes: 0,
   activeLearners: 0,
-  ...over,
-});
-
-const qualityPoint = (over: Partial<QualityTrendPoint> = {}): QualityTrendPoint => ({
-  bucket: "2024-06-10",
-  avgCompositeScore: null,
-  evaluatedSessions: 0,
   ...over,
 });
 
@@ -78,34 +69,17 @@ describe("buildPracticeMinutesSeries", () => {
 });
 
 describe("average trends preserve gaps", () => {
-  it("emits null (not a dropped point) for a bucket with no evaluated sessions", () => {
+  it("emits null (not a dropped point) for a bucket with no ratings", () => {
     // Dropping the point let the line close the gap invisibly, so a period with
-    // no evaluations looked like a smooth trend across it. A null renders as a
+    // no ratings looked like a smooth trend across it. A null renders as a
     // visible break.
-    const series = buildQualityTrendSeries([
-      qualityPoint({ bucket: "2024-06-10", avgCompositeScore: 82.5, evaluatedSessions: 4 }),
-      qualityPoint({ bucket: "2024-06-11", avgCompositeScore: null }),
-      qualityPoint({ bucket: "2024-06-12", avgCompositeScore: 79, evaluatedSessions: 6 }),
-    ]);
-
-    expect(series.map(d => d.value)).toEqual([82.5, null, 79]);
-    expect(series).toHaveLength(3);
-  });
-
-  it("does the same for the CSAT trend", () => {
     const series = buildCsatTrendSeries([
       csatPoint({ avgRating: 4.25, responses: 8 }),
       csatPoint({ bucket: "2024-06-11", avgRating: null }),
     ]);
 
     expect(series.map(d => d.value)).toEqual([4.25, null]);
-  });
-
-  it("never fabricates a zero for a missing average", () => {
-    const series = buildQualityTrendSeries([qualityPoint({ avgCompositeScore: null })]);
-
-    expect(series[0].value).toBeNull();
-    expect(series[0].value).not.toBe(0);
+    expect(series[1].value).not.toBe(0);
   });
 });
 

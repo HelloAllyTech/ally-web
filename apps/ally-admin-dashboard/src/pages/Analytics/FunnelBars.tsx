@@ -18,6 +18,22 @@ export interface FunnelStage {
   reached: number;
   /** Marks the terminal success stage, which gets the accent colour. */
   terminal?: boolean;
+  /**
+   * Share of the funnel's first stage, 0-100 — SERVER-SUPPLIED.
+   *
+   * Provide this (with {@link ofPreviousPct}) for any funnel whose percentages
+   * the server may have suppressed under the minimum-group-size rule. An
+   * explicit `null` means "this share may not be stated" and renders as an
+   * em dash; leaving both undefined falls back to computing them from the
+   * counts, which is correct only for funnels over populations that cannot
+   * identify anybody — orgs, sessions, enrollments.
+   *
+   * Recomputing a suppressed share on the client would quietly undo the
+   * suppression: "67% of previous" over three learners names one of them.
+   */
+  ofEnteredPct?: number | null;
+  /** Conversion from the stage above, 0-100. See {@link ofEnteredPct}. */
+  ofPreviousPct?: number | null;
 }
 
 interface FunnelBarsProps {
@@ -25,6 +41,14 @@ interface FunnelBarsProps {
   /** Noun for the counted thing, e.g. "sessions", "enrollments". */
   unit?: string;
 }
+
+/**
+ * True when a stage carries server-supplied shares — including explicit nulls,
+ * which is the whole point: `null` is a decision to suppress, not missing data,
+ * so it must not fall through to the client-side calculation.
+ */
+const hasServerShares = (stage: FunnelStage): boolean =>
+  stage.ofEnteredPct !== undefined || stage.ofPreviousPct !== undefined;
 
 const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 1000) / 10 : null);
 
@@ -40,8 +64,18 @@ export const FunnelBars = ({ stages, unit = "" }: FunnelBarsProps) => {
     <div className="flex flex-col gap-2">
       {stages.map((stage, i) => {
         const prev = i > 0 ? stages[i - 1] : null;
-        const ofEntered = pct(stage.reached, entered);
-        const ofPrev = prev ? pct(stage.reached, prev.reached) : null;
+        const serverShares = hasServerShares(stage);
+        const ofEntered = serverShares ? (stage.ofEnteredPct ?? null) : pct(stage.reached, entered);
+        const ofPrev = serverShares
+          ? (stage.ofPreviousPct ?? null)
+          : prev
+            ? pct(stage.reached, prev.reached)
+            : null;
+
+        // Bar length comes from the COUNTS either way. The counts are on screen
+        // regardless, so their ratio is already visible; what the suppression
+        // rule withholds is the stated percentage.
+        const barPct = pct(stage.reached, entered) ?? 0;
         const fill = stage.terminal ? PALETTE.teal : PALETTE.blue;
 
         return (
@@ -54,7 +88,7 @@ export const FunnelBars = ({ stages, unit = "" }: FunnelBarsProps) => {
               <div
                 className="absolute inset-y-0 left-0 rounded"
                 style={{
-                  width: `${ofEntered ?? 0}%`,
+                  width: `${barPct}%`,
                   backgroundColor: fill,
                 }}
               />
@@ -69,7 +103,9 @@ export const FunnelBars = ({ stages, unit = "" }: FunnelBarsProps) => {
                 stage has nothing to convert from, so it states the base. */}
             <div className="w-28 shrink-0 text-right" style={{ color: CONTEXT.strong }}>
               {i === 0
-                ? `100%${unit ? ` of ${unit}` : ""}`
+                ? ofEntered === null
+                  ? "—"
+                  : `100%${unit ? ` of ${unit}` : ""}`
                 : ofPrev === null
                   ? "—"
                   : `${ofPrev}% of previous`}

@@ -165,6 +165,42 @@ export interface SkillGrowthOrdinal {
   experienced: SkillGrowthStat;
 }
 
+/**
+ * How a learner's own history moved. `insufficient` = too few evaluated
+ * sessions to say anything, which is a state to render, not a gap to hide.
+ */
+export type SkillTrendClass = "improving" | "flat" | "declining" | "insufficient";
+
+/**
+ * The knobs the server classified under, echoed with every response.
+ *
+ * Read them, never re-declare them: a client copy is how a legend ends up
+ * saying "±3 points" while the server classified at ±5.
+ */
+export interface SkillTrendThresholds {
+  minSessions: number;
+  window: number;
+  flatBand: number;
+}
+
+export interface SkillTrendMixMonth {
+  /** 'YYYY-MM' the learner became classifiable — not calendar activity. */
+  month: string;
+  improving: number;
+  flat: number;
+  declining: number;
+}
+
+export interface SkillTrendMix {
+  classifiedLearners: number;
+  insufficientLearners: number;
+  improving: number;
+  flat: number;
+  declining: number;
+  months: SkillTrendMixMonth[];
+  thresholds: SkillTrendThresholds;
+}
+
 export interface SkillGrowthResponse {
   ordinals: SkillGrowthOrdinal[];
   maxOrdinal: number;
@@ -181,7 +217,97 @@ export interface SkillGrowthResponse {
     lastComparableOrdinal: number | null;
     lastComparableMedian: number | null;
   };
+  /** Per-person movement the population median nets out. */
+  trendMix: SkillTrendMix;
   scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Skill growth drill-down — GET /v1/analytics/skill-growth/learners[/:userId] */
+/* -------------------------------------------------------------------------- */
+
+export interface SkillTrendLearnerRow {
+  learnerId: number;
+  name: string | null;
+  email: string | null;
+  tenantId: string | null;
+  evaluatedSessions: number;
+  /** Null for `insufficient` learners — overlapping windows would read as flat. */
+  firstWindowMean: number | null;
+  lastWindowMean: number | null;
+  delta: number | null;
+  trend: SkillTrendClass;
+  lastSessionAt: string | null;
+}
+
+export interface SkillGrowthLearnersResponse {
+  rows: SkillTrendLearnerRow[];
+  total: number;
+  limit: number;
+  offset: number;
+  thresholds: SkillTrendThresholds;
+  provenance: { derivation: string; note: string };
+  computedAt: string;
+}
+
+export type SkillGrowthLearnersQuery = {
+  tenantId?: string;
+  limit?: number;
+  offset?: number;
+  sort?: "delta" | "evaluatedSessions" | "lastSessionAt";
+  order?: "asc" | "desc";
+};
+
+/**
+ * One `skillCoverage` entry as the evaluator wrote it.
+ *
+ * `category` is a free string on purpose: two label generations exist in the
+ * data ("Listening Engagement"/"Emotional Attunement"/"Supportive engagement"
+ * and the older "Learning"/"Support"/"Standards"), so consumers group by the
+ * string they receive rather than by an enum that would drop half the rows.
+ */
+export interface SkillCoverageEntry {
+  category: string;
+  percentage: number;
+}
+
+export interface SkillGrowthLearnerSession {
+  ordinal: number;
+  occurredAt: string | null;
+  scenarioTitle: string | null;
+  compositeScore: number;
+  /** Null on sessions the evaluation left no per-skill payload for. */
+  skillCoverage: SkillCoverageEntry[] | null;
+}
+
+export interface SkillGrowthKnowledgeAttempt {
+  kind: "quiz" | "annotation";
+  itemTitle: string | null;
+  scorePct: number;
+  attemptNumber: number;
+  submittedAt: string | null;
+}
+
+export interface SkillGrowthLearnerSeriesResponse {
+  learner: {
+    id: number;
+    name: string | null;
+    email: string | null;
+    tenantId: string | null;
+    evaluatedSessions: number;
+    firstWindowMean: number | null;
+    lastWindowMean: number | null;
+    delta: number | null;
+    trend: SkillTrendClass;
+  };
+  sessions: SkillGrowthLearnerSession[];
+  knowledgeAttempts: SkillGrowthKnowledgeAttempt[];
+  /** True when a series hit the server row cap — the timeline is incomplete. */
+  truncated: boolean;
+  thresholds: SkillTrendThresholds;
+  scoreDomain: [number, number];
+  provenance: { derivation: string; note: string };
   computedAt: string;
 }
 
