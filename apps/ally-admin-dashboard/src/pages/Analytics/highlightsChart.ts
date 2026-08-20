@@ -4,7 +4,6 @@ import {
   CsatTrendPoint,
   PlayTimePoint,
   PracticeMinutesPoint,
-  QualityTrendPoint,
   RetentionPoint,
   TopOrgRow,
   TopOrgsBelowFloor,
@@ -22,7 +21,6 @@ export type HighlightsBarDatum = { group: string; value: number };
 /** Series labels, keyed so the colour scales and data groups stay in sync. */
 export const HIGHLIGHTS_GROUPS = {
   practiceMinutes: "Practice minutes",
-  qualityScore: "Avg score",
   csat: "Avg rating",
   costPerSim: "Cost / sim",
   totalCost: "Total cost",
@@ -254,22 +252,9 @@ export function peakActiveLearners(points: PracticeMinutesPoint[]): number {
 }
 
 /**
- * Roleplay quality trend (mean composite score, 0-100).
- *
- * Buckets with no evaluated sessions are emitted as `null` rather than dropped:
- * dropping them let the line close the gap invisibly, so a fortnight with no
- * evaluations looked like a smooth trend across it. A null renders as a visible
- * break.
+ * Learner CSAT trend; gapped rather than dropped — a fortnight with no ratings
+ * must read as a visible break, not a smooth line closing invisibly over it.
  */
-export function buildQualityTrendSeries(points: QualityTrendPoint[]): HighlightsDatum[] {
-  return points.map(p => ({
-    group: HIGHLIGHTS_GROUPS.qualityScore,
-    key: p.bucket,
-    value: p.avgCompositeScore,
-  }));
-}
-
-/** Learner CSAT trend; gapped for the same reason as the quality trend. */
 export function buildCsatTrendSeries(points: CsatTrendPoint[]): HighlightsDatum[] {
   return points.map(p => ({
     group: HIGHLIGHTS_GROUPS.csat,
@@ -278,9 +263,6 @@ export function buildCsatTrendSeries(points: CsatTrendPoint[]): HighlightsDatum[
   }));
 }
 
-export const QUALITY_SCALE: ColorScale = {
-  [HIGHLIGHTS_GROUPS.qualityScore]: PALETTE.green,
-};
 export const CSAT_SCALE: ColorScale = { [HIGHLIGHTS_GROUPS.csat]: PALETTE.gold };
 export const PRACTICE_SCALE: ColorScale = {
   [HIGHLIGHTS_GROUPS.practiceMinutes]: PALETTE.teal,

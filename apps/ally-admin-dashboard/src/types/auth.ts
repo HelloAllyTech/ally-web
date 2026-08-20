@@ -333,18 +333,91 @@ export interface PlayTimePoint {
   sessions: number;
 }
 
-export interface QualityTrendPoint {
-  /** Bucket start (yyyy-mm-dd). */
-  bucket: string;
-  avgCompositeScore: number | null;
-  evaluatedSessions: number;
-}
-
 export interface CsatTrendPoint {
   /** Bucket start (yyyy-mm-dd). */
   bucket: string;
   avgRating: number | null;
   responses: number;
+}
+
+// Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
+// from GET /api/v1/analytics/quality-sentiment.
+//
+// IMPORTANT: `proxyNps` is NOT NPS. Ally has never asked the 0-10 "would you
+// recommend" question; it is derived from the 1-5 post-session rating (5 =
+// promoter, 4 = passive, <=3 = detractor). Every surface MUST render
+// `proxyNote` alongside it and must never label it a plain NPS.
+export interface QualitySentimentPoint {
+  bucket: string;
+  /** Raw actor-goal mean; the plotted quality series is qualityIndex. */
+  avgCompositeScore: number | null;
+  evaluatedSessions: number;
+  /** Proxy NPS, -100..+100. Null below `minResponses`. */
+  proxyNps: number | null;
+  avgRating: number | null;
+  responses: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+
+  // --- Roleplay Quality Index (the series the card plots) ---
+  /** 0-100 blend of whatever dimensions had data, renormalised. Null if none did. */
+  qualityIndex: number | null;
+  /** Per-dimension stack heights; present layers sum to qualityIndex. */
+  indexContributions: Record<string, number>;
+  /** Each dimension's raw value in its own unit — see indexCoverage[].unit. */
+  indexRaw: Record<string, number>;
+  /** Rows behind each dimension here — sessions, or turns for latency. */
+  indexSampleSizes: Record<string, number>;
+  /** Dimensions with no data in this bucket. */
+  indexMissing: string[];
+}
+
+/**
+ * One dimension's standing in the index — weight, coverage, and whether its
+ * 0-100 anchors are measured or still the shipped placeholder.
+ *
+ * `calibrated: false` is the field a client must never ignore: an index
+ * normalised against invented anchors looks identical to one normalised
+ * against measured ones, so the card carries the caveat, not the number.
+ */
+export interface QualityIndexCoverage {
+  dimension: string;
+  label: string;
+  unit: string;
+  weight: number;
+  bucketsCovered: number;
+  bucketsTotal: number;
+  calibrated: boolean;
+  target: number;
+  ceiling: number;
+  sampleSize: number | null;
+  measuredAt: string | null;
+}
+
+export interface QualitySentimentResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  points: QualitySentimentPoint[];
+  overallCompositeScore: number | null;
+  overallProxyNps: number | null;
+  totalEvaluatedSessions: number;
+  totalResponses: number;
+  minResponses: number;
+  /** Pearson r over paired buckets; null below three of them. Co-movement only. */
+  correlation: number | null;
+  pairedBuckets: number;
+  /** Mandatory caveat to render wherever proxyNps appears. */
+  proxyNote: string;
+  /** Bumped whenever a weight, direction or dimension's raw metric changes. */
+  indexVersion: string;
+  /** True only when EVERY dimension has measured (non-placeholder) anchors. */
+  indexCalibrated: boolean;
+  /** Per-dimension weight, coverage and calibration state, in stacking order. */
+  indexCoverage: QualityIndexCoverage[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
 }
 
 export interface TrackFunnel {
@@ -388,8 +461,9 @@ export interface AnalyticsHighlightsResponse {
   practiceMinutes: PracticeMinutesPoint[];
   /** Contiguous axis, gap-filled with NULLs — an average has no zero. */
   playTime: PlayTimePoint[];
-  /** Sparse — buckets with no evaluated sessions are absent. */
-  qualityTrend: QualityTrendPoint[];
+  // `qualityTrend` was retired here: it plotted an unpinned judge composite
+  // with no coverage figures, superseded by the Roleplay Quality Index on
+  // GET /v1/analytics/quality-sentiment (see QualitySentimentResponse above).
   /** Sparse — buckets with no ratings are absent. */
   csatTrend: CsatTrendPoint[];
   trackFunnel: TrackFunnel;

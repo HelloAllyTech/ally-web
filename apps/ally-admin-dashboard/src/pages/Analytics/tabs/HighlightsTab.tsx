@@ -1,8 +1,12 @@
 import { useMemo, useState } from "react";
 
-import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
+import { ComboChart, LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import { useGetAnalyticsHighlightsQuery, useGetAnalyticsOverviewQuery } from "@api";
+import {
+  useGetAnalyticsHighlightsQuery,
+  useGetAnalyticsOverviewQuery,
+  useGetQualitySentimentQuery,
+} from "@api";
 import { AnalyticsBucket } from "@types";
 
 import {
@@ -33,6 +37,7 @@ import {
   buildSource,
   hBarOpts,
   lineOpts,
+  stackedAreaLineOpts,
   stackedBarOpts,
   timeBarOpts,
 } from "../chartKit";
@@ -46,7 +51,6 @@ import {
   NEW_USERS_SCALE,
   PLAY_TIME_SCALE,
   PRACTICE_SCALE,
-  QUALITY_SCALE,
   RATING_DOMAIN,
   RETENTION_SCALE,
   SCORE_DOMAIN,
@@ -58,7 +62,6 @@ import {
   buildNewUsersSeries,
   buildPlayTimeSeries,
   buildPracticeMinutesSeries,
-  buildQualityTrendSeries,
   buildRetentionSeries,
   buildRoleBars,
   buildSimulationsSeries,
@@ -71,6 +74,17 @@ import {
   totalPlayTimeSessions,
   totalUnpricedCalls,
 } from "../highlightsChart";
+import {
+  QUALITY_INDEX_DIMENSIONS,
+  QUALITY_INDEX_DIMENSION_LABELS,
+  QUALITY_INDEX_DOMAIN,
+  QUALITY_INDEX_LABEL,
+  QUALITY_INDEX_SCALE,
+  buildQualityIndexAreaSeries,
+  buildQualityIndexSeries,
+  isIndexFullyCalibrated,
+  qualityIndexCoverageNotes,
+} from "../qualityIndexChart";
 import { RoleplayVolumeCard } from "../RoleplayVolumeCard";
 import { UsageLevelCard } from "../UsageLevelCard";
 
@@ -101,7 +115,7 @@ type ChartId =
   | "sims"
   | "practice"
   | "playTime"
-  | "quality"
+  | "qualityIndex"
   | "csat"
   | "costPerSim"
   | "totalCost";
@@ -111,19 +125,20 @@ type ChartId =
  *
  * Split so a grain is only fetched from the endpoint that needs it: re-graining
  * a growth chart must not re-run the highlights aggregation (thirteen parallel
- * queries) for a grain nothing on that side is showing.
+ * queries) for a grain nothing on that side is showing. `QUALITY_SENTIMENT_CHARTS`
+ * is its own group for the same reason: the Roleplay Quality Index comes from a
+ * third endpoint, not from `/highlights`, so re-graining it must not re-run
+ * either of the other two aggregations.
  */
 const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
-const HIGHLIGHTS_CHARTS = [
-  "practice",
-  "playTime",
-  "quality",
-  "csat",
-  "costPerSim",
-  "totalCost",
-] as const;
+const HIGHLIGHTS_CHARTS = ["practice", "playTime", "csat", "costPerSim", "totalCost"] as const;
+const QUALITY_SENTIMENT_CHARTS = ["qualityIndex"] as const;
 
-const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS];
+const CHART_IDS: ChartId[] = [
+  ...OVERVIEW_CHARTS,
+  ...HIGHLIGHTS_CHARTS,
+  ...QUALITY_SENTIMENT_CHARTS,
+];
 
 /** Every chart opens on the same grain, so the first paint is two requests. */
 const DEFAULT_GROUPINGS = Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_GROUPING])) as Record<
@@ -184,6 +199,7 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
   // window is all-time, which has no comparison basis.
   const hBuckets = bucketsFor(HIGHLIGHTS_CHARTS);
   const oBuckets = bucketsFor(OVERVIEW_CHARTS);
+  const qsBuckets = bucketsFor(QUALITY_SENTIMENT_CHARTS);
 
   const hQ = {
     day: useGetAnalyticsHighlightsQuery(
@@ -216,6 +232,21 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
     year: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "year" },
       { skip: !oBuckets.has("year") },
+    ),
+  };
+  const qsQ = {
+    day: useGetQualitySentimentQuery({ ...query, bucket: "day" }, { skip: !qsBuckets.has("day") }),
+    week: useGetQualitySentimentQuery(
+      { ...query, bucket: "week" },
+      { skip: !qsBuckets.has("week") },
+    ),
+    month: useGetQualitySentimentQuery(
+      { ...query, bucket: "month" },
+      { skip: !qsBuckets.has("month") },
+    ),
+    year: useGetQualitySentimentQuery(
+      { ...query, bucket: "year" },
+      { skip: !qsBuckets.has("year") },
     ),
   };
 
@@ -275,7 +306,7 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
   const simsQ = oQ[groupingFor("sims")];
   const practiceQ = hQ[groupingFor("practice")];
   const playTimeQ = hQ[groupingFor("playTime")];
-  const qualityQ = hQ[groupingFor("quality")];
+  const qualityIndexQ = qsQ[groupingFor("qualityIndex")];
   const csatQ = hQ[groupingFor("csat")];
   const costPerSimQ = hQ[groupingFor("costPerSim")];
   const totalCostQ = hQ[groupingFor("totalCost")];
@@ -287,7 +318,7 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
     sims: groupingFor("sims"),
     practice: groupingFor("practice"),
     playTime: groupingFor("playTime"),
-    quality: groupingFor("quality"),
+    qualityIndex: groupingFor("qualityIndex"),
     csat: groupingFor("csat"),
     costPerSim: groupingFor("costPerSim"),
     totalCost: groupingFor("totalCost"),
@@ -349,12 +380,33 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
   );
   const playTimeSessions = useMemo(() => totalPlayTimeSessions(playTimePoints), [playTimePoints]);
 
-  const qualityPoints = qualityQ.data?.qualityTrend ?? [];
-  const qualityInProgress = qualityQ.data?.window.inProgressBucket;
-  const quality = useMemo(
+  // The index's stack layers are zero-filled (never null) when a dimension has
+  // no data that period — see buildQualityIndexAreaSeries. The line is where
+  // "nothing was measured" is a real gap, same convention as every mean series
+  // on this tab.
+  const qualityIndexPoints = qualityIndexQ.data?.points ?? [];
+  const qualityIndexInProgress = qualityIndexQ.data?.window.inProgressBucket;
+  const qualityAreas = useMemo(
     () =>
-      buildQualityTrendSeries(withoutInProgress(qualityPoints, p => p.bucket, qualityInProgress)),
-    [qualityPoints, qualityInProgress],
+      buildQualityIndexAreaSeries(
+        withoutInProgress(qualityIndexPoints, p => p.bucket, qualityIndexInProgress),
+      ),
+    [qualityIndexPoints, qualityIndexInProgress],
+  );
+  const qualityLine = useMemo(
+    () =>
+      buildQualityIndexSeries(
+        withoutInProgress(qualityIndexPoints, p => p.bucket, qualityIndexInProgress),
+      ),
+    [qualityIndexPoints, qualityIndexInProgress],
+  );
+  const quality = useMemo(() => [...qualityAreas, ...qualityLine], [qualityAreas, qualityLine]);
+
+  const qualityCoverage = qualityIndexQ.data?.indexCoverage ?? [];
+  const qualityFullyCalibrated = isIndexFullyCalibrated(qualityCoverage);
+  const qualityCoverageNotes = useMemo(
+    () => qualityIndexCoverageNotes(qualityCoverage),
+    [qualityCoverage],
   );
 
   const csatPoints = csatQ.data?.csatTrend ?? [];
@@ -407,11 +459,6 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       practice: sparkValues(
         buildPracticeMinutesSeries(
           withoutInProgress(h?.practiceMinutes ?? [], p => p.bucket, baseInProgress),
-        ),
-      ),
-      quality: sparkValues(
-        buildQualityTrendSeries(
-          withoutInProgress(h?.qualityTrend ?? [], p => p.bucket, baseInProgress),
         ),
       ),
       csat: sparkValues(
@@ -473,16 +520,20 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       loading: highlightsLoading,
     },
     {
-      label: "Avg quality score",
-      description: `Mean composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric.`,
+      label: "Actor goal score",
+      description: `Mean composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric. One of the four inputs to the Quality index chart below — not the same figure.`,
       value: formatKpi(summary?.avgCompositeScore, { decimals: 1 }),
       // Below the documented minimum this tile shows "not enough data" instead:
       // a one-decimal mean of a handful of LLM-judged sessions is noise wearing
       // a decimal point.
+      //
+      // No `spark` here: its source, the per-bucket qualityTrend series, was
+      // retired from the highlights payload along with the trend chart it fed
+      // (superseded by the Roleplay Quality Index below). This tile keeps only
+      // the whole-window figure `getQualityOverall` still provides.
       n: summary?.evaluatedSessions,
       nUnit: "evaluated sessions",
       minN: MIN_N_FOR_SCORE,
-      spark: kpiSparks.quality,
       loading: highlightsLoading,
     },
     {
@@ -584,26 +635,20 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       }),
     [grain.playTime],
   );
-  const qualityOpts = useMemo(
+  const qualityIndexOpts = useMemo(
     () =>
-      lineOpts({
-        leftTitle: "Composite score",
-        bottomTitle: bucketTitle(grain.quality),
-        colorScale: QUALITY_SCALE,
-        legend: false,
-        domain: SCORE_DOMAIN,
+      stackedAreaLineOpts({
+        // Fixed stack order, not derived from the data present: the order is
+        // part of the chart's contract, not something that should reshuffle
+        // depending on which dimensions this window happens to cover.
+        areaGroups: QUALITY_INDEX_DIMENSIONS.map(d => QUALITY_INDEX_DIMENSION_LABELS[d]),
+        lineGroup: QUALITY_INDEX_LABEL,
+        colorScale: QUALITY_INDEX_SCALE,
+        leftTitle: "Quality index",
+        bottomTitle: bucketTitle(grain.qualityIndex),
+        domain: QUALITY_INDEX_DOMAIN,
       }),
-    [grain.quality],
-  );
-  const qualityZoomedOpts = useMemo(
-    () =>
-      lineOpts({
-        leftTitle: "Composite score",
-        bottomTitle: bucketTitle(grain.quality),
-        colorScale: QUALITY_SCALE,
-        legend: false,
-      }),
-    [grain.quality],
+    [grain.qualityIndex],
   );
   const csatOpts = useMemo(
     () =>
@@ -964,32 +1009,45 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ChartCard
           title="Roleplay quality"
-          caption={`Mean composite evaluation score. ${boundedDomainNote(
-            SCORE_DOMAIN,
-          )} Gaps are periods with no evaluated sessions.${inProgressCaption(
-            grain.quality,
-            qualityInProgress,
-          )}`}
+          caption={
+            `Weighted blend of four dimensions per ${bucketTitle(grain.qualityIndex).toLowerCase()} — ` +
+            `the stack is what it's made of, the line is their sum. ` +
+            `${boundedDomainNote(QUALITY_INDEX_DOMAIN)} A period with no data in ANY ` +
+            `dimension breaks the line rather than dropping to zero.${inProgressCaption(
+              grain.qualityIndex,
+              qualityIndexInProgress,
+            )}` +
+            (qualityFullyCalibrated
+              ? ""
+              : " Some dimensions are still on PLACEHOLDER anchors, not yet " +
+                "measured from production traffic — see the note below the tab.")
+          }
           source={buildSource({
-            derivation: "Mean of scenario_session_details.compositeScore (LLM-judged)",
-            window: windowLabel(qualityQ.data?.window),
+            derivation:
+              "Weighted blend of actor-goal score, in-character rate, language " +
+              "quality and response latency; each normalised 0-100 and re-weighted " +
+              "over whichever dimensions had data" +
+              (qualityIndexQ.data?.indexVersion
+                ? ` (index v${qualityIndexQ.data.indexVersion})`
+                : ""),
+            window: windowLabel(qualityIndexQ.data?.window),
             n: summary?.evaluatedSessions,
             nUnit: "evaluated sessions",
-            extra: groupingNote(grain.quality),
-            asOf: asOf(qualityQ.data?.window),
+            extra: groupingNote(grain.qualityIndex),
+            asOf: asOf(qualityIndexQ.data?.window),
           })}
-          loading={busy(qualityQ)}
-          error={qualityQ.isError}
-          onRetry={qualityQ.refetch}
+          loading={busy(qualityIndexQ)}
+          error={qualityIndexQ.isError}
+          onRetry={qualityIndexQ.refetch}
           n={summary?.evaluatedSessions}
           nUnit="evaluated sessions"
           minN={MIN_N_FOR_SCORE}
-          empty={!busy(qualityQ) && quality.every(d => d.value === null)}
-          controls={picker("quality")}
-          onExpand={() => setExpanded("quality")}
+          empty={!busy(qualityIndexQ) && qualityLine.every(d => d.value === null)}
+          controls={picker("qualityIndex")}
+          onExpand={() => setExpanded("qualityIndex")}
         >
           <ScrollableChart data={quality}>
-            <LineChart data={quality} options={qualityOpts} />
+            <ComboChart data={quality} options={qualityIndexOpts} />
           </ScrollableChart>
         </ChartCard>
 
@@ -1021,6 +1079,23 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
           </ScrollableChart>
         </ChartCard>
       </div>
+
+      {/* Per-dimension coverage/calibration for the index above, one line each.
+          Not a paraphrase of a server string — built from `indexCoverage`, the
+          same array the card's own caption checks via `qualityFullyCalibrated`,
+          so the two can't disagree. */}
+      {qualityCoverageNotes.length > 0 && (
+        <div className="max-w-3xl text-xs leading-relaxed text-typography-500">
+          <strong>On the quality index:</strong> each dimension is normalised against anchors
+          measured from production traffic, pinned to one judge version, and re-weighted whenever a
+          dimension has no data in a period.
+          <ul className="mt-1 list-disc pl-5">
+            {qualityCoverageNotes.map((note, i) => (
+              <li key={QUALITY_INDEX_DIMENSIONS[i]}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <ChartCard
         title="Learning track funnel"
@@ -1332,41 +1407,50 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
         />
       )}
 
-      {expanded === "quality" && (
+      {expanded === "qualityIndex" && (
         <ChartDetailModal
           open
           onClose={() => setExpanded(null)}
-          title="Roleplay quality"
-          caption="Sample size per period is the column the chart cannot show — a mean over three sessions moves for reasons that are not quality, and coarser grouping is the cheapest way to get a period worth reading."
+          title="Roleplay quality index"
+          caption="Sample size per dimension per period is the column the chart cannot show — a coverage gap moves the index for reasons that are not quality, and the notes below the tab name every dimension's coverage."
           source={buildSource({
-            derivation: "Mean of scenario_session_details.compositeScore (LLM-judged)",
-            window: windowLabel(qualityQ.data?.window),
+            derivation:
+              "Weighted blend of actor-goal score, in-character rate, language " +
+              "quality and response latency; each normalised 0-100 and " +
+              "re-weighted over whichever dimensions had data",
+            window: windowLabel(qualityIndexQ.data?.window),
             n: summary?.evaluatedSessions,
             nUnit: "evaluated sessions",
-            extra: groupingNote(grain.quality),
+            extra: groupingNote(grain.qualityIndex),
           })}
-          zoomable
-          zoomNote={`Axis zoomed to the data instead of the full ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]} scale. This magnifies small changes — read the shape, not the height.`}
+          // No zoomable variant: the index is 0-100 by construction, and the
+          // whole point of the stack is reading how much of that fixed scale
+          // is covered — auto-fitting the axis to the data would distort
+          // exactly that reading.
           table={{
-            columns: [bucketTitle(grain.quality), "Avg composite score", "Evaluated sessions"],
-            rows: qualityPoints.map(p => [
-              rowKey(p.bucket, qualityInProgress),
+            columns: [
+              bucketTitle(grain.qualityIndex),
+              QUALITY_INDEX_LABEL,
+              "Actor goal score",
+              "Evaluated sessions",
+            ],
+            rows: qualityIndexPoints.map(p => [
+              rowKey(p.bucket, qualityIndexInProgress),
+              p.qualityIndex,
               p.avgCompositeScore,
               p.evaluatedSessions,
             ]),
           }}
           exportContext={exportLines(
-            windowLabel(qualityQ.data?.window),
-            grain.quality,
-            qualityInProgress,
+            windowLabel(qualityIndexQ.data?.window),
+            grain.qualityIndex,
+            qualityIndexInProgress,
             `Minimum n for a stated score: ${MIN_N_FOR_SCORE}`,
+            ...qualityCoverageNotes,
           )}
-          render={({ height, zoomed }) => (
+          render={({ height }) => (
             <ScrollableChart data={quality}>
-              <LineChart
-                data={quality}
-                options={{ ...(zoomed ? qualityZoomedOpts : qualityOpts), height }}
-              />
+              <ComboChart data={quality} options={{ ...qualityIndexOpts, height }} />
             </ScrollableChart>
           )}
         />

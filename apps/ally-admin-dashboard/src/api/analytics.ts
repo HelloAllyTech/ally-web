@@ -20,6 +20,7 @@ import {
   OrgHealthResponse,
   OrgSessionDistributionResponse,
   QualityDistributionResponse,
+  QualitySentimentResponse,
   RoadmapDeliveryResponse,
   RoleplayVolumeResponse,
   ScenarioUsageResponse,
@@ -407,6 +408,15 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: windowParams(q),
       }),
     }),
+    // Roleplay Quality Index vs learner sentiment. `avgCompositeScore` stays on
+    // each point for audit, but the plotted quality series is `qualityIndex`.
+    getQualitySentiment: builder.query<QualitySentimentResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.QUALITY_SENTIMENT,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
     getCompetencyMap: builder.query<CompetencyMapResponse, AllTimeAnalyticsQuery>({
       query: ({ tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.COMPETENCY_MAP,
@@ -517,6 +527,7 @@ export const {
   useGetLanguageMixQuery,
   useGetSkillGrowthQuery,
   useGetQualityDistributionQuery,
+  useGetQualitySentimentQuery,
   useGetCompetencyMapQuery,
   useGetTrackDropoffQuery,
   useGetCoachingLoopQuery,
