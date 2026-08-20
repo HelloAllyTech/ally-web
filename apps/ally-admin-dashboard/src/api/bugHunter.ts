@@ -196,6 +196,27 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_NOTIFICATIONS, id: "LIST" }],
     }),
 
+    /**
+     * Rewrite the bug's description before putting Bug Hunter on it. This text
+     * is the fix agent's entire brief — see ally-be's `buildFixSessionPrompt`
+     * — so an edit here changes what the NEXT session is asked to fix, and
+     * nothing about the bug's status.
+     */
+    editBugFindingDescription: builder.mutation<BugFinding, { id: string; description: string }>({
+      query: ({ id, description }) => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_DESCRIPTION(id),
+        method: HttpMethod.PATCH,
+        body: { description },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+        // The table's row shows the title, not the description — but the
+        // duplicate-title grouping and the drawer both read the list cache,
+        // and a row whose drawer disagrees with it reads as a bug.
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+      ],
+    }),
+
     answerBugFinding: builder.mutation<BugFindingDetail, { id: string; answer: string }>({
       query: ({ id, answer }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_ANSWER(id),
@@ -221,6 +242,7 @@ export const {
   useApproveBugFindingMutation,
   useRejectBugFindingMutation,
   useAnswerBugFindingMutation,
+  useEditBugFindingDescriptionMutation,
   useStartBugFixSessionMutation,
   useCancelBugFixSessionMutation,
   useReleaseBugFindingMutation,

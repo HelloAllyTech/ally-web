@@ -46,6 +46,8 @@ export enum BugHuntEventStage {
   RELEASE_FAILED = "release_failed",
   /** An admin pressed "Stop fix session" — see ally-be's BugFixSessionService.cancelFixSession. */
   CANCELLED = "cancelled",
+  /** An admin rewrote the bug's description — the brief a fix session reads. */
+  DESCRIPTION_EDITED = "description_edited",
 }
 
 /**
@@ -113,6 +115,18 @@ export const BUG_FINDING_FIX_SESSION_START_STATUSES: BugFindingStatus[] = [
   BugFindingStatus.CANCELLED,
 ];
 
+/**
+ * Statuses the description may be rewritten from. Mirrors ally-be's
+ * BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES, which is itself the fix-session
+ * start list — the edit is offered exactly where "Put me on it" is, because
+ * the point of editing is to improve the brief that button hands over.
+ */
+export const BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES: BugFindingStatus[] =
+  BUG_FINDING_FIX_SESSION_START_STATUSES;
+
+/** Cap on an edited description. Mirrors ally-be's BUG_FINDING_DESCRIPTION_MAX_LENGTH. */
+export const BUG_FINDING_DESCRIPTION_MAX_LENGTH = 5000;
+
 export interface BugHunterSettings {
   mode: BugHunterMode;
   updatedBy: number | null;
@@ -138,6 +152,10 @@ export interface BugFinding {
   source: BugFindingSource;
   title: string;
   description: string;
+  /** The finder's or reporter's own words, before an admin rewrote them. Null when nobody has edited this bug. */
+  originalDescription: string | null;
+  descriptionEditedBy: number | null;
+  descriptionEditedAt: string | null;
   file: string | null;
   evidence: string | null;
   severity: BugFindingSeverity | null;

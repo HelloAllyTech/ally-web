@@ -8,6 +8,7 @@ import { BugFindingDrawer } from "../BugFindingDrawer";
 const startFixSession = vi.fn();
 const cancelFixSession = vi.fn();
 const releaseFinding = vi.fn();
+const editDescription = vi.fn();
 const getBugFinding = vi.fn();
 
 vi.mock("@api", () => ({
@@ -18,6 +19,7 @@ vi.mock("@api", () => ({
   useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
   useCancelBugFixSessionMutation: () => [cancelFixSession, { isLoading: false }],
   useReleaseBugFindingMutation: () => [releaseFinding, { isLoading: false }],
+  useEditBugFindingDescriptionMutation: () => [editDescription, { isLoading: false }],
 }));
 
 // The @hooks barrel reaches the real Redux store (useScenarioReportsSocket ->
@@ -42,8 +44,16 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       {children}
     </button>
   ),
-  TextArea: ({ value, onChange, placeholder }: any) => (
-    <textarea value={value} onChange={onChange} placeholder={placeholder} />
+  TextArea: ({ value, onChange, placeholder, labelText, invalid, invalidText }: any) => (
+    <>
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-label={labelText}
+      />
+      {invalid && <p>{invalidText}</p>}
+    </>
   ),
   Tooltip: ({ children }: any) => <>{children}</>,
   SidePanel: ({ open, title, children }: any) =>
@@ -75,6 +85,9 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   source: "reported_bug",
   title: "Terms link is not formatted correctly",
   description: "The external emergency-services link renders unstyled.",
+  originalDescription: null,
+  descriptionEditedBy: null,
+  descriptionEditedAt: null,
   file: "src/app.ts",
   evidence: null,
   severity: null,
@@ -454,5 +467,179 @@ describe("BugFindingDrawer — a backend older than this build", () => {
     expect(screen.getByText(/haven.t touched this one yet/i)).toBeInTheDocument();
     // And no plan block, since an absent step list means the same as an empty one.
     expect(screen.queryByText(/This fix spans/)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Rewriting the brief before a fix session runs.
+ *
+ * The description is not a record of the bug — it is the text ally-be pastes
+ * into the fix agent's prompt as the entire statement of what is wrong. So
+ * these cover where the control appears (exactly where "Put me on it" does),
+ * that it says nothing about approving, and that the original stays reachable
+ * once it has been replaced.
+ */
+describe("BugFindingDrawer — rewriting the description", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    editDescription.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+  });
+
+  const openEditor = (data: Record<string, unknown>) => {
+    renderDrawer(data);
+    fireEvent.click(screen.getByText("Rewrite this for me"));
+    return screen.getByRole("textbox", { name: /as you want me to understand it/i });
+  };
+
+  it("offers the rewrite on a bug that hasn't been fixed yet", () => {
+    renderDrawer(finding());
+    expect(screen.getByText("Rewrite this for me")).toBeInTheDocument();
+  });
+
+  it.each([
+    BugFindingStatus.QUEUED,
+    BugFindingStatus.FIXING,
+    BugFindingStatus.MERGED,
+    BugFindingStatus.RELEASED,
+  ])("hides the rewrite while the bug is %s", status => {
+    renderDrawer(finding({ status }));
+    expect(screen.queryByText("Rewrite this for me")).not.toBeInTheDocument();
+  });
+
+  it("starts the draft from the current description, not an empty box", () => {
+    const textarea = openEditor(finding());
+    expect(textarea).toHaveValue("The external emergency-services link renders unstyled.");
+  });
+
+  it("saves the trimmed rewrite", async () => {
+    const textarea = openEditor(finding());
+    fireEvent.change(textarea, {
+      target: { value: "  Tapping the terms link opens an unstyled page on Android only.  " },
+    });
+    fireEvent.click(screen.getByText("Save description"));
+
+    await waitFor(() =>
+      expect(editDescription).toHaveBeenCalledWith({
+        id: "finding-1",
+        description: "Tapping the terms link opens an unstyled page on Android only.",
+      }),
+    );
+  });
+
+  it("refuses to save an emptied description", () => {
+    const textarea = openEditor(finding());
+    fireEvent.change(textarea, { target: { value: "   " } });
+
+    // A blank brief would leave the fix agent's prompt saying "Bug:" and
+    // nothing else, so the button is closed rather than the failure deferred
+    // to a 400.
+    expect(screen.getByText("Save description")).toBeDisabled();
+  });
+
+  it("blocks and explains a brief that's too long to be one", () => {
+    const textarea = openEditor(finding());
+    fireEvent.change(textarea, { target: { value: "x".repeat(5001) } });
+
+    expect(screen.getByText(/longer than I can take as a brief/i)).toBeInTheDocument();
+    expect(screen.getByText("Save description")).toBeDisabled();
+  });
+
+  it("leaves the description alone on cancel", () => {
+    const textarea = openEditor(finding());
+    fireEvent.change(textarea, { target: { value: "a different bug entirely" } });
+    fireEvent.click(screen.getByText("Cancel"));
+
+    expect(editDescription).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("The external emergency-services link renders unstyled."),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps what Bug Hunter originally found reachable after a rewrite", () => {
+    renderDrawer(
+      finding({
+        description: "Tapping the terms link opens an unstyled page on Android only.",
+        originalDescription: "terms link looks wrong",
+        descriptionEditedBy: 42,
+        descriptionEditedAt: "2026-08-19",
+      }),
+    );
+
+    expect(screen.getByText(/Rewritten by user #42/)).toBeInTheDocument();
+    // Collapsed by default — the current brief is what matters day to day.
+    expect(screen.queryByText("terms link looks wrong")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("See what I originally found"));
+    expect(screen.getByText("terms link looks wrong")).toBeInTheDocument();
+  });
+
+  it("says nothing about an original on a bug nobody has rewritten", () => {
+    renderDrawer(finding());
+    expect(screen.queryByText(/Rewritten by user/)).not.toBeInTheDocument();
+    expect(screen.queryByText("See what I originally found")).not.toBeInTheDocument();
+  });
+
+  it("surfaces the backend's own refusal verbatim", async () => {
+    const { toast } = await import("sonner");
+    editDescription.mockReturnValue({
+      unwrap: () =>
+        Promise.reject({
+          data: { message: "Finding finding-1 is queued — its description can't be changed." },
+        }),
+    });
+
+    const textarea = openEditor(finding());
+    fireEvent.change(textarea, { target: { value: "a better brief" } });
+    fireEvent.click(screen.getByText("Save description"));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "Finding finding-1 is queued — its description can't be changed.",
+      ),
+    );
+  });
+});
+
+/**
+ * An open draft and a live "Put me on it" cannot coexist.
+ *
+ * Caught in the real console, not by the tests above: the fix-session button
+ * sits directly under the editor, and pressing it mid-rewrite dispatched a
+ * session that read the OLD description while the admin's unsaved words went
+ * nowhere — briefing the agent on exactly the text that had just been judged
+ * wrong. Approving has the same shape via the next sweep.
+ */
+describe("BugFindingDrawer — an unsaved rewrite blocks the decisions under it", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    editDescription.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+    startFixSession.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+  });
+
+  it("closes 'Put me on it' while a draft is open, and says why", () => {
+    renderDrawer(finding());
+    expect(screen.getByText("Put me on it")).not.toBeDisabled();
+
+    fireEvent.click(screen.getByText("Rewrite this for me"));
+
+    expect(screen.getByText("Put me on it")).toBeDisabled();
+    expect(screen.getByText(/Save or cancel your rewrite first/i)).toBeInTheDocument();
+  });
+
+  it("closes the Manual-mode decision too — the next sweep would read the old words", () => {
+    renderDrawer(finding({ status: BugFindingStatus.PENDING_APPROVAL }));
+    fireEvent.click(screen.getByText("Rewrite this for me"));
+
+    expect(screen.getByText("Approve — go fix it")).toBeDisabled();
+    expect(screen.getByText("Reject")).toBeDisabled();
+  });
+
+  it("reopens them once the rewrite is settled", async () => {
+    renderDrawer(finding());
+    fireEvent.click(screen.getByText("Rewrite this for me"));
+    fireEvent.click(screen.getByText("Cancel"));
+
+    await waitFor(() => expect(screen.getByText("Put me on it")).not.toBeDisabled());
+    expect(screen.queryByText(/Save or cancel your rewrite first/i)).not.toBeInTheDocument();
   });
 });
