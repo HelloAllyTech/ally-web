@@ -2472,6 +2472,27 @@ export const en = {
     pageStatus: "Page {page} of {pages}",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
+    // ── Editing the brief ─────────────────────────────────────────────────────
+    // Written from Bug Hunter's side of the exchange, like the rest of this
+    // tab: what the admin is changing is what I will be told to fix, and
+    // saying so is the whole justification for the control existing.
+    drawerDescriptionEdit: "Rewrite this for me",
+    drawerDescriptionEditTooltip:
+      "This description is the entire brief I work from — I'm told the bug in these words and nothing else, and I use them to work out which codebase it's even in. If it's vague, say what breaks, when, and what should happen instead. Rewriting doesn't approve anything or start anything; it just means I'll be better briefed when you do.",
+    drawerDescriptionEditLabel: "The bug, as you want me to understand it",
+    drawerDescriptionEditPlaceholder:
+      "What breaks, when it breaks, and what should happen instead…",
+    drawerDescriptionEditSave: "Save description",
+    drawerDescriptionEditCancel: "Cancel",
+    drawerDescriptionEditFailed: "Couldn't save that description. Try again.",
+    drawerDescriptionEditTooLong:
+      "That's longer than I can take as a brief ({length} of {max} characters). Paste raw output into a comment on the PR instead — this field is what I read before I start.",
+    drawerDescriptionEditedBy: "Rewritten by user #{userId}",
+    drawerDescriptionShowOriginal: "See what I originally found",
+    drawerDescriptionHideOriginal: "Hide what I originally found",
+    drawerDescriptionOriginalTitle: "Originally",
+    drawerDescriptionSettleFirst:
+      "Save or cancel your rewrite first — right now I'd still be working from the description above it.",
     drawerEvidenceTitle: "Evidence",
     drawerTimelineTitle: "My work log",
     drawerTimelineEmpty: "I haven't touched this one yet.",

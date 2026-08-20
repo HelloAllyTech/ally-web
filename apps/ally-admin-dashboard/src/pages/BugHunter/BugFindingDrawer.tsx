@@ -7,6 +7,7 @@ import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
   useCancelBugFixSessionMutation,
+  useEditBugFindingDescriptionMutation,
   useGetBugFindingQuery,
   useRejectBugFindingMutation,
   useReleaseBugFindingMutation,
@@ -16,7 +17,12 @@ import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { AgentAvatar } from "@components/agent-avatar";
 import { en } from "@constants";
-import { BUG_FINDING_FIX_SESSION_START_STATUSES, BugFindingStatus } from "@types";
+import {
+  BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES,
+  BUG_FINDING_DESCRIPTION_MAX_LENGTH,
+  BUG_FINDING_FIX_SESSION_START_STATUSES,
+  BugFindingStatus,
+} from "@types";
 import { formatDate } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
@@ -88,11 +94,18 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const [startFixSession, { isLoading: isStartingSession }] = useStartBugFixSessionMutation();
   const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
+  const [editDescription, { isLoading: isSavingDescription }] =
+    useEditBugFindingDescriptionMutation();
 
   const [confirmAction, setConfirmAction] = useState<
     "approve" | "reject" | "fixSession" | "stopFixSession" | "release" | null
   >(null);
   const [answerText, setAnswerText] = useState("");
+  // `null` is not editing. A string is the draft, which starts as the current
+  // description rather than empty: this is a rewrite of an existing brief, and
+  // an empty box would invite retyping what is already there.
+  const [descriptionDraft, setDescriptionDraft] = useState<string | null>(null);
+  const [showOriginalDescription, setShowOriginalDescription] = useState(false);
 
   // Both arrays are defaulted rather than read straight off the response. A
   // backend one release behind this build omits `steps` entirely, and reading
@@ -122,6 +135,41 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const canStopSession = finding
     ? finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING
     : false;
+
+  // The description is the fix agent's whole brief (see ally-be's
+  // `buildFixSessionPrompt`), so the edit is offered exactly where "Put me on
+  // it" is and nowhere else — mirroring the backend's own gate so a stale
+  // click never makes a round trip just to be told 403.
+  const canEditDescription = finding
+    ? BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES.includes(finding.status)
+    : false;
+
+  const draftTooLong = (descriptionDraft?.trim().length ?? 0) > BUG_FINDING_DESCRIPTION_MAX_LENGTH;
+
+  // An open draft closes the decisions below it. "Put me on it" would dispatch
+  // a session reading the OLD description while the admin's rewrite sat
+  // unsaved in the box above — the rewrite silently discarded and the fix
+  // briefed on the text they had just decided was wrong. Approving has the
+  // same shape: the next sweep would pick up the old words. So the actions
+  // wait for the brief to be settled, and say why.
+  const isDraftingDescription = descriptionDraft !== null;
+
+  const handleSaveDescription = async () => {
+    const next = descriptionDraft?.trim();
+    if (!next || draftTooLong) return;
+    try {
+      await editDescription({ id, description: next }).unwrap();
+      setDescriptionDraft(null);
+    } catch (error) {
+      // The backend's own refusal is the useful one — "is queued, its
+      // description can't be changed from there" names the reason a generic
+      // line would hide. The draft stays put so nothing typed is lost.
+      toast.error(
+        (error as { data?: { message?: string } })?.data?.message ??
+          en.bugHunter.drawerDescriptionEditFailed,
+      );
+    }
+  };
 
   const handleDecision = async () => {
     if (!confirmAction) return;
@@ -225,11 +273,104 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             <p className="text-xs text-destructive-600">{en.bugHunter.drawerGuardedPathNotice}</p>
           )}
 
+          {/* ── The brief ───────────────────────────────────────────────────
+              Editable, because this text is not a record of the bug — it is
+              the instruction a fix session runs on. See ally-be's
+              BugFindingService.editDescription. */}
           <div>
-            <h3 className="text-xs font-semibold text-typography-700 mb-1">
-              {en.bugHunter.drawerDescriptionTitle}
-            </h3>
-            <p className="text-sm text-typography-900 whitespace-pre-wrap">{finding.description}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-xs font-semibold text-typography-700">
+                {en.bugHunter.drawerDescriptionTitle}
+              </h3>
+              {canEditDescription && descriptionDraft === null && (
+                <>
+                  <Button
+                    size="sm"
+                    kind="ghost"
+                    onClick={() => setDescriptionDraft(finding.description)}
+                  >
+                    {en.bugHunter.drawerDescriptionEdit}
+                  </Button>
+                  <Tooltip label={en.bugHunter.drawerDescriptionEditTooltip} align="bottom">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+
+            {descriptionDraft === null ? (
+              <p className="text-sm text-typography-900 whitespace-pre-wrap">
+                {finding.description}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <TextArea
+                  id={`bug-finding-description-${finding.id}`}
+                  labelText={en.bugHunter.drawerDescriptionEditLabel}
+                  placeholder={en.bugHunter.drawerDescriptionEditPlaceholder}
+                  value={descriptionDraft}
+                  onChange={e => setDescriptionDraft(e.target.value)}
+                  rows={8}
+                  invalid={draftTooLong}
+                  invalidText={en.bugHunter.drawerDescriptionEditTooLong
+                    .replace("{length}", String(descriptionDraft.trim().length))
+                    .replace("{max}", String(BUG_FINDING_DESCRIPTION_MAX_LENGTH))}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    kind="primary"
+                    disabled={isSavingDescription || !descriptionDraft.trim() || draftTooLong}
+                    onClick={handleSaveDescription}
+                  >
+                    {en.bugHunter.drawerDescriptionEditSave}
+                  </Button>
+                  <Button size="sm" kind="ghost" onClick={() => setDescriptionDraft(null)}>
+                    {en.bugHunter.drawerDescriptionEditCancel}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* What Bug Hunter originally found stays reachable once an admin
+                has rewritten it — collapsed, because the current brief is what
+                matters day to day, but never dropped: when a fix goes wrong the
+                first question is whether the agent misread the bug or was
+                handed a different one. */}
+            {finding.originalDescription && descriptionDraft === null && (
+              <div className="mt-2">
+                <p className="text-xs text-typography-500">
+                  {en.bugHunter.drawerDescriptionEditedBy.replace(
+                    "{userId}",
+                    String(finding.descriptionEditedBy ?? "—"),
+                  )}
+                  {finding.descriptionEditedAt
+                    ? ` · ${formatDate(finding.descriptionEditedAt)}`
+                    : ""}
+                </p>
+                <button
+                  type="button"
+                  className="text-xs text-primary-600 underline cursor-pointer mt-1"
+                  onClick={() => setShowOriginalDescription(open => !open)}
+                >
+                  {showOriginalDescription
+                    ? en.bugHunter.drawerDescriptionHideOriginal
+                    : en.bugHunter.drawerDescriptionShowOriginal}
+                </button>
+                {showOriginalDescription && (
+                  <div className="mt-1 border-l-2 border-border-light pl-3">
+                    <p className="text-xs font-semibold text-typography-600">
+                      {en.bugHunter.drawerDescriptionOriginalTitle}
+                    </p>
+                    <p className="text-sm text-typography-700 whitespace-pre-wrap">
+                      {finding.originalDescription}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {finding.evidence && (
@@ -362,7 +503,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 <Button
                   size="sm"
                   kind="primary"
-                  disabled={isApproving}
+                  disabled={isApproving || isDraftingDescription}
                   onClick={() => setConfirmAction("approve")}
                 >
                   {en.bugHunter.drawerApprove}
@@ -370,7 +511,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 <Button
                   size="sm"
                   kind="danger--tertiary"
-                  disabled={isRejecting}
+                  disabled={isRejecting || isDraftingDescription}
                   onClick={() => setConfirmAction("reject")}
                 >
                   {en.bugHunter.drawerReject}
@@ -385,7 +526,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                   kind={
                     finding.status === BugFindingStatus.PENDING_APPROVAL ? "tertiary" : "primary"
                   }
-                  disabled={isStartingSession}
+                  disabled={isStartingSession || isDraftingDescription}
                   onClick={() => setConfirmAction("fixSession")}
                 >
                   {/* CANCELLED reads as a retry too — same story as FAILED,
@@ -441,6 +582,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               </>
             )}
           </div>
+
+          {isDraftingDescription && (
+            <p className="text-xs text-typography-600">
+              {en.bugHunter.drawerDescriptionSettleFirst}
+            </p>
+          )}
 
           {/* Merged but not releasable from here — say why rather than just
               omitting the button the admin came looking for. */}

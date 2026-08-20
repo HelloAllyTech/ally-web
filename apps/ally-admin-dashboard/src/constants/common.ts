@@ -421,6 +421,7 @@ export const ApiEndpoints = {
     FINDING_APPROVE: (id: string) => `/v1/bug-hunter/findings/${id}/approve`,
     FINDING_REJECT: (id: string) => `/v1/bug-hunter/findings/${id}/reject`,
     FINDING_ANSWER: (id: string) => `/v1/bug-hunter/findings/${id}/answer`,
+    FINDING_DESCRIPTION: (id: string) => `/v1/bug-hunter/findings/${id}/description`,
     FINDING_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/fix-session`,
     FINDING_CANCEL_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/cancel-fix-session`,
     FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,

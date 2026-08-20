@@ -20,4 +20,5 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.RELEASED]: "Released",
   [BugHuntEventStage.RELEASE_FAILED]: "Release failed",
   [BugHuntEventStage.CANCELLED]: "Fix session cancelled",
+  [BugHuntEventStage.DESCRIPTION_EDITED]: "Description rewritten",
 };
