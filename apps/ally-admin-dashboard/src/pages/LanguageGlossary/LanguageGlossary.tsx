@@ -139,7 +139,27 @@ export const LanguageGlossary: React.FC = () => {
     });
   }, [data]);
 
+  // One rail row per sectionCode; the global row leads, style overlays are
+  // variants selectable in the detail pane.
+  const groups = useMemo(() => {
+    const byCode = new Map<string, typeof views>();
+    for (const v of views) {
+      const list = byCode.get(v.section.sectionCode) ?? [];
+      list.push(v);
+      byCode.set(v.section.sectionCode, list);
+    }
+    return [...byCode.entries()].map(([code, variants]) => {
+      const sorted = [...variants].sort(
+        (a, b) => (a.section.profileId ? 1 : 0) - (b.section.profileId ? 1 : 0),
+      );
+      return { code, primary: sorted[0], variants: sorted };
+    });
+  }, [views]);
+
   const selectedView = views.find(v => sectionKey(v.section) === selectedCode);
+  const selectedGroup = groups.find(g =>
+    g.variants.some(v => sectionKey(v.section) === selectedCode),
+  );
   const pendingProposals = (selectedView?.section.entries ?? []).filter(
     e => e.status === "proposed",
   );
@@ -412,6 +432,34 @@ export const LanguageGlossary: React.FC = () => {
           )}
           {draft && (
             <div className="space-y-4">
+              {selectedGroup && selectedGroup.variants.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Variant</span>
+                  <select
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={selectedCode ?? ""}
+                    onChange={e => selectSection(e.target.value)}
+                    title="The global section serves every org; a style variant replaces it for the orgs speaking that style."
+                  >
+                    {selectedGroup.variants.map(variant => {
+                      const pid = variant.section.profileId;
+                      const label = pid
+                        ? `Style: ${profileInfo.get(pid)?.name ?? "variety overlay"} (${
+                            (profileInfo.get(pid)?.orgs ?? []).join(", ") || "no orgs yet"
+                          })`
+                        : "Global (all orgs)";
+                      return (
+                        <option
+                          key={sectionKey(variant.section)}
+                          value={sectionKey(variant.section)}
+                        >
+                          {label} — {variant.section.status}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-[1fr_220px] gap-3">
                 <TextInput
                   id="glossary-title"
