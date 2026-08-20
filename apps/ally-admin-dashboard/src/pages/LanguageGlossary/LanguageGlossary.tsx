@@ -562,8 +562,9 @@ export const LanguageGlossary: React.FC = () => {
                   Style overlay — written by the consolidation loop for{" "}
                   {profileInfo.get(draft.profileId)?.name ?? "a variety profile"} (used by{" "}
                   {(profileInfo.get(draft.profileId)?.orgs ?? []).join(", ") || "no orgs yet"}).
-                  Review its proposals here; content edits and publish/archive apply to the global
-                  section only.
+                  Review its proposals here, then Publish to serve this style its own version of the
+                  section (it replaces the global one for these orgs). Content edits apply to the
+                  global section only.
                 </div>
               )}
               <div className="flex gap-3 pt-2 border-t border-gray-200">
