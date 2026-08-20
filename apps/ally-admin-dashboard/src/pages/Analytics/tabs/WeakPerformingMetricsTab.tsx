@@ -170,7 +170,10 @@ const SeriesCard: FC<{
   const points = useMemo(
     () =>
       withoutInProgress(
-        series.points.filter(p => p.value !== null),
+        // Thin buckets come off the plot for the same reason the accruing one
+        // does: drawn beside a bucket a hundred times their size they read as a
+        // swing in quality rather than a swing in traffic.
+        series.points.filter(p => p.value !== null && !p.sparse),
         p => p.bucket,
         inProgressBucket,
       ).map(p => ({
@@ -192,8 +195,21 @@ const SeriesCard: FC<{
   // crowded out the number it was there to qualify. It is reference material a
   // reader reaches for once, so it moves behind a tooltip and the caption
   // carries the one line that says what is being counted.
+  const thinCount = series.points.filter(p => p.value !== null && p.sparse).length;
   const caption =
-    [series.description, inProgressCaption(bucket as never, inProgressBucket)]
+    [
+      series.description,
+      inProgressCaption(bucket as never, inProgressBucket),
+      // Named, not silently dropped — otherwise a reader comparing this chart
+      // against the raw counts finds buckets missing and no reason given.
+      thinCount
+        ? ` ${thinCount} ${bucket === "week" ? "week" : "month"}${
+            thinCount === 1 ? "" : "s"
+          } had too few turns to read as a rate and ${
+            thinCount === 1 ? "is" : "are"
+          } left off the plot; ${thinCount === 1 ? "it is" : "they are"} in the expanded view.`
+        : "",
+    ]
       .filter(Boolean)
       .join("") || undefined;
 

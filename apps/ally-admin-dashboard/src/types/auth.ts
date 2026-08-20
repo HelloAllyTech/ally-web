@@ -1144,6 +1144,13 @@ export interface WeakMetricPoint {
   denominator: number;
   /** null when the denominator is 0 — an empty bucket, not a clean one. */
   value: number | null;
+  /**
+   * Denominator below the platform's thin-sample minimum. The bucket is real —
+   * it stays in tables — but it is left off the plot and never supplies the
+   * delta, because a two-session week drawn beside a ninety-seven-session one
+   * became the headline.
+   */
+  sparse: boolean;
 }
 
 export interface WeakMetricSeries {
