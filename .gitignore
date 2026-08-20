@@ -129,6 +129,7 @@ test-output
 !.claude/settings.json
 !.claude/skills/
 !.claude/hooks/
+!.claude/agents/
 
 # Scratch clone of the wiki, created by the wiki-pr flow (see AGENTS.md)
 .wiki-tmp/
