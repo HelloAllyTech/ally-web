@@ -11,6 +11,7 @@ import {
   useGenerateLanguageGlossaryMutation,
   useGetLanguageGlossaryQuery,
   useGetLanguagesQuery,
+  useGetVarietyProfilesQuery,
   usePublishGlossarySectionMutation,
   useRejectGlossaryProposalMutation,
   useUpsertGlossarySectionMutation,
@@ -55,6 +56,8 @@ interface SectionDraft {
   injectionMode: GlossaryInjectionMode;
   status: GlossarySectionStatus;
   isNew: boolean;
+  /** Non-null when the section is a style overlay (variety profile scoped). */
+  profileId: string | null;
 }
 
 const toDraft = (section: LanguageGlossarySection): SectionDraft => ({
@@ -65,7 +68,13 @@ const toDraft = (section: LanguageGlossarySection): SectionDraft => ({
   injectionMode: section.injectionMode,
   status: section.status,
   isNew: false,
+  profileId: section.profileId ?? null,
 });
+
+/** Sections are unique by (sectionCode, profileId) now that style overlays
+ * share their global counterpart's code. */
+const sectionKey = (s: { sectionCode: string; profileId?: string | null }) =>
+  s.profileId ? `${s.sectionCode}@${s.profileId}` : s.sectionCode;
 
 const Pill: React.FC<{ className: string; children: React.ReactNode }> = ({
   className,
@@ -99,6 +108,21 @@ export const LanguageGlossary: React.FC = () => {
   const [acceptProposal] = useAcceptGlossaryProposalMutation();
   const [rejectProposal] = useRejectGlossaryProposalMutation();
 
+  const { data: varietyProfiles } = useGetVarietyProfilesQuery(languageId, {
+    skip: !Number.isFinite(languageId),
+  });
+  // profileId -> style name + the orgs that speak it (for overlay badges).
+  const profileInfo = useMemo(() => {
+    const map = new Map<string, { name: string; orgs: string[] }>();
+    for (const view of varietyProfiles ?? []) {
+      map.set(view.profile.id, {
+        name: view.profile.name,
+        orgs: view.attachments.map(a => a.tenantName ?? a.tenantId),
+      });
+    }
+    return map;
+  }, [varietyProfiles]);
+
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [draft, setDraft] = useState<SectionDraft | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -115,7 +139,7 @@ export const LanguageGlossary: React.FC = () => {
     });
   }, [data]);
 
-  const selectedView = views.find(v => v.section.sectionCode === selectedCode);
+  const selectedView = views.find(v => sectionKey(v.section) === selectedCode);
   const pendingProposals = (selectedView?.section.entries ?? []).filter(
     e => e.status === "proposed",
   );
@@ -149,6 +173,7 @@ export const LanguageGlossary: React.FC = () => {
       injectionMode: "retrieved",
       status: "draft",
       isNew: true,
+      profileId: null,
     });
   };
 
@@ -158,7 +183,7 @@ export const LanguageGlossary: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!draft) return;
+    if (!draft || draft.profileId) return;
     const code = draft.sectionCode.trim();
     if (!code || !draft.title.trim()) {
       toast.error("Section code and title are required");
@@ -240,7 +265,12 @@ export const LanguageGlossary: React.FC = () => {
     }
     try {
       const mutate = accept ? acceptProposal : rejectProposal;
-      await mutate({ languageId, sectionCode: draft.sectionCode, entryId }).unwrap();
+      await mutate({
+        languageId,
+        sectionCode: draft.sectionCode,
+        entryId,
+        profileId: draft.profileId,
+      }).unwrap();
       setDirty(false);
       toast.success(accept ? "Proposal added to the section" : "Proposal rejected");
     } catch (err) {
@@ -302,13 +332,14 @@ export const LanguageGlossary: React.FC = () => {
               const proposals = (v.section.entries ?? []).filter(
                 e => e.status === "proposed",
               ).length;
+              const style = v.section.profileId ? profileInfo.get(v.section.profileId) : undefined;
               return (
                 <button
-                  key={v.section.sectionCode}
+                  key={sectionKey(v.section)}
                   className={`w-full text-left px-3 py-2 border-b border-gray-100 hover:bg-gray-50 ${
-                    v.section.sectionCode === selectedCode ? "bg-gray-100" : ""
+                    sectionKey(v.section) === selectedCode ? "bg-gray-100" : ""
                   }`}
-                  onClick={() => selectSection(v.section.sectionCode)}
+                  onClick={() => selectSection(sectionKey(v.section))}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium truncate">{v.section.title}</span>
@@ -316,6 +347,19 @@ export const LanguageGlossary: React.FC = () => {
                       {MODE_LABELS[v.section.injectionMode]}
                     </Pill>
                   </div>
+                  {v.section.profileId && (
+                    <div className="mt-1">
+                      <Pill className="bg-indigo-100 text-indigo-800">
+                        style: {style?.name ?? "variety overlay"}
+                      </Pill>
+                      <div
+                        className="text-xs text-gray-500 truncate mt-0.5"
+                        title={(style?.orgs ?? []).join(", ")}
+                      >
+                        used by {style?.orgs?.length ? style.orgs.join(", ") : "no orgs yet"}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mt-1">
                     <span className="flex items-center gap-1">
                       <Pill className={STATUS_STYLES[v.section.status]}>{v.section.status}</Pill>
@@ -459,15 +503,24 @@ export const LanguageGlossary: React.FC = () => {
                 </div>
               )}
 
+              {draft.profileId && (
+                <div className="text-xs text-gray-500 border border-indigo-100 bg-indigo-50 rounded p-2">
+                  Style overlay — written by the consolidation loop for{" "}
+                  {profileInfo.get(draft.profileId)?.name ?? "a variety profile"} (used by{" "}
+                  {(profileInfo.get(draft.profileId)?.orgs ?? []).join(", ") || "no orgs yet"}).
+                  Review its proposals here; content edits and publish/archive apply to the global
+                  section only.
+                </div>
+              )}
               <div className="flex gap-3 pt-2 border-t border-gray-200">
                 <Button
                   variant={ButtonVariant.PRIMARY}
                   onClick={handleSave}
-                  disabled={isSaving || !dirty}
+                  disabled={isSaving || !dirty || Boolean(draft.profileId)}
                 >
                   {isSaving ? "Saving…" : "Save"}
                 </Button>
-                {!draft.isNew && draft.status !== "published" && (
+                {!draft.isNew && !draft.profileId && draft.status !== "published" && (
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     onClick={handlePublish}
@@ -477,7 +530,7 @@ export const LanguageGlossary: React.FC = () => {
                     {isPublishing ? "Publishing…" : "Publish"}
                   </Button>
                 )}
-                {!draft.isNew && draft.status === "published" && (
+                {!draft.isNew && !draft.profileId && draft.status === "published" && (
                   <Button variant={ButtonVariant.SECONDARY} onClick={() => setConfirmArchive(true)}>
                     Archive
                   </Button>

@@ -1,6 +1,7 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   GlossaryListResponse,
+  VarietyProfileView,
   LanguageGlossarySection,
   UpsertGlossarySectionPayload,
   GenerateGlossaryResult,
@@ -920,17 +921,31 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
-    /** Accept a consolidation proposal — appends its markdown to the section content. */
+    /**
+     * Variety profiles ("styles") for a language, with the orgs attached to
+     * each — who speaks which style. Read-only surface for the glossary page.
+     */
+    getVarietyProfiles: builder.query<VarietyProfileView[], number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_VARIETY_PROFILES(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Accept a consolidation proposal — appends its markdown to the section
+     * content. `profileId` targets a style-overlay section's proposal. */
     acceptGlossaryProposal: builder.mutation<
       LanguageGlossarySection,
-      { languageId: number; sectionCode: string; entryId: string }
+      { languageId: number; sectionCode: string; entryId: string; profileId?: string | null }
     >({
-      query: ({ languageId, sectionCode, entryId }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.ACCEPT_GLOSSARY_PROPOSAL(
-          languageId,
-          sectionCode,
-          entryId,
-        ),
+      query: ({ languageId, sectionCode, entryId, profileId }) => ({
+        url:
+          ApiEndpoints.SIMULATION_STUDIO.ACCEPT_GLOSSARY_PROPOSAL(
+            languageId,
+            sectionCode,
+            entryId,
+          ) + (profileId ? `?profileId=${profileId}` : ""),
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
@@ -938,14 +953,15 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
 
     rejectGlossaryProposal: builder.mutation<
       LanguageGlossarySection,
-      { languageId: number; sectionCode: string; entryId: string }
+      { languageId: number; sectionCode: string; entryId: string; profileId?: string | null }
     >({
-      query: ({ languageId, sectionCode, entryId }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.REJECT_GLOSSARY_PROPOSAL(
-          languageId,
-          sectionCode,
-          entryId,
-        ),
+      query: ({ languageId, sectionCode, entryId, profileId }) => ({
+        url:
+          ApiEndpoints.SIMULATION_STUDIO.REJECT_GLOSSARY_PROPOSAL(
+            languageId,
+            sectionCode,
+            entryId,
+          ) + (profileId ? `?profileId=${profileId}` : ""),
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
@@ -1515,6 +1531,7 @@ export const {
   useSetTranslationRuntimeModelMutation,
   useBackfillPromptTranslationsMutation,
   useGetLanguageGlossaryQuery,
+  useGetVarietyProfilesQuery,
   useUpsertGlossarySectionMutation,
   usePublishGlossarySectionMutation,
   useArchiveGlossarySectionMutation,

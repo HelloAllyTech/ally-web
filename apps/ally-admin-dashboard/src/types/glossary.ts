@@ -28,6 +28,10 @@ export interface LanguageGlossarySection {
   id: string;
   languageId: number;
   organizationId?: string | null;
+  /** NULL = global row; non-NULL scopes the section to a variety profile
+   * ("style") — runtime serves global + the session org's overlay,
+   * overlay winning on sectionCode. */
+  profileId?: string | null;
   sectionCode: string;
   title: string;
   /** The glossary body: plain markdown, served to the agent as-is. */
@@ -76,8 +80,43 @@ export interface GenerateGlossaryResult {
 export interface ConsolidateGlossaryResult {
   annotationsConsidered: number;
   proposed: number;
+  autoAccepted: number;
+  overlayEntries: number;
   skippedDuplicates: number;
   sections: string[];
+  batchId: string | null;
+}
+
+/**
+ * A language variety profile ("style") — how one deployment population
+ * actually speaks the language, inferred from its learners' transcripts.
+ * Orgs attach to profiles many-to-one; overlay glossary sections scope to a
+ * profile via `LanguageGlossarySection.profileId`.
+ */
+export interface LanguageVarietyProfile {
+  id: string;
+  languageId: number;
+  name: string;
+  description: string;
+  status: "inferred" | "confirmed" | "archived";
+  exemplars: string[];
+  version: number;
+  createdAt?: string;
+}
+
+export interface VarietyProfileAttachmentView {
+  id: string;
+  profileId: string;
+  tenantId: string;
+  /** Org display name, resolved server-side — who speaks this style. */
+  tenantName?: string;
+  attachedBy: string;
+  similarity?: number | null;
+}
+
+export interface VarietyProfileView {
+  profile: LanguageVarietyProfile;
+  attachments: VarietyProfileAttachmentView[];
 }
 
 export interface BackfillGlossariesOutcome {

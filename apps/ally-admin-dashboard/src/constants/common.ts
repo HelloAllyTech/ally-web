@@ -73,6 +73,7 @@ export const ApiEndpoints = {
       `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/accept`,
     REJECT_GLOSSARY_PROPOSAL: (id: string | number, sectionCode: string, entryId: string) =>
       `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/reject`,
+    GET_VARIETY_PROFILES: (id: string | number) => `/v1/language/${id}/variety-profiles`,
     CONSOLIDATE_LANGUAGE_GLOSSARY: (id: string | number) =>
       `/v1/language/${id}/glossary/consolidate`,
     BACKFILL_LANGUAGE_GLOSSARIES: "/v1/language/glossary/backfill",
