@@ -124,6 +124,7 @@ vi.mock("@components", () => ({
   },
 }));
 vi.mock("@assets", () => ({
+  CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Warning: () => <div>Warning</div>,
   Assessment: () => <div>Assessment</div>,

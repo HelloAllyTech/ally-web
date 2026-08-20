@@ -36,6 +36,10 @@ vi.mock("@hooks", () => ({
   useUser: mockUseUser,
   // Exhaustive mock: NavSideBar reads the streak pill from this hook.
   usePracticeStreakSummary: () => ({ summary: undefined }),
+  // Exhaustive mock: NavSideBar gates the Character Library tab on this hook.
+  // Not visible by default — the mocked `navBarOptions` below has no
+  // CHARACTER_LIBRARY entry anyway, so this only needs to exist, not vary.
+  useCanViewCharacterLibrary: () => ({ canView: false, isLoading: false }),
 }));
 
 // Mock react-router-dom
