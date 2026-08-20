@@ -1,11 +1,12 @@
 import {
   COMFORT_AUDIO_VOLUME_DEFAULT,
   FORM_FIELD_IDS,
+  FORM_FIELD_TYPES,
   isValidStateInstructionId,
   SIMULATION_CREATOR_FIELD_GROUPS,
   TEMPERATURE_DEFAULT,
 } from "@constants";
-import { GetSimulationByIdResponse, knowledgeSource } from "@types";
+import { CreatorFieldGroups, GetSimulationByIdResponse, knowledgeSource } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
   return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
@@ -52,6 +53,41 @@ export const formatVersionConfigToForm = (config: Record<string, any>) => {
 
   return formatSimulationResponseData(adminShape as GetSimulationByIdResponse);
 };
+
+/**
+ * Collect every TOGGLE_BUTTON field's declared `defaultValue` into a
+ * `defaultValues` object for `useForm`.
+ *
+ * ToggleSection seeds its own controller, but only once it MOUNTS — and the
+ * creator renders one step at a time and hides fields behind `visibleWhen`, so
+ * on a brand-new simulation a toggle the author never scrolled to has no value
+ * in form state at all. The save payload is built from `getValues()`, so those
+ * fields used to persist as `false` (via `extractValidData`'s `Boolean(value)`)
+ * regardless of what their config declared. Seeding the whole set up front
+ * fixes that for the create path; the edit path is unaffected because
+ * `formMethods.reset(formatSimulationResponseData(...))` replaces these values
+ * with the stored ones.
+ *
+ * Deliberately toggles only. Other field types declare defaults too, but they
+ * have their own seeding rules that a blanket seed would break — most sharply
+ * `prompt`, whose managed role-instruction default is written by an effect in
+ * CreateSimulation that keys off the field still being empty.
+ *
+ * Note this seeds `false` for a toggle that declares no default, so the whole
+ * toggle set is explicit in the payload from the first save. Nothing is marked
+ * dirty: `defaultValues` is the form's baseline, so merely opening the creator
+ * still doesn't trip the `dirtyFields` gate that keeps autosave from littering
+ * the list with untouched drafts.
+ */
+export const buildToggleDefaultValues = (
+  fieldGroups: CreatorFieldGroups[],
+): Record<string, boolean> =>
+  Object.fromEntries(
+    fieldGroups
+      .flatMap(group => group.fields)
+      .filter(field => field.type === FORM_FIELD_TYPES.TOGGLE_BUTTON)
+      .map(field => [field.id, field.defaultValue === true]),
+  );
 
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
   return {

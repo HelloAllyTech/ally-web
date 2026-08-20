@@ -247,6 +247,16 @@ vi.mock("@utils", () => ({
   }),
   extractValidData: (_fields: any, data: any) => data,
   formatSimulationResponseData: (data: any) => data,
+  // Real implementation in spirit: every toggle id mapped to its declared
+  // default. CreateSimulation feeds this straight into useForm's defaultValues,
+  // so a stub returning undefined would silently drop the create-path defaults.
+  buildToggleDefaultValues: (groups: any[]) =>
+    Object.fromEntries(
+      (groups ?? [])
+        .flatMap((group: any) => group?.fields ?? [])
+        .filter((field: any) => field?.type === "toggle_button")
+        .map((field: any) => [field.id, field.defaultValue === true]),
+    ),
   isNonEmptyString: (str: string) => str && str.length > 0,
   isNonEmptyArray: <T,>(value: unknown): value is T[] => {
     return Array.isArray(value) && value?.length > 0;

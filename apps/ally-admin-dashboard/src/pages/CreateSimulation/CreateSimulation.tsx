@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -66,6 +66,7 @@ import {
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
+  buildToggleDefaultValues,
   formatSimulationResponseData,
   formatVersionConfigToForm,
   isNonEmptyString,
@@ -361,9 +362,25 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
   const advancedEventsCount = mappedScenarioEventsData?.data?.length ?? 0;
   const showAdvancedEventsLatencyWarning = advancedEventsCount > ADVANCED_EVENTS_LATENCY_THRESHOLD;
 
-  const formMethods = useForm({
+  // Every TOGGLE_BUTTON's declared default, seeded as the form's baseline so a
+  // brand-new roleplay saves what its field config says even for a toggle on a
+  // step the author never opened. Resolved here rather than at module load: the
+  // field groups come from the `@constants` barrel, which several test files
+  // mock wholesale (see CLAUDE.md). useForm only reads `defaultValues` on the
+  // first render, and the field groups are static, so the memo is just hygiene.
+  const toggleDefaultValues = useMemo(
+    () => buildToggleDefaultValues(SIMULATION_CREATOR_FIELD_GROUPS),
+    [],
+  );
+
+  // `FieldValues` is pinned explicitly: without it, `defaultValues` narrows the
+  // form's value type to the toggles' `Record<string, boolean>` and every
+  // non-boolean field in this file (title, prompt, maxTimeValue, …) starts
+  // failing to typecheck.
+  const formMethods = useForm<FieldValues>({
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: toggleDefaultValues,
   });
 
   const managedRoleInstruction = useMemo(

@@ -149,7 +149,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             placeholder={placeholder}
             multiline={multiline}
             isMandatory={isMandatory}
-            defaultValue={defaultValue}
+            defaultValue={typeof defaultValue === "string" ? defaultValue : undefined}
             enhanceButton={enhanceButton}
             tooltipLocation={tooltipLocation}
           />
@@ -206,6 +206,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
               name={id}
               formMethods={formMethods}
               tooltipLocation={tooltipLocation}
+              defaultValue={defaultValue === true}
             />
           </div>
         );
@@ -218,7 +219,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             min={config.min}
             max={config.max}
             step={config.step}
-            defaultValue={config.defaultValue as unknown as number}
+            defaultValue={typeof defaultValue === "number" ? defaultValue : undefined}
             isMandatory={isMandatory}
             note={note}
           />
@@ -350,7 +351,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
                 </div>
               )}
               <TimeInput
-                value={formMethods.watch(id) || defaultValue}
+                value={
+                  formMethods.watch(id) || (typeof defaultValue === "string" ? defaultValue : "")
+                }
                 onChange={value => formMethods.setValue(id, value)}
                 placeholder={placeholder}
                 disabled={false}

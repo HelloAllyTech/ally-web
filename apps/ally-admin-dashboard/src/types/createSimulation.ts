@@ -301,7 +301,16 @@ export interface FormFieldConfig {
   allowDeselect?: boolean;
   maxLength?: number;
   multiline?: boolean;
-  defaultValue?: string;
+  /**
+   * Initial value for a brand-new record, before anything has been `reset()`
+   * into the form from a loaded response. TEXT fields declare a string,
+   * SLIDER a number, TOGGLE_BUTTON a boolean — each consuming field component
+   * is responsible for seeding it into its own controller (see ToggleSection /
+   * SliderField), and CreateSimulation additionally seeds every toggle up
+   * front via `buildToggleDefaultValues` so a field the author never scrolled
+   * to still saves its declared default rather than `undefined`.
+   */
+  defaultValue?: string | number | boolean;
   /** Slider (FORM_FIELD_TYPES.SLIDER) bounds. */
   min?: number;
   max?: number;

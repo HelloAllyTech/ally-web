@@ -1,12 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { FORM_FIELD_TYPES, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 import { extractValidData } from "../common";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
+  buildToggleDefaultValues,
 } from "../createSimulation";
 
 describe("createSimulation utils", () => {
@@ -817,6 +818,103 @@ describe("createSimulation utils", () => {
         difficultyLevel: null, // empty select
         coverImageUrl: null, // empty string returns null
       });
+    });
+  });
+
+  describe("buildToggleDefaultValues (create path — no simulationId)", () => {
+    const defaults = buildToggleDefaultValues(SIMULATION_CREATOR_FIELD_GROUPS);
+    const toggleIds = SIMULATION_CREATOR_FIELD_GROUPS.flatMap(group => group.fields)
+      .filter(field => field.type === FORM_FIELD_TYPES.TOGGLE_BUTTON)
+      .map(field => field.id);
+
+    it("should cover every TOGGLE_BUTTON field and nothing else", () => {
+      expect(toggleIds.length).toBeGreaterThan(0);
+      expect(Object.keys(defaults).sort()).toEqual([...toggleIds].sort());
+    });
+
+    it("should give every toggle an explicit boolean — never undefined", () => {
+      // This is the whole point: `extractValidData` coerces with
+      // `Boolean(value)`, so any toggle missing from form state on a
+      // brand-new roleplay saves as `false` no matter what its config says.
+      Object.entries(defaults).forEach(([id, value]) => {
+        expect(typeof value, `${id} should default to a boolean`).toBe("boolean");
+      });
+    });
+
+    it("should turn the ON-by-default toggles on", () => {
+      // Every toggle whose config declares `defaultValue: true`. Listed
+      // explicitly rather than derived from the same config the function
+      // reads, so a default silently flipped in SimulationCreator.ts fails
+      // here instead of quietly agreeing with itself.
+      expect(defaults.enableFeedback).toBe(true);
+      expect(defaults.optGuardrails).toBe(true);
+      expect(defaults.languageGlossaryEnabled).toBe(true);
+      expect(defaults.historyTrimEnabled).toBe(true);
+      expect(defaults.interimReplyEnabled).toBe(true);
+    });
+
+    it("should leave the OFF-by-default and undeclared toggles off", () => {
+      expect(defaults.summaryChecklistEnabled).toBe(false);
+      expect(defaults.pauseEnabled).toBe(false);
+      expect(defaults.fillerEnabled).toBe(false);
+      expect(defaults.comfortAudioEnabled).toBe(false);
+      expect(defaults.continuousBackchanneling).toBe(false);
+      // No `defaultValue` in the config at all — absent reads as OFF.
+      expect(defaults.isGlobal).toBe(false);
+      expect(defaults.isPublic).toBe(false);
+      expect(defaults.timerMode).toBe(false);
+      expect(defaults.showScoreMeter).toBe(false);
+      expect(defaults.currentState).toBe(false);
+    });
+
+    it("should survive extractValidData with the declared defaults intact", () => {
+      // The create-path payload is `extractValidData(groups, getValues())`.
+      // Feeding it the seeded baseline is the closest unit-level stand-in for
+      // "author opens the creator, types a title, saves" — before the fix the
+      // ON-by-default toggles reached this point as `undefined` and came out
+      // `false`.
+      const saved = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, {
+        title: "First Save",
+        ...defaults,
+      });
+
+      expect(saved.enableFeedback).toBe(true);
+      expect(saved.historyTrimEnabled).toBe(true);
+      expect(saved.interimReplyEnabled).toBe(true);
+      expect(saved.languageGlossaryEnabled).toBe(true);
+      expect(saved.optGuardrails).toBe(true);
+      expect(saved.pauseEnabled).toBe(false);
+      expect(saved.isGlobal).toBe(false);
+    });
+
+    it("should round-trip: a first save then reloaded keeps the same toggle states", () => {
+      const saved = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, {
+        title: "First Save",
+        ...defaults,
+      });
+
+      const reloaded = formatSimulationResponseData({
+        id: "sim-1",
+        title: "First Save",
+        description: "D",
+        status: "DRAFT",
+        metadata: saved,
+      } as any);
+
+      expect(reloaded.enableFeedback).toBe(true);
+      expect(reloaded.historyTrimEnabled).toBe(true);
+      expect(reloaded.interimReplyEnabled).toBe(true);
+      expect(reloaded.languageGlossaryEnabled).toBe(true);
+      expect(reloaded.pauseEnabled).toBe(false);
+    });
+
+    it("should ignore groups with no toggles at all", () => {
+      expect(
+        buildToggleDefaultValues([
+          { id: "g", label: "G", fields: [{ id: "title", label: "T", type: "text" } as any] },
+        ]),
+      ).toEqual({});
+      expect(buildToggleDefaultValues([])).toEqual({});
     });
   });
 });
