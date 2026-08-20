@@ -211,7 +211,11 @@ export const LanguageGlossary: React.FC = () => {
   const handlePublish = async () => {
     if (!draft || draft.isNew) return;
     try {
-      await publishSection({ languageId, sectionCode: draft.sectionCode }).unwrap();
+      await publishSection({
+        languageId,
+        sectionCode: draft.sectionCode,
+        profileId: draft.profileId,
+      }).unwrap();
       setDirty(false);
       toast.success(`Section '${draft.sectionCode}' published`);
     } catch (err) {
@@ -223,7 +227,11 @@ export const LanguageGlossary: React.FC = () => {
     if (!draft || draft.isNew) return;
     setConfirmArchive(false);
     try {
-      await archiveSection({ languageId, sectionCode: draft.sectionCode }).unwrap();
+      await archiveSection({
+        languageId,
+        sectionCode: draft.sectionCode,
+        profileId: draft.profileId,
+      }).unwrap();
       setDirty(false);
       toast.success(`Section '${draft.sectionCode}' archived`);
     } catch (err) {
@@ -520,7 +528,7 @@ export const LanguageGlossary: React.FC = () => {
                 >
                   {isSaving ? "Saving…" : "Save"}
                 </Button>
-                {!draft.isNew && !draft.profileId && draft.status !== "published" && (
+                {!draft.isNew && draft.status !== "published" && (
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     onClick={handlePublish}
@@ -530,7 +538,7 @@ export const LanguageGlossary: React.FC = () => {
                     {isPublishing ? "Publishing…" : "Publish"}
                   </Button>
                 )}
-                {!draft.isNew && !draft.profileId && draft.status === "published" && (
+                {!draft.isNew && draft.status === "published" && (
                   <Button variant={ButtonVariant.SECONDARY} onClick={() => setConfirmArchive(true)}>
                     Archive
                   </Button>

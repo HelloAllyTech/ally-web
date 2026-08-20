@@ -889,13 +889,16 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
-    /** Publish a section (backend blocks when the Tier 0 set would exceed the cap). */
+    /** Publish a section (backend blocks when the Tier 0 set would exceed the
+     * cap). `profileId` targets a style-overlay section. */
     publishGlossarySection: builder.mutation<
       LanguageGlossarySection,
-      { languageId: number; sectionCode: string }
+      { languageId: number; sectionCode: string; profileId?: string | null }
     >({
-      query: ({ languageId, sectionCode }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.PUBLISH_GLOSSARY_SECTION(languageId, sectionCode),
+      query: ({ languageId, sectionCode, profileId }) => ({
+        url:
+          ApiEndpoints.SIMULATION_STUDIO.PUBLISH_GLOSSARY_SECTION(languageId, sectionCode) +
+          (profileId ? `?profileId=${profileId}` : ""),
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
@@ -903,10 +906,12 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
 
     archiveGlossarySection: builder.mutation<
       LanguageGlossarySection,
-      { languageId: number; sectionCode: string }
+      { languageId: number; sectionCode: string; profileId?: string | null }
     >({
-      query: ({ languageId, sectionCode }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.ARCHIVE_GLOSSARY_SECTION(languageId, sectionCode),
+      query: ({ languageId, sectionCode, profileId }) => ({
+        url:
+          ApiEndpoints.SIMULATION_STUDIO.ARCHIVE_GLOSSARY_SECTION(languageId, sectionCode) +
+          (profileId ? `?profileId=${profileId}` : ""),
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
