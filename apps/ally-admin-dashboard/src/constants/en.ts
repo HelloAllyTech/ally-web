@@ -2629,6 +2629,137 @@ export const en = {
     updatedSecondsAgo: "Updated {count}s ago",
     updatedMinutesAgo: "Updated {count}m ago",
     updatedHoursAgo: "Updated {count}h ago",
+    // ── Scorecard (the governor's view: cost, throughput, reliability) ─────
+    // Every other surface on this tab answers "what should I do next?". This one
+    // answers "should this thing still be merging its own code?" — a different
+    // question, asked by a different reader, and the one the tab could not answer
+    // at all. See pages/BugHunter/agentScorecard.ts for why each window states
+    // whether it is complete, and why nothing here restates a bucket count.
+    scorecardTitle: "How I'm doing",
+    scorecardSubtitle: "What I've cost, what I've turned up, and how often my shifts finish clean.",
+    scorecardSpendLabel: "Spent",
+    scorecardSpendTooltip:
+      "What my shifts have cost in model usage over the window you've picked. I use the figure the Claude Code CLI reports, which prices prompt-cache reads properly; older shifts fall back to a cache-blind estimate that runs high.",
+    scorecardSpendWindow7: "7 days",
+    scorecardSpendWindow30: "30 days",
+    scorecardSpendWindowAll: "All",
+    // Not "$41" when the real answer is "$41 plus however much the shifts I'm
+    // not holding cost". A floor stated as a floor is useful; a floor printed
+    // as a total is the one reading that could talk someone out of looking.
+    scorecardSpendFloor:
+      "At least this. I'm holding my {runs} most recent shifts and this window starts before the oldest of them, so older spend in it isn't counted.",
+    scorecardFoundLabel: "Bugs I turned up",
+    scorecardFoundTooltip:
+      "Every bug my shifts reported, counted from the shifts themselves rather than from the table above — so it includes ones already rejected, shipped or aged out of the hundred I'm holding.",
+    scorecardAutoMergeLabel: "Merged without asking",
+    scorecardAutoMergeTooltip:
+      "How much of what I found I fixed and merged on my own — lint or type-only changes, or a single-file fix backed by a new regression test. The rest came to you as a pull request. If this climbs, I'm being trusted with more; if it falls, I'm finding harder things.",
+    scorecardCleanLabel: "Shifts that finished clean",
+    scorecardCleanTooltip:
+      "Shifts that completed against shifts that went red. Running and off-duty shifts aren't counted either way. A falling number here usually means something in the harness is broken rather than something in the code.",
+    scorecardTokensLabel: "Tokens",
+    scorecardTokensValue: "{input} in / {output} out",
+    scorecardTokensPartial:
+      "{count} of these shifts predate token tracking, so the counts above are a floor.",
+    scorecardSeriesTitle: "Last 14 days",
+    scorecardSeriesCost: "Cost",
+    scorecardSeriesFound: "Bugs found",
+    scorecardSeriesEmpty: "I haven't worked a shift in the last 14 days.",
+    scorecardSeriesDay: "{date} — {cost}, {found} bugs across {runs} shifts",
+    scorecardSeriesDayQuiet: "{date} — nothing",
+    scorecardWindowNotice:
+      "From my {count} most recent shifts. I don't hold my whole history on this page.",
+    scorecardEmptyTitle: "Nothing to report yet",
+    scorecardEmptySubtitle:
+      "Once I've worked a shift, what it cost and what it turned up shows up here.",
+    scorecardLoadFailed: "Couldn't load the scorecard.",
+    // ── Age / staleness column ─────────────────────────────────────
+    findingColumnAge: "Age",
+    findingColumnAgeTooltip:
+      "How long a bug has been on my list. I only colour it for bugs still waiting on a decision — something that shipped last month isn't stale, it's finished.",
+    findingAgeStaleTooltip: "Waiting on a decision for over a week.",
+    findingAgeAncientTooltip: "Waiting on a decision for over a month.",
+    // ── Row selection and quick actions ─────────────────────────────
+    rowSelectLabel: "Select bug: {title}",
+    selectAllLabel: "Select every bug on this page",
+    selectAllTooltip:
+      "Selects the bugs on this page only — not the whole filtered list, and not the bugs I'm not currently holding.",
+    quickActionsColumn: "Decide",
+    quickApprove: "Approve",
+    quickReject: "Reject",
+    quickFix: "Put me on it",
+    quickActionFailed: "Couldn't record that. Try again.",
+    // Deliberately not "Approve"/"Reject" again. The row button that opened the
+    // dialog says those, and two identical labels on screen at once make it
+    // ambiguous which one you are confirming — the same rule the fix-session
+    // dialog follows with "Start now".
+    quickApproveConfirm: "Approve it",
+    quickRejectConfirm: "Reject it",
+    quickActionNotApplicable: "That doesn't apply to this bug from where it is.",
+    densityLabel: "Rows",
+    densityComfortable: "Comfortable",
+    densityCompact: "Compact",
+    // ── Bulk triage ─────────────────────────────────────────────
+    bulkBarLabel: "Bulk decisions",
+    bulkSelectedOne: "1 bug selected",
+    bulkSelected: "{count} bugs selected",
+    bulkApprove: "Approve {count}",
+    bulkReject: "Reject {count}",
+    bulkClear: "Clear",
+    // Approve and reject have different doors — approve needs "pending your
+    // approval", reject also takes "new" — so each states its own scope rather
+    // than sharing one sentence with the verb swapped in.
+    bulkApproveScope: "{eligible} of {selected} can be approved from where they are.",
+    bulkRejectScope: "{eligible} of {selected} can be rejected from where they are.",
+    bulkApproveNone: "Approving only applies to bugs pending your approval. None of these are.",
+    bulkRejectNone:
+      "Rejecting only applies to bugs that are new or pending your approval. None of these are.",
+    bulkApproveConfirmTitle: "Approve {count} bugs for me to fix?",
+    bulkApproveConfirmBody:
+      "I'll pick them up in the fix stage of my next sweep for their repos. Anything that has moved on since you selected it is skipped, and I'll tell you which.",
+    bulkApproveConfirm: "Approve them",
+    bulkRejectConfirmTitle: "Reject {count} bugs?",
+    bulkRejectConfirmBody:
+      "I'll never pick them up, and this can't be undone. Anything that has moved on since you selected it is skipped, and I'll tell you which.",
+    bulkRejectConfirm: "Reject them",
+    bulkProgress: "Working through {done} of {total}…",
+    bulkApproveDoneOne: "Approved 1 bug.",
+    bulkApproveDone: "Approved {count} bugs.",
+    bulkRejectDoneOne: "Rejected 1 bug.",
+    bulkRejectDone: "Rejected {count} bugs.",
+    // Partial failure is the ordinary case, not the exception: a selection made
+    // fifteen seconds ago can hold a bug whose status has since moved. Both
+    // halves get said, and the failures get named rather than counted.
+    bulkPartial: "{done} done. {failed} didn't go through: {titles}.",
+    bulkPartialMore: "{done} done. {failed} didn't go through: {titles}, and {rest} more.",
+    bulkAllFailed: "None of those went through, so nothing changed.",
+    // ── Keyboard ───────────────────────────────────────────────
+    shortcutsButton: "Keyboard",
+    shortcutsTitle: "Keyboard shortcuts",
+    shortcutsIntro:
+      "For working the list without reaching for the mouse. These apply whenever the bugs table is on screen and you aren't typing into a field.",
+    shortcutsHint: "Press ? for shortcuts",
+    shortcutsClose: "Close",
+    shortcutsGroupMove: "Moving around",
+    shortcutsGroupAct: "Acting on the bug you're on",
+    shortcutsGroupSelect: "Selecting",
+    shortcutMoveDown: "Next bug",
+    shortcutMoveUp: "Previous bug",
+    shortcutOpen: "Open it",
+    shortcutEscape: "Close the drawer, or clear the selection",
+    shortcutApprove: "Approve it",
+    shortcutReject: "Reject it",
+    shortcutFix: "Put me on it",
+    shortcutToggleSelect: "Add it to the selection",
+    shortcutSelectPage: "Select every bug on this page",
+    shortcutSearch: "Jump to the search box",
+    shortcutHelp: "Show this list",
+    // ── Deep link ────────────────────────────────────────────
+    drawerCopyLink: "Copy link",
+    drawerCopyLinkTooltip:
+      "Copies a link that opens this exact bug for whoever you send it to — the address bar carries the open bug and your filters, so a bookmark of this page is a bookmark of this view.",
+    drawerCopyLinkDone: "Link copied.",
+    drawerCopyLinkFailed: "Couldn't copy the link.",
   },
   evaluate: {
     title: "Ally Evaluation",

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock API hooks — mode state, the findings table, and run history all come entirely from these.
@@ -190,13 +191,21 @@ describe("BugHunter", () => {
   });
 
   it("leads with the character rather than a page heading", () => {
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
     expect(screen.getByText(/Software test engineer/)).toBeInTheDocument();
   });
 
   it("renders every About-me question, so a reader can find them before putting it on duty", () => {
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("What do you do?")).toBeInTheDocument();
     expect(
       screen.getByText("What's the difference between the two working styles?"),
@@ -208,7 +217,11 @@ describe("BugHunter", () => {
   });
 
   it("names both old mode names in About me, so logs and docs still join up", () => {
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     expect(screen.getByText(/Works solo \(AI mode\)/)).toBeInTheDocument();
     expect(screen.getByText(/Checks with you \(Manual mode\)/)).toBeInTheDocument();
   });
@@ -223,7 +236,11 @@ describe("BugHunter", () => {
   };
 
   it("puts About me directly under the card while it is off duty", () => {
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     expect(aboutComesBeforeTheBugsTable()).toBe(true);
   });
 
@@ -231,7 +248,11 @@ describe("BugHunter", () => {
     mockSettingsQuery({
       data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
     });
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     expect(aboutComesBeforeTheBugsTable()).toBe(false);
   });
 
@@ -259,7 +280,11 @@ describe("BugHunter", () => {
         count: 1,
       },
     });
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
 
     const queue = screen.getByText("What I need from you");
     const bugs = screen.getByText("Bugs I'm tracking");
@@ -270,7 +295,11 @@ describe("BugHunter", () => {
     mockSettingsQuery({
       data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
     });
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
 
     // An always-present section headed "What I need from you" saying "nothing"
     // trains a reader to skip the region where the urgent thing later appears.
@@ -278,7 +307,11 @@ describe("BugHunter", () => {
   });
 
   it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {
-    render(<BugHunter />);
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
     const emptyStates = screen.getAllByTestId("empty-state");
     expect(emptyStates.some(el => el.textContent?.includes("No bugs yet"))).toBe(true);
     expect(emptyStates.some(el => el.textContent?.includes("No shifts yet"))).toBe(true);

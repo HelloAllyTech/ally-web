@@ -107,6 +107,27 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const [descriptionDraft, setDescriptionDraft] = useState<string | null>(null);
   const [showOriginalDescription, setShowOriginalDescription] = useState(false);
 
+  /**
+   * Copies the address bar, which now identifies this exact bug.
+   *
+   * The whole point of moving the open bug into `?bug=<id>` was that "take a
+   * look at this one" becomes a link rather than a description of how to find a
+   * row. This is that link, made reachable without teaching anyone that the
+   * address bar changed.
+   *
+   * `navigator.clipboard` is unavailable on an insecure origin and can be
+   * refused by permissions policy, so the failure is reported rather than
+   * swallowed — a copy button that silently does nothing is worse than none.
+   */
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success(en.bugHunter.drawerCopyLinkDone);
+    } catch {
+      toast.error(en.bugHunter.drawerCopyLinkFailed);
+    }
+  };
+
   // Both arrays are defaulted rather than read straight off the response. A
   // backend one release behind this build omits `steps` entirely, and reading
   // `.some` off that undefined threw during render — which, with no error
@@ -257,6 +278,19 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 · {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
               </span>
             )}
+
+            {/* Pushed to the end of the row rather than given a place among the
+                actions below: this is about the bug's address, not about its
+                state, and it is safe to press at any point in the lifecycle. */}
+            <div className="ml-auto">
+              <Tooltip label={en.bugHunter.drawerCopyLinkTooltip} align="bottom">
+                <span className="inline-flex">
+                  <Button size="sm" kind="ghost" onClick={() => void copyLink()}>
+                    {en.bugHunter.drawerCopyLink}
+                  </Button>
+                </span>
+              </Tooltip>
+            </div>
           </div>
 
           <PipelineRail
