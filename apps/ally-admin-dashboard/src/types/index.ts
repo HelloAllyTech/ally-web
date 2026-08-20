@@ -30,3 +30,4 @@ export * from "./bugHunter";
 export * from "./whatsappBot";
 export * from "./characterInterview";
 export * from "./featureToggles";
+export * from "./cohorts";

@@ -755,6 +755,7 @@ export const en = {
     path: "Tracks",
     cases: "Cases",
     courses: "Courses",
+    groups: "Groups",
     badges: "Badges",
     access: "Access",
     global: "Global",

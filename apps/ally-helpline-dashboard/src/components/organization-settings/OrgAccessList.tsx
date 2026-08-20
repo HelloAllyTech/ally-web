@@ -9,7 +9,8 @@ import { useDebounce } from "@hooks";
  * scenario / path / case rows, all of which expose the same fields.
  */
 export interface OrgAccessItem {
-  id: number;
+  /** Number for scenarios/paths, uuid string for courses (Track 2.0). */
+  id: number | string;
   title: string;
   description: string;
   coverImageUrl?: string;
@@ -26,12 +27,22 @@ interface OrgAccessListProps {
   /** True when the last page came back full — shows the Load more button. */
   hasMore: boolean;
   /** Ids currently mid-flight for a toggle, to disable the switch. */
-  pendingIds?: Set<number>;
+  pendingIds?: Set<number | string>;
   searchPlaceholder: string;
   emptyLabel: string;
   onSearchChange: (value: string) => void;
-  onToggle: (id: number, enabled: boolean) => void;
+  onToggle: (id: number | string, enabled: boolean) => void;
   onLoadMore: () => void;
+  /**
+   * Optional extra control rendered on each row, left of the enable toggle.
+   *
+   * A render prop rather than cohort-specific props so this list stays unaware
+   * that cohorts exist — the Badges tab and any future tab can keep using it
+   * with no cohort concept at all. Only rendered for rows that are actually
+   * assigned to the tenant: restricting content the org does not have would be
+   * a control with nothing to act on.
+   */
+  renderRowAction?: (item: OrgAccessItem) => ReactNode;
 }
 
 const RowSkeleton = () => (
@@ -76,6 +87,7 @@ export const OrgAccessList: FC<OrgAccessListProps> = ({
   onSearchChange,
   onToggle,
   onLoadMore,
+  renderRowAction,
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce((value: string) => onSearchChange(value), 300);
@@ -139,6 +151,7 @@ export const OrgAccessList: FC<OrgAccessListProps> = ({
                 </div>
               </div>
               <div className="flex flex-shrink-0 items-center gap-3">
+                {item.isAssignedToTenant ? renderRowAction?.(item) : null}
                 <div className={isPending ? "pointer-events-none opacity-50" : ""}>
                   <ToggleSwitch
                     enabled={item.isAssignedToTenant}

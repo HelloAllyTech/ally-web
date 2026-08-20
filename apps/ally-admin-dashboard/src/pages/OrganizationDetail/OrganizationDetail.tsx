@@ -25,6 +25,7 @@ import {
   SimulationsSettings,
   CasesTab,
   CoursesTab,
+  GroupsTab,
   BadgesTab,
 } from "@components";
 import { en, ROUTES, isSuperAdminRole, FeatureToggleKey } from "@constants";
@@ -37,6 +38,7 @@ enum TAB_IDS {
   PATH = "path",
   CASES = "cases",
   COURSES = "courses",
+  GROUPS = "groups",
   BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
   SIMULATION_SETTINGS = "simulationSettings",
@@ -47,6 +49,7 @@ const defaultTabs = [
   { id: TAB_IDS.PATH, label: en.userManagement.path },
   { id: TAB_IDS.CASES, label: en.userManagement.cases },
   { id: TAB_IDS.COURSES, label: en.userManagement.courses },
+  { id: TAB_IDS.GROUPS, label: en.userManagement.groups },
   { id: TAB_IDS.BADGES, label: en.userManagement.badges },
   { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
   { id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings },
@@ -70,7 +73,15 @@ export const OrganizationDetail: FC = () => {
   const filteredTabs = useMemo(() => {
     return defaultTabs.filter(tab => {
       // Content-access tabs stay gated, matching Tracks and Cases.
-      if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES || tab.id === TAB_IDS.COURSES) {
+      if (
+        tab.id === TAB_IDS.PATH ||
+        tab.id === TAB_IDS.CASES ||
+        tab.id === TAB_IDS.COURSES ||
+        // Groups sits behind the same gate: limiting content to a group is
+        // meaningless to an admin who cannot see the tabs that assign that
+        // content in the first place.
+        tab.id === TAB_IDS.GROUPS
+      ) {
         return hasOrgDetailContentAccess;
       }
       return true;
@@ -246,6 +257,8 @@ export const OrganizationDetail: FC = () => {
             onToggleAccess={handleToggleCourseAccess}
           />
         );
+      case TAB_IDS.GROUPS:
+        return <GroupsTab organizationId={id} />;
       case TAB_IDS.SCRIBE_SETTINGS:
         return <ScribeSettings tenantId={id} onUpdateTenant={refetchTenant} />;
       case TAB_IDS.BADGES:
