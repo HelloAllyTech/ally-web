@@ -17,6 +17,16 @@ interface ToggleSectionProps {
    * label. Superadmins author the text under Manage Tooltips.
    */
   tooltipLocation?: string;
+  /**
+   * Initial value used when the form holds nothing for this field yet — i.e. a
+   * brand-new record, where no response has been `reset()` in. Mirrors
+   * SliderField. Without it the controller starts `undefined`, so a field
+   * config declaring `defaultValue: true` still rendered OFF, the author's
+   * first click on it read as "turn on" (they had to click twice to actually
+   * turn it off), and saving without touching it persisted `false` — the exact
+   * opposite of the declared default.
+   */
+  defaultValue?: boolean;
 }
 
 export const ToggleSection = ({
@@ -24,12 +34,17 @@ export const ToggleSection = ({
   name,
   formMethods,
   tooltipLocation,
+  defaultValue,
 }: ToggleSectionProps) => {
   const {
     field: { value, onChange },
   } = useController({
     name,
     control: formMethods.control,
+    // Always an explicit boolean: a field with no declared default is OFF, and
+    // seeding `false` rather than leaving the key absent keeps what the author
+    // sees and what the save payload carries in step.
+    defaultValue: defaultValue === true,
   });
 
   const { data: tooltips = [] } = useGetActiveTooltipsQuery(undefined, {

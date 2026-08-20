@@ -105,6 +105,14 @@ vi.mock("../../time-input", () => ({
   TimeInput: ({ id, label }: any) => <div data-testid={`time-input-${id}`}>{label}</div>,
 }));
 
+// Stubbed so the assertions are about the props FormField FORWARDS. The
+// seeding those props drive lives in ToggleSection's own test.
+vi.mock("../../toggle-section", () => ({
+  ToggleSection: ({ name, defaultValue }: any) => (
+    <div data-testid={`toggle-${name}`} data-default-value={String(defaultValue)} />
+  ),
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   ReportGenerationStatus: {
@@ -123,6 +131,7 @@ vi.mock("@constants", () => ({
     },
     TIME_INPUT: "time_input",
     SLIDER: "slider",
+    TOGGLE_BUTTON: "toggle_button",
   },
   TAG_TYPES: {
     USERS: "users",
@@ -1068,6 +1077,58 @@ describe("FormField", () => {
       );
 
       expect(screen.getByText("Controls response variability.")).toBeInTheDocument();
+    });
+  });
+
+  describe("TOGGLE_BUTTON defaultValue pass-through", () => {
+    const renderToggle = (config: Partial<FormFieldConfig>) =>
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField
+              config={
+                {
+                  id: "enableFeedback",
+                  label: "Post-Session Feedback",
+                  type: "toggle_button",
+                  ...config,
+                } as FormFieldConfig
+              }
+              formMethods={formMethods}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+    // The gap this closes: FormField destructured `defaultValue` off the config
+    // but never handed it to ToggleSection, so a config declaring
+    // `defaultValue: true` rendered OFF on a brand-new simulation and saved
+    // `false`.
+    it("forwards a declared `defaultValue: true`", () => {
+      renderToggle({ defaultValue: true });
+
+      expect(screen.getByTestId("toggle-enableFeedback")).toHaveAttribute(
+        "data-default-value",
+        "true",
+      );
+    });
+
+    it("forwards a declared `defaultValue: false`", () => {
+      renderToggle({ defaultValue: false });
+
+      expect(screen.getByTestId("toggle-enableFeedback")).toHaveAttribute(
+        "data-default-value",
+        "false",
+      );
+    });
+
+    it("forwards `false` when the config declares no default", () => {
+      renderToggle({});
+
+      expect(screen.getByTestId("toggle-enableFeedback")).toHaveAttribute(
+        "data-default-value",
+        "false",
+      );
     });
   });
 });
