@@ -25,7 +25,7 @@ import {
   hasAllyAdminAccess,
   adminAppUrl,
 } from "@constants";
-import { usePracticeStreakSummary, useUser } from "@hooks";
+import { useCanViewCharacterLibrary, usePracticeStreakSummary, useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
@@ -140,11 +140,18 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const [openReportProblem, setOpenReportProblem] = useState<boolean>(false);
+  const { canView: canViewCharacterLibrary } = useCanViewCharacterLibrary();
   const permittedTabs = navBarOptions.filter(tab => {
     // Organization Settings is gated by ADMIN role + a temporary email
     // allowlist, not by a permission (see canViewOrganizationSettings).
     if (tab.id === TabId.ORGANIZATION_SETTINGS) {
       return canViewOrganizationSettings(user);
+    }
+
+    // Character Library needs the view:scenario-character permission AND the
+    // tenant's CHARACTER_LIBRARY_ENABLED org toggle — see useCanViewCharacterLibrary.
+    if (tab.id === TabId.CHARACTER_LIBRARY) {
+      return canViewCharacterLibrary;
     }
 
     // Check if user has permission for this tab

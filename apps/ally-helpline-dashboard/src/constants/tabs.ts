@@ -11,6 +11,7 @@ export enum TabId {
   REVIEW = "REVIEW",
   BADGES = "BADGES",
   ORGANIZATION_SETTINGS = "ORGANIZATION_SETTINGS",
+  CHARACTER_LIBRARY = "CHARACTER_LIBRARY",
   // Not an in-app tab: opens the Ally Admin console in a new tab.
   ALLY_ADMIN = "ALLY_ADMIN",
   // Not a route: opens the report-a-problem modal in place, handled in NavSideBar.

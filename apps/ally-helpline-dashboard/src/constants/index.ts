@@ -15,3 +15,5 @@ export * from "./user.ts";
 export * from "./review";
 export * from "./aiChat";
 export * from "./rating";
+export * from "./characterOptions";
+export * from "./characterLibraryStrings";

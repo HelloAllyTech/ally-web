@@ -279,4 +279,17 @@ export const ApiEndpoints = {
     // resulting opportunity source='consumer'; see ally-be src/product-roadmap.
     CREATE_BUG_REPORT: "/v1/product-roadmap/bug-reports",
   },
+  // Character Library + interview agent (ADMIN, view+create only — see
+  // migration 1905000000000-AddTenantScopedCharacterLibrary). Own-tenant only:
+  // the backend row-scopes GET by the caller's tenant.
+  CHARACTER_LIBRARY: {
+    GET_CHARACTERS: "/v1/scenario-characters",
+    CREATE_CHARACTER: "/v1/scenario-characters",
+    CHARACTER_LIBRARY_ENABLED: "/v1/settings/character-library-enabled",
+    INTERVIEW_SESSIONS: "/v1/scenario-characters/interview/sessions",
+    INTERVIEW_SESSION: (sessionId: string) =>
+      `/v1/scenario-characters/interview/sessions/${sessionId}`,
+    INTERVIEW_SESSION_STREAM: (sessionId: string) =>
+      `/v1/scenario-characters/interview/sessions/${sessionId}/messages/stream`,
+  },
 };

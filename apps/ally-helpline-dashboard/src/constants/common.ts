@@ -57,6 +57,8 @@ export const LOCAL_STORAGE_KEYS = {
   ACCESS_TOKEN: "accessToken",
   REFRESH_TOKEN: "refreshToken",
   ROOM_DATA: "roomData",
+  // Pins an in-progress character-interview session across a page reload.
+  CHARACTER_INTERVIEW_SESSION_ID: "characterInterviewSessionId",
 };
 
 export const SESSION_STORAGE_KEYS = {
@@ -151,6 +153,8 @@ export const TAG_TYPES = {
   LEARN_TRACKS: "LearnTracks",
   LEARN_TRACK_DETAIL: "LearnTrackDetail",
   LEARN_TRACK_NEXT: "LearnTrackNext",
+  // Character Library (own-tenant list)
+  CHARACTER_LIBRARY: "CharacterLibrary",
 };
 
 export const SORT_ORDER = {

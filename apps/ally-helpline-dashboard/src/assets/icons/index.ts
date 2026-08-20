@@ -42,6 +42,7 @@ import Carousel1 from "./carousel-1.svg?react";
 import Carousel2 from "./carousel-2.svg?react";
 import Carousel3 from "./carousel-3.svg?react";
 import Carousel4 from "./carousel-4.svg?react";
+import CharacterLibraryIcon from "./character-library.svg?react";
 import ChatBubble from "./chat-bubble.svg?react";
 import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
@@ -190,6 +191,7 @@ export {
   Carousel2,
   Carousel3,
   Carousel4,
+  CharacterLibraryIcon,
   CloseIcon,
   Close,
   Cloud,

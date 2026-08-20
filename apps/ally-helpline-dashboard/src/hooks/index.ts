@@ -24,3 +24,5 @@ export * from "./usePostSessionStreak";
 export * from "./usePracticeStreakSummary";
 export * from "./useVideoWatchProgress";
 export * from "./useFieldAutosave";
+export * from "./useCharacterInterviewStream";
+export * from "./useCanViewCharacterLibrary";

@@ -82,6 +82,7 @@ afterAll(() => {
 
 // Mock assets
 vi.mock("@assets", () => ({
+  CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Carousel1: "carousel-1.jpg",
   Carousel2: "carousel-2.jpg",

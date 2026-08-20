@@ -88,6 +88,7 @@ vi.mock("@hooks", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   ArrowLeft: ({ className }: { className?: string }) => (
     <svg data-testid="arrow-left-icon" className={className} />

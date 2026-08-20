@@ -63,6 +63,10 @@ vi.mock("@pages", () => ({
   OrganizationSettings: () => (
     <div data-testid="organization-settings-page">Organization Settings Page</div>
   ),
+  CharacterLibrary: () => <div data-testid="character-library-page">Character Library Page</div>,
+  CharacterInterview: () => (
+    <div data-testid="character-interview-page">Character Interview Page</div>
+  ),
 }));
 
 // Mock the reducer actions

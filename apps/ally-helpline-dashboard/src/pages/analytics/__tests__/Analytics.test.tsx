@@ -56,6 +56,7 @@ vi.mock("../OrganizationMetrics", () => ({
 
 // Mock the NoAnalytics asset
 vi.mock("@assets", () => ({
+  CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   NoAnalytics: () => <div data-testid="no-analytics">No Analytics Available</div>,
   Carousel1: "Carousel1",
