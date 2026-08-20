@@ -247,6 +247,13 @@ vi.mock("@utils", () => ({
   }),
   extractValidData: (_fields: any, data: any) => data,
   formatSimulationResponseData: (data: any) => data,
+  // Mirrors the real helper's absent-means-ON semantics — a Boolean() stub
+  // here would hide the very regression the real one exists to prevent.
+  buildFeedbackTabsPayload: (form: any) => ({
+    debrief: form?.feedbackTabDebrief !== false,
+    skills: form?.feedbackTabSkills !== false,
+    transcript: form?.feedbackTabTranscript !== false,
+  }),
   // Real implementation in spirit: every toggle id mapped to its declared
   // default. CreateSimulation feeds this straight into useForm's defaultValues,
   // so a stub returning undefined would silently drop the create-path defaults.

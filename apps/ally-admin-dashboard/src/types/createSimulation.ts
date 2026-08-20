@@ -64,6 +64,10 @@ export type FormData = {
   maxTimeValue?: string;
   showScoreMeter?: boolean;
   enableFeedback?: boolean;
+  /** Post-session tab visibility, gated under `enableFeedback`. See SimulationInput.feedbackTabs. */
+  feedbackTabDebrief?: boolean;
+  feedbackTabSkills?: boolean;
+  feedbackTabTranscript?: boolean;
   pauseEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;

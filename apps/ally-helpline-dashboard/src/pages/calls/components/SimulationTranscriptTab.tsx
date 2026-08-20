@@ -8,7 +8,7 @@ import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { useGetAudioUrlQuery, useGetSimulationTranscriptQuery } from "@api";
 import { TranscriptListing } from "@components";
 import { RootState } from "@store";
-import { SimulationTranscriptMessage } from "@types";
+import { SimulationTranscriptMessage, TranscriptFocusRequest } from "@types";
 
 import { TRANSCRIPT_LANGUAGE_OPTIONS } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
@@ -41,9 +41,13 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   councellorName,
   agentName,
   originalLanguageCode = "en",
+  focusMessage,
 }) => {
   const { t } = useTranslation();
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
+  /** The moment request, held back until there is a loaded transcript to search. */
+  const [resolvedFocus, setResolvedFocus] = useState<TranscriptFocusRequest | null>(null);
+  const handledFocusRequestRef = useRef<number | null>(null);
   const [transcriptLanguage, setTranscriptLanguage] = useState<string>(originalLanguageCode);
   /** originalLanguageCode can resolve after mount (parent's language lookup is async);
    * once the user picks a language manually, stop syncing to it. */
@@ -136,6 +140,30 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     }
   }, [transcript, user?.id, t]);
 
+  // A moment chip can be clicked before the transcript has loaded (this tab
+  // mounts on the switch), so hold the request until there is something to
+  // search, then either hand it to the listing or say the jump failed.
+  useEffect(() => {
+    if (!focusMessage) return;
+    if (handledFocusRequestRef.current === focusMessage.requestId) return;
+    if (transcriptQueryBusy) return;
+    // An empty list is either a failed fetch or a session with no transcript —
+    // both already say so on screen, so don't stack a second message on top.
+    if (!transcriptList.length) return;
+
+    handledFocusRequestRef.current = focusMessage.requestId;
+    const targetId = String(focusMessage.messageId);
+    if (transcriptList.some(message => String(message.id) === targetId)) {
+      setResolvedFocus(focusMessage);
+      return;
+    }
+    // Ally only anchors moments it could resolve, so landing here means the id
+    // is outside what this view loaded (e.g. a translated transcript that
+    // dropped a turn). Opening the tab is still useful — say the jump didn't
+    // land instead of leaving the learner at the top wondering.
+    toast.info(t("postSim.debrief.momentNotFound"));
+  }, [focusMessage, transcriptQueryBusy, transcriptList, t]);
+
   return (
     <div
       className={`relative flex h-full min-h-0 flex-col border border-gray-200 rounded-md p-2 custom-scrollbar ${className}`}
@@ -170,6 +198,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         counsellorName={councellorName}
         agentName={agentName}
         audioUrl={audioUrlData?.presignedUrl}
+        focusRequest={resolvedFocus}
       />
     </div>
   );

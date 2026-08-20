@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
+import { toast } from "sonner";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import {
@@ -49,13 +50,28 @@ vi.mock("@api", () => ({
   useUpdateReviewMutation: vi.fn(),
 }));
 
+// Toasts are asserted against for the unresolvable-moment case.
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() },
+}));
+
 // Mock TranscriptListing component
 vi.mock("@components", async importOriginal => {
   const actual = await importOriginal<typeof import("@components")>();
   return {
     ...actual,
-    TranscriptListing: ({ transcriptList, handleLoadMore, isLoading }: any) => (
-      <div data-testid="transcript-tab">
+    TranscriptListing: ({ transcriptList, handleLoadMore, isLoading, focusRequest }: any) => (
+      <div
+        data-testid="transcript-tab"
+        // Spread rather than always-present attributes, so the unrelated
+        // snapshot above stays untouched when no moment is requested.
+        {...(focusRequest
+          ? {
+              "data-focus-message-id": focusRequest.messageId,
+              "data-focus-request-id": String(focusRequest.requestId),
+            }
+          : {})}
+      >
         {isLoading && transcriptList.length === 0 && <div data-testid="loading">Loading...</div>}
         <div data-testid="transcript-list">
           {transcriptList.map((item: any, index: number) => (
@@ -246,6 +262,84 @@ describe("SimulationTranscriptTab", () => {
       expect(screen.getByTestId("content-2")).toHaveTextContent("Client message 2");
     });
     expect(screen.queryByTestId("load-more-button")).not.toBeInTheDocument();
+  });
+
+  // --- Debrief moment anchors ---
+  // A "See this moment" chip in the debrief note asks this tab to scroll to one
+  // message. The tab mounts as the learner switches to it, so a request can
+  // arrive before the transcript has loaded.
+
+  it("should hand a resolvable moment to the transcript listing", async () => {
+    renderWithProvider(
+      <SimulationTranscriptTab
+        sessionId={mockSessionId}
+        focusMessage={{ messageId: "2", requestId: 1 }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("transcript-tab")).toHaveAttribute("data-focus-message-id", "2");
+    });
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it("should say so when the anchored moment is not in the transcript", async () => {
+    renderWithProvider(
+      <SimulationTranscriptTab
+        sessionId={mockSessionId}
+        focusMessage={{ messageId: "does-not-exist", requestId: 1 }}
+      />,
+    );
+
+    // Opening the tab is still useful, so the transcript renders — but the
+    // learner is told the jump didn't land rather than being left at the top.
+    await waitFor(() => {
+      expect(toast.info).toHaveBeenCalledWith(expect.stringContaining("moment"));
+    });
+    expect(screen.getByTestId("transcript-tab")).not.toHaveAttribute("data-focus-message-id");
+  });
+
+  it("should wait for the transcript before calling a moment unresolvable", async () => {
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isFetching: true,
+      refetch: vi.fn(),
+    } as any);
+
+    const { rerender } = renderWithProvider(
+      <SimulationTranscriptTab
+        sessionId={mockSessionId}
+        focusMessage={{ messageId: "3", requestId: 1 }}
+      />,
+    );
+
+    // Still loading: the message may well be in the response that hasn't
+    // arrived yet, so nothing is claimed either way.
+    expect(toast.info).not.toHaveBeenCalled();
+    expect(screen.getByTestId("transcript-tab")).not.toHaveAttribute("data-focus-message-id");
+
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: mockTranscriptData,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    } as any);
+    rerender(
+      <BrowserRouter>
+        <Provider store={store}>
+          <SimulationTranscriptTab
+            sessionId={mockSessionId}
+            focusMessage={{ messageId: "3", requestId: 1 }}
+          />
+        </Provider>
+      </BrowserRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("transcript-tab")).toHaveAttribute("data-focus-message-id", "3");
+    });
+    expect(toast.info).not.toHaveBeenCalled();
   });
 
   // --- Data Handling Tests ---

@@ -5,10 +5,25 @@ import { useTranslation } from "react-i18next";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "@components";
 import { ScribeSessionMode } from "@constants";
-import { SimulationTranscriptMessage, TranscriptMessage } from "@types";
+import { SimulationTranscriptMessage, TranscriptFocusRequest, TranscriptMessage } from "@types";
 
 const NEAR_END_THRESHOLD = 3;
 const NEAR_END_COOLDOWN_MS = 900;
+
+/**
+ * How long a jumped-to moment stays visibly marked. Long enough to catch the
+ * eye once the smooth scroll settles, short enough that it reads as "here it
+ * is" rather than as a selection the reader now has to dismiss.
+ */
+const FOCUS_HIGHLIGHT_MS = 2500;
+
+/** Transcript ids are numeric in the payload but strings in note anchors. */
+const getMessageId = (
+  message: SimulationTranscriptMessage | TranscriptMessage,
+): string | undefined =>
+  "id" in message && message.id !== null && message.id !== undefined
+    ? String(message.id)
+    : undefined;
 
 interface TranscriptListingProps {
   /** Messages in backend order (sorted server-side; append pages in that same order). */
@@ -22,6 +37,12 @@ interface TranscriptListingProps {
   className?: string;
   audioUrl?: string;
   mode?: string;
+  /**
+   * A message to scroll into view and briefly highlight. Ignored when the id
+   * isn't in `transcriptList` — the caller owns that fallback, because only it
+   * knows whether the transcript has finished loading or has more pages.
+   */
+  focusRequest?: TranscriptFocusRequest | null;
 }
 
 const categoryColoeMap = {
@@ -84,6 +105,7 @@ const TranscriptItem = ({
   aiAgentName,
   youLabel,
   isActive,
+  isFocused,
   itemRef,
   onRowClick,
 }: {
@@ -94,6 +116,7 @@ const TranscriptItem = ({
   youLabel: string;
   transcript: SimulationTranscriptMessage | TranscriptMessage;
   isActive: boolean;
+  isFocused: boolean;
   itemRef?: RefObject<HTMLDivElement | HTMLButtonElement | null>;
   onRowClick?: () => void;
 }) => {
@@ -107,9 +130,12 @@ const TranscriptItem = ({
 
   const borderWidthClass = isActive ? "border-[3px]" : "border";
   const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
-  const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-colors ${borderWidthClass} ${
+  // A jumped-to moment is marked with a ring rather than a border change, so it
+  // reads on top of whatever the audio playback highlight is doing to the row.
+  const focusRingClass = isFocused ? "ring-2 ring-offset-1 ring-primary-500" : "";
+  const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-all ${borderWidthClass} ${
     isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
-  } ${hoverBgClass}`;
+  } ${hoverBgClass} ${focusRingClass}`;
 
   const body = (
     <>
@@ -171,6 +197,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   className = "",
   audioUrl,
   mode,
+  focusRequest,
 }) => {
   const { t } = useTranslation();
   const aiClientSuffix = t("transcription.aiClientSuffix");
@@ -178,6 +205,10 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const youLabel = t("transcription.youLabel");
   const containerRef = useRef<HTMLDivElement>(null);
   const activeItemRef = useRef<HTMLDivElement | HTMLButtonElement | null>(null);
+  const focusedItemRef = useRef<HTMLDivElement | HTMLButtonElement | null>(null);
+  const focusHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Last request acted on, so a re-render doesn't re-scroll an old jump. */
+  const handledFocusRequestRef = useRef<number | null>(null);
   const seekRequestIdRef = useRef(0);
   const prevIsLoadingRef = useRef(false);
   /** Max transcript time when the in-flight fetch started (detect no-op pages). */
@@ -185,6 +216,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const nearEndLastCallRef = useRef(0);
 
   const [activeIndex, setActiveIndex] = useState(-1);
+  /** Message currently marked as the jumped-to moment; cleared on a timer. */
+  const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const [transcriptSeekRequest, setTranscriptSeekRequest] =
@@ -281,6 +314,32 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
       activeItemRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [activeIndex]);
+
+  // ── Jump to a requested moment (debrief note chip) ──
+  // The list can arrive after the request does, so this re-runs on
+  // transcriptList too rather than only on the request itself.
+  useEffect(() => {
+    if (!focusRequest) return;
+    if (handledFocusRequestRef.current === focusRequest.requestId) return;
+    const targetId = String(focusRequest.messageId);
+    if (!transcriptList.some(message => getMessageId(message) === targetId)) return;
+    handledFocusRequestRef.current = focusRequest.requestId;
+    setFocusedMessageId(targetId);
+  }, [focusRequest, transcriptList]);
+
+  // Scroll only once the highlighted row has rendered and its ref is attached,
+  // then let the highlight expire on its own.
+  useEffect(() => {
+    if (!focusedMessageId) return undefined;
+    focusedItemRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    focusHighlightTimerRef.current = setTimeout(
+      () => setFocusedMessageId(null),
+      FOCUS_HIGHLIGHT_MS,
+    );
+    return () => {
+      if (focusHighlightTimerRef.current) clearTimeout(focusHighlightTimerRef.current);
+    };
+  }, [focusedMessageId]);
 
   // ── While playing, prefetch when near the chronological end of loaded data ──
   useEffect(() => {
@@ -379,6 +438,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
                 ))
               : transcriptList.map((transcript, index) => {
                   const isItemActive = index === activeIndex;
+                  const isItemFocused =
+                    focusedMessageId !== null && getMessageId(transcript) === focusedMessageId;
                   return (
                     <TranscriptItem
                       key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
@@ -389,7 +450,13 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
                       aiAgentName={aiAgentName}
                       youLabel={youLabel}
                       isActive={isItemActive}
-                      itemRef={isItemActive ? activeItemRef : undefined}
+                      isFocused={isItemFocused}
+                      // A row can be both the playback-active one and the
+                      // jumped-to one; the jump owns the ref while it lasts,
+                      // since it is the scroll the reader just asked for.
+                      itemRef={
+                        isItemFocused ? focusedItemRef : isItemActive ? activeItemRef : undefined
+                      }
                       onRowClick={
                         audioUrl
                           ? () => {

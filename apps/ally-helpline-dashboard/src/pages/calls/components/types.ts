@@ -2,7 +2,13 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { Dayjs } from "dayjs";
 
-import { CallLog, ChatSummaryStatus, SessionType, SimulationSummary } from "@types";
+import {
+  CallLog,
+  ChatSummaryStatus,
+  SessionType,
+  SimulationSummary,
+  TranscriptFocusRequest,
+} from "@types";
 
 import { SessionUserGroup } from "../constants";
 
@@ -129,6 +135,13 @@ export interface SimulationTranscriptTabProps {
   /** Language the session was actually conducted in, resolved from the session's
    * `metadata.languageId`. Falls back to "en" when unresolved (e.g. legacy sessions). */
   originalLanguageCode?: string;
+  /**
+   * A moment to scroll to and highlight once the transcript has loaded —
+   * raised by the "See this moment" chips in Ally's debrief note. If the id
+   * isn't in the transcript, the tab says so rather than sitting at the top
+   * pretending the jump worked.
+   */
+  focusMessage?: TranscriptFocusRequest | null;
 }
 
 export interface AudioUploadDialogProps {

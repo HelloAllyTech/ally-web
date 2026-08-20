@@ -361,6 +361,13 @@ export const ApiEndpoints = {
     USAGE_LEVELS: "/v1/analytics/usage-levels",
     CERTIFICATION: "/v1/analytics/certification",
     ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
+    USAGE_LADDER: "/v1/analytics/usage-ladder",
+    PRACTICE_STICKINESS: "/v1/analytics/practice-stickiness",
+    QUALIFIED_SESSIONS: "/v1/analytics/qualified-sessions",
+    ORG_ENGAGEMENT: "/v1/analytics/org-engagement",
+    ROLEPLAY_COST: "/v1/analytics/roleplay-cost",
+    QUALITY_SENTIMENT: "/v1/analytics/quality-sentiment",
+    CHART_PREFERENCES: "/v1/analytics/chart-preferences",
     ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
@@ -385,6 +392,11 @@ export const ApiEndpoints = {
     COMPLETION_RATE: "/v1/analytics/completion-rate",
     LANGUAGE_MIX: "/v1/analytics/language-mix",
     SKILL_GROWTH: "/v1/analytics/skill-growth",
+    // The drill-down behind the curve: the list, and one learner's timeline.
+    // Sub-paths of skill-growth because they answer the SAME question at a
+    // different grain — a separate top-level name would invite a second
+    // definition of an evaluated session.
+    SKILL_GROWTH_LEARNERS: "/v1/analytics/skill-growth/learners",
     QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
     COMPETENCY_MAP: "/v1/analytics/competency-map",
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",
@@ -681,6 +693,12 @@ export const TAG_TYPES = {
   WHATSAPP_BOT_UNANSWERED: "whatsAppBotUnanswered",
   WHATSAPP_BOT_ANALYTICS: "whatsAppBotAnalytics",
 
+  // Cohorts (per-organization user grouping). Restrictions are a separate tag so
+  // a restriction edit refreshes the content tab without refetching the roster.
+  COHORTS: "cohorts",
+  COHORT_MEMBERS: "cohortMembers",
+  COHORT_RESTRICTIONS: "cohortRestrictions",
+
   TRACKS_V2: "tracksV2",
   TRACK_TRANSLATIONS: "trackTranslations",
   BLOGS: "blogs",
@@ -705,6 +723,7 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
   // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
   ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
+  ANALYTICS_CHART_PREFERENCES: "analyticsChartPreferences",
   BUG_HUNTER_SETTINGS: "bugHunterSettings",
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
@@ -762,7 +781,16 @@ export enum TooltipLocation {
   // superadmins author the text and enable each under Manage Tooltips.
   SESSION_TIMER = "session_timer",
   SCORE = "score",
+  // Post-session feedback master switch (was "AI Feedback Summary" — the
+  // label changed but the slug stays put so any already-authored Manage
+  // Tooltips row keeps applying) plus its three per-tab sub-toggles, nested
+  // under it via dependsOn/visibleWhen in SimulationCreator.ts. Seeded blank
+  // + inactive; superadmins author the text and enable each under Manage
+  // Tooltips.
   AI_FEEDBACK_SUMMARY = "ai_feedback_summary",
+  FEEDBACK_TAB_DEBRIEF = "feedback_tab_debrief",
+  FEEDBACK_TAB_SKILLS = "feedback_tab_skills",
+  FEEDBACK_TAB_TRANSCRIPT = "feedback_tab_transcript",
   ALLOW_PAUSE_RESUME = "allow_pause_resume",
   DEFAULT_ORG_VISIBILITY = "default_org_visibility",
   PUBLIC_VISIBILITY = "public_visibility",

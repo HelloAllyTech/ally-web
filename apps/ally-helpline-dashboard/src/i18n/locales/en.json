@@ -632,7 +632,8 @@
       "upNext": "Up next",
       "askAi": "Ask AI",
       "skillsDemonstrated": "Skills  Demonstrated",
-      "sessionReview": "Session Review"
+      "sessionReview": "Session Review",
+      "debrief": "Debrief"
     },
     "shortSession": {
       "title": "Session ended too soon",
@@ -679,6 +680,19 @@
         "keepPracticing": "Keep sharpening your skills with another {{difficulty}} scenario.",
         "buildConfidence": "Rebuild confidence with a {{difficulty}} scenario, then climb back up."
       }
+    },
+    "debrief": {
+      "header": "Your debrief",
+      "from": "from Ally",
+      "aiLabel": "AI-generated",
+      "aiTooltip": "Ally is an AI supervisor. This debrief was written by AI from your session transcript, not by a person.",
+      "generating": "Ally is writing your debrief…",
+      "generatingHint": "This usually takes a few moments.",
+      "failed": "Ally couldn't write your debrief for this session.",
+      "momentLabel": "See this moment",
+      "momentNotFound": "We couldn't jump to that moment — here's the full transcript instead.",
+      "replyPlaceholder": "Reply to Ally about this session… (0/{{max}})",
+      "replyPrompt": "Have a question about any of this? Reply below."
     }
   },
   "review": {
