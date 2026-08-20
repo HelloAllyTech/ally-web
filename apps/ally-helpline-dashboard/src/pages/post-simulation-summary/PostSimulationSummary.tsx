@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
@@ -16,8 +16,8 @@ import {
 } from "@api";
 import { ArrowRight, BackCircle, Comment } from "@assets";
 import {
-  AskAiTab,
   Button,
+  DebriefTab,
   NextChallengeCard,
   SessionRatingTrigger,
   ShareForReview,
@@ -25,24 +25,38 @@ import {
   ToggleSwitch,
 } from "@components";
 import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import {
-  FeedbackDialog,
-  ShortSessionUI,
-  SimulationSummary,
-  useSimulationSummaryPolling,
-} from "@containers";
+import { FeedbackDialog, ShortSessionUI, useSimulationSummaryPolling } from "@containers";
 import { useContinueTrack, useNextChallenge } from "@hooks";
-import { ActiveTrackContext, pageType, SessionType, ShareForReviewsInput } from "@types";
+import {
+  ActiveTrackContext,
+  pageType,
+  SessionType,
+  ShareForReviewsInput,
+  TranscriptFocusRequest,
+} from "@types";
 import { readTrackContext } from "@utils";
 
 import { StreakMoment, UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { containerVariants } from "../learn/constants";
 
+/**
+ * Stable ids so a tab keeps its identity as the roleplay's sub-toggles change
+ * which of them are present. Tab ORDER is the array order below — Debrief
+ * first, because the note is the thing the learner came back for.
+ */
+const TAB_IDS = {
+  DEBRIEF: 6,
+  SKILLS: 5,
+  TRANSCRIPT: 2,
+  UP_NEXT: 3,
+} as const;
+
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const [selectedTab, setSelectedTab] = useState<number>(TAB_IDS.DEBRIEF);
 
   const {
     data: summary,
@@ -70,6 +84,19 @@ export const PostSimulationSummary: FC = () => {
   );
   const continueTrack = useContinueTrack(trackContext);
 
+  // A "See this moment" chip both switches to the transcript and asks it to
+  // scroll to that message. The counter makes each click a distinct request, so
+  // clicking the same chip again scrolls back to the moment after the reader
+  // has wandered off it.
+  const [momentRequest, setMomentRequest] = useState<TranscriptFocusRequest | null>(null);
+  const momentRequestCountRef = useRef(0);
+
+  const handleOpenMoment = useCallback((messageId: string) => {
+    momentRequestCountRef.current += 1;
+    setMomentRequest({ messageId, requestId: momentRequestCountRef.current });
+    setSelectedTab(TAB_IDS.TRANSCRIPT);
+  }, []);
+
   const { data: availableLanguages } = useGetAvailableLanguagesQuery({});
   const originalLanguageCode = useMemo(() => {
     const languageId = summary?.metadata?.languageId;
@@ -80,45 +107,64 @@ export const PostSimulationSummary: FC = () => {
     return matchedLanguage?.value?.split("-")[0] ?? "en";
   }, [summary?.metadata?.languageId, availableLanguages]);
 
+  // Which post-session tabs this roleplay shows. The backend sends this
+  // already resolved; the fallback here only covers a response cached from
+  // before the sub-toggles existed, where every tab was on.
+  const feedbackTabs = summary?.scenario?.metadata?.feedbackTabs ?? {
+    debrief: true,
+    skills: true,
+    transcript: true,
+  };
+
   const tabList = [
-    {
-      id: 5,
-      label: t("postSim.tabs.skillsDemonstrated"),
-      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
-    },
-    {
-      id: 2,
-      label: t("postSim.tabs.annotatedTranscript"),
-      content: (
-        <SimulationTranscriptTab
-          sessionId={sessionId}
-          className="w-full"
-          agentName={summary?.scenario?.metadata?.name}
-          originalLanguageCode={originalLanguageCode}
-        />
-      ),
-    },
-    {
-      id: 4,
-      label: t("postSim.tabs.askAi"),
-      content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
-    },
-    {
-      id: 1,
-      label: t("postSim.tabs.sessionReview"),
-      content: (
-        <SimulationSummary
-          sessionId={sessionId ?? ""}
-          summaryData={summaryData}
-          retryMaxReached={retryMaxReached}
-          className="h-full min-h-0 flex flex-col overflow-hidden"
-        />
-      ),
-    },
+    ...(feedbackTabs.debrief
+      ? [
+          {
+            id: TAB_IDS.DEBRIEF,
+            label: t("postSim.tabs.debrief"),
+            content: (
+              <DebriefTab
+                sessionId={sessionId ?? ""}
+                summaryData={summaryData}
+                retryMaxReached={retryMaxReached}
+                // Anchors only become chips when there is a transcript tab to
+                // open; otherwise they render as plain prose.
+                onOpenMoment={feedbackTabs.transcript ? handleOpenMoment : undefined}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(feedbackTabs.skills
+      ? [
+          {
+            id: TAB_IDS.SKILLS,
+            label: t("postSim.tabs.skillsDemonstrated"),
+            content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
+          },
+        ]
+      : []),
+    ...(feedbackTabs.transcript
+      ? [
+          {
+            id: TAB_IDS.TRANSCRIPT,
+            label: t("postSim.tabs.annotatedTranscript"),
+            content: (
+              <SimulationTranscriptTab
+                sessionId={sessionId}
+                className="w-full"
+                agentName={summary?.scenario?.metadata?.name}
+                originalLanguageCode={originalLanguageCode}
+                focusMessage={momentRequest}
+              />
+            ),
+          },
+        ]
+      : []),
     ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
       ? [
           {
-            id: 3,
+            id: TAB_IDS.UP_NEXT,
             label: t("postSim.tabs.upNext"),
             content: (
               <UpNextTab
@@ -140,16 +186,28 @@ export const PostSimulationSummary: FC = () => {
     if (summary?.hasFeedback) setHasFeedback(true);
   }, [summary?.hasFeedback]);
 
-  const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
+  // Debrief is the default landing tab, but a roleplay can switch it off — in
+  // which case fall through to whichever tab is actually first.
+  useEffect(() => {
+    if (!tabList.length) return;
+    if (!tabList.some(tab => tab.id === selectedTab)) {
+      setSelectedTab(tabList[0].id);
+    }
+  }, [tabList, selectedTab]);
+
   const [shareForReview, setShareForReview] = useState<boolean>(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const feedbackDialogEvaluatedRef = useRef<boolean>(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
 
-  // When the trainer has disabled the AI feedback summary for this scenario,
-  // we skip the evaluation surface entirely. Default to enabled when the flag
-  // is missing (legacy scenarios).
-  const feedbackEnabled = summary?.scenario?.metadata?.enableFeedback !== false;
+  // When the trainer has disabled post-session feedback for this scenario, we
+  // skip the evaluation surface entirely. Default to enabled when the flag is
+  // missing (legacy scenarios). Switching every sub-toggle off is the same
+  // thing said a longer way, so it lands in the same branch — there is nothing
+  // left to show but the star rating.
+  const feedbackEnabled =
+    summary?.scenario?.metadata?.enableFeedback !== false &&
+    (feedbackTabs.debrief || feedbackTabs.skills || feedbackTabs.transcript);
 
   useEffect(() => {
     if (summaryData && !isLoading && !feedbackDialogEvaluatedRef.current) {

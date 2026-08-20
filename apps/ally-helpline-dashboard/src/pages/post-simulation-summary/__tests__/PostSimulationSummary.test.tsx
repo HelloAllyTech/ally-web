@@ -19,7 +19,6 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useGetSimulationSummaryQuery } from "@api";
-import { SimulationSummary } from "@containers";
 import { ROUTES } from "@constants";
 import { store } from "@store";
 
@@ -61,18 +60,9 @@ vi.mock("framer-motion", () => ({
 // button per item (driven by items/activeId/onChange). The assertions below
 // query those testids and the active-tab styling rather than MUI roles/attrs.
 
-// Mock containers
+// Mock containers. SimulationSummary (the old Session Review tab) is no
+// longer imported by the page — Debrief replaced it — so it is dropped here.
 vi.mock("@containers", () => ({
-  SimulationSummary: vi.fn(({ sessionId, summaryData, retryMaxReached, className }: any) => (
-    <div
-      data-testid="simulation-summary"
-      className={className}
-      data-has-summary={String(!!summaryData)}
-      data-retry-max={String(retryMaxReached)}
-    >
-      <div data-testid="summary-session-id">{sessionId}</div>
-    </div>
-  )),
   useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
   FeedbackDialog: ({ open, id, sessionType, onClose }: any) =>
     open ? (
@@ -89,16 +79,22 @@ vi.mock("@containers", () => ({
 
 // Mock SimulationTranscriptTab
 vi.mock("../../calls/components", () => ({
-  SimulationTranscriptTab: ({ sessionId, className }: any) => (
-    <div data-testid="simulation-transcript-tab" className={className}>
+  SimulationTranscriptTab: ({ sessionId, className, focusMessage }: any) => (
+    <div
+      data-testid="simulation-transcript-tab"
+      className={className}
+      data-focus-message-id={focusMessage?.messageId ?? ""}
+      data-focus-request-id={String(focusMessage?.requestId ?? "")}
+    >
       <div data-testid="transcript-session-id">{sessionId}</div>
     </div>
   ),
 }));
 
-// Stub SkillsTab only. It leads the tab order, so it is what the page renders
-// on open — and unlike the other tabs it drives its own query, so left real it
-// renders a loading skeleton on one render and an error on the next, making
+// Stub DebriefTab and SkillsTab. DebriefTab now leads the tab order and is
+// what the page renders on open; SkillsTab is the next one a test switches
+// to. Both drive their own queries (chat history / skills), so left real they
+// render a loading skeleton on one render and an error on the next, making
 // both the snapshots and the render-consistency assertion timing-dependent.
 // Everything else in the barrel stays real (the star rating and footer button
 // are asserted against directly).
@@ -109,6 +105,27 @@ vi.mock("@components", async importOriginal => {
     SkillsTab: ({ sessionId, retryMaxReached }: any) => (
       <div data-testid="skills-tab" data-retry-max={String(retryMaxReached)}>
         <div data-testid="skills-session-id">{sessionId}</div>
+      </div>
+    ),
+    DebriefTab: ({ sessionId, summaryData, retryMaxReached, onOpenMoment }: any) => (
+      <div
+        data-testid="debrief-tab"
+        data-has-summary={String(!!summaryData)}
+        data-retry-max={String(retryMaxReached)}
+      >
+        <div data-testid="debrief-session-id">{sessionId}</div>
+        {onOpenMoment && (
+          <>
+            <button data-testid="debrief-open-moment" onClick={() => onOpenMoment("msg-1")}>
+              open moment
+            </button>
+            {/* A second anchor, so the tests can tell "the id travelled" apart
+                from "some id travelled". */}
+            <button data-testid="debrief-open-moment-2" onClick={() => onOpenMoment("msg-2")}>
+              open other moment
+            </button>
+          </>
+        )}
       </div>
     ),
   };
@@ -170,10 +187,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 
 const hasNormalizedText = (element: Element | null, expectedText: string) =>
   element?.textContent?.replace(/\s+/g, " ").trim() === expectedText;
-
-// Skills Demonstrated (id 5) leads the shared tab order, so the page no longer
-// opens on Session Review. Tests asserting SimulationSummary content select it.
-const selectSessionReviewTab = () => fireEvent.click(screen.getByTestId("tab-1"));
 
 describe("PostSimulationSummary Component", () => {
   beforeEach(() => {
@@ -284,15 +297,14 @@ describe("PostSimulationSummary Component", () => {
       expect(title.className).toContain("font-secondary");
     });
 
-    it("should render SimulationSummary component", () => {
+    it("should render DebriefTab as the landing content", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
-      selectSessionReviewTab();
 
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
   });
 
@@ -310,9 +322,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      selectSessionReviewTab();
-
-      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("456");
+      expect(screen.getByTestId("debrief-session-id")).toHaveTextContent("456");
     });
 
     it("should handle missing sessionId parameter", () => {
@@ -426,42 +436,74 @@ describe("PostSimulationSummary Component", () => {
   });
 
   /**
-   * TEST GROUP: Container Integration
-   * Verifies integration with SimulationSummary container
+   * TEST GROUP: DebriefTab Integration
+   * Verifies integration with the DebriefTab component, which replaced the
+   * old SimulationSummary container as the landing tab's content.
    */
-  describe("Container Integration", () => {
-    it("should pass correct props to SimulationSummary", () => {
+  describe("DebriefTab Integration", () => {
+    it("should pass sessionId, summaryData and retryMaxReached to DebriefTab", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      selectSessionReviewTab();
-
-      const simulationSummary = screen.getByTestId("simulation-summary");
-      expect(simulationSummary).toHaveClass("h-full");
-      expect(simulationSummary).toHaveClass("min-h-0");
-      expect(simulationSummary).toHaveClass("overflow-hidden");
-      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("123");
+      const debriefTab = screen.getByTestId("debrief-tab");
+      expect(debriefTab).toHaveAttribute("data-retry-max", "false");
+      expect(screen.getByTestId("debrief-session-id")).toHaveTextContent("123");
     });
 
-    it("should pass sessionId, summaryData, retryMaxReached and className to SimulationSummary", () => {
+    it("should pass an onOpenMoment callback that switches to the Transcript tab", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      selectSessionReviewTab();
+      // Debrief anchors a moment in the transcript; clicking one should hand
+      // control back to the page, which switches the active tab.
+      fireEvent.click(screen.getByTestId("debrief-open-moment"));
 
-      const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
-      expect(lastCallArgs[0]).toMatchObject({
-        sessionId: "123",
-        className: "h-full min-h-0 flex flex-col overflow-hidden",
-      });
-      expect(lastCallArgs[0]).toHaveProperty("summaryData");
-      expect(lastCallArgs[0]).toHaveProperty("retryMaxReached");
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+    });
+
+    it("should hand the anchored message id to the transcript tab", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("debrief-open-moment-2"));
+
+      // The chip lands on the moment, not merely on the tab.
+      const transcriptTab = screen.getByTestId("simulation-transcript-tab");
+      expect(transcriptTab).toHaveAttribute("data-focus-message-id", "msg-2");
+      expect(transcriptTab).toHaveAttribute("data-focus-request-id", "1");
+    });
+
+    it("should raise a fresh request each time a moment is opened", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("debrief-open-moment"));
+      expect(screen.getByTestId("simulation-transcript-tab")).toHaveAttribute(
+        "data-focus-request-id",
+        "1",
+      );
+
+      // Back to Debrief, then the same chip again: a reader who has scrolled
+      // away should be taken back to the moment rather than ignored because
+      // the id has not changed.
+      fireEvent.click(screen.getByTestId("tab-6"));
+      fireEvent.click(screen.getByTestId("debrief-open-moment"));
+
+      const transcriptTab = screen.getByTestId("simulation-transcript-tab");
+      expect(transcriptTab).toHaveAttribute("data-focus-message-id", "msg-1");
+      expect(transcriptTab).toHaveAttribute("data-focus-request-id", "2");
     });
   });
 
@@ -480,15 +522,15 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 
-    it("should render Summary tab", () => {
+    it("should render Debrief tab", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-1")).toHaveTextContent("Session Review");
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toHaveTextContent("Debrief");
     });
 
     it("should render Transcription tab", () => {
@@ -502,7 +544,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
     });
 
-    it("should have Skills tab selected by default", () => {
+    it("should have Debrief tab selected by default", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -510,22 +552,20 @@ describe("PostSimulationSummary Component", () => {
       );
 
       // Carbon Tabs marks the active tab via styling rather than a data-value
-      // attribute; Skills Demonstrated (id 5) leads the shared tab order and so
-      // is highlighted by default.
-      const skillsTab = screen.getByTestId("tab-5");
-      expect(skillsTab.className).toContain("text-primary-500");
+      // attribute; Debrief leads the shared tab order and so is the landing
+      // tab, highlighted by default.
+      const debriefTab = screen.getByTestId("tab-6");
+      expect(debriefTab.className).toContain("text-primary-500");
     });
 
-    it("should display SimulationSummary content when the Session Review tab is selected", () => {
+    it("should display DebriefTab content by default", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      fireEvent.click(screen.getByTestId("tab-1"));
-
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
 
     it("should switch to Transcription tab when clicked", async () => {
@@ -542,26 +582,25 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
     });
 
-    it("should hide Summary content when Transcription tab is selected", async () => {
+    it("should hide Debrief content when Transcription tab is selected", async () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      // Select Session Review first — Skills Demonstrated is the landing tab.
-      fireEvent.click(screen.getByTestId("tab-1"));
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      // Debrief is the landing tab.
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
 
       // Click Transcription tab
       const transcriptionTab = screen.getByTestId("tab-2");
       fireEvent.click(transcriptionTab);
 
-      // Summary should no longer be visible
-      expect(screen.queryByTestId("simulation-summary")).not.toBeInTheDocument();
+      // Debrief should no longer be visible
+      expect(screen.queryByTestId("debrief-tab")).not.toBeInTheDocument();
     });
 
-    it("should switch back to Summary tab when clicked", async () => {
+    it("should switch back to Debrief tab when clicked", async () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -574,11 +613,11 @@ describe("PostSimulationSummary Component", () => {
 
       expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
 
-      // Click Summary tab
-      const summaryTab = screen.getByTestId("tab-1");
-      fireEvent.click(summaryTab);
+      // Click Debrief tab
+      const debriefTab = screen.getByTestId("tab-6");
+      fireEvent.click(debriefTab);
 
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
 
     it("should apply correct styles to Tabs component", () => {
@@ -602,9 +641,12 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      // Carbon Tabs renders each item as a `tab-${id}` button (no ARIA tab role).
+      // Carbon Tabs renders each item as a `tab-${id}` button (no ARIA tab
+      // role). With no session data loaded, feedbackTabs falls back to the
+      // legacy all-true default (Debrief, Skills, Transcript) and there is no
+      // Up Next tab since there's no scenarioPathSessionItemId/caseSessionItemId.
       const tabButtons = screen.getAllByTestId(/^tab-\d+$/);
-      expect(tabButtons).toHaveLength(4);
+      expect(tabButtons).toHaveLength(3);
     });
   });
 
@@ -669,14 +711,14 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("transcript-session-id")).toHaveTextContent("789");
     });
 
-    it("should not render SimulationTranscriptTab when Summary tab is selected", () => {
+    it("should not render SimulationTranscriptTab when Debrief tab is selected", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      // By default Summary tab is selected
+      // By default the Debrief tab is selected
       expect(screen.queryByTestId("simulation-transcript-tab")).not.toBeInTheDocument();
     });
   });
@@ -693,46 +735,23 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
     });
 
-    it("should have Summary as first tab with id 1", () => {
+    it("should have Debrief as first tab with id 6", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const summaryTab = screen.getByTestId("tab-1");
-      expect(summaryTab).toHaveTextContent("Session Review");
+      const debriefTab = screen.getByTestId("tab-6");
+      expect(debriefTab).toHaveTextContent("Debrief");
     });
 
-    it("should have Transcription as second tab with id 2", () => {
-      render(
-        <TestWrapper>
-          <PostSimulationSummary />
-        </TestWrapper>,
-      );
-
-      const transcriptionTab = screen.getByTestId("tab-2");
-      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
-    });
-
-    it("should have Ask AI as third tab with id 4", () => {
-      render(
-        <TestWrapper>
-          <PostSimulationSummary />
-        </TestWrapper>,
-      );
-
-      const askAiTab = screen.getByTestId("tab-4");
-      expect(askAiTab).toHaveTextContent("Ask AI");
-    });
-
-    it("should have Skills as fourth tab with id 5", () => {
+    it("should have Skills as second tab with id 5", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -743,6 +762,16 @@ describe("PostSimulationSummary Component", () => {
       expect(skillsTab).toHaveTextContent("Skills");
     });
 
+    it("should have Annotated Transcript as third tab with id 2", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
+    });
   });
 
   /**
@@ -871,7 +900,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.queryByTestId("simulation-summary")).toBeNull();
+      expect(screen.queryByTestId("debrief-tab")).toBeNull();
       expect(screen.queryByTestId("tabs")).toBeNull();
       expect(screen.queryByTestId("feedback-dialog")).toBeNull();
     });
@@ -891,8 +920,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
-      selectSessionReviewTab();
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      // Debrief is the landing tab, so its content is visible immediately.
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
 
     it("treats a missing flag as enabled (legacy scenarios)", () => {
@@ -924,7 +953,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.queryByTestId("tabs")).toBeNull();
-      expect(screen.queryByTestId("simulation-summary")).toBeNull();
+      expect(screen.queryByTestId("debrief-tab")).toBeNull();
       expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
     });
 
@@ -964,6 +993,153 @@ describe("PostSimulationSummary Component", () => {
 
       expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
       expect(screen.queryByTestId("tabs")).toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: feedbackTabs gating
+   * Verifies the backend-resolved `scenario.metadata.feedbackTabs` sub-toggles
+   * ({ debrief, skills, transcript }) control which tabs render, that the
+   * page lands on the first tab still present, and that switching every
+   * sub-toggle off is equivalent to enableFeedback: false.
+   */
+  describe("feedbackTabs gating", () => {
+    const mockedSummaryQuery = vi.mocked(useGetSimulationSummaryQuery);
+
+    const summaryQueryResult = (data: unknown, isLoading = false) =>
+      ({ data, isLoading, refetch: vi.fn() }) as unknown as ReturnType<
+        typeof useGetSimulationSummaryQuery
+      >;
+
+    it("falls back to all three tabs when feedbackTabs is absent (legacy roleplay)", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({ scenario: { metadata: {} }, hasFeedback: false }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      // Debrief still leads, and is still the landing tab.
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
+    });
+
+    it("hides the Debrief tab and lands on Skills when debrief is off", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { feedbackTabs: { debrief: false, skills: true, transcript: true } } },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("tab-6")).not.toBeInTheDocument();
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      // Skills is now the first tab in the list, so the page lands there.
+      expect(screen.getByTestId("skills-tab")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-5").className).toContain("text-primary-500");
+    });
+
+    it("renders only Debrief when skills and transcript are off", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: {
+            metadata: { feedbackTabs: { debrief: true, skills: false, transcript: false } },
+          },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("tab-2")).not.toBeInTheDocument();
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
+      // No transcript tab exists to jump to, so the moment-open callback is
+      // never wired up.
+      expect(screen.queryByTestId("debrief-open-moment")).not.toBeInTheDocument();
+    });
+
+    it("renders Debrief plus Up Next when only debrief is on and the session belongs to a track", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: {
+            metadata: { feedbackTabs: { debrief: true, skills: false, transcript: false } },
+          },
+          hasFeedback: false,
+          scenarioPathSessionItemId: "path-item-1",
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("tab-2")).not.toBeInTheDocument();
+    });
+
+    it("falls through to the feedback-disabled branch when every sub-toggle is off", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: {
+            metadata: { feedbackTabs: { debrief: false, skills: false, transcript: false } },
+          },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      // Same branch as enableFeedback: false — only the star-rating dialog.
+      expect(screen.queryByTestId("tabs")).toBeNull();
+      expect(screen.queryByTestId("debrief-tab")).toBeNull();
+      expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
+    });
+
+    it("lands on Debrief by default when it is present alongside the other tabs", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: {
+            metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } },
+          },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-6").className).toContain("text-primary-500");
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
+      expect(screen.queryByTestId("skills-tab")).not.toBeInTheDocument();
     });
   });
 
@@ -1051,8 +1227,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
-      selectSessionReviewTab();
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
   });
 
@@ -1071,9 +1246,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      selectSessionReviewTab();
-
-      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(longSessionId);
+      expect(screen.getByTestId("debrief-session-id")).toHaveTextContent(longSessionId);
     });
 
     it("should handle special characters in sessionId", () => {
@@ -1086,9 +1259,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      selectSessionReviewTab();
-
-      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(specialSessionId);
+      expect(screen.getByTestId("debrief-session-id")).toHaveTextContent(specialSessionId);
     });
 
     it("should render consistently on multiple renders", () => {

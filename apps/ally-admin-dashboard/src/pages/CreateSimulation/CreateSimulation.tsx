@@ -66,6 +66,7 @@ import {
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
+  buildFeedbackTabsPayload,
   buildToggleDefaultValues,
   formatSimulationResponseData,
   formatVersionConfigToForm,
@@ -724,6 +725,15 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
             content: item.content,
           }))
         : [],
+      // Which post-session tabs this roleplay shows, nested under the
+      // enableFeedback master switch. Always send all three keys — a
+      // partial object could be misread as "off" for whichever key is
+      // missing, since the backend resolver treats an absent key as on.
+      // Sent regardless of enableFeedback's own value: turning the master
+      // switch off only hides these controls in the form, it doesn't clear
+      // their stored preference (see the field configs in
+      // SimulationCreator.ts), so re-enabling it later restores them as-is.
+      feedbackTabs: buildFeedbackTabsPayload(restForm),
       // Carry the draft's event mappings on the version config (only when
       // editing a version and the event table has provided them). The live
       // update path ignores this key; publish replays it to scenario_events.
@@ -731,6 +741,15 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         ? { mappedEvents: draftMappedEventsRef.current }
         : {}),
     };
+
+    // The three sub-toggles above are folded into feedbackTabs; drop their
+    // flat copies (added by extractValidData, which normalizes every
+    // SIMULATION_CREATOR_FIELD_GROUPS field including these) so the payload
+    // matches the backend contract exactly instead of also carrying loose
+    // top-level booleans.
+    delete (simulationData as any).feedbackTabDebrief;
+    delete (simulationData as any).feedbackTabSkills;
+    delete (simulationData as any).feedbackTabTranscript;
 
     if (Array.isArray((simulationData as any).stateNames)) {
       const filtered = ((simulationData as any).stateNames as any[]).filter(sn =>

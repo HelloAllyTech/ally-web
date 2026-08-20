@@ -51,6 +51,18 @@ export interface Scenario {
      * panel, which follows `experienceMode` alone.
      */
     summaryChecklistEnabled?: boolean;
+    /**
+     * Which post-session tabs this roleplay shows, as sub-toggles of the
+     * `enableFeedback` master switch. The backend always sends this RESOLVED,
+     * so the client never has to re-implement the "absent means all on"
+     * default — but it stays optional here because a cached or older response
+     * may predate it, in which case treat every tab as on.
+     */
+    feedbackTabs?: {
+      debrief: boolean;
+      skills: boolean;
+      transcript: boolean;
+    };
   };
   triggerWarnings?: TriggerChipItemWarning[];
   checklistEvents?: any[];
@@ -232,6 +244,14 @@ export interface SimulationSummary {
         improvements?: string[];
         areasOfGrowth?: { improvement: string; recommendation: string }[];
         positives: string[];
+        /**
+         * The debrief note Ally wrote to the learner, as markdown. Specific
+         * moments are anchored as `[[msg:<messageId>]]`, which the Debrief tab
+         * renders as chips linking into the annotated transcript.
+         * Absent on sessions evaluated before the supervisor note shipped, and
+         * on roleplays whose Debrief tab is switched off.
+         */
+        supervisorNote?: string;
       };
       errorMessage?: string;
     } | null;
@@ -336,6 +356,18 @@ export interface SimulationTranscriptMessage {
     label: string;
     category?: string;
   }[];
+}
+
+/**
+ * A request to bring one transcript message into view — raised by the "See
+ * this moment" chips in Ally's debrief note. `messageId` is the anchor's raw
+ * `scenarioSessionMessageId` (a string in the note, numeric in the transcript
+ * payload, so compare as strings). `requestId` increments per request so
+ * tapping the same chip twice scrolls to the moment twice.
+ */
+export interface TranscriptFocusRequest {
+  messageId: string;
+  requestId: number;
 }
 
 export interface ScenarioPathway {

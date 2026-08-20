@@ -104,6 +104,15 @@ export interface SimulationInput {
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
+  /**
+   * Which post-session tabs this roleplay shows its learners, gated under
+   * `enableFeedback` (the master switch — false there means everything off
+   * regardless of these). Always sent with all three keys present: the
+   * backend resolver treats an absent `feedbackTabs` object as all-on and
+   * each key as on unless explicitly `false`, so a partial object could be
+   * misread as "off" for the omitted keys.
+   */
+  feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
   fillerEnabled?: boolean;
   languageGlossaryEnabled?: boolean;
   comfortAudioEnabled?: boolean;
@@ -216,6 +225,8 @@ export interface GetSimulationByIdResponse {
     timerMode?: boolean;
     showScoreMeter?: boolean;
     enableFeedback?: boolean;
+    /** See SimulationInput.feedbackTabs — absent object or absent key both read as on. */
+    feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
     pauseEnabled?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;

@@ -255,9 +255,9 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
-              data-testid="tab-5"
+              data-testid="tab-6"
             >
-              Skills  Demonstrated 
+              Debrief 
               <span
                 aria-hidden="true"
                 class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
@@ -265,21 +265,15 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-5"
+            >
+              Skills  Demonstrated 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
               Annotated Transcript 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-4"
-            >
-              Ask AI 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-1"
-            >
-              Session Review 
             </button>
           </nav>
         </div>
@@ -288,14 +282,25 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           data-testid="post-sim-tab-panel"
         >
           <div
+            data-has-summary="false"
             data-retry-max="false"
-            data-testid="skills-tab"
+            data-testid="debrief-tab"
           >
             <div
-              data-testid="skills-session-id"
+              data-testid="debrief-session-id"
             >
               123
             </div>
+            <button
+              data-testid="debrief-open-moment"
+            >
+              open moment
+            </button>
+            <button
+              data-testid="debrief-open-moment-2"
+            >
+              open other moment
+            </button>
           </div>
         </div>
         <div
@@ -570,9 +575,9 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
-              data-testid="tab-5"
+              data-testid="tab-6"
             >
-              Skills  Demonstrated 
+              Debrief 
               <span
                 aria-hidden="true"
                 class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
@@ -580,21 +585,15 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-5"
+            >
+              Skills  Demonstrated 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
               Annotated Transcript 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-4"
-            >
-              Ask AI 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-1"
-            >
-              Session Review 
             </button>
           </nav>
         </div>
@@ -603,14 +602,25 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           data-testid="post-sim-tab-panel"
         >
           <div
+            data-has-summary="false"
             data-retry-max="false"
-            data-testid="skills-tab"
+            data-testid="debrief-tab"
           >
             <div
-              data-testid="skills-session-id"
+              data-testid="debrief-session-id"
             >
               789
             </div>
+            <button
+              data-testid="debrief-open-moment"
+            >
+              open moment
+            </button>
+            <button
+              data-testid="debrief-open-moment-2"
+            >
+              open other moment
+            </button>
           </div>
         </div>
         <div

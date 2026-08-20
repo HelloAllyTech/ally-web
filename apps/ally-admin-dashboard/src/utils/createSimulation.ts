@@ -89,6 +89,27 @@ export const buildToggleDefaultValues = (
       .map(field => [field.id, field.defaultValue === true]),
   );
 
+/**
+ * Build the `feedbackTabs` metadata payload from the three form toggles.
+ *
+ * Every key is `!== false`, never `Boolean(...)`. `buildToggleDefaultValues`
+ * above now seeds these up front, so in the normal case they arrive as real
+ * booleans — but this stays defensive on purpose, because the cost of an
+ * `undefined` slipping through is a newly authored roleplay saved with all
+ * three tabs dark, and a learner finishing a session to a blank screen. Reading
+ * absent as ON also keeps this symmetric with `formatSimulationResponseData`
+ * and with the backend resolver, both of which treat absent as on.
+ */
+export const buildFeedbackTabsPayload = (form: {
+  feedbackTabDebrief?: boolean;
+  feedbackTabSkills?: boolean;
+  feedbackTabTranscript?: boolean;
+}) => ({
+  debrief: form.feedbackTabDebrief !== false,
+  skills: form.feedbackTabSkills !== false,
+  transcript: form.feedbackTabTranscript !== false,
+});
+
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
   return {
     title: data.title,
@@ -190,6 +211,13 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     })),
     showScoreMeter: data?.metadata?.showScoreMeter,
     enableFeedback: data?.metadata?.enableFeedback ?? true,
+    // feedbackTabs mirrors the backend resolver exactly: an absent
+    // `feedbackTabs` object (every scenario saved before this feature
+    // existed) hydrates as all three ON, and within the object each key is
+    // ON unless explicitly `false`. Only `=== false` reads as off.
+    feedbackTabDebrief: (data?.metadata as any)?.feedbackTabs?.debrief !== false,
+    feedbackTabSkills: (data?.metadata as any)?.feedbackTabs?.skills !== false,
+    feedbackTabTranscript: (data?.metadata as any)?.feedbackTabs?.transcript !== false,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
     // Per-language STT picks, keyed like languageVoices. Absent = inherit.

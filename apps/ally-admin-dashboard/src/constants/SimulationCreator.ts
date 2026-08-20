@@ -211,6 +211,9 @@ export const FORM_FIELD_IDS = {
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
   ENABLE_FEEDBACK: "enableFeedback",
+  FEEDBACK_TAB_DEBRIEF: "feedbackTabDebrief",
+  FEEDBACK_TAB_SKILLS: "feedbackTabSkills",
+  FEEDBACK_TAB_TRANSCRIPT: "feedbackTabTranscript",
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   REMINDERS_ENABLED: "remindersEnabled",
@@ -747,12 +750,60 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.SCORE,
       },
       {
+        // Master switch for the whole post-session experience — the debrief
+        // note + reply thread from Ally, the score/skills view, and the
+        // annotated transcript. Renamed from "AI Feedback Summary": that
+        // label undersold it once the feature grew from a single summary
+        // into three distinct tabs. The FIELD ID stays `enableFeedback`
+        // (it's what's already persisted) — only the human-facing label
+        // and tooltip copy changed.
         id: "enableFeedback",
-        label: "AI Feedback Summary",
+        label: "Post-Session Feedback",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.AI_FEEDBACK_SUMMARY,
+      },
+      {
+        // Nested sub-toggle: only meaningful (and only shown) while
+        // enableFeedback is on. Turning enableFeedback off hides this
+        // control but does NOT clear its stored value — re-enabling the
+        // master switch restores whatever tab visibility was configured
+        // before. Persists to scenarios.metadata.feedbackTabs.debrief
+        // (see CreateSimulation.tsx's payload builder); absent metadata
+        // reads as ON everywhere the backend resolves it.
+        id: "feedbackTabDebrief",
+        label: "Debrief",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+        dependsOn: "enableFeedback",
+        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
+        tooltipLocation: TooltipLocation.FEEDBACK_TAB_DEBRIEF,
+      },
+      {
+        // See feedbackTabDebrief above — same nesting/persistence rules.
+        // Persists to scenarios.metadata.feedbackTabs.skills.
+        id: "feedbackTabSkills",
+        label: "Skills",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+        dependsOn: "enableFeedback",
+        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
+        tooltipLocation: TooltipLocation.FEEDBACK_TAB_SKILLS,
+      },
+      {
+        // See feedbackTabDebrief above — same nesting/persistence rules.
+        // Persists to scenarios.metadata.feedbackTabs.transcript.
+        id: "feedbackTabTranscript",
+        label: "Transcript",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+        dependsOn: "enableFeedback",
+        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
+        tooltipLocation: TooltipLocation.FEEDBACK_TAB_TRANSCRIPT,
       },
       {
         id: "pauseEnabled",
@@ -777,12 +828,24 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.PUBLIC_VISIBILITY,
       },
       {
+        // Author-editable on purpose. This carried a `disabled: true` from the
+        // days when the toggle was decorative — ally-be read `optGuardrails`
+        // nowhere, so turning it off did nothing. The flag was dead anyway
+        // (never a member of FormFieldConfig, never forwarded to
+        // ToggleSection), and the switch has always been clickable.
+        //
+        // ally-be now honours it: `false` skips USER (author-configured)
+        // guardrail sampling for the session, so this is the only place that
+        // gate is reachable from. The safety floor lives in the backend, not
+        // in a greyed-out switch — the mandatory SYSTEM guardrail (STT
+        // Coherence Guard) is deliberately NOT gated by this toggle and stays
+        // on however the author sets it. Hence ON by default, off as a
+        // per-simulation escape hatch.
         id: "optGuardrails",
         label: "Conversational Guardrails",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
-        disabled: true,
         tooltipLocation: TooltipLocation.CONVERSATIONAL_GUARDRAILS,
       },
       {
