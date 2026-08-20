@@ -345,6 +345,66 @@ export const comboOpts = ({
 });
 
 /**
+ * Single-axis combo: a stacked area (the contributions) with a line (their
+ * sum) drawn over it, both against ONE value axis (x = `key`).
+ *
+ * `comboOpts` above exists for the one case a SECOND axis is legitimate — the
+ * line there is the same quantity as the bars at a different aggregation, and
+ * the second scale only keeps a much-larger cumulative total from flattening
+ * the per-period bars. This factory is the mirror-image case, where a second
+ * axis is not just unnecessary but wrong: the line here is the sum of the area
+ * layers AT THE SAME AGGREGATION — same unit, same 0-100 scale — so putting it
+ * on its own axis would let two things that are already numerically identical
+ * drift apart on the page. One axis, `stacked: true`, and the layers plus the
+ * line share it exactly.
+ *
+ * `areaGroups` sets the stack order (bottom to top); `lineGroup` rides the same
+ * axis as a plain line, not stacked with them. `domain` should normally be
+ * passed explicitly at `[0, 100]` for an index built to sum to that range —
+ * left to auto-fit, a stack whose true ceiling is 100 but whose observed data
+ * tops out at 60 would draw as if 60 were the ceiling.
+ */
+export const stackedAreaLineOpts = ({
+  areaGroups,
+  lineGroup,
+  leftTitle = "Value",
+  bottomTitle = "",
+  colorScale,
+  legend = true,
+  height = CHART_HEIGHT,
+  domain,
+  extra = {},
+}: Omit<AxisOptsBase, "leftTitle"> & {
+  leftTitle?: string;
+  /** Series names plotted as a stacked area, bottom to top. */
+  areaGroups: string[];
+  /** Series name plotted as a line over the stack — its sum, not a stacked layer. */
+  lineGroup: string;
+}) => ({
+  height,
+  axes: {
+    left: valueAxis(leftTitle, domain, true),
+    bottom: labelAxis(bottomTitle, "key"),
+  },
+  comboChartTypes: [
+    { type: "stacked-area", correspondingDatasets: areaGroups },
+    {
+      type: "line",
+      // Points on: gaps in the index (a bucket with no dimension covered) must
+      // be visibly distinguishable from a flat stretch, the same reason every
+      // sparse average series in this file enables them.
+      options: { points: { enabled: true } },
+      correspondingDatasets: [lineGroup],
+    },
+  ],
+  curve: "curveLinear",
+  color: { scale: colorScale },
+  legend: { enabled: legend },
+  toolbar: { enabled: false },
+  ...extra,
+});
+
+/**
  * Scatter plot with TWO measured axes (x = `x`, y = `y`).
  *
  * The only chart type here whose x-axis is a quantity rather than a time bucket

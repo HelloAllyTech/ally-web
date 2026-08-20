@@ -1,4 +1,4 @@
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   ActivationResponse,
   AgentJoinReliabilityResponse,
@@ -26,11 +26,23 @@ import {
   ScribeAdoptionResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
+  SkillGrowthLearnerSeriesResponse,
+  SkillGrowthLearnersQuery,
+  SkillGrowthLearnersResponse,
   SkillGrowthResponse,
   StartLatencyResponse,
   TokenConsumptionResponse,
   TrackDropoffResponse,
   CertificationResponse,
+  ChartPreference,
+  ChartPreferencesResponse,
+  OrgEngagementResponse,
+  QualifiedSessionsResponse,
+  QualitySentimentResponse,
+  RoleplayCostResponse,
+  StickinessResponse,
+  UsageLadderGrain,
+  UsageLadderResponse,
   UsageLevelResponse,
   VoiceLatencyResponse,
   ListVoiceLatencySessionsResponse,
@@ -124,6 +136,29 @@ type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
  */
 type AllTimeAnalyticsQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
+/**
+ * The usage ladder is all-time for the same reason as certification — its rungs
+ * are LIFETIME minute totals — so it takes no window, only the grain its
+ * attainment axis is drawn at. Month or quarter only: the lowest rung takes
+ * weeks to reach, so a finer axis shows noise rather than trend.
+ */
+type UsageLadderQuery = Pick<AnalyticsWindowQuery, "tenantId"> & {
+  grain?: UsageLadderGrain;
+};
+
+/** Stickiness is all-time: "did they ever come back" has no window. */
+type StickinessQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
+/**
+ * Org engagement takes its own trailing window for the "active recently"
+ * headline, and NO tenant: every figure counts orgs, which one org cannot
+ * narrow. The endpoint would ignore a tenantId anyway and flag it in
+ * `scoping.unscopedSections`; not offering it here keeps the client honest.
+ */
+type OrgEngagementQuery = {
+  activityDays?: 7 | 28 | 90;
+};
+
 type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
@@ -186,6 +221,87 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
       }),
+    }),
+    // Learner usage ladder L1-L5 by LIFETIME roleplay minutes. One response
+    // feeds four charts (attainment, cumulative holders, funnel, ladder), so
+    // they cannot disagree. Takes no window — the rungs are lifetime totals —
+    // only the grain of the attainment axis.
+    getUsageLadder: builder.query<UsageLadderResponse, UsageLadderQuery>({
+      query: ({ tenantId, grain } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.USAGE_LADDER,
+        method: HttpMethod.GET,
+        params: {
+          ...(tenantId ? { tenantId } : {}),
+          ...(grain ? { grain } : {}),
+        },
+      }),
+    }),
+    // Of the learners who practised once, how many came back. All-time by
+    // construction: windowing it would report every recent signup as churned.
+    getPracticeStickiness: builder.query<StickinessResponse, StickinessQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.PRACTICE_STICKINESS,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Completed roleplays of 5+ minutes per bucket, with all completed sessions
+    // beside them — a fall means something different when total sessions fell
+    // with it than when they did not.
+    getQualifiedSessions: builder.query<QualifiedSessionsResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.QUALIFIED_SESSIONS,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Org ladder funnel, "orgs active in the last X days", and a monthly
+    // activity trend. Platform-wide always: counting orgs cannot be narrowed to
+    // one org.
+    getOrgEngagement: builder.query<OrgEngagementResponse, OrgEngagementQuery>({
+      query: ({ activityDays } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ORG_ENGAGEMENT,
+        method: HttpMethod.GET,
+        params: activityDays ? { activityDays: String(activityDays) } : {},
+      }),
+    }),
+    // Estimated AI cost per 10 minutes of practice, split by area and service.
+    // Platform-wide: llm_usage is largely tenantless, so a tenant-filtered cost
+    // would be a fraction of real spend presented as the whole.
+    getRoleplayCost: builder.query<RoleplayCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ROLEPLAY_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // LLM-judge composite score against a PROXY NPS derived from the 1-5
+    // post-session rating, plus their correlation. Render `proxyNote` wherever
+    // the proxy appears — it is not an NPS and must never be labelled as one.
+    getQualitySentiment: builder.query<QualitySentimentResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.QUALITY_SENTIMENT,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // The caller's saved per-chart window/grain, across every analytics tab.
+    getChartPreferences: builder.query<ChartPreferencesResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.ANALYTICS.CHART_PREFERENCES,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.ANALYTICS_CHART_PREFERENCES],
+    }),
+    // Upsert a batch. NOT a replace-all: charts absent from the payload keep
+    // what they had, so a tab saving its own controls cannot wipe another tab's.
+    saveChartPreferences: builder.mutation<ChartPreferencesResponse, ChartPreference[]>({
+      query: preferences => ({
+        url: ApiEndpoints.ANALYTICS.CHART_PREFERENCES,
+        method: HttpMethod.PUT,
+        body: { preferences },
+      }),
+      invalidatesTags: [TAG_TYPES.ANALYTICS_CHART_PREFERENCES],
     }),
     // Lifetime distribution of completed roleplays across the learner
     // population. Takes ONLY `tenantId`, like usage levels and cohort retention:
@@ -398,6 +514,26 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
+    // The learner list behind the curve. Undefined params are dropped for the
+    // same reason `windowParams` drops them: a param spelled `undefined` is a
+    // different cache key for the same request.
+    getSkillGrowthLearners: builder.query<SkillGrowthLearnersResponse, SkillGrowthLearnersQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SKILL_GROWTH_LEARNERS,
+        method: HttpMethod.GET,
+        params: Object.fromEntries(
+          Object.entries(q).filter(([, v]) => v !== undefined && v !== ""),
+        ),
+      }),
+    }),
+    // One learner's timeline. Fetched only when a row is opened — the panel
+    // passes `skip` until then, so the list costs one request, not N.
+    getSkillGrowthLearnerSeries: builder.query<SkillGrowthLearnerSeriesResponse, number>({
+      query: userId => ({
+        url: `${ApiEndpoints.ANALYTICS.SKILL_GROWTH_LEARNERS}/${userId}`,
+        method: HttpMethod.GET,
+      }),
+    }),
     // Quality as a distribution (median + IQR) and satisfaction as a rating mix,
     // plus the tags behind low ratings — the three panels that replace two means.
     getQualityDistribution: builder.query<QualityDistributionResponse, AnalyticsWindowQuery>({
@@ -516,6 +652,8 @@ export const {
   useGetCompletionRateQuery,
   useGetLanguageMixQuery,
   useGetSkillGrowthQuery,
+  useGetSkillGrowthLearnersQuery,
+  useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
   useGetCompetencyMapQuery,
   useGetTrackDropoffQuery,
@@ -525,4 +663,12 @@ export const {
   useGetLearnerKpisQuery,
   useGetScenarioUsageQuery,
   useGetScribeAdoptionQuery,
+  useGetUsageLadderQuery,
+  useGetPracticeStickinessQuery,
+  useGetQualifiedSessionsQuery,
+  useGetOrgEngagementQuery,
+  useGetRoleplayCostQuery,
+  useGetQualitySentimentQuery,
+  useGetChartPreferencesQuery,
+  useSaveChartPreferencesMutation,
 } = analyticsAPI;
