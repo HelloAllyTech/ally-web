@@ -1,12 +1,33 @@
-import { useState } from "react";
-
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getBugFindings = vi.fn();
+const approveFinding = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+const rejectFinding = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+const startFixSession = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
 
 vi.mock("@api", () => ({
   useGetBugFindingsQuery: (...args: unknown[]) => getBugFindings(...args),
+  useApproveBugFindingMutation: () => [approveFinding, { isLoading: false }],
+  useRejectBugFindingMutation: () => [rejectFinding, { isLoading: false }],
+  useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
+}));
+
+// The table can now act on a bug without opening the drawer — row buttons, the
+// keyboard, and the bulk bar all go through these.
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+
+vi.mock("@components/action-confirmation-popup", () => ({
+  ActionConfirmationPopup: ({ title, primaryButton, secondaryButton }: any) => (
+    <div role="dialog" aria-label={title}>
+      <p>{title}</p>
+      <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
+      {secondaryButton && (
+        <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
+      )}
+    </div>
+  ),
 }));
 
 vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
@@ -71,7 +92,6 @@ vi.mock("framer-motion", () => ({
 import { BugFinding, BugFindingSeverity, BugFindingSource, BugFindingStatus } from "@types";
 
 import { BugFindingsTable } from "../BugFindingsTable";
-import type { BucketFilter } from "../LifecycleBucketChips";
 
 const finding = (overrides: Partial<BugFinding> & { id: string }): BugFinding =>
   ({
@@ -93,7 +113,12 @@ const finding = (overrides: Partial<BugFinding> & { id: string }): BugFinding =>
     ...overrides,
   }) as unknown as BugFinding;
 
-const mount = (items: BugFinding[], props: Record<string, unknown> = {}, count?: number) => {
+/**
+ * `url` seeds the query string, which is where the table's filters live now —
+ * so a test that needs to start on a bucket says so in the address rather than
+ * driving a parent's `useState`.
+ */
+const mount = (items: BugFinding[], count?: number, url = "/") => {
   getBugFindings.mockReturnValue({
     data: { items, count: count ?? items.length },
     isLoading: false,
@@ -101,7 +126,9 @@ const mount = (items: BugFinding[], props: Record<string, unknown> = {}, count?:
     refetch: vi.fn(),
   });
   return render(
-    <BugFindingsTable bucket="all" onBucketChange={vi.fn()} {...(props as any)} />,
+    <MemoryRouter initialEntries={[url]}>
+      <BugFindingsTable onShowShortcuts={vi.fn()} />
+    </MemoryRouter>,
   );
 };
 
@@ -147,13 +174,14 @@ describe("BugFindingsTable — triage controls", () => {
     expect(screen.queryByText("Bug a")).not.toBeInTheDocument();
   });
 
-  it("honours the lifecycle bucket the page has set", () => {
+  it("honours the lifecycle bucket the address bar has set", () => {
     mount(
       [
         finding({ id: "waiting", status: BugFindingStatus.PENDING_APPROVAL }),
         finding({ id: "busy", status: BugFindingStatus.FIXING }),
       ],
-      { bucket: "needs_you" },
+      undefined,
+      "/?bucket=needs_you",
     );
 
     expect(screen.getByText("Bug waiting")).toBeInTheDocument();
@@ -194,11 +222,11 @@ describe("BugFindingsTable — triage controls", () => {
   it("reports its sort state to a screen reader, not just with a caret", () => {
     mount([finding({ id: "a" })]);
 
-    const discovered = screen.getByText("Discovered").closest("th");
-    expect(discovered).toHaveAttribute("aria-sort", "descending");
+    const age = screen.getByText("Age").closest("th");
+    expect(age).toHaveAttribute("aria-sort", "descending");
 
-    fireEvent.click(screen.getByText("Discovered"));
-    expect(screen.getByText("Discovered").closest("th")).toHaveAttribute("aria-sort", "ascending");
+    fireEvent.click(screen.getByText("Age"));
+    expect(screen.getByText("Age").closest("th")).toHaveAttribute("aria-sort", "ascending");
   });
 
   it("sorts severity worst-first the moment that column is chosen", () => {
@@ -243,14 +271,14 @@ describe("BugFindingsTable — triage controls", () => {
       refetch: vi.fn(),
     });
 
-    // Rendered through a parent that actually applies the callback, because the
-    // bucket is page state: a `vi.fn()` would record the reset and never apply
-    // it, and the test would then be asserting nothing about clearing.
-    const Harness = () => {
-      const [bucket, setBucket] = useState<BucketFilter>("needs_you");
-      return <BugFindingsTable bucket={bucket} onBucketChange={setBucket} />;
-    };
-    render(<Harness />);
+    // Started on a bucket via the query string rather than through a stateful
+    // parent — the bucket is URL state now, so "clear" has to clear the URL and
+    // a real router is what proves it did.
+    render(
+      <MemoryRouter initialEntries={["/?bucket=needs_you"]}>
+        <BugFindingsTable onShowShortcuts={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     fireEvent.change(screen.getByLabelText("Search bugs"), { target: { value: "zzzz" } });
     expect(screen.queryByText("Terms link")).not.toBeInTheDocument();
@@ -281,7 +309,7 @@ describe("BugFindingsTable — triage controls", () => {
   });
 
   it("says so when the filters only searched part of the table", () => {
-    mount([finding({ id: "a" })], {}, 40);
+    mount([finding({ id: "a" })], 40);
 
     // Replaces the workload strip's footnote apologising for its denominator —
     // said here, where the filters are, and only when it is actually true.
@@ -291,7 +319,7 @@ describe("BugFindingsTable — triage controls", () => {
   });
 
   it("does not claim a window when it has the whole table", () => {
-    mount([finding({ id: "a" })], {}, 1);
+    mount([finding({ id: "a" })], 1);
     expect(screen.queryByText(/most recent bugs, of/)).not.toBeInTheDocument();
   });
 
@@ -302,7 +330,11 @@ describe("BugFindingsTable — triage controls", () => {
       isError: false,
       refetch: vi.fn(),
     });
-    const { container } = render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
+    const { container } = render(
+      <MemoryRouter>
+        <BugFindingsTable onShowShortcuts={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });

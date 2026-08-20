@@ -1,12 +1,35 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BugFindingsTable } from "../BugFindingsTable";
 
 const getBugFindings = vi.fn();
+const approveFinding = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+const rejectFinding = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
+const startFixSession = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
 
 vi.mock("@api", () => ({
   useGetBugFindingsQuery: (...args: unknown[]) => getBugFindings(...args),
+  useApproveBugFindingMutation: () => [approveFinding, { isLoading: false }],
+  useRejectBugFindingMutation: () => [rejectFinding, { isLoading: false }],
+  useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
+}));
+
+// The table can now act on a bug without opening the drawer — row buttons, the
+// keyboard, and the bulk bar all go through these.
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+
+vi.mock("@components/action-confirmation-popup", () => ({
+  ActionConfirmationPopup: ({ title, primaryButton, secondaryButton }: any) => (
+    <div role="dialog" aria-label={title}>
+      <p>{title}</p>
+      <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
+      {secondaryButton && (
+        <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
+      )}
+    </div>
+  ),
 }));
 
 vi.mock("@utils", () => ({
@@ -135,6 +158,14 @@ const findings = [
  * page-level one would catch the throw, but it would also remove the table, and
  * the table is how you reach a different bug.
  */
+/** The table's view state lives in the query string now, so it needs a router. */
+const renderTable = () =>
+  render(
+    <MemoryRouter>
+      <BugFindingsTable onShowShortcuts={vi.fn()} />
+    </MemoryRouter>,
+  );
+
 describe("BugFindingsTable — a drawer that throws", () => {
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   afterAll(() => consoleError.mockRestore());
@@ -150,7 +181,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("keeps the bugs table on screen and reports the failure in place", () => {
-    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
+    renderTable();
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
 
     // The table survived — both rows are still there to click.
@@ -168,7 +199,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("dismisses back to the plain table", () => {
-    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
+    renderTable();
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
 
@@ -176,7 +207,7 @@ describe("BugFindingsTable — a drawer that throws", () => {
   });
 
   it("starts clean on a different bug rather than inheriting the last one's error", () => {
-    render(<BugFindingsTable bucket="all" onBucketChange={vi.fn()} />);
+    renderTable();
     fireEvent.click(screen.getByText("Terms link is not formatted correctly"));
     expect(screen.getByRole("alert")).toBeInTheDocument();
 
