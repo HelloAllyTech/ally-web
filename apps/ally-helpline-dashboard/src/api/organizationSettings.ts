@@ -23,6 +23,14 @@ import {
   OrgTenantBadgesParams,
   OrgTenantBadgesResponse,
   OrgBadgeTenantVisibilityBody,
+  OrgTrack,
+  Cohort,
+  CohortListResponse,
+  CohortMemberListResponse,
+  CohortMembersParams,
+  CohortContentType,
+  ContentCohortRestriction,
+  SetCohortRestrictionsBody,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -301,6 +309,134 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.ORG_BADGES],
     }),
+
+    // --- Access management: Courses (Track 2.0) ----------------------------
+    // The tenant ADMIN already holds view:admin:tracks + edit/delete:track-tenant
+    // from the original access-management grant, so this tab needed no new
+    // backend permission — only the UI that was never built.
+    getOrgTracks: builder.query<OrgAccessListResponse<OrgTrack>, OrgAccessListParams>({
+      query: params => ({
+        url: ApiEndpoints.ORG_ACCESS.GET_TRACKS,
+        params,
+      }),
+      providesTags: [TAG_TYPES.ORG_TRACKS],
+    }),
+
+    enableOrgTracks: builder.mutation<
+      { success: boolean },
+      { tenantId: string; trackIds: string[] }
+    >({
+      query: ({ tenantId, trackIds }) => ({
+        url: ApiEndpoints.ORG_ACCESS.TRACK_TENANT_VISIBILITY(tenantId),
+        method: HttpMethod.POST,
+        body: { trackIds },
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_TRACKS],
+    }),
+
+    disableOrgTracks: builder.mutation<
+      { success: boolean },
+      { tenantId: string; trackIds: string[] }
+    >({
+      query: ({ tenantId, trackIds }) => ({
+        url: ApiEndpoints.ORG_ACCESS.TRACK_TENANT_VISIBILITY(tenantId),
+        method: HttpMethod.DELETE,
+        body: { trackIds },
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_TRACKS],
+    }),
+
+    // --- Cohorts ------------------------------------------------------------
+    getOrgCohorts: builder.query<CohortListResponse, { tenantId: string }>({
+      query: ({ tenantId }) => ApiEndpoints.COHORTS.LIST(tenantId),
+      providesTags: [TAG_TYPES.ORG_COHORTS],
+    }),
+
+    createOrgCohort: builder.mutation<
+      Cohort,
+      { tenantId: string; name: string; description?: string }
+    >({
+      query: ({ tenantId, ...body }) => ({
+        url: ApiEndpoints.COHORTS.CREATE(tenantId),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_COHORTS, TAG_TYPES.ORG_COHORT_MEMBERS],
+    }),
+
+    updateOrgCohort: builder.mutation<
+      Cohort,
+      { tenantId: string; cohortId: string; name?: string; description?: string }
+    >({
+      query: ({ tenantId, cohortId, ...body }) => ({
+        url: ApiEndpoints.COHORTS.UPDATE(tenantId, cohortId),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_COHORTS, TAG_TYPES.ORG_COHORT_MEMBERS],
+    }),
+
+    // Deleting a cohort returns its members to Unassigned AND drops every
+    // restriction that named it, so all three cohort tags must be invalidated.
+    deleteOrgCohort: builder.mutation<
+      { success: boolean },
+      { tenantId: string; cohortId: string }
+    >({
+      query: ({ tenantId, cohortId }) => ({
+        url: ApiEndpoints.COHORTS.DELETE(tenantId, cohortId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [
+        TAG_TYPES.ORG_COHORTS,
+        TAG_TYPES.ORG_COHORT_MEMBERS,
+        TAG_TYPES.ORG_COHORT_RESTRICTIONS,
+      ],
+    }),
+
+    getOrgCohortMembers: builder.query<CohortMemberListResponse, CohortMembersParams>({
+      query: ({ tenantId, ...params }) => ({
+        url: ApiEndpoints.COHORTS.MEMBERS(tenantId),
+        params,
+      }),
+      providesTags: [TAG_TYPES.ORG_COHORT_MEMBERS],
+    }),
+
+    // Membership is exclusive, so this MOVES rather than adds: the backend
+    // replaces whatever membership each user had. Invalidates the cohort list
+    // too, because every move changes two member counts.
+    moveOrgCohortMembers: builder.mutation<
+      { success: boolean },
+      { tenantId: string; userIds: number[]; cohortId: string }
+    >({
+      query: ({ tenantId, ...body }) => ({
+        url: ApiEndpoints.COHORTS.MOVE_MEMBERS(tenantId),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_COHORT_MEMBERS, TAG_TYPES.ORG_COHORTS],
+    }),
+
+    // Items with no restriction are ABSENT from this response — that is the
+    // "visible to everyone" default, not an empty result.
+    getOrgCohortRestrictions: builder.query<
+      ContentCohortRestriction[],
+      { tenantId: string; contentType: CohortContentType; contentIds?: string }
+    >({
+      query: ({ tenantId, ...params }) => ({
+        url: ApiEndpoints.COHORTS.RESTRICTIONS(tenantId),
+        params,
+      }),
+      providesTags: [TAG_TYPES.ORG_COHORT_RESTRICTIONS],
+    }),
+
+    setOrgCohortRestrictions: builder.mutation<{ success: boolean }, SetCohortRestrictionsBody>({
+      query: ({ tenantId, ...body }) => ({
+        url: ApiEndpoints.COHORTS.RESTRICTIONS(tenantId),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ORG_COHORT_RESTRICTIONS],
+    }),
   }),
 });
 
@@ -335,4 +471,16 @@ export const {
   useGetOrgTenantBadgesQuery,
   useAssignOrgBadgeMutation,
   useUnassignOrgBadgeMutation,
+  useGetOrgTracksQuery,
+  useEnableOrgTracksMutation,
+  useDisableOrgTracksMutation,
+  // Cohorts
+  useGetOrgCohortsQuery,
+  useCreateOrgCohortMutation,
+  useUpdateOrgCohortMutation,
+  useDeleteOrgCohortMutation,
+  useGetOrgCohortMembersQuery,
+  useMoveOrgCohortMembersMutation,
+  useGetOrgCohortRestrictionsQuery,
+  useSetOrgCohortRestrictionsMutation,
 } = organizationSettingsAPI;

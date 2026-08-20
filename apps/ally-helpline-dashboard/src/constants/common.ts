@@ -149,6 +149,13 @@ export const TAG_TYPES = {
   ORG_SCENARIO_PATHS: "OrgScenarioPaths",
   ORG_CASES: "OrgCases",
   ORG_BADGES: "OrgBadges",
+  ORG_TRACKS: "OrgTracks",
+  // Cohorts (own tenant): the list, the member roster, and the per-content
+  // restriction map. Restrictions are their own tag because a restriction edit
+  // must refresh the content tab without refetching the whole user roster.
+  ORG_COHORTS: "OrgCohorts",
+  ORG_COHORT_MEMBERS: "OrgCohortMembers",
+  ORG_COHORT_RESTRICTIONS: "OrgCohortRestrictions",
   // Track 2.0 learner resources
   LEARN_TRACKS: "LearnTracks",
   LEARN_TRACK_DETAIL: "LearnTrackDetail",

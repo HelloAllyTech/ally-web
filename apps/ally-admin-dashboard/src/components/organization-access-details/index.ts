@@ -5,3 +5,4 @@ export { CasesTab } from "./CasesTab";
 export { CoursesTab } from "./CoursesTab";
 export { ScribeSettings } from "./ScribeSettings";
 export { SimulationsSettings } from "./SimulationsSettings";
+export * from "./GroupsTab";

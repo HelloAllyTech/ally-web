@@ -270,6 +270,28 @@ export const ApiEndpoints = {
     GET_TENANT_BADGES: (tenantId: string) => `/v1/badges/tenants/${tenantId}`,
     // POST assigns, DELETE unassigns; both take { badgeId, tenantIds }.
     BADGES_TENANT_VISIBILITY: "/v1/badges/tenants",
+    // Courses / Track 2.0 (Courses tab). Same list+assign shape as scenarios;
+    // tenant ADMIN already holds view:admin:tracks + edit/delete:track-tenant
+    // (granted with the other access-management permissions), so this tab needed
+    // no backend work beyond the cohort layer.
+    GET_TRACKS: "/v1/learn/admin/tracks",
+    TRACK_TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
+  },
+  // Cohorts — a tenant's own MECE grouping of its users, and the per-cohort
+  // narrowing of content already assigned to the tenant.
+  //
+  // tenantId is a PATH segment on every route including the GETs, and must stay
+  // that way: OwnTenantScopeGuard on the backend resolves the target tenant from
+  // route params and the body only — never the query string — so a `?tenantId=`
+  // variant would be rejected outright for a tenant admin.
+  COHORTS: {
+    LIST: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}`,
+    CREATE: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}`,
+    UPDATE: (tenantId: string, cohortId: string) => `/v1/cohorts/tenant/${tenantId}/${cohortId}`,
+    DELETE: (tenantId: string, cohortId: string) => `/v1/cohorts/tenant/${tenantId}/${cohortId}`,
+    MEMBERS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/members`,
+    MOVE_MEMBERS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/members`,
+    RESTRICTIONS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/restrictions`,
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",

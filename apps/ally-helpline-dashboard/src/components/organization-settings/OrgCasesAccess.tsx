@@ -11,6 +11,7 @@ import {
 import { SORT_ORDER } from "@constants";
 
 import { OrgAccessItem, OrgAccessList } from "./OrgAccessList";
+import { useCohortRestrictions } from "./useCohortRestrictions";
 
 const PAGE_SIZE = 20;
 
@@ -25,7 +26,7 @@ export const OrgCasesAccess: FC = () => {
 
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
-  const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
+  const [pendingIds, setPendingIds] = useState<Set<number | string>>(new Set());
 
   useEffect(() => {
     setOffset(0);
@@ -63,7 +64,7 @@ export const OrgCasesAccess: FC = () => {
   const [enableCases] = useEnableOrgCasesMutation();
   const [disableCases] = useDisableOrgCasesMutation();
 
-  const handleToggle = async (id: number, enabled: boolean) => {
+  const handleToggle = async (id: number | string, enabled: boolean) => {
     if (!tenantId) return;
     setItems(prev =>
       prev.map(item => (item.id === id ? { ...item, isAssignedToTenant: enabled } : item)),
@@ -71,9 +72,9 @@ export const OrgCasesAccess: FC = () => {
     setPendingIds(prev => new Set(prev).add(id));
     try {
       if (enabled) {
-        await enableCases({ tenantId, caseIds: [id] }).unwrap();
+        await enableCases({ tenantId, caseIds: [Number(id)] }).unwrap();
       } else {
-        await disableCases({ tenantId, caseIds: [id] }).unwrap();
+        await disableCases({ tenantId, caseIds: [Number(id)] }).unwrap();
       }
     } catch (error: any) {
       setItems(prev =>
@@ -94,6 +95,8 @@ export const OrgCasesAccess: FC = () => {
     [isLoading, tenantId, data, items.length],
   );
 
+  const { renderRowAction } = useCohortRestrictions(tenantId, "case");
+
   return (
     <OrgAccessList
       items={items}
@@ -106,6 +109,7 @@ export const OrgCasesAccess: FC = () => {
       onSearchChange={setSearch}
       onToggle={handleToggle}
       onLoadMore={() => setOffset(prev => prev + PAGE_SIZE)}
+      renderRowAction={renderRowAction}
     />
   );
 };

@@ -4,9 +4,9 @@ import { toast } from "sonner";
 
 import {
   useGetOwnTenantQuery,
-  useGetOrgScenariosQuery,
-  useEnableOrgScenariosMutation,
-  useDisableOrgScenariosMutation,
+  useGetOrgTracksQuery,
+  useEnableOrgTracksMutation,
+  useDisableOrgTracksMutation,
 } from "@api";
 import { SORT_ORDER } from "@constants";
 
@@ -16,13 +16,19 @@ import { useCohortRestrictions } from "./useCohortRestrictions";
 const PAGE_SIZE = 20;
 
 /**
- * Simulations (scenario access) tab for the org admin's own tenant.
+ * Courses (Track 2.0) tab for the org admin's own tenant.
  *
- * Lists all admin scenarios with an assigned/unassigned toggle per row, scoped
- * to the caller's own tenant. Mirrors the super-admin SimulationsTab, but the
- * assign/unassign mutations are owned here (helpline has no parent handler).
+ * This tab did not exist before cohorts: `track_tenants` and the tenant-scoped
+ * assign/unassign endpoints were already there, and the ADMIN role already held
+ * `view:admin:tracks` + `edit`/`delete:track-tenant` from the original
+ * access-management grant — only the UI was missing. Adding per-group targeting
+ * for courses required the tenant-level tab first, since the group control hangs
+ * off these rows.
+ *
+ * Unlike scenarios, course ids are uuids, which is why OrgAccessItem.id is
+ * `number | string`.
  */
-export const OrgSimulationsAccess: FC = () => {
+export const OrgTracksAccess: FC = () => {
   const { data: ownTenant } = useGetOwnTenantQuery();
   const tenantId = ownTenant?.id ?? "";
 
@@ -30,12 +36,11 @@ export const OrgSimulationsAccess: FC = () => {
   const [offset, setOffset] = useState(0);
   const [pendingIds, setPendingIds] = useState<Set<number | string>>(new Set());
 
-  // Reset paging whenever the search term changes.
   useEffect(() => {
     setOffset(0);
   }, [search]);
 
-  const { data, isLoading, isFetching } = useGetOrgScenariosQuery(
+  const { data, isLoading, isFetching } = useGetOrgTracksQuery(
     {
       tenantId,
       search: search || undefined,
@@ -48,37 +53,37 @@ export const OrgSimulationsAccess: FC = () => {
     { skip: !tenantId },
   );
 
-  // Accumulate pages so "Load more" appends rather than replaces.
   const [items, setItems] = useState<OrgAccessItem[]>([]);
   useEffect(() => {
     if (!data?.data) return;
-    const rows: OrgAccessItem[] = data.data.map(s => ({
-      id: s.id,
-      title: s.title,
-      description: s.description,
-      coverImageUrl: s.coverImageUrl,
-      isAssignedToTenant: s.isAssignedToTenant,
+    const rows: OrgAccessItem[] = data.data.map(track => ({
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      coverImageUrl: track.coverImageUrl,
+      isAssignedToTenant: track.isAssignedToTenant,
+      totalScenarios: track.totalItems,
     }));
     setItems(prev => (offset === 0 ? rows : [...prev, ...rows]));
   }, [data, offset]);
 
   const hasMore = (data?.data?.length ?? 0) === PAGE_SIZE;
 
-  const [enableScenarios] = useEnableOrgScenariosMutation();
-  const [disableScenarios] = useDisableOrgScenariosMutation();
+  const [enableTracks] = useEnableOrgTracksMutation();
+  const [disableTracks] = useDisableOrgTracksMutation();
 
   const handleToggle = async (id: number | string, enabled: boolean) => {
     if (!tenantId) return;
-    // Optimistic flip + pending guard.
+    const trackId = String(id);
     setItems(prev =>
       prev.map(item => (item.id === id ? { ...item, isAssignedToTenant: enabled } : item)),
     );
     setPendingIds(prev => new Set(prev).add(id));
     try {
       if (enabled) {
-        await enableScenarios({ tenantId, scenarioIds: [Number(id)] }).unwrap();
+        await enableTracks({ tenantId, trackIds: [trackId] }).unwrap();
       } else {
-        await disableScenarios({ tenantId, scenarioIds: [Number(id)] }).unwrap();
+        await disableTracks({ tenantId, trackIds: [trackId] }).unwrap();
       }
     } catch (error: any) {
       setItems(prev =>
@@ -94,13 +99,12 @@ export const OrgSimulationsAccess: FC = () => {
     }
   };
 
-  // Only the very first load shows skeletons; subsequent pages keep the list.
   const showInitialLoading = useMemo(
     () => isLoading || (!!tenantId && !data && items.length === 0),
     [isLoading, tenantId, data, items.length],
   );
 
-  const { renderRowAction } = useCohortRestrictions(tenantId, "scenario");
+  const { renderRowAction } = useCohortRestrictions(tenantId, "track");
 
   return (
     <OrgAccessList
@@ -109,8 +113,8 @@ export const OrgSimulationsAccess: FC = () => {
       isFetching={isFetching}
       hasMore={hasMore}
       pendingIds={pendingIds}
-      searchPlaceholder="Search simulations"
-      emptyLabel="No simulations found"
+      searchPlaceholder="Search courses"
+      emptyLabel="No courses found"
       onSearchChange={setSearch}
       onToggle={handleToggle}
       onLoadMore={() => setOffset(prev => prev + PAGE_SIZE)}
@@ -119,4 +123,4 @@ export const OrgSimulationsAccess: FC = () => {
   );
 };
 
-export default OrgSimulationsAccess;
+export default OrgTracksAccess;
