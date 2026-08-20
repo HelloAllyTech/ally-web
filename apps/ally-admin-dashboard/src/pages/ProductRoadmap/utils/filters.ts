@@ -38,7 +38,17 @@ export const EMPTY_ADVANCED_FILTERS: RoadmapAdvancedFilterValues = {
  * while it was hiding rows.
  */
 export const countActiveAdvancedFilters = (v: RoadmapAdvancedFilterValues): number =>
-  (v.createdBy.length ? 1 : 0) +
+  (v.createdBy.length ? 1 : 0) + countActiveRangeFilters(v);
+
+/**
+ * The three RANGES only — the badge on the collapsed "More filters" disclosure.
+ *
+ * Split from countActiveAdvancedFilters when `createdBy` moved into the Filter popover alongside
+ * the other checkbox facets: the disclosure now holds nothing but ranges, so counting a creator
+ * selection there would badge a panel that has no creator control in it. The wider count still
+ * includes createdBy, because `hasActiveFilters` and "Clear all" both have to see it.
+ */
+export const countActiveRangeFilters = (v: RoadmapAdvancedFilterValues): number =>
   (v.dateFrom || v.dateTo ? 1 : 0) +
   (v.releasedFrom || v.releasedTo ? 1 : 0) +
   (v.priorityMin !== "" || v.priorityMax !== "" ? 1 : 0);

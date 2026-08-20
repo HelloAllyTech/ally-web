@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 
-import { Button, ListToolbar } from "@components";
+import { Close } from "@icons";
+
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Button, FilterDropdown, ListToolbar } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   RoadmapFacets,
@@ -15,8 +18,18 @@ import {
   EMPTY_ADVANCED_FILTERS,
   RoadmapAdvancedFilterValues,
   countActiveAdvancedFilters,
+  countActiveRangeFilters,
 } from "./utils/filters";
-import { SOURCE_LABEL, STAGE_LABEL, typeLabel } from "./utils/stages";
+import {
+  RoadmapFacetSelection,
+  RoadmapFacetState,
+  buildFacetSections,
+  countActiveFacets,
+  describeActiveFacets,
+  fromFacetSelection,
+  mergeFacetSelection,
+  toFacetSelection,
+} from "./utils/filterSelection";
 
 export interface RoadmapFilterBarProps {
   search: string;
@@ -42,7 +55,7 @@ export interface RoadmapFilterBarProps {
   canVote: boolean;
   canManage: boolean;
   onAddClick: () => void;
-  /** Rendered between the search toolbar and the chips — the layout toggle lives here. */
+  /** Rendered at the right of the control row — the layout toggle lives here. */
   trailing?: React.ReactNode;
 }
 
@@ -62,12 +75,28 @@ export const hasActiveFilters = (
   0;
 
 /**
- * Search, filter chips and the advanced panel — shared by the table and the month board.
+ * Search, filtering and the layout switch — shared by the table and the month board.
  *
- * Extracted from OpportunitiesBoard when month boards arrived. Sharing it is not just about the
- * ~100 lines: the filter set is one contract with the backend (RoadmapOpportunityFiltersDto), and
- * a chip that existed in only one layout would silently stop filtering the moment somebody flipped
- * the toggle — which reads as "the filters are broken", not "that chip is missing".
+ * Sharing it is not just about the line count: the filter set is one contract with the backend
+ * (RoadmapOpportunityFiltersDto), and a control that existed in only one layout would silently
+ * stop filtering the moment somebody flipped the toggle — which reads as "the filters are broken",
+ * not "that control is missing".
+ *
+ * SHAPE: one search row, then ONE control row — the two filter entry points, then what is applied,
+ * then "Clear all", with goal management and the layout switch pushed to the right.
+ *
+ * It used to render every option of every facet as a permanently-visible pill: 19 pills plus five
+ * group labels wrapping to three lines, which pushed the first table row roughly 900px down the
+ * page on a board holding 500+ opportunities. Past a certain density extra controls stop reading as
+ * options at all (Stacks: "Signal Overload Creates Noise"), and the saved-view tabs directly above
+ * — Backlog, Released, Open Bugs, Prioritised, one per owner — were already the one-click paths
+ * those pills were meant to be, so the pills were a redundant second layer of the same thing.
+ * Collapsing them into the admin app's standard FilterDropdown is what UserManagement,
+ * PromptManagement, ScenarioVoices and UserBadges already do.
+ *
+ * The cost of a popover is that an applied filter can hide. It doesn't: every applied facet stays
+ * on screen as a removable chip, and the ranges keep their count badge. A filter narrowing the
+ * list with nothing on screen to say so is how someone concludes the board is broken.
  *
  * Filters live ABOVE the content, never in a second header row. The standalone app put date and
  * number inputs inside <th>s, which forced a 1240px min-width plus horizontal scroll and placed
@@ -99,15 +128,51 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     trailing,
   } = props;
 
-  const toggle = <T,>(list: T[], value: T): T[] =>
-    list.includes(value) ? list.filter(v => v !== value) : [...list, value];
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const rangeCount = countActiveRangeFilters(advanced);
+  /**
+   * Start the range panel expanded when something in it is already applied — e.g. after selecting a
+   * saved view that carries a date range, so the reason the list is narrowed is visible without
+   * hunting for it.
+   */
+  const [isRangesOpen, setIsRangesOpen] = useState(rangeCount > 0);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
+  /** The six checkbox facets as one value, so the popover reads and writes in one shape. */
+  const facetState: RoadmapFacetState = {
+    typeFilter,
+    stageFilter,
+    sourceFilter,
+    goalFilter,
+    ownerFilter,
+    createdBy: advanced.createdBy,
+  };
+
+  const chips = describeActiveFacets(facetState, facets);
+  const facetCount = countActiveFacets(facetState);
+
+  /** Outlined when the control is open or carrying something, muted when it is neither. */
   const chipClass = (isActive: boolean) =>
     `border px-2 py-1 ${
       isActive
         ? "border-primary-500 text-primary-600"
         : "border-border-light text-typography-secondary"
     }`;
+
+  /** Fan a whole facet selection back out to the individual setters the page owns. */
+  const applyFacetState = (next: RoadmapFacetState) => {
+    onTypeFilterChange(next.typeFilter);
+    onStageFilterChange(next.stageFilter);
+    onSourceFilterChange(next.sourceFilter);
+    onGoalFilterChange(next.goalFilter);
+    onOwnerFilterChange(next.ownerFilter);
+    onAdvancedChange({ ...advanced, createdBy: next.createdBy });
+  };
+
+  const clearFacet = (id: keyof RoadmapFacetSelection) => {
+    const cleared = mergeFacetSelection(toFacetSelection(facetState), { [id]: [] });
+    applyFacetState(fromFacetSelection(cleared));
+  };
 
   return (
     <>
@@ -126,82 +191,57 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
         }
       />
 
-      {trailing}
-
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-typography-secondary">Type</span>
-        {Object.values(RoadmapOpportunityType).map(value => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onTypeFilterChange(toggle(typeFilter, value))}
-            className={chipClass(typeFilter.includes(value))}
-          >
-            {typeLabel(value)}
-          </button>
-        ))}
+        {/* Two entry points, styled identically because they are the same kind of control: the
+            checkbox facets, and the ranges FilterDropdown cannot express. Both keep a STABLE label
+            and report open/closed through aria-expanded rather than swapping in "Hide" — a control
+            whose text changes under the cursor is harder to re-find than one that doesn't. */}
+        <button
+          ref={filterButtonRef}
+          type="button"
+          onClick={() => setIsFilterOpen(open => !open)}
+          aria-expanded={isFilterOpen}
+          className={chipClass(facetCount > 0 || isFilterOpen)}
+        >
+          Filter{facetCount > 0 ? ` (${facetCount})` : ""}
+        </button>
 
-        <span className="text-typography-secondary ml-3">Stage</span>
-        {Object.values(RoadmapOpportunityStage).map(value => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onStageFilterChange(toggle(stageFilter, value))}
-            className={chipClass(stageFilter.includes(value))}
-          >
-            {STAGE_LABEL[value]}
-          </button>
-        ))}
+        <button
+          type="button"
+          onClick={() => setIsRangesOpen(open => !open)}
+          aria-expanded={isRangesOpen}
+          className={chipClass(rangeCount > 0 || isRangesOpen)}
+        >
+          Dates &amp; score{rangeCount > 0 ? ` (${rangeCount})` : ""}
+        </button>
 
-        <span className="text-typography-secondary ml-3">Source</span>
-        {Object.values(RoadmapOpportunitySource).map(value => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onSourceFilterChange(toggle(sourceFilter, value))}
-            className={chipClass(sourceFilter.includes(value))}
+        {/* Applied facets. Rendered here rather than through ListToolbar's own `filterChips` slot:
+            that one runs every label through formatCapitalizedEnum, which lowercases past the
+            first character and would render an owner as "Sandeep malhotra" and a goal as "Roleplay
+            actor realism". The four other pages using it pass raw enum values, where that is what
+            you want — so this borrows the house chip's styling rather than changing its behaviour
+            underneath them. */}
+        {chips.map(chip => (
+          <span
+            key={chip.id}
+            className="text-typography-900 border-border-light flex items-center rounded-[20px] border px-2 py-0.5"
           >
-            {SOURCE_LABEL[value] ?? value}
-          </button>
+            <span className="text-typography-secondary mr-1 text-xs">{chip.label}:</span>
+            <Tooltip label={chip.values.join(", ")} align="top">
+              <span className="mr-1 max-w-[16rem] truncate text-xs font-medium">
+                {chip.values.join(", ")}
+              </span>
+            </Tooltip>
+            <button
+              type="button"
+              onClick={() => clearFacet(chip.id)}
+              aria-label={`Clear ${chip.label} filter`}
+              className="text-typography-800 hover:text-typography-900"
+            >
+              <Close />
+            </button>
+          </span>
         ))}
-
-        <span className="text-typography-secondary ml-3">Goal</span>
-        {canManage && (
-          <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
-            Manage
-          </Button>
-        )}
-        {goals.map(goal => (
-          <button
-            key={goal.id}
-            type="button"
-            onClick={() => onGoalFilterChange(toggle(goalFilter, goal.name))}
-            className={chipClass(goalFilter.includes(goal.name))}
-          >
-            {goal.name}
-          </button>
-        ))}
-
-        {/* Owner options come from GET /facets, not from the loaded rows. Deriving them from the
-            page would shrink the option list as soon as a filter or the page limit hid an owner —
-            and four of the saved views migrated from production are defined ENTIRELY by
-            ownerFilter, so without this control those tabs would apply as "no filter" and silently
-            show everything. */}
-        {!!facets?.owners?.length && (
-          <>
-            <span className="text-typography-secondary ml-3">Owner</span>
-            {facets.owners.map(owner => (
-              <button
-                key={owner}
-                type="button"
-                onClick={() => onOwnerFilterChange(toggle(ownerFilter, owner))}
-                className={chipClass(ownerFilter.includes(owner))}
-              >
-                {owner}
-              </button>
-            ))}
-          </>
-        )}
 
         {hasActiveFilters(props) && (
           <Button
@@ -212,17 +252,39 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
               onSourceFilterChange([]);
               onGoalFilterChange([]);
               onOwnerFilterChange([]);
-              // Must include the collapsed panel: "Clear filters" that leaves a hidden date range
-              // applied is the exact confusion the active-count badge exists to prevent.
+              // Must include the collapsed panel: "Clear all" that leaves a hidden date range
+              // applied is the exact confusion the count badge exists to prevent.
               onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
             }}
           >
-            Clear filters
+            Clear all
           </Button>
         )}
+
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          {canManage && (
+            <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
+              Manage goals
+            </Button>
+          )}
+          {trailing}
+        </div>
       </div>
 
-      <RoadmapAdvancedFilters values={advanced} onChange={onAdvancedChange} facets={facets} />
+      <RoadmapAdvancedFilters isOpen={isRangesOpen} values={advanced} onChange={onAdvancedChange} />
+
+      <FilterDropdown<RoadmapFacetSelection>
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        sections={buildFacetSections(goals, facets)}
+        currentFilters={toFacetSelection(facetState)}
+        onApplyFilters={selection =>
+          applyFacetState(
+            fromFacetSelection(mergeFacetSelection(toFacetSelection(facetState), selection)),
+          )
+        }
+        anchorRect={filterButtonRef.current?.getBoundingClientRect() ?? null}
+      />
     </>
   );
 };
