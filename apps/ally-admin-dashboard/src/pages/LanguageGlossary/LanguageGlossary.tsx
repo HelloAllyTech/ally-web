@@ -356,16 +356,22 @@ export const LanguageGlossary: React.FC = () => {
             </div>
           )}
           <div className="flex-1">
-            {views.map(v => {
-              const proposals = (v.section.entries ?? []).filter(
-                e => e.status === "proposed",
-              ).length;
-              const style = v.section.profileId ? profileInfo.get(v.section.profileId) : undefined;
+            {groups.map(g => {
+              const v = g.primary;
+              const proposals = g.variants.reduce(
+                (sum, variant) =>
+                  sum + (variant.section.entries ?? []).filter(e => e.status === "proposed").length,
+                0,
+              );
+              const styleCount = g.variants.filter(variant => variant.section.profileId).length;
+              const isSelected = g.variants.some(
+                variant => sectionKey(variant.section) === selectedCode,
+              );
               return (
                 <button
-                  key={sectionKey(v.section)}
+                  key={g.code}
                   className={`w-full text-left px-3 py-2 border-b border-gray-100 hover:bg-gray-50 ${
-                    sectionKey(v.section) === selectedCode ? "bg-gray-100" : ""
+                    isSelected ? "bg-gray-100" : ""
                   }`}
                   onClick={() => selectSection(sectionKey(v.section))}
                 >
@@ -375,22 +381,14 @@ export const LanguageGlossary: React.FC = () => {
                       {MODE_LABELS[v.section.injectionMode]}
                     </Pill>
                   </div>
-                  {v.section.profileId && (
-                    <div className="mt-1">
-                      <Pill className="bg-indigo-100 text-indigo-800">
-                        style: {style?.name ?? "variety overlay"}
-                      </Pill>
-                      <div
-                        className="text-xs text-gray-500 truncate mt-0.5"
-                        title={(style?.orgs ?? []).join(", ")}
-                      >
-                        used by {style?.orgs?.length ? style.orgs.join(", ") : "no orgs yet"}
-                      </div>
-                    </div>
-                  )}
                   <div className="flex items-center justify-between mt-1">
                     <span className="flex items-center gap-1">
                       <Pill className={STATUS_STYLES[v.section.status]}>{v.section.status}</Pill>
+                      {styleCount > 0 && (
+                        <Pill className="bg-indigo-100 text-indigo-800">
+                          {styleCount} style{styleCount > 1 ? "s" : ""}
+                        </Pill>
+                      )}
                       {proposals > 0 && (
                         <Pill className="bg-amber-100 text-amber-800">
                           {proposals} proposal{proposals > 1 ? "s" : ""}
