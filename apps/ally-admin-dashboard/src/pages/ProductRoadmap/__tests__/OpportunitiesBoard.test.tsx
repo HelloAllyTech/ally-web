@@ -26,6 +26,7 @@ vi.mock("../RoadmapAdvancedFilters", () => ({
 vi.mock("@icons", () => ({
   SortAscending: () => null,
   SortDescending: () => null,
+  Close: () => null,
 }));
 
 vi.mock("@components", () => ({
@@ -42,6 +43,10 @@ vi.mock("@components", () => ({
     </div>
   ),
   ListToolbar: () => null,
+  // The facet popover. Its own wiring is covered by RoadmapFilterBar.test.tsx and
+  // filterSelection.test.ts; here it only has to resolve to a component, since the filter bar
+  // renders it unconditionally and lets it decide whether it is open.
+  FilterDropdown: () => null,
 }));
 
 vi.mock("@components/types", () => ({
@@ -49,6 +54,7 @@ vi.mock("@components/types", () => ({
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Tooltip: ({ children }: any) => <>{children}</>,
   Table: ({ children }: any) => <table>{children}</table>,
   TableBody: ({ children }: any) => <tbody>{children}</tbody>,
   TableCell: ({ children, onClick }: any) => <td onClick={onClick}>{children}</td>,
@@ -189,24 +195,30 @@ describe("OpportunitiesBoard pagination", () => {
   });
 });
 
-describe("OpportunitiesBoard source filter/badge", () => {
-  it("toggles the source filter chip", () => {
-    const onSourceFilterChange = vi.fn();
-    renderBoard({ onSourceFilterChange });
-
-    fireEvent.click(screen.getByRole("button", { name: "Consumer" }));
-    expect(onSourceFilterChange).toHaveBeenCalledWith([RoadmapOpportunitySource.CONSUMER]);
-  });
-
+describe("OpportunitiesBoard row content", () => {
   it("badges a consumer-filed row but not a staff-filed one", () => {
     renderBoard({
       data: response(2, 2, [RoadmapOpportunitySource.CONSUMER, RoadmapOpportunitySource.STAFF]),
     });
 
     // Exactly one badge in the table — the consumer row's, not the staff row's (the common case
-    // stays unbadged). Scoped to the table so the Source filter chip's own "Consumer" label,
-    // rendered above it, isn't counted.
+    // stays unbadged). Scoped to the table so that if a Source chip is ever rendered above it,
+    // its "Consumer" label isn't counted.
     const table = screen.getByRole("table");
     expect(within(table).getAllByText("Consumer")).toHaveLength(1);
+  });
+
+  it("reads the goal on the row's meta line, with no column of its own", () => {
+    // The goal moved out of a w-40 column because long names ("Roleplay Actor Build Time") wrapped
+    // to two lines and set the height of every row. It has to stay visible on the row — a filter
+    // people sort and scan by cannot retreat into the drawer.
+    renderBoard({ data: response(1, 1) });
+
+    const table = screen.getByRole("table");
+    expect(
+      within(table).getByRole("columnheader", { name: "Opportunity" }),
+    ).toBeInTheDocument();
+    expect(within(table).queryByRole("columnheader", { name: "Goal" })).not.toBeInTheDocument();
+    expect(within(table).getByText(/Engagement & Usability/)).toBeInTheDocument();
   });
 });

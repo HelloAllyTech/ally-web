@@ -231,7 +231,6 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                 </SortHeader>
                 <TableHeader className="w-24">Coins</TableHeader>
                 <SortHeader field="description">Opportunity</SortHeader>
-                <TableHeader className="w-40">Goal</TableHeader>
                 <TableHeader className="w-32">Stage</TableHeader>
                 <TableHeader className="w-32">Owner</TableHeader>
                 <SortHeader field="createdAt" className="w-28">
@@ -291,24 +290,32 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                     <div className="text-typography-primary line-clamp-2">
                       {opportunity.description}
                     </div>
-                    <div className="text-typography-secondary text-xs mt-1 flex gap-2">
+                    {/* The goal reads here rather than in a column of its own. Goal names run long
+                        ("Roleplay Actor Build Time"), so a w-40 cell wrapped to two lines and set
+                        the height of EVERY row — the widest single cause of how few of 500+
+                        opportunities fit on a screen. It is secondary context like the type and the
+                        filer, it stays filterable and it is still on every row, so it belongs on
+                        this line (Stacks: "Visual Hierarchy: Controlling Perception Order" —
+                        visibility proportional to importance). */}
+                    {/* Inline text flow, NOT a flex row. As flex items with `gap-2` these five
+                        spans wrapped with an 8px row-gap and stood 40px tall — taller than the
+                        two-line description above them, on the line that is supposed to be the
+                        quieter of the two. Normal wrapping at `leading-snug` is 16px per line. */}
+                    <div className="text-typography-secondary mt-1 text-xs leading-snug">
                       <span>{typeLabel(opportunity.type)}</span>
                       {isConsumerSourced(opportunity.source) && (
-                        <span className={`px-1.5 py-0.5 ${SOURCE_BADGE_STYLE}`}>
+                        <span className={`ml-1.5 inline-block px-1.5 ${SOURCE_BADGE_STYLE}`}>
                           {SOURCE_LABEL[opportunity.source]}
                         </span>
                       )}
+                      {opportunity.productGoal && <span> · {opportunity.productGoal}</span>}
                       {opportunity.commentCount > 0 && (
-                        <span>· {opportunity.commentCount} comments</span>
+                        <span> · {opportunity.commentCount} comments</span>
                       )}
                       {opportunity.creator && (
-                        <span>· {opportunity.creator.name || opportunity.creator.email}</span>
+                        <span> · {opportunity.creator.name || opportunity.creator.email}</span>
                       )}
                     </div>
-                  </TableCell>
-
-                  <TableCell className="text-typography-secondary text-sm">
-                    {opportunity.productGoal}
                   </TableCell>
 
                   <TableCell>
