@@ -27,6 +27,8 @@ import {
   Review,
   AchievementsViewAll,
   OrganizationSettings,
+  CharacterLibrary,
+  CharacterInterview,
 } from "@pages";
 import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
@@ -271,6 +273,11 @@ const PrivateRouteLayout: FC = () => {
         />
         {/* Access is enforced inside the page (ADMIN role + temporary allowlist). */}
         <Route path={ROUTES.ORGANIZATION_SETTINGS} element={<OrganizationSettings />} />
+        {/* Access is enforced inside the page: view:scenario-character permission
+            AND the tenant's CHARACTER_LIBRARY_ENABLED org toggle (see
+            useCanViewCharacterLibrary) — not a plain permission array. */}
+        <Route path={ROUTES.CHARACTER_LIBRARY} element={<CharacterLibrary />} />
+        <Route path={ROUTES.CHARACTER_LIBRARY_INTERVIEW} element={<CharacterInterview />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </NavbarWrapper>

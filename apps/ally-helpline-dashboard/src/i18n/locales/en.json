@@ -91,7 +91,8 @@
       "search": "Search",
       "organizationSettings": "Org. Settings",
       "organizationSettingsTag": "Testing",
-      "allyAdmin": "Ally Admin"
+      "allyAdmin": "Ally Admin",
+      "characterLibrary": "Character Library"
     },
     "logout": {
       "title": {

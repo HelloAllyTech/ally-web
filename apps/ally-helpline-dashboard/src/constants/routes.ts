@@ -7,6 +7,7 @@ import {
   ReviewNavIcon,
   Badge,
   ManageAccount,
+  CharacterLibraryIcon,
 } from "@assets";
 
 import { Permissions } from "./permissions";
@@ -36,6 +37,8 @@ export const ROUTES = {
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   ORGANIZATION_SETTINGS: "/organization-settings",
+  CHARACTER_LIBRARY: "/character-library",
+  CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
   SUMMARY: "/summary/:chatId",
   SEARCH: "/search",
   LEARN: "/learn",
@@ -147,6 +150,19 @@ export const navBarOptions = [
     activePages: [],
     // Not permission-gated: visibility is decided by canViewOrganizationSettings
     // (ADMIN role + temporary email allowlist), handled in NavSideBar.
+    permissions: [] as Permissions[],
+  },
+  {
+    id: TabId.CHARACTER_LIBRARY,
+    title: "Character Library",
+    key: "nav.tabs.characterLibrary",
+    Icon: CharacterLibraryIcon,
+    path: ROUTES.CHARACTER_LIBRARY,
+    activePages: [ROUTES.CHARACTER_LIBRARY_INTERVIEW],
+    // Not permission-array-gated (same escape hatch as Organization Settings):
+    // visibility needs the view:scenario-character permission AND the tenant's
+    // CHARACTER_LIBRARY_ENABLED org toggle, so useCanViewCharacterLibrary
+    // handles it in NavSideBar instead.
     permissions: [] as Permissions[],
   },
 ];

@@ -49,6 +49,12 @@ export enum Permissions {
 
   // Counsellor
   COUNSELOR_ACCESS = "counselor:access",
+
+  // Character Library (tenant-admin view+create only; edit/delete are
+  // platform-admin-only and not exposed in this app — see the migration that
+  // grants the ADMIN group view/create: 1905000000000-AddTenantScopedCharacterLibrary).
+  VIEW_CHARACTER_LIBRARY = "view:scenario-character",
+  CREATE_CHARACTER_LIBRARY = "create:scenario-character",
 }
 
 export const CALL_PERMISSIONS = [
