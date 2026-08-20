@@ -52,6 +52,7 @@ import {
   WeakMetricsResponse,
 } from "@types";
 
+import { AnalyticsTabFilters } from "../analyticsFilters";
 import { WeakPerformingMetricsTab } from "../tabs/WeakPerformingMetricsTab";
 
 /**
@@ -98,6 +99,9 @@ const response = (o: Partial<WeakMetricsResponse> = {}): WeakMetricsResponse => 
   },
   bucket: "month",
   start: "2025-08-01T00:00:00.000Z",
+  // Null by default: these fixtures describe windows that ended in the past,
+  // so nothing is still accruing and no point is withheld from the plot.
+  inProgressBucket: null,
   groups: [group()],
   worstScenarios: [
     {
@@ -121,11 +125,14 @@ const response = (o: Partial<WeakMetricsResponse> = {}): WeakMetricsResponse => 
   ...o,
 });
 
-const filters = {
+// Typed rather than `as never`: spreading a `never` into JSX made every
+// `render(<Tab {...filters} />)` in this file a TS2698, so the cast hid nothing
+// and cost the file its type checking on the props it passes.
+const filters: AnalyticsTabFilters = {
   query: { range: "12m" },
   language: "",
   onSelectLanguage: vi.fn(),
-} as never;
+};
 
 beforeEach(() => {
   queryMock.mockReset();
@@ -138,6 +145,68 @@ beforeEach(() => {
 });
 
 describe("WeakPerformingMetricsTab", () => {
+  describe("the still-accruing bucket", () => {
+    // Three days of the current week charted beside seven-day weeks reads as
+    // quality collapsing, and the reader explains that fall to themselves. It
+    // is also what made the axis look like it stopped days early. Every other
+    // tab already withholds this bucket; this one plots it.
+    const withPartial = () =>
+      response({
+        bucket: "week",
+        inProgressBucket: "2026-08-17",
+        groups: [
+          group({
+            series: [
+              series({
+                points: [
+                  { bucket: "2026-08-03", numerator: 20, denominator: 500, value: 0.04 },
+                  { bucket: "2026-08-10", numerator: 25, denominator: 500, value: 0.05 },
+                  // 3 of 7 days in — a real value over a partial denominator.
+                  { bucket: "2026-08-17", numerator: 1, denominator: 20, value: 0.05 },
+                ],
+              }),
+            ],
+          }),
+        ],
+      });
+
+    it("keeps the partial bucket out of the plotted series", () => {
+      queryMock.mockReturnValue({
+        data: withPartial(),
+        isFetching: false,
+        isError: false,
+        refetch: refetchMock,
+      });
+      render(<WeakPerformingMetricsTab {...filters} />);
+
+      // The completed weeks are still listed; the accruing one is not. The
+      // bucket key renders in more than one place per card, so count rather
+      // than assume a single node.
+      expect(screen.getAllByText(/2026-08-10/).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/2026-08-17/)).toHaveLength(0);
+    });
+
+    it("says the current week was left off, rather than silently dropping it", () => {
+      queryMock.mockReturnValue({
+        data: withPartial(),
+        isFetching: false,
+        isError: false,
+        refetch: refetchMock,
+      });
+      render(<WeakPerformingMetricsTab {...filters} />);
+
+      // Without this a screenshot reader cannot tell a deliberate omission from
+      // missing data — which is the confusion the plotted version caused.
+      expect(screen.getByText(/still accruing/i)).toBeInTheDocument();
+    });
+
+    it("plots every bucket when nothing is accruing", () => {
+      // A window that ended in the past withholds nothing.
+      render(<WeakPerformingMetricsTab {...filters} />);
+      expect(screen.queryByText(/still accruing/i)).not.toBeInTheDocument();
+    });
+  });
+
   it("renders each group with its series", () => {
     render(<WeakPerformingMetricsTab {...filters} />);
     expect(screen.getByText("Conversational progression & resolution")).toBeInTheDocument();

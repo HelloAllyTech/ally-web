@@ -31,6 +31,7 @@ import {
 } from "@types";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
+import { inProgressCaption, withoutInProgress } from "../analyticsGrouping";
 import { ChartCard, buildSource, lineOpts, single, timeBarOpts } from "../chartKit";
 import { PALETTE } from "../chartScales";
 import { TabControls } from "../tabControlsSlot";
@@ -156,17 +157,28 @@ const seriesForm = (valuedBuckets: number, allZero: boolean): SeriesForm => {
   return "line";
 };
 
-const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, bucket }) => {
+const SeriesCard: FC<{
+  series: WeakMetricSeries;
+  bucket: string;
+  inProgressBucket?: string | null;
+}> = ({ series, bucket, inProgressBucket }) => {
+  // `withoutInProgress` strips the still-accruing bucket from what is PLOTTED
+  // only — the same contract every other tab uses. Three days of the current
+  // week charted beside seven-day weeks read as quality collapsing, which is
+  // how "data stops on the 17th" and a fake cliff arrive together. The full
+  // series still reaches the denominator below and the expanded view's table.
   const points = useMemo(
     () =>
-      series.points
-        .filter(p => p.value !== null)
-        .map(p => ({
-          group: series.label,
-          key: p.bucket,
-          value: toDisplay(p.value as number, series.unit),
-        })),
-    [series],
+      withoutInProgress(
+        series.points.filter(p => p.value !== null),
+        p => p.bucket,
+        inProgressBucket,
+      ).map(p => ({
+        group: series.label,
+        key: p.bucket,
+        value: toDisplay(p.value as number, series.unit),
+      })),
+    [series, inProgressBucket],
   );
 
   const totalDenominator = series.points.reduce((a, p) => a + p.denominator, 0);
@@ -180,7 +192,10 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   // crowded out the number it was there to qualify. It is reference material a
   // reader reaches for once, so it moves behind a tooltip and the caption
   // carries the one line that says what is being counted.
-  const caption = series.description || undefined;
+  const caption =
+    [series.description, inProgressCaption(bucket as never, inProgressBucket)]
+      .filter(Boolean)
+      .join("") || undefined;
 
   // No "lower is better" caption. Every metric here is NAMED as the thing you
   // want less of — comprehension errors, unfair criticism, wrong language — so
@@ -281,7 +296,11 @@ const SeriesCard: FC<{ series: WeakMetricSeries; bucket: string }> = ({ series, 
   );
 };
 
-const GroupSection: FC<{ group: WeakMetricGroup; bucket: string }> = ({ group, bucket }) => {
+const GroupSection: FC<{
+  group: WeakMetricGroup;
+  bucket: string;
+  inProgressBucket?: string | null;
+}> = ({ group, bucket, inProgressBucket }) => {
   const tag = STATE_TAG[group.state];
   return (
     <section style={{ marginBottom: "2.5rem" }}>
@@ -307,7 +326,7 @@ const GroupSection: FC<{ group: WeakMetricGroup; bucket: string }> = ({ group, b
         }}
       >
         {group.series.map(s => (
-          <SeriesCard key={s.id} series={s} bucket={bucket} />
+          <SeriesCard key={s.id} series={s} bucket={bucket} inProgressBucket={inProgressBucket} />
         ))}
       </div>
     </section>
@@ -601,7 +620,12 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
       ) : (
         <>
           {(data?.groups ?? []).map(g => (
-            <GroupSection key={g.id} group={g} bucket={bucket} />
+            <GroupSection
+              key={g.id}
+              group={g}
+              bucket={bucket}
+              inProgressBucket={data?.inProgressBucket}
+            />
           ))}
 
           {data?.turnConditions && <TurnConditionsSection data={data.turnConditions} />}

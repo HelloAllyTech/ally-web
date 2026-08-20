@@ -226,7 +226,11 @@ const TABS: TabDef[] = [
 ];
 
 export const Analytics = () => {
-  const [range, setRange] = useState<AnalyticsRange>("30d");
+  // 90 days, not 30. The judge backfill now reaches months back, and a
+  // 30-day window truncated every trend on this page to about four
+  // buckets — enough to draw a line, not enough to read one. The wider
+  // default costs a slower first paint on tabs that run many aggregates.
+  const [range, setRange] = useState<AnalyticsRange>("90d");
   // Page-level filters, shared across tabs (language id "" = all). Each tab
   // opts in via TabDef.uses; the picker only renders for tabs that use it.
   const [language, setLanguage] = useState<string>("");

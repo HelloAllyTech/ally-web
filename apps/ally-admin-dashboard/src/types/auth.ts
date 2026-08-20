@@ -1235,6 +1235,12 @@ export interface WeakMetricsResponse {
   };
   bucket: string;
   start: string;
+  /**
+   * Start of the bucket containing today, or null when the window ended in the
+   * past. Still accruing, so it is left off plots and kept in the expanded
+   * view — the same contract `window.inProgressBucket` carries elsewhere.
+   */
+  inProgressBucket: string | null;
   groups: WeakMetricGroup[];
   worstScenarios: WeakMetricScenarioRow[];
   /**
