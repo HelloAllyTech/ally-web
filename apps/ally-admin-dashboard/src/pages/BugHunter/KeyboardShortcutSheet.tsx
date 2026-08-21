@@ -121,7 +121,10 @@ export const KeyboardShortcutSheet: FC<KeyboardShortcutSheetProps> = ({ onClose 
         <div className="mt-4 flex flex-col gap-4">
           {shortcutGroups().map(group => (
             <div key={group.title}>
-              <p className="text-[11px] font-mono uppercase tracking-wide text-typography-500 mb-2">
+              {/* Serif: a group heading is a word, not a key. The `<kbd>` above
+                  keeps its monospace, which is what the config's code/ID
+                  carve-out is for. */}
+              <p className="text-[11px] uppercase tracking-wide text-typography-500 mb-2">
                 {group.title}
               </p>
               <ul className="flex flex-col gap-1.5">

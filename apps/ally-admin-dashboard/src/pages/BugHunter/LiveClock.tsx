@@ -83,12 +83,15 @@ export const LiveClock: FC<LiveClockProps> = ({ since, mode = "updated", srLabel
     mode === "elapsed" && srLabel ? srLabel.replace("{duration}", label) : undefined;
 
   return (
-    // Monospace + tabular-nums: the one glanceable "this is telemetry, and
-    // it's live" cue on the card, in ordinary Carbon light — no dark skin,
-    // just the type treatment. Tabular figures also stop the row from
-    // twitching sideways as the digit count changes.
+    // `tabular-nums` and nothing else. This used to be `font-mono` too, for a
+    // "this is telemetry and it's live" cue, which put a second typeface on a
+    // tab whose design language is serif-only — the carve-out in
+    // `tailwind.config.js` is for code and IDs, and a duration is neither.
+    // IBM Plex Serif carries tabular figures, so the functional half of the old
+    // treatment survives intact: the row still cannot twitch sideways as the
+    // digit count changes.
     <span
-      className="text-[11px] font-mono tabular-nums text-typography-500"
+      className="text-[11px] tabular-nums text-typography-500"
       // An `aria-label` on a bare <span> is ignored by assistive tech, so the
       // role comes with it — the same pairing `Sparkbars` and the scorecard's
       // chip row use. "45s" is compact notation for a sighted reader and a

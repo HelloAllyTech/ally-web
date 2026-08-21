@@ -38,16 +38,23 @@ vi.mock("@assets", () => ({
 // label/state/handler into it.
 // Real motion timing isn't what a layout test is about.
 vi.mock("framer-motion", () => {
-  // `initial`/`animate`/`transition` are dropped rather than spread onto a real
-  // element — React warns about `initial={false}` on a <div>, and that warning
-  // would be this mock's rather than the component's. `div` is needed because
-  // the live board draws a dense PipelineRail per in-flight row.
-  const strip = ({ initial, animate, transition, ...rest }: any) => rest;
+  // Defined inside the factory: `vi.mock` is hoisted above this file's own
+  // declarations, so a helper referenced from out here would be in its TDZ by
+  // the time the factory runs.
+  //
+  // Motion-only props are dropped rather than spread onto real elements —
+  // React warns about `initial={false}` or `layout="position"` on a <div>, and
+  // that warning would be this mock's rather than the component's. `li`/`p`
+  // exist because the live board's rows and its sweep event line are those.
+  const strip = ({ initial, animate, exit, transition, layout, layoutId, ...rest }: any) => rest;
   return {
     motion: {
       div: (props: any) => <div {...strip(props)} />,
       span: (props: any) => <span {...strip(props)} />,
+      li: (props: any) => <li {...strip(props)} />,
+      p: (props: any) => <p {...strip(props)} />,
     },
+    AnimatePresence: ({ children }: any) => <>{children}</>,
     useReducedMotion: () => false,
   };
 });
