@@ -39,9 +39,7 @@ export const clampCoins = (raw: unknown, budget: RoadmapCoinBudget, myCoins: num
  * RoadmapAllocationService.setCoins.
  */
 export const isAllocatable = (
-  opportunity:
-    | Pick<RoadmapOpportunity, "stage" | "type">
-    | { stage?: string; type?: string },
+  opportunity: Pick<RoadmapOpportunity, "stage" | "type"> | { stage?: string; type?: string },
 ): boolean =>
   (opportunity.stage ?? RoadmapOpportunityStage.NEW) === RoadmapOpportunityStage.NEW &&
   opportunity.type !== RoadmapOpportunityType.BUG;

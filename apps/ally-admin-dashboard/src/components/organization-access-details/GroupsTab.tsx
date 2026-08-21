@@ -237,11 +237,7 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
       <section className="flex flex-col gap-3">
         <h3 className="text-base font-medium text-typography-900">People</h3>
 
-        <ListToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          placeholder="Search people"
-        />
+        <ListToolbar searchValue={search} onSearchChange={setSearch} placeholder="Search people" />
 
         {members.length === 0 && !membersFetching ? (
           <p className="rounded bg-neutral-50 p-4 text-sm text-typography-600">
