@@ -230,20 +230,37 @@ export const OrgEngagementSubTab = () => {
       <ChartDetailModal
         open={expanded === "activity" || expanded === "share"}
         onClose={() => setExpanded(null)}
-        title="Orgs active per month"
-        caption="Count and share side by side, with the population each month."
-        render={({ height }) => (
-          <LineChart
-            data={activity.counts}
-            options={lineOpts({
-              colorScale: ORG_ACTIVITY_SCALE,
-              leftTitle: "Orgs",
-              bottomTitle: "Month",
-              legend: true,
-              height,
-            })}
-          />
-        )}
+        title={expanded === "share" ? "Share of orgs active each month" : "Orgs active per month"}
+        caption={
+          expanded === "share"
+            ? "The same months as a percentage of the orgs that existed by each month's end."
+            : "Count and share side by side, with the population each month."
+        }
+        render={({ height }) =>
+          expanded === "share" ? (
+            <LineChart
+              data={activity.shares}
+              options={lineOpts({
+                colorScale: ORG_SHARE_SCALE,
+                leftTitle: "% of orgs",
+                bottomTitle: "Month",
+                domain: [0, 100],
+                height,
+              })}
+            />
+          ) : (
+            <LineChart
+              data={activity.counts}
+              options={lineOpts({
+                colorScale: ORG_ACTIVITY_SCALE,
+                leftTitle: "Orgs",
+                bottomTitle: "Month",
+                legend: true,
+                height,
+              })}
+            />
+          )
+        }
         table={{
           columns: ["Month", "Active orgs", "All orgs", "Active share"],
           rows: (data?.activityTrend ?? []).map(p => [
