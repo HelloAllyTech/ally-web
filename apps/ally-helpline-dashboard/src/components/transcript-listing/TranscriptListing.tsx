@@ -216,8 +216,17 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const nearEndLastCallRef = useRef(0);
 
   const [activeIndex, setActiveIndex] = useState(-1);
-  /** Message currently marked as the jumped-to moment; cleared on a timer. */
-  const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
+  /**
+   * Message currently marked as the jumped-to moment, plus the requestId that
+   * asked for it; cleared on a timer. requestId rides along so a repeat tap on
+   * the same message still produces a new object and re-triggers the
+   * scroll/highlight effect below — a plain messageId string would be
+   * `Object.is`-equal to the current state and React would bail out.
+   */
+  const [focusedMessage, setFocusedMessage] = useState<{
+    id: string;
+    requestId: number;
+  } | null>(null);
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const [transcriptSeekRequest, setTranscriptSeekRequest] =
@@ -324,22 +333,19 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     const targetId = String(focusRequest.messageId);
     if (!transcriptList.some(message => getMessageId(message) === targetId)) return;
     handledFocusRequestRef.current = focusRequest.requestId;
-    setFocusedMessageId(targetId);
+    setFocusedMessage({ id: targetId, requestId: focusRequest.requestId });
   }, [focusRequest, transcriptList]);
 
   // Scroll only once the highlighted row has rendered and its ref is attached,
   // then let the highlight expire on its own.
   useEffect(() => {
-    if (!focusedMessageId) return undefined;
+    if (!focusedMessage) return undefined;
     focusedItemRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    focusHighlightTimerRef.current = setTimeout(
-      () => setFocusedMessageId(null),
-      FOCUS_HIGHLIGHT_MS,
-    );
+    focusHighlightTimerRef.current = setTimeout(() => setFocusedMessage(null), FOCUS_HIGHLIGHT_MS);
     return () => {
       if (focusHighlightTimerRef.current) clearTimeout(focusHighlightTimerRef.current);
     };
-  }, [focusedMessageId]);
+  }, [focusedMessage]);
 
   // ── While playing, prefetch when near the chronological end of loaded data ──
   useEffect(() => {
@@ -439,7 +445,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
               : transcriptList.map((transcript, index) => {
                   const isItemActive = index === activeIndex;
                   const isItemFocused =
-                    focusedMessageId !== null && getMessageId(transcript) === focusedMessageId;
+                    focusedMessage !== null && getMessageId(transcript) === focusedMessage.id;
                   return (
                     <TranscriptItem
                       key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}

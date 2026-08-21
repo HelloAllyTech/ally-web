@@ -133,4 +133,31 @@ describe("TranscriptListing moment focus", () => {
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
     expect(rowFor("The moment in question")?.className).toContain("ring-2");
   });
+
+  it("scrolls again when the same chip is tapped a second time before the highlight expires", () => {
+    const { rerender } = render(
+      <TranscriptListing
+        transcriptList={transcriptList as any}
+        hasMore={false}
+        focusRequest={{ messageId: "22", requestId: 1 }}
+      />,
+    );
+
+    // Well within the 2.5s highlight window — the learner tapped again
+    // because they weren't sure the first tap registered.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    rerender(
+      <TranscriptListing
+        transcriptList={transcriptList as any}
+        hasMore={false}
+        focusRequest={{ messageId: "22", requestId: 2 }}
+      />,
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(rowFor("The moment in question")?.className).toContain("ring-2");
+  });
 });
