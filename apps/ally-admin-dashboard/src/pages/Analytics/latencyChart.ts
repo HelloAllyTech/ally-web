@@ -135,6 +135,163 @@ export function buildPromptCacheHitRateSeries(points: VoiceLatencyPoint[]): Late
     );
 }
 
+/**
+ * What the learner actually heard first on a turn.
+ *
+ * `responseLatencyMs` is time-to-FIRST-AUDIO, and the agent's first audio is a
+ * thinking-filler or a predictive interim reply whenever one played. That is the
+ * honest measure of "how long until someone spoke to me" — but on its own it
+ * makes a turn masked at 400ms indistinguishable from one genuinely answered at
+ * 400ms, so a rise in filler coverage would read as a latency win. These groups
+ * exist to keep those two stories apart.
+ */
+export const FIRST_AUDIO_GROUPS = {
+  filler: "Thinking filler",
+  interim: "Interim reply",
+  reply: "The reply itself",
+  unknown: "Not recorded",
+};
+
+/**
+ * Masking speech and the real reply are different KINDS of first audio, not
+ * degrees of one thing, so they take distinct hues rather than a ramp. "Not
+ * recorded" is the absence of knowledge, not a fourth kind of audio, so it takes
+ * context grey — the same rule the usage-level zero band follows (§8.2).
+ */
+export const FIRST_AUDIO_SCALE: ColorScale = {
+  [FIRST_AUDIO_GROUPS.filler]: PALETTE.teal,
+  [FIRST_AUDIO_GROUPS.interim]: PALETTE.purple,
+  [FIRST_AUDIO_GROUPS.reply]: STAT.avg,
+  [FIRST_AUDIO_GROUPS.unknown]: CONTEXT.faint,
+};
+
+/** Live-pipeline buckets that have at least one turn to state shares over. */
+const firstAudioBuckets = (points: VoiceLatencyPoint[]) =>
+  points
+    .filter(point => point.source === "pipeline")
+    .map(point => ({
+      point,
+      // Denominator is the sum of the four mutually-exclusive counts rather
+      // than `turns`: they partition the bucket by construction, so summing
+      // them cannot produce shares that fail to reach 100%.
+      total:
+        point.firstAudioFillerTurns +
+        point.firstAudioInterimTurns +
+        point.firstAudioReplyTurns +
+        point.firstAudioUnknownTurns,
+    }))
+    .filter(({ total }) => total > 0);
+
+/**
+ * Share of each bucket's turns by what spoke first, as a 100%-stacked bar.
+ *
+ * Emitted group-by-group in stack order (Carbon takes stack order from first
+ * appearance), reading bottom-to-top: the unmasked reply, then the two kinds of
+ * masking speech, then the unrecorded remainder LAST. "Not recorded" sits on top
+ * on purpose — its size is an artefact of when instrumentation landed, and
+ * putting it at the bottom would shift the real bands off a common baseline and
+ * make them impossible to compare across buckets.
+ */
+export function buildFirstAudioMixSeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  const buckets = firstAudioBuckets(points);
+  const share = (count: number, total: number) => Math.round((1000 * count) / total) / 10;
+  return (
+    [
+      [FIRST_AUDIO_GROUPS.reply, (p: VoiceLatencyPoint) => p.firstAudioReplyTurns],
+      [FIRST_AUDIO_GROUPS.interim, (p: VoiceLatencyPoint) => p.firstAudioInterimTurns],
+      [FIRST_AUDIO_GROUPS.filler, (p: VoiceLatencyPoint) => p.firstAudioFillerTurns],
+      [FIRST_AUDIO_GROUPS.unknown, (p: VoiceLatencyPoint) => p.firstAudioUnknownTurns],
+    ] as const
+  ).flatMap(([group, pick]) =>
+    buckets.map(({ point, total }) => ({
+      group,
+      key: point.bucket,
+      value: share(pick(point), total),
+    })),
+  );
+}
+
+/**
+ * Mean time-to-first-voice per bucket, split by what spoke first.
+ *
+ * This is the "why" behind the headline trend: filler-first turns sit near the
+ * filler's own delay, reply-first turns carry the full pipeline. A group is
+ * OMITTED for a bucket with no turns of that kind rather than drawn at 0 —
+ * latency has no meaningful zero, same rule as every other series here.
+ *
+ * Turns with no recorded provenance have no line: there is no per-source mean to
+ * state for them. Their share is on the mix chart, which is where the reader
+ * should look to see how much of the window this chart cannot speak for.
+ */
+export function buildFirstAudioLatencySeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point =>
+      (
+        [
+          [FIRST_AUDIO_GROUPS.filler, point.avgFirstAudioFillerMs],
+          [FIRST_AUDIO_GROUPS.interim, point.avgFirstAudioInterimMs],
+          [FIRST_AUDIO_GROUPS.reply, point.avgFirstAudioReplyMs],
+        ] as const
+      ).flatMap(([group, ms]) =>
+        ms != null ? [{ group, key: point.bucket, value: toS(ms) }] : [],
+      ),
+    );
+}
+
+/**
+ * Time to the REAL reply per bucket (p50/avg/p95) — the unmasked pipeline
+ * number, which does not move when filler coverage does.
+ *
+ * Read against the time-to-first-voice chart above: that one is the learner's
+ * experience, this one is the machine's. Widening the gap between them means
+ * more masking; a rise in THIS one is a genuine regression no amount of filler
+ * coverage can hide.
+ *
+ * Live-pipeline and instrumented turns only — null (not 0) for buckets that
+ * predate the provenance instrumentation, so those buckets are simply absent.
+ */
+export function buildReplyLatencySeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point =>
+      (
+        [
+          [LATENCY_GROUPS.p50, point.p50ReplyLatencyMs],
+          [LATENCY_GROUPS.avg, point.avgReplyLatencyMs],
+          [LATENCY_GROUPS.p95, point.p95ReplyLatencyMs],
+        ] as const
+      ).flatMap(([group, ms]) =>
+        ms != null ? [{ group, key: point.bucket, value: toS(ms) }] : [],
+      ),
+    );
+}
+
+/**
+ * Live turns carrying a recorded first-audio source — the n the split charts are
+ * measured over, which is NOT the same as the tab's live turn count while any
+ * pre-instrumentation data is still inside the window.
+ */
+export function countFirstAudioTurns(points: VoiceLatencyPoint[]): number {
+  return points
+    .filter(point => point.source === "pipeline")
+    .reduce(
+      (sum, point) =>
+        sum +
+        point.firstAudioFillerTurns +
+        point.firstAudioInterimTurns +
+        point.firstAudioReplyTurns,
+      0,
+    );
+}
+
+/** Live turns whose first audio was masking speech (filler or interim). */
+export function countMaskedTurns(points: VoiceLatencyPoint[]): number {
+  return points
+    .filter(point => point.source === "pipeline")
+    .reduce((sum, point) => sum + point.firstAudioFillerTurns + point.firstAudioInterimTurns, 0);
+}
+
 export type LanguageBarDatum = { group: string; value: number };
 
 /**
