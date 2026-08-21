@@ -2625,11 +2625,60 @@ export const en = {
     pipelineStageReview: "Review",
     pipelineStageMerged: "Merged",
     pipelineStageShip: "Ship",
+    // The dense rail has no visible stage names, so its group name carries
+    // them — see the `dense` prop in PipelineRail.tsx.
+    pipelineRailDenseLabel: "Pipeline stage: {stage}, step {step} of {total}",
     // ── Live clock (freshness readout next to the status pill) ──────────────
     updatedJustNow: "Updated just now",
     updatedSecondsAgo: "Updated {count}s ago",
     updatedMinutesAgo: "Updated {count}m ago",
     updatedHoursAgo: "Updated {count}h ago",
+    // The same clock in `elapsed` mode: a bare duration, because the caller's
+    // own words say what it is a duration of. No "just now" case — a counter
+    // climbing from 0s is the signal.
+    elapsedSeconds: "{count}s",
+    elapsedMinutes: "{count}m",
+    elapsedHours: "{count}h",
+    // ── Live work board ("on it right now") ─────────────────────────────────
+    // The tab's only present-tense section, and the only one that reports the
+    // agent's own work in progress rather than a record of it. Voice rules
+    // apply as everywhere else — first person, plain, and every line ends with
+    // what happens next — with one extra constraint specific to this section:
+    // nothing here may be written to sound busier than the data is. The board
+    // is absent entirely when nothing is in flight, so no string below ever has
+    // to cover an idle agent.
+    liveWorkTitle: "On it right now",
+    liveWorkSubtitle:
+      "These are moving on their own — nothing here needs you. Open one to follow along.",
+    liveWorkSweeping: "I'm sweeping {repo}.",
+    liveWorkSweepElapsedLabel: "Sweeping for {duration}",
+    liveWorkStageElapsedLabel: "{duration} on this step",
+    liveWorkNoRepo: "No codebase matched to this one yet",
+    // What each in-flight status means, as the thing it is doing.
+    liveWorkQueued: "I've queued a fix session — it starts as soon as a runner frees up.",
+    liveWorkFixing:
+      "I'm writing the fix now: a failing test that reproduces it first, then the change, then the whole suite.",
+    liveWorkCoordinating:
+      "This one spans repos, so I'm working through them in order — one has to land before the next starts.",
+    liveWorkReleasing: "The release is running. I'll report how it went here in a few minutes.",
+    liveWorkGeneric: "I'm working on this one now.",
+    // Where a bug just got to. Shown for a few seconds after it stops being in
+    // flight, which is the only moment on the tab where finishing is visible as
+    // it happens rather than as a row that quietly changed colour.
+    liveWorkLandedPrOpened: "Fix written and pushed — the PR is open for review.",
+    liveWorkLandedMerged: "Merged to master. Putting it in front of users is your call.",
+    liveWorkLandedReleased: "Released to production. Users have this fix now.",
+    liveWorkLandedReleaseFailed:
+      "It's merged, but the release went red. The details are on the bug.",
+    liveWorkLandedNeedsInput:
+      "I've stopped on this one — my question for you is in the queue above.",
+    liveWorkLandedPendingApproval: "Waiting on your call before I start fixing it.",
+    liveWorkLandedFailed: "That attempt went red. Whether I try again is your call.",
+    liveWorkLandedCancelled: "You stopped this session. The bug is still open.",
+    liveWorkLandedClosed: "Off the board — I won't pick this one up.",
+    liveWorkLandedRequeued: "Back in the queue. I'll pick it up on my next pass.",
+    liveWorkShowAll: "Show {count} more",
+    liveWorkShowFewer: "Show fewer",
     // ── Scorecard (the governor's view: cost, throughput, reliability) ─────
     // Every other surface on this tab answers "what should I do next?". This one
     // answers "should this thing still be merging its own code?" — a different
