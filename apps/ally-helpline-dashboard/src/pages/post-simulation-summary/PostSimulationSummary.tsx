@@ -442,7 +442,10 @@ export const PostSimulationSummary: FC = () => {
               {getTabContent()}
             </div>
             {!isLoading && trackContext && (
-              <div className="flex flex-col items-center gap-2 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+              <div
+                data-testid="post-sim-footer"
+                className="flex w-full shrink-0 flex-col items-center gap-2 bg-white p-[20px]"
+              >
                 <span className="font-primary text-sm text-typography-700">
                   {t("tracks2.continueLearning.label")}
                 </span>
@@ -453,7 +456,10 @@ export const PostSimulationSummary: FC = () => {
               !trackContext &&
               !summary?.scenarioPathSessionItemId &&
               !summary?.caseSessionItemId && (
-                <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <div
+                  data-testid="post-sim-footer"
+                  className="flex w-full shrink-0 flex-col items-center gap-3 bg-white p-[20px]"
+                >
                   {nextChallenge && (
                     <div className="w-full max-w-4xl px-4 sm:px-6">
                       <NextChallengeCard recommendation={nextChallenge} />
