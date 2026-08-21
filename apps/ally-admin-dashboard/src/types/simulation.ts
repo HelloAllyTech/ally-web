@@ -20,6 +20,17 @@ export interface LiveKitEvent {
   timestamp: string;
 }
 
+/**
+ * One live supervisor note, as published by ally-ai-learn on the "supervisor"
+ * data-channel topic. `seq` is 1-based per session and is the note's identity.
+ */
+export interface SupervisorNotePayload {
+  note: string;
+  seq: number;
+  turn_index?: number;
+  timestamp?: string;
+}
+
 export interface UseLiveKitRoomReturn {
   error: string | null;
   events: LiveKitEvent[];
@@ -31,6 +42,7 @@ export interface UseLiveKitRoomReturn {
   startTime: Date;
   roomData: any;
   detectedEventIds: string[];
+  supervisorNotes: SupervisorNotePayload[];
 }
 
 export interface stateInstruction {
@@ -228,6 +240,8 @@ export interface GetSimulationByIdResponse {
     /** See SimulationInput.feedbackTabs — absent object or absent key both read as on. */
     feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
     pauseEnabled?: boolean;
+    /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
+    supervisorNotesEnabled?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
     fillerEnabled?: boolean;
@@ -318,6 +332,7 @@ export interface StartSimulationResponse {
       showScoreMeter?: boolean;
       enableFeedback?: boolean;
       pauseEnabled?: boolean;
+      supervisorNotesEnabled?: boolean;
       currentState?: boolean;
       stateNames?: stateInstruction[];
     };

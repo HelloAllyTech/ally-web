@@ -69,6 +69,8 @@ export type FormData = {
   feedbackTabSkills?: boolean;
   feedbackTabTranscript?: boolean;
   pauseEnabled?: boolean;
+  /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
+  supervisorNotesEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
   remindersEnabled?: boolean;

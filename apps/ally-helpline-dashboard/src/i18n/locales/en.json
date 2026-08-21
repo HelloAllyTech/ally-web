@@ -1289,6 +1289,8 @@
     "remindersTab": "Reminders",
     "descriptionTab": "Description",
     "noRemindersYet": "No reminders for this scenario yet.",
+    "supervisorTab": "Supervisor",
+    "supervisorEmptyState": "Your supervisor is listening — notes appear here when there's something useful.",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",

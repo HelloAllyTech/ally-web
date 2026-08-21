@@ -83,6 +83,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   startTime,
   events,
   detectedEventIds,
+  supervisorNotes = [],
   score,
   isPreview = false,
   onEndSimulation,
@@ -428,6 +429,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           roomData={roomData}
           events={events}
           detectedEventIds={detectedEventIds}
+          supervisorNotes={supervisorNotes}
+          // Opt-in per roleplay: only an explicit true shows the tab (the
+          // pauseEnabled precedent below is the same shape, inverted default).
+          supervisorNotesEnabled={roomData?.supervisorNotesEnabled === true}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           isPaused={isPaused}

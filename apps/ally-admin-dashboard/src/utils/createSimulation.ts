@@ -220,6 +220,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     feedbackTabTranscript: (data?.metadata as any)?.feedbackTabs?.transcript !== false,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
+    // Same opt-in shape: a roleplay saved before live supervisor notes existed
+    // hydrates as off, which is also the intended default for new ones.
+    supervisorNotesEnabled: (data?.metadata as any)?.supervisorNotesEnabled === true,
     // Per-language STT picks, keyed like languageVoices. Absent = inherit.
     sttConfigByLanguage: (data?.metadata as any)?.sttConfigByLanguage ?? {},
     characterProfileText: data?.metadata?.characterProfileText,

@@ -72,6 +72,9 @@ export interface Scenario {
   timerMode?: boolean;
   showScoreMeter?: boolean;
   pauseEnabled?: boolean;
+  /** Live in-session coaching hints in the Supervisor sidebar tab. Opt-in per
+   * roleplay, so only an explicit true shows the tab. */
+  supervisorNotesEnabled?: boolean;
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];
