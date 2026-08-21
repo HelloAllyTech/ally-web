@@ -21,6 +21,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useGetSimulationSummaryQuery } from "@api";
 import { ROUTES } from "@constants";
 import { store } from "@store";
+import { ACTIVE_TRACK_CONTEXT_KEY } from "@types";
 
 import { PostSimulationSummary } from "../PostSimulationSummary";
 
@@ -1032,7 +1033,9 @@ describe("PostSimulationSummary Component", () => {
     it("hides the Debrief tab and lands on Skills when debrief is off", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { feedbackTabs: { debrief: false, skills: true, transcript: true } } },
+          scenario: {
+            metadata: { feedbackTabs: { debrief: false, skills: true, transcript: true } },
+          },
           hasFeedback: false,
         }),
       );
@@ -1140,6 +1143,44 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-6").className).toContain("text-primary-500");
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
       expect(screen.queryByTestId("skills-tab")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Bottom footer layout
+   * Regression: the "continue" / "next challenge" bar pinned to the bottom of
+   * the page used to be `fixed`, which pulls it out of the flex column's flow
+   * so it floats on top of whatever is beneath it instead of reserving its
+   * own space. That covered the bottom of the tab panel — e.g. the last
+   * utterance under the Annotated Transcript tab — making it inaccessible.
+   */
+  describe("Bottom footer layout", () => {
+    afterEach(() => {
+      sessionStorage.removeItem(ACTIVE_TRACK_CONTEXT_KEY);
+    });
+
+    it("keeps the continue-track footer in normal flex flow instead of floating over the tab panel", () => {
+      sessionStorage.setItem(
+        ACTIVE_TRACK_CONTEXT_KEY,
+        JSON.stringify({ trackId: "track-1", itemId: "item-1" }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const footer = screen.getByTestId("post-sim-footer");
+      const tabPanel = screen.getByTestId("post-sim-tab-panel");
+
+      // `fixed` removes the footer from the flex column entirely, so the tab
+      // panel above it never shrinks to leave it room — the footer just
+      // overlaps whatever content is currently at the bottom of the panel.
+      expect(footer.className).not.toMatch(/\bfixed\b/);
+      // Still a sibling of the tab panel in the same flex column, so the
+      // panel's flex-1/min-h-0 sizing accounts for the footer's height.
+      expect(footer.parentElement).toBe(tabPanel.parentElement);
     });
   });
 
