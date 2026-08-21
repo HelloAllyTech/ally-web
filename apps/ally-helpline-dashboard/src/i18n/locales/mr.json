@@ -1251,6 +1251,8 @@
     "remindersTab": "स्मरणपत्रे",
     "descriptionTab": "वर्णन",
     "noRemindersYet": "या परिस्थितीसाठी अद्याप कोणतीही स्मरणपत्रे नाहीत.",
+    "supervisorTab": "पर्यवेक्षक",
+    "supervisorEmptyState": "तुमचे पर्यवेक्षक ऐकत आहेत — उपयुक्त काही असेल तेव्हा टिपा येथे दिसतील.",
     "turnIndicator": {
       "speaking": "बोलत आहे...",
       "listening": "ऐकत आहे...",

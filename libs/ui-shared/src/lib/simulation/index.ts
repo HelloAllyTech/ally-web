@@ -8,6 +8,7 @@ export { SimulationControls } from "./SimulationControls";
 export { BottomSection } from "./SimulationBottomSection";
 export { SessionProgress } from "./SessionProgress";
 export { SessionSidebar } from "./SessionSidebar";
+export { SupervisorNotes } from "./SupervisorNotes";
 export { SessionTimeBar } from "./SessionTimeBar";
 export * from "./utils";
 export * from "./types";

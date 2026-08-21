@@ -49,6 +49,8 @@ export const Simulation = () => {
     remindersTab: t("simulationPage.remindersTab"),
     descriptionTab: t("simulationPage.descriptionTab"),
     noRemindersYet: t("simulationPage.noRemindersYet"),
+    supervisorTab: t("simulationPage.supervisorTab"),
+    supervisorEmptyState: t("simulationPage.supervisorEmptyState"),
     turnIndicator: {
       speaking: t("simulationPage.turnIndicator.speaking"),
       listening: t("simulationPage.turnIndicator.listening"),
@@ -76,6 +78,7 @@ export const Simulation = () => {
     score,
     detectedEventIds,
     agentTurnStatus,
+    supervisorNotes,
   } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
   if (roomData) {
@@ -135,6 +138,12 @@ export const Simulation = () => {
         startTime={startTime?.toISOString()}
         events={getSimulationEvents(events)}
         detectedEventIds={detectedEventIds}
+        supervisorNotes={(supervisorNotes ?? []).map(({ note, seq, turn_index, timestamp }) => ({
+          note,
+          seq,
+          turnIndex: turn_index,
+          timestamp,
+        }))}
         score={score}
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}

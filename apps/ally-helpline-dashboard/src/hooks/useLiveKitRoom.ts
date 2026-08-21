@@ -11,12 +11,15 @@ import {
   AGENT_STATE_THINKING,
   AGENT_STATE_DONE_THINKING,
   AGENT_STATE_SPEAKING,
+  SUPERVISOR_TOPIC,
+  SUPERVISOR_NOTE_EVENT_TYPE,
+  EVENT_FEED_TOPICS,
 } from "@constants";
 import { ANALYTICS_EVENTS } from "@constants/analyticsEvents";
 import { RoomStatus } from "@types";
 import { captureEvent, createAgentAudioTimer, decodeUint8ToJson } from "@utils";
 
-import { AgentTurnStatus, LiveKitEvent, UseLiveKitRoomReturn } from "./types";
+import { AgentTurnStatus, LiveKitEvent, SupervisorNote, UseLiveKitRoomReturn } from "./types";
 
 // Tiny delay before connect to avoid React 18 StrictMode mount/unmount/mount races
 // against the shared Room instance. Was 5000ms when it was also acting as a
@@ -38,6 +41,7 @@ export const useLiveKitRoom = (
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [score, setScore] = useState<number>(0);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
+  const [supervisorNotes, setSupervisorNotes] = useState<SupervisorNote[]>([]);
   const [startTime, setStartTime] = useState(null);
   const [agentTurnStatus, setAgentTurnStatus] = useState<AgentTurnStatus>("user_turn");
 
@@ -82,26 +86,57 @@ export const useLiveKitRoom = (
     return url;
   };
 
-  const onDataReceived = useCallback((payload: any) => {
-    const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-    // Handle agent state signals — do not treat as score/event data
-    if (eventObj?.type === AGENT_STATE_EVENT_TYPE) {
-      if (eventObj.state === AGENT_STATE_THINKING) {
-        updateAgentTurnStatus(AGENT_STATE_THINKING);
-      } else if (eventObj.state === AGENT_STATE_DONE_THINKING) {
-        if (agentTurnStatusRef.current !== AGENT_STATE_SPEAKING) {
-          updateAgentTurnStatus("user_turn");
-        }
+  const onDataReceived = useCallback(
+    (payload: any, _participant?: any, _kind?: any, topic?: string) => {
+      // Live supervisor notes have their own topic. They must be claimed before
+      // the fall-through below, which treats any packet as a scored coaching
+      // event — a note reaching `events` would corrupt the score.
+      if (topic === SUPERVISOR_TOPIC) {
+        const notePayload = decodeUint8ToJson(payload) as SupervisorNote & { type?: string };
+        if (notePayload?.type !== SUPERVISOR_NOTE_EVENT_TYPE || !notePayload?.note) return;
+        setSupervisorNotes(prev =>
+          // A reliable packet can be redelivered; seq is assigned per session
+          // by the agent, so it is the stable identity of a note.
+          prev.some(existing => existing.seq === notePayload.seq)
+            ? prev
+            : [
+                ...prev,
+                {
+                  note: notePayload.note,
+                  seq: notePayload.seq,
+                  turn_index: notePayload.turn_index,
+                  timestamp: notePayload.timestamp,
+                },
+              ],
+        );
+        return;
       }
-      return;
-    }
 
-    setEvents(prev => [...prev, eventObj]);
-    setScore(prev => prev + (eventObj?.data?.score ?? 0));
-    setDetectedEventIds(prevIds => {
-      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
-    });
-  }, []);
+      // Everything below folds the packet into the scored event feed, so only
+      // topics that genuinely belong to that feed may reach it.
+      if (!EVENT_FEED_TOPICS.includes(topic)) return;
+
+      const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+      // Handle agent state signals — do not treat as score/event data
+      if (eventObj?.type === AGENT_STATE_EVENT_TYPE) {
+        if (eventObj.state === AGENT_STATE_THINKING) {
+          updateAgentTurnStatus(AGENT_STATE_THINKING);
+        } else if (eventObj.state === AGENT_STATE_DONE_THINKING) {
+          if (agentTurnStatusRef.current !== AGENT_STATE_SPEAKING) {
+            updateAgentTurnStatus("user_turn");
+          }
+        }
+        return;
+      }
+
+      setEvents(prev => [...prev, eventObj]);
+      setScore(prev => prev + (eventObj?.data?.score ?? 0));
+      setDetectedEventIds(prevIds => {
+        return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+      });
+    },
+    [],
+  );
 
   const transitionToAgentJoined = useCallback(() => {
     if (agentJoinedRef.current) return;
@@ -343,5 +378,6 @@ export const useLiveKitRoom = (
     roomData,
     detectedEventIds,
     agentTurnStatus,
+    supervisorNotes,
   };
 };
