@@ -108,12 +108,16 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   const isGenerating = !note && !errorMessage && !retryMaxReached;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-gradient-to-br from-primary-500 to-primary-100 p-1">
-      <div className="relative flex min-h-0 w-full flex-1 flex-col rounded-lg">
-        <div className="w-full shrink-0 p-4 font-primary text-lg font-semibold text-white">
+    <div className="flex w-full flex-col rounded-lg bg-gradient-to-br from-primary-500 to-primary-100 p-1">
+      <div className="flex w-full flex-col rounded-lg">
+        <div className="w-full shrink-0 px-4 py-3 font-primary text-lg font-semibold text-white">
           {t("postSim.debrief.header")}
         </div>
-        <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto rounded-t-lg rounded-b-md bg-white p-4 pb-24">
+        {/* The note grows to its full length and the PAGE scrolls. It used to
+            live in its own short scroller, which showed about four lines of a
+            fifteen-line note behind a floating composer — the thing the learner
+            came back to read was the least readable thing on the screen. */}
+        <div className="flex flex-col gap-5 rounded-t-lg rounded-b-md bg-white p-4 sm:p-6">
           {isGenerating ? (
             <div className="flex flex-col gap-3">
               <NoteSkeleton />
@@ -161,9 +165,12 @@ export const DebriefTab: FC<DebriefTabProps> = ({
             </div>
           )}
           <div ref={threadEndRef} />
+          {/* Replying only makes sense once there is a note to reply to. The
+              composer sits at the end of the thread and sticks to the bottom of
+              the viewport while the card is on screen, so a long thread never
+              puts it out of reach and it never covers the note. */}
+          {note && <DebriefReplyInput onSend={sendMessage} disabled={isStreaming} />}
         </div>
-        {/* Replying only makes sense once there is a note to reply to. */}
-        {note && <DebriefReplyInput onSend={sendMessage} disabled={isStreaming} />}
       </div>
     </div>
   );

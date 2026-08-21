@@ -60,7 +60,10 @@ export const SupervisorNote: FC<SupervisorNoteProps> = ({ note, onOpenMoment }) 
   return (
     <div className="flex w-full gap-3" data-testid="supervisor-note">
       <AskAiIcon className="mt-1 h-8 w-8 shrink-0" />
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      {/* Capped measure: the card is 896px wide and the note runs to five
+          paragraphs, which at full width is ~110 characters a line — too long
+          to track comfortably in prose this personal. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[68ch]">
         <div className="flex items-center gap-2">
           <span className="font-primary text-sm font-semibold text-typography-900">
             {t("postSim.debrief.from")}
