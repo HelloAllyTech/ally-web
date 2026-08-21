@@ -9,6 +9,7 @@ import { AgentScorecard } from "./AgentScorecard";
 import { BugFindingsTable } from "./BugFindingsTable";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { KeyboardShortcutSheet } from "./KeyboardShortcutSheet";
+import { LiveWorkBoard } from "./LiveWorkBoard";
 import { NeedsYouQueue } from "./NeedsYouQueue";
 import { NotificationInbox } from "./NotificationInbox";
 import { RunHistoryTable } from "./RunHistoryTable";
@@ -19,15 +20,23 @@ import { RunHistoryTable } from "./RunHistoryTable";
  *
  * ## The order, and why it is what it is
  *
- * `card → what I need from you → messages → bugs → scorecard → shift log`.
+ * `card → what I need from you → on it right now → messages → bugs →
+ * scorecard → shift log`.
  *
- * The first four are ordered by whose move it is. An earlier version led with
+ * The first five are ordered by whose move it is. An earlier version led with
  * the profile card and the message bar, which together stood about 525px tall
  * and pushed the first actionable bug below the fold on a 1000×600 viewport: an
  * admin arriving because the card said "4 bugs are waiting on your call" had to
  * scroll past that sentence to reach anything they could act on. The queue
  * fixed that by holding the decision itself, and by rendering nothing at all
  * when nothing is blocked.
+ *
+ * "On it right now" sits third for the same reason: your blocked work outranks
+ * the agent's own, but its work in progress outranks a log of what it has
+ * already said. It is also the section that was missing entirely — everything
+ * above and below it is a record, and the agent's live work had no page-level
+ * surface at all beyond one sentence on the card. See `LiveWorkBoard`'s module
+ * doc for what that cost.
  *
  * The last two are ordered by who is asking. Everything above the scorecard
  * serves a *reviewer* working a queue; the scorecard and the shift log serve a
@@ -42,6 +51,9 @@ import { RunHistoryTable } from "./RunHistoryTable";
  * - `AgentProfileCard` — who it is, what it is doing, how much rope it has.
  * - `NeedsYouQueue` — your unfinished work, with the buttons on it. Absent when
  *   there is none, which is what keeps it the one coloured region on the page.
+ * - `LiveWorkBoard` — what it is doing this minute, and what finished in the
+ *   last few seconds. Absent when nothing is moving, for the same reason the
+ *   queue is absent when nothing is blocked.
  * - `NotificationInbox` — everything it has said to you, collapsed to a line.
  * - `BugFindingsTable` — every bug it knows about: filterable, searchable,
  *   selectable, and workable from the keyboard.
@@ -98,6 +110,13 @@ export const BugHunter: FC = () => {
           quiet day rather than an empty section with a heading over it. */}
       <div className="mt-8 shrink-0 empty:mt-0">
         <NeedsYouQueue findings={findings} onOpen={setBug} />
+      </div>
+
+      {/* Present tense, and the agent's own move rather than yours. Renders
+          null when nothing is in flight, so like the queue above it this is a
+          no-op margin on a quiet night. */}
+      <div className="mt-8 shrink-0 empty:mt-0">
+        <LiveWorkBoard findings={findings} onOpen={setBug} />
       </div>
 
       <div className="mt-8 shrink-0">

@@ -17,6 +17,16 @@ export interface PipelineRailProps {
    * should say which without implying it moved backward or forward.
    */
   variant?: "error" | "waiting";
+  /**
+   * Strips the rail down to its nodes for use inside a row: no bordered box,
+   * no header, no per-node text labels, smaller circles. `LiveWorkBoard` shows
+   * one of these per in-flight bug, where six visible stage names per row would
+   * be six times as much text as the row's own title — and where the row
+   * already carries a sentence saying what Bug Hunter is doing, so the words
+   * would be a second copy of it. The stage names stay reachable as each node's
+   * hover title and the whole rail names its own position to a screen reader.
+   */
+  dense?: boolean;
 }
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
@@ -46,6 +56,36 @@ const NODE_STYLES = {
   currentWaiting: "border-2 border-orange-400 bg-orange-50 text-orange-600",
 } as const;
 
+/**
+ * Geometry per size. The track has to start and end at the *centre* of the
+ * first and last nodes rather than at the rail's edges, so its horizontal
+ * inset is half a node on each side and the coloured fill's width is
+ * `progress` of what is left — which is why these three values are one object
+ * per size rather than three loose literals.
+ */
+const GEOMETRY = {
+  regular: {
+    node: "h-8 w-8",
+    icon: 16,
+    /** Half a node (1rem), matching `trackInset`'s Tailwind classes. */
+    trackShrink: "2rem",
+    trackInset: "left-4 right-4",
+    fillInset: "left-4",
+    trackTop: "top-[15px]",
+    wrapper: "relative pt-1",
+  },
+  dense: {
+    node: "h-5 w-5",
+    icon: 12,
+    /** Half a node (0.625rem) each side. */
+    trackShrink: "1.25rem",
+    trackInset: "left-2.5 right-2.5",
+    fillInset: "left-2.5",
+    trackTop: "top-[9px]",
+    wrapper: "relative",
+  },
+} as const;
+
 const PULSE_RING_COLOR: Record<"working" | "error" | "waiting", string> = {
   working: "bg-amber-400",
   error: "bg-destructive-400",
@@ -64,37 +104,58 @@ const PULSE_RING_COLOR: Record<"working" | "error" | "waiting", string> = {
  * the one motion in this feature that most says "this moved forward since
  * you last looked" (see the module doc in `pipelineStage.ts` for the mapping
  * this renders).
+ *
+ * That last sentence is why `dense` exists. This rail was reachable from
+ * exactly one place — the drawer, for one bug, if you opened it — so the
+ * feature's clearest statement of forward motion was also its best-hidden
+ * one. `dense` is the same rail sized to sit in a list row, which is what lets
+ * `LiveWorkBoard` show every in-flight bug's position at once on the page
+ * itself. It is a second size, deliberately not a second component: the six
+ * stages, their order, their colours and the pulse are defined here once.
  */
-export const PipelineRail: FC<PipelineRailProps> = ({ stage, variant }) => {
+export const PipelineRail: FC<PipelineRailProps> = ({ stage, variant, dense = false }) => {
   const shouldReduceMotion = useReducedMotion();
   const currentIndex = PIPELINE_STAGES.indexOf(stage);
   const progress = currentIndex / (PIPELINE_STAGES.length - 1);
   const pulseKind = variant === "error" ? "error" : variant === "waiting" ? "waiting" : "working";
+  const geometry = dense ? GEOMETRY.dense : GEOMETRY.regular;
+
+  // Dense has no visible stage labels, so it has to say where it is some other
+  // way — the group's own name carries the current stage and its position,
+  // which is the sentence the labels would otherwise have spelled out.
+  const groupLabel = dense
+    ? en.bugHunter.pipelineRailDenseLabel
+        .replace("{stage}", STAGE_LABELS[stage])
+        .replace("{step}", String(currentIndex + 1))
+        .replace("{total}", String(PIPELINE_STAGES.length))
+    : en.bugHunter.pipelineRailLabel;
 
   return (
     <div
-      className="border border-border-light rounded-lg bg-white px-4 py-4"
+      className={dense ? "" : "border border-border-light rounded-lg bg-white px-4 py-4"}
       role="group"
-      aria-label={en.bugHunter.pipelineRailLabel}
+      aria-label={groupLabel}
     >
-      <div className="text-[11px] font-mono uppercase tracking-wide text-typography-500 mb-4">
-        {en.bugHunter.pipelineRailLabel}
-      </div>
+      {!dense && (
+        <div className="text-[11px] font-mono uppercase tracking-wide text-typography-500 mb-4">
+          {en.bugHunter.pipelineRailLabel}
+        </div>
+      )}
 
-      <div className="relative pt-1">
+      <div className={geometry.wrapper}>
         {/* Static neutral track, full width. */}
         <div
-          className="absolute left-4 right-4 top-[15px] h-0.5 bg-border-light"
+          className={`absolute ${geometry.trackInset} ${geometry.trackTop} h-0.5 bg-border-light`}
           aria-hidden="true"
         />
         {/* Coloured fill whose width animates to the new stage. Track spans
             from the first node's centre to the last's — inset by half a node
-            width (1rem) on each side, matching the `left-4`/`right-4` track
-            above — so the width is `progress` of (100% - 2rem). */}
+            width on each side, matching the track above — so the width is
+            `progress` of (100% - one node width). */}
         <motion.div
-          className="absolute left-4 top-[15px] h-0.5 bg-green-500"
+          className={`absolute ${geometry.fillInset} ${geometry.trackTop} h-0.5 bg-green-500`}
           initial={false}
-          animate={{ width: `calc((100% - 2rem) * ${progress})` }}
+          animate={{ width: `calc((100% - ${geometry.trackShrink}) * ${progress})` }}
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
         />
 
@@ -118,7 +179,13 @@ export const PipelineRail: FC<PipelineRailProps> = ({ stage, variant }) => {
 
             return (
               <div key={nodeStage} className="flex flex-col items-center gap-1.5">
-                <span className="relative flex items-center justify-center h-8 w-8">
+                <span
+                  className={`relative flex items-center justify-center ${geometry.node}`}
+                  // Only in dense, where it replaces the visible label. In the
+                  // regular rail the name is already printed underneath and a
+                  // tooltip repeating it is noise.
+                  title={dense ? STAGE_LABELS[nodeStage] : undefined}
+                >
                   {isCurrent && !shouldReduceMotion && (
                     <motion.span
                       className={`absolute inline-flex h-full w-full rounded-full ${PULSE_RING_COLOR[pulseKind]}`}
@@ -129,24 +196,26 @@ export const PipelineRail: FC<PipelineRailProps> = ({ stage, variant }) => {
                     />
                   )}
                   <span
-                    className={`relative flex items-center justify-center h-8 w-8 rounded-full ${nodeClassName}`}
+                    className={`relative flex items-center justify-center ${geometry.node} rounded-full ${nodeClassName}`}
                   >
                     {isCurrentError ? (
-                      <FailIcon size={16} />
+                      <FailIcon size={geometry.icon} />
                     ) : isCompleted ? (
-                      <CheckCircle size={16} />
+                      <CheckCircle size={geometry.icon} />
                     ) : (
-                      <Icon size={16} />
+                      <Icon size={geometry.icon} />
                     )}
                   </span>
                 </span>
-                <span
-                  className={`text-[10px] font-mono uppercase tracking-wide whitespace-nowrap ${
-                    isCurrent ? "text-typography-900 font-semibold" : "text-typography-500"
-                  }`}
-                >
-                  {STAGE_LABELS[nodeStage]}
-                </span>
+                {!dense && (
+                  <span
+                    className={`text-[10px] font-mono uppercase tracking-wide whitespace-nowrap ${
+                      isCurrent ? "text-typography-900 font-semibold" : "text-typography-500"
+                    }`}
+                  >
+                    {STAGE_LABELS[nodeStage]}
+                  </span>
+                )}
               </div>
             );
           })}

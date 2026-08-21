@@ -37,14 +37,30 @@ vi.mock("@assets", () => ({
 // exact markup isn't what this test verifies, only that the tab wires the right
 // label/state/handler into it.
 // Real motion timing isn't what a layout test is about.
-vi.mock("framer-motion", () => ({
-  motion: { span: ({ children, ...props }: any) => <span {...props}>{children}</span> },
-  useReducedMotion: () => false,
-}));
+vi.mock("framer-motion", () => {
+  // `initial`/`animate`/`transition` are dropped rather than spread onto a real
+  // element — React warns about `initial={false}` on a <div>, and that warning
+  // would be this mock's rather than the component's. `div` is needed because
+  // the live board draws a dense PipelineRail per in-flight row.
+  const strip = ({ initial, animate, transition, ...rest }: any) => rest;
+  return {
+    motion: {
+      div: (props: any) => <div {...strip(props)} />,
+      span: (props: any) => <span {...strip(props)} />,
+    },
+    useReducedMotion: () => false,
+  };
+});
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Search: ({ id, labelText, value, onChange, placeholder }: any) => (
-    <input id={id} aria-label={labelText} placeholder={placeholder} value={value} onChange={onChange} />
+    <input
+      id={id}
+      aria-label={labelText}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+    />
   ),
   ContentSwitcher: ({ selectedIndex, onChange, children }: any) => (
     <div data-testid="mode-switcher" data-selected-index={selectedIndex}>
@@ -304,6 +320,69 @@ describe("BugHunter", () => {
     // An always-present section headed "What I need from you" saying "nothing"
     // trains a reader to skip the region where the urgent thing later appears.
     expect(screen.queryByText("What I need from you")).not.toBeInTheDocument();
+  });
+
+  // The section the page was missing: every other surface here is a record of
+  // something, and the agent's live work had no page-level home beyond one
+  // sentence on the card.
+  it("puts what it is doing right now between your blocked work and the bugs table", () => {
+    mockSettingsQuery({
+      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+    });
+    mockFindingsQuery({
+      data: {
+        items: [
+          {
+            id: "f-1",
+            status: "pending_approval",
+            title: "A bug awaiting your call",
+            source: "code_review",
+            repo: "ally-be",
+            severity: null,
+            escalationQuestion: null,
+            createdAt: "2026-08-18",
+            updatedAt: "2026-08-18",
+          },
+          {
+            id: "f-2",
+            status: "fixing",
+            title: "A bug being fixed right now",
+            source: "test_failure",
+            repo: "ally-web",
+            severity: null,
+            escalationQuestion: null,
+            createdAt: "2026-08-18",
+            updatedAt: "2026-08-18",
+          },
+        ],
+        count: 2,
+      },
+    });
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+
+    const queue = screen.getByText("What I need from you");
+    const live = screen.getByText("On it right now");
+    const bugs = screen.getByText("Bugs I'm tracking");
+
+    expect(queue.compareDocumentPosition(live) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(live.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("says nothing about live work on a quiet day, rather than showing an empty board", () => {
+    mockSettingsQuery({
+      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
+    });
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText("On it right now")).not.toBeInTheDocument();
   });
 
   it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {
