@@ -60,19 +60,12 @@ const cohortsApi = baseAPI.injectEndpoints({
 
     // Deleting a cohort returns its members to Unassigned AND drops every
     // restriction that named it, so all three tags must be invalidated.
-    deleteCohort: builder.mutation<
-      { success: boolean },
-      { tenantId: string; cohortId: string }
-    >({
+    deleteCohort: builder.mutation<{ success: boolean }, { tenantId: string; cohortId: string }>({
       query: ({ tenantId, cohortId }) => ({
         url: `${COHORT_BASE}/${tenantId}/${cohortId}`,
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [
-        TAG_TYPES.COHORTS,
-        TAG_TYPES.COHORT_MEMBERS,
-        TAG_TYPES.COHORT_RESTRICTIONS,
-      ],
+      invalidatesTags: [TAG_TYPES.COHORTS, TAG_TYPES.COHORT_MEMBERS, TAG_TYPES.COHORT_RESTRICTIONS],
     }),
 
     getCohortMembers: builder.query<CohortMemberListResponse, CohortMembersParams>({

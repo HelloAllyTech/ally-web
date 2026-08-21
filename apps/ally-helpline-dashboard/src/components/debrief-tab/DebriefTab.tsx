@@ -119,9 +119,7 @@ export const DebriefTab: FC<DebriefTabProps> = ({
               <NoteSkeleton />
               <p className="font-primary text-sm text-typography-700">
                 {t("postSim.debrief.generating")}{" "}
-                <span className="text-typography-600">
-                  {t("postSim.debrief.generatingHint")}
-                </span>
+                <span className="text-typography-600">{t("postSim.debrief.generatingHint")}</span>
               </p>
             </div>
           ) : note ? (
@@ -142,7 +140,11 @@ export const DebriefTab: FC<DebriefTabProps> = ({
           )}
 
           {messages.map((message, index) => (
-            <ReplyBubble key={`${message.role}-${index}`} role={message.role} content={message.content} />
+            <ReplyBubble
+              key={`${message.role}-${index}`}
+              role={message.role}
+              content={message.content}
+            />
           ))}
           {streamingMessage && (
             <ReplyBubble role={streamingMessage.role} content={streamingMessage.content} />

@@ -16,7 +16,13 @@ export enum BugHuntTrigger {
  * bug has no repo of its own yet. ally-mobile is included but never
  * auto-merges — Bug Hunter opens a PR there and a human always merges it.
  */
-export const BUG_FIX_SESSION_REPOS = ["ally-be", "ally-web", "ally-ai", "ally-ai-learn", "ally-mobile"] as const;
+export const BUG_FIX_SESSION_REPOS = [
+  "ally-be",
+  "ally-web",
+  "ally-ai",
+  "ally-ai-learn",
+  "ally-mobile",
+] as const;
 
 export enum BugHuntRunStatus {
   RUNNING = "running",
