@@ -330,7 +330,11 @@ export const PostSimulationSummary: FC = () => {
   }
 
   return (
-    <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
+    // The page scrolls, the tabs do not. This was a viewport-locked shell where
+    // every tab panel got whatever height the header, streak banner and footer
+    // left over — about four lines of the debrief note on a laptop — and each
+    // tab then scrolled internally. One scrollbar, full-length content.
+    <div className="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10">
       <FeedbackDialog
         open={showFeedbackDialog}
         onClose={() => setShowFeedbackDialog(false)}
@@ -341,7 +345,7 @@ export const PostSimulationSummary: FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        className="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
       >
         {trackContext && (
           <div className="mt-8 flex w-full shrink-0 items-center gap-2 text-sm text-typography-700 min-w-0">
@@ -432,13 +436,12 @@ export const PostSimulationSummary: FC = () => {
               items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
               activeId={String(selectedTab)}
               onChange={id => setSelectedTab(Number(id))}
-              className="w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+              // Sticky so switching tabs stays reachable once a long note or
+              // transcript has been scrolled past.
+              className="sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
               showCount={false}
             />
-            <div
-              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
-              data-testid="post-sim-tab-panel"
-            >
+            <div className="flex w-full flex-1 flex-col" data-testid="post-sim-tab-panel">
               {getTabContent()}
             </div>
             {!isLoading && trackContext && (

@@ -6,10 +6,10 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
+      class="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10"
     >
       <div
-        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        class="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
@@ -246,7 +246,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -278,7 +278,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </nav>
         </div>
         <div
-          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          class="flex w-full flex-1 flex-col"
           data-testid="post-sim-tab-panel"
         >
           <div
@@ -327,10 +327,10 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
+      class="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10"
     >
       <div
-        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        class="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
@@ -567,7 +567,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -599,7 +599,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </nav>
         </div>
         <div
-          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          class="flex w-full flex-1 flex-col"
           data-testid="post-sim-tab-panel"
         >
           <div

@@ -250,7 +250,10 @@ describe("PostSimulationSummary Component", () => {
       const mainContainer = container.querySelector("div.bg-white");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
-      expect(mainContainer?.className).toContain("h-[100dvh]");
+      // min-h, not h: the shell is at least a viewport tall and grows with its
+      // content rather than locking every tab into a fixed-height scroller.
+      expect(mainContainer?.className).toContain("min-h-[100dvh]");
+      expect(mainContainer?.className).not.toContain("overflow-hidden");
       expect(mainContainer?.className).toContain("flex");
       expect(mainContainer?.className).toContain("flex-col");
       expect(mainContainer?.className).toContain("items-center");
@@ -271,7 +274,10 @@ describe("PostSimulationSummary Component", () => {
       expect(motionDiv.className).toContain("max-w-4xl");
       expect(motionDiv.className).toContain("w-full");
       expect(motionDiv.className).toContain("flex-1");
-      expect(motionDiv.className).toContain("min-h-0");
+      // No min-h-0: the column has to grow to its content so the PAGE scrolls.
+      // min-h-0 here let the wrapper shrink to the viewport and squeezed every
+      // tab panel into whatever height was left over.
+      expect(motionDiv.className).not.toContain("min-h-0");
       expect(motionDiv.className).toContain("pb-8");
       expect(motionDiv.className).toContain("sm:pb-16");
       expect(motionDiv.className).toContain("px-4");

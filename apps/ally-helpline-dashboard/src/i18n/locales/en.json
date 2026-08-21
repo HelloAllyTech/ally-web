@@ -691,7 +691,7 @@
       "failed": "Ally couldn't write your debrief for this session.",
       "momentLabel": "See this moment",
       "momentNotFound": "We couldn't jump to that moment — here's the full transcript instead.",
-      "replyPlaceholder": "Reply to Ally about this session… (0/{{max}})",
+      "replyPlaceholder": "Reply to Ally about this session…",
       "replyPrompt": "Have a question about any of this? Reply below."
     }
   },
