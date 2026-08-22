@@ -16,8 +16,10 @@ import { en } from "@constants";
 import { BugHuntRun, BugHuntTrigger } from "@types";
 import { formatDate } from "@utils";
 
+import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
 import { BugHuntStatusBadge } from "./BugHuntStatusBadge";
+import { BUG_FINDINGS_TABLE_ANCHOR_ID } from "./findingsTableAnchor";
 
 const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.SCHEDULED]: en.bugHunter.triggerScheduled,
@@ -34,6 +36,55 @@ const formatTokens = (input: number | null, output: number | null): string =>
 /** Prefers the CLI's own reported cost (prices prompt-cache correctly) over the cache-blind token estimate. */
 const formatCost = (run: BugHuntRun): string =>
   `$${run.cliReportedCostUsd != null ? run.cliReportedCostUsd.toFixed(4) : run.totalTokenCostUsd}`;
+
+/**
+ * The "Found" count, as the way into the bugs that count is about.
+ *
+ * ## Why this is a link at all
+ *
+ * "Found 10" and a bugs table sorted newest-first disagreed, and the count was
+ * the honest one. `foundCount` is every finding a sweep *touched*, and most of
+ * what a sweep touches on a quiet night is human-reported bugs it re-triages —
+ * rows created the day somebody filed them, weeks before this run stamped
+ * itself onto them. So a sweep reporting ten could add nothing at all to the
+ * top of a table ordered by discovery date, and the only available reading was
+ * that the ten had gone missing.
+ *
+ * The count is the aggregate; the rows are the records behind it. Making the
+ * one reach the other is Stacks' *Correlate Logs and Traces via Shared
+ * Metadata* — the shared id is `runId`, and the jump from "a number looks wrong"
+ * to "here is exactly what produced it" is the whole value of having it.
+ *
+ * Zero stays plain text. A link that leads to an empty table teaches a reader
+ * that the links are unreliable.
+ */
+const FoundCell: FC<{ run: BugHuntRun }> = ({ run }) => {
+  const { setRun } = useBugHunterUrlState();
+
+  if (run.foundCount === 0) return <>{run.foundCount}</>;
+
+  return (
+    <button
+      type="button"
+      // The row itself toggles the event timeline. Without this, one click both
+      // scopes the table and expands a detail row the reader is about to be
+      // scrolled away from.
+      onClick={event => {
+        event.stopPropagation();
+        setRun(run.id);
+        document
+          .getElementById(BUG_FINDINGS_TABLE_ANCHOR_ID)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }}
+      className="text-primary-600 underline underline-offset-2 cursor-pointer tabular-nums hover:text-primary-700"
+      aria-label={en.bugHunter.runScopeCellLabel
+        .replace("{count}", String(run.foundCount))
+        .replace("{repo}", run.repo)}
+    >
+      {run.foundCount}
+    </button>
+  );
+};
 
 /** A column header with a help tooltip — the pattern from the ally-web admin tooltip convention, applied per-column instead of per-field. */
 const HeaderWithTooltip: FC<{ label: string; tooltip: string }> = ({ label, tooltip }) => (
@@ -220,7 +271,9 @@ export const RunHistoryTable: FC = () => {
                   <TableCell className="py-3 pr-4">
                     <BugHuntStatusBadge status={run.status} />
                   </TableCell>
-                  <TableCell className="py-3 pr-4">{run.foundCount}</TableCell>
+                  <TableCell className="py-3 pr-4">
+                    <FoundCell run={run} />
+                  </TableCell>
                   <TableCell className="py-3 pr-4">{run.autoMergedCount}</TableCell>
                   <TableCell className="py-3 pr-4">{run.prOpenedCount}</TableCell>
                   <TableCell className="py-3 pr-4">{run.dismissedCount}</TableCell>

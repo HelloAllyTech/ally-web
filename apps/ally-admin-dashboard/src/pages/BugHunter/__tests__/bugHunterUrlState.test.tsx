@@ -26,6 +26,7 @@ const Probe: FC = () => {
           bug: state.bug,
           bucket: state.bucket,
           search: state.search,
+          run: state.run,
           repo: state.repo,
           severity: state.severity,
           source: state.source,
@@ -38,6 +39,8 @@ const Probe: FC = () => {
       <button onClick={() => state.setSearch("terms")}>search terms</button>
       <button onClick={() => state.setBucket("needs_you")}>bucket needs_you</button>
       <button onClick={() => state.setBucket("all")}>bucket all</button>
+      <button onClick={() => state.setRun("run-a")}>scope run-a</button>
+      <button onClick={() => state.setRun(null)}>scope none</button>
       <button onClick={() => state.setSeverity(BugFindingSeverity.HIGH)}>severity high</button>
       <button onClick={() => state.setDensity("compact")}>compact</button>
       <button onClick={() => state.setDensity("comfortable")}>comfortable</button>
@@ -63,6 +66,7 @@ describe("reading the query string", () => {
     expect(parsed()).toEqual({
       bug: null,
       bucket: "all",
+      run: null,
       search: "",
       repo: "all",
       severity: "all",
@@ -74,12 +78,13 @@ describe("reading the query string", () => {
 
   it("reads a whole view out of a link", () => {
     mount(
-      `/?bug=abc&bucket=problem&q=terms&repo=ally-be&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.CODE_REVIEW}&density=compact`,
+      `/?bug=abc&bucket=problem&q=terms&run=run-a&repo=ally-be&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.CODE_REVIEW}&density=compact`,
     );
     expect(parsed()).toEqual({
       bug: "abc",
       bucket: "problem",
       search: "terms",
+      run: "run-a",
       repo: "ally-be",
       severity: BugFindingSeverity.HIGH,
       source: BugFindingSource.CODE_REVIEW,
@@ -184,6 +189,43 @@ describe("writing the query string", () => {
     // The open bug and the density preference are not filters.
     expect(state.bug).toBe("abc");
     expect(state.density).toBe("compact");
+  });
+
+  /**
+   * The run scope, which is not a filter over the loaded window like the rest
+   * of them — it goes to the server and replaces the window. See
+   * `BUG_HUNTER_PARAM.run` for why it has to.
+   */
+  it("scoping to a run clears every other filter in one write", () => {
+    mount(`/?bucket=closed&q=terms&repo=ally-be&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.LINT_ERROR}`);
+    fireEvent.click(screen.getByText("scope run-a"));
+
+    const state = parsed();
+    expect(state.run).toBe("run-a");
+    // "The 10 that sweep found" intersected with a leftover severity filter is
+    // an answer to a question nobody asked, next to a log still saying 10.
+    expect(state.bucket).toBe("all");
+    expect(state.search).toBe("");
+    expect(state.repo).toBe("all");
+    expect(state.severity).toBe("all");
+    expect(state.source).toBe("all");
+    expect(search()).toBe("?run=run-a");
+  });
+
+  it("counts the run scope as a filter, and clearing the filters drops it", () => {
+    mount("/?run=run-a");
+    expect(screen.getByTestId("has-filters").textContent).toBe("true");
+
+    fireEvent.click(screen.getByText("clear filters"));
+    expect(parsed().run).toBeNull();
+  });
+
+  it("drops the scope back to every bug", () => {
+    mount("/?run=run-a");
+    fireEvent.click(screen.getByText("scope none"));
+
+    expect(parsed().run).toBeNull();
+    expect(search()).toBe("");
   });
 
   it("keeps unrelated params written by anything else on the page", () => {

@@ -30,7 +30,7 @@ import type { BucketFilter } from "./LifecycleBucketChips";
  * rules in it, and rules are worth testing without rendering a table.
  */
 
-export type SortKey = "discovered" | "severity" | "title";
+export type SortKey = "discovered" | "updated" | "severity" | "title";
 export type SortDirection = "asc" | "desc";
 
 /** High first when descending — the order an admin means by "sort by severity". */
@@ -153,6 +153,30 @@ const applyFilters = (findings: BugFinding[], filters: FindingsFilters): BugFind
   });
 };
 
+/**
+ * When anything last happened to a bug, falling back to its discovery date.
+ *
+ * The fallback is for an unparseable value rather than a missing one: the field
+ * is required on the wire, but a NaN here would sort its row to an arbitrary
+ * place in the table instead of to one end, which is the kind of defect nobody
+ * reads as a date-parsing problem.
+ */
+export const updatedAt = (finding: BugFinding): number => {
+  const at = new Date(finding.updatedAt).getTime();
+  return Number.isNaN(at) ? new Date(finding.createdAt).getTime() : at;
+};
+
+/**
+ * True when a bug has been touched since it was discovered — a status move, a
+ * sweep re-triaging it, an admin rewriting its description.
+ *
+ * The minute of slack is not cosmetic: a finding is INSERTed and then PATCHed
+ * to `pending_approval` seconds later within one sweep, so a strict `>` would
+ * call every row "updated" and the column would repeat Age on the whole table.
+ */
+export const wasTouchedSinceDiscovery = (finding: BugFinding): boolean =>
+  updatedAt(finding) - new Date(finding.createdAt).getTime() > 60_000;
+
 const compare = (a: BugFinding, b: BugFinding, sortKey: SortKey): number => {
   switch (sortKey) {
     case "severity":
@@ -161,6 +185,8 @@ const compare = (a: BugFinding, b: BugFinding, sortKey: SortKey): number => {
       return a.title.localeCompare(b.title);
     case "discovered":
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    case "updated":
+      return updatedAt(a) - updatedAt(b);
   }
 };
 
