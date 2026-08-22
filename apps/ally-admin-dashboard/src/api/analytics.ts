@@ -47,6 +47,7 @@ import {
   VoiceLatencyResponse,
   ListVoiceLatencySessionsResponse,
   VoiceLatencySessionsSummary,
+  VoiceLatencyByScenarioResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -105,6 +106,10 @@ type VoiceLatencySessionsQuery = AnalyticsWindowQuery & {
 
 type VoiceLatencySessionsSummaryQuery = AnalyticsWindowQuery & {
   scenarioId: number;
+  language?: string;
+};
+
+type VoiceLatencyByScenarioQuery = AnalyticsWindowQuery & {
   language?: string;
 };
 
@@ -359,6 +364,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
           scenarioId,
           ...(language ? { language } : {}),
         },
+      }),
+    }),
+    getVoiceLatencyByScenario: builder.query<
+      VoiceLatencyByScenarioResponse,
+      VoiceLatencyByScenarioQuery
+    >({
+      query: ({ language, ...q } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.VOICE_LATENCY_BY_SCENARIO,
+        method: HttpMethod.GET,
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
@@ -637,6 +652,7 @@ export const {
   useGetVoiceLatencyQuery,
   useGetVoiceLatencySessionsQuery,
   useGetVoiceLatencySessionsSummaryQuery,
+  useGetVoiceLatencyByScenarioQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
   useGetConversationDriftQuery,

@@ -149,4 +149,32 @@ describe("useLatencySessions", () => {
     expect(result.current.rangeStart).toBe(1);
     expect(result.current.rangeEnd).toBe(LATENCY_SESSIONS_PAGE_SIZE);
   });
+
+  it("seeds the picked simulation from initialScenarioId", () => {
+    const { result } = renderHook(() => useLatencySessions({}, "", 42));
+
+    expect(result.current.scenarioId).toBe(42);
+    expect(getVoiceLatencySessionsQueryMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ scenarioId: 42 }),
+      { skip: false },
+    );
+  });
+
+  it("re-syncs on every initialScenarioId change, not just the first", () => {
+    const { result, rerender } = renderHook(
+      ({ initialScenarioId }: { initialScenarioId?: number }) =>
+        useLatencySessions({}, "", initialScenarioId),
+      { initialProps: { initialScenarioId: 1 } },
+    );
+
+    expect(result.current.scenarioId).toBe(1);
+
+    // A manual pick via the panel's own picker...
+    act(() => result.current.setScenarioId(2));
+    expect(result.current.scenarioId).toBe(2);
+
+    // ...must not block a later push from the ranking panel above it.
+    rerender({ initialScenarioId: 3 });
+    expect(result.current.scenarioId).toBe(3);
+  });
 });

@@ -45,7 +45,11 @@ describe("root eslint config: react-hooks rules", () => {
     );
 
     expect(messages.map(m => m.ruleId)).toContain("react-hooks/rules-of-hooks");
-  });
+  }, // Being the first real lintText() call in the file, this one pays
+  // ESLint's one-time flat-config/plugin-resolution cost (the other two
+  // tests reuse the already-loaded engine). Under the full monorepo
+  // suite's parallel load that cost alone exceeded the default 5000ms.
+  15000);
 
   it("enforces react-hooks/exhaustive-deps", async () => {
     const messages = await lint(

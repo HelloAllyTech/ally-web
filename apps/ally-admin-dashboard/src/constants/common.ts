@@ -372,6 +372,7 @@ export const ApiEndpoints = {
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
     VOICE_LATENCY_SESSIONS_SUMMARY: "/v1/analytics/voice-latency/sessions/summary",
+    VOICE_LATENCY_BY_SCENARIO: "/v1/analytics/voice-latency/by-scenario",
     AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",
     CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",

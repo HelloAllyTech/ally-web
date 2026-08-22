@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { StartLatencyPoint, VoiceLatencyByLanguageRow, VoiceLatencyPoint } from "@types";
+import {
+  StartLatencyPoint,
+  VoiceLatencyByLanguageRow,
+  VoiceLatencyByScenarioRow,
+  VoiceLatencyPoint,
+} from "@types";
 
 import {
   CACHE_HIT_RATE_GROUP,
@@ -16,6 +21,7 @@ import {
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
+  buildVoiceLatencyByScenarioBars,
   buildVoiceLatencySeries,
   countFirstAudioTurns,
   countMaskedTurns,
@@ -240,6 +246,94 @@ describe("buildVoiceLatencyByLanguageBars", () => {
 
     expect(sttFinalize).toEqual([{ group: "en", value: 0.3 }]);
     expect(sttFinalizeByLanguage).toEqual({ en: 0.3 });
+  });
+});
+
+describe("buildVoiceLatencyByScenarioBars", () => {
+  const scenarioRow = (over: Partial<VoiceLatencyByScenarioRow>): VoiceLatencyByScenarioRow => ({
+    scenarioId: 1,
+    scenarioTitle: "Scenario",
+    sessionCount: 1,
+    turnCount: 1,
+    avgResponseLatencyMs: 0,
+    p50ResponseLatencyMs: 0,
+    p95ResponseLatencyMs: 0,
+    avgEouDelayMs: null,
+    avgSttFinalizeMs: null,
+    avgLlmTtftMs: null,
+    avgTtsTtfbMs: null,
+    avgOrchestrationMs: null,
+    avgLlmResponseMs: null,
+    avgBranchingMs: null,
+    avgKnowledgeRetrievalMs: null,
+    avgProcessEventsMs: null,
+    avgBehaviorsMs: null,
+    interruptedTurns: 0,
+    llmTimedOutTurns: 0,
+    ...over,
+  });
+
+  it("ranks worst-first, independently per metric", () => {
+    const { avgResponseLatency, avgLlmTtft } = buildVoiceLatencyByScenarioBars([
+      scenarioRow({
+        scenarioId: 1,
+        scenarioTitle: "Fast overall, slow TTFT",
+        avgResponseLatencyMs: 900,
+        avgLlmTtftMs: 3000,
+      }),
+      scenarioRow({
+        scenarioId: 2,
+        scenarioTitle: "Slow overall, fast TTFT",
+        avgResponseLatencyMs: 1200,
+        avgLlmTtftMs: 200,
+      }),
+    ]);
+
+    // Response latency ranks scenario 2 first...
+    expect(avgResponseLatency).toEqual([
+      { group: "Slow overall, fast TTFT", value: 1.2 },
+      { group: "Fast overall, slow TTFT", value: 0.9 },
+    ]);
+    // ...but LLM TTFT ranks scenario 1 first — the two charts must not share one order.
+    expect(avgLlmTtft).toEqual([
+      { group: "Fast overall, slow TTFT", value: 3 },
+      { group: "Slow overall, fast TTFT", value: 0.2 },
+    ]);
+  });
+
+  it("truncates to topN but reports the true total", () => {
+    const rows = Array.from({ length: 15 }, (_, i) =>
+      scenarioRow({ scenarioId: i, scenarioTitle: `Scenario ${i}`, avgResponseLatencyMs: i * 100 }),
+    );
+
+    const { avgResponseLatency, totalScenarios } = buildVoiceLatencyByScenarioBars(rows, 10);
+
+    expect(avgResponseLatency).toHaveLength(10);
+    expect(totalScenarios).toBe(15);
+    // Worst (highest) response latency leads.
+    expect(avgResponseLatency[0].group).toBe("Scenario 14");
+  });
+
+  it("drops a scenario from one metric's chart without dropping it from the other", () => {
+    const { avgResponseLatency, avgLlmTtft } = buildVoiceLatencyByScenarioBars([
+      scenarioRow({
+        scenarioId: 1,
+        scenarioTitle: "No TTFT data",
+        avgResponseLatencyMs: 900,
+        avgLlmTtftMs: null,
+      }),
+    ]);
+
+    expect(avgResponseLatency).toEqual([{ group: "No TTFT data", value: 0.9 }]);
+    expect(avgLlmTtft).toEqual([]);
+  });
+
+  it("returns empty bars for no rows", () => {
+    expect(buildVoiceLatencyByScenarioBars([])).toEqual({
+      avgResponseLatency: [],
+      avgLlmTtft: [],
+      totalScenarios: 0,
+    });
   });
 });
 

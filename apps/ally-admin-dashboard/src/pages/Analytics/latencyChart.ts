@@ -2,6 +2,7 @@ import {
   AnalyticsBucket,
   StartLatencyPoint,
   VoiceLatencyByLanguageRow,
+  VoiceLatencyByScenarioRow,
   VoiceLatencyPoint,
 } from "@types";
 
@@ -330,6 +331,42 @@ export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[
     ),
     turnsByLanguage: Object.fromEntries(sorted.map(r => [r.language, r.turns])),
     totalTurns: sorted.reduce((sum, r) => sum + r.turns, 0),
+  };
+}
+
+/**
+ * Top-N worst simulations, one bar chart per metric, each independently
+ * sorted by ITS OWN metric — not "the top-10-by-response-latency
+ * simulations' TTFT values". A simulation can be fine on overall response
+ * latency but bad specifically on LLM TTFT (or vice versa), and showing one
+ * chart's ranking through the other's lens would hide that.
+ *
+ * Truncated to `topN` (unlike {@link buildVoiceLatencyByLanguageBars}, which
+ * shows every language because there are only a handful) — `totalScenarios`
+ * travels alongside so the caller can caption "top N of M", making the
+ * truncation visible rather than silent. Rows with a null metric are
+ * dropped from THAT metric's chart only (a simulation can be missing
+ * avgLlmTtftMs while still having a real avgResponseLatencyMs).
+ */
+export function buildVoiceLatencyByScenarioBars(
+  rows: VoiceLatencyByScenarioRow[],
+  topN = 10,
+): {
+  avgResponseLatency: LanguageBarDatum[];
+  avgLlmTtft: LanguageBarDatum[];
+  totalScenarios: number;
+} {
+  const worstBy = (metric: "avgResponseLatencyMs" | "avgLlmTtftMs"): LanguageBarDatum[] =>
+    [...rows]
+      .filter(r => r[metric] != null)
+      .sort((a, b) => (b[metric] as number) - (a[metric] as number))
+      .slice(0, topN)
+      .map(r => ({ group: r.scenarioTitle, value: toS(r[metric] as number) }));
+
+  return {
+    avgResponseLatency: worstBy("avgResponseLatencyMs"),
+    avgLlmTtft: worstBy("avgLlmTtftMs"),
+    totalScenarios: rows.length,
   };
 }
 

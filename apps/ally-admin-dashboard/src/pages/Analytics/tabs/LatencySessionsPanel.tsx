@@ -18,8 +18,8 @@ import { formatDate } from "@utils";
 import { ChartCard } from "../chartKit";
 import { useLatencySessions } from "./useLatencySessions";
 
-/** Milliseconds -> "123 ms" / "1.23 s"; em-dash for null. */
-const formatMs = (ms: number | null): string => {
+/** Milliseconds -> "123 ms" / "1.23 s"; em-dash for null. Shared with LatencyByScenarioPanel, which renders the same stage columns one row per simulation instead of per session. */
+export const formatMs = (ms: number | null): string => {
   if (ms === null || ms === undefined) return "—";
   return ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : `${Math.round(ms)} ms`;
 };
@@ -44,6 +44,8 @@ const STAGE_TILES: {
 interface LatencySessionsPanelProps {
   query: AnalyticsWindowQuery;
   language: string;
+  /** Pushed in from the by-scenario ranking panel's "View sessions" action — see useLatencySessions. */
+  initialScenarioId?: number;
 }
 
 /**
@@ -52,9 +54,13 @@ interface LatencySessionsPanelProps {
  * been able to reach for instead of hand-written SQL. Composes with the
  * page-level Language filter (both `query`/`language` are shared with the
  * rest of the Latency tab); the Simulation picker below is local to this
- * panel.
+ * panel, though `initialScenarioId` lets LatencyByScenarioPanel drive it.
  */
-export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelProps) => {
+export const LatencySessionsPanel = ({
+  query,
+  language,
+  initialScenarioId,
+}: LatencySessionsPanelProps) => {
   const { data: scenarios } = useGetSimulationsQuery({ limit: 200 });
   const {
     scenarioId,
@@ -71,7 +77,7 @@ export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelPr
     goNext,
     rangeStart,
     rangeEnd,
-  } = useLatencySessions(query, language);
+  } = useLatencySessions(query, language, initialScenarioId);
 
   const scenarioItems = (scenarios?.data ?? []).map(s => ({
     id: s.id as number,

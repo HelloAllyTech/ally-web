@@ -12,6 +12,7 @@ import { AnalyticsBucket } from "@types";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
 import { ChartDetailModal, ChartTableData } from "../ChartDetailModal";
+import { LatencyByScenarioPanel } from "./LatencyByScenarioPanel";
 import { LatencySessionsPanel } from "./LatencySessionsPanel";
 import {
   ChartCard,
@@ -123,6 +124,10 @@ const axesWithThreshold = ({
 export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const [bucket, setBucket] = useState<AnalyticsBucket>("day");
   const [expanded, setExpanded] = useState<string | null>(null);
+  // Lifted so a click on a LatencyByScenarioPanel row can drive
+  // LatencySessionsPanel's simulation picker directly, without either owning
+  // the other's state.
+  const [focusedScenarioId, setFocusedScenarioId] = useState<number | null>(null);
   const languageParam = language || undefined;
   const scopedQuery = { ...query, bucket };
 
@@ -782,7 +787,17 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         </ScrollableChart>
       </ChartCard>
 
-      <LatencySessionsPanel query={query} language={language} />
+      <LatencyByScenarioPanel
+        query={query}
+        language={language}
+        onSelectScenario={setFocusedScenarioId}
+      />
+
+      <LatencySessionsPanel
+        query={query}
+        language={language}
+        initialScenarioId={focusedScenarioId ?? undefined}
+      />
 
       {/* ---------------------------- Detail views ---------------------------- */}
 

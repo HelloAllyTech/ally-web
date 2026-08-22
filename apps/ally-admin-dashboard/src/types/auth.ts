@@ -1138,6 +1138,23 @@ export interface VoiceLatencySessionsSummary extends VoiceLatencySessionStages {
   window: AnalyticsWindow;
 }
 
+// VoiceLatencyByScenarioRowDto from GET /api/v1/analytics/voice-latency/by-scenario.
+// "Which simulations are slow" (one row per simulation, worst-first), distinct
+// from VoiceLatencySessionRow ("this simulation's worst sessions").
+export interface VoiceLatencyByScenarioRow extends VoiceLatencySessionStages {
+  scenarioId: number;
+  scenarioTitle: string;
+  sessionCount: number;
+  turnCount: number;
+}
+
+export interface VoiceLatencyByScenarioResponse {
+  rows: VoiceLatencyByScenarioRow[];
+  window: AnalyticsWindow;
+  /** True if the ranking's tail was cut by the backend's defensive cap. */
+  truncated: boolean;
+}
+
 // AgentJoinReliabilityResponseDto from GET /api/v1/analytics/agent-join-reliability.
 export interface AgentJoinReliabilityPoint {
   /** Bucket start (yyyy-mm-dd). */
