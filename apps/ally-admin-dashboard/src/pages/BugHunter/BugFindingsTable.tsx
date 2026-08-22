@@ -18,14 +18,16 @@ import {
 import {
   useApproveBugFindingMutation,
   useGetBugFindingsQuery,
+  useGetBugHuntRunQuery,
   useRejectBugFindingMutation,
   useStartBugFixSessionMutation,
 } from "@api";
-import { EmptyState } from "@components";
 // Reached past the barrel on purpose. Importing the barrel pulls @constants,
 // which reads `cellTypes` back off it at module-eval time — a test that needs
 // the real boundary while stubbing the barrel deadlocks on that cycle. Same
 // direct-path treatment as @components/action-confirmation-popup elsewhere.
+import { TooltipIcon } from "@assets";
+import { EmptyState } from "@components";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { ErrorBoundary } from "@components/error-boundary";
 import { en } from "@constants";
@@ -38,6 +40,7 @@ import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFin
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { BulkTriageBar } from "./BulkTriageBar";
+import { BUG_FINDINGS_TABLE_ANCHOR_ID } from "./findingsTableAnchor";
 import {
   buildFindingsView,
   FindingsFilters,
@@ -46,6 +49,8 @@ import {
   reposInWindow,
   SortDirection,
   SortKey,
+  updatedAt,
+  wasTouchedSinceDiscovery,
 } from "./findingsView";
 import { countByBucket } from "./lifecycleBucket";
 import { LifecycleBucketChips } from "./LifecycleBucketChips";
@@ -130,7 +135,16 @@ const SortableHeader: FC<{
   direction: SortDirection;
   onSort: (key: SortKey) => void;
   className?: string;
-}> = ({ sortKey, label, activeKey, direction, onSort, className }) => {
+  /**
+   * Help text for a column whose name does not fully explain it.
+   *
+   * Rendered as a sibling of the sort button, never inside it: a tooltip
+   * trigger is itself a `<button>`, and nesting one inside the sort control
+   * would be invalid markup and would sort the table on the way to reading the
+   * explanation.
+   */
+  tooltip?: string;
+}> = ({ sortKey, label, activeKey, direction, onSort, className, tooltip }) => {
   const isActive = activeKey === sortKey;
   return (
     <TableHeader
@@ -140,16 +154,29 @@ const SortableHeader: FC<{
       // cannot read the state of would be adding half of it.
       aria-sort={isActive ? (direction === "asc" ? "ascending" : "descending") : "none"}
     >
-      <button
-        type="button"
-        onClick={() => onSort(sortKey)}
-        className="inline-flex items-center gap-1 cursor-pointer hover:text-typography-900"
-      >
-        {label}
-        <span aria-hidden="true" className="text-[10px] text-typography-500">
-          {isActive ? (direction === "asc" ? "▲" : "▼") : "↕"}
-        </span>
-      </button>
+      <span className="inline-flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onSort(sortKey)}
+          className="inline-flex items-center gap-1 cursor-pointer hover:text-typography-900"
+        >
+          {label}
+          <span aria-hidden="true" className="text-[10px] text-typography-500">
+            {isActive ? (direction === "asc" ? "▲" : "▼") : "↕"}
+          </span>
+        </button>
+        {tooltip && (
+          // `autoAlign` is on by default in the shared wrapper, which matters
+          // here specifically: this header is `position: sticky` at the top of
+          // the page's scroll container, so a top-aligned tooltip would open
+          // into the chrome above it and flips itself instead.
+          <Tooltip label={tooltip} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        )}
+      </span>
     </TableHeader>
   );
 };
@@ -228,6 +255,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
     bug: selectedId,
     bucket,
     search,
+    run,
     repo,
     severity,
     source,
@@ -235,6 +263,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
     setBug,
     setBucket,
     setSearch,
+    setRun,
     setRepo,
     setSeverity,
     setSource,
@@ -269,13 +298,41 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
   const [reject] = useRejectBugFindingMutation();
   const [startFixSession] = useStartBugFixSessionMutation();
 
-  // Same args as the profile card's and the queue's, so all three read one RTK
-  // Query cache entry rather than opening a request each. Every filter below is
-  // applied to that shared window client-side — see findingsView.ts.
-  const { data, isLoading, isError, refetch } = useGetBugFindingsQuery(
-    { status: "all", limit: 100 },
-    { pollingInterval: 15_000 },
+  /**
+   * Unscoped, these are the same args as the profile card's and the queue's, so
+   * all three read one RTK Query cache entry rather than opening a request
+   * each, and every filter below is applied to that shared window client-side
+   * (see findingsView.ts).
+   *
+   * A run scope is the one exception, and has to be: `runId` goes to the server
+   * and *replaces* the window rather than filtering it. A sweep stamps its id
+   * onto every row it touches — including a human-reported bug filed weeks ago,
+   * which is the common case, not the corner one — so its findings are not the
+   * newest hundred rows and filtering the shared window would have found only
+   * the few that happened to be recent, then reported that number as the total.
+   * That costs one extra cache entry while a scope is on, and is the difference
+   * between "the 10 that sweep found" and "the 2 of them I could see".
+   */
+  const queryArgs = useMemo(
+    () =>
+      run
+        ? { status: "all" as const, limit: 100, runId: run }
+        : { status: "all" as const, limit: 100 },
+    [run],
   );
+
+  const { data, isLoading, isError, refetch } = useGetBugFindingsQuery(queryArgs, {
+    pollingInterval: 15_000,
+  });
+
+  /**
+   * The scoped sweep, for the banner's own words.
+   *
+   * Skipped entirely when there is no scope — an admin who never clicks a count
+   * in the shift log should not pay a request for a banner that never renders.
+   * The shift log has usually already cached this entry by the time they do.
+   */
+  const { data: scopedRun } = useGetBugHuntRunQuery(run ?? "", { skip: !run });
 
   // Memoised because `data?.items ?? []` is a fresh array identity every render:
   // without it the view below (filter, sort, duplicate scan, page slice) would
@@ -323,6 +380,15 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
   const showRepo = useMemo(() => findings.some(finding => !!finding.repo), [findings]);
   const showSeverity = useMemo(() => findings.some(finding => !!finding.severity), [findings]);
   const showPr = useMemo(() => findings.some(finding => !!finding.prUrl), [findings]);
+  /**
+   * "Updated" earns its column only once something in the window has actually
+   * moved since it was found.
+   *
+   * Without this it is the widest kind of dead column — not an em-dash repeated
+   * down the page but a *second copy of Age*, which is worse: a reader has to
+   * compare the two before concluding they say the same thing.
+   */
+  const showUpdated = useMemo(() => findings.some(wasTouchedSinceDiscovery), [findings]);
 
   const rows = view.rows;
 
@@ -572,7 +638,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
   const rowPadding = density === "compact" ? "py-1.5" : "py-3";
 
   return (
-    <div>
+    <div id={BUG_FINDINGS_TABLE_ANCHOR_ID} className="scroll-mt-4">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-typography-900">
@@ -616,6 +682,29 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
           </Button>
         </div>
       </div>
+
+      {/* Above the chips on purpose: the scope changes what every number below
+          it counts, so a reader who has not seen this line will read
+          "Everything 7" as "seven bugs exist". Stacks' *Making Agent
+          Trustworthiness Visible Through Transparency* is the argument for
+          spelling out the audit trail rather than quietly narrowing the view. */}
+      {run && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-primary-200 bg-primary-50 px-3 py-2">
+          <p className="text-xs text-typography-800">
+            <span className="font-semibold">
+              {scopedRun
+                ? en.bugHunter.runScopeBanner
+                    .replace("{repo}", scopedRun.repo)
+                    .replace("{date}", formatDate(scopedRun.createdAt))
+                : en.bugHunter.runScopeBannerLoading}
+            </span>{" "}
+            {en.bugHunter.runScopeBannerHint}
+          </p>
+          <Button size="sm" kind="ghost" onClick={() => setRun(null)}>
+            {en.bugHunter.runScopeClear}
+          </Button>
+        </div>
+      )}
 
       <div className="mb-3">
         <LifecycleBucketChips
@@ -786,10 +875,25 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                 <SortableHeader
                   sortKey="discovered"
                   label={en.bugHunter.findingColumnAge}
+                  tooltip={en.bugHunter.findingColumnAgeTooltip}
                   activeKey={sortKey}
                   direction={sortDirection}
                   onSort={handleSort}
                 />
+                {/* Age answers "how long has this been sitting"; this answers
+                    "did anything happen to it recently" — and they come apart
+                    hard on a re-triaged human report, where Age is the day
+                    somebody filed it and this is last night. */}
+                {showUpdated && (
+                  <SortableHeader
+                    sortKey="updated"
+                    label={en.bugHunter.findingColumnUpdated}
+                    tooltip={en.bugHunter.findingColumnUpdatedTooltip}
+                    activeKey={sortKey}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                )}
                 {showPr && (
                   <TableHeader className={`py-3 pr-4 font-medium ${STICKY_HEADER}`}>
                     {en.bugHunter.findingColumnPr}
@@ -949,6 +1053,26 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                         </Tooltip>
                       ) : null}
                     </TableCell>
+
+                    {showUpdated && (
+                      <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
+                        {/* Relative, like Age, and from the same helper — a
+                            column of absolute timestamps next to a column of
+                            "9h" is two units to hold at once. */}
+                        <span
+                          title={formatDate(finding.updatedAt)}
+                          className="tabular-nums text-typography-700"
+                        >
+                          {formatAge(
+                            // Fractional days, and clamped: `formatAge` derives
+                            // hours from the fraction, so flooring here would
+                            // print "now" for everything under a day, and clock
+                            // skew would otherwise print a negative age.
+                            Math.max(0, (Date.now() - updatedAt(finding)) / 86_400_000),
+                          )}
+                        </span>
+                      </TableCell>
+                    )}
 
                     {showPr && (
                       <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>

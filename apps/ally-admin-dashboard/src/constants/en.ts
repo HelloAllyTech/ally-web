@@ -2593,8 +2593,14 @@ export const en = {
     columnCost: "Est. cost",
     columnTokens: "Tokens",
     columnStarted: "Started",
+    // Rewritten because the old wording ("Bugs I identified on that sweep") read
+    // as "new bugs", and on a normal night most of this number is bugs your team
+    // filed earlier that I re-read — rows that already existed and kept their
+    // original date. That mismatch is what made a sweep of ten look like a sweep
+    // that lost ten. Now the number says what it counts, and clicks through to
+    // the rows so nobody has to take my word for it.
     columnFoundTooltip:
-      "Bugs I identified on that sweep, across all four sources — tests, code review, logs and bugs your team reported. The individual ones are in my bugs table above.",
+      "Bugs I looked at on that sweep, across all four sources — tests, code review, logs and bugs your team reported. Not all of them are new: re-reading a bug your team filed weeks ago counts here too, and that bug keeps its original date in my table. Click the number to see exactly which bugs this was.",
     columnAutoMergedTooltip:
       "Trivial fixes I merged myself: lint or type-only, or backed by a new red-then-green regression test.",
     columnPrPendingTooltip:
@@ -2729,6 +2735,26 @@ export const en = {
       "How long a bug has been on my list. I only colour it for bugs still waiting on a decision — something that shipped last month isn't stale, it's finished.",
     findingAgeStaleTooltip: "Waiting on a decision for over a week.",
     findingAgeAncientTooltip: "Waiting on a decision for over a month.",
+    // ── "Updated" column, and the run scope it exists to explain ────
+    // Not "Last triaged". `updatedAt` moves for anything at all — my own sweep
+    // re-reading the bug, a status change, an admin rewriting the description —
+    // and a column promising it was me who last looked would be wrong roughly
+    // whenever a human touched the row.
+    findingColumnUpdated: "Updated",
+    // Only shows once something in view has actually moved since it was found,
+    // so this tooltip is never explaining a column of repeated Age values.
+    findingColumnUpdatedTooltip:
+      "When anything last happened to a bug — I re-read it on a sweep, its status moved, or someone rewrote it. Age is how long it's been on my list; this is whether it's been touched lately. On a bug your team reported weeks ago and I only looked at last night, those two are very far apart.",
+    runScopeBanner: "Showing only the bugs my {repo} sweep of {date} touched.",
+    runScopeBannerLoading: "Showing only the bugs one sweep touched.",
+    // The point of the sentence. "Found 10" meant ten rows touched, and most of
+    // what a nightly sweep touches is bugs your team filed weeks ago — so the
+    // ten were never going to be at the top of a table sorted by age, and the
+    // only reading left was that they had gone missing.
+    runScopeBannerHint:
+      "Counts and filters below describe this sweep only. Some of these bugs are older than the sweep — I re-read what your team reported, so a bug filed weeks ago still counts as found on the night I looked at it.",
+    runScopeClear: "Show all bugs",
+    runScopeCellLabel: "Show the {count} bugs this {repo} sweep touched",
     // ── Row selection and quick actions ─────────────────────────────
     rowSelectLabel: "Select bug: {title}",
     selectAllLabel: "Select every bug on this page",

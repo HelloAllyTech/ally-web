@@ -56,6 +56,18 @@ export const BUG_HUNTER_PARAM = {
   bucket: "bucket",
   /** Free-text search. `q` because that is what every search box in the world calls it. */
   search: "q",
+  /**
+   * Scope the table to one sweep's findings — what the shift log's "Found N"
+   * links to.
+   *
+   * Unlike every other key here this one is NOT a client-side filter over the
+   * loaded window: it is passed to `GET /findings` so the window itself becomes
+   * that run's findings. A sweep stamps its id onto every row it touches,
+   * including a human-reported bug filed weeks ago, so its findings are not the
+   * newest rows and a window-local filter would have found only the handful
+   * that happened to be recent.
+   */
+  run: "run",
   repo: "repo",
   severity: "sev",
   source: "src",
@@ -91,6 +103,8 @@ export interface BugHunterUrlState {
   bug: string | null;
   bucket: BucketFilter;
   search: string;
+  /** The sweep whose findings the table is scoped to, or null for every bug. */
+  run: string | null;
   repo: string | "all";
   severity: BugFindingSeverity | "all";
   source: BugFindingSource | "all";
@@ -102,6 +116,16 @@ export interface BugHunterUrlActions {
   setBug: (id: string | null) => void;
   setBucket: (bucket: BucketFilter) => void;
   setSearch: (search: string) => void;
+  /**
+   * Scopes the table to one sweep, or drops the scope with `null`.
+   *
+   * Clears the other filters in the same write, deliberately. This is reached
+   * by clicking a count in the shift log — "the 10 that sweep found" — and
+   * intersecting that with a severity filter left over from earlier would
+   * answer a question nobody asked, while still showing "10" in the log. One
+   * `write` call, not five setters, for the reason `write`'s doc gives.
+   */
+  setRun: (runId: string | null) => void;
   setRepo: (repo: string | "all") => void;
   setSeverity: (severity: BugFindingSeverity | "all") => void;
   setSource: (source: BugFindingSource | "all") => void;
@@ -117,6 +141,7 @@ export interface BugHunterUrlActions {
 export const hasFilterParams = (state: BugHunterUrlState): boolean =>
   state.bucket !== "all" ||
   state.search.trim() !== "" ||
+  state.run !== null ||
   state.repo !== "all" ||
   state.severity !== "all" ||
   state.source !== "all";
@@ -130,6 +155,10 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
       bug: searchParams.get(BUG_HUNTER_PARAM.bug) || null,
       bucket: readFacet<LifecycleBucket>(searchParams, BUG_HUNTER_PARAM.bucket, BUCKET_VALUES),
       search: searchParams.get(BUG_HUNTER_PARAM.search) ?? "",
+      // Unvalidated for the same reason as `repo` below: this hook cannot see
+      // the run list, and a run id that matches nothing renders as an empty
+      // scope banner with a "show all bugs" button already on it.
+      run: searchParams.get(BUG_HUNTER_PARAM.run) || null,
       // Repo is deliberately unvalidated against a list: the set of repos is
       // whatever the loaded findings mention, which this hook cannot see, and a
       // repo that matches nothing already renders as an empty table with a
@@ -200,6 +229,20 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     [write],
   );
 
+  const setRun = useCallback(
+    (runId: string | null) =>
+      write({
+        [BUG_HUNTER_PARAM.run]: runId,
+        // Same single call, so nothing is clobbered — see `write`'s doc.
+        [BUG_HUNTER_PARAM.bucket]: null,
+        [BUG_HUNTER_PARAM.search]: null,
+        [BUG_HUNTER_PARAM.repo]: null,
+        [BUG_HUNTER_PARAM.severity]: null,
+        [BUG_HUNTER_PARAM.source]: null,
+      }),
+    [write],
+  );
+
   const setRepo = useCallback(
     (repo: string | "all") => write({ [BUG_HUNTER_PARAM.repo]: repo }),
     [write],
@@ -227,6 +270,7 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
       write({
         [BUG_HUNTER_PARAM.bucket]: null,
         [BUG_HUNTER_PARAM.search]: null,
+        [BUG_HUNTER_PARAM.run]: null,
         [BUG_HUNTER_PARAM.repo]: null,
         [BUG_HUNTER_PARAM.severity]: null,
         [BUG_HUNTER_PARAM.source]: null,
@@ -239,6 +283,7 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     setBug,
     setBucket,
     setSearch,
+    setRun,
     setRepo,
     setSeverity,
     setSource,

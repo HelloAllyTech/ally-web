@@ -251,6 +251,13 @@ export interface ListBugFindingsQuery {
   status?: BugFindingStatus | "all";
   source?: BugFindingSource;
   repo?: string;
+  /**
+   * Scope the table to one sweep's findings. Filtered server-side on purpose —
+   * a sweep stamps its id onto every row it touches, including a
+   * human-reported bug filed weeks earlier, so its findings are not the newest
+   * rows and cannot be found inside a newest-100 window.
+   */
+  runId?: string;
   limit?: number;
   offset?: number;
 }
