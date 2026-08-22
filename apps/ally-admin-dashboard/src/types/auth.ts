@@ -1035,6 +1035,38 @@ export interface VoiceLatencyPoint {
    * instrumented.
    */
   avgCacheHitRatePct: number | null;
+
+  // What the learner heard first. avgMs/p50Ms/p95Ms measure time to the agent's
+  // FIRST audio, which is a thinking-filler or interim reply when one played —
+  // so these counts are what keeps "we got faster" apart from "we masked more".
+  /** Turns whose first audio was a thinking-filler. */
+  firstAudioFillerTurns: number;
+  /** Turns whose first audio was a predictive interim reply. */
+  firstAudioInterimTurns: number;
+  /** Turns whose first audio was the real reply (nothing masked it). */
+  firstAudioReplyTurns: number;
+  /**
+   * Turns with no provenance recorded: every 'transcript' row, and live rows
+   * predating the instrumentation. Charted as its own band rather than folded
+   * into 'reply' — those turns may have been masked and there is no way to tell.
+   */
+  firstAudioUnknownTurns: number;
+  /** Mean time-to-first-voice (ms) for filler-first turns; null if none. */
+  avgFirstAudioFillerMs: number | null;
+  /** Mean time-to-first-voice (ms) for interim-first turns; null if none. */
+  avgFirstAudioInterimMs: number | null;
+  /** Mean time-to-first-voice (ms) for reply-first turns; null if none. */
+  avgFirstAudioReplyMs: number | null;
+  /**
+   * Mean time to the REAL reply (ms) — the unmasked pipeline number, which does
+   * not move when filler coverage does. Instrumented turns only, so null for
+   * 'transcript' buckets and windows predating the instrumentation.
+   */
+  avgReplyLatencyMs: number | null;
+  /** Median (p50) time to the real reply (ms). Null as above. */
+  p50ReplyLatencyMs: number | null;
+  /** p95 time to the real reply (ms). Null as above. */
+  p95ReplyLatencyMs: number | null;
 }
 
 /** One language's live-pipeline latency over the whole window (no time bucketing). */
