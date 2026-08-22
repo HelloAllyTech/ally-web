@@ -6,8 +6,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { useDispatchPreviewAgentMutation, useEndScenarioPreviewMutation } from "@api";
-import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
+import {
+  LIVEKIT_CONFIG,
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  SUPERVISOR_TOPIC,
+  SUPERVISOR_NOTE_EVENT_TYPE,
+  EVENT_FEED_TOPICS,
+} from "@constants";
+import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent, SupervisorNotePayload } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
 // Tiny delay before connect to avoid React 18 StrictMode mount/unmount/mount races
@@ -57,6 +64,7 @@ export const useLiveKitRoom = (
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
+  const [supervisorNotes, setSupervisorNotes] = useState<SupervisorNotePayload[]>([]);
   const [score, setScore] = useState<number>(0);
   const [startTime, setStartTime] = useState(null);
 
@@ -83,14 +91,45 @@ export const useLiveKitRoom = (
     return url;
   };
 
-  const onDataReceived = useCallback((payload: any) => {
-    const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-    setEvents(prev => [...prev, eventObj]);
-    setScore(prev => prev + (eventObj?.data?.score ?? 0));
-    setDetectedEventIds(prevIds => {
-      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
-    });
-  }, []);
+  const onDataReceived = useCallback(
+    (payload: any, _participant?: any, _kind?: any, topic?: string) => {
+      // Live supervisor notes ride their own topic and must be claimed before
+      // the fall-through below, which adds any packet to `events` and folds its
+      // score in — a note landing there would corrupt the preview's score.
+      if (topic === SUPERVISOR_TOPIC) {
+        const notePayload = decodeUint8ToJson(payload) as SupervisorNotePayload & {
+          type?: string;
+        };
+        if (notePayload?.type !== SUPERVISOR_NOTE_EVENT_TYPE || !notePayload?.note) return;
+        setSupervisorNotes(prev =>
+          prev.some(existing => existing.seq === notePayload.seq)
+            ? prev
+            : [
+                ...prev,
+                {
+                  note: notePayload.note,
+                  seq: notePayload.seq,
+                  turn_index: notePayload.turn_index,
+                  timestamp: notePayload.timestamp,
+                },
+              ],
+        );
+        return;
+      }
+
+      // Everything below folds the packet into the scored event feed, so only
+      // topics that genuinely belong to that feed may reach it.
+      if (!EVENT_FEED_TOPICS.includes(topic)) return;
+
+      const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+      setEvents(prev => [...prev, eventObj]);
+      setScore(prev => prev + (eventObj?.data?.score ?? 0));
+      setDetectedEventIds(prevIds => {
+        return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+      });
+    },
+    [],
+  );
 
   const transitionToAgentJoined = useCallback(() => {
     if (agentJoinedRef.current) return;
@@ -294,5 +333,6 @@ export const useLiveKitRoom = (
     startTime,
     roomData,
     detectedEventIds,
+    supervisorNotes,
   };
 };

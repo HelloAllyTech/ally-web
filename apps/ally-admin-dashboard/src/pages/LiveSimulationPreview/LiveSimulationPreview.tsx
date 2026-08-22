@@ -27,6 +27,7 @@ export const LiveSimulationPreview: React.FC = () => {
     score,
     startTime,
     detectedEventIds,
+    supervisorNotes,
     handleEndSession,
   } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
@@ -58,6 +59,12 @@ export const LiveSimulationPreview: React.FC = () => {
       startTime={startTime?.toISOString()}
       events={getSimulationEvents(events)}
       detectedEventIds={detectedEventIds}
+      supervisorNotes={(supervisorNotes ?? []).map(({ note, seq, turn_index, timestamp }) => ({
+        note,
+        seq,
+        turnIndex: turn_index,
+        timestamp,
+      }))}
       score={score}
       isPreview
       onEndSimulation={handleEndSession}

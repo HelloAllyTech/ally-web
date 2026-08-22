@@ -73,6 +73,12 @@ export interface SimulationTranslations {
   remindersTab?: string;
   descriptionTab?: string;
   noRemindersYet?: string;
+  /** Live supervisor notes tab. Optional so existing consumers (admin
+   * previews) compile without providing them. Note bodies are NOT translated
+   * here — they arrive from the agent already written in the session
+   * language. */
+  supervisorTab?: string;
+  supervisorEmptyState?: string;
   turnIndicator: TurnIndicatorTranslations;
 }
 
@@ -90,6 +96,22 @@ export interface SimulationEventsProps {
   hideHeader?: boolean;
 }
 
+/**
+ * One live supervisor note. `seq` is assigned per session by the agent and is
+ * the note's identity (the client de-duplicates on it).
+ */
+export interface SupervisorNoteType {
+  note: string;
+  seq: number;
+  turnIndex?: number;
+  timestamp?: string;
+}
+
+export interface SupervisorNotesProps {
+  notes: SupervisorNoteType[];
+  translations?: Pick<SimulationTranslations, "supervisorEmptyState">;
+}
+
 export interface SessionSidebarProps {
   reminders?: string[];
   description?: string;
@@ -104,6 +126,13 @@ export interface SessionSidebarProps {
   checklistItems: ChecklistItem[];
   detectedEventIds?: string[];
   events: SimulationEventType[];
+  /** Live supervisor notes, in the order the learner received them. */
+  supervisorNotes?: SupervisorNoteType[];
+  /** Whether this roleplay has live supervisor notes turned on. Opt-in, so the
+   * Supervisor tab appears only for an explicit true — and then it appears even
+   * with zero notes, because its empty state is the point (it tells the learner
+   * someone is watching). */
+  supervisorNotesEnabled?: boolean;
   translations?: SimulationTranslations;
 }
 
@@ -158,6 +187,8 @@ export interface SimulationPageProps {
   startTime: string;
   events: SimulationEventType[];
   detectedEventIds?: string[];
+  /** Live supervisor notes received so far this session. */
+  supervisorNotes?: SupervisorNoteType[];
   score?: number;
   roomStatus: RoomStatus;
   isPreview?: boolean;

@@ -17,6 +17,7 @@ import {
   ChecklistMode,
   StateInstruction,
   SimulationTranslations,
+  SupervisorNoteType,
 } from "./types";
 import { UserCallCard } from "./UserCallCard";
 import { FEATURE_FLAGS_MAP } from "../../featureFlag";
@@ -43,6 +44,8 @@ export interface SimulationInterfaceProps {
   roomData: any;
   events: SimulationEventType[];
   detectedEventIds?: string[];
+  supervisorNotes?: SupervisorNoteType[];
+  supervisorNotesEnabled?: boolean;
   isFocusMode: boolean;
   isMuted: boolean;
   isPaused?: boolean;
@@ -65,6 +68,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   roomData,
   events,
   detectedEventIds,
+  supervisorNotes = [],
+  supervisorNotesEnabled = false,
   isFocusMode,
   isMuted,
   isPaused = false,
@@ -178,7 +183,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     (showSessionInfo ||
       hasStateNames ||
       (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
-      (checklistMode === ChecklistMode.OFF && events?.length > 0));
+      (checklistMode === ChecklistMode.OFF && events?.length > 0) ||
+      // The Supervisor tab earns the sidebar on its own: it shows from the
+      // start of the session, before any note has arrived.
+      supervisorNotesEnabled === true);
 
   const renderConnectedContent = () => (
     <>
@@ -208,6 +216,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               checklistItems={checklistItems}
               detectedEventIds={detectedEventIds}
               events={events}
+              supervisorNotes={supervisorNotes}
+              supervisorNotesEnabled={supervisorNotesEnabled}
               translations={translations}
             />
           </div>

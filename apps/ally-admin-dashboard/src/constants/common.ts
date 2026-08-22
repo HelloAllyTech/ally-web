@@ -792,6 +792,12 @@ export enum TooltipLocation {
   FEEDBACK_TAB_SKILLS = "feedback_tab_skills",
   FEEDBACK_TAB_TRANSCRIPT = "feedback_tab_transcript",
   ALLOW_PAUSE_RESUME = "allow_pause_resume",
+  // Live supervisor notes: an AI supervisor watching the session sends the
+  // learner short coaching hints in a Supervisor sidebar tab, and those notes
+  // also inform the post-session debrief. Off by default — mid-session
+  // feedback suits a novice but breaks the pressure a confident learner
+  // practises for, so it is a per-roleplay judgement call.
+  SUPERVISOR_NOTES_ENABLED = "supervisor_notes_enabled",
   DEFAULT_ORG_VISIBILITY = "default_org_visibility",
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
@@ -820,3 +826,16 @@ export enum TooltipLocation {
 }
 
 export const CUSTOM_CHARACTER_ID = "custom";
+
+// Live supervisor notes arrive on their own LiveKit data-channel topic so they
+// can never be mistaken for scored coaching events. Must match
+// SUPERVISOR_DATA_TOPIC in ally-ai-learn's app/core/supervisor/service.py.
+export const SUPERVISOR_TOPIC = "supervisor" as const;
+export const SUPERVISOR_NOTE_EVENT_TYPE = "supervisor.note" as const;
+
+// Topics whose packets belong to the scored coaching-event feed. Coaching
+// events are published on "events"; AGENT_STATE and the pause/resume control
+// packets carry no topic at all. Anything else — notably the v2 "director"
+// feed, which has its own observer panel — is dropped rather than folded into
+// `events`, where it would silently contribute to the preview's score.
+export const EVENT_FEED_TOPICS: readonly (string | undefined)[] = [undefined, "", "events"];

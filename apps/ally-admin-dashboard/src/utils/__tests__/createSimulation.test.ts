@@ -254,6 +254,9 @@ describe("createSimulation utils", () => {
         feedbackTabSkills: true,
         feedbackTabTranscript: true,
         pauseEnabled: false,
+        // Opt-in: a roleplay saved before live supervisor notes existed
+        // hydrates as off, which is also the default for new ones.
+        supervisorNotesEnabled: false,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         category: "",

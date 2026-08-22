@@ -132,6 +132,10 @@ export const useStartSimulation = (
             timerMode: scenario?.timerMode,
             showScoreMeter: scenario?.showScoreMeter,
             pauseEnabled: scenario?.pauseEnabled,
+            // Opt-in per roleplay — drives the Supervisor tab in the session
+            // sidebar. The agent gates note generation independently, so this
+            // only controls whether the learner has somewhere to read them.
+            supervisorNotesEnabled: scenario?.supervisorNotesEnabled === true,
             stateNames: scenario?.stateNames || [],
             difficultyLevel: scenario?.difficultyLevel,
           }),

@@ -420,4 +420,36 @@ describe("useStartSimulation", () => {
     const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
     expect(storedData.reminders).toEqual([]);
   });
+
+  describe("supervisorNotesEnabled", () => {
+    const startWithScenario = async (scenario: Record<string, unknown>) => {
+      mockStartSimulationMutation.mockResolvedValue({
+        data: {
+          scenarioSession: { id: "session-123", startedAt: "2024-01-01T00:00:00Z" },
+          scenario: { id: "scenario-123", title: "Test Scenario", ...scenario },
+          accessToken: { token: "token-123", serverUrl: "https://server.example.com" },
+        },
+        error: null,
+      });
+
+      const { result } = renderHook(() => useStartSimulation(), { wrapper });
+      await act(async () => {
+        await result.current.startSimulation({ params: { scenarioId: 1, languageId: 1 } });
+      });
+      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    };
+
+    it("carries the flag through to room data when the roleplay enables it", async () => {
+      const storedData = await startWithScenario({ supervisorNotesEnabled: true });
+      expect(storedData.supervisorNotesEnabled).toBe(true);
+    });
+
+    it.each([[false], [undefined]])(
+      "stores false when the scenario sends %p, since the tab is opt-in",
+      async value => {
+        const storedData = await startWithScenario({ supervisorNotesEnabled: value });
+        expect(storedData.supervisorNotesEnabled).toBe(false);
+      },
+    );
+  });
 });

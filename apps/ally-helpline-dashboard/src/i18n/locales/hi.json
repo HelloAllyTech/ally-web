@@ -1251,6 +1251,8 @@
     "remindersTab": "रिमाइंडर",
     "descriptionTab": "विवरण",
     "noRemindersYet": "इस परिदृश्य के लिए अभी कोई रिमाइंडर नहीं है।",
+    "supervisorTab": "सुपरवाइज़र",
+    "supervisorEmptyState": "आपके सुपरवाइज़र सुन रहे हैं — जब कुछ काम की बात होगी, नोट यहाँ दिखेंगे।",
     "turnIndicator": {
       "speaking": "बोल रहें है...",
       "listening": "सुन रहें है...",
