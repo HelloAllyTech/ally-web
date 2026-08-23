@@ -79,6 +79,10 @@ export interface SimulationTranslations {
    * language. */
   supervisorTab?: string;
   supervisorEmptyState?: string;
+  /** AI disclosure badge shown once at the top of the Supervisor panel, so
+   * the learner never reads "Supervisor" as a person listening in. */
+  supervisorAiLabel?: string;
+  supervisorAiTooltip?: string;
   turnIndicator: TurnIndicatorTranslations;
 }
 
@@ -109,7 +113,10 @@ export interface SupervisorNoteType {
 
 export interface SupervisorNotesProps {
   notes: SupervisorNoteType[];
-  translations?: Pick<SimulationTranslations, "supervisorEmptyState">;
+  translations?: Pick<
+    SimulationTranslations,
+    "supervisorEmptyState" | "supervisorAiLabel" | "supervisorAiTooltip"
+  >;
 }
 
 export interface SessionSidebarProps {

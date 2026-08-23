@@ -1291,6 +1291,8 @@
     "noRemindersYet": "No reminders for this scenario yet.",
     "supervisorTab": "Supervisor",
     "supervisorEmptyState": "Your supervisor is listening — notes appear here when there's something useful.",
+    "supervisorAiLabel": "AI-generated",
+    "supervisorAiTooltip": "Ally is an AI supervisor. It's listening live and sending these notes automatically — not a person.",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",
