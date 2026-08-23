@@ -51,6 +51,8 @@ export const Simulation = () => {
     noRemindersYet: t("simulationPage.noRemindersYet"),
     supervisorTab: t("simulationPage.supervisorTab"),
     supervisorEmptyState: t("simulationPage.supervisorEmptyState"),
+    supervisorAiLabel: t("simulationPage.supervisorAiLabel"),
+    supervisorAiTooltip: t("simulationPage.supervisorAiTooltip"),
     turnIndicator: {
       speaking: t("simulationPage.turnIndicator.speaking"),
       listening: t("simulationPage.turnIndicator.listening"),

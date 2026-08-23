@@ -29,6 +29,13 @@ vi.mock("../SimulationEvents", () => ({
 vi.mock("../../rich-text-renderer", () => ({
   RichTextRenderer: ({ content }: any) => <div data-testid="rich-text-renderer">{content}</div>,
 }));
+vi.mock("../../../primitives", () => ({
+  Tooltip: ({ children, label }: any) => (
+    <div data-testid="tooltip" title={label}>
+      {children}
+    </div>
+  ),
+}));
 
 const baseProps = {
   stateNames: [],
@@ -165,7 +172,28 @@ describe("SessionSidebar", () => {
       expect(screen.queryByTestId("supervisor-notes")).not.toBeInTheDocument();
     });
 
-    it("uses the translated tab label and empty state when provided", () => {
+    it("discloses the supervisor is AI, with default copy, whether or not notes have arrived yet", () => {
+      // The tab is named "Supervisor" and reads as a person unless something
+      // says otherwise — the badge is permanent, not a one-time toast.
+      const { rerender } = render(<SessionSidebar {...baseProps} supervisorNotesEnabled />);
+
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-generated");
+      expect(screen.getByTestId("tooltip")).toHaveAttribute(
+        "title",
+        "Ally is an AI supervisor. It's listening live and sending these notes automatically — not a person.",
+      );
+
+      rerender(
+        <SessionSidebar
+          {...baseProps}
+          supervisorNotesEnabled
+          supervisorNotes={[{ note: "Slow down.", seq: 1 }]}
+        />,
+      );
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-generated");
+    });
+
+    it("uses the translated tab label, empty state and AI disclosure when provided", () => {
       render(
         <SessionSidebar
           {...baseProps}
@@ -174,6 +202,8 @@ describe("SessionSidebar", () => {
             {
               supervisorTab: "மேற்பார்வையாளர்",
               supervisorEmptyState: "காத்திருக்கிறது",
+              supervisorAiLabel: "AI-உருவாக்கியது",
+              supervisorAiTooltip: "இது ஒரு AI.",
             } as any
           }
         />,
@@ -183,6 +213,8 @@ describe("SessionSidebar", () => {
         "மேற்பார்வையாளர்",
       );
       expect(screen.getByTestId("supervisor-notes-empty")).toHaveTextContent("காத்திருக்கிறது");
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-உருவாக்கியது");
+      expect(screen.getByTestId("tooltip")).toHaveAttribute("title", "இது ஒரு AI.");
     });
 
     it("renders notes in order once they arrive", () => {
@@ -216,9 +248,7 @@ describe("SessionSidebar", () => {
       );
 
       // Reminders is tab[0], so Supervisor starts inactive.
-      expect(
-        screen.queryByTestId("session-sidebar-supervisor-badge"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
 
       rerender(
         <SessionSidebar
@@ -232,9 +262,7 @@ describe("SessionSidebar", () => {
 
       // Opening the tab clears it, and it stays clear.
       fireEvent.click(screen.getByTestId("session-sidebar-tab-supervisor"));
-      expect(
-        screen.queryByTestId("session-sidebar-supervisor-badge"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
 
       rerender(
         <SessionSidebar
@@ -248,9 +276,7 @@ describe("SessionSidebar", () => {
         />,
       );
       // Still on the Supervisor tab, so a new note is read as it lands.
-      expect(
-        screen.queryByTestId("session-sidebar-supervisor-badge"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId("session-sidebar-tab-reminders"));
       rerender(
