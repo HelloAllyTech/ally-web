@@ -536,7 +536,7 @@
       "therapeuticTechniques": "कोणती उपचाराची तंत्रे/ कार्यपद्धती सर्वाधिक उपयुक्त होती?"
     },
     "transcriptReferences": "ट्रान्स्क्रिप्टमधील संदर्भ",
-    "inputPlaceholder": "सेशनबद्दल एक प्रश्न विचारा.... (0/{{max}})"
+    "inputPlaceholder": "सेशनबद्दल एक प्रश्न विचारा...."
   },
   "postSim": {
     "titlePrefix": "भूमिका वठवणे (रोल प्ले)",
