@@ -1,11 +1,17 @@
 import { useMemo, useState } from "react";
 
-import { ComboChart, LineChart } from "@carbon/charts-react";
+import { ComboChart, LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import { useGetQualitySentimentQuery } from "@api";
+import { useGetQualityDistributionQuery, useGetQualitySentimentQuery } from "@api";
 
 import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
-import { bucketTitle, groupingNote } from "../analyticsGrouping";
+import {
+  bucketTitle,
+  groupingNote,
+  inProgressCaption,
+  isInProgress,
+  withoutInProgress,
+} from "../analyticsGrouping";
 import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
@@ -16,9 +22,25 @@ import {
   ScrollableChart,
   boundedDomainNote,
   buildSource,
+  hBarOpts,
   lineOpts,
   stackedAreaLineOpts,
+  stackedBarOpts,
 } from "../chartKit";
+import {
+  PCT_DOMAIN,
+  RATING_BAND_SCALE,
+  SCORE_DOMAIN,
+  SKILL_GROWTH_SCALE,
+  buildLowRatingTagBars,
+  buildQualityBandSeries,
+  buildRankedBarScale,
+  buildSatisfactionMixSeries,
+  formatPct,
+  formatScore,
+  ratedBuckets,
+  satisfactionTakeaway,
+} from "../testingChart";
 import {
   PROXY_NPS_DOMAIN,
   PROXY_NPS_LABEL,
@@ -36,9 +58,18 @@ import {
   qualityIndexCoverageNotes,
 } from "../unitCostChart";
 
-type ChartId = "qualitySentiment";
+/**
+ * Three windowed series, each with its own saved window and grain.
+ *
+ * The distribution and the satisfaction mix are separate entries even though one
+ * response feeds both: they are read at different resolutions by different
+ * readers — a spread wants enough sessions per bucket to have quartiles, a
+ * rating mix wants enough ratings — and one shared control would force the
+ * coarser of the two on whoever wanted the other.
+ */
+type ChartId = "qualitySentiment" | "distribution" | "satisfaction";
 
-const CHARTS: readonly ChartId[] = ["qualitySentiment"];
+const CHARTS: readonly ChartId[] = ["qualitySentiment", "distribution", "satisfaction"];
 
 /**
  * Does the platform agree with the learner?
@@ -104,6 +135,84 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
     { skip: hydrating },
   );
 
+  // The distribution behind the averages above. Two requests to one endpoint
+  // rather than one: the two charts carry independent windows and grains, and
+  // RTK Query keys its cache on the argument object, so each gets exactly the
+  // response it is drawing.
+  const distControls = controlsFor("distribution");
+  const distQ = useGetQualityDistributionQuery(
+    { ...query, range: distControls.range, bucket: distControls.bucket },
+    { skip: hydrating },
+  );
+  const satControls = controlsFor("satisfaction");
+  const satQ = useGetQualityDistributionQuery(
+    { ...query, range: satControls.range, bucket: satControls.bucket },
+    { skip: hydrating },
+  );
+
+  const dist = distQ.data;
+  const sat = satQ.data;
+  const distLoading = hydrating || (distQ.isLoading && !dist);
+  const satLoading = hydrating || (satQ.isLoading && !sat);
+
+  const distInProgress = dist?.window.inProgressBucket;
+  const distPoints = useMemo(
+    () => withoutInProgress(dist?.quality ?? [], p => p.bucket, distInProgress),
+    [dist, distInProgress],
+  );
+  const distSeries = useMemo(() => buildQualityBandSeries(distPoints), [distPoints]);
+
+  const satInProgress = sat?.window.inProgressBucket;
+  const satPoints = useMemo(
+    () => withoutInProgress(sat?.satisfaction ?? [], p => p.bucket, satInProgress),
+    [sat, satInProgress],
+  );
+  const satSeries = useMemo(() => buildSatisfactionMixSeries(satPoints), [satPoints]);
+  // How many periods actually carry a stateable mix — a 100%-stacked chart hides
+  // its own base, so the caption says how many bars are real.
+  const satRated = useMemo(() => ratedBuckets(satPoints), [satPoints]);
+
+  const tagBars = useMemo(() => buildLowRatingTagBars(dist?.lowRatingTags ?? []), [dist]);
+  const tagScale = useMemo(() => buildRankedBarScale(tagBars), [tagBars]);
+
+  const distOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Composite score",
+        bottomTitle: bucketTitle(distControls.bucket),
+        colorScale: SKILL_GROWTH_SCALE,
+        domain: SCORE_DOMAIN,
+      }),
+    [distControls.bucket],
+  );
+  const distZoomedOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Composite score",
+        bottomTitle: bucketTitle(distControls.bucket),
+        colorScale: SKILL_GROWTH_SCALE,
+      }),
+    [distControls.bucket],
+  );
+  const satOpts = useMemo(
+    () =>
+      stackedBarOpts({
+        leftTitle: "Share of ratings (%)",
+        bottomTitle: bucketTitle(satControls.bucket),
+        colorScale: RATING_BAND_SCALE,
+        domain: PCT_DOMAIN,
+      }),
+    [satControls.bucket],
+  );
+  const tagOpts = useMemo(
+    () => hBarOpts({ bottomTitle: "Low-rated sessions", colorScale: tagScale }),
+    [tagScale],
+  );
+
+  /** Bucket label for a table row, flagged while the period is still accruing. */
+  const rowKey = (bucket: string, inProgress?: string | null) =>
+    isInProgress(bucket, inProgress) ? `${bucket} (in progress)` : bucket;
+
   // Both series keep every period, nulls included: a mean has no meaningful
   // zero, so a quiet period must break the line rather than be dropped (which
   // would collapse the axis) or zeroed (which would draw a collapse). The
@@ -142,6 +251,21 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
     </div>
   );
 
+  const chartPickers = (chart: ChartId) => (
+    <div className="flex items-center gap-2">
+      <RangePicker
+        id={`${chart}-range`}
+        value={controlsFor(chart).range}
+        onChange={range => setRange(chart, range)}
+      />
+      <GroupingPicker
+        id={`${chart}-grouping`}
+        value={controlsFor(chart).bucket}
+        onChange={bucket => setBucket(chart, bucket)}
+      />
+    </div>
+  );
+
   // Checked against the LINE, not the combined `quality` array: the area
   // layers are zero-filled (never null — see buildQualityIndexAreaSeries), so
   // testing the combined array would never report "empty" even when no
@@ -151,7 +275,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <KpiTile
           label="Actor goal score"
           value={
@@ -180,6 +304,30 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           nUnit="paired periods"
           loading={loading}
           description="Pearson r across periods that have both. Co-movement, not cause."
+        />
+
+        {/* The median beside the mean, and the top-2-box beside the proxy NPS.
+            Both are deliberately shown next to their mean-based neighbours: a
+            mean over a small sample and a mean of an ordinal scale each hide
+            the thing a reader would act on, and the pairing is what makes that
+            visible rather than asserted. */}
+        <KpiTile
+          label="Median quality score"
+          description={`Median composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric. Median, not mean: one outlying session moves a mean and not a median.`}
+          value={formatScore(dist?.summary.medianScore)}
+          n={dist?.summary.evaluatedSessions}
+          nUnit="evaluated sessions"
+          minN={MIN_N_FOR_SCORE}
+          loading={distLoading}
+        />
+        <KpiTile
+          label="Rated 4–5"
+          description="Share of post-session ratings that were 4 or 5. Rating is optional, so this covers only sessions that were rated."
+          value={formatPct(dist?.summary.top2BoxPct)}
+          n={dist?.summary.responses}
+          nUnit="ratings"
+          minN={MIN_N_FOR_SCORE}
+          loading={distLoading}
         />
       </div>
 
@@ -275,6 +423,95 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         </ChartCard>
       </div>
 
+      {/* The distribution and the raw ratings behind the two summary series
+          above. Same sessions, read three more ways: the spread the median
+          hides, the rating mix an average flattens, and what learners said was
+          wrong when they rated low. */}
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <ChartCard
+          title="Roleplay quality — median and spread"
+          caption={`The distribution behind the quality average: the median with its interquartile range. A median that climbs while the quartiles stay wide is a different story from one that climbs while they converge. Periods with fewer than ${
+            dist?.minSampleSize ?? MIN_N_FOR_SCORE
+          } evaluated sessions carry no percentiles. ${boundedDomainNote(SCORE_DOMAIN)}${inProgressCaption(
+            distControls.bucket,
+            distInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "LLM-judged composite score per session, percentiles per period",
+            window: windowLabel(dist?.window),
+            n: dist?.summary.evaluatedSessions,
+            nUnit: "evaluated sessions",
+            extra: groupingNote(distControls.bucket),
+            asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
+          })}
+          loading={distLoading}
+          error={distQ.isError}
+          onRetry={distQ.refetch}
+          empty={!distLoading && distSeries.length === 0}
+          controls={chartPickers("distribution")}
+          onExpand={() => setExpanded("distribution")}
+        >
+          <ScrollableChart data={distSeries}>
+            <LineChart data={distSeries} options={distOpts} />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          title="Satisfaction mix"
+          caption={`Ratings split into 1–2 / 3 / 4–5 rather than averaged: a mean of 3.8 from all-4s and a mean of 3.8 from half-5s-and-half-2s call for opposite responses. ${satRated.length} period${
+            satRated.length === 1 ? "" : "s"
+          } carry ratings; periods with none are absent, because a mix over nobody is undefined.${inProgressCaption(
+            satControls.bucket,
+            satInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Post-session ratings grouped into bands, share per period",
+            window: windowLabel(sat?.window),
+            n: sat?.summary.responses,
+            nUnit: "ratings",
+            extra: `${groupingNote(satControls.bucket)} · ${formatPct(
+              sat?.summary.responseRatePct,
+            )} of completed sessions were rated`,
+            asOf: sat?.computedAt ? new Date(sat.computedAt).toLocaleDateString() : undefined,
+          })}
+          takeaway={satisfactionTakeaway(satPoints)}
+          loading={satLoading}
+          error={satQ.isError}
+          onRetry={satQ.refetch}
+          empty={!satLoading && satSeries.length === 0}
+          emptyText="No ratings in any period on this axis"
+          controls={chartPickers("satisfaction")}
+          onExpand={() => setExpanded("satisfaction")}
+        >
+          <ScrollableChart data={satSeries}>
+            <StackedBarChart data={satSeries} options={satOpts} />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          wide
+          title="What low-rated sessions were tagged with"
+          caption="Tags on sessions rated 3 or below, ranked. Counts, not shares: tagging is optional, so the denominator is the tagged low ratings and not all sessions. The leader is in the accent colour and the tail in grey — the order is the point. Reads the window set on the quality panel above."
+          source={buildSource({
+            derivation: "Tags on post-session ratings <= 3",
+            window: windowLabel(dist?.window),
+            n: dist?.summary.taggedLowRatings,
+            nUnit: "tagged low ratings",
+            asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
+          })}
+          loading={distLoading}
+          error={distQ.isError}
+          onRetry={distQ.refetch}
+          empty={!distLoading && tagBars.length === 0}
+          emptyText="No tags on low-rated sessions yet"
+          onExpand={() => setExpanded("tags")}
+        >
+          <ScrollableChart data={tagBars} on="group">
+            <SimpleBarChart data={tagBars} options={tagOpts} />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       {/* Per-dimension coverage/calibration, one line each. Not a paraphrase of
           a server string (the index has no single `note` field to render
           verbatim) — built from `indexCoverage`, the same array the card's
@@ -360,6 +597,123 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           `Window: ${windowLabel(data?.window) ?? windowNote}`,
         ].filter(Boolean)}
         exportFilename="quality-index-vs-sentiment"
+      />
+
+      <ChartDetailModal
+        open={expanded === "distribution"}
+        onClose={() => setExpanded(null)}
+        title="Roleplay quality — median and spread"
+        caption="Percentiles are blank for periods below the sample floor."
+        source={buildSource({
+          derivation: "LLM-judged composite score, percentiles per period",
+          window: windowLabel(dist?.window),
+          extra: groupingNote(distControls.bucket),
+          asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
+        })}
+        zoomable
+        zoomNote="Axis zoomed to the data range — the tile shows the full 0–100 scale."
+        render={({ height, zoomed }) => (
+          <LineChart
+            data={distSeries}
+            options={{ ...(zoomed ? distZoomedOpts : distOpts), height }}
+          />
+        )}
+        table={{
+          columns: [
+            bucketTitle(distControls.bucket),
+            "Median",
+            "25th pct",
+            "75th pct",
+            "Evaluated",
+          ],
+          rows: (dist?.quality ?? []).map(p => [
+            rowKey(p.bucket, distInProgress),
+            p.median,
+            p.p25,
+            p.p75,
+            p.evaluatedSessions,
+          ]),
+        }}
+        exportContext={[
+          `Window: ${windowLabel(dist?.window)}`,
+          `Grouping: ${bucketTitle(distControls.bucket)}`,
+          ...(distInProgress
+            ? [`${distInProgress} is still accruing — provisional, and omitted from the chart`]
+            : []),
+          `Percentiles are blank below ${dist?.minSampleSize ?? MIN_N_FOR_SCORE} evaluated sessions`,
+        ]}
+        exportFilename="roleplay-quality-distribution"
+      />
+
+      <ChartDetailModal
+        open={expanded === "satisfaction"}
+        onClose={() => setExpanded(null)}
+        title="Satisfaction mix"
+        caption="The counts behind the shares, plus the response rate the shares are silent about."
+        source={buildSource({
+          derivation: "Post-session ratings grouped into bands",
+          window: windowLabel(sat?.window),
+          extra: groupingNote(satControls.bucket),
+          asOf: sat?.computedAt ? new Date(sat.computedAt).toLocaleDateString() : undefined,
+        })}
+        render={({ height }) => (
+          <StackedBarChart data={satSeries} options={{ ...satOpts, height }} />
+        )}
+        table={{
+          columns: [
+            bucketTitle(satControls.bucket),
+            "1–2",
+            "3",
+            "4–5",
+            "Ratings",
+            "4–5 %",
+            "Completed sessions",
+            "Response rate %",
+          ],
+          rows: (sat?.satisfaction ?? []).map(p => [
+            rowKey(p.bucket, satInProgress),
+            p.low,
+            p.mid,
+            p.high,
+            p.responses,
+            p.top2BoxPct,
+            p.completedSessions,
+            p.responseRatePct,
+          ]),
+        }}
+        exportContext={[
+          `Window: ${windowLabel(sat?.window)}`,
+          `Grouping: ${bucketTitle(satControls.bucket)}`,
+          ...(satInProgress
+            ? [`${satInProgress} is still accruing — provisional, and omitted from the chart`]
+            : []),
+          "Rating is optional: the response rate is the share of completed sessions that were rated",
+        ]}
+        exportFilename="satisfaction-mix"
+      />
+
+      <ChartDetailModal
+        open={expanded === "tags"}
+        onClose={() => setExpanded(null)}
+        title="What low-rated sessions were tagged with"
+        caption="Tags on ratings of 3 or below. Optional, so counts — not shares of all sessions."
+        source={buildSource({
+          derivation: "Tags on post-session ratings <= 3",
+          window: windowLabel(dist?.window),
+          n: dist?.summary.taggedLowRatings,
+          nUnit: "tagged low ratings",
+          asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
+        })}
+        render={({ height }) => <SimpleBarChart data={tagBars} options={{ ...tagOpts, height }} />}
+        table={{
+          columns: ["Tag", "Low-rated sessions"],
+          rows: (dist?.lowRatingTags ?? []).map(t => [t.tag, t.count]),
+        }}
+        exportContext={[
+          `Window: ${windowLabel(dist?.window)}`,
+          "Tags on post-session ratings of 3 or below; tagging is optional",
+        ]}
+        exportFilename="low-rating-tags"
       />
     </>
   );

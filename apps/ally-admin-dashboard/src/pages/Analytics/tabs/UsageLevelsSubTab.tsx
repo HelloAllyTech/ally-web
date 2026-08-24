@@ -4,13 +4,14 @@ import { GroupedBarChart, LineChart, SimpleBarChart } from "@carbon/charts-react
 
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import {
+  useGetActivationQuery,
   useGetPracticeStickinessQuery,
   useGetQualifiedSessionsQuery,
   useGetUsageLadderQuery,
 } from "@api";
 import { UsageLadderGrain } from "@types";
 
-import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
+import { AnalyticsTabFilters, asOfStamp, windowLabel } from "../analyticsFilters";
 import {
   bucketTitle,
   groupingNote,
@@ -23,6 +24,7 @@ import {
   ChartCard,
   GroupingPicker,
   ScrollableChart,
+  barOpts,
   buildSource,
   integerTickValues,
   lineOpts,
@@ -41,6 +43,13 @@ import {
   periodLabel,
   stickinessPlateau,
 } from "../ladderChart";
+import {
+  TESTING_GROUPS,
+  buildActivationFunnelStages,
+  buildTimeToFirstBars,
+  buildTimeToFirstScale,
+  formatCount,
+} from "../testingChart";
 
 /**
  * Charts on this sub-tab that carry a full window+grain control.
@@ -62,10 +71,13 @@ const GRAIN_ITEMS: { id: UsageLadderGrain; label: string }[] = [
 /**
  * Usage levels — how deep into the product learners actually get.
  *
- * Five panels off three endpoints. The organising idea is that "engagement" is
- * two different questions and this tab answers both separately rather than
+ * Seven panels off four endpoints. The organising idea is that "engagement" is
+ * three different questions and this tab answers each separately rather than
  * averaging them into one number:
  *
+ *  - **Activation**: whether a learner ever starts. The funnel and the
+ *    time-to-first-practice histogram are the entry to everything below — a
+ *    ladder rung cannot be reached by someone who never finished a session.
  *  - **Depth**: the L1–L5 ladder, by lifetime practice minutes. Its flow series
  *    ("how many L3s did we produce this quarter") and its stock series ("how
  *    many L3s exist") are deliberately two charts, because a healthy platform
@@ -96,6 +108,10 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
 
   const ladder = useGetUsageLadderQuery({ ...pickTenant(query), grain });
   const stickiness = useGetPracticeStickinessQuery(pickTenant(query));
+  // Both activation panels are all-time counts over learner ACCOUNTS, so this
+  // asks for no window and no grain: the bucketed series off the same endpoint
+  // is the north star on the Platform sub-tab, not anything drawn here.
+  const activation = useGetActivationQuery(pickTenant(query));
 
   const sessionControls = controlsFor("qualifiedSessions");
   const sessions = useGetQualifiedSessionsQuery(
@@ -112,6 +128,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
   const l = ladder.data;
   const s = stickiness.data;
   const q = sessions.data;
+  const act = activation.data;
 
   /* ------------------------------- series ---------------------------------- */
 
@@ -136,6 +153,20 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
       })),
     [sessionPoints, q?.window.inProgressBucket],
   );
+
+  const funnelStages = useMemo(() => buildActivationFunnelStages(act?.funnel), [act]);
+  const ttfBars = useMemo(() => buildTimeToFirstBars(act?.timeToFirstPractice), [act]);
+  const ttfScale = useMemo(() => buildTimeToFirstScale(act?.timeToFirstPractice), [act]);
+  const ttfOpts = useMemo(
+    () =>
+      barOpts({
+        leftTitle: "Learners",
+        bottomTitle: "Days to first session",
+        colorScale: ttfScale,
+      }),
+    [ttfScale],
+  );
+  const activationLoading = activation.isLoading && !act;
 
   const ladderEmpty = !hasLadderData(l);
   const asOf = l?.computedAt ? new Date(l.computedAt).toLocaleDateString() : undefined;
@@ -164,6 +195,62 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
 
   return (
     <>
+      {/* Before depth: whether a learner starts at all. A ladder rung is only
+          reachable by someone who got past their first session, so the two
+          activation panels come before the climb rather than after it. */}
+      <SubHeading>Activation — getting to a first session</SubHeading>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <ChartCard
+          title="New-learner activation funnel"
+          caption={`Of every ${act?.funnel.denominatorLabel ?? "learner account"}, how many reached each step. The first bar is 100% by construction — it is the population, not a measurement. All-time: this is a question about accounts, not about a period.`}
+          source={buildSource({
+            derivation: "users joined to completed sessions, all time",
+            window: "all time",
+            n: act?.summary.registeredLearners,
+            nUnit: "learner accounts",
+            asOf: asOfStamp(act?.computedAt),
+          })}
+          loading={activationLoading}
+          error={activation.isError}
+          onRetry={activation.refetch}
+          empty={!activationLoading && funnelStages.length === 0}
+          height="auto"
+        >
+          <FunnelBars stages={funnelStages} unit="learners" />
+        </ChartCard>
+
+        <ChartCard
+          title="Time to first practice"
+          caption={`Days from signing up to completing a first session, as counts of learners. ${
+            act?.timeToFirstPractice.boundsNote ?? ""
+          } "${TESTING_GROUPS.neverPractised}" is a residual — a learner who has never practised has no first session to measure — so it is greyed as context rather than coloured as the slowest band.`}
+          source={buildSource({
+            derivation: "users.createdAt to first completed session, all time",
+            window: "all time",
+            n: act?.summary.registeredLearners,
+            nUnit: "learner accounts",
+            asOf: asOfStamp(act?.computedAt),
+          })}
+          takeaway={
+            act && act.summary.registeredLearners > 0
+              ? `${formatCount(act.timeToFirstPractice.neverPractised)} of ${formatCount(
+                  act.summary.registeredLearners,
+                )} learner accounts have never completed a session`
+              : undefined
+          }
+          loading={activationLoading}
+          error={activation.isError}
+          onRetry={activation.refetch}
+          empty={!activationLoading && ttfBars.length === 0}
+          onExpand={() => setExpanded("timeToFirst")}
+        >
+          <ScrollableChart data={ttfBars} on="group">
+            <SimpleBarChart data={ttfBars} options={ttfOpts} />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       <SubHeading>Depth — the L1–L5 ladder</SubHeading>
 
       <p className="mb-4 max-w-3xl text-xs leading-relaxed text-typography-500">
@@ -462,6 +549,49 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           ]),
         }}
         exportFilename="qualified-sessions"
+      />
+
+      <ChartDetailModal
+        open={expanded === "timeToFirst"}
+        onClose={() => setExpanded(null)}
+        title="Time to first practice"
+        caption={act?.timeToFirstPractice.boundsNote}
+        source={buildSource({
+          derivation: "users.createdAt to first completed session",
+          window: "all time",
+          n: act?.summary.registeredLearners,
+          nUnit: "learner accounts",
+          asOf: asOfStamp(act?.computedAt),
+        })}
+        render={({ height }) => <SimpleBarChart data={ttfBars} options={{ ...ttfOpts, height }} />}
+        table={{
+          columns: ["Days to first session", "Learners", "Cumulative activated", "% activated"],
+          rows: [
+            ...(act?.timeToFirstPractice.bands ?? []).map((b, i) => {
+              const cumulative = act?.timeToFirstPractice.cumulative.find(
+                cp => cp.days === (b.maxDays ?? b.minDays),
+              );
+              return [
+                b.label,
+                act?.timeToFirstPractice.learnersByBand[i] ?? 0,
+                cumulative?.activated ?? null,
+                cumulative?.activatedPct ?? null,
+              ];
+            }),
+            [
+              TESTING_GROUPS.neverPractised,
+              act?.timeToFirstPractice.neverPractised ?? 0,
+              null,
+              null,
+            ],
+          ],
+        }}
+        exportContext={[
+          "Window: All time",
+          `Bands: ${act?.timeToFirstPractice.boundsNote ?? ""}`,
+          `"${TESTING_GROUPS.neverPractised}" is a residual: learner accounts minus learners who ever completed a session`,
+        ]}
+        exportFilename="time-to-first-practice"
       />
     </>
   );

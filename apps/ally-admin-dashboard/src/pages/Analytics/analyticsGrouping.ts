@@ -138,3 +138,46 @@ export function useChartGrouping<K extends string>(
 
   return { groupingFor, setGrouping, bucketsFor, bucketsInUse };
 }
+
+/** One query result per grain, so a chart can read the grain it is set to. */
+export type GrainQueries<T> = Record<AnalyticsBucket, T>;
+
+/**
+ * Four hooks for one endpoint — one per grain, in a fixed order so hook order
+ * never changes — each skipped unless a chart fed by that endpoint is currently
+ * reading that grain.
+ *
+ * The shape a caller ends up with is `q[groupingFor("chart")]`: re-graining a
+ * chart replaces one request rather than adding one, and an endpoint is never
+ * fetched at a grain nothing on screen displays. Lifted out of the individual
+ * sub-tabs because every panel with a grain control needs exactly this, and a
+ * per-file copy is a per-file chance to get the skip condition wrong.
+ *
+ * Pass the base grain in `grains` as well when a bucket-invariant panel (a KPI
+ * tile, a funnel, a ranking) reads from the same response: without it that panel
+ * blinks out the moment the last chart on that grain is switched away.
+ */
+export const useGrainQueries = <A, T>(
+  useQueryHook: (arg: A & { bucket: AnalyticsBucket }, opts: { skip: boolean }) => T,
+  query: A,
+  grains: Set<AnalyticsBucket>,
+): GrainQueries<T> => ({
+  day: useQueryHook({ ...query, bucket: "day" }, { skip: !grains.has("day") }),
+  week: useQueryHook({ ...query, bucket: "week" }, { skip: !grains.has("week") }),
+  month: useQueryHook({ ...query, bucket: "month" }, { skip: !grains.has("month") }),
+  year: useQueryHook({ ...query, bucket: "year" }, { skip: !grains.has("year") }),
+});
+
+/**
+ * Whether a panel's OWN request is still in flight.
+ *
+ * `isUninitialized` counts: on the render where a grain is first selected the
+ * hook has only just stopped being skipped, so it reports neither loading nor
+ * fetching and the card would flash its empty state for a frame.
+ */
+export const isBusy = (q: {
+  isLoading: boolean;
+  isFetching: boolean;
+  isUninitialized: boolean;
+  data?: unknown;
+}): boolean => !q.data && (q.isLoading || q.isFetching || q.isUninitialized);

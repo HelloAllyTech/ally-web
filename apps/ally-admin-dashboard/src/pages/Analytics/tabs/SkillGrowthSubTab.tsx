@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 
-import { LineChart, StackedBarChart } from "@carbon/charts-react";
+import { LineChart, ScatterChart, StackedBarChart } from "@carbon/charts-react";
 
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
-import { useGetSkillGrowthLearnersQuery, useGetSkillGrowthQuery } from "@api";
+import {
+  useGetCompetencyMapQuery,
+  useGetSkillGrowthLearnersQuery,
+  useGetSkillGrowthQuery,
+} from "@api";
 import { SkillGrowthLearnersQuery } from "@types";
 
 import { AnalyticsTabFilters, asOfStamp } from "../analyticsFilters";
@@ -11,10 +15,12 @@ import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   KpiTile,
+  MIN_N_FOR_SCORE,
   ScrollableChart,
   boundedDomainNote,
   buildSource,
   lineOpts,
+  scatterOpts,
   stackedBarOpts,
 } from "../chartKit";
 import { LearnerSkillPanel } from "../LearnerSkillPanel";
@@ -30,13 +36,19 @@ import {
   trendMixTakeaway,
 } from "../skillGrowthChart";
 import {
+  COMPETENCY_SCALE,
   SKILL_GROWTH_VARIANTS,
+  SCORE_DOMAIN,
   SkillGrowthVariant,
   SKILL_GROWTH_SCALE,
+  buildCompetencyScatter,
   buildSkillGrowthSeries,
+  competencyTakeaway,
+  formatCount,
   ordinalLabel,
   plottableOrdinals,
   skillGrowthTakeaway,
+  suppressedCompetencies,
 } from "../testingChart";
 
 const PAGE_SIZE = 20;
@@ -50,7 +62,7 @@ const SORT_ITEMS: { id: NonNullable<SkillGrowthLearnersQuery["sort"]>; label: st
 /**
  * Skill growth — does practising on this platform make people better?
  *
- * Three altitudes of ONE question, which is why they share a sub-tab rather
+ * Four altitudes of ONE question, which is why they share a sub-tab rather
  * than being scattered across Highlights:
  *
  *  1. **The curve** — the population's median score at each learner's Nth
@@ -60,7 +72,11 @@ const SORT_ITEMS: { id: NonNullable<SkillGrowthLearnersQuery["sort"]>; label: st
  *     while another slides nets out of it entirely, and a platform where half
  *     improve and half decline draws the same flat line as one where nobody
  *     changes.
- *  3. **The learner** — one person's timeline, opened from the list.
+ *  3. **The competencies** — which skills the practice is actually landing on,
+ *     volume against proficiency. The curve says whether people improve; this
+ *     says at what, and a high-volume low-score competency is the one finding
+ *     here that a content owner can act on directly.
+ *  4. **The learner** — one person's timeline, opened from the list.
  *
  * ## Self against self, never learner against learner
  *
@@ -90,6 +106,9 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const growth = useGetSkillGrowthQuery(tenantOnly);
+  // All-time like the curve, and for the same reason: a competency total is a
+  // lifetime count of practice, not a figure a window would narrow.
+  const competencyMap = useGetCompetencyMapQuery(tenantOnly);
   const learners = useGetSkillGrowthLearnersQuery({
     tenantId,
     limit: PAGE_SIZE,
@@ -107,6 +126,20 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
     [data?.ordinals, variant],
   );
   const mixSeries = useMemo(() => buildTrendMixSeries(mix?.months ?? []), [mix?.months]);
+
+  const cm = competencyMap.data;
+  const competencyPoints = useMemo(() => buildCompetencyScatter(cm?.competencies ?? []), [cm]);
+  const competencyHeld = useMemo(() => suppressedCompetencies(cm?.competencies ?? []), [cm]);
+  const competencyOpts = useMemo(
+    () =>
+      scatterOpts({
+        leftTitle: "Median composite score",
+        bottomTitle: "Completed sessions",
+        colorScale: COMPETENCY_SCALE,
+        domain: SCORE_DOMAIN,
+      }),
+    [],
+  );
 
   const curveOpts = useMemo(
     () =>
@@ -256,9 +289,44 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
             <StackedBarChart data={mixSeries} options={mixOpts} />
           </ScrollableChart>
         </ChartCard>
+
+        {/* 3. WHERE the practice is landing. The curve and the mix say whether
+            people improve; this says at what, which is the question a content
+            owner acts on. Wide, because a scatter needs the room to separate
+            its points. */}
+        <ChartCard
+          wide
+          title="Competency map — volume against proficiency"
+          caption={`One point per competency: how much it is practised, against how well it scores. High volume with a low score is a teaching gap; low volume is a coverage gap. Points are one colour on purpose — colour by identity here would encode nothing — so the expanded table names them.${
+            competencyHeld.length > 0
+              ? ` ${competencyHeld.length} competenc${competencyHeld.length === 1 ? "y is" : "ies are"} not plotted: fewer than ${cm?.minSampleSize ?? MIN_N_FOR_SCORE} evaluated sessions.`
+              : ""
+          }`}
+          source={buildSource({
+            derivation:
+              "Completed sessions and median score per competency, via the scenario's tags",
+            window: "All time",
+            n: cm?.summary.evaluatedSessions,
+            nUnit: "evaluated sessions",
+            extra:
+              cm && cm.unattributed.completedSessions > 0
+                ? `${formatCount(cm.unattributed.completedSessions)} sessions ran scenarios with no competency tagged and are excluded`
+                : undefined,
+            asOf: asOfStamp(cm?.computedAt),
+          })}
+          takeaway={competencyTakeaway(cm?.competencies ?? [])}
+          loading={competencyMap.isLoading && !cm}
+          error={competencyMap.isError}
+          onRetry={competencyMap.refetch}
+          empty={!competencyMap.isLoading && competencyPoints.length === 0}
+          emptyText={`No competency yet has ${cm?.minSampleSize ?? MIN_N_FOR_SCORE} evaluated sessions`}
+          onExpand={() => setExpanded("competency")}
+        >
+          <ScatterChart data={competencyPoints} options={competencyOpts} />
+        </ChartCard>
       </div>
 
-      {/* 3. The learner list — the drill-down. */}
+      {/* 4. The learner list — the drill-down. */}
       <ChartCard
         title="Learners"
         caption="Every learner with an evaluated session, and how their own scores moved. Select a learner for their full timeline. No cross-learner ranking is shown — the movement is always against that person's own first sessions."
@@ -435,6 +503,63 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
         }}
         exportContext={[data?.provenance.note ?? ""]}
         exportFilename="skill-growth-learners"
+      />
+
+      <ChartDetailModal
+        open={expanded === "competency"}
+        onClose={() => setExpanded(null)}
+        title="Competency map — volume against proficiency"
+        caption="The table is where the points get their names. A scenario tagged with several competencies counts towards each, so the session column can sum to more than the platform total."
+        source={buildSource({
+          derivation: "Completed sessions and median score per competency",
+          window: "All time",
+          n: cm?.summary.evaluatedSessions,
+          nUnit: "evaluated sessions",
+          asOf: asOfStamp(cm?.computedAt),
+        })}
+        render={({ height }) => (
+          <ScatterChart data={competencyPoints} options={{ ...competencyOpts, height }} />
+        )}
+        table={{
+          columns: [
+            "Competency",
+            "Completed sessions",
+            "Evaluated",
+            "Median score",
+            "Learners",
+            "Scenarios",
+          ],
+          rows: [
+            ...(cm?.competencies ?? []).map(r => [
+              r.name,
+              r.completedSessions,
+              r.evaluatedSessions,
+              r.belowFloor
+                ? `n = ${r.evaluatedSessions} · need ${cm?.minSampleSize}`
+                : r.medianScore,
+              r.learners,
+              r.scenarios,
+            ]),
+            ...(cm && cm.unattributed.completedSessions > 0
+              ? [
+                  [
+                    cm.unattributed.label,
+                    cm.unattributed.completedSessions,
+                    cm.unattributed.evaluatedSessions,
+                    null,
+                    null,
+                    null,
+                  ],
+                ]
+              : []),
+          ],
+        }}
+        exportContext={[
+          "Window: All time",
+          `Median score is blank below ${cm?.minSampleSize ?? MIN_N_FOR_SCORE} evaluated sessions`,
+          "Multi-competency scenarios count towards every competency they are tagged with",
+        ]}
+        exportFilename="competency-map"
       />
 
       <LearnerSkillPanel learnerId={openLearner} onClose={() => setOpenLearner(null)} />
