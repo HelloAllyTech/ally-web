@@ -9,6 +9,7 @@ import { AccessFilterValue, SimulationStatus, TrackListItem } from "@types";
 import { isNonEmptyArray, toAssignmentStatus } from "@utils";
 
 import { AccessFilter } from "./AccessFilter";
+import { useCohortRestrictions } from "./useCohortRestrictions";
 
 const COURSES_PAGE_SIZE = 30;
 
@@ -33,6 +34,11 @@ export const CoursesTab: FC<CoursesTabProps> = ({
   const [coursesOffset, setCoursesOffset] = useState(0);
   const [courses, setCourses] = useState<TrackListItem[]>([]);
   const [accessFilter, setAccessFilter] = useState<AccessFilterValue>(AccessFilterValue.ALL);
+
+  // Group targeting sits on top of the tenant assignment this tab manages: the
+  // toggle decides whether the org has the course at all, the pill narrows it
+  // to some of the org's people.
+  const { renderRestrictionCell } = useCohortRestrictions(organizationId ?? "", "track");
 
   const handleToggleAccess = async (trackId: string, enabled: boolean) => {
     setCourses(prev =>
@@ -148,6 +154,9 @@ export const CoursesTab: FC<CoursesTabProps> = ({
 
         {/* Toggle and Status */}
         <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
+          {/* Only for assigned rows: restricting content the org does not have
+              would be a control with nothing to act on. */}
+          {course.isAssignedToTenant ? renderRestrictionCell(course.id, course.title) : null}
           <ToggleSwitch
             enabled={course.isAssignedToTenant ?? false}
             onChange={enabled => handleToggleAccess(course.id, enabled)}

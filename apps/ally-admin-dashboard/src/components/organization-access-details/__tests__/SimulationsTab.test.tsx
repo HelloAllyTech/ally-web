@@ -6,12 +6,22 @@ import { AssignmentStatus, Simulation } from "@types";
 
 import { SimulationsTab } from "../SimulationsTab";
 
-const { mockUseGetSimulationsQuery } = vi.hoisted(() => ({
-  mockUseGetSimulationsQuery: vi.fn(),
-}));
+// The cohort queries back the per-row group-targeting pill. Defaulted to an
+// empty tenant here so these tests keep asserting the tab itself; the pill has
+// its own test in CohortRestrictionCell.test.tsx.
+const { mockUseGetSimulationsQuery, mockUseGetCohortsQuery, mockUseGetCohortRestrictionsQuery } = vi.hoisted(
+  () => ({
+    mockUseGetSimulationsQuery: vi.fn(),
+    mockUseGetCohortsQuery: vi.fn(() => ({ data: undefined })),
+    mockUseGetCohortRestrictionsQuery: vi.fn(() => ({ data: undefined })),
+  }),
+);
 
 vi.mock("@api", () => ({
   useGetSimulationsQuery: mockUseGetSimulationsQuery,
+  useGetCohortsQuery: mockUseGetCohortsQuery,
+  useGetCohortRestrictionsQuery: mockUseGetCohortRestrictionsQuery,
+  useSetCohortRestrictionsMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 vi.mock("@components", () => ({
