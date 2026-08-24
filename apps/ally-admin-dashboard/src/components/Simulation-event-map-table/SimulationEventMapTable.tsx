@@ -33,6 +33,7 @@ import {
   MAPPED_EVENT_FIELDS,
   isNonEmptyString,
   addScoreColors,
+  getErrorMessage,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
@@ -373,13 +374,15 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     return addScoreColors(sortMappedEvents);
   }, [sortMappedEvents]);
 
-  // Helper function to save events to API
+  // Helper function to save events to API. Returns whether the save succeeded
+  // so callers that applied an optimistic local update can roll it back on
+  // failure instead of leaving state that was never actually persisted.
   const saveEventsToApi = useCallback(
-    async (events: UpdateScenarioEventDataParam[]) => {
-      if (!simulationId) return;
+    async (events: UpdateScenarioEventDataParam[]): Promise<boolean> => {
+      if (!simulationId) return true;
       // Version mode persists through onVersionEventsChange (see effect above);
       // never write event changes to the live scenario.
-      if (versionId) return;
+      if (versionId) return true;
       const apiEvents = convertToApiFormat(events);
       isSavingRef.current = true;
       try {
@@ -387,11 +390,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
           scenarioId: Number(simulationId),
           events: apiEvents,
         });
-        if (response?.error?.data?.message) {
-          toast.error(response.error.data.message || en.errors.failedToSaveEvents);
+        if (response?.error) {
+          toast.error(getErrorMessage(response.error, en.errors.failedToSaveEvents));
+          return false;
         }
+        return true;
       } catch {
         toast.error(en.errors.failedToSaveEvents);
+        return false;
       } finally {
         isSavingRef.current = false;
       }
@@ -586,18 +592,26 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         return;
       }
 
-      // Add events to the beginning of mappedEvents array
+      // Keep the pre-add snapshot so we can roll back if the save fails —
+      // the mapScenarioEvents call persists the whole batch in one request,
+      // so a failure means none of these events were actually saved.
+      const previousEvents = mappedEvents;
       const updatedEvents = [...events, ...mappedEvents];
       setMappedEvents(updatedEvents);
 
-      // Save to API
-      await saveEventsToApi(events);
-
-      // Close panel
+      // Close panel optimistically; on failure we reopen state via the toast,
+      // but keep the panel closed so the admin isn't stuck mid-flow.
       setIsBulkAddPanelOpen(false);
 
-      // Show success message
-      toast.success(en.simulation.bulkAddSuccess(events.length));
+      const saved = await saveEventsToApi(events);
+
+      if (saved) {
+        toast.success(en.simulation.bulkAddSuccess(events.length));
+      } else {
+        // Roll back the optimistic insert — none of the batch persisted.
+        setMappedEvents(previousEvents);
+        toast.error(en.errors.failedToBulkAddEvents(events.length));
+      }
     },
     [mappedEvents, saveEventsToApi],
   );

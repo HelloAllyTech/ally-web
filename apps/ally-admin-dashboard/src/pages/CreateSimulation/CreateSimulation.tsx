@@ -925,6 +925,22 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     return () => clearInterval(interval);
   }, []);
 
+  // Browser-level unsaved-changes guard (in addition to the in-app discard
+  // popup). Background autosave above closes most of the gap, but only runs
+  // every AUTOSAVE_INTERVAL_MS — a real tab close in between still lost
+  // whatever changed since the last tick with no warning at all. Mirrors
+  // CreateTrack.tsx's guard.
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!viewMode && Object.keys(dirtyFields).length > 0) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [viewMode, dirtyFields]);
+
   // Note: a brand-new roleplay is NOT persisted on mount. Nothing is saved until
   // the user actually edits a field — at which point the interval autosave above
   // (gated on `dirtyFields`) picks it up. A draft saved without an explicit title

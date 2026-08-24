@@ -22,6 +22,7 @@ import {
   BUG_FINDING_DESCRIPTION_MAX_LENGTH,
   BUG_FINDING_FIX_SESSION_START_STATUSES,
   BugFindingStatus,
+  BugHuntEventStage,
 } from "@types";
 import { formatDateTime, formatTimestamp } from "@utils";
 
@@ -135,6 +136,14 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   // An absent array means the same thing as an empty one here, so treat it so.
   const steps = finding?.steps ?? [];
   const events = finding?.events ?? [];
+
+  // A plain fix-session FAILED carries no reason field of its own — unlike
+  // RELEASE_FAILED, which has a dedicated banner reading `releaseTag`, the
+  // failure text only ever lands as an ERROR-stage timeline event (see
+  // ally-be's BugFixSessionService). Events are returned oldest-first, so the
+  // last ERROR entry is the one that actually explains this state.
+  const latestFailureReason = [...events].reverse().find(event => event.stage === BugHuntEventStage.ERROR)
+    ?.summary;
 
   const inFlight = finding
     ? IN_FLIGHT_STATUSES.includes(finding.status) ||
@@ -499,6 +508,14 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
           {finding.status === BugFindingStatus.RELEASE_FAILED && (
             <p className="text-sm text-destructive-700 bg-destructive-50 border border-destructive-200 rounded p-3">
               {en.bugHunter.drawerReleaseFailedNotice.replace("{tag}", finding.releaseTag ?? "—")}
+            </p>
+          )}
+          {/* A plain fix-session failure used to surface only as buried
+              timeline text — promoted to the same dedicated-banner treatment
+              RELEASE_FAILED gets, since both are "this needs a look" states. */}
+          {finding.status === BugFindingStatus.FAILED && (
+            <p className="text-sm text-destructive-700 bg-destructive-50 border border-destructive-200 rounded p-3">
+              {latestFailureReason || en.bugHunter.drawerFixSessionFailedNotice}
             </p>
           )}
           {finding.status === BugFindingStatus.QUEUED && (

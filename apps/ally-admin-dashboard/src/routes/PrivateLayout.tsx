@@ -18,6 +18,7 @@ import {
   OrgToggle,
   Permissions,
   UserRole,
+  en,
   normalizeEmailForAllowlist,
 } from "@constants";
 import { setUser, setPermissions, setFeatures } from "@reducer";
@@ -108,12 +109,18 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // role (e.g. SUPER_ADMIN) — or any one of a set of roles (e.g. the super-admin
   // tier: [SUPER_ADMIN, SUPER_DUPER_ADMIN]) — regardless of the permission set.
   // Routes that pass no requiredRole stay backward compatible (hasRole stays true).
+  //
+  // Gated on `userData?.roles` (the additive array), never the singular
+  // `role` — the backend collapses that field to one value by a priority
+  // list that omits some roles, which misreports exactly the multi-role
+  // accounts a role-gated route is most likely to matter for.
   if (!isUserLoading) {
+    const userRoles = userData?.roles ?? [];
     hasRole =
       !requiredRole ||
       (Array.isArray(requiredRole)
-        ? requiredRole.includes(userData?.role as UserRole)
-        : userData?.role === requiredRole);
+        ? requiredRole.some(role => userRoles.includes(role))
+        : userRoles.includes(requiredRole));
   }
 
   // Feature-toggle gating. `features` defaults to `[]` while still loading or
@@ -157,6 +164,19 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   const hasAccess =
     hasPermission && (hasRole || hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
 
+  // Every gate used to read as identical generic copy on AccessDenied. Order
+  // matters here roughly by how "fixable by the viewer" each cause is: an
+  // allowlist miss and a missing permission are both dead ends for this
+  // account specifically, while the role/feature/org-toggle trio failing
+  // together usually means the surface just isn't turned on yet.
+  const accessDeniedReason = !hasAccess
+    ? !hasPermission
+      ? en.accessDenied.reasonMissingPermission
+      : !hasAllowedEmail
+        ? en.accessDenied.reasonNotAllowlisted
+        : en.accessDenied.reasonMissingRoleOrToggle
+    : undefined;
+
   // The preview routes render bare, with no shell to preserve — but a crash
   // there used to blank the page just the same, so they get the barrier too.
   if (hasAccess && isPreview) return <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>;
@@ -181,7 +201,11 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
               sidebar, the nav and their way out of it. */}
           <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
             <ErrorBoundary resetKey={pathname}>
-              {hasAccess ? children : <AccessDenied />}
+              {hasAccess ? (
+                children
+              ) : (
+                <AccessDenied reason={accessDeniedReason} nextStep={en.accessDenied.nextStepContactAdmin} />
+              )}
             </ErrorBoundary>
           </div>
         </main>

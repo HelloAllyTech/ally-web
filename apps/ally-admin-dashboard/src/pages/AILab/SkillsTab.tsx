@@ -15,6 +15,7 @@ import { ButtonVariant } from "@components/types";
 import { en, DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS } from "@constants";
 import { LabSkill } from "@types";
 
+import { AiLabErrorState } from "./AiLabErrorState";
 import { LabSidePanel, LabField } from "./LabSidePanel";
 import { LabTable, LabTableColumn } from "./LabTable";
 
@@ -31,7 +32,12 @@ const EMPTY_FORM = {
 
 export const SkillsTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useGetLabSkillsQuery({ search: search || undefined });
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetLabSkillsQuery({ search: search || undefined });
   const skills = data?.items ?? [];
 
   const [createSkill] = useCreateLabSkillMutation();
@@ -189,6 +195,8 @@ export const SkillsTab: React.FC = () => {
       <div className="mt-5">
         {isLoading ? (
           <p className="text-typography-600 py-8 text-center">{en.common.loading}</p>
+        ) : isError ? (
+          <AiLabErrorState message={en.aiLab.skills.loadFailed} onRetry={refetch} />
         ) : skills.length === 0 ? (
           <EmptyState
             title={en.aiLab.skills.empty}

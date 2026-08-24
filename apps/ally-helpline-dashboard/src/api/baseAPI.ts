@@ -18,25 +18,54 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES } from "@constants";
 import { RefreshResponse } from "@types";
 
 // Environment variables for API configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 /**
- * Handles user logout by clearing tokens, cache, and redirecting to login
+ * Where to send the learner back to once they sign in again. Captured from
+ * the current URL at the moment logout fires, so a session expiry mid-quiz
+ * or mid-simulation lands them back on the same item instead of the
+ * dashboard home. Never points at the login page itself.
+ */
+export const buildReturnTo = (): string | null => {
+  const { pathname, search } = window.location;
+  if (pathname === ROUTES.LOGIN) return null;
+  return `${pathname}${search}`;
+};
+
+/**
+ * Handles user logout by clearing tokens, cache, and redirecting to login.
+ *
+ * This is a hard `window.location.href` redirect (not a router navigation),
+ * which is a full reload that drops all in-memory React/Redux state — so
+ * every caller reaches this from a place where that state is already
+ * unrecoverable (the refresh token itself was rejected). What it can still
+ * do is tell the learner *why* they landed back on the login screen instead
+ * of silently reloading there, and hand the login page a `returnTo` so a
+ * successful re-login sends them back to what they were doing rather than
+ * the dashboard home. (Component-level state, e.g. a quiz attempt in
+ * progress, needs its own recovery — see the sessionStorage snapshot in
+ * `QuizItemPlayer`/`AnnotationItemPlayer` via `itemProgressStorage`.)
  *
  * @function handleLogout
  * @returns {void}
  */
-const handleLogout = () => {
+export const handleLogout = () => {
   // Clear tokens
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
 
-  // Redirect to login
-  window.location.href = "/login";
+  const params = new URLSearchParams();
+  params.set("sessionExpired", "1");
+  const returnTo = buildReturnTo();
+  if (returnTo) params.set("returnTo", returnTo);
+
+  // Redirect to login. Login.tsx reads `sessionExpired` to toast an
+  // explanation and `returnTo` to navigate there after a successful sign-in.
+  window.location.href = `${ROUTES.LOGIN}?${params.toString()}`;
 };
 
 /**

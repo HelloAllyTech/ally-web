@@ -103,6 +103,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const {
     data: callLogsData,
     isLoading: isCallLogsLoading,
+    isError: isCallLogsError,
     refetch: refetchCallLogs,
     error: callLogsError,
   } = useGetAdminCallLogsQuery(
@@ -113,6 +114,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
+    isError: isSimulationLogsError,
     refetch: refetchSimulationLogs,
   } = useGetAdminSimulationLogsQuery(
     { ...filters, sortBy: "createdAt", order: "DESC", languageCode: i18n.language },
@@ -125,6 +127,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
+  const isError = isCall ? isCallLogsError : isSimulationLogsError;
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -216,6 +219,30 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
+      </div>
+    );
+  }
+
+  // A fetch failure must not be indistinguishable from "no calls yet" — the
+  // counsellor needs to know the difference and get a way back in, not a
+  // table that silently looks empty.
+  if (isError && !isLoading) {
+    const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
+    return (
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={
+            isCall ? t("calls.fallback.callErrorTitle") : t("calls.fallback.simErrorTitle")
+          }
+          description={
+            isCall ? t("calls.fallback.callErrorDesc") : t("calls.fallback.simErrorDesc")
+          }
+          button={{
+            text: t("common.retry"),
+            onClick: () => refetchFn?.(),
+          }}
+        />
       </div>
     );
   }

@@ -204,12 +204,16 @@ export const UsageDashboard: React.FC = () => {
           description={en.whatsappBot.usage.inboundHelp}
           value={count(stats?.inbound)}
           loading={overview.isLoading}
+          error={overview.isError}
+          onRetry={overview.refetch}
         />
         <KpiTile
           label={en.whatsappBot.usage.uniqueContacts}
           description={en.whatsappBot.usage.contactsHelp}
           value={count(stats?.uniqueContacts)}
           loading={overview.isLoading}
+          error={overview.isError}
+          onRetry={overview.refetch}
         />
         <KpiTile
           label={en.whatsappBot.usage.declineRate}
@@ -222,6 +226,8 @@ export const UsageDashboard: React.FC = () => {
           minN={MIN_N_FOR_SCORE}
           higherIsBetter={false}
           loading={overview.isLoading}
+          error={overview.isError}
+          onRetry={overview.refetch}
         />
         <KpiTile
           label={en.whatsappBot.usage.latency}
@@ -231,6 +237,8 @@ export const UsageDashboard: React.FC = () => {
           description={`p95 ${seconds(stats?.latencyP95Ms)}`}
           higherIsBetter={false}
           loading={overview.isLoading}
+          error={overview.isError}
+          onRetry={overview.refetch}
         />
       </div>
 

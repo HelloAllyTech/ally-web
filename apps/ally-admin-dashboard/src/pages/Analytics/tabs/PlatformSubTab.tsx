@@ -477,6 +477,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(overviewSummary?.totalUsers),
       spark: kpiSparks.cumulative,
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Active users",
@@ -484,6 +486,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         "Distinct people who have started at least one simulation — started, not necessarily finished.",
       value: formatKpi(overviewSummary?.activeUsers),
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Active orgs",
@@ -491,6 +495,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         "Organisations with at least one completed simulation. An org that only browsed does not count.",
       value: formatKpi(summary?.activeOrgs),
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Completed sims",
@@ -499,6 +505,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.completedSimulations),
       spark: kpiSparks.sims,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Practice minutes",
@@ -507,6 +515,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.practiceMinutes),
       spark: kpiSparks.practice,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Avg quality score",
@@ -524,6 +534,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       nUnit: "evaluated sessions",
       minN: MIN_N_FOR_SCORE,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Avg rating",
@@ -534,6 +546,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       minN: MIN_N_FOR_SCORE,
       spark: kpiSparks.csat,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "AI cost / sim",
@@ -546,6 +560,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.costPerCompletedSimUsd, { prefix: "$", decimals: 2 }),
       spark: kpiSparks.costPerSim,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
   ];
 
@@ -815,6 +831,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           ).toLowerCase()}. The north-star metric: people reaching value, not sessions played.`}
           value={formatCount(a?.summary.latestPractisingLearners)}
           loading={busy(activation)}
+          error={activation.isError}
+          onRetry={activation.refetch}
         />
         <KpiTile
           label="Activation rate"
@@ -823,6 +841,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           n={a?.summary.registeredLearners}
           nUnit="learner accounts"
           loading={busy(activation)}
+          error={activation.isError}
+          onRetry={activation.refetch}
         />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -1015,18 +1035,24 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             description="LEARNER-role accounts created, all-time — the KPI strip above counts every role."
             value={formatCount(lk?.summary.totalLearners)}
             loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
           />
           <KpiTile
             label="Active learners"
             description="Distinct learners with >=1 completed session, all-time."
             value={formatCount(lk?.summary.activeLearners)}
             loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
           />
           <KpiTile
             label="Completed sessions"
             description="Completed sessions attributed to learners, all-time."
             value={formatCount(lk?.summary.totalCompletedSessions)}
             loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
           />
         </div>
 

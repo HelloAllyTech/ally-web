@@ -107,9 +107,25 @@ export const useSpecAutosave = ({ step }: { step?: string } = {}) => {
     }
   }, [step, saveNow]);
 
-  // Best-effort flush when the tab closes / reloads.
+  // Browser-level unsaved-changes guard, mirroring CreateTrack's pattern —
+  // plus a best-effort flush. Previously this handler fired `saveNow()` but
+  // never called `preventDefault()`/set `returnValue`, so no native "leave
+  // site?" dialog ever appeared: a real tab close lost up to
+  // AUTOSAVE_INTERVAL_MS of edits with zero warning, and the PUT it kicked
+  // off had no `keepalive`, so the browser could tear it down mid-flight
+  // anyway (see the `keepalive: true` on saveRoleplayDraft's query).
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      const state = stateRef.current;
+      const hasUnsavedChanges =
+        Boolean(state.spec) &&
+        Boolean(state.specId) &&
+        !state.isStreaming &&
+        state.revision > state.savedRevision;
+      if (hasUnsavedChanges) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
       void saveNow();
     };
     window.addEventListener("beforeunload", handleBeforeUnload);

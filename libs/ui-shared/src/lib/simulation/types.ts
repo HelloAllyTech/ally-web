@@ -83,6 +83,17 @@ export interface SimulationTranslations {
    * the learner never reads "Supervisor" as a person listening in. */
   supervisorAiLabel?: string;
   supervisorAiTooltip?: string;
+  /** Connection-failure and reconnect copy. Optional so existing consumers
+   * (admin previews) compile without providing them; each has an English
+   * fallback at the render site. */
+  connectionFailedTitle?: string;
+  connectionFailedMessage?: string;
+  agentNotJoinedTitle?: string;
+  agentNotJoinedMessage?: string;
+  retryConnection?: string;
+  exitSimulation?: string;
+  reconnecting?: string;
+  missedSupervisorHints?: string;
   turnIndicator: TurnIndicatorTranslations;
 }
 
@@ -202,6 +213,16 @@ export interface SimulationPageProps {
   score?: number;
   roomStatus: RoomStatus;
   isPreview?: boolean;
+  /**
+   * Connection/agent failure state, forwarded straight to SimulationInterface.
+   * All optional: a consumer that doesn't pass them (the admin preview) simply
+   * never shows the failure UI, exactly as before.
+   */
+  connectionError?: string | null;
+  agentJoinTimedOut?: boolean;
+  onRetryConnection?: () => void;
+  onExitSimulation?: () => void;
+  missedSupervisorNoteCount?: number;
   onEndSimulation: () => Promise<void> | void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;

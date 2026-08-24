@@ -19,7 +19,7 @@ import { en, USER_BADGES_TABLE_COLUMNS } from "@src/constants";
 import { useDebounce } from "@src/hooks";
 import TableSkeleton from "@src/pages/UserBadges/TableSkeleton";
 import { BadgeCategory, UserBadge, UserBadgeFilters } from "@src/types";
-import { formatDate } from "@src/utils";
+import { formatDate, getErrorMessage } from "@src/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const BADGES_PAGE_LIMIT = 10;
@@ -126,11 +126,23 @@ export const UserBadges = () => {
   const handleConfirmDeleteBadges = useCallback(async () => {
     try {
       const badgeIds = selectedBadges.map(badge => badge.id);
-      await batchDeleteBadges(badgeIds);
+      // batchDeleteBadges is an RTK Query mutation trigger: it resolves with
+      // {data, error} rather than throwing on a server-side failure, so the
+      // previous code's try/catch never caught a real API error — it always
+      // reported success and stripped the rows from the list regardless of
+      // what the server actually did.
+      const result = await batchDeleteBadges(badgeIds);
       setShowDeleteBadgesConfirmation(false);
-      setSelectedBadges([]);
-      toast.success(en.badge.badgesDeletedSuccessfully);
-      setAllBadges(prev => prev.filter(badge => !badgeIds.includes(badge.id)));
+      if (!("error" in result) || !result.error) {
+        setSelectedBadges([]);
+        setAllBadges(prev => prev.filter(badge => !badgeIds.includes(badge.id)));
+        toast.success(en.badge.badgesDeletedSuccessfully);
+      } else {
+        // Backend deletes badges in a single transaction (all-or-nothing), so
+        // there is no per-item result to report here — the selection is left
+        // intact so the admin can retry.
+        toast.error(getErrorMessage(result.error, en.errors.failedToDeleteBadges));
+      }
     } catch {
       toast.error(en.errors.failedToDeleteBadges);
     }

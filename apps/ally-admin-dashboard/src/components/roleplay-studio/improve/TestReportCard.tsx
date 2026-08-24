@@ -123,6 +123,28 @@ export const TestReportCard: React.FC<TestReportCardProps> = ({
         </span>
       );
     }
+    // The list endpoint deliberately omits judgeNotes/testResult (it's a
+    // poll-friendly summary row — see RoleplayTestReportListItem), so a FAILED
+    // report's actual reason (e.g. the judge LLM call falling back) isn't
+    // available here. It IS captured and already rendered by
+    // TestReportDetail once expanded, so surface a path to it instead of
+    // leaving "Failed" as a dead end — consistent with how the auto-improve
+    // lifecycle below links its own failure to `improveMeta.error`.
+    if (report.status === RoleplayTestReportStatus.FAILED && !expanded) {
+      return (
+        <span className="flex items-center gap-2 text-xs text-typography-500">
+          {strings.statusFailed}
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="text-primary-600 underline hover:text-primary-700"
+          >
+            {strings.viewFailureReason}
+          </button>
+        </span>
+      );
+    }
+
     return (
       <span className="text-xs text-typography-500">
         {report.status === RoleplayTestReportStatus.FAILED

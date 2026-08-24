@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useGetLearnTrackDetailQuery, useStartTrackItemMutation } from "@api";
+import { NoResults } from "@assets";
+import { FallbackUI } from "@components";
+import { ErrorBoundary } from "@components/error-boundary/ErrorBoundary";
 import { ROUTES } from "@constants";
 import {
   StartTrackItemResponse,
@@ -36,7 +39,11 @@ export const TrackPlayer: FC = () => {
   const navigate = useNavigate();
   const { trackId = "", itemId = "" } = useParams<{ trackId: string; itemId: string }>();
 
-  const { data: track } = useGetLearnTrackDetailQuery({ trackId }, { skip: !trackId });
+  const {
+    data: track,
+    isError: isTrackError,
+    refetch: refetchTrack,
+  } = useGetLearnTrackDetailQuery({ trackId }, { skip: !trackId });
   const [startTrackItem] = useStartTrackItemMutation();
 
   // Items completed in this player session (drives Next gating optimistically).
@@ -203,6 +210,24 @@ export const TrackPlayer: FC = () => {
     f => f.item.status === TrackItemStatus.COMPLETED || justCompleted.has(f.item.id),
   ).length;
 
+  // The track detail fetch backs everything below (nav.current, section
+  // titles, progress) — on failure there is no partial view worth showing,
+  // so the whole player screen is replaced with a retry state rather than
+  // leaving the per-item spinner (renderItem's own fallback) spinning
+  // forever with nothing to trigger a refetch.
+  if (isTrackError) {
+    return (
+      <div className="fixed inset-0 z-40 flex h-[100dvh] w-full items-center justify-center bg-white font-primary">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={t("tracks2.player.trackLoadFailed")}
+          description={t("tracks2.player.trackLoadFailedDescription")}
+          button={{ text: t("tracks2.player.retry"), onClick: refetchTrack }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex h-[100dvh] w-full flex-col bg-white font-primary">
       <PlayerTopBar
@@ -231,7 +256,9 @@ export const TrackPlayer: FC = () => {
             }}
             className="h-full min-h-0"
           >
-            {renderItem()}
+            <ErrorBoundary variant="panel" resetKey={itemId}>
+              {renderItem()}
+            </ErrorBoundary>
           </motion.div>
         </AnimatePresence>
       </div>

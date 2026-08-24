@@ -66,10 +66,8 @@ export const PostSimulationSummary: FC = () => {
     { sessionId: sessionId ?? "", languageCode: i18n.language },
     { skip: !sessionId },
   );
-  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
-    sessionId,
-    i18n.language,
-  );
+  const { summaryData, retryMaxReached, isShortSession, checkAgain, isCheckingAgain } =
+    useSimulationSummaryPolling(sessionId, i18n.language);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
   const nextChallenge = useNextChallenge(summary);
@@ -128,6 +126,8 @@ export const PostSimulationSummary: FC = () => {
                 sessionId={sessionId ?? ""}
                 summaryData={summaryData}
                 retryMaxReached={retryMaxReached}
+                checkAgain={checkAgain}
+                isCheckingAgain={isCheckingAgain}
                 // Anchors only become chips when there is a transcript tab to
                 // open; otherwise they render as plain prose.
                 onOpenMoment={feedbackTabs.transcript ? handleOpenMoment : undefined}

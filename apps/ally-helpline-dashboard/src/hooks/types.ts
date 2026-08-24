@@ -31,6 +31,13 @@ export interface SupervisorNote {
 
 export interface UseLiveKitRoomReturn {
   error: string | null;
+  /** The room connected but no agent participant ever joined within the cap. */
+  agentJoinTimedOut: boolean;
+  /**
+   * How many supervisor hints the `seq` numbers prove never arrived (a gap,
+   * e.g. seq 5 then seq 8). Distinct from de-dup, which handles a redelivery.
+   */
+  missedSupervisorNoteCount: number;
   events: LiveKitEvent[];
   handleRetryConnection: () => void;
   room: Room;

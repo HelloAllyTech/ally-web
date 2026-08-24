@@ -11,6 +11,7 @@ import { RootState } from "@store";
 import { ChatMessagePayload, SimulationSummary as SimulationSummaryType } from "@types";
 
 import { DebriefReplyInput } from "./DebriefReplyInput";
+import { getDebriefViewState } from "./debriefViewState";
 import { SupervisorNote } from "./SupervisorNote";
 
 const NoteSkeleton = () => (
@@ -56,6 +57,10 @@ interface DebriefTabProps {
   /** True once polling gave up — used to stop showing "still writing". */
   retryMaxReached: boolean;
   onOpenMoment?: (messageId: string) => void;
+  /** Ask the polling hook to check again after it has given up. */
+  checkAgain?: () => void;
+  /** True while a manual `checkAgain` is in flight. */
+  isCheckingAgain?: boolean;
 }
 
 /**
@@ -69,6 +74,8 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   summaryData,
   retryMaxReached,
   onOpenMoment,
+  checkAgain,
+  isCheckingAgain = false,
 }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -103,9 +110,14 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   const summary = summaryData?.details?.summary;
   const note = summary?.feedback?.supervisorNote;
   const errorMessage = summary?.errorMessage;
-  // Nothing has landed yet and polling is still going: the evaluation runs
-  // asynchronously after the session ends, so "empty" here means "not yet".
-  const isGenerating = !note && !errorMessage && !retryMaxReached;
+  const hasFeedback = Boolean(summary?.feedback);
+  // See debriefViewState.ts for why this is a dedicated function rather than
+  // a chain of booleans: "generation failed" and "this session predates the
+  // debrief feature" used to collapse into the same permanent-looking
+  // message, and a poll timeout used to mean "failed" here while meaning
+  // "still working, ask again later" in the toast the poll itself showed.
+  const viewState = getDebriefViewState({ note, hasFeedback, errorMessage, retryMaxReached });
+  const isGenerating = viewState === "generating";
 
   return (
     <div className="flex w-full flex-col rounded-lg bg-gradient-to-br from-primary-500 to-primary-100 p-1">
@@ -126,12 +138,38 @@ export const DebriefTab: FC<DebriefTabProps> = ({
                 <span className="text-typography-600">{t("postSim.debrief.generatingHint")}</span>
               </p>
             </div>
-          ) : note ? (
+          ) : viewState === "note" ? (
             <SupervisorNote note={note} onOpenMoment={onOpenMoment} />
+          ) : viewState === "timedOut" ? (
+            // Not a failure: the summary is likely still being written for a
+            // longer session. Say so, and let the learner ask again instead
+            // of leaving them stuck behind a permanent-looking dead end.
+            <div className="flex flex-col gap-3">
+              <p className="font-primary text-base text-typography-800">
+                {t("postSim.debrief.stillWorking")}
+              </p>
+              {checkAgain && (
+                <button
+                  onClick={checkAgain}
+                  disabled={isCheckingAgain}
+                  className="flex w-fit items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-2.5 font-primary text-sm text-primary-600 transition-colors hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Refresh className="h-4 w-4" />
+                  {isCheckingAgain
+                    ? t("postSim.debrief.checkingAgain")
+                    : t("postSim.debrief.checkAgain")}
+                </button>
+              )}
+            </div>
+          ) : viewState === "notAvailable" ? (
+            // Feedback generated fine — this session simply predates the
+            // debrief-note feature (or has it switched off). Nothing failed,
+            // so this must not read like "failed".
+            <p className="font-primary text-base text-typography-800">
+              {t("postSim.debrief.notAvailable")}
+            </p>
           ) : (
-            // Generation failed, or this session predates the debrief note.
-            // Say so plainly rather than showing an empty panel — the learner
-            // should never be left wondering whether feedback is still coming.
+            // viewState === "failed": the backend recorded an actual error.
             <p className="font-primary text-base text-typography-800">
               {errorMessage || t("postSim.debrief.failed")}
             </p>

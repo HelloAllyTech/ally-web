@@ -164,7 +164,23 @@ export const useStartSimulation = (
         };
 
         if (errorData.data?.statusCode === 403) {
-          toast.error("You are not authorized to start this simulation");
+          // The roleplay v2 gate throws two distinct, useful messages —
+          // "not currently enabled" (rollout not live yet) vs. "not
+          // available for this account yet" (allowlist) — collapsing both
+          // into one generic string left the learner with no way to tell a
+          // platform-wide rollout state from an account-specific one. Only
+          // the two known, curated gate strings are shown verbatim; any
+          // other 403 still gets the safe generic message.
+          const knownGateMessages = [
+            "Roleplay v2 is not currently enabled.",
+            "Roleplay v2 is not available for this account yet.",
+          ];
+          const backendMessage = errorData.data?.message;
+          toast.error(
+            backendMessage && knownGateMessages.includes(backendMessage)
+              ? backendMessage
+              : "You are not authorized to start this simulation",
+          );
         } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
           // End previous simulation and retry
           await endSimulation({ sessionId: errorData?.data?.entityId });

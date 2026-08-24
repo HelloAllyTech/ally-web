@@ -70,6 +70,10 @@ export const FileUpload = ({
   enableAiGeneration = false,
 }: FileUploadProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  // The File a failed upload was for, kept around so Retry can re-run the
+  // exact same upload instead of forcing a full drag/browse re-pick — no
+  // upload path used to retain this on failure, it was simply discarded.
+  const [pendingRetryFile, setPendingRetryFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const { setValue, setError, clearErrors, formState, register, watch } = formMethods;
@@ -200,9 +204,17 @@ export const FileUpload = ({
           await uploadToS3(file, response.presignedUrl);
 
           setUploadedFile(file);
+          setPendingRetryFile(null);
           setValue(id, response.coverVideoUrl, { shouldValidate: true });
         } catch (error) {
-          toast.error((error as any)?.data?.message || en.errors.videoUploadFailed);
+          // Previously toast-only — the one upload path with no inline field
+          // error, unlike the image path below (via the outer catch). The
+          // toast fades; the field error is what's still there when the
+          // admin looks back at the form.
+          const message = (error as any)?.data?.message || en.errors.videoUploadFailed;
+          setError(id, { type: "manual", message });
+          toast.error(message);
+          setPendingRetryFile(file);
         }
       } else {
         const response = await getCoverImageUrl({
@@ -216,10 +228,12 @@ export const FileUpload = ({
         }
 
         setUploadedFile(file);
+        setPendingRetryFile(null);
         setValue(id, response.coverImageUrl, { shouldValidate: true });
       }
     } catch {
       setError(id, { type: "manual", message: en.errors.fileUploadFailed });
+      setPendingRetryFile(file);
     } finally {
       setIsUploading(false);
     }
@@ -284,6 +298,7 @@ export const FileUpload = ({
     (imageUrl: string) => {
       clearErrors(id);
       setUploadedFile(null);
+      setPendingRetryFile(null);
       setValue(id, imageUrl, { shouldValidate: true });
     },
     [id, clearErrors, setValue],
@@ -302,11 +317,19 @@ export const FileUpload = ({
         }
       }
       setUploadedFile(null);
+      setPendingRetryFile(null);
       setValue(id, null);
     } catch {
       toast.error(en.errors.fileDeleteFailed);
     }
   };
+
+  // Re-runs the same upload for the file a previous attempt failed on,
+  // instead of forcing the admin to re-pick it from disk.
+  const handleRetryUpload = useCallback(() => {
+    if (!pendingRetryFile || isUploading) return;
+    processFile(pendingRetryFile);
+  }, [pendingRetryFile, isUploading, processFile]);
 
   const openImageLibrary = event => {
     event.stopPropagation();
@@ -541,9 +564,21 @@ export const FileUpload = ({
         {renderFileInfo()}
 
         {formState.errors[id]?.message && (
-          <p className="text-destructive-500 text-sm mt-1">
-            {String(formState.errors[id]?.message)}
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-destructive-500 text-sm">
+              {String(formState.errors[id]?.message)}
+            </p>
+            {pendingRetryFile && (
+              <button
+                type="button"
+                onClick={handleRetryUpload}
+                disabled={isUploading}
+                className="text-sm text-primary-600 underline hover:text-primary-700 whitespace-nowrap disabled:opacity-50"
+              >
+                {en.common.retry}
+              </button>
+            )}
+          </div>
         )}
       </div>
 

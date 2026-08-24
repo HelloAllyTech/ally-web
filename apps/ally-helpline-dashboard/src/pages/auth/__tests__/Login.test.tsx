@@ -16,7 +16,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
+import { toast } from "sonner";
 import { describe, expect, it, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 
 import { Login } from "../Login";
@@ -184,6 +185,7 @@ vi.mock("sonner", () => ({
   toast: {
     error: vi.fn(),
     success: vi.fn(),
+    info: vi.fn(),
   },
 }));
 
@@ -498,6 +500,37 @@ describe("Login Component", () => {
           <Login />
         </TestWrapper>
       )).not.toThrow();
+    });
+  });
+
+  /**
+   * TEST GROUP: Session expiry messaging (graceful-failure audit item 4)
+   *
+   * A refresh-token failure previously did a silent `window.location.href =
+   * "/login"` reload with no explanation. `handleLogout` in `api/baseAPI.ts`
+   * now appends `sessionExpired=1` (and a `returnTo`) to that redirect, and
+   * Login.tsx is expected to surface an explanatory toast when it sees that
+   * flag on mount.
+   */
+  describe("Session expiry messaging", () => {
+    const renderAtLoginUrl = (search: string) =>
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={[`/login${search}`]}>
+            <Login />
+          </MemoryRouter>
+        </Provider>,
+      );
+
+    it("toasts an explanation when sessionExpired=1 is on the URL", () => {
+      renderAtLoginUrl("?sessionExpired=1");
+      expect(toast.info).toHaveBeenCalledTimes(1);
+      expect((toast.info as ReturnType<typeof vi.fn>).mock.calls[0][0]).toMatch(/session/i);
+    });
+
+    it("does not toast a session-expiry message on a plain visit", () => {
+      renderAtLoginUrl("");
+      expect(toast.info).not.toHaveBeenCalled();
     });
   });
 });

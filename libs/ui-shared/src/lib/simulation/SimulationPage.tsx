@@ -86,6 +86,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   supervisorNotes = [],
   score,
   isPreview = false,
+  connectionError = null,
+  agentJoinTimedOut = false,
+  onRetryConnection,
+  onExitSimulation,
+  missedSupervisorNoteCount = 0,
   onEndSimulation,
   renderWarningDialog,
   renderFooter,
@@ -445,6 +450,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          connectionError={connectionError}
+          agentJoinTimedOut={agentJoinTimedOut}
+          onRetryConnection={onRetryConnection}
+          onExitSimulation={onExitSimulation}
+          missedSupervisorNoteCount={missedSupervisorNoteCount}
           score={score}
           stateNames={stateNames}
           difficultyLevel={difficultyLevel}

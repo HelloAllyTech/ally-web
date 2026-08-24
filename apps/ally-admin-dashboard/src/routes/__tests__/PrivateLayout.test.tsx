@@ -39,7 +39,7 @@ vi.mock("@store", () => ({
 }));
 
 vi.mock("@api", () => ({
-  useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
+  useGetUserQuery: vi.fn(() => ({ data: { id: 1 }, isLoading: false })),
   useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
   useGetFeatureTogglesQuery: vi.fn(() => ({ data: [], isLoading: false })),
   useGetCharacterLibraryEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
@@ -239,6 +239,94 @@ describe("PrivateLayout", () => {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
       const { useGetFeatureTogglesQuery } = await import("@api");
+      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  <PrivateLayout
+                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
+                    requiredFeature="settings"
+                  >
+                    <div>GatedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+      expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
+      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
+    });
+  });
+
+  describe("role gating reads the roles[] array, not the collapsed role", () => {
+    // The backend collapses a user's additive group memberships to one
+    // `role` field by a priority list that omits some roles — lossy for
+    // exactly the multi-role accounts (e.g. a platform role held alongside a
+    // tenant one) a role-gated route is most likely to matter for. Gating
+    // must read `roles[]` instead.
+    it("grants access when roles[] contains the required role, even if the collapsed role does not", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+
+      const { useGetUserQuery, useGetFeatureTogglesQuery } = await import("@api");
+      (useGetUserQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: { id: 1, role: UserRole.ADMIN, roles: [UserRole.ADMIN, UserRole.SUPER_DUPER_ADMIN] },
+        isLoading: false,
+      });
+      // Pair with an unmet requiredFeature so hasRequiredFeature can't
+      // trivially carry the dual-gate's OR on its own — only hasRole (i.e.
+      // roles[]) can grant access here.
+      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  <PrivateLayout
+                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
+                    requiredFeature="settings"
+                  >
+                    <div>RoleGrantedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+      expect(screen.getByText("RoleGrantedContent")).toBeInTheDocument();
+    });
+
+    it("denies access when roles[] does not contain the required role, even if the collapsed role happens to match a decoy", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+
+      const { useGetUserQuery, useGetFeatureTogglesQuery } = await import("@api");
+      (useGetUserQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: { id: 1, role: UserRole.SUPER_DUPER_ADMIN, roles: [UserRole.ADMIN] },
+        isLoading: false,
+      });
+      // requiredRole alone leaves hasRequiredFeature trivially true (no
+      // requiredFeature to fail), which would pass the dual-gate's OR
+      // regardless of hasRole — pair it with an unmet requiredFeature, same
+      // as the existing "neither satisfied" case above, so this isolates
+      // hasRole specifically.
       (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         data: [],
         isLoading: false,

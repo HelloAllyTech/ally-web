@@ -35,7 +35,7 @@ import {
   UserListUser,
   UserRoles,
 } from "@types";
-import { getChipValue, parseEmailList } from "@utils";
+import { getChipValue, getErrorMessage, parseEmailList } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
@@ -283,7 +283,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleAddUserClose();
       toast.success("User added successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to add user");
+      toast.error(getErrorMessage(error, "Failed to add user"));
     }
   };
 
@@ -324,7 +324,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleBulkAddClose();
       toast.success(en.userManagement.bulkAddUsersSuccess(response?.created ?? emails.length));
     } catch (error: any) {
-      toast.error(error?.data?.message || en.userManagement.bulkAddUsersFailed);
+      toast.error(getErrorMessage(error, en.userManagement.bulkAddUsersFailed));
     }
   };
 
@@ -338,7 +338,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
         toast.error(en.errors.userIdNotFound);
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || en.errors.failedToRemoveUser);
+      toast.error(getErrorMessage(error, en.errors.failedToRemoveUser));
     }
   };
 
@@ -362,7 +362,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleDropdownClose();
       toast.success("User updated successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update user");
+      toast.error(getErrorMessage(error, "Failed to update user"));
     }
   };
 
@@ -379,7 +379,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleDropdownClose();
       toast.success("User suspended successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to suspend user");
+      toast.error(getErrorMessage(error, "Failed to suspend user"));
     }
   };
 
@@ -394,7 +394,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleDropdownClose();
       toast.success("User activated successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to activate user");
+      toast.error(getErrorMessage(error, "Failed to activate user"));
     }
   };
 
@@ -418,7 +418,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleDropdownClose();
       toast.success("User role changed successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to change user role");
+      toast.error(getErrorMessage(error, "Failed to change user role"));
     }
   };
 
@@ -436,7 +436,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
 
       window.open(`${IMPERSONATION_APP_URL}/impersonate?${params.toString()}`, "_blank");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to impersonate user");
+      toast.error(getErrorMessage(error, "Failed to impersonate user"));
     }
   };
 
@@ -451,7 +451,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
       handleDropdownClose();
       toast.success("Credit added successfully");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to add credit");
+      toast.error(getErrorMessage(error, "Failed to add credit"));
     }
   };
 

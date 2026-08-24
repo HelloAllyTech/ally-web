@@ -15,6 +15,7 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { LabValue } from "@types";
 
+import { AiLabErrorState } from "./AiLabErrorState";
 import { LabSidePanel, LabField } from "./LabSidePanel";
 import { LabTable, LabTableColumn } from "./LabTable";
 
@@ -22,7 +23,12 @@ const EMPTY_FORM = { variableId: "", label: "", value: "" };
 
 export const ValuesTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useGetLabValuesQuery({ search: search || undefined });
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetLabValuesQuery({ search: search || undefined });
   const values = data?.items ?? [];
 
   // Full variable list drives the picker (and gates creation when empty).
@@ -151,6 +157,8 @@ export const ValuesTab: React.FC = () => {
       <div className="mt-5">
         {isLoading ? (
           <p className="text-typography-600 py-8 text-center">{en.common.loading}</p>
+        ) : isError ? (
+          <AiLabErrorState message={en.aiLab.values.loadFailed} onRetry={refetch} />
         ) : values.length === 0 ? (
           <EmptyState
             title={en.aiLab.values.empty}

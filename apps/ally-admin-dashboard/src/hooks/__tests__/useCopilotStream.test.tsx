@@ -69,8 +69,17 @@ describe("parseSseBuffer", () => {
 
   it("drops malformed frames and frames without event names", () => {
     const buffer = "event: token\ndata: {not-json}\n\n" + 'data: {"delta":"x"}\n\n';
-    const { events } = parseSseBuffer(buffer);
+    const { events, droppedCount } = parseSseBuffer(buffer);
     expect(events).toEqual([]);
+    // Only the genuinely malformed-JSON frame counts as dropped — a frame
+    // with no event name is skipped as a non-event (comment/keep-alive), not
+    // a failure, so it must not inflate the count the UI surfaces to the user.
+    expect(droppedCount).toBe(1);
+  });
+
+  it("counts zero drops for an all-valid buffer", () => {
+    const { droppedCount } = parseSseBuffer(sseFrame("token", { delta: "Hi" }));
+    expect(droppedCount).toBe(0);
   });
 
   it("joins multi-line data fields", () => {
@@ -141,6 +150,30 @@ describe("useCopilotStream", () => {
     expect(result.current.isStreaming).toBe(false);
 
     expect(result.current.messages.map(message => message.role)).toEqual(["user", "assistant"]);
+  });
+
+  it("surfaces a tool note when the stream drops a malformed frame, instead of finishing silently", async () => {
+    const fetchMock = mockSseFetch([
+      sseFrame("token", { delta: "Hello" }),
+      "event: token\ndata: {not-json}\n\n",
+      sseFrame("done", { messageSeq: 1, specVersionId: "v1" }),
+    ]);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const store = buildStore();
+    const { result } = renderStream(store);
+
+    await act(async () => {
+      await result.current.sendMessage("Build me a persona");
+    });
+
+    await waitFor(() => {
+      const assistant = result.current.messages.find(message => message.role === "assistant");
+      expect(assistant?.content).toBe("Hello");
+      expect(assistant?.toolNotes).toEqual([
+        "A part of this response could not be read and was skipped.",
+      ]);
+    });
   });
 
   it("renders question events as structured messages", async () => {
