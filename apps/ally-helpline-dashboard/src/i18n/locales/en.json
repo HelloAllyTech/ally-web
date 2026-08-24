@@ -604,7 +604,7 @@
       "therapeuticTechniques": "What therapeutic techniques/moves were most helpful?"
     },
     "transcriptReferences": "Transcript References",
-    "inputPlaceholder": "Ask a question about the session.... (0/{{max}})"
+    "inputPlaceholder": "Ask a question about the session...."
   },
   "postSim": {
     "titlePrefix": "Role play",

@@ -536,7 +536,7 @@
       "therapeuticTechniques": "कौन-सी उपचार तकनीकें / कार्यप्रणालियाँ सबसे अधिक उपयोगी थीं?"
     },
     "transcriptReferences": "ट्रांसक्रिप्ट से संदर्भ",
-    "inputPlaceholder": "सेशन के बारे में एक प्रश्न पूछें.... (0/{{max}})"
+    "inputPlaceholder": "सेशन के बारे में एक प्रश्न पूछें...."
   },
   "postSim": {
     "titlePrefix": "रोल प्ले",

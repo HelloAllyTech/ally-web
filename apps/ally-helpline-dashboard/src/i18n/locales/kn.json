@@ -536,7 +536,7 @@
       "therapeuticTechniques": "ನೀವು ಯಾವ ಥೆರಪ್ಯೂಟಿಕ್ ತಂತ್ರಗಳು/ಚಲನೆಗಳು ಹೆಚ್ಚು ಸಹಾಯಕವಾಗಿದ್ದವು?"
     },
     "transcriptReferences": "ಟ್ರಾನ್ಸ್ಕ್ರಿಪ್ಟ್ ಉಲ್ಲೇಖಗಳು",
-    "inputPlaceholder": "ಸೆಷನ್ ಬಗ್ಗೆ ಪ್ರಶ್ನೆ ಕೇಳಿ.... (0/{{max}})"
+    "inputPlaceholder": "ಸೆಷನ್ ಬಗ್ಗೆ ಪ್ರಶ್ನೆ ಕೇಳಿ...."
   },
   "postSim": {
     "titlePrefix": "ಸಿಮ್ಯುಲೇಶನ್",
