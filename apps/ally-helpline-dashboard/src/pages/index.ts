@@ -31,3 +31,4 @@ export * from "./legal/Terms";
 export * from "./legal/Privacy";
 export * from "./blog/Blog";
 export * from "./blog/BlogPost";
+export * from "./blog/Changelog";
