@@ -296,6 +296,7 @@ export const RoleplaySessionLogDetail: FC = () => {
 
       {/* Summary card */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 p-4 rounded-lg border border-border-light bg-white">
+        <Field label="Session ID" value={data.id} />
         <Field label="User" value={data.counselorName || "—"} />
         <Field label="Email" value={data.counselorEmail || "—"} />
         <Field label="Organization" value={data.orgName || "—"} />
