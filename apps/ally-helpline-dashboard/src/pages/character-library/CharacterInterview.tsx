@@ -7,7 +7,8 @@ import {
   useCreateCharacterInterviewSessionMutation,
   useLazyGetCharacterInterviewSessionQuery,
 } from "@api";
-import { ArrowLeft } from "@assets";
+import { ArrowLeft, NoResults } from "@assets";
+import { ButtonVariant, ConfirmationDialog, FallbackUI } from "@components";
 import {
   CharacterInterviewAnswerPayload,
   ChatComposer,
@@ -58,8 +59,13 @@ export const CharacterInterview: React.FC = () => {
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isBooting, setIsBooting] = useState(true);
+  // A failed fresh-session start used to leave isBooting true forever — the
+  // three skeleton bubbles just sat there with no way out but a manual
+  // reload, on top of the toast that already fired once.
+  const [bootFailed, setBootFailed] = useState(false);
   const [draftCharacter, setDraftCharacter] = useState<CharacterData | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   // Set true only for a brand-new session (never on resume) so the next
   // render's effect can fire the hidden kickoff message with a `sendMessage`
   // closure that actually sees the new `sessionId`.
@@ -118,7 +124,11 @@ export const CharacterInterview: React.FC = () => {
 
       const freshId = await startFreshSession();
       setIsBooting(false);
-      if (freshId) setNeedsKickoff(true);
+      if (freshId) {
+        setNeedsKickoff(true);
+      } else {
+        setBootFailed(true);
+      }
     })();
     // Runs once on mount only — bootedRef guards StrictMode's double-invoke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,7 +152,36 @@ export const CharacterInterview: React.FC = () => {
   const handleAnswerQuestion = (payload: CharacterInterviewAnswerPayload) =>
     void sendMessage(payload.message, { questionId: payload.questionId, answer: payload.answer });
 
+  const handleRetryBoot = async () => {
+    setBootFailed(false);
+    setIsBooting(true);
+    const freshId = await startFreshSession();
+    setIsBooting(false);
+    if (freshId) setNeedsKickoff(true);
+    else setBootFailed(true);
+  };
+
+  // "Leave the interview?" only matters once the admin has actually answered
+  // something — leaving during the agent's opening question loses nothing.
+  // Before this guard, the back button navigated straight away and the
+  // conversation (and its unsaved draft, if the agent had already produced
+  // one) was gone with no warning, despite copy for exactly this having
+  // existed in characterInterviewStrings all along.
+  const hasProgress = messages.some(message => message.role === "user");
+
   const handleBack = () => {
+    if (hasProgress) {
+      setIsExitConfirmOpen(true);
+      return;
+    }
+    navigate(ROUTES.CHARACTER_LIBRARY);
+  };
+
+  const confirmExit = () => {
+    // Leave the pinned session id in place — the session resumes from where
+    // it left off if the admin reopens the interview agent, same as a
+    // pinned session recovered after any other navigation away from here.
+    setIsExitConfirmOpen(false);
     navigate(ROUTES.CHARACTER_LIBRARY);
   };
 
@@ -172,6 +211,17 @@ export const CharacterInterview: React.FC = () => {
               <div className="h-12 w-1/2 self-end rounded-2xl bg-background-secondary animate-pulse" />
               <div className="h-12 w-3/4 rounded-2xl bg-background-secondary animate-pulse" />
             </div>
+          ) : bootFailed ? (
+            <FallbackUI
+              icon={<NoResults />}
+              mainMessage={strings.startFailed}
+              description={characterLibraryStrings.errorDescription}
+              button={{
+                text: characterLibraryStrings.retry,
+                onClick: () => void handleRetryBoot(),
+              }}
+              className="py-16"
+            />
           ) : (
             <div className="flex flex-col gap-3 pb-2">
               {messages.map(message => (
@@ -202,7 +252,7 @@ export const CharacterInterview: React.FC = () => {
             onSend={handleSend}
             onStop={stop}
             isStreaming={isStreaming}
-            disabled={isBooting || !sessionId || !!draftCharacter}
+            disabled={isBooting || bootFailed || !sessionId || !!draftCharacter}
           />
         </div>
       </div>
@@ -212,6 +262,19 @@ export const CharacterInterview: React.FC = () => {
         onClose={() => setIsReviewOpen(false)}
         onSave={() => navigate(ROUTES.CHARACTER_LIBRARY)}
         initialCharacter={draftCharacter}
+      />
+
+      <ConfirmationDialog
+        isOpen={isExitConfirmOpen}
+        onClose={() => setIsExitConfirmOpen(false)}
+        title={{ normal: strings.exitConfirmTitle, italic: "" }}
+        content={strings.exitConfirmDescription}
+        buttonText={strings.exitConfirmLeave}
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={confirmExit}
+        secondaryButtonText={strings.exitConfirmStay}
+        secondaryButtonVariant={ButtonVariant.SECONDARY}
+        onSecondaryButtonClick={() => setIsExitConfirmOpen(false)}
       />
     </div>
   );

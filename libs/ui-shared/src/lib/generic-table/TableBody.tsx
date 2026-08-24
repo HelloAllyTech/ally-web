@@ -64,7 +64,10 @@ const TableBody = <T extends Record<string, any>>({
       {data.map((row, rowIndex) => (
         <tr
           key={rowIndex}
-          className="hover:bg-gray-100 cursor-pointer"
+          // Every row hinted "clickable" even on tables with no onRowClick —
+          // Character Library and several other GenericTable consumers pass
+          // none, so hovering highlighted rows that did nothing when clicked.
+          className={onRowClick ? "hover:bg-gray-100 cursor-pointer" : undefined}
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
           {visibleColumns.map((col, columnIndex) => (
