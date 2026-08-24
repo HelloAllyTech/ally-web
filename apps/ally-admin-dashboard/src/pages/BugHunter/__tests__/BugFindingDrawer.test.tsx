@@ -35,7 +35,11 @@ vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 // Same stub, same reason as BugHunter.test.tsx.
 vi.mock("@components", () => ({ cellTypes: {} }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+}));
 vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /> }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({

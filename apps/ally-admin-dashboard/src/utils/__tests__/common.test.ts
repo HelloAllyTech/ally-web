@@ -12,6 +12,8 @@ import {
   isPathExcluded,
   decodeUint8ToJson,
   formatDate,
+  formatDateTime,
+  formatTimestamp,
   formatCapitalizedEnum,
   getButtonStyles,
   formatSimulationUsage,
@@ -230,6 +232,37 @@ describe("common utils", () => {
     it("should handle different date formats", () => {
       expect(formatDate("2024/01/15")).toBe("15 Jan 2024");
       expect(formatDate("Jan 15, 2024")).toBe("15 Jan 2024");
+    });
+  });
+
+  // Local-time inputs on purpose (no trailing Z): these render in the reader's
+  // own zone, so a UTC literal would make the expected clock time depend on
+  // where the suite runs.
+  describe("formatDateTime", () => {
+    it("carries the clock time, not just the day", () => {
+      expect(formatDateTime("2024-01-15T14:32:07")).toBe("15 Jan 2024, 14:32");
+    });
+
+    it("is 24-hour, so an operator never has to hunt for am/pm", () => {
+      expect(formatDateTime("2024-01-15T23:40:00")).toBe("15 Jan 2024, 23:40");
+      expect(formatDateTime("2024-01-15T00:05:00")).toBe("15 Jan 2024, 00:05");
+    });
+
+    // The reason this exists at all: two runs on one night were indistinguishable.
+    it("separates two moments that share a date", () => {
+      expect(formatDateTime("2024-01-15T02:12:00")).not.toBe(formatDateTime("2024-01-15T18:44:00"));
+    });
+  });
+
+  describe("formatTimestamp", () => {
+    it("adds seconds, for event logs where stages land seconds apart", () => {
+      expect(formatTimestamp("2024-01-15T14:32:07")).toBe("15 Jan 2024, 14:32:07");
+    });
+
+    it("separates two events inside the same minute", () => {
+      expect(formatTimestamp("2024-01-15T14:32:07")).not.toBe(
+        formatTimestamp("2024-01-15T14:32:41"),
+      );
     });
   });
 

@@ -9,7 +9,7 @@ import {
 import { AgentAvatar } from "@components/agent-avatar";
 import { en } from "@constants";
 import { BugHunterNotification, BugHunterNotificationLevel } from "@types";
-import { formatDate } from "@utils";
+import { formatDateTime } from "@utils";
 
 const LEVEL_STYLES: Record<BugHunterNotificationLevel, string> = {
   [BugHunterNotificationLevel.ACTION_NEEDED]: "border-l-orange-500 bg-orange-50",
@@ -133,7 +133,7 @@ export const NotificationInbox: FC<NotificationInboxProps> = ({ onOpenFinding })
                           {LEVEL_LABELS[notification.level]}
                         </span>
                         <span className="text-xs text-typography-500 ml-auto whitespace-nowrap tabular-nums">
-                          {formatDate(notification.createdAt)}
+                          {formatDateTime(notification.createdAt)}
                         </span>
                       </div>
                       <p className="text-sm text-typography-900 font-medium mt-0.5">

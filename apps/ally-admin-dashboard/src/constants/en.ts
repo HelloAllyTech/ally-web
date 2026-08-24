@@ -2671,6 +2671,11 @@ export const en = {
     elapsedSeconds: "{count}s",
     elapsedMinutes: "{count}m",
     elapsedHours: "{count}h",
+    // Both modes hover to the exact moment, to the second. The relative form
+    // answers "is this still moving?"; only a real timestamp answers "which
+    // sweep was this?", and an incident review needs the second one.
+    clockUpdatedExactTitle: "Last updated {timestamp}",
+    clockElapsedExactTitle: "Started {timestamp}",
     // ── Live work board ("on it right now") ─────────────────────────────────
     // The tab's only present-tense section, and the only one that reports the
     // agent's own work in progress rather than a record of it. Voice rules
@@ -2771,7 +2776,7 @@ export const en = {
     // so this tooltip is never explaining a column of repeated Age values.
     findingColumnUpdatedTooltip:
       "When anything last happened to a bug — I re-read it on a sweep, its status moved, or someone rewrote it. Age is how long it's been on my list; this is whether it's been touched lately. On a bug your team reported weeks ago and I only looked at last night, those two are very far apart.",
-    runScopeBanner: "Showing only the bugs my {repo} sweep of {date} touched.",
+    runScopeBanner: "Showing only the bugs my {repo} sweep at {timestamp} touched.",
     runScopeBannerLoading: "Showing only the bugs one sweep touched.",
     // The point of the sentence. "Found 10" meant ten rows touched, and most of
     // what a nightly sweep touches is bugs your team filed weeks ago — so the

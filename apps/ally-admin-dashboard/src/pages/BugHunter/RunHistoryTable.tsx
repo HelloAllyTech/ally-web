@@ -14,7 +14,7 @@ import { TooltipIcon } from "@assets";
 import { EmptyState } from "@components";
 import { en } from "@constants";
 import { BugHuntRun, BugHuntTrigger } from "@types";
-import { formatDate } from "@utils";
+import { formatDateTime, formatTimestamp } from "@utils";
 
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
@@ -118,7 +118,7 @@ const RunDetailRow: FC<{ runId: string }> = ({ runId }) => {
             {data.events.map(event => (
               <li key={event.id} className="text-sm text-typography-800 flex gap-2">
                 <span className="text-typography-500 whitespace-nowrap tabular-nums">
-                  {formatDate(event.createdAt)}
+                  {formatTimestamp(event.createdAt)}
                 </span>
                 <span className="font-medium text-typography-700 whitespace-nowrap">
                   {BUG_HUNT_EVENT_STAGE_LABELS[event.stage]}
@@ -282,7 +282,7 @@ export const RunHistoryTable: FC = () => {
                     {formatTokens(run.totalInputTokens, run.totalOutputTokens)}
                   </TableCell>
                   <TableCell className="py-3 pr-4 whitespace-nowrap">
-                    {formatDate(run.createdAt)}
+                    {formatDateTime(run.createdAt)}
                   </TableCell>
                 </TableRow>
                 {expandedRunId === run.id && <RunDetailRow runId={run.id} />}
