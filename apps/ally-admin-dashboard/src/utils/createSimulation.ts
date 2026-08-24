@@ -196,10 +196,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
-    // EXPERIMENT(turn-endpointing) — no fallback: unset genuinely means
-    // "use the platform default", not a number the form should write back.
-    turnMinEndpointingDelay: data?.metadata?.turnMinEndpointingDelay,
-    turnMaxEndpointingDelay: data?.metadata?.turnMaxEndpointingDelay,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,

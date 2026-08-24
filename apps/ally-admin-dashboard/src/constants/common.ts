@@ -492,6 +492,7 @@ export const ApiEndpoints = {
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
+    TURN_ENDPOINTING: "/v1/settings/turn-endpointing",
   },
   ROLEPLAY_STUDIO: {
     SPECS: "/v1/roleplay-studio/specs",

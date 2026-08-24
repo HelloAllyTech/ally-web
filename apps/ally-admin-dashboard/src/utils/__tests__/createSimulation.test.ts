@@ -710,37 +710,6 @@ describe("createSimulation utils", () => {
       });
     });
 
-    // EXPERIMENT(turn-endpointing) — delete with the feature.
-    it("should hydrate both endpointing delays when set", () => {
-      const mockResponse = {
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: { turnMinEndpointingDelay: 0.3, turnMaxEndpointingDelay: 1.8 },
-      } as any;
-
-      const result = formatSimulationResponseData(mockResponse);
-
-      expect(result.turnMinEndpointingDelay).toBe(0.3);
-      expect(result.turnMaxEndpointingDelay).toBe(1.8);
-    });
-
-    it("should leave both endpointing delays undefined when unset (no fallback default)", () => {
-      const mockResponse = {
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: {},
-      } as any;
-
-      const result = formatSimulationResponseData(mockResponse);
-
-      expect(result.turnMinEndpointingDelay).toBeUndefined();
-      expect(result.turnMaxEndpointingDelay).toBeUndefined();
-    });
-
   describe("buildFeedbackTabsPayload (write side)", () => {
     // The bug this locks in: on a brand-new simulation the form's
     // TOGGLE_BUTTON defaultValue never reaches the controller, so all three
@@ -924,24 +893,6 @@ describe("createSimulation utils", () => {
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.temperature).toBeNull();
-    });
-
-    it("should keep a NUMBER field value as a float (not truncate to int)", () => {
-      const formData = {
-        turnMaxEndpointingDelay: "1.5",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.turnMaxEndpointingDelay).toBe(1.5);
-    });
-
-    it("should convert empty NUMBER field value to null", () => {
-      const formData = {
-        turnMaxEndpointingDelay: "",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.turnMaxEndpointingDelay).toBeNull();
     });
 
     it("should handle image upload field with valid URL", () => {
