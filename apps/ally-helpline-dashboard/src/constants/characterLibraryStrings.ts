@@ -10,6 +10,7 @@
 export const characterLibraryStrings = {
   characters: "Characters",
   createNewCharacter: "Create new character",
+  createManually: "Create manually",
   createWithInterviewAgent: "Create with interview agent",
   characterCreatedSuccessfully: "Character created successfully",
   failedToCreateCharacter: "Failed to create character",
@@ -26,15 +27,43 @@ export const characterLibraryStrings = {
   dialectSamples: "Dialect samples",
   dialectSamplePlaceholder: "Enter a sample line in the character's voice",
   addDialectSample: "Add dialect sample",
-  dialectSampleLimit: "You can only have 20 dialect samples. Remove one to add another.",
+  dialectSampleLimit: "Maximum of 20 dialect samples — remove one to add another.",
   knowledgeSources: "Knowledge sources",
   knowledgeSourceTitlePlaceholder: "Title",
   knowledgeSourceTextPlaceholder: "What should this character know?",
   addKnowledgeSource: "Add knowledge source",
-  knowledgeSourceLimit: "You can only have 50 knowledge sources. Remove one to add another.",
+  knowledgeSourceLimit: "Maximum of 50 knowledge sources — remove one to add another.",
   emptyStateTitle: "No characters yet",
   emptyStateDescription:
-    "Create your organisation's first character manually, or let the interview agent build one with you.",
+    "Let the interview agent build your organisation's first character with you, or create one manually.",
+
+  // Search
+  searchLabel: "Search characters",
+  searchPlaceholder: "Search characters",
+  clearSearch: "Clear search",
+
+  // A search that matched nothing is a different situation from a library
+  // that was never populated — offering "create your first character" to
+  // someone who just mistyped a name sends them down the wrong path.
+  noResultsTitle: "No characters match your search",
+  noResultsDescription: "Try a different name, or clear the search to see every character.",
+
+  // Failure state: the table used to render the "no characters yet" empty
+  // state on a failed fetch, telling admins their library was empty when we
+  // simply hadn't managed to read it.
+  errorTitle: "Couldn't load characters",
+  errorDescription: "Something went wrong reaching the character library. Try again in a moment.",
+  retry: "Try again",
+
+  // Form validation + exit guard
+  closeForm: "Close",
+  requiredField: "Required",
+  requiredFieldsMissing: "Fill in the required fields before saving",
+  discardConfirmTitle: "Discard",
+  discardConfirmTitleItalic: "this character?",
+  discardConfirmDescription: "You have unsaved details on this form. Closing it now discards them.",
+  discardConfirmLeave: "Discard",
+  discardConfirmStay: "Keep editing",
 } as const;
 
 export const characterInterviewStrings = {

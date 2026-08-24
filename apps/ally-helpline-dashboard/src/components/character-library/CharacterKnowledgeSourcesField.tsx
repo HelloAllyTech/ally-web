@@ -69,16 +69,17 @@ export const CharacterKnowledgeSourcesField: React.FC<CharacterKnowledgeSourcesF
         </div>
       ))}
 
-      {sources.length < maxCount ? (
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="self-start text-sm text-primary hover:text-primary-700"
-        >
-          + {strings.addKnowledgeSource}
-        </button>
-      ) : (
-        <span className="text-destructive-500 text-xs">* {strings.knowledgeSourceLimit}</span>
+      {/* See DialectSamplesField: a cap is a limit, not a failure. */}
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={sources.length >= maxCount}
+        className="self-start text-sm text-primary hover:text-primary-700 disabled:cursor-not-allowed disabled:text-typography-500 disabled:hover:text-typography-500"
+      >
+        + {strings.addKnowledgeSource}
+      </button>
+      {sources.length >= maxCount && (
+        <span className="text-typography-600 text-xs">{strings.knowledgeSourceLimit}</span>
       )}
     </div>
   );

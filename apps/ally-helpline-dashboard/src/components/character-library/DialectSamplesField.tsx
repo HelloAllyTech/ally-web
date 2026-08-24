@@ -49,16 +49,19 @@ export const DialectSamplesField: React.FC<DialectSamplesFieldProps> = ({
         </div>
       ))}
 
-      {samples.length < maxCount ? (
-        <button
-          type="button"
-          onClick={handleAddSample}
-          className="self-start text-sm text-primary hover:text-primary-700"
-        >
-          + {strings.addDialectSample}
-        </button>
-      ) : (
-        <span className="text-destructive-500 text-xs">* {strings.dialectSampleLimit}</span>
+      {/* Hitting a cap isn't an error, and hiding the button on the way made
+          it look like the control had broken. Keep it in place, disabled,
+          with the cap stated plainly. */}
+      <button
+        type="button"
+        onClick={handleAddSample}
+        disabled={samples.length >= maxCount}
+        className="self-start text-sm text-primary hover:text-primary-700 disabled:cursor-not-allowed disabled:text-typography-500 disabled:hover:text-typography-500"
+      >
+        + {strings.addDialectSample}
+      </button>
+      {samples.length >= maxCount && (
+        <span className="text-typography-600 text-xs">{strings.dialectSampleLimit}</span>
       )}
     </div>
   );
