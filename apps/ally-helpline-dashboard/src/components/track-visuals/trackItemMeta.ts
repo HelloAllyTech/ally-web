@@ -36,7 +36,10 @@ export const getTrackItemMeta = (item: TrackDetailItem, t: TFunction): string =>
     case TrackItemType.ARTICLE:
       return t("tracks2.meta.article");
     case TrackItemType.ROLEPLAY: {
-      if (criteria?.minScore) {
+      // A minScore of 0 is the unconfigured default and gates nothing (see
+      // meetsMinimumScore in ally-be), so only a real threshold is shown —
+      // advertising "min score 0" would read as a hurdle that isn't there.
+      if ((criteria?.minScore ?? 0) > 0) {
         return `${t("tracks2.meta.roleplay")} · ${t("tracks2.meta.minScore", {
           score: criteria.minScore,
         })}`;
