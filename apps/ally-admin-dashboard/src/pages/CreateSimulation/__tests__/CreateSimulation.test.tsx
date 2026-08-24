@@ -274,6 +274,19 @@ vi.mock("@utils", () => ({
     if (Array.isArray(value) && value.length === 0) return true;
     return false;
   },
+  // EXPERIMENT(turn-endpointing) — remove with the per-sim delay fields. Real
+  // semantics, not a stub: saveSimulationChangesCore aborts on an invalid pair,
+  // so a `() => true` stub would hide a save-blocking regression and an
+  // omitted key crashes every save path in this file.
+  validateEndpointingPair: (min: unknown, max: unknown) => {
+    const isSet = (value: unknown) => value !== null && value !== undefined && value !== "";
+    if (!isSet(min) && !isSet(max)) return { isValid: true };
+    if (isSet(min) !== isSet(max)) return { isValid: false };
+    const minValue = Number(min);
+    const maxValue = Number(max);
+    if (Number.isNaN(minValue) || Number.isNaN(maxValue)) return { isValid: false };
+    return { isValid: minValue > 0 && maxValue > minValue };
+  },
 }));
 
 describe("CreateSimulation", () => {
@@ -475,6 +488,34 @@ describe("CreateSimulation", () => {
         },
         { timeout: 500 },
       );
+    });
+
+    // EXPERIMENT(turn-endpointing) — delete with the per-sim delay fields.
+    it("should block the save when the endpointing pair is invalid", async () => {
+      const { toast } = await import("sonner");
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+        languageVoices: { "1": "voice-1" },
+        turnMinEndpointingDelay: 2,
+        turnMaxEndpointingDelay: 0.5,
+      });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(toast.error).toHaveBeenCalled();
+        },
+        { timeout: 500 },
+      );
+      // The invalid pair must never reach the backend — ally-ai-learn would
+      // discard it silently and the sim would look untouched.
+      expect(mockCreateSimulation).not.toHaveBeenCalled();
     });
 
     it("should update simulation if id exists", async () => {

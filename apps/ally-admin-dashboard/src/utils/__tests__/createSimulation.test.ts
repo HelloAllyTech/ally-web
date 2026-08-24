@@ -705,21 +705,23 @@ describe("createSimulation utils", () => {
       });
     });
 
-    it("should pass through turnMaxEndpointingDelay when set", () => {
+    // EXPERIMENT(turn-endpointing) — delete with the feature.
+    it("should hydrate both endpointing delays when set", () => {
       const mockResponse = {
         id: "sim-1",
         title: "T",
         description: "D",
         status: "DRAFT",
-        metadata: { turnMaxEndpointingDelay: 1.5 },
+        metadata: { turnMinEndpointingDelay: 0.3, turnMaxEndpointingDelay: 1.8 },
       } as any;
 
       const result = formatSimulationResponseData(mockResponse);
 
-      expect(result.turnMaxEndpointingDelay).toBe(1.5);
+      expect(result.turnMinEndpointingDelay).toBe(0.3);
+      expect(result.turnMaxEndpointingDelay).toBe(1.8);
     });
 
-    it("should leave turnMaxEndpointingDelay undefined when unset (no fallback default)", () => {
+    it("should leave both endpointing delays undefined when unset (no fallback default)", () => {
       const mockResponse = {
         id: "sim-1",
         title: "T",
@@ -730,6 +732,7 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
+      expect(result.turnMinEndpointingDelay).toBeUndefined();
       expect(result.turnMaxEndpointingDelay).toBeUndefined();
     });
 

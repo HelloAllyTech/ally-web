@@ -22,6 +22,7 @@ import {
   isNonEmptyString,
   isArray,
   validateTimeRange,
+  validateEndpointingPair,
   toLocationSlug,
   fromLocationSlug,
 } from "../common";
@@ -484,6 +485,40 @@ describe("common utils", () => {
     it("should return false for array-like objects", () => {
       expect(isArray({ length: 0 })).toBe(false);
       expect(isArray({ 0: "a", 1: "b", length: 2 })).toBe(false);
+    });
+  });
+
+  // EXPERIMENT(turn-endpointing) — delete with the per-sim delay fields.
+  describe("validateEndpointingPair", () => {
+    it("accepts both unset — the platform defaults apply", () => {
+      expect(validateEndpointingPair(undefined, undefined).isValid).toBe(true);
+      expect(validateEndpointingPair("", "").isValid).toBe(true);
+      expect(validateEndpointingPair(null, null).isValid).toBe(true);
+    });
+
+    it("accepts a max above the min", () => {
+      expect(validateEndpointingPair(0.3, 1.8).isValid).toBe(true);
+      expect(validateEndpointingPair("0.3", "1.8").isValid).toBe(true);
+    });
+
+    it("rejects a max at or below the min", () => {
+      expect(validateEndpointingPair(2, 0.5).isValid).toBe(false);
+      expect(validateEndpointingPair(1, 1).isValid).toBe(false);
+    });
+
+    it("rejects a half-configured pair in either direction", () => {
+      expect(validateEndpointingPair(0.3, undefined).isValid).toBe(false);
+      expect(validateEndpointingPair(undefined, 1.8).isValid).toBe(false);
+      expect(validateEndpointingPair(0.3, "").isValid).toBe(false);
+    });
+
+    it("rejects a zero or negative floor", () => {
+      expect(validateEndpointingPair(0, 1.8).isValid).toBe(false);
+      expect(validateEndpointingPair(-0.2, 1.8).isValid).toBe(false);
+    });
+
+    it("rejects non-numeric input", () => {
+      expect(validateEndpointingPair("fast", 1.8).isValid).toBe(false);
     });
   });
 
