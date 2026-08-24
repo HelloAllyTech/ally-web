@@ -204,7 +204,8 @@
         "generateOtp": "Failed to generate OTP. Please try again.",
         "verifyOtp": "Failed to verify OTP. Please try again.",
         "agreeTerms": "Failed to agree to terms and conditions"
-      }
+      },
+      "sessionExpired": "You were signed out because your session expired. Sign in again to pick up where you left off."
     }
   },
   "user": {
@@ -652,11 +653,41 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
-            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
-            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
-            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
-            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+            "1": [
+              "Poor",
+              "Not helpful",
+              "Very bad",
+              "Disappointing",
+              "Unhelpful"
+            ],
+            "2": [
+              "Below average",
+              "Lacking",
+              "Unsatisfying",
+              "Weak",
+              "Needs improvement"
+            ],
+            "3": [
+              "Neutral",
+              "Okay",
+              "Average",
+              "Moderate",
+              "Acceptable"
+            ],
+            "4": [
+              "Good",
+              "Helpful",
+              "Satisfying",
+              "Effective",
+              "Worthwhile"
+            ],
+            "5": [
+              "Excellent",
+              "Amazing",
+              "Highly useful",
+              "Outstanding",
+              "Very effective"
+            ]
           }
         }
       }
@@ -689,6 +720,10 @@
       "generating": "Ally is writing your debrief…",
       "generatingHint": "This usually takes a few moments.",
       "failed": "Ally couldn't write your debrief for this session.",
+      "stillWorking": "Ally is taking longer than usual to finish this debrief. It may still be on its way.",
+      "checkAgain": "Check again",
+      "checkingAgain": "Checking…",
+      "notAvailable": "This session doesn't have a written debrief — it took place before Ally started writing them.",
       "momentLabel": "See this moment",
       "momentNotFound": "We couldn't jump to that moment — here's the full transcript instead.",
       "replyPlaceholder": "Reply to Ally about this session…",
@@ -1122,8 +1157,13 @@
         "unsupported": "Audio recording isn't supported in this browser.",
         "noSpeech": "We couldn't hear any speech. Please try recording again.",
         "generateError": "Couldn't generate notes from the recording. Please try again.",
-        "generated": "Notes generated from your recording",
+        "generated_one": "Filled in {{fields}} from your recording",
+        "generated_other": "Filled in {{count}} fields from your recording: {{fields}}",
         "nothingExtracted": "We transcribed the audio but couldn't fill any fields from it.",
+        "cancel": "Cancel",
+        "timeout": "This is taking longer than expected, so we stopped waiting. Try again or go back to fill the form manually.",
+        "backToForm": "Back to form",
+        "tryAgain": "Try again",
         "processing": {
           "transcribing": "Transcribing your recording…",
           "extracting": "Extracting note details…",
@@ -1158,7 +1198,11 @@
       "callEmptyTitle": "No call logs found",
       "callEmptyDesc": "Try adjusting filters or refresh the page.",
       "simEmptyTitle": "No simulation logs found",
-      "simEmptyDesc": "Try adjusting filters or refresh the page."
+      "simEmptyDesc": "Try adjusting filters or refresh the page.",
+      "callErrorTitle": "Unable to load call logs",
+      "callErrorDesc": "Something went wrong while loading call logs. Please try again.",
+      "simErrorTitle": "Unable to load simulation logs",
+      "simErrorDesc": "Something went wrong while loading simulation logs. Please try again."
     },
     "status": {
       "processing": "Processing",
@@ -1293,6 +1337,14 @@
     "supervisorEmptyState": "Your supervisor is listening — notes appear here when there's something useful.",
     "supervisorAiLabel": "AI-generated",
     "supervisorAiTooltip": "Ally is an AI supervisor. It's listening live and sending these notes automatically — not a person.",
+    "connectionFailedTitle": "We couldn't connect you to this session",
+    "connectionFailedMessage": "Sorry — something went wrong setting up this roleplay. Check your internet connection and try again.",
+    "agentNotJoinedTitle": "Your practice partner didn't join",
+    "agentNotJoinedMessage": "Sorry — we reached the session but no one picked up on the other side. Trying again usually sorts it.",
+    "retryConnection": "Try again",
+    "exitSimulation": "Leave this session",
+    "reconnecting": "Reconnecting…",
+    "missedSupervisorHints": "Some supervisor hints may not have reached you",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",
@@ -1447,6 +1499,8 @@
       "finish": "Finish",
       "overallProgress": "{{pct}}% complete",
       "loadFailed": "Could not load this item. Please try again.",
+      "trackLoadFailed": "Could not load this course",
+      "trackLoadFailedDescription": "Something went wrong while loading this course. Please try again.",
       "retry": "Retry"
     },
     "celebration": {
@@ -1467,7 +1521,9 @@
     },
     "video": {
       "markWatched": "Mark as watched",
-      "watched": "Watched"
+      "watched": "Watched",
+      "loadFailed": "This video could not be loaded.",
+      "openExternally": "Open video externally"
     },
     "journal": {
       "submit": "Submit",
@@ -1584,6 +1640,8 @@
         "SPROUT": "Most growth in one sitting: {{score}}"
       },
       "optional": "Play as long as you like, or skip straight on — either way you're good to continue.",
+      "loadFailed": "This game could not be loaded.",
+      "loadFailedDescription": "There was a problem loading this game. You're still free to continue — nothing here is scored or required.",
       "frameStrings": {
         "MEMORY_MATCH": {
           "moves": "{{moves}} moves",
@@ -1642,5 +1700,14 @@
         }
       }
     }
+  },
+  "errorBoundary": {
+    "pageTitle": "Sorry — this page stopped working",
+    "pageMessage": "Something went wrong while showing this page. Try again, or reload if that doesn't help.",
+    "panelTitle": "Sorry — this section stopped working",
+    "panelMessage": "Something went wrong here. The rest of the app still works — try again, or come back to this later.",
+    "tryAgain": "Try again",
+    "reloadPage": "Reload the page",
+    "detailLabel": "Technical detail"
   }
 }

@@ -11,3 +11,4 @@ export * from "./reportUtils";
 export * from "./loggerWithRedux";
 export * from "./availableVariables";
 export * from "./navigation";
+export * from "./errorMessage";

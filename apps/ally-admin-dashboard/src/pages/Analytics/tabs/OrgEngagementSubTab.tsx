@@ -137,6 +137,8 @@ export const OrgEngagementSubTab = () => {
           n={data?.eligibleOrgs}
           nUnit="orgs eligible"
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description={`At least one completed simulation. ${PLATFORM_WIDE_NOTE}`}
         />
 
@@ -146,6 +148,8 @@ export const OrgEngagementSubTab = () => {
           n={data?.eligibleOrgs}
           nUnit="orgs eligible"
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description="Of the orgs that existed before this window opened — see the note below."
         />
 
@@ -153,6 +157,8 @@ export const OrgEngagementSubTab = () => {
           label="Orgs on the platform"
           value={data ? data.orgs.toLocaleString() : "—"}
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description="Non-test, non-deleted tenants. The funnel's top row."
         />
       </div>

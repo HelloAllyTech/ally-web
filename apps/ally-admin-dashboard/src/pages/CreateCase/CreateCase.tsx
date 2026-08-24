@@ -34,6 +34,7 @@ import { useDebounce } from "@hooks";
 import { GetScenarioType } from "@types";
 import {
   extractValidData,
+  getErrorMessage,
   isEmpty,
   isNonEmptyArray,
   isNonEmptyObject,
@@ -183,7 +184,7 @@ export const CreateCase: FC = () => {
         formMethods.reset(currentFormValues);
         return response?.data;
       } else if (response?.error) {
-        toast.error(response?.error?.data?.message || en.errors.failedSaveDraft);
+        toast.error(getErrorMessage(response.error, en.errors.failedSaveDraft));
         return null;
       }
       return responseData;
@@ -197,9 +198,14 @@ export const CreateCase: FC = () => {
     try {
       const response = await saveCaseChanges(SimulationStatus.ACTIVE);
 
+      if (response?.error) {
+        toast.error(getErrorMessage(response.error, en.errors.failedSimulationCreation));
+        return;
+      }
+
       if (response) navigate(-1);
-    } catch (error: any) {
-      toast.error(error?.data?.message || en.errors.failedSimulationCreation);
+    } catch (error) {
+      toast.error(getErrorMessage(error, en.errors.failedSimulationCreation));
     }
   };
 

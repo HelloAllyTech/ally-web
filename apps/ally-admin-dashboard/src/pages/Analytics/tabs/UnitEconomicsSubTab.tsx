@@ -159,6 +159,8 @@ export const UnitEconomicsSubTab = () => {
           label={`USD per ${u?.perMinutes ?? 10} min of practice`}
           value={formatUsd(u?.overallCostPer10MinUsd)}
           loading={hydrating || (unitCost.isLoading && !u)}
+          error={Boolean(unitCost.error)}
+          onRetry={() => void unitCost.refetch()}
           description="Learner-caused AI spend over practice minutes, across the window."
         />
 
@@ -166,6 +168,8 @@ export const UnitEconomicsSubTab = () => {
           label="Learner-caused AI spend"
           value={formatUsd(u?.totalAttributableCostUsd)}
           loading={hydrating || (unitCost.isLoading && !u)}
+          error={Boolean(unitCost.error)}
+          onRetry={() => void unitCost.refetch()}
           description="Live roleplay, feedback and quiz grading."
         />
 
@@ -173,6 +177,8 @@ export const UnitEconomicsSubTab = () => {
           label="Other AI spend"
           value={formatUsd(u?.totalExcludedCostUsd)}
           loading={hydrating || (unitCost.isLoading && !u)}
+          error={Boolean(unitCost.error)}
+          onRetry={() => void unitCost.refetch()}
           description="Judges, authoring, copilot, translation, internal tooling. Excluded from the ratio."
         />
 
@@ -180,6 +186,8 @@ export const UnitEconomicsSubTab = () => {
           label="Practice minutes"
           value={u ? Math.round(u.totalPracticeMinutes).toLocaleString() : "—"}
           loading={hydrating || (unitCost.isLoading && !u)}
+          error={Boolean(unitCost.error)}
+          onRetry={() => void unitCost.refetch()}
           description="The denominator — the same measurement the practice-minutes chart uses."
         />
       </div>

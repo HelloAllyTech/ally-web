@@ -96,6 +96,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const {
     data: callLogsData,
     isLoading: isCallLogsLoading,
+    isError: isCallLogsError,
     refetch: refetchCallLogs,
   } = useGetCallLogsQuery(
     {
@@ -112,6 +113,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
+    isError: isSimulationLogsError,
     refetch: refetchSimulationLogs,
   } = useGetSimulationLogsQuery(
     {
@@ -128,6 +130,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const { data: simulationLogs = [] } = simulationLogsData || {};
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
+  const isError = isCall ? isCallLogsError : isSimulationLogsError;
 
   const handleScroll = () => {
     if (tableRef.current) {
@@ -219,6 +222,30 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
+      </div>
+    );
+  }
+
+  // A fetch failure must not be indistinguishable from "no calls yet" — the
+  // counsellor needs to know the difference and get a way back in, not a
+  // table that silently looks empty.
+  if (isError && !isLoading) {
+    const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
+    return (
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={
+            isCall ? t("calls.fallback.callErrorTitle") : t("calls.fallback.simErrorTitle")
+          }
+          description={
+            isCall ? t("calls.fallback.callErrorDesc") : t("calls.fallback.simErrorDesc")
+          }
+          button={{
+            text: t("common.retry"),
+            onClick: () => refetchFn?.(),
+          }}
+        />
       </div>
     );
   }

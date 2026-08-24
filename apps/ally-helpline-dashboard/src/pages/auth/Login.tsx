@@ -4,7 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { GoogleSignInButton } from "@ally-ui-mono/ui-shared";
@@ -36,7 +36,16 @@ const DEFAULT_EXPIRES_IN = 10; // 10 minutes
 export const Login: FunctionComponent = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useSelector((state: RootState) => state.user);
+
+  // A same-origin, in-app path only — never follow a returnTo that could
+  // redirect off the dashboard (e.g. a `//evil.com` protocol-relative URL
+  // smuggled through the query string).
+  const returnTo = (() => {
+    const raw = searchParams.get("returnTo");
+    return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+  })();
 
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
@@ -94,9 +103,21 @@ export const Login: FunctionComponent = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/");
+      navigate(returnTo ?? "/");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, user]);
+
+  // A session-expiry logout (see `handleLogout` in `api/baseAPI.ts`) is a
+  // hard redirect here with `sessionExpired=1` on the URL — surface why the
+  // learner landed back on the login screen instead of leaving them to
+  // wonder whether they did something wrong.
+  useEffect(() => {
+    if (searchParams.get("sessionExpired") === "1") {
+      toast.info(t("auth.login.sessionExpired"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (generateOTPError) {
@@ -146,7 +167,7 @@ export const Login: FunctionComponent = () => {
   const updateLocalStorageAndNavigate = () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessTokenRef.current);
     localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshTokenRef.current);
-    navigate("/");
+    navigate(returnTo ?? "/");
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

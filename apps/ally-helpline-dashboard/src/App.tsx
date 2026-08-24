@@ -1,6 +1,7 @@
 import { Toaster } from "sonner";
 
 import { AllyThemeProvider } from "@ally-ui-mono/ui-shared";
+import { ErrorBoundary } from "@components/error-boundary/ErrorBoundary";
 import RouteLayout from "@routes/RouteLayout";
 
 const App = () => {
@@ -21,7 +22,9 @@ const App = () => {
           },
         }}
       />
-      <RouteLayout />
+      <ErrorBoundary variant="page">
+        <RouteLayout />
+      </ErrorBoundary>
     </AllyThemeProvider>
   );
 };

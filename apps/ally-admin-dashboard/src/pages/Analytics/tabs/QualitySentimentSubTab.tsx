@@ -285,6 +285,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           nUnit="evaluated sessions"
           minN={MIN_N_FOR_SCORE}
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description="Mean LLM-judge composite over the window, 0–100. One of the four inputs to the Quality index chart below — not the same figure."
         />
 
@@ -294,6 +296,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           n={data?.totalResponses}
           nUnit="ratings"
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description="NOT an NPS — derived from the 1–5 rating. See the note below."
         />
 
@@ -303,6 +307,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           n={data?.pairedBuckets}
           nUnit="paired periods"
           loading={loading}
+          error={Boolean(error)}
+          onRetry={() => void refetch()}
           description="Pearson r across periods that have both. Co-movement, not cause."
         />
 
@@ -319,6 +325,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           nUnit="evaluated sessions"
           minN={MIN_N_FOR_SCORE}
           loading={distLoading}
+          error={distQ.isError}
+          onRetry={distQ.refetch}
         />
         <KpiTile
           label="Rated 4–5"
@@ -328,6 +336,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           nUnit="ratings"
           minN={MIN_N_FOR_SCORE}
           loading={distLoading}
+          error={distQ.isError}
+          onRetry={distQ.refetch}
         />
       </div>
 

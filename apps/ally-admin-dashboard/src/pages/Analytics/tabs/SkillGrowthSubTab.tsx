@@ -199,6 +199,8 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           nUnit="classified learners"
           minN={MIN_LEARNERS_FOR_SHARE}
           loading={growth.isLoading}
+          error={growth.isError}
+          onRetry={growth.refetch}
         />
         <KpiTile
           label="Classified learners"
@@ -209,6 +211,8 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           }
           value={mix ? mix.classifiedLearners.toLocaleString() : "—"}
           loading={growth.isLoading}
+          error={growth.isError}
+          onRetry={growth.refetch}
         />
         <KpiTile
           label="Median first session"
@@ -220,12 +224,16 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
               : "—"
           }
           loading={growth.isLoading}
+          error={growth.isError}
+          onRetry={growth.refetch}
         />
         <KpiTile
           label="Evaluated sessions"
           description="Judged sessions behind every number on this tab"
           value={data ? data.summary.evaluatedSessions.toLocaleString() : "—"}
           loading={growth.isLoading}
+          error={growth.isError}
+          onRetry={growth.refetch}
         />
       </div>
 

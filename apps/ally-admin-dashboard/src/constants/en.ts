@@ -83,6 +83,8 @@ export const en = {
     failedToCreateEvent: "Failed to create event",
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
     failedToSaveEvents: "Failed to save events. Please try again.",
+    failedToBulkAddEvents: (count: number) =>
+      `Failed to save ${count} event${count !== 1 ? "s" : ""}. None of them were added — please try again.`,
     failedToDeleteEvent: "Failed to delete event. Please try again.",
     errorUpdatingEvent: "Error updating event",
     userIdNotFound: "User id not found",
@@ -107,6 +109,10 @@ export const en = {
     title: "This page is not accessible",
     message:
       "You don't have permission to access this page. Please contact your administrator if you believe this is an error.",
+    reasonMissingPermission: "Your account doesn't have the permission this page requires.",
+    reasonMissingRoleOrToggle: "This page isn't turned on for your role yet.",
+    reasonNotAllowlisted: "This page is in a limited rollout your account isn't part of yet.",
+    nextStepContactAdmin: "Ask an Ally admin to grant access if you believe this is a mistake.",
   },
   /**
    * What a crashed page or panel says. Two deliberate choices here. The tone
@@ -134,6 +140,7 @@ export const en = {
     userFetchFailed: "User fetch failed",
     permissionsFetchFailed: "Permissions fetch failed",
     authenticationFailed: "Authentication failed",
+    forbidden: "You don't have permission to do that.",
   },
   auth: {
     hey: "Hey",
@@ -981,6 +988,10 @@ export const en = {
       resumeFailed: "Couldn’t resume the copilot session",
       startFailed: "Couldn’t start a copilot session",
       streamFailed: "The copilot stream failed — please try again",
+      streamFramesDropped: (count: number) =>
+        count === 1
+          ? "A part of this response could not be read and was skipped."
+          : `${count} parts of this response could not be read and were skipped.`,
       emptyTitle: "Start the interview",
       emptySubtitle:
         "Tell the copilot who the trainee will be talking to. It will draft the persona, states, secrets, and rubric live on the right.",
@@ -1154,6 +1165,7 @@ export const en = {
       cancelFailed: "Failed to cancel the test run",
       statusFailed: "Failed",
       statusCancelled: "Cancelled",
+      viewFailureReason: "View reason",
       verdictPassed: "Passed",
       verdictFailed: "Failed",
       verdictInconclusive: "Inconclusive",
@@ -1732,6 +1744,7 @@ export const en = {
       invalidMaxTokens: "Max tokens must be a positive whole number",
       empty: "No skills yet",
       emptySubtitle: "Create a system-prompt template to reuse across runs.",
+      loadFailed: "Couldn't load skills.",
       created: "Skill created",
       updated: "Skill updated",
       deleted: "Skill deleted",
@@ -1756,6 +1769,7 @@ export const en = {
       descriptionPlaceholder: "What does this variable represent?",
       empty: "No variables yet",
       emptySubtitle: "Define placeholder names you can drop into skill prompts.",
+      loadFailed: "Couldn't load variables.",
       created: "Variable created",
       updated: "Variable updated",
       deleted: "Variable deleted",
@@ -1785,6 +1799,7 @@ export const en = {
       columnValue: "Value",
       empty: "No values yet",
       emptySubtitle: "Add values for your variables so runs have something to substitute.",
+      loadFailed: "Couldn't load values.",
       noVariables: "Create a variable first — values are bound to a variable.",
       created: "Value created",
       updated: "Value updated",
@@ -1804,6 +1819,7 @@ export const en = {
       searchPlaceholder: "Search runs...",
       empty: "No runs yet",
       emptySubtitle: "Create a run to execute one or more skills and see their output here.",
+      loadFailed: "Couldn't load runs.",
       // Drawer
       drawerTitle: "Create New Run",
       selectSkills: "Select skills",
@@ -1992,6 +2008,7 @@ export const en = {
       emailPlaceholder: "evaluator@example.com",
       empty: "No evaluators yet",
       emptySubtitle: "Create evaluator accounts to assign published records for human review.",
+      loadFailed: "Couldn't load evaluators.",
       created: "Evaluator created",
       createFailed: "Failed to create evaluator",
       duplicate: "An evaluator with this email already exists",
@@ -2043,6 +2060,7 @@ export const en = {
       questionCount: (count: number) => `${count} question${count === 1 ? "" : "s"}`,
       empty: "No question sets yet",
       emptySubtitle: "Create a reusable list of questions to apply when publishing runs.",
+      loadFailed: "Couldn't load question sets.",
       saveDraft: "Save Draft",
       publishButton: "Publish",
       publishHelp: "Publishing locks the question list — it can no longer be edited.",
@@ -2606,6 +2624,8 @@ export const en = {
     drawerReleasedNotice: "This is live in production as {tag}.",
     drawerReleaseFailedNotice:
       "Release {tag} went red. The fix is still merged to master — it just isn't deployed. Check the run, then ask me to retry.",
+    drawerFixSessionFailedNotice:
+      "The fix session failed. Start a new session to retry.",
     drawerReleaseBlocked: "Why I can't release this from here",
     drawerReleasedBy: "Released by user #{userId}",
     drawerViewReleaseRun: "View release run",

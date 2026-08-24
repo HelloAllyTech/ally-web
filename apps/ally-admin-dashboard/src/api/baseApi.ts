@@ -46,7 +46,12 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     try {
       result = await baseQuery(args, store, extraOptions);
     } catch (error) {
-      toast.error(`${en.error.apiRequestFailed}: ${error}`);
+      // The raw error (often a bare "TypeError: Failed to fetch") used to be
+      // interpolated straight into the toast — a technical string with no
+      // action the user can take. Keep the detail in the console for
+      // debugging; show only the curated message.
+      console.error(en.error.apiRequestFailed, error);
+      toast.error(en.error.apiRequestFailed);
       throw error;
     }
 
@@ -79,19 +84,31 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         try {
           result = await baseQuery(args, store, extraOptions);
         } catch (error) {
-          toast.error(`${en.error.tokenRefreshFailed}: ${error}`);
+          console.error(en.error.tokenRefreshFailed, error);
+          toast.error(en.error.tokenRefreshFailed);
           throw error;
         }
       } catch (error) {
-        toast.error(`${en.error.tokenRefreshFailed}: ${error}`);
+        console.error(en.error.tokenRefreshFailed, error);
+        toast.error(en.error.tokenRefreshFailed);
         handleLogout();
         return result;
       }
+    } else if (result.error && result.error.status === 403) {
+      // Previously fell straight through with no handling at all — every
+      // caller had to remember to check `isError` on its own to learn a
+      // request was forbidden, which is exactly what let AI Lab's list tabs
+      // render "forbidden" identically to "genuinely empty" (see
+      // AiLabErrorState / the AI Lab tabs). One consistent toast here means
+      // every endpoint gets a permission message even when the calling
+      // component only checks `isError`.
+      toast.error(en.error.forbidden);
     }
 
     return result;
   } catch (error) {
-    toast.error(`${en.error.apiRequestFailed}: ${error}`);
+    console.error(en.error.apiRequestFailed, error);
+    toast.error(en.error.apiRequestFailed);
     return { error: { status: "FETCH_ERROR", error: String(error) } };
   }
 };

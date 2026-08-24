@@ -93,6 +93,12 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ROLEPLAY_STUDIO.SAVE_DRAFT(specId),
         method: HttpMethod.PUT,
         body: { spec, expectedUpdatedAt },
+        // useSpecAutosave fires this from a `beforeunload` handler; without
+        // `keepalive` the browser can (and does) tear the request down the
+        // moment the tab actually closes, right when it matters most. Chrome
+        // caps keepalive request bodies around 64KB combined — an edge case
+        // for a very large spec — but a best-effort save beats none.
+        keepalive: true,
       }),
       // Server returns { spec, specVersionId, validation } — the hook needs the
       // fresh concurrency token and the id of the snapshot this save produced.

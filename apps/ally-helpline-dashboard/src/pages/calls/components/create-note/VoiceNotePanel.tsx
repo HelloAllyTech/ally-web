@@ -11,6 +11,8 @@ interface VoiceNotePanelProps {
   /** Elapsed recorded time in milliseconds. */
   durationMs: number;
   isGenerating: boolean;
+  /** True once the drawer has aborted a generate call for taking too long. */
+  hasTimedOut: boolean;
   /** Rotating status lines shown while generating (already translated). */
   generatingMessages: string[];
   onPause: () => void;
@@ -61,6 +63,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   status,
   durationMs,
   isGenerating,
+  hasTimedOut,
   generatingMessages,
   onPause,
   onResume,
@@ -87,6 +90,41 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   const isPaused = status === "paused";
   const isStopped = status === "stopped";
 
+  // Checked before isGenerating: the request has just been aborted for
+  // taking too long, but the mutation's own isLoading flag may take a beat
+  // to catch up, and we want the timed-out screen the instant that happens
+  // rather than a flash back to the spinner.
+  if (hasTimedOut) {
+    return (
+      <div
+        className="flex flex-col items-center gap-3 border border-[#e0e0e0] bg-[#f4f4f4] p-5"
+        data-testid="voice-note-timeout"
+      >
+        <p className="font-primary text-sm text-[#525252] text-center">
+          {t("calls.createNote.voice.timeout")}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onDiscard}
+            className={`${ctrlButton} border-[#8d8d8d] text-[#525252] hover:bg-[#e8e8e8]`}
+            data-testid="voice-note-timeout-back"
+          >
+            {t("calls.createNote.voice.backToForm")}
+          </button>
+          <button
+            type="button"
+            onClick={onGenerate}
+            className={`${ctrlButton} border-[#264D8E] bg-[#264D8E] text-white hover:bg-[#1F3F75]`}
+            data-testid="voice-note-timeout-retry"
+          >
+            {t("calls.createNote.voice.tryAgain")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isGenerating) {
     return (
       <div
@@ -102,6 +140,14 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
         >
           {generatingMessages[messageIndex] ?? t("calls.createNote.voice.generating")}
         </motion.p>
+        <button
+          type="button"
+          onClick={onDiscard}
+          className={`${ctrlButton} border-[#8d8d8d] text-[#525252] hover:bg-[#e8e8e8]`}
+          data-testid="voice-note-cancel"
+        >
+          {t("calls.createNote.voice.cancel")}
+        </button>
       </div>
     );
   }

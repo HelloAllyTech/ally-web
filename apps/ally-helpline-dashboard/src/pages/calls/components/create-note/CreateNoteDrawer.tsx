@@ -176,6 +176,17 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     blob: recordedBlob,
   } = recorder;
   const [voiceOpen, setVoiceOpen] = useState(false);
+  // True once the in-flight generate call has been aborted for taking too
+  // long. Distinct from a hard failure: the recording is kept so the
+  // counsellor can retry or fall back to the manual form.
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  // The in-flight generateNoteFromAudio trigger result, so a timeout or an
+  // explicit cancel can abort the real network request rather than merely
+  // ignoring its eventual response.
+  const activeRequestRef = useRef<{ abort: () => void } | null>(null);
+  // Set immediately before calling abort() so the catch block can tell a
+  // deliberate timeout/cancel apart from a genuine failure from the server.
+  const abortReasonRef = useRef<"timeout" | "cancel" | null>(null);
 
   // Custom-field edit state (keyed by fieldDefinitionId).
   const [localValues, setLocalValues] = useState<Record<string, string | null>>({});
@@ -210,6 +221,9 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       creatingRef.current = null;
       transcriptRef.current = "";
       setVoiceOpen(false);
+      setHasTimedOut(false);
+      activeRequestRef.current = null;
+      abortReasonRef.current = null;
       resetRecorder();
     }
     // autosave is intentionally not a dependency: re-running this on every
@@ -410,27 +424,30 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   };
 
   // Write the model's extracted values into the form using each field's decoder,
-  // then persist. Returns how many fields were actually filled.
-  const applyGeneratedValues = (values: { id: string; value: string }[]): number => {
-    let filled = 0;
+  // then persist. Returns the labels of the fields actually filled, so the
+  // caller can tell the counsellor exactly which ones changed rather than
+  // just a count they'd have to eyeball-diff against the whole form.
+  const applyGeneratedValues = (values: { id: string; value: string }[]): string[] => {
+    const filledLabels: string[] = [];
     for (const { id, value } of values) {
       const decoder = voiceDecoders.get(id);
       if (!decoder) continue;
+      const label = voiceFields.find(f => f.id === id)?.label ?? id;
       if (decoder.kind === "builtin") {
         handleSummaryChange(id, value);
-        filled += 1;
+        filledLabels.push(label);
       } else {
         const encoded = encodeVoiceValue(decoder, value);
         if (encoded != null) {
           handleValueChange(id, encoded);
-          filled += 1;
+          filledLabels.push(label);
         }
       }
     }
-    if (filled === 0) return 0;
+    if (filledLabels.length === 0) return [];
     // Dictated values shouldn't sit in the debounce window — write them now.
     void autosave.flush().catch(() => {});
-    return filled;
+    return filledLabels;
   };
 
   const handleMicClick = () => {
@@ -440,18 +457,41 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   };
 
   const handleDiscardVoice = () => {
+    // Abort a still in-flight generate request (covers both the "Cancel"
+    // control shown while generating and the timed-out screen's "Back to
+    // form" button) — a no-op when nothing is in flight.
+    if (activeRequestRef.current) {
+      abortReasonRef.current = "cancel";
+      activeRequestRef.current.abort();
+      activeRequestRef.current = null;
+    }
+    setHasTimedOut(false);
     resetRecorder();
     setVoiceOpen(false);
   };
 
+  // Voice transcription + LLM field extraction over a real recording can
+  // legitimately take tens of seconds for a longer dictation; 45s is chosen
+  // to comfortably cover that round trip without leaving a merely slow (but
+  // working) request stranded on a spinner with no way out.
+  const GENERATE_TIMEOUT_MS = 45_000;
+
   const handleGenerateNotes = async () => {
     if (!recordedBlob) return;
+    setHasTimedOut(false);
+    const request = generateNoteFromAudio({ audio: recordedBlob, fields: voiceFields });
+    activeRequestRef.current = request;
+    const timeoutId = setTimeout(() => {
+      abortReasonRef.current = "timeout";
+      setHasTimedOut(true);
+      request.abort();
+    }, GENERATE_TIMEOUT_MS);
+
     try {
-      const result = await generateNoteFromAudio({
-        audio: recordedBlob,
-        fields: voiceFields,
-      }).unwrap();
-      const filled = applyGeneratedValues(result.values);
+      const result = await request.unwrap();
+      clearTimeout(timeoutId);
+      activeRequestRef.current = null;
+      const filledLabels = applyGeneratedValues(result.values);
 
       // Persist what was dictated so it shows in the note's Transcript view
       // later. Accumulate across multiple recordings and re-send the full text
@@ -474,15 +514,56 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
 
       resetRecorder();
       setVoiceOpen(false);
-      if (filled > 0) {
-        toast.success(t("calls.createNote.voice.generated"));
+      if (filledLabels.length > 0) {
+        toast.success(
+          t("calls.createNote.voice.generated", {
+            count: filledLabels.length,
+            fields: filledLabels.join(", "),
+          }),
+        );
       } else {
         toast(t("calls.createNote.voice.nothingExtracted"));
       }
     } catch (error) {
-      const message = (error as { data?: { message?: string } })?.data?.message;
+      clearTimeout(timeoutId);
+      activeRequestRef.current = null;
+      const abortReason = abortReasonRef.current;
+      abortReasonRef.current = null;
+      // Both a timeout and an explicit cancel abort this same request. The
+      // timed-out screen (or the closed panel, for cancel) already reflects
+      // that, so there's nothing further to surface here.
+      if (abortReason === "timeout" || abortReason === "cancel") return;
+
+      // The backend may throw on field-extraction while having already
+      // produced a transcript — the other half of this fix, landing
+      // separately in ally-be, has it return that transcript alongside the
+      // failure instead of nothing. Treat it as a partial success so a
+      // successful dictation is never thrown away just because extraction
+      // failed. Until that backend change ships, error responses carry no
+      // transcript and this falls through to the generic failure below,
+      // which is today's existing (if regrettable) behaviour.
+      const errorData = (error as { data?: { transcript?: string; message?: string } })?.data;
+      const partialTranscript = errorData?.transcript?.trim();
+      if (partialTranscript) {
+        transcriptRef.current = transcriptRef.current
+          ? `${transcriptRef.current}\n${partialTranscript}`
+          : partialTranscript;
+        try {
+          const chatId = await ensureNote();
+          await saveNoteTranscript({ chatId, transcript: transcriptRef.current }).unwrap();
+        } catch {
+          // Best-effort: even if this save fails, don't turn a partial
+          // success into a hard failure — the counsellor is already told no
+          // fields were extracted.
+        }
+        resetRecorder();
+        setVoiceOpen(false);
+        toast(t("calls.createNote.voice.nothingExtracted"));
+        return;
+      }
+
       toast.error(
-        message === "NO_SPEECH_DETECTED"
+        errorData?.message === "NO_SPEECH_DETECTED"
           ? t("calls.createNote.voice.noSpeech")
           : t("calls.createNote.voice.generateError"),
       );
@@ -604,6 +685,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
             status={recorder.status}
             durationMs={recorder.durationMs}
             isGenerating={isGeneratingNotes}
+            hasTimedOut={hasTimedOut}
             generatingMessages={voiceProcessingMessages}
             onPause={recorder.pause}
             onResume={recorder.resume}

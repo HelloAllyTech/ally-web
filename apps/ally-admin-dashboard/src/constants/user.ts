@@ -380,10 +380,22 @@ export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean 
  * user's gating changes. Falls back to `role` for any client or cache entry
  * predating `roles`.
  */
+// PLATFORM_ADMIN belongs here for exactly the reason MULTI_TENANT_ADMIN was
+// added above: it's a valid ADMIN_PORTAL_LOGIN_ROLES entry, so a user holding
+// e.g. [ADMIN, PLATFORM_ADMIN] would otherwise collapse to "ADMIN" (which
+// outranks the backend's own priority-list fallback). PrivateLayout's own
+// role gate now reads `roles[]` directly rather than this collapsed value
+// (see PrivateLayout.tsx), which removes the hazard there structurally — but
+// `resolveAdminRole`'s single-`role` output still drives other UI (sidebar,
+// display) outside that gate, so this precedence list stays as the correct
+// source for those. Any future platform-tier role added to
+// ADMIN_PORTAL_LOGIN_ROLES must be added here too, or a multi-role account
+// misreports everywhere this collapsed value is still read.
 const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
   UserRole.SUPER_DUPER_ADMIN,
   UserRole.SUPER_ADMIN,
   UserRole.MULTI_TENANT_ADMIN,
+  UserRole.PLATFORM_ADMIN,
 ];
 
 export const resolveAdminRole = (user?: {

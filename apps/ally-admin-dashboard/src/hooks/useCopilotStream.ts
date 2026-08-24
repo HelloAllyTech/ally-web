@@ -36,13 +36,23 @@ const nextMessageId = () => {
 
 /**
  * Parses SSE frames out of `buffer`. Returns the parsed events plus the
- * unconsumed remainder (a partial frame that is still streaming in).
- * Exported for unit tests.
+ * unconsumed remainder (a partial frame that is still streaming in), and how
+ * many frames were dropped for failing to parse as JSON. Exported for unit
+ * tests.
+ *
+ * `droppedCount` exists because a dropped frame used to vanish with only a
+ * console warning: whatever content it carried (a token, a tool result) was
+ * silently missing from the feed with no signal to the person reading it.
+ * The caller surfaces a visible note when this is nonzero rather than
+ * treating the turn as if nothing was lost.
  */
-export const parseSseBuffer = (buffer: string): { events: CopilotStreamEvent[]; rest: string } => {
+export const parseSseBuffer = (
+  buffer: string,
+): { events: CopilotStreamEvent[]; rest: string; droppedCount: number } => {
   const events: CopilotStreamEvent[] = [];
   const frames = buffer.split(/\r?\n\r?\n/);
   const rest = frames.pop() ?? "";
+  let droppedCount = 0;
 
   for (const frame of frames) {
     let eventName = "";
@@ -58,10 +68,11 @@ export const parseSseBuffer = (buffer: string): { events: CopilotStreamEvent[]; 
       events.push({ type: eventName, data } as CopilotStreamEvent);
     } catch {
       logger.warn(`[Copilot Stream] Dropping malformed SSE frame for event "${eventName}"`);
+      droppedCount += 1;
     }
   }
 
-  return { events, rest };
+  return { events, rest, droppedCount };
 };
 
 const ANSWER_PREFIX_RE = /^\[answers question [^\]]+\]\s*/i;
@@ -430,13 +441,15 @@ export const useCopilotStream = ({
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let droppedFrames = 0;
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          const { events, rest } = parseSseBuffer(buffer);
+          const { events, rest, droppedCount } = parseSseBuffer(buffer);
           buffer = rest;
+          droppedFrames += droppedCount;
           for (const event of events) {
             if (event.type === "error" && event.data.code === "session_not_found") {
               sessionLost = true; // handled by sendMessage; don't toast the raw error
@@ -447,6 +460,14 @@ export const useCopilotStream = ({
         }
         flushTokens();
         patchAssistantMessage(assistantId, { streaming: false });
+        // A dropped frame is silent on the wire — it never became an "error"
+        // event, so nothing else in this turn would ever mention it. Surface
+        // it as a tool note (the same affordance already used for tool
+        // calls/results) rather than leaving the reader to wonder why a
+        // response reads as if a sentence is missing.
+        if (droppedFrames > 0) {
+          appendToolNote(en.roleplayStudio.copilot.streamFramesDropped(droppedFrames));
+        }
       } catch (error) {
         flushTokens();
         if (controller.signal.aborted) {
@@ -472,7 +493,7 @@ export const useCopilotStream = ({
 
       return { userMsgId, assistantId, sessionLost, aborted: controller.signal.aborted };
     },
-    [dispatch, fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
+    [appendToolNote, dispatch, fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
   );
 
   const sendMessage = useCallback(

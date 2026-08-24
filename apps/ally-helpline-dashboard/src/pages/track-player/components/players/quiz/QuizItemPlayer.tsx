@@ -18,6 +18,7 @@ import {
   TrackItemCompletionResult,
   TrackItemType,
 } from "@types";
+import { clearItemProgress, loadItemProgress, saveItemProgress } from "@utils";
 
 import { QuizAnswerState, initialAnswerState, isAnswered, toAnswerInput } from "./quizAnswerState";
 import { QuizIntro } from "./QuizIntro";
@@ -84,10 +85,31 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
     setAnswers(seed);
   };
 
-  // Seed answer state once on mount from the initial payload.
+  // Seed answer state once on mount from the initial payload — unless an
+  // in-progress attempt was snapshotted to sessionStorage (e.g. a session
+  // expiry mid-quiz forced a reload), in which case resume it directly
+  // rather than restarting from the intro screen.
   useEffect(() => {
-    resetAnswers(payload.quiz);
+    const saved = loadItemProgress<{ current: number; answers: Record<string, QuizAnswerState> }>(
+      "quiz",
+      itemId,
+    );
+    if (saved) {
+      setAnswers(saved.answers);
+      setCurrent(saved.current);
+      setPhase("questions");
+    } else {
+      resetAnswers(payload.quiz);
+    }
   }, []);
+
+  // Snapshot in-progress answers so they survive a forced reload (session
+  // expiry) or an accidental refresh/back-navigation. Cleared once the
+  // attempt is actually submitted — see applyAttemptResult.
+  useEffect(() => {
+    if (phase !== "questions") return;
+    saveItemProgress("quiz", itemId, { current, answers });
+  }, [phase, current, answers, itemId]);
 
   const startQuiz = () => {
     resetAnswers(quiz);
@@ -100,6 +122,10 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
     setAnswers(prev => ({ ...prev, [questionId]: state }));
 
   const applyAttemptResult = (attempt: QuizAttemptResult) => {
+    // The attempt has been graded server-side — any locally snapshotted
+    // in-progress answers are now stale and should not resurrect on a later
+    // visit to this item.
+    clearItemProgress("quiz", itemId);
     setResult(attempt);
     setAttemptsUsed(attempt.attemptsUsed);
     setPhase("results");

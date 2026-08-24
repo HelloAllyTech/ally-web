@@ -442,6 +442,51 @@ describe("CreateSimulation", () => {
     });
   });
 
+  describe("Browser unload guard", () => {
+    // Background autosave runs on an interval and closes most of the gap, but
+    // a real tab close in between ticks previously lost whatever changed
+    // since the last one with no warning at all.
+    const fireBeforeUnload = () => {
+      const event = new Event("beforeunload", { cancelable: true }) as BeforeUnloadEvent;
+      window.dispatchEvent(event);
+      return event;
+    };
+
+    it("warns before unload when there are unsaved changes", () => {
+      mockFormMethods.formState.dirtyFields = { title: true };
+      renderCreateSimulation();
+
+      const event = fireBeforeUnload();
+
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it("does not warn before unload when the form is clean", () => {
+      mockFormMethods.formState.dirtyFields = {};
+      renderCreateSimulation();
+
+      const event = fireBeforeUnload();
+
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it("does not warn before unload in view-only mode, even with dirty fields", () => {
+      mockFormMethods.formState.dirtyFields = { title: true };
+      const store = createTestStore();
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <CreateSimulation viewMode />
+          </BrowserRouter>
+        </Provider>,
+      );
+
+      const event = fireBeforeUnload();
+
+      expect(event.defaultPrevented).toBe(false);
+    });
+  });
+
   describe("Save Draft", () => {
     it("should call save draft when save draft button is clicked", async () => {
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });

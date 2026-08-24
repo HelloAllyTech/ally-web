@@ -8,6 +8,7 @@ import type { SimulationTranslations } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation } from "@api";
 import { SimulationWarningIllustration } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";
+import { ErrorBoundary } from "@components/error-boundary/ErrorBoundary";
 import { ROUTES } from "@constants";
 import { useLiveKitRoom } from "@hooks";
 import { RoomStatus } from "@types";
@@ -53,6 +54,14 @@ export const Simulation = () => {
     supervisorEmptyState: t("simulationPage.supervisorEmptyState"),
     supervisorAiLabel: t("simulationPage.supervisorAiLabel"),
     supervisorAiTooltip: t("simulationPage.supervisorAiTooltip"),
+    connectionFailedTitle: t("simulationPage.connectionFailedTitle"),
+    connectionFailedMessage: t("simulationPage.connectionFailedMessage"),
+    agentNotJoinedTitle: t("simulationPage.agentNotJoinedTitle"),
+    agentNotJoinedMessage: t("simulationPage.agentNotJoinedMessage"),
+    retryConnection: t("simulationPage.retryConnection"),
+    exitSimulation: t("simulationPage.exitSimulation"),
+    reconnecting: t("simulationPage.reconnecting"),
+    missedSupervisorHints: t("simulationPage.missedSupervisorHints"),
     turnIndicator: {
       speaking: t("simulationPage.turnIndicator.speaking"),
       listening: t("simulationPage.turnIndicator.listening"),
@@ -81,7 +90,21 @@ export const Simulation = () => {
     detectedEventIds,
     agentTurnStatus,
     supervisorNotes,
+    // Previously destructured by nobody, so a failed connect set an error the
+    // UI never read and offered a retry nothing could call — the learner just
+    // watched "Connecting…" forever.
+    error,
+    agentJoinTimedOut,
+    missedSupervisorNoteCount,
+    handleRetryConnection,
   } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
+
+  // The way out when a session can't be started at all. Goes to Learn rather
+  // than the post-session summary: there is no session to summarise, and
+  // handleRoomDisconnected's summary route would land on an empty debrief.
+  const handleExitSimulation = () => {
+    navigate(ROUTES.LEARN, { replace: true });
+  };
 
   if (roomData) {
     roomData["title"] = scenarioTitle;
@@ -128,15 +151,24 @@ export const Simulation = () => {
   );
 
   return (
-    <>
+    <ErrorBoundary variant="panel" resetKey={id}>
       <SimulationPage
         room={room}
         roomData={roomData}
         roomStatus={roomStatus}
         sessionId={id}
         isEndingSession={
-          roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
+          roomStatus !== RoomStatus.CONNECTED &&
+          roomStatus !== RoomStatus.AGENT_JOINED &&
+          // A transient reconnect is still a live session — the learner must
+          // keep being able to end it rather than have the control greyed out.
+          roomStatus !== RoomStatus.RECONNECTING
         }
+        connectionError={error}
+        agentJoinTimedOut={agentJoinTimedOut}
+        onRetryConnection={handleRetryConnection}
+        onExitSimulation={handleExitSimulation}
+        missedSupervisorNoteCount={missedSupervisorNoteCount}
         startTime={startTime?.toISOString()}
         events={getSimulationEvents(events)}
         detectedEventIds={detectedEventIds}
@@ -170,6 +202,6 @@ export const Simulation = () => {
         secondaryButtonText={t("simulationPage.endDialog.cancel")}
         onSecondaryButtonClick={() => setIsBackConfirmOpen(false)}
       />
-    </>
+    </ErrorBoundary>
   );
 };
