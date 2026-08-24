@@ -215,6 +215,7 @@ export const FORM_FIELD_IDS = {
   FEEDBACK_TAB_SKILLS: "feedbackTabSkills",
   FEEDBACK_TAB_TRANSCRIPT: "feedbackTabTranscript",
   SUPERVISOR_NOTES_ENABLED: "supervisorNotesEnabled",
+  LIVE_TAB_ENABLED: "liveTabEnabled",
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   REMINDERS_ENABLED: "remindersEnabled",
@@ -827,6 +828,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         tooltipLocation: TooltipLocation.SUPERVISOR_NOTES_ENABLED,
+      },
+      {
+        id: "liveTabEnabled",
+        label: "Live transcript tab",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+        tooltipLocation: TooltipLocation.LIVE_TAB_ENABLED,
       },
       {
         id: "isGlobal",

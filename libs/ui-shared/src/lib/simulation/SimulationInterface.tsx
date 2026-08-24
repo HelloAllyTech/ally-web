@@ -46,6 +46,7 @@ export interface SimulationInterfaceProps {
   detectedEventIds?: string[];
   supervisorNotes?: SupervisorNoteType[];
   supervisorNotesEnabled?: boolean;
+  liveTabEnabled?: boolean;
   isFocusMode: boolean;
   isMuted: boolean;
   isPaused?: boolean;
@@ -70,6 +71,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   detectedEventIds,
   supervisorNotes = [],
   supervisorNotesEnabled = false,
+  liveTabEnabled = true,
   isFocusMode,
   isMuted,
   isPaused = false,
@@ -183,7 +185,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     (showSessionInfo ||
       hasStateNames ||
       (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
-      (checklistMode === ChecklistMode.OFF && events?.length > 0) ||
+      (checklistMode === ChecklistMode.OFF && events?.length > 0 && liveTabEnabled) ||
       // The Supervisor tab earns the sidebar on its own: it shows from the
       // start of the session, before any note has arrived.
       supervisorNotesEnabled === true);
@@ -218,6 +220,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               events={events}
               supervisorNotes={supervisorNotes}
               supervisorNotesEnabled={supervisorNotesEnabled}
+              liveTabEnabled={liveTabEnabled}
               translations={translations}
             />
           </div>

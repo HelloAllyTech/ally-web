@@ -75,6 +75,9 @@ export interface Scenario {
   /** Live in-session coaching hints in the Supervisor sidebar tab. Opt-in per
    * roleplay, so only an explicit true shows the tab. */
   supervisorNotesEnabled?: boolean;
+  /** Whether the learner-facing Live transcript/events tab is shown for this
+   * roleplay. Opt-out, so only an explicit false hides the tab. */
+  liveTabEnabled?: boolean;
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];

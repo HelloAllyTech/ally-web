@@ -41,12 +41,13 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
   events,
   supervisorNotes = [],
   supervisorNotesEnabled = false,
+  liveTabEnabled = true,
   translations,
 }) => {
   const showReminders = reminders.length > 0;
   const showDescription = !!description;
   const showChecklist = checklistMode !== ChecklistMode.OFF && checklistItems.length > 0;
-  const showLive = checklistMode === ChecklistMode.OFF && events?.length > 0;
+  const showLive = checklistMode === ChecklistMode.OFF && events?.length > 0 && liveTabEnabled;
   // Unlike the other tabs, this one shows before it has content: its empty
   // state is what tells the learner the supervisor is there at all.
   const showSupervisor = supervisorNotesEnabled === true;
