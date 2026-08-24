@@ -785,13 +785,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_DEBRIEF,
       },
       {
-        // See feedbackTabDebrief above — same nesting/persistence rules.
-        // Persists to scenarios.metadata.feedbackTabs.skills.
+        // See feedbackTabDebrief above, with one difference: Skills
+        // Demonstrated was switched off platform-wide (2026-08-24), so unlike
+        // debrief/transcript this one defaults OFF — only an explicit `true`
+        // persisted to scenarios.metadata.feedbackTabs.skills turns it on.
         id: "feedbackTabSkills",
         label: "Skills",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: true,
+        defaultValue: false,
         dependsOn: "enableFeedback",
         visibleWhen: (formValues: any) => formValues.enableFeedback === true,
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_SKILLS,

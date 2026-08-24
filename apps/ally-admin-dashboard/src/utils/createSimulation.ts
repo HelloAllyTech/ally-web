@@ -92,13 +92,17 @@ export const buildToggleDefaultValues = (
 /**
  * Build the `feedbackTabs` metadata payload from the three form toggles.
  *
- * Every key is `!== false`, never `Boolean(...)`. `buildToggleDefaultValues`
- * above now seeds these up front, so in the normal case they arrive as real
- * booleans — but this stays defensive on purpose, because the cost of an
- * `undefined` slipping through is a newly authored roleplay saved with all
- * three tabs dark, and a learner finishing a session to a blank screen. Reading
- * absent as ON also keeps this symmetric with `formatSimulationResponseData`
- * and with the backend resolver, both of which treat absent as on.
+ * Debrief and transcript read `!== false`, never `Boolean(...)`.
+ * `buildToggleDefaultValues` above now seeds these up front, so in the normal
+ * case they arrive as real booleans — but this stays defensive on purpose,
+ * because the cost of an `undefined` slipping through is a newly authored
+ * roleplay saved with those tabs dark, and a learner finishing a session to a
+ * blank screen. Reading absent as ON also keeps this symmetric with
+ * `formatSimulationResponseData` and with the backend resolver.
+ *
+ * Skills is the opposite shape (`=== true`, not `!== false`): it was switched
+ * off platform-wide (2026-08-24), so an unchecked/undefined toggle must
+ * persist as off, matching `DEFAULT_FEEDBACK_TABS` in the backend resolver.
  */
 export const buildFeedbackTabsPayload = (form: {
   feedbackTabDebrief?: boolean;
@@ -106,7 +110,7 @@ export const buildFeedbackTabsPayload = (form: {
   feedbackTabTranscript?: boolean;
 }) => ({
   debrief: form.feedbackTabDebrief !== false,
-  skills: form.feedbackTabSkills !== false,
+  skills: form.feedbackTabSkills === true,
   transcript: form.feedbackTabTranscript !== false,
 });
 
@@ -212,11 +216,12 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     showScoreMeter: data?.metadata?.showScoreMeter,
     enableFeedback: data?.metadata?.enableFeedback ?? true,
     // feedbackTabs mirrors the backend resolver exactly: an absent
-    // `feedbackTabs` object (every scenario saved before this feature
-    // existed) hydrates as all three ON, and within the object each key is
-    // ON unless explicitly `false`. Only `=== false` reads as off.
+    // `feedbackTabs` object hydrates debrief/transcript as ON (each is ON
+    // unless explicitly `false`) and skills as OFF (only an explicit `true`
+    // reads as on — Skills Demonstrated defaults off platform-wide since
+    // 2026-08-24).
     feedbackTabDebrief: (data?.metadata as any)?.feedbackTabs?.debrief !== false,
-    feedbackTabSkills: (data?.metadata as any)?.feedbackTabs?.skills !== false,
+    feedbackTabSkills: (data?.metadata as any)?.feedbackTabs?.skills === true,
     feedbackTabTranscript: (data?.metadata as any)?.feedbackTabs?.transcript !== false,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,

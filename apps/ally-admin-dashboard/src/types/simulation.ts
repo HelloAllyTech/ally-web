@@ -120,9 +120,10 @@ export interface SimulationInput {
    * Which post-session tabs this roleplay shows its learners, gated under
    * `enableFeedback` (the master switch — false there means everything off
    * regardless of these). Always sent with all three keys present: the
-   * backend resolver treats an absent `feedbackTabs` object as all-on and
-   * each key as on unless explicitly `false`, so a partial object could be
-   * misread as "off" for the omitted keys.
+   * backend resolver treats an absent `feedbackTabs` object as debrief/
+   * transcript-on, skills-off, and reads each key the same way when the
+   * object is only partially written — debrief/transcript on unless
+   * explicitly `false`, skills on only if explicitly `true`.
    */
   feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
   fillerEnabled?: boolean;
@@ -236,7 +237,7 @@ export interface GetSimulationByIdResponse {
     timerMode?: boolean;
     showScoreMeter?: boolean;
     enableFeedback?: boolean;
-    /** See SimulationInput.feedbackTabs — absent object or absent key both read as on. */
+    /** See SimulationInput.feedbackTabs — debrief/transcript default on, skills defaults off. */
     feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
     pauseEnabled?: boolean;
     /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */

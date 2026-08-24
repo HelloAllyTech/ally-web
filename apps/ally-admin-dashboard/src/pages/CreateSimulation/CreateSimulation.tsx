@@ -727,9 +727,9 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         : [],
       // Which post-session tabs this roleplay shows, nested under the
       // enableFeedback master switch. Always send all three keys — a
-      // partial object could be misread as "off" for whichever key is
-      // missing, since the backend resolver treats an absent key as on.
-      // Sent regardless of enableFeedback's own value: turning the master
+      // partial object could be misread by the backend resolver's per-key
+      // defaults (debrief/transcript on, skills off) for whichever key is
+      // missing. Sent regardless of enableFeedback's own value: turning the master
       // switch off only hides these controls in the form, it doesn't clear
       // their stored preference (see the field configs in
       // SimulationCreator.ts), so re-enabling it later restores them as-is.
