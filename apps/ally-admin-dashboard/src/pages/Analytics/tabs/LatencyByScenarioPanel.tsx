@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { SimpleBarChart } from "@carbon/charts-react";
 
 import {
+  InlineNotification,
   Table,
   TableBody,
   TableCell,
@@ -96,6 +97,15 @@ export const LatencyByScenarioPanel = ({
 
   return (
     <div className="flex flex-col gap-4">
+      {data?.truncated && (
+        <InlineNotification
+          kind="warning"
+          lowContrast
+          hideCloseButton
+          title="Ranking truncated"
+          subtitle="The backend's defensive cap cut this ranking's tail — the worst-performing simulation may not be shown."
+        />
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartCard
           title="Worst simulations — response latency"
