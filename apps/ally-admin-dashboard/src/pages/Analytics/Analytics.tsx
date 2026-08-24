@@ -17,7 +17,7 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { en, isSuperDuperAdminRole, UserRole, FeatureToggleKey } from "@constants";
+import { en, isSuperAdminRole, UserRole, FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
@@ -173,14 +173,14 @@ const TABS: TabDef[] = [
     render: () => <ProductManagementTab />,
   },
   {
-    // Ask-anything, in English. Gated on the elevated super-duper-admin tier,
-    // unlike every tab above it.
-    //
-    // The narrower gate is the point: the other tabs answer fixed, reviewed
-    // questions, while this one writes its own query across every readable
-    // table at platform scope. ally-be gates the endpoints on the same tier, so
-    // hiding the tab for a plain SUPER_ADMIN keeps the UI honest about what it
-    // could actually fetch rather than offering a control that 403s.
+    // Ask-anything, in English. Visible to the same SUPER_ADMIN_ROLES tier as
+    // every other tab — this used to sit behind the elevated super-duper-admin
+    // tier (the other tabs answer fixed, reviewed questions, while this one
+    // writes its own query across every readable table at platform scope), but
+    // the product decision was made to give every admin tier parity across all
+    // analytics surfaces. ally-be's ALLOWED_TABLES backs every tenant-
+    // attributable table with a filtered view that already excludes test-tenant
+    // rows, so widening who can ask a question does not widen what it can see.
     //
     // No page-level pickers: the reader states the period and the grouping in
     // the question itself, and a range picker that silently re-scoped a typed
@@ -190,16 +190,15 @@ const TABS: TabDef[] = [
     uses: { language: false, range: false },
     render: () => <AnalyticsAgentTab />,
     visibleTo: ({ role, features }) =>
-      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
+      isSuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
   },
   {
     // "What should we build next?", answered from the platform's own numbers and
-    // reviewed card by card. Last in the list, and on the elevated tier for a
-    // reason the tabs above it do not share: accepting a suggestion WRITES — it
-    // files an opportunity onto the product roadmap. Reading a chart and adding to
-    // the backlog are different privileges, and only SUPER_DUPER_ADMIN holds
-    // edit:admin:product-roadmap, so a plain SUPER_ADMIN seeing this tab would be
-    // offered a decision they cannot make.
+    // reviewed card by card. Visible to the same SUPER_ADMIN_ROLES tier as every
+    // other tab — this used to sit on the elevated tier because accepting a
+    // suggestion WRITES onto the product roadmap, a different privilege from
+    // reading a chart, but the product decision was made to give every admin
+    // tier parity across all analytics surfaces instead.
     //
     // No page-level pickers: the period belongs to a Generate run that already
     // happened and is stamped on every card, so a picker at the top of the page
@@ -209,7 +208,7 @@ const TABS: TabDef[] = [
     uses: { language: false, range: false },
     render: () => <SuggestionsTab />,
     visibleTo: ({ role, features }) =>
-      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
+      isSuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
   },
 ];
 
