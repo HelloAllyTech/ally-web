@@ -26,6 +26,7 @@ export const en = {
     noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
+    saving: "Saving...",
     enabled: "Enabled",
     disabled: "Disabled",
     edit: "Edit",
@@ -756,6 +757,28 @@ export const en = {
     cases: "Cases",
     courses: "Courses",
     groups: "Groups",
+    // Per-row group targeting on the content tabs. "Everyone" is the honest
+    // name for an item with no restriction rows — never "None" or "0 groups",
+    // which would read as nobody can see it.
+    cohortRestrictionEveryone: "Everyone",
+    cohortRestrictionOneGroup: "1 group",
+    cohortRestrictionCount: (count: number) => `${count} groups`,
+    cohortRestrictionAria: (title: string) => `Change who can see ${title}`,
+    cohortRestrictionTitle: (title: string) => `Who can see \u201C${title}\u201D?`,
+    cohortRestrictionHint:
+      "Leave every group unchecked to keep this available to everyone in this organization.",
+    cohortRestrictionUnassignedHint: "(people not in any group)",
+    cohortRestrictionReachAll: (total: number) =>
+      `Visible to everyone \u2014 all ${total} people in this organization.`,
+    cohortRestrictionReach: (reach: number, total: number) =>
+      `Visible to ${reach} of ${total} people.`,
+    cohortRestrictionGraceNote:
+      "People who have already started this keep access until they finish. New starts are limited to the groups above.",
+    cohortRestrictionCleared: (title: string) => `\u201C${title}\u201D is now visible to everyone`,
+    cohortRestrictionSaved: (title: string, count: number) =>
+      `\u201C${title}\u201D is now limited to ${count} ${count === 1 ? "group" : "groups"}`,
+    cohortRestrictionFailed: "Failed to update access",
+    peopleCount: (count: number) => `${count} ${count === 1 ? "person" : "people"}`,
     badges: "Badges",
     access: "Access",
     global: "Global",

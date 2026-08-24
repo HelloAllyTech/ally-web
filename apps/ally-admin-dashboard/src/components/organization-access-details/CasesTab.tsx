@@ -9,6 +9,7 @@ import { AccessFilterValue, ScenarioPath, SimulationStatus } from "@types";
 import { isNonEmptyArray, toAssignmentStatus } from "@utils";
 
 import { AccessFilter } from "./AccessFilter";
+import { useCohortRestrictions } from "./useCohortRestrictions";
 
 const CASES_PAGE_SIZE = 30;
 
@@ -28,6 +29,11 @@ export const CasesTab: FC<CasesTabProps> = ({
   const [casesOffset, setCasesOffset] = useState(0);
   const [cases, setCases] = useState<ScenarioPath[]>([]);
   const [accessFilter, setAccessFilter] = useState<AccessFilterValue>(AccessFilterValue.ALL);
+
+  // Group targeting sits on top of the tenant assignment this tab manages: the
+  // toggle decides whether the org has the case at all, the pill narrows it to
+  // some of the org's people.
+  const { renderRestrictionCell } = useCohortRestrictions(organizationId ?? "", "case");
 
   const handleToggleAccess = async (caseId: number, enabled: boolean) => {
     setCases(prev =>
@@ -133,6 +139,9 @@ export const CasesTab: FC<CasesTabProps> = ({
 
         {/* Toggle and Status */}
         <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
+          {/* Only for assigned rows: restricting content the org does not have
+              would be a control with nothing to act on. */}
+          {caseItem.isAssignedToTenant ? renderRestrictionCell(caseItem.id, caseItem.title) : null}
           <ToggleSwitch
             enabled={caseItem.isAssignedToTenant ?? false}
             onChange={enabled => handleToggleAccess(caseItem.id, enabled)}
