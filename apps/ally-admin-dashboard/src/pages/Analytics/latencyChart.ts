@@ -4,6 +4,7 @@ import {
   VoiceLatencyByLanguageRow,
   VoiceLatencyByScenarioRow,
   VoiceLatencyPoint,
+  VoiceLatencySessionRow,
 } from "@types";
 
 import { bucketTitle } from "./analyticsGrouping";
@@ -65,6 +66,54 @@ export function buildVoiceLatencySeries(
       { group: LATENCY_GROUPS.avg, key: point.bucket, value: toS(point.avgMs) },
       { group: LATENCY_GROUPS.p95, key: point.bucket, value: toS(point.p95Ms) },
     ]);
+}
+
+/**
+ * "15 Jan 2024, 14:32" for one x-axis tick. Duplicates utils/common.ts's
+ * `formatDateTime` rather than importing it: this file is otherwise
+ * dependency-free chart math, and `@utils` chains into `@constants`/
+ * `@components` — exactly the barrel that has broken narrowly-mocked tests
+ * elsewhere in this app (see CLAUDE.md's module-load-time-work gotcha).
+ */
+const formatSessionTimestamp = (iso: string): string =>
+  new Date(iso).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+/**
+ * Per-session response latency (p50/avg/p95), in seconds, as three lines — the
+ * session-wise counterpart to {@link buildVoiceLatencySeries}: one point per
+ * session, ordered by when it started, instead of one point per time bucket.
+ *
+ * A session with no `occurredAt` is skipped — there is no honest x-position
+ * for a point that didn't happen at a known time. A stat that's null for an
+ * otherwise-placed session is skipped too, same no-fabricated-zero rule as
+ * the bucketed series.
+ */
+export function buildVoiceLatencySessionSeries(rows: VoiceLatencySessionRow[]): LatencyDatum[] {
+  return rows
+    .filter(
+      (row): row is VoiceLatencySessionRow & { occurredAt: string } => row.occurredAt !== null,
+    )
+    .flatMap(row => {
+      const key = formatSessionTimestamp(row.occurredAt);
+      const datums: LatencyDatum[] = [];
+      if (row.p50ResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.p50, key, value: toS(row.p50ResponseLatencyMs) });
+      }
+      if (row.avgResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.avg, key, value: toS(row.avgResponseLatencyMs) });
+      }
+      if (row.p95ResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.p95, key, value: toS(row.p95ResponseLatencyMs) });
+      }
+      return datums;
+    });
 }
 
 /** Total turns behind a source's series — the n the chart is measured over. */

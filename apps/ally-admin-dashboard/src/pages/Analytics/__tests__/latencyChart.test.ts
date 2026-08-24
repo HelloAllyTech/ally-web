@@ -5,6 +5,7 @@ import {
   VoiceLatencyByLanguageRow,
   VoiceLatencyByScenarioRow,
   VoiceLatencyPoint,
+  VoiceLatencySessionRow,
 } from "@types";
 
 import {
@@ -23,6 +24,7 @@ import {
   buildVoiceLatencyByLanguageBars,
   buildVoiceLatencyByScenarioBars,
   buildVoiceLatencySeries,
+  buildVoiceLatencySessionSeries,
   countFirstAudioTurns,
   countMaskedTurns,
   countStartLatencySessions,
@@ -51,6 +53,28 @@ const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   avgReplyLatencyMs: null,
   p50ReplyLatencyMs: null,
   p95ReplyLatencyMs: null,
+  ...over,
+});
+
+const sessionRow = (over: Partial<VoiceLatencySessionRow>): VoiceLatencySessionRow => ({
+  scenarioSessionId: "sess-1",
+  occurredAt: "2024-06-10T14:32:00Z",
+  turnCount: 1,
+  avgResponseLatencyMs: 0,
+  p50ResponseLatencyMs: 0,
+  p95ResponseLatencyMs: 0,
+  avgEouDelayMs: null,
+  avgSttFinalizeMs: null,
+  avgLlmTtftMs: null,
+  avgTtsTtfbMs: null,
+  avgOrchestrationMs: null,
+  avgLlmResponseMs: null,
+  avgBranchingMs: null,
+  avgKnowledgeRetrievalMs: null,
+  avgProcessEventsMs: null,
+  avgBehaviorsMs: null,
+  interruptedTurns: 0,
+  llmTimedOutTurns: 0,
   ...over,
 });
 
@@ -104,6 +128,63 @@ describe("buildVoiceLatencySeries", () => {
 
   it("omits buckets with no turns rather than plotting a zero latency", () => {
     expect(buildVoiceLatencySeries([], "pipeline")).toEqual([]);
+  });
+});
+
+describe("buildVoiceLatencySessionSeries", () => {
+  // The builder formats `occurredAt` in the local timezone (same as the rest
+  // of this app's date display), so the expected label is derived the same
+  // way rather than hardcoded — a hardcoded "14:32" would only pass in UTC.
+  const label = (iso: string) =>
+    new Date(iso).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+  it("plots p50, average AND p95 per session, keyed by its start time", () => {
+    const occurredAt = "2024-06-10T14:32:00Z";
+    const series = buildVoiceLatencySessionSeries([
+      sessionRow({
+        occurredAt,
+        avgResponseLatencyMs: 4858,
+        p50ResponseLatencyMs: 3200,
+        p95ResponseLatencyMs: 8046,
+      }),
+    ]);
+
+    expect(series).toEqual([
+      { group: LATENCY_GROUPS.p50, key: label(occurredAt), value: 3.2 },
+      { group: LATENCY_GROUPS.avg, key: label(occurredAt), value: 4.858 },
+      { group: LATENCY_GROUPS.p95, key: label(occurredAt), value: 8.046 },
+    ]);
+  });
+
+  it("skips a session with no start time — there is no honest x-position for it", () => {
+    const series = buildVoiceLatencySessionSeries([sessionRow({ occurredAt: null })]);
+
+    expect(series).toEqual([]);
+  });
+
+  it("omits a null stat rather than plotting it as zero latency", () => {
+    const occurredAt = "2024-06-10T14:32:00Z";
+    const series = buildVoiceLatencySessionSeries([
+      sessionRow({
+        occurredAt,
+        avgResponseLatencyMs: null,
+        p50ResponseLatencyMs: 1000,
+        p95ResponseLatencyMs: null,
+      }),
+    ]);
+
+    expect(series).toEqual([{ group: LATENCY_GROUPS.p50, key: label(occurredAt), value: 1 }]);
+  });
+
+  it("returns an empty series for no rows", () => {
+    expect(buildVoiceLatencySessionSeries([])).toEqual([]);
   });
 });
 
