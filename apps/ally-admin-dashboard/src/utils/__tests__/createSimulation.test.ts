@@ -272,7 +272,9 @@ describe("createSimulation utils", () => {
         customFields: [],
         optGuardrails: false,
         temperature: 0.7,
-        fillerEnabled: false,
+        // Absent in metadata hydrates as ON: thinking filler is on by
+        // default across every scenario.
+        fillerEnabled: true,
         // Absent in metadata hydrates as ON, mirroring the backend's
         // default-ON glossary read (`!== false`).
         languageGlossaryEnabled: true,
@@ -1025,12 +1027,12 @@ describe("createSimulation utils", () => {
       expect(defaults.languageGlossaryEnabled).toBe(true);
       expect(defaults.historyTrimEnabled).toBe(true);
       expect(defaults.interimReplyEnabled).toBe(true);
+      expect(defaults.fillerEnabled).toBe(true);
     });
 
     it("should leave the OFF-by-default and undeclared toggles off", () => {
       expect(defaults.summaryChecklistEnabled).toBe(false);
       expect(defaults.pauseEnabled).toBe(false);
-      expect(defaults.fillerEnabled).toBe(false);
       expect(defaults.comfortAudioEnabled).toBe(false);
       expect(defaults.continuousBackchanneling).toBe(false);
       // No `defaultValue` in the config at all — absent reads as OFF.

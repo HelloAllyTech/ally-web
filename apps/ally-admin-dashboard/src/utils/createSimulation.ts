@@ -182,7 +182,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
-    fillerEnabled: data?.metadata?.fillerEnabled ?? false,
+    // Absent = ON: thinking filler is on by default across every scenario
+    // unless the stored value is explicitly false. Hydrating absent as false
+    // made the edit form LIE about live behavior — and a super-duper-admin
+    // saving the form would then write the explicit false back.
+    fillerEnabled: data?.metadata?.fillerEnabled ?? true,
     // Absent = ON: the backend serves the glossary unless the stored value is
     // explicitly false (default-ON rollout). Hydrating absent as false made
     // the edit form LIE about live behavior — and a super-duper-admin saving

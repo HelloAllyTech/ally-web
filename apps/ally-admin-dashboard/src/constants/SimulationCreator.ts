@@ -879,7 +879,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Thinking Filler",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
+        defaultValue: true,
         tooltipLocation: TooltipLocation.THINKING_FILLER,
       },
       {
