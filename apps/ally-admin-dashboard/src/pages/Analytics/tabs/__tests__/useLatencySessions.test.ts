@@ -177,4 +177,24 @@ describe("useLatencySessions", () => {
     rerender({ initialScenarioId: 3 });
     expect(result.current.scenarioId).toBe(3);
   });
+
+  it("re-applies initialScenarioId when a repeat push follows a manual pick, using focusToken to break the tie", () => {
+    const { result, rerender } = renderHook(
+      ({ initialScenarioId, focusToken }: { initialScenarioId?: number; focusToken?: number }) =>
+        useLatencySessions({}, "", initialScenarioId, focusToken),
+      { initialProps: { initialScenarioId: 1, focusToken: 1 } },
+    );
+
+    expect(result.current.scenarioId).toBe(1);
+
+    // A manual pick via the panel's own picker diverges from the pushed value...
+    act(() => result.current.setScenarioId(2));
+    expect(result.current.scenarioId).toBe(2);
+
+    // ...and a later "View sessions" click for the SAME simulation as before must
+    // still win, even though initialScenarioId itself is unchanged (1 -> 1) --
+    // that's what focusToken (bumped on every click) is for.
+    rerender({ initialScenarioId: 1, focusToken: 2 });
+    expect(result.current.scenarioId).toBe(1);
+  });
 });
