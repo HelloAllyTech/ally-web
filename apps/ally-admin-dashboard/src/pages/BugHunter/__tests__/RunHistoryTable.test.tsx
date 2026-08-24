@@ -15,7 +15,11 @@ vi.mock("@api", () => ({
   useGetBugHuntRunQuery: (id: string) => getRun(id),
 }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+}));
 
 /**
  * A router, because the "Found" count writes `?run=` through

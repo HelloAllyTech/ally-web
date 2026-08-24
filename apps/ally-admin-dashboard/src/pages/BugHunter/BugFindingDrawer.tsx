@@ -23,7 +23,7 @@ import {
   BUG_FINDING_FIX_SESSION_START_STATUSES,
   BugFindingStatus,
 } from "@types";
-import { formatDate } from "@utils";
+import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
@@ -381,7 +381,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                     String(finding.descriptionEditedBy ?? "—"),
                   )}
                   {finding.descriptionEditedAt
-                    ? ` · ${formatDate(finding.descriptionEditedAt)}`
+                    ? ` · ${formatDateTime(finding.descriptionEditedAt)}`
                     : ""}
                 </p>
                 <button
@@ -635,21 +635,21 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
           {finding.releasedBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerReleasedBy.replace("{userId}", String(finding.releasedBy))}
-              {finding.releasedAt ? ` · ${formatDate(finding.releasedAt)}` : ""}
+              {finding.releasedAt ? ` · ${formatDateTime(finding.releasedAt)}` : ""}
             </p>
           )}
 
           {finding.decidedBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerDecidedBy.replace("{userId}", String(finding.decidedBy))}
-              {finding.decidedAt ? ` · ${formatDate(finding.decidedAt)}` : ""}
+              {finding.decidedAt ? ` · ${formatDateTime(finding.decidedAt)}` : ""}
             </p>
           )}
 
           {finding.cancelledBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerCancelledBy.replace("{userId}", String(finding.cancelledBy))}
-              {finding.cancelledAt ? ` · ${formatDate(finding.cancelledAt)}` : ""}
+              {finding.cancelledAt ? ` · ${formatDateTime(finding.cancelledAt)}` : ""}
             </p>
           )}
 
@@ -677,7 +677,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                         String(finding.escalationAnsweredBy),
                       )}
                       {finding.escalationAnsweredAt
-                        ? ` · ${formatDate(finding.escalationAnsweredAt)}`
+                        ? ` · ${formatDateTime(finding.escalationAnsweredAt)}`
                         : ""}
                     </p>
                   )}
@@ -718,7 +718,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 {events.map(event => (
                   <li key={event.id} className="text-sm text-typography-800 flex gap-2">
                     <span className="text-typography-500 whitespace-nowrap tabular-nums">
-                      {formatDate(event.createdAt)}
+                      {formatTimestamp(event.createdAt)}
                     </span>
                     <span className="font-medium text-typography-700 whitespace-nowrap">
                       {BUG_HUNT_EVENT_STAGE_LABELS[event.stage]}

@@ -36,7 +36,12 @@ vi.mock("@components/action-confirmation-popup", () => ({
   ),
 }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+  logger: { error: vi.fn() },
+}));
 
 vi.mock("@components", () => ({
   cellTypes: {},

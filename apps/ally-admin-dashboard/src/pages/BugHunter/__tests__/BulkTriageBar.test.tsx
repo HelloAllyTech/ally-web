@@ -14,7 +14,12 @@ vi.mock("@api", () => ({
   baseAPI: { injectEndpoints: () => ({}), reducerPath: "api" },
 }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+  logger: { error: vi.fn() },
+}));
 
 vi.mock("@components", () => ({ cellTypes: {} }));
 

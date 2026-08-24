@@ -50,6 +50,32 @@ describe("LiveClock — rollover", () => {
     render(<LiveClock since="2026-08-18T11:58:00.000Z" />);
     expect(screen.getByText("Updated 2m ago")).toBeInTheDocument();
   });
+
+  // "2h ago" answers "is this page stale?" and nothing else. Which sweep the
+  // numbers came from needs a real moment, so it hangs off the hover.
+  it("hovers to the exact moment, down to the second", () => {
+    render(<LiveClock since={Date.now() - 2 * 60 * 60_000} />);
+
+    // Hour and minute float with the runner's zone; the seconds do not.
+    expect(screen.getByText("Updated 2h ago").getAttribute("title")).toMatch(
+      /^Last updated 18 Aug 2026, \d{2}:\d{2}:00$/,
+    );
+  });
+
+  it("says 'Started' rather than 'Last updated' on an elapsed counter", () => {
+    render(<LiveClock since={Date.now() - 45_000} mode="elapsed" />);
+
+    expect(screen.getByText("45s").getAttribute("title")).toMatch(
+      /^Started 18 Aug 2026, \d{2}:\d{2}:15$/,
+    );
+  });
+
+  // A malformed timestamp must not hover to "Last updated Invalid Date".
+  it("leaves the hover off entirely when the timestamp is unreadable", () => {
+    const { container } = render(<LiveClock since="not-a-date" />);
+
+    expect(container.querySelector("[title]")).toBeNull();
+  });
 });
 
 /**
