@@ -286,6 +286,12 @@ export const en = {
     imageMaxSizeLabel: "2MB",
     file: "File",
     addEvent: "Add event",
+    // The event picker lists the whole active-event catalogue, so a failed
+    // catalogue fetch used to look exactly like "there is nothing to pick" —
+    // every search answered "No options found" until the page was reloaded.
+    // Say which of the two it is, and offer the reload in place.
+    eventCatalogLoadFailed: "Couldn’t load the event list",
+    reloadEvents: "Reload the event list and re-sort rows by score",
     advancedEventsLatencyWarning: (count: number) =>
       `Heads up: ${count} advanced events are selected for this simulation. Selecting more than 10 can increase response latency during a session.`,
     bulkAddEvents: "Bulk add events",
