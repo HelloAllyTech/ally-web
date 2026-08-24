@@ -1,3 +1,15 @@
+/**
+ * Series builders and scales for the charts that were staged on the former
+ * **Testing** tab.
+ *
+ * The tab is gone — its twenty charts were distributed across the Highlights
+ * sub-tabs in 2026-08 — but the module keeps its name: several of these helpers
+ * are already shared with skillGrowthChart.ts, OrgHealthCard and the Weak
+ * performing metrics tab, and renaming a file that eight others import (plus its
+ * two test files) would put churn in front of every future `git blame` here for
+ * no reader-visible gain. Nothing in it is provisional any more.
+ */
+
 import {
   ActivationFunnel,
   CoachingLoopPoint,
