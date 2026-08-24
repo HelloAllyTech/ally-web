@@ -2,15 +2,24 @@ import React, { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
+import { NumberInput } from "@ally-ui-mono/ui-shared";
 import {
   useGetTermsQuery,
   useGetPrivacyQuery,
   useUpdateTermsMutation,
   useUpdatePrivacyMutation,
+  useGetTurnEndpointingQuery,
+  useUpdateTurnEndpointingMutation,
 } from "@api";
 import { Button, ComfortAudioSettings } from "@components";
 import { RichTextEditor } from "@components/rich-text-editor";
 import { ButtonVariant } from "@components/types";
+import {
+  TURN_ENDPOINTING_MIN_FLOOR,
+  TURN_ENDPOINTING_MIN_CEILING,
+  TURN_ENDPOINTING_MAX_FLOOR,
+  TURN_ENDPOINTING_MAX_CEILING,
+} from "@constants";
 
 type LegalEditorProps = {
   title: string;
@@ -43,6 +52,116 @@ const LegalEditor: React.FC<LegalEditorProps> = ({
     />
   </section>
 );
+
+type NumberFieldValue = number | "";
+
+/**
+ * Global turn-detection timing for every Studio v1 roleplay session. Replaces
+ * the deleted per-simulation "Min/Max Endpointing Delay" fields on
+ * Create/Edit Simulation — this is now the single platform-wide knob.
+ */
+const TurnEndpointingSettings: React.FC = () => {
+  const { data, isFetching: isLoading } = useGetTurnEndpointingQuery();
+  const [updateTurnEndpointing, { isLoading: isSaving }] = useUpdateTurnEndpointingMutation();
+
+  const [minDelay, setMinDelay] = useState<NumberFieldValue>("");
+  const [maxDelay, setMaxDelay] = useState<NumberFieldValue>("");
+
+  // Seed the fields once the current global setting arrives from the server.
+  useEffect(() => {
+    if (!data) return;
+    setMinDelay(data.turnMinEndpointingDelay);
+    setMaxDelay(data.turnMaxEndpointingDelay);
+  }, [data]);
+
+  const hasBothValues = minDelay !== "" && maxDelay !== "";
+  const isMaxGreaterThanMin = hasBothValues && Number(maxDelay) > Number(minDelay);
+  const isValid = hasBothValues && isMaxGreaterThanMin;
+  const showPairError = hasBothValues && !isMaxGreaterThanMin;
+
+  const handleNumberChange =
+    (setValue: React.Dispatch<React.SetStateAction<NumberFieldValue>>) =>
+    (_event: unknown, state: { value: number | string } | undefined) => {
+      const next = state?.value;
+      setValue(next === "" || next === undefined ? "" : Number(next));
+    };
+
+  const handleSave = async () => {
+    if (!isValid) return;
+    try {
+      await updateTurnEndpointing({
+        turnMinEndpointingDelay: Number(minDelay),
+        turnMaxEndpointingDelay: Number(maxDelay),
+      }).unwrap();
+      toast.success("Turn detection timing updated");
+    } catch {
+      toast.error("Failed to update turn detection timing");
+    }
+  };
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-secondary text-typography-900">Turn Detection Timing</h2>
+          <p className="text-sm text-typography-600">
+            Applies to every Studio v1 roleplay session, platform-wide. There is no more
+            per-simulation override.
+          </p>
+        </div>
+        <Button
+          variant={ButtonVariant.PRIMARY}
+          onClick={handleSave}
+          disabled={isSaving || isLoading || !isValid}
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4 max-w-md">
+        <div className="flex flex-col gap-1">
+          <NumberInput
+            id="turn-endpointing-min-delay"
+            label="Minimum reply delay (seconds)"
+            value={minDelay}
+            allowEmpty
+            min={TURN_ENDPOINTING_MIN_FLOOR}
+            max={TURN_ENDPOINTING_MIN_CEILING}
+            step={0.05}
+            hideSteppers
+            disabled={isLoading}
+            onChange={handleNumberChange(setMinDelay)}
+          />
+          <span className="text-xs text-typography-400">
+            How fast the agent may reply once it&apos;s confident the learner has finished. Lower =
+            snappier, more risk of cutting the learner off.
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <NumberInput
+            id="turn-endpointing-max-delay"
+            label="Maximum reply delay (seconds)"
+            value={maxDelay}
+            allowEmpty
+            min={TURN_ENDPOINTING_MAX_FLOOR}
+            max={TURN_ENDPOINTING_MAX_CEILING}
+            step={0.05}
+            hideSteppers
+            disabled={isLoading}
+            invalid={showPairError}
+            invalidText="Maximum delay must be greater than the minimum delay."
+            onChange={handleNumberChange(setMaxDelay)}
+          />
+          <span className="text-xs text-typography-400">
+            How long the agent waits for a learner who seems mid-thought before replying anyway.
+            Higher = fewer interruptions, more perceived dead air.
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export const Settings: React.FC = () => {
   const { data: terms, isFetching: isTermsLoading } = useGetTermsQuery();
@@ -110,6 +229,7 @@ export const Settings: React.FC = () => {
             isLoading={isPrivacyLoading}
           />
           <ComfortAudioSettings />
+          <TurnEndpointingSettings />
         </div>
       </div>
     </div>

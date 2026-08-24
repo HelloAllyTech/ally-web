@@ -227,9 +227,6 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
-  // EXPERIMENT(turn-endpointing) — temporary per-sim pair
-  TURN_MIN_ENDPOINTING_DELAY: "turnMinEndpointingDelay",
-  TURN_MAX_ENDPOINTING_DELAY: "turnMaxEndpointingDelay",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
@@ -270,13 +267,11 @@ export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
 
 /**
- * EXPERIMENT(turn-endpointing) — TEMPORARY. Per-simulation turn-detection
- * bounds (seconds), so we can find a good pair on real scenarios before
- * promoting it to ally-ai-learn's global TURN_MIN/MAX_ENDPOINTING_DELAY and
- * deleting these controls. Bounds mirror ally-be's DTO validators; the pair
- * itself (max strictly above min, both set or neither) is enforced by
- * `validateEndpointingPair` and again server-side, because the voice worker
- * silently discards an invalid pair and runs on the platform defaults.
+ * Turn-detection timing bounds (seconds) for the global "Turn Detection
+ * Timing" control on the admin Settings page. Bounds mirror ally-be's DTO
+ * validators for `PUT /v1/settings/turn-endpointing`. Formerly a per-simulation
+ * experiment (`EXPERIMENT(turn-endpointing)`); promoted to a single
+ * platform-wide setting once a good pair was found on real scenarios.
  */
 export const TURN_ENDPOINTING_MIN_FLOOR = 0.05;
 export const TURN_ENDPOINTING_MIN_CEILING = 5;
@@ -937,26 +932,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
-      },
-      // EXPERIMENT(turn-endpointing) — TEMPORARY pair of tuning dials, remove
-      // once a good global pair is found. Both or neither: the voice worker
-      // discards a half-configured pair. Save is blocked on an invalid pair in
-      // CreateSimulation (saveSimulationChangesCore) and by the ally-be DTO.
-      {
-        id: "turnMinEndpointingDelay",
-        label: "Min Endpointing Delay (seconds)",
-        type: FORM_FIELD_TYPES.NUMBER,
-        fullWidth: true,
-        placeholder: `Platform default (${TURN_ENDPOINTING_MIN_FLOOR}-${TURN_ENDPOINTING_MIN_CEILING})`,
-        note: "How fast the agent may reply once it is confident the learner has finished. Lower = snappier, but more risk of cutting the learner off. Leave both delays blank to use the platform default.",
-      },
-      {
-        id: "turnMaxEndpointingDelay",
-        label: "Max Endpointing Delay (seconds)",
-        type: FORM_FIELD_TYPES.NUMBER,
-        fullWidth: true,
-        placeholder: `Platform default (${TURN_ENDPOINTING_MAX_FLOOR}-${TURN_ENDPOINTING_MAX_CEILING})`,
-        note: "How long the agent waits for a learner who seems mid-thought before replying anyway. Must be greater than the min. Higher = fewer interruptions but more perceived dead air.",
       },
       {
         id: "continuousBackchanneling",
