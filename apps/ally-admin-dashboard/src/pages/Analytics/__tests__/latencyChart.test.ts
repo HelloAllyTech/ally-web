@@ -253,7 +253,7 @@ describe("buildVoiceLatencyByScenarioBars", () => {
   const scenarioRow = (over: Partial<VoiceLatencyByScenarioRow>): VoiceLatencyByScenarioRow => ({
     scenarioId: 1,
     scenarioTitle: "Scenario",
-    sessionCount: 1,
+    occurredAt: "2026-08-20T09:15:00.000Z",
     turnCount: 1,
     avgResponseLatencyMs: 0,
     p50ResponseLatencyMs: 0,

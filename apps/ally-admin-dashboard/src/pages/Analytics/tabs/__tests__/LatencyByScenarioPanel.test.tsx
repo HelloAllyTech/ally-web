@@ -60,7 +60,7 @@ import { LatencyByScenarioPanel } from "../LatencyByScenarioPanel";
 const baseRow = {
   scenarioId: 7,
   scenarioTitle: "Crisis call",
-  sessionCount: 3,
+  occurredAt: "2026-08-20T09:15:00.000Z",
   turnCount: 12,
   avgResponseLatencyMs: 12723,
   p50ResponseLatencyMs: 10037,
@@ -130,9 +130,28 @@ describe("LatencyByScenarioPanel", () => {
     render(<LatencyByScenarioPanel query={{}} language="" onSelectScenario={vi.fn()} />);
 
     expect(screen.getByText("Crisis call")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument(); // sessionCount
+    expect(screen.getByText("2026-08-20T09:15:00.000Z")).toBeInTheDocument(); // occurredAt (mocked formatDate is identity)
     expect(screen.getByText("12.72 s")).toBeInTheDocument(); // avgResponseLatencyMs
     expect(screen.getByText("Showing 1–1 of 1")).toBeInTheDocument();
+  });
+
+  it("shows an em-dash when a simulation has no latest-session timestamp", () => {
+    // avgSttFinalizeMs overridden to a real value — baseRow's null there
+    // already renders "—" via formatMs, which would otherwise collide with
+    // the assertion below and make it ambiguous which cell it's checking.
+    useGetVoiceLatencyByScenarioQueryMock.mockReturnValue(
+      makeResult({
+        data: {
+          rows: [{ ...baseRow, occurredAt: null, avgSttFinalizeMs: 500 }],
+          window: {},
+          truncated: false,
+        },
+      }),
+    );
+
+    render(<LatencyByScenarioPanel query={{}} language="" onSelectScenario={vi.fn()} />);
+
+    expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("calls onSelectScenario with the row's scenarioId when 'View sessions' is clicked", () => {

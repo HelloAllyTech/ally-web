@@ -13,6 +13,7 @@ import {
 import { AnalyticsWindowQuery, useGetVoiceLatencyByScenarioQuery } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
+import { formatDate } from "@utils";
 
 import { asOf, windowLabel } from "../analyticsFilters";
 import { ChartCard, buildSource, hBarOpts, single } from "../chartKit";
@@ -29,13 +30,22 @@ interface LatencyByScenarioPanelProps {
 }
 
 /**
- * "Which simulations are slow" — the ranking LatencySessionsPanel has no way
- * to produce on its own, since it requires a scenario to already be picked.
- * Two at-a-glance bar charts (worst-first, independently per metric) plus
- * the full per-stage table (same columns/formatting as LatencySessionsPanel,
- * one row per simulation instead of per session) so a slow scenario's
- * bottleneck stage is visible without a second lookup. "View sessions" on a
- * row drives the session-wise panel mounted directly below this one.
+ * "Which simulations are slow right now" — the ranking LatencySessionsPanel
+ * has no way to produce on its own, since it requires a scenario to already
+ * be picked. Two at-a-glance bar charts (worst-first, independently per
+ * metric) plus the full per-stage table (same columns/formatting as
+ * LatencySessionsPanel, one row per simulation instead of per session) so a
+ * slow scenario's bottleneck stage is visible without a second lookup.
+ * "View sessions" on a row drives the session-wise panel mounted directly
+ * below this one.
+ *
+ * Each row is that simulation's SINGLE MOST RECENT session, not a
+ * whole-window average — a real production investigation found that a
+ * multi-session average can make a scenario look systemically slow when
+ * it's really just one old, anomalous session (a disconnect, a paused
+ * client, a one-off provider stall) dragging the mean up. Latest-session
+ * answers "is this slow today", at the cost of being a one-session sample
+ * rather than an average.
  */
 export const LatencyByScenarioPanel = ({
   query,
@@ -77,7 +87,7 @@ export const LatencyByScenarioPanel = ({
   const rangeEnd = Math.min(page * PAGE_SIZE + PAGE_SIZE, rows.length);
 
   const source = buildSource({
-    derivation: "Live pipeline turn metrics, mean per simulation",
+    derivation: "Live pipeline turn metrics, each simulation's most recent session",
     window: scenarioWindow,
     n: totalTurns,
     nUnit: "turns",
@@ -89,7 +99,7 @@ export const LatencyByScenarioPanel = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartCard
           title="Worst simulations — response latency"
-          caption={`Top ${bars.avgResponseLatency.length} of ${bars.totalScenarios} simulations, slowest first.`}
+          caption={`Each simulation's most recent session. Top ${bars.avgResponseLatency.length} of ${bars.totalScenarios} simulations, slowest first.`}
           source={source}
           loading={isLoading && !data}
           error={isError}
@@ -102,7 +112,7 @@ export const LatencyByScenarioPanel = ({
         </ChartCard>
         <ChartCard
           title="Worst simulations — LLM TTFT"
-          caption={`Top ${bars.avgLlmTtft.length} of ${bars.totalScenarios} simulations, slowest first. Ranked independently of the chart beside it — a simulation can be bad on one and fine on the other.`}
+          caption={`Each simulation's most recent session. Top ${bars.avgLlmTtft.length} of ${bars.totalScenarios} simulations, slowest first. Ranked independently of the chart beside it — a simulation can be bad on one and fine on the other.`}
           source={source}
           loading={isLoading && !data}
           error={isError}
@@ -117,7 +127,7 @@ export const LatencyByScenarioPanel = ({
 
       <ChartCard
         title="Every simulation, worst-first"
-        caption="Full per-stage breakdown, so a slow simulation's bottleneck stage is visible without a second lookup. Click 'View sessions' to see that simulation's worst individual sessions below."
+        caption="Each simulation's most recent session, full per-stage breakdown, so a slow simulation's bottleneck stage is visible without a second lookup. Click 'View sessions' to see that simulation's worst individual sessions below."
         source={source}
         loading={isLoading && !data}
         error={isError}
@@ -132,7 +142,7 @@ export const LatencyByScenarioPanel = ({
             <TableHead>
               <TableRow className="border-b border-border-light text-sm text-typography-700">
                 <TableHeader className="py-3 pr-4 font-medium">Simulation</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Sessions</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Latest session</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Turns</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Response (avg)</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Response (p50)</TableHeader>
@@ -157,7 +167,9 @@ export const LatencyByScenarioPanel = ({
                   className="border-b border-border-light text-sm text-typography-900"
                 >
                   <TableCell className="py-3 pr-4">{row.scenarioTitle}</TableCell>
-                  <TableCell className="py-3 pr-4">{row.sessionCount}</TableCell>
+                  <TableCell className="py-3 pr-4">
+                    {row.occurredAt ? formatDate(row.occurredAt) : "—"}
+                  </TableCell>
                   <TableCell className="py-3 pr-4">{row.turnCount}</TableCell>
                   <TableCell className="py-3 pr-4">{formatMs(row.avgResponseLatencyMs)}</TableCell>
                   <TableCell className="py-3 pr-4">{formatMs(row.p50ResponseLatencyMs)}</TableCell>

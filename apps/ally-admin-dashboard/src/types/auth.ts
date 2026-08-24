@@ -1139,12 +1139,15 @@ export interface VoiceLatencySessionsSummary extends VoiceLatencySessionStages {
 }
 
 // VoiceLatencyByScenarioRowDto from GET /api/v1/analytics/voice-latency/by-scenario.
-// "Which simulations are slow" (one row per simulation, worst-first), distinct
-// from VoiceLatencySessionRow ("this simulation's worst sessions").
+// "Which simulations are slow right now" (one row per simulation, worst-first),
+// distinct from VoiceLatencySessionRow ("this simulation's worst sessions").
+// Each row is that simulation's single MOST RECENT session, not a
+// whole-window average — see the backend repository method's doc-comment.
 export interface VoiceLatencyByScenarioRow extends VoiceLatencySessionStages {
   scenarioId: number;
   scenarioTitle: string;
-  sessionCount: number;
+  /** When this simulation's most recent session started. */
+  occurredAt: string | null;
   turnCount: number;
 }
 

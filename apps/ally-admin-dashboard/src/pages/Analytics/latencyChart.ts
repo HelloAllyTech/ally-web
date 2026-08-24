@@ -341,6 +341,12 @@ export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[
  * latency but bad specifically on LLM TTFT (or vice versa), and showing one
  * chart's ranking through the other's lens would hide that.
  *
+ * `rows` is one row per simulation's single MOST RECENT session (not a
+ * whole-window average — see `VoiceLatencyByScenarioRow`'s doc-comment), so
+ * this ranks by "how slow was the latest session", not "how slow has this
+ * scenario been on average". This function itself doesn't know or care —
+ * it just sorts and slices whatever numbers it's given.
+ *
  * Truncated to `topN` (unlike {@link buildVoiceLatencyByLanguageBars}, which
  * shows every language because there are only a handful) — `totalScenarios`
  * travels alongside so the caller can caption "top N of M", making the
