@@ -154,6 +154,26 @@ describe("LatencyByScenarioPanel", () => {
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
+  it("warns that the ranking is incomplete when the backend truncated it", () => {
+    useGetVoiceLatencyByScenarioQueryMock.mockReturnValue(
+      makeResult({ data: { rows: [baseRow], window: {}, truncated: true } }),
+    );
+
+    render(<LatencyByScenarioPanel query={{}} language="" onSelectScenario={vi.fn()} />);
+
+    expect(screen.getByText("Ranking truncated")).toBeInTheDocument();
+  });
+
+  it("does not show a truncation warning when the backend returned the full ranking", () => {
+    useGetVoiceLatencyByScenarioQueryMock.mockReturnValue(
+      makeResult({ data: { rows: [baseRow], window: {}, truncated: false } }),
+    );
+
+    render(<LatencyByScenarioPanel query={{}} language="" onSelectScenario={vi.fn()} />);
+
+    expect(screen.queryByText("Ranking truncated")).not.toBeInTheDocument();
+  });
+
   it("calls onSelectScenario with the row's scenarioId when 'View sessions' is clicked", () => {
     const onSelectScenario = vi.fn();
     useGetVoiceLatencyByScenarioQueryMock.mockReturnValue(

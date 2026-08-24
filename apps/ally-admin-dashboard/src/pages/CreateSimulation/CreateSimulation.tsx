@@ -75,6 +75,7 @@ import {
   isEmpty,
   isNonEmptyArray,
   validateTimeRange,
+  validateEndpointingPair,
 } from "@utils";
 
 const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
@@ -537,6 +538,18 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         if (!silent) toast.error(en.errors.titleIsRequired);
         return null;
       }
+    }
+
+    // EXPERIMENT(turn-endpointing) — TEMPORARY, remove with the per-sim delay
+    // fields. Blocks every save path (explicit, publish, background autosave):
+    // ally-ai-learn discards an invalid pair and runs on the platform defaults,
+    // so persisting one would read as "my setting did nothing".
+    if (
+      !validateEndpointingPair(formData.turnMinEndpointingDelay, formData.turnMaxEndpointingDelay)
+        .isValid
+    ) {
+      if (!silent) toast.error(en.simulation.endpointingPairError);
+      return null;
     }
 
     if (formData.timerMode && formData.maxTimeValue) {

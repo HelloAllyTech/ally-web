@@ -408,6 +408,29 @@ export const validateTime = (timeString: string): string => {
  * @param maxTime - Optional maximum allowed time in HH:MM:SS format
  * @returns Object with isValid boolean and optional error message
  */
+/**
+ * EXPERIMENT(turn-endpointing) — TEMPORARY, remove with the per-sim delay
+ * fields. Valid states are "neither set" (use the platform defaults) and "both
+ * set with max strictly above min". Anything else is rejected at save time,
+ * because ally-ai-learn silently discards a bad pair and runs on the globals —
+ * so an invalid save looks exactly like a working one until someone reads the
+ * worker logs.
+ */
+export const validateEndpointingPair = (min: unknown, max: unknown): { isValid: boolean } => {
+  const isSet = (value: unknown) => value !== null && value !== undefined && value !== "";
+  const minSet = isSet(min);
+  const maxSet = isSet(max);
+
+  if (!minSet && !maxSet) return { isValid: true };
+  if (minSet !== maxSet) return { isValid: false };
+
+  const minValue = Number(min);
+  const maxValue = Number(max);
+  if (Number.isNaN(minValue) || Number.isNaN(maxValue)) return { isValid: false };
+
+  return { isValid: minValue > 0 && maxValue > minValue };
+};
+
 export const validateTimeRange = (
   timeStr: string,
   minTime?: string,

@@ -131,6 +131,8 @@ export interface SimulationInput {
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
+  // EXPERIMENT(turn-endpointing) — temporary per-sim pair
+  turnMinEndpointingDelay?: number;
   turnMaxEndpointingDelay?: number;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -250,6 +252,8 @@ export interface GetSimulationByIdResponse {
     comfortAudioUrl?: string;
     comfortAudioVolume?: number;
     historyTrimEnabled?: boolean;
+    // EXPERIMENT(turn-endpointing) — temporary per-sim pair
+    turnMinEndpointingDelay?: number;
     turnMaxEndpointingDelay?: number;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;

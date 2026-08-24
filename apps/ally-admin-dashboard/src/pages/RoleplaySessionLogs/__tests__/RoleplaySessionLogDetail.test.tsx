@@ -75,6 +75,15 @@ const baseDetail = {
   weakMetrics: null,
 };
 
+describe("RoleplaySessionLogDetail — summary card", () => {
+  it("shows the session id alongside the other identifying fields", () => {
+    getQueryMock.mockReturnValue({ data: baseDetail, isLoading: false, isError: false });
+    render(<RoleplaySessionLogDetail />);
+    expect(screen.getByText("Session ID")).toBeInTheDocument();
+    expect(screen.getByText(baseDetail.id)).toBeInTheDocument();
+  });
+});
+
 describe("RoleplaySessionLogDetail — language glossary card", () => {
   it("renders nothing for a genuine non-glossary session", () => {
     getQueryMock.mockReturnValue({ data: baseDetail, isLoading: false, isError: false });
