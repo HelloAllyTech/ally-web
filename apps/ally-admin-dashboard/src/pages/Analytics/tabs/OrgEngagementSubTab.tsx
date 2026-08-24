@@ -1,20 +1,26 @@
 import { useMemo, useState } from "react";
 
-import { LineChart } from "@carbon/charts-react";
+import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
-import { useGetOrgEngagementQuery } from "@api";
+import {
+  useGetOrgEngagementQuery,
+  useGetOrgHealthQuery,
+  useGetOrgSessionDistributionQuery,
+} from "@api";
 
-import { PLATFORM_WIDE_NOTE } from "../analyticsFilters";
+import { asOfStamp, PLATFORM_WIDE_NOTE } from "../analyticsFilters";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   KpiTile,
   ScrollableChart,
+  barOpts,
   buildSource,
   integerTickValues,
   lineOpts,
 } from "../chartKit";
+import { sequentialScale } from "../chartScales";
 import { FunnelBars } from "../FunnelBars";
 import {
   ORG_ACTIVITY_SCALE,
@@ -24,6 +30,16 @@ import {
   buildOrgFunnelStages,
   periodLabel,
 } from "../ladderChart";
+import { OrgHealthCard } from "../OrgHealthCard";
+
+/**
+ * Stable empty argument for the two org-wide endpoints.
+ *
+ * A fresh `{}` per render would be a new argument object each time; RTK Query
+ * would still key it identically, but a module constant makes the intent — no
+ * tenant, no window — visible rather than incidental.
+ */
+const PLATFORM_WIDE = {};
 
 /** The trailing windows the "active recently" headline may be read over. */
 const WINDOW_ITEMS: { id: 7 | 28 | 90; label: string }[] = [
@@ -54,6 +70,29 @@ export const OrgEngagementSubTab = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const { data, isLoading, error, refetch } = useGetOrgEngagementQuery({ activityDays });
+  // Which SPECIFIC org needs attention, and how the whole customer base is
+  // shaped. Both count orgs, so like everything else here they are platform-wide
+  // by construction rather than by a filter that happens not to be set.
+  const orgHealth = useGetOrgHealthQuery(PLATFORM_WIDE);
+  const orgSessionDistribution = useGetOrgSessionDistributionQuery(PLATFORM_WIDE);
+
+  const osd = orgSessionDistribution.data;
+  const minutesBars = useMemo(
+    () => (osd?.avgMinutesPerLearner.bands ?? []).map(b => ({ group: b.label, value: b.orgs })),
+    [osd],
+  );
+  const minutesScale = useMemo(
+    () => sequentialScale((osd?.avgMinutesPerLearner.bands ?? []).map(b => b.label)),
+    [osd],
+  );
+  const sessionsBars = useMemo(
+    () => (osd?.avgSessionsPerLearner.bands ?? []).map(b => ({ group: b.label, value: b.orgs })),
+    [osd],
+  );
+  const sessionsScale = useMemo(
+    () => sequentialScale((osd?.avgSessionsPerLearner.bands ?? []).map(b => b.label)),
+    [osd],
+  );
 
   const funnel = useMemo(() => buildOrgFunnelStages(data), [data]);
   const activity = useMemo(() => buildOrgActivitySeries(data), [data]);
@@ -224,6 +263,73 @@ export const OrgEngagementSubTab = () => {
               })}
             />
           </ScrollableChart>
+        </ChartCard>
+      </div>
+
+      {/* ----------------------------- Customers -------------------------- */}
+      <SubHeading>Customers</SubHeading>
+      <div className="grid grid-cols-1 gap-4">
+        <OrgHealthCard
+          data={orgHealth.data}
+          loading={orgHealth.isLoading && !orgHealth.data}
+          error={orgHealth.isError}
+          onRetry={orgHealth.refetch}
+        />
+      </div>
+
+      {/* How the WHOLE customer base is shaped — org-health above is which
+          SPECIFIC org needs attention; this has no per-org row on purpose. */}
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <ChartCard
+          title="Orgs by avg practice minutes per learner"
+          caption={`All-time average minutes-played per learner, per org, bucketed. A first-pass scale — not yet calibrated against real usage.${
+            osd && !osd.avgMinutesPerLearner.shown
+              ? ` Fewer than ${osd.avgMinutesPerLearner.minGroupSize} orgs in scope — suppressed rather than shown over a population too small to band.`
+              : ""
+          }`}
+          source={buildSource({
+            derivation: "AVG(user_daily_scores.minutesPlayed) per learner, per org",
+            window: "All time",
+            n: osd?.avgMinutesPerLearner.totalOrgs,
+            nUnit: "orgs with >=1 learner",
+            asOf: asOfStamp(osd?.computedAt),
+          })}
+          loading={orgSessionDistribution.isLoading && !osd}
+          error={orgSessionDistribution.isError}
+          onRetry={orgSessionDistribution.refetch}
+          empty={!orgSessionDistribution.isLoading && minutesBars.length === 0}
+          emptyText="No orgs with learners yet"
+        >
+          <SimpleBarChart
+            data={minutesBars}
+            options={barOpts({ leftTitle: "Orgs", colorScale: minutesScale })}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Orgs by avg completed sessions per learner"
+          caption={`All-time average completed sessions per learner, per org, bucketed.${
+            osd && !osd.avgSessionsPerLearner.shown
+              ? ` Fewer than ${osd.avgSessionsPerLearner.minGroupSize} orgs in scope — suppressed rather than shown over a population too small to band.`
+              : ""
+          }`}
+          source={buildSource({
+            derivation: "AVG(completed scenario_sessions count) per learner, per org",
+            window: "All time",
+            n: osd?.avgSessionsPerLearner.totalOrgs,
+            nUnit: "orgs with >=1 learner",
+            asOf: asOfStamp(osd?.computedAt),
+          })}
+          loading={orgSessionDistribution.isLoading && !osd}
+          error={orgSessionDistribution.isError}
+          onRetry={orgSessionDistribution.refetch}
+          empty={!orgSessionDistribution.isLoading && sessionsBars.length === 0}
+          emptyText="No orgs with learners yet"
+        >
+          <SimpleBarChart
+            data={sessionsBars}
+            options={barOpts({ leftTitle: "Orgs", colorScale: sessionsScale })}
+          />
         </ChartCard>
       </div>
 

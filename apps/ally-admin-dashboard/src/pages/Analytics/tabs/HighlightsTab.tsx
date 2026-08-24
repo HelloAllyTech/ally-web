@@ -3,6 +3,8 @@ import { ReactNode, useState } from "react";
 import { Tab, TabList, TabPanel, TabPanels, CarbonTabs as Tabs } from "@ally-ui-mono/ui-shared";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
+import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
+import { CurriculumSubTab } from "./CurriculumSubTab";
 import { OrgEngagementSubTab } from "./OrgEngagementSubTab";
 import { PlatformSubTab } from "./PlatformSubTab";
 import { QualitySentimentSubTab } from "./QualitySentimentSubTab";
@@ -26,18 +28,21 @@ interface SubTabDef {
 
 const SUB_TABS: SubTabDef[] = [
   {
-    // First entry = the landing panel. This is the former Highlights tab in
-    // full, unchanged: certification hero, KPI strip, growth, engagement,
-    // outcomes, adoption and the existing unit-economics charts.
+    // First entry = the landing panel. The former Highlights tab in full —
+    // certification hero, KPI strip, growth, engagement, outcomes, adoption and
+    // the existing unit-economics charts — plus the north-star pair, which
+    // belongs on the first screen a leader sees rather than a click away.
     id: "platform",
     label: "Platform",
-    blurb: "The whole-platform picture: certification, growth, engagement, outcomes and adoption.",
+    blurb:
+      "The whole-platform picture: the north star, certification, growth, engagement, outcomes and adoption.",
     render: f => <PlatformSubTab {...f} />,
   },
   {
     id: "levels",
     label: "Usage levels",
-    blurb: "How deep learners get (the L1–L5 lifetime-minutes ladder) and whether they come back.",
+    blurb:
+      "Whether learners start at all, how deep they get (the L1–L5 lifetime-minutes ladder), and whether they come back.",
     render: f => <UsageLevelsSubTab {...f} />,
   },
   {
@@ -47,21 +52,40 @@ const SUB_TABS: SubTabDef[] = [
     id: "skills",
     label: "Skill growth",
     blurb:
-      "Does practice make people better? The learning curve, how many individuals improved against their own baseline, and any one learner's history.",
+      "Does practice make people better? The learning curve, how many individuals improved against their own baseline, which competencies the practice lands on, and any one learner's history.",
     render: f => <SkillGrowthSubTab {...f} />,
   },
   {
-    id: "orgs",
-    label: "Orgs",
-    blurb: "How far each account has climbed, and how many are still active. Always platform-wide.",
-    render: () => <OrgEngagementSubTab />,
+    // Content rather than people: the three sub-tabs above ask how far learners
+    // get and how well they do, and this one asks what the platform put in
+    // front of them.
+    id: "curriculum",
+    label: "Curriculum",
+    blurb:
+      "What learners practise and what they finish: completion by item format, the language mix, and the most- and least-used scenarios.",
+    render: f => <CurriculumSubTab {...f} />,
   },
   {
     id: "quality",
     label: "Quality & sentiment",
     blurb:
-      "Does the LLM judge agree with the learner? Two measures of the same sessions, compared.",
+      "Does the LLM judge agree with the learner? The same sessions read as an index, a proxy NPS, a distribution and a rating mix.",
     render: f => <QualitySentimentSubTab {...f} />,
+  },
+  {
+    // The only panels on this tab that measure people other than learners.
+    id: "coaching",
+    label: "Coaching & support",
+    blurb:
+      "The human loop around the product: sessions shared for review, how fast they get a reply, and how widely live support is used.",
+    render: f => <CoachingSupportSubTab {...f} />,
+  },
+  {
+    id: "orgs",
+    label: "Orgs",
+    blurb:
+      "How far each account has climbed, how many are still active, and how the customer base is shaped. Always platform-wide.",
+    render: () => <OrgEngagementSubTab />,
   },
   {
     id: "cost",
@@ -77,14 +101,15 @@ const SUB_TABS: SubTabDef[] = [
  *
  * ## Why sub-tabs rather than one long page
  *
- * The tab reached twenty-three charts. Beyond a screen or two, a dashboard stops
+ * The tab reached twenty-three charts, and then absorbed the twenty that used to
+ * live on a separate Testing tab. Beyond a screen or two, a dashboard stops
  * being read and starts being scrolled past, and the reader loses the ability to
  * hold a section in their head — which is the whole point of grouping charts by
  * the question they answer rather than by the endpoint that serves them.
  *
  * There is a second, mechanical reason: only the visible panel's hooks mount, so
  * a reader opening Highlights pays for the Platform panel's requests and not for
- * five sub-tabs' worth of aggregation across a dozen endpoints. Mounting
+ * seven sub-tabs' worth of aggregation across two dozen endpoints. Mounting
  * everything and hiding it with CSS would have made the first paint slower for
  * every reader in order to save a click for some of them.
  *
@@ -133,7 +158,7 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
           {SUB_TABS.map((tab, i) => (
             <TabPanel key={tab.id}>
               {/* Rendered only while selected. Carbon keeps every TabPanel in
-                  the tree, so without this guard all five panels' hooks would
+                  the tree, so without this guard every panel's hooks would
                   mount on first paint and fire their requests — the cost this
                   structure exists to avoid. */}
               {i === selected ? tab.render(filters) : null}

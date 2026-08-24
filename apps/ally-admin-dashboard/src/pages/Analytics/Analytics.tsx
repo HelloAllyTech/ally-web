@@ -32,7 +32,6 @@ import { LatencyTab } from "./tabs/LatencyTab";
 import { ProductManagementTab } from "./tabs/ProductManagementTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
-import { TestingTab } from "./tabs/TestingTab";
 import { WeakPerformingMetricsTab } from "./tabs/WeakPerformingMetricsTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
@@ -79,7 +78,10 @@ interface TabDef {
 const TABS: TabDef[] = [
   // First entry = the default landing tab. Highlights is the whole-platform
   // picture; it absorbed the former separate "Overview" tab, which rendered four
-  // of the same charts from the same data.
+  // of the same charts from the same data, and later the "Testing" staging tab,
+  // whose twenty charts were distributed into the Highlights sub-tab that
+  // answers the same question as each — so a metric now lives in exactly one
+  // place rather than in a reviewed copy and a provisional one.
   //
   // It takes no time range: a leadership view of "how is the platform doing" is
   // a question about the whole history, and the reader who wants a narrower read
@@ -169,20 +171,6 @@ const TABS: TabDef[] = [
     label: "Product management",
     uses: { language: false, range: false },
     render: () => <ProductManagementTab />,
-  },
-  {
-    // The staging surface for charts that are candidates for the tabs above.
-    // Last in the list because everything on it is provisional, and a panel
-    // still being judged should not be the first thing a reader meets. Visible
-    // to both super-admin tiers, like the rest of this page — the route already
-    // gates on SUPER_ADMIN_ROLES and every endpoint it calls does the same, so a
-    // narrower tab-level gate would only hide charts a reader is allowed to
-    // fetch. Like Highlights it is all-time with per-chart grouping, so a chart
-    // that earns its place can move without rework.
-    id: "testing",
-    label: "Testing",
-    uses: { language: false, range: false },
-    render: f => <TestingTab {...f} />,
   },
   {
     // Ask-anything, in English. Gated on the elevated super-duper-admin tier,

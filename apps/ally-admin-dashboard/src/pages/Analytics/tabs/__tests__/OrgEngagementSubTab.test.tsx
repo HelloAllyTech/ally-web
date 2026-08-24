@@ -13,10 +13,24 @@ vi.hoisted(() => {
 const queryMock = vi.fn();
 const refetchMock = vi.fn();
 
-// Full replacement, not a partial spread: this tab calls exactly one hook, so
-// there is no need to pull in the real `@api` barrel's import graph.
+const idleQuery = () => ({
+  data: undefined,
+  isLoading: false,
+  isFetching: false,
+  isUninitialized: false,
+  isError: false,
+  error: undefined,
+  refetch: vi.fn(),
+});
+
+// Full replacement, not a partial spread: there is no need to pull in the real
+// `@api` barrel's import graph. The two customer panels are stubbed idle —
+// these tests are about the engagement-ladder cards, and a card with no data
+// renders its empty state without touching the assertions below.
 vi.mock("@api", () => ({
   useGetOrgEngagementQuery: (args: unknown) => queryMock(args),
+  useGetOrgHealthQuery: () => idleQuery(),
+  useGetOrgSessionDistributionQuery: () => idleQuery(),
 }));
 
 import { OrgEngagementSubTab } from "../OrgEngagementSubTab";
