@@ -1424,7 +1424,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
           chrome above matches the parent; the editable form is bounded
           (~Notion's editor width) and centered so whitespace is balanced on
           both sides instead of stretching fields edge-to-edge. */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
+      <div ref={containerRef} className="relative flex-1 overflow-y-auto custom-scrollbar">
         {/* The Agent Builder Copilot tab is a full-width split screen, so it
             opts out of the centered, max-width reading column the other tabs
             use. */}
