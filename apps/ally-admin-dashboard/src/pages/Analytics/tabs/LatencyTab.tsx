@@ -126,8 +126,17 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const [expanded, setExpanded] = useState<string | null>(null);
   // Lifted so a click on a LatencyByScenarioPanel row can drive
   // LatencySessionsPanel's simulation picker directly, without either owning
-  // the other's state.
+  // the other's state. focusToken bumps on every click, even a repeat of the
+  // same scenario id, so a click that repeats the current value still forces
+  // LatencySessionsPanel to re-apply it -- otherwise a manual pick in that
+  // panel's own dropdown could diverge and a same-id click here would be a
+  // silent no-op (React bails on setState when the value is unchanged).
   const [focusedScenarioId, setFocusedScenarioId] = useState<number | null>(null);
+  const [focusToken, setFocusToken] = useState(0);
+  const selectScenario = (scenarioId: number) => {
+    setFocusedScenarioId(scenarioId);
+    setFocusToken(token => token + 1);
+  };
   const languageParam = language || undefined;
   const scopedQuery = { ...query, bucket };
 
@@ -787,16 +796,13 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         </ScrollableChart>
       </ChartCard>
 
-      <LatencyByScenarioPanel
-        query={query}
-        language={language}
-        onSelectScenario={setFocusedScenarioId}
-      />
+      <LatencyByScenarioPanel query={query} language={language} onSelectScenario={selectScenario} />
 
       <LatencySessionsPanel
         query={query}
         language={language}
         initialScenarioId={focusedScenarioId ?? undefined}
+        focusToken={focusToken}
       />
 
       {/* ---------------------------- Detail views ---------------------------- */}

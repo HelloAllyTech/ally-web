@@ -46,6 +46,8 @@ interface LatencySessionsPanelProps {
   language: string;
   /** Pushed in from the by-scenario ranking panel's "View sessions" action — see useLatencySessions. */
   initialScenarioId?: number;
+  /** Changes on every "View sessions" click, even a repeat simulation — see useLatencySessions. */
+  focusToken?: unknown;
 }
 
 /**
@@ -60,6 +62,7 @@ export const LatencySessionsPanel = ({
   query,
   language,
   initialScenarioId,
+  focusToken,
 }: LatencySessionsPanelProps) => {
   const { data: scenarios } = useGetSimulationsQuery({ limit: 200 });
   const {
@@ -77,7 +80,7 @@ export const LatencySessionsPanel = ({
     goNext,
     rangeStart,
     rangeEnd,
-  } = useLatencySessions(query, language, initialScenarioId);
+  } = useLatencySessions(query, language, initialScenarioId, focusToken);
 
   const scenarioItems = (scenarios?.data ?? []).map(s => ({
     id: s.id as number,
