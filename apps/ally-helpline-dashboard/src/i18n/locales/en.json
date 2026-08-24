@@ -1593,6 +1593,12 @@
           "playAgain": "Play again",
           "cardLabel": "Card {{number}}"
         },
+        "SNAKE": {
+          "score": "Score",
+          "best": "Best",
+          "restart": "Start over",
+          "gameOver": "Game over — {{score}}"
+        },
         "CUB_N_PUP": {
           "levels": "Levels",
           "close": "Close",
