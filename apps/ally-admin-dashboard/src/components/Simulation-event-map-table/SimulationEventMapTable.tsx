@@ -4,6 +4,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
@@ -79,20 +80,40 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
   const [viewMode, setViewMode] = useState<EventMapViewMode>("full");
 
-  const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
-    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
-    sortBy: SORT_BY.CREATED_AT,
-    order: SORT_ORDER.DESC,
-  });
-  const { data: mappedScenarioEventsData, isLoading: isMappedEventsLoading } =
-    useGetMappedScenarioEventsQuery(
-      {
-        id: String(simulationId || ""),
-      },
-      {
-        refetchOnMountOrArgChange: true,
-      },
-    );
+  // The whole active-event catalogue backs the event picker, so this one
+  // request decides whether an event can be found at all. It gets
+  // `refetchOnMountOrArgChange` for the same reason the mapped-events query
+  // below does: a cached failure must not survive as a silently empty
+  // catalogue — that reads as "no such event" and only a full page reload
+  // cleared it. `isError` is carried through to the picker so a failed load
+  // never masquerades as an empty one.
+  const {
+    data: sessionEventsData,
+    isLoading: isSessionEventsLoading,
+    isError: isSessionEventsError,
+    refetch: refetchSessionEvents,
+  } = useGetSessionEventsQuery(
+    {
+      visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
+      sortBy: SORT_BY.CREATED_AT,
+      order: SORT_ORDER.DESC,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const {
+    data: mappedScenarioEventsData,
+    isLoading: isMappedEventsLoading,
+    refetch: refetchMappedEvents,
+  } = useGetMappedScenarioEventsQuery(
+    {
+      id: String(simulationId || ""),
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
@@ -324,7 +345,13 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     setEventOrderMapping(orderMapping);
   };
 
+  // The refresh control used to only re-sort the rows already on screen, so
+  // when the catalogue or the mapping had failed to load, the one control that
+  // looks like "reload" changed nothing and a full page reload was the only way
+  // out. Refetch both queries first, then re-sort.
   const onReloadMappedEvents = () => {
+    refetchSessionEvents?.();
+    refetchMappedEvents?.();
     setTimeout(() => {
       updateEventOrderMapping(mappedEvents);
       // Target the NotionTable's scrollable container (has overflow-auto class)
@@ -606,15 +633,40 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     <div className="flex flex-col h-full w-full">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
         <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
-          <div className="cursor-pointer" onClick={onReloadMappedEvents}>
-            <Refresh className="w-4 h-4" />
-          </div>
+          {/* Opens downward: this row is the top of a scrolling panel, and the
+              tooltip has no auto-flip. */}
+          <Tooltip label={en.simulation.reloadEvents} align="bottom">
+            <button
+              type="button"
+              aria-label={en.simulation.reloadEvents}
+              className="cursor-pointer inline-flex items-center"
+              onClick={onReloadMappedEvents}
+            >
+              <Refresh className="w-4 h-4" />
+            </button>
+          </Tooltip>
           <SegmentedToggle
             label="Advanced settings view"
             value={viewMode}
             options={VIEW_MODE_OPTIONS}
             onChange={setViewMode}
           />
+          {/*
+            A failed catalogue fetch is not an empty catalogue: without this the
+            only sign was every event search answering "No options found".
+          */}
+          {isSessionEventsError && (
+            <span className="flex items-center gap-2 text-sm font-normal text-destructive-500">
+              {en.simulation.eventCatalogLoadFailed}
+              <button
+                type="button"
+                className="underline text-primary-600"
+                onClick={() => refetchSessionEvents?.()}
+              >
+                {en.common.retry}
+              </button>
+            </span>
+          )}
         </div>
         <div className="flex gap-2">
           {!isLoading && (
@@ -653,6 +705,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         sessionEvents={sessionEvents}
         availableEventOptions={sessionEventsOptions}
         onEventSelect={handleEventSelect}
+        catalogFailedToLoad={isSessionEventsError}
+        onRetryCatalog={() => refetchSessionEvents?.()}
       />
       <BulkAddEventsSidePanel
         isOpen={isBulkAddPanelOpen}
