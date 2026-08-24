@@ -39,10 +39,11 @@ const FRAME_HEIGHT: Record<TrackGameKey, string> = {
  * learner's language for itself — anything it renders in words has to be handed
  * to it on the `focus` message. The runner and the tic-tac-toe board are pure
  * canvas and need nothing; the memory deck has a move counter and an
- * end-of-round card, the puzzle has a level list, a solved count and the lines
- * that teach it, and the plant has a picker, a running commentary and the whole
- * of its screen-reader narration, so those three get these. A bundle falls back
- * to its own baked-in English if the host sends nothing, which keeps this list
+ * end-of-round card, the snake has a score/best readout and a game-over line,
+ * the puzzle has a level list, a solved count and the lines that teach it, and
+ * the plant has a picker, a running commentary and the whole of its
+ * screen-reader narration, so those four get these. A bundle falls back to its
+ * own baked-in English if the host sends nothing, which keeps this list
  * optional.
  */
 const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
@@ -54,6 +55,7 @@ const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
     "playAgain",
     "cardLabel",
   ],
+  [TrackGameKey.SNAKE]: ["score", "best", "restart", "gameOver"],
   [TrackGameKey.CUB_N_PUP]: [
     "levels",
     "close",
