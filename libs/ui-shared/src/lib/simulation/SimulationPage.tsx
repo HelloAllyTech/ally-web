@@ -433,6 +433,9 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           // Opt-in per roleplay: only an explicit true shows the tab (the
           // pauseEnabled precedent below is the same shape, inverted default).
           supervisorNotesEnabled={roomData?.supervisorNotesEnabled === true}
+          // Opt-out per roleplay, unlike supervisorNotesEnabled/pauseEnabled above:
+          // only an explicit false hides the tab, so missing/undefined keeps it shown.
+          liveTabEnabled={roomData?.liveTabEnabled !== false}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           isPaused={isPaused}

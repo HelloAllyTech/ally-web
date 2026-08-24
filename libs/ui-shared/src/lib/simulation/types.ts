@@ -140,6 +140,9 @@ export interface SessionSidebarProps {
    * with zero notes, because its empty state is the point (it tells the learner
    * someone is watching). */
   supervisorNotesEnabled?: boolean;
+  /** Whether this roleplay has the Live transcript/events tab turned on. Opt-out,
+   * so the tab appears unless explicitly disabled with `false`. */
+  liveTabEnabled?: boolean;
   translations?: SimulationTranslations;
 }
 

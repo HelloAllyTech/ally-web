@@ -257,6 +257,9 @@ describe("createSimulation utils", () => {
         // Opt-in: a roleplay saved before live supervisor notes existed
         // hydrates as off, which is also the default for new ones.
         supervisorNotesEnabled: false,
+        // Opt-out, unlike supervisorNotesEnabled above: absent in metadata
+        // hydrates as ON (only an explicit false turns it off).
+        liveTabEnabled: true,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         category: "",

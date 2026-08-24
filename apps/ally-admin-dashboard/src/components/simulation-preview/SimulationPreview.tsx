@@ -86,6 +86,9 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         // So an author previewing a roleplay sees the Supervisor tab exactly as
         // the learner will. Opt-in, same as the learner path.
         supervisorNotesEnabled: scenario?.metadata?.supervisorNotesEnabled === true,
+        // Opt-out, unlike supervisorNotesEnabled above: only an explicit false
+        // hides the Live tab, so the preview matches the learner's default.
+        liveTabEnabled: scenario?.metadata?.liveTabEnabled !== false,
         stateNames: stateNames || [],
         difficultyLevel: scenario?.difficultyLevel || "",
         useDirectAgentDispatch: useDirectAgentDispatch ?? false,

@@ -799,6 +799,9 @@ export enum TooltipLocation {
   // feedback suits a novice but breaks the pressure a confident learner
   // practises for, so it is a per-roleplay judgement call.
   SUPERVISOR_NOTES_ENABLED = "supervisor_notes_enabled",
+  // Learner-facing Live transcript/events tab. Unlike supervisor notes above,
+  // this is on by default (opt-out) — only an explicit false hides it.
+  LIVE_TAB_ENABLED = "live_tab_enabled",
   DEFAULT_ORG_VISIBILITY = "default_org_visibility",
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
