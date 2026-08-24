@@ -535,6 +535,9 @@ export const en = {
     maxTimeError(minTime: string, maxTime: string) {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
     },
+    // EXPERIMENT(turn-endpointing) — remove with the per-sim delay fields.
+    endpointingPairError:
+      "Set both endpointing delays, with the max greater than the min — or leave both blank to use the platform default.",
     newRow: "New row",
     statesInstruction: "States Instruction & Dialogues",
     behavioursInstruction: "Behaviour Instructions",
