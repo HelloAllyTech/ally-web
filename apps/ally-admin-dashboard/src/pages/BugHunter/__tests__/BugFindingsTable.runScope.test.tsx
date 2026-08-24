@@ -36,7 +36,12 @@ vi.mock("@components/action-confirmation-popup", () => ({
   ),
 }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+  logger: { error: vi.fn() },
+}));
 
 vi.mock("@components", () => ({
   cellTypes: {},
@@ -174,12 +179,17 @@ describe("BugFindingsTable — one sweep's bugs", () => {
 
   it("names the sweep it is scoped to, and offers the way out", () => {
     getBugHuntRun.mockReturnValue({
-      data: { id: "run-a", repo: "ally-ai-learn", createdAt: "22 Aug 2026" },
+      data: { id: "run-a", repo: "ally-ai-learn", createdAt: "22 Aug 2026, 02:12" },
     });
     mount([finding({ id: "a", runId: "run-a" })], 1, "/?run=run-a");
 
+    // The clock time, not just the day: a nightly sweep and the manual one
+    // someone kicked off after a release share a date, and the banner has to
+    // say which of the two these counts describe.
     expect(
-      screen.getByText(/Showing only the bugs my ally-ai-learn sweep of 22 Aug 2026 touched/),
+      screen.getByText(
+        /Showing only the bugs my ally-ai-learn sweep at 22 Aug 2026, 02:12 touched/,
+      ),
     ).toBeInTheDocument();
     // Stated, not implied: a reader who has not seen this line reads
     // "Everything 1" as "one bug exists".

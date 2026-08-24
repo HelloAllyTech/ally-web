@@ -32,7 +32,7 @@ import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { ErrorBoundary } from "@components/error-boundary";
 import { en } from "@constants";
 import { BugFinding, BugFindingSeverity, BugFindingSource } from "@types";
-import { formatDate } from "@utils";
+import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
 import { BugFindingDrawer } from "./BugFindingDrawer";
@@ -695,7 +695,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
               {scopedRun
                 ? en.bugHunter.runScopeBanner
                     .replace("{repo}", scopedRun.repo)
-                    .replace("{date}", formatDate(scopedRun.createdAt))
+                    .replace("{timestamp}", formatDateTime(scopedRun.createdAt))
                 : en.bugHunter.runScopeBannerLoading}
             </span>{" "}
             {en.bugHunter.runScopeBannerHint}
@@ -1029,11 +1029,13 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                     </TableCell>
 
                     <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                      {/* The absolute date stays reachable as the hover title —
-                          the column shows the magnitude, which is the thing a
+                      {/* The exact timestamp — to the second, not just the day —
+                          stays reachable as the hover title, so a row can be
+                          placed against the sweep that touched it. The column
+                          itself shows the magnitude, which is the thing a
                           triager is actually comparing between rows. */}
                       <span
-                        title={formatDate(finding.createdAt)}
+                        title={formatTimestamp(finding.createdAt)}
                         className={`tabular-nums ${STALENESS_STYLES[tinted]}`}
                       >
                         {days == null ? "—" : formatAge(days)}
@@ -1060,7 +1062,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                             column of absolute timestamps next to a column of
                             "9h" is two units to hold at once. */}
                         <span
-                          title={formatDate(finding.updatedAt)}
+                          title={formatTimestamp(finding.updatedAt)}
                           className="tabular-nums text-typography-700"
                         >
                           {formatAge(

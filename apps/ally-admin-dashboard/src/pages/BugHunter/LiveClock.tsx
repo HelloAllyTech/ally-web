@@ -1,6 +1,11 @@
 import { FC, useEffect, useState } from "react";
 
 import { en } from "@constants";
+// Deep import, not the `@utils` barrel: this clock renders inside
+// `LiveWorkBoard` and `AgentProfileCard`, whose tests stub `@api` down to
+// what they use, and the barrel drags the real store in behind
+// `loggerWithRedux`.
+import { formatTimestamp } from "@utils/common";
 
 export interface LiveClockProps {
   /** When the data this clock describes was last fetched — an ISO string or a `Date.now()`-style timestamp (RTK Query's own `fulfilledTimeStamp`). */
@@ -82,6 +87,17 @@ export const LiveClock: FC<LiveClockProps> = ({ since, mode = "updated", srLabel
   const accessibleName =
     mode === "elapsed" && srLabel ? srLabel.replace("{duration}", label) : undefined;
 
+  // The relative reading is the summary; the exact moment is one hover away.
+  // "Updated 2h ago" is the right answer to "is this page stale?" and no answer
+  // at all to "which sweep produced this?" — so the title carries the
+  // timestamp, to the second, rather than making the reader do the subtraction.
+  const exactTitle = Number.isNaN(sinceMs)
+    ? undefined
+    : (mode === "elapsed"
+        ? strings.clockElapsedExactTitle
+        : strings.clockUpdatedExactTitle
+      ).replace("{timestamp}", formatTimestamp(new Date(sinceMs).toISOString()));
+
   return (
     // `tabular-nums` and nothing else. This used to be `font-mono` too, for a
     // "this is telemetry and it's live" cue, which put a second typeface on a
@@ -98,6 +114,7 @@ export const LiveClock: FC<LiveClockProps> = ({ since, mode = "updated", srLabel
       // named graphic to a screen reader, which is what `role="img"` describes.
       role={accessibleName ? "img" : undefined}
       aria-label={accessibleName}
+      title={exactTitle}
     >
       {label}
     </span>

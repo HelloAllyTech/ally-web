@@ -23,7 +23,12 @@ vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: (m: string) => toastError(m) } }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+  logger: { error: vi.fn() },
+}));
 
 vi.mock("@components", () => ({
   cellTypes: {},

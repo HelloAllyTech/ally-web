@@ -119,6 +119,50 @@ export const formatDate = (dateString: string) => {
   });
 };
 
+/**
+ * "15 Jan 2024, 14:32" — a date that also says *when* on that day.
+ *
+ * The date alone is enough for something that happens at most once a day. It
+ * stops being enough the moment two records can share a day: a nightly sweep
+ * plus the manual one someone kicked off after a release, four status moves on
+ * one bug, a run that started before midnight and finished after it. There,
+ * "15 Jan 2024" twice over reads as a duplicate rather than as an ordering, so
+ * anything on an operational surface carries the clock time too.
+ *
+ * 24-hour, because an operator comparing 11:40 with 23:40 should not have to
+ * find the am/pm to do it.
+ */
+export const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+};
+
+/**
+ * {@link formatDateTime} down to the second — for event logs and for the
+ * `title` on a relative time, where the reader is reconstructing an order of
+ * events. A run's own stages land seconds apart, so minute precision would
+ * flatten a timeline into a column of identical strings.
+ */
+export const formatTimestamp = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+};
+
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;

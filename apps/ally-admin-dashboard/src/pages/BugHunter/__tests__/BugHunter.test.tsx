@@ -27,6 +27,8 @@ vi.mock("@api", () => ({
 
 vi.mock("@utils", () => ({
   formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
 }));
 
 vi.mock("@assets", () => ({
