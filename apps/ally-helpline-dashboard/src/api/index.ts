@@ -18,6 +18,7 @@ export * from "./legalContent";
 export * from "./organizationSettings";
 export * from "./tracks";
 export * from "./blog";
+export * from "./changelog";
 export * from "./bugReport";
 export * from "./characterLibrary";
 export * from "./characterInterview";

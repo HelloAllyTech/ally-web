@@ -16,6 +16,7 @@ import {
   Privacy,
   Blog,
   BlogPost,
+  Changelog,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -46,6 +47,7 @@ const RouteLayout = () => {
           {/* Blog — public, accessible whether or not signed in */}
           <Route path={ROUTES.BLOG} element={<Blog />} />
           <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
+          <Route path={ROUTES.CHANGELOG} element={<Changelog />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}

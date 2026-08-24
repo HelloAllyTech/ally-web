@@ -25,6 +25,7 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   BLOG: "/blog",
   BLOG_POST: "/blog/:slug",
+  CHANGELOG: "/blog/changelog",
 
   // Private Routes
   HOME: "/",
