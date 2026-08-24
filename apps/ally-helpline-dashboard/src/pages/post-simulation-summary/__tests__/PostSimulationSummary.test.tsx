@@ -650,10 +650,10 @@ describe("PostSimulationSummary Component", () => {
 
       // Carbon Tabs renders each item as a `tab-${id}` button (no ARIA tab
       // role). With no session data loaded, feedbackTabs falls back to the
-      // legacy all-true default (Debrief, Skills, Transcript) and there is no
-      // Up Next tab since there's no scenarioPathSessionItemId/caseSessionItemId.
+      // default (Debrief, Transcript — Skills is off by default) and there is
+      // no Up Next tab since there's no scenarioPathSessionItemId/caseSessionItemId.
       const tabButtons = screen.getAllByTestId(/^tab-\d+$/);
-      expect(tabButtons).toHaveLength(3);
+      expect(tabButtons).toHaveLength(2);
     });
   });
 
@@ -735,7 +735,14 @@ describe("PostSimulationSummary Component", () => {
    * Verifies the tab list configuration
    */
   describe("Tab List Configuration", () => {
-    it("should have all tabs configured", () => {
+    const mockedSummaryQuery = vi.mocked(useGetSimulationSummaryQuery);
+
+    const summaryQueryResult = (data: unknown, isLoading = false) =>
+      ({ data, isLoading, refetch: vi.fn() }) as unknown as ReturnType<
+        typeof useGetSimulationSummaryQuery
+      >;
+
+    it("should have Debrief and Transcript configured, with Skills off by default", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -743,7 +750,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      // Skills Demonstrated defaults off platform-wide.
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
     });
 
@@ -758,7 +766,14 @@ describe("PostSimulationSummary Component", () => {
       expect(debriefTab).toHaveTextContent("Debrief");
     });
 
-    it("should have Skills as second tab with id 5", () => {
+    it("should render Skills as a tab with id 5 when a scenario explicitly opts back in", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } } },
+          hasFeedback: false,
+        }),
+      );
+
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -769,7 +784,7 @@ describe("PostSimulationSummary Component", () => {
       expect(skillsTab).toHaveTextContent("Skills");
     });
 
-    it("should have Annotated Transcript as third tab with id 2", () => {
+    it("should have Annotated Transcript as a tab with id 2", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -1018,7 +1033,7 @@ describe("PostSimulationSummary Component", () => {
         typeof useGetSimulationSummaryQuery
       >;
 
-    it("falls back to all three tabs when feedbackTabs is absent (legacy roleplay)", () => {
+    it("falls back to Debrief and Transcript (no Skills) when feedbackTabs is absent (legacy roleplay)", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({ scenario: { metadata: {} }, hasFeedback: false }),
       );
@@ -1030,7 +1045,9 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      // Skills Demonstrated defaults off platform-wide; only an explicit
+      // feedbackTabs.skills: true brings it back.
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       // Debrief still leads, and is still the landing tab.
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();

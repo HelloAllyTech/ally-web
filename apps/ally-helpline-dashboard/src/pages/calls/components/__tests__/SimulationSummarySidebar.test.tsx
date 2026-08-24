@@ -167,8 +167,8 @@ describe("SimulationSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
-      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
+      // Skills Demonstrated was switched off platform-wide (2026-08-24).
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.queryByTestId("tab-4")).not.toBeInTheDocument();
     });
 

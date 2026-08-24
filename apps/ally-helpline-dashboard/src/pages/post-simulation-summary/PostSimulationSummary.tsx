@@ -109,10 +109,11 @@ export const PostSimulationSummary: FC = () => {
 
   // Which post-session tabs this roleplay shows. The backend sends this
   // already resolved; the fallback here only covers a response cached from
-  // before the sub-toggles existed, where every tab was on.
+  // before the sub-toggles existed. Mirrors the backend's DEFAULT_FEEDBACK_TABS:
+  // debrief/transcript on, skills off (switched off platform-wide 2026-08-24).
   const feedbackTabs = summary?.scenario?.metadata?.feedbackTabs ?? {
     debrief: true,
-    skills: true,
+    skills: false,
     transcript: true,
   };
 

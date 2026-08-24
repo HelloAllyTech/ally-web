@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableLanguagesQuery, useGetSimulationSummaryQuery } from "@api";
-import { SkillsTab } from "@components";
 import { SimulationSummary, useSimulationSummaryPolling } from "@containers";
 
 import { SimulationTranscriptTab } from "../../../calls/components";
@@ -15,8 +14,8 @@ interface RoleplaySessionLogPanelProps {
 
 /**
  * Inline "full log" for a completed roleplay item — the same Session Review /
- * Annotated Transcript / Skills Demonstrated content as the Roleplay Logs
- * drawer, expanded in place under the summary card rather than navigated to.
+ * Annotated Transcript content as the Roleplay Logs drawer, expanded in place
+ * under the summary card rather than navigated to.
  */
 export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sessionId }) => {
   const { t, i18n } = useTranslation();
@@ -38,11 +37,6 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
   }, [summary?.metadata?.languageId, availableLanguages]);
 
   const tabList = [
-    {
-      id: "skills",
-      label: t("postSim.tabs.skillsDemonstrated"),
-      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
-    },
     {
       id: "transcript",
       label: t("postSim.tabs.annotatedTranscript"),

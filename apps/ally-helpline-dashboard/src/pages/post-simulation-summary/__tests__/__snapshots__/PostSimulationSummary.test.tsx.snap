@@ -265,12 +265,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
-            >
-              Skills  Demonstrated 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
               Annotated Transcript 
@@ -583,12 +577,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 aria-hidden="true"
                 class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
               />
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
-            >
-              Skills  Demonstrated 
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"

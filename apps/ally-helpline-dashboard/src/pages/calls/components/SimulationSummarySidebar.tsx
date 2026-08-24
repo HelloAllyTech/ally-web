@@ -17,7 +17,6 @@ import { Comment } from "@assets";
 import {
   AskAiTab,
   SessionRatingTrigger,
-  SkillsTab,
   ToggleSwitch,
   ShareForReview,
 } from "@components";
@@ -198,11 +197,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   );
 
   const tabList = [
-    {
-      id: 5,
-      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
-      content: <SkillsTab sessionId={summaryId} retryMaxReached={retryMaxReached} />,
-    },
     {
       id: 3,
       label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
