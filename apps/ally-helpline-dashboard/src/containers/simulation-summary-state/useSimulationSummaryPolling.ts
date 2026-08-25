@@ -27,6 +27,11 @@ export function useSimulationSummaryPolling(
    * NOT necessarily a failure — see `checkAgain`. */
   retryMaxReached: boolean;
   isShortSession: boolean;
+  /** True when the backend recorded this session as force-ended by the
+   * agent's stall watchdog (`endReason: "TECHNICAL_INTERRUPTION"`) rather
+   * than a normal finish — takes priority over `isShortSession`, since it
+   * explains WHY the session was short instead of just noting that it was. */
+  isTechnicalInterruption: boolean;
   /** Ask the backend again after `retryMaxReached` — restarts a full poll
    * window rather than a single one-shot check, since a summary that is
    * merely slow rarely finishes in the next few seconds either. */
@@ -39,6 +44,7 @@ export function useSimulationSummaryPolling(
   const [summaryData, setSummaryData] = useState<SimulationSummaryType | undefined>(undefined);
   const [retryMaxReached, setRetryMaxReached] = useState(false);
   const [isShortSession, setIsShortSession] = useState(false);
+  const [isTechnicalInterruption, setIsTechnicalInterruption] = useState(false);
   const [isCheckingAgain, setIsCheckingAgain] = useState(false);
   // Bumping this re-runs the polling effect from scratch (fresh poll count,
   // fresh timers) without duplicating the loop's logic in a second function.
@@ -80,6 +86,7 @@ export function useSimulationSummaryPolling(
         if (data) {
           if (isMounted) setSummaryData(data);
           setIsShortSession(data?.details?.callDuration <= 30); // 30 seconds
+          setIsTechnicalInterruption(data?.endReason === "TECHNICAL_INTERRUPTION");
         }
 
         if (data?.details?.summary?.feedback) {
@@ -122,5 +129,12 @@ export function useSimulationSummaryPolling(
     };
   }, [summaryId, activeLanguageCode, getSimulationSummary, pollGeneration]);
 
-  return { summaryData, retryMaxReached, isShortSession, checkAgain, isCheckingAgain };
+  return {
+    summaryData,
+    retryMaxReached,
+    isShortSession,
+    isTechnicalInterruption,
+    checkAgain,
+    isCheckingAgain,
+  };
 }

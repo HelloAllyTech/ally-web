@@ -640,6 +640,10 @@
       "title": "Session ended too soon",
       "description": "We need more interaction data to provide meaningful feedback."
     },
+    "technicalInterruption": {
+      "title": "Session ended early",
+      "description": "It looks like we lost you for a bit — often a dropped connection. Your progress up to that point was saved, so feel free to start again."
+    },
     "feedback": {
       "generating": "Generating your feedback…",
       "sessionFeedback": "Session Feedback",

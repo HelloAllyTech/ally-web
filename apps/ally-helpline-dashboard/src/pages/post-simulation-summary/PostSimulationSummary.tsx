@@ -25,7 +25,12 @@ import {
   ToggleSwitch,
 } from "@components";
 import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import { FeedbackDialog, ShortSessionUI, useSimulationSummaryPolling } from "@containers";
+import {
+  FeedbackDialog,
+  ShortSessionUI,
+  TechnicalInterruptionUI,
+  useSimulationSummaryPolling,
+} from "@containers";
 import { useContinueTrack, useNextChallenge } from "@hooks";
 import {
   ActiveTrackContext,
@@ -66,8 +71,18 @@ export const PostSimulationSummary: FC = () => {
     { sessionId: sessionId ?? "", languageCode: i18n.language },
     { skip: !sessionId },
   );
-  const { summaryData, retryMaxReached, isShortSession, checkAgain, isCheckingAgain } =
-    useSimulationSummaryPolling(sessionId, i18n.language);
+  const {
+    summaryData,
+    retryMaxReached,
+    isShortSession,
+    isTechnicalInterruption,
+    checkAgain,
+    isCheckingAgain,
+  } = useSimulationSummaryPolling(sessionId, i18n.language);
+  // Neither a too-short session nor a technically-interrupted one has enough
+  // of a real conversation to rate, share for review, or count toward a
+  // streak — same reasoning that already applied to isShortSession alone.
+  const hideEvaluationChrome = isShortSession || isTechnicalInterruption;
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
   const nextChallenge = useNextChallenge(summary);
@@ -373,11 +388,11 @@ export const PostSimulationSummary: FC = () => {
               <BackCircle />
             </button>
             {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
-            {!isShortSession && (
+            {!hideEvaluationChrome && (
               <SessionRatingTrigger value={displayRating} onSelect={handleStarSelect} size="sm" />
             )}
           </div>
-          {!isShortSession && (
+          {!hideEvaluationChrome && (
             <div className="flex justify-center gap-2 items-center">
               <div className="flex items-center gap-2">
                 <span className="font-primary font-normal text-sm">
@@ -414,11 +429,14 @@ export const PostSimulationSummary: FC = () => {
         </div>
         {/* Sits on the page shell rather than inside a tab: OverallScoreMeter
             lives in the Skills tab, which is not the landing tab, so anchoring
-            the moment there would hide it from most users. A short session
-            cannot have secured the streak, so it is disabled for that branch. */}
-        <StreakMoment enabled={!isShortSession && !!summary} />
+            the moment there would hide it from most users. Neither a too-short
+            nor a technically-interrupted session can have secured the streak,
+            so it is disabled for both branches. */}
+        <StreakMoment enabled={!hideEvaluationChrome && !!summary} />
 
-        {isShortSession ? (
+        {isTechnicalInterruption ? (
+          <TechnicalInterruptionUI className="flex-1" summaryData={summaryData} />
+        ) : isShortSession ? (
           <ShortSessionUI className="flex-1" summaryData={summaryData} />
         ) : (
           <>

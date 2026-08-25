@@ -236,6 +236,13 @@ export interface SimulationSummary {
   };
   totalScore: number;
   eventStatus?: string;
+  /**
+   * Set only when this session was force-ended by the agent's stall
+   * watchdog (commonly a network dropout, but any cause of the learner
+   * going silent past the timeout) rather than ending normally. Currently
+   * only value on the wire: "TECHNICAL_INTERRUPTION".
+   */
+  endReason?: string | null;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
   details: {
