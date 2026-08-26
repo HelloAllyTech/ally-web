@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("react-router-dom", () => ({
@@ -81,6 +81,39 @@ describe("RoleplaySessionLogDetail — summary card", () => {
     render(<RoleplaySessionLogDetail />);
     expect(screen.getByText("Session ID")).toBeInTheDocument();
     expect(screen.getByText(baseDetail.id)).toBeInTheDocument();
+  });
+});
+
+describe("RoleplaySessionLogDetail — transcript audio seeking", () => {
+  it("seeks the audio when a seekable transcript turn is activated with the keyboard", () => {
+    getQueryMock.mockReturnValue({
+      data: {
+        ...baseDetail,
+        recording: { storageKey: "rec-1", egressId: "eg-1", url: "https://example.com/rec.mp3" },
+        transcript: [
+          {
+            id: 1,
+            senderId: 42,
+            content: "Hello there",
+            startSeconds: 12,
+            endSeconds: 14,
+            createdAt: baseDetail.createdAt,
+          },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<RoleplaySessionLogDetail />);
+
+    const turnButton = screen.getByText("Hello there").closest('[role="button"]');
+    expect(turnButton).toBeTruthy();
+
+    const audio = document.querySelector("audio") as HTMLAudioElement;
+    fireEvent.keyDown(turnButton as HTMLElement, { key: "Enter" });
+
+    expect(audio.currentTime).toBe(12);
   });
 });
 
