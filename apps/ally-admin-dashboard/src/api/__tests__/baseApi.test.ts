@@ -1,3 +1,7 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { ESLint } from "eslint";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { LOCAL_STORAGE_KEYS } from "@constants";
@@ -159,6 +163,24 @@ describe("baseAPI", () => {
       expect(import.meta.env).toBeDefined();
       expect(import.meta.env.VITE_API_BASE_URL).toBeTruthy();
     });
+  });
+
+  describe("lint: no-console in baseQueryWithReauth", () => {
+    // baseQueryWithReauth handles 401 token refresh and logout — leftover
+    // console.error calls in that path fail `npm run lint` (no-console) and
+    // should never ship without a deliberate eslint-disable justifying them.
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
+    const filePath = path.join(repoRoot, "apps/ally-admin-dashboard/src/api/baseApi.ts");
+
+    it("reports no no-console errors", async () => {
+      const eslint = new ESLint({
+        cwd: repoRoot,
+        overrideConfigFile: path.join(repoRoot, "eslint.config.mjs"),
+      });
+      const [result] = await eslint.lintFiles([filePath]);
+
+      expect(result.messages.filter(m => m.ruleId === "no-console")).toEqual([]);
+    }, 15000);
   });
 
   describe("Local Storage Integration", () => {
