@@ -1,22 +1,4 @@
 services:
-  web:
-    build:
-      context: .
-      dockerfile: apps/ally-web/Dockerfile.dev
-    working_dir: /app
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - WATCHPACK_POLLING=true
-      - HOST=0.0.0.0
-      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://host.docker.internal:8001}
-      - NEXT_PUBLIC_API_VERSION=${NEXT_PUBLIC_API_VERSION:-v1}
-    volumes:
-      - .:/app
-      - /app/node_modules
-    restart: unless-stopped
-
   helpline:
     build:
       context: .
@@ -59,4 +41,4 @@ services:
 # - If any Dockerfile.dev does not set the container start command, you may need to add a
 #   `command:` line per service (e.g. `command: ["npm", "run", "dev"]`).
 # - Keep an eye on the Dockerfile.dev files: they should expose the same ports as mapped
-#   here (3000, 8080, 8081) and listen on 0.0.0.0 for the HOST variable to work.
+#   here (8080, 8081) and listen on 0.0.0.0 for the HOST variable to work.

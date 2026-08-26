@@ -11,7 +11,6 @@ The workflow system is designed with modularity and reusability in mind:
 ├── workflows/
 │   ├── deploy-ecs-service.yml              # Reusable workflow for ECS deployment
 │   ├── deploy-ally-helpline-dashboard.yml  # App-specific workflow
-│   ├── deploy-ally-web.yml                 # App-specific workflow
 │   ├── deploy-app-template.yml             # Template for new apps
 │   ├── manual-deploy.yml                   # Centralized manual deployment
 │   └── ci.yml                              # Main CI workflow
