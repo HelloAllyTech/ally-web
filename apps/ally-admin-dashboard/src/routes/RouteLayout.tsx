@@ -39,6 +39,8 @@ import {
   Settings,
   Logs,
   BugHunter,
+  Builder,
+  BuilderSession,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
@@ -388,6 +390,28 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredFeature={FeatureToggleKey.BUG_HUNTER}>
               <BugHunter />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER}
+          element={
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.BUILDER}
+            >
+              <Builder />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SESSION(":sessionId")}
+          element={
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.BUILDER}
+            >
+              <BuilderSession />
             </PrivateLayout>
           }
         />

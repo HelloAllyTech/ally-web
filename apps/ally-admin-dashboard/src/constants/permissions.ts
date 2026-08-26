@@ -39,6 +39,11 @@ export enum Permissions {
   VOTE_PRODUCT_ROADMAP = "vote:admin:product-roadmap",
   EDIT_PRODUCT_ROADMAP = "edit:admin:product-roadmap",
   DELETE_AI_LAB = "delete:admin:ai-lab",
+  // Builder. Two tiers, not three: VIEW is read-only (catching up on a build),
+  // EDIT covers the interview, PRD edits and starting or stopping a build.
+  // No delete — a session is cancelled, never removed, because its PRs outlive it.
+  VIEW_BUILDER = "view:admin:builder",
+  EDIT_BUILDER = "edit:admin:builder",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -68,6 +73,7 @@ export const SIDEBAR_ITEMS = {
   LOGS: "logs",
   WHATSAPP_BOT: "whatsapp-bot",
   BUG_HUNTER: "bug-hunter",
+  BUILDER: "builder",
 };
 
 /**

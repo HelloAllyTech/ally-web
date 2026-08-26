@@ -65,6 +65,8 @@ vi.mock("@pages", () => ({
   EvaluateRecords: () => <div>EvaluateRecordsPage</div>,
   EvaluateRecordDetail: () => <div>EvaluateRecordDetailPage</div>,
   BugHunter: () => <div>BugHunterPage</div>,
+  Builder: () => <div>BuilderPage</div>,
+  BuilderSession: () => <div>BuilderSessionPage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -88,6 +90,21 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
     render(<RouteLayout />);
     expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderPage")).toBeInTheDocument();
+  });
+
+  // The session route is a separate assertion from the list route because the
+  // two differ only by a path param — a mistyped param pattern would leave the
+  // list route passing while every session link 404s.
+  it("renders Builder session route with id", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SESSION("abc-123"));
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderSessionPage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {

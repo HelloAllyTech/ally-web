@@ -33,6 +33,7 @@ export const FeatureToggleKey = {
   ADMIN_USER_MANAGEMENT: "admin_user_management",
   MULTI_TENANT_ALLOWLIST_MANAGEMENT: "multi_tenant_allowlist_management",
   BUG_HUNTER: "bug_hunter",
+  BUILDER: "builder",
   OPERATIONAL_ADMIN_ACTIONS: "operational_admin_actions",
 } as const;
 
@@ -91,6 +92,7 @@ export const buildSidebarItemFeatureKeyMap = (
     [sidebarItems.LOGS, FeatureToggleKey.LOGS],
     [sidebarItems.WHATSAPP_BOT, FeatureToggleKey.WHATSAPP_BOT],
     [sidebarItems.BUG_HUNTER, FeatureToggleKey.BUG_HUNTER],
+    [sidebarItems.BUILDER, FeatureToggleKey.BUILDER],
     [sidebarItems.ANALYTICS, FeatureToggleKey.ANALYTICS],
     [sidebarItems.COMPETENCIES, FeatureToggleKey.COMPETENCIES],
     [sidebarItems.AI_LAB, FeatureToggleKey.AI_LAB],
@@ -139,6 +141,7 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
   [FeatureToggleKey.WHATSAPP_BOT]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.OPERATIONAL_ADMIN_ACTIONS]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.BUG_HUNTER]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
+  [FeatureToggleKey.BUILDER]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
 
   [FeatureToggleKey.USER_BADGES]: FEATURE_TOGGLE_SECTIONS.USER_AND_ORG_MANAGEMENT,
   [FeatureToggleKey.ADMIN_USER_MANAGEMENT]: FEATURE_TOGGLE_SECTIONS.USER_AND_ORG_MANAGEMENT,

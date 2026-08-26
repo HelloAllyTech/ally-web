@@ -1,5 +1,7 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useClickOutside } from "./useClickOutside";
+import { useBuilderSocket } from "./useBuilderSocket";
+import { useBuilderStream } from "./useBuilderStream";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
@@ -34,6 +36,8 @@ export {
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
   useCopilotStream,
+  useBuilderStream,
+  useBuilderSocket,
   useTranscriptDisclaimer,
   useTryRoleplayLive,
   useSpecAutosave,

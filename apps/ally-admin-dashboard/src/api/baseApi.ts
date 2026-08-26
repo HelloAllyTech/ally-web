@@ -191,6 +191,11 @@ export const baseAPI = createApi({
     TAG_TYPES.BUG_HUNTER_SETTINGS,
     TAG_TYPES.BUG_HUNTER_RUNS,
     TAG_TYPES.BUG_HUNTER_FINDINGS,
+    TAG_TYPES.BUILDER_SESSIONS,
+    TAG_TYPES.BUILDER_SESSION,
+    TAG_TYPES.BUILDER_PRD_VERSIONS,
+    TAG_TYPES.BUILDER_SETTINGS,
+    TAG_TYPES.BUILDER_NOTIFICATIONS,
     // These four were used in providesTags/invalidatesTags but never declared
     // here, so RTK Query silently ignored them and the invalidation never
     // fired — saving a voice or a config left the list showing stale data
