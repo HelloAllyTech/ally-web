@@ -50,6 +50,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       // interpolated straight into the toast — a technical string with no
       // action the user can take. Keep the detail in the console for
       // debugging; show only the curated message.
+      // eslint-disable-next-line no-console
       console.error(en.error.apiRequestFailed, error);
       toast.error(en.error.apiRequestFailed);
       throw error;
@@ -84,11 +85,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         try {
           result = await baseQuery(args, store, extraOptions);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error(en.error.tokenRefreshFailed, error);
           toast.error(en.error.tokenRefreshFailed);
           throw error;
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(en.error.tokenRefreshFailed, error);
         toast.error(en.error.tokenRefreshFailed);
         handleLogout();
@@ -107,6 +110,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
     return result;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(en.error.apiRequestFailed, error);
     toast.error(en.error.apiRequestFailed);
     return { error: { status: "FETCH_ERROR", error: String(error) } };
