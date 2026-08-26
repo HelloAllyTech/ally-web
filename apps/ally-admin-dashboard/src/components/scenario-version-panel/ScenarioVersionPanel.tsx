@@ -222,7 +222,9 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
         ) : (
           <ul className="divide-y divide-border-light">
             {versions.map(version => {
-              const isActive = version.id === activeVersionId;
+              // No selected version means the editor is on the live scenario,
+              // which the `isLive` version stands for — so it's the active row.
+              const isActive = activeVersionId ? version.id === activeVersionId : !!version.isLive;
               const isPublished = version.status === ScenarioVersionStatus.PUBLISHED;
               const isRenamingThis = renamingId === version.id;
               return (
@@ -299,7 +301,10 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
                       >
                         <Branch className="w-3.5 h-3.5" />
                       </button>
-                      {!isPublished && (
+                      {/* The live-mirroring version is the editor's handle on
+                          the live scenario; deleting it would strand that
+                          content (the server refuses it too). */}
+                      {!isPublished && !version.isLive && (
                         <button
                           className={`${rowActionBtnClass} hover:text-destructive-500`}
                           onClick={() => setDeleteTarget(version)}
