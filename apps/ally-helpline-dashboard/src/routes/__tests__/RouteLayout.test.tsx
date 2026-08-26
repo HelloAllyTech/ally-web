@@ -20,6 +20,7 @@ vi.mock("@pages", () => ({
   Privacy: () => <div data-testid="privacy-page">Privacy Page</div>,
   Blog: () => <div data-testid="blog-page">Blog Page</div>,
   BlogPost: () => <div data-testid="blog-post-page">Blog Post Page</div>,
+  Changelog: () => <div data-testid="changelog-page">Changelog Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -68,6 +69,7 @@ vi.mock("@constants", () => ({
     PRIVACY: "/privacy",
     BLOG: "/blog",
     BLOG_POST: "/blog/:slug",
+    CHANGELOG: "/blog/changelog",
   },
 }));
 
