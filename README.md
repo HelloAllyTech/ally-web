@@ -1,12 +1,11 @@
 # Ally Web
 
-A multi-application frontend monorepo for the Ally mental health platform, built with React and Next.js. It provides the user-facing web application, a helpline dashboard for mental health professionals, and an admin dashboard for platform management.
+A multi-application frontend monorepo for the Ally mental health platform, built with React and Vite. It provides a helpline dashboard for mental health professionals and an admin dashboard for platform management.
 
 ## Overview
 
 Ally Web is the frontend layer of the Ally platform that:
 
-- **Powers the landing page** (`ally-web`) with a Next.js application showcasing the platform
 - **Provides the Helpline Dashboard** (`ally-helpline-dashboard`) for mental health counselors — real-time chat, appointment scheduling, case management, analytics, and LiveKit voice integration
 - **Provides the Admin Dashboard** (`ally-admin-dashboard`) for super admins — simulation management, session event configuration, user and tenant management, permission-based access control, and simulation credit monitoring
 - **Shares UI components** across applications via the `libs/ui-shared` library
@@ -15,11 +14,10 @@ Ally Web is the frontend layer of the Ally platform that:
 
 ## Architecture
 
-The system is organised as an Nx monorepo with three applications and one shared library:
+The system is organised as an Nx monorepo with two applications and one shared library:
 
 ### Key Components
 
-- **Ally Web** (`apps/ally-web/`) - Next.js 14 landing page with CSS Modules; mental health resource library with document search, category filtering, and infinite scroll
 - **Helpline Dashboard** (`apps/ally-helpline-dashboard/`) - Vite + React application for counselors; real-time chat, LiveKit voice sessions, calendar, case management, analytics reports, and PDF export
 - **Admin Dashboard** (`apps/ally-admin-dashboard/`) - Vite + React application for administrators; scenario and session-event management, user/tenant/permission management, LiveKit simulation preview, and credit monitoring
 - **Shared UI Library** (`libs/ui-shared/`) - Reusable React components, utilities, feature flags, and logger shared across all applications
@@ -28,7 +26,6 @@ The system is organised as an Nx monorepo with three applications and one shared
 
 | Component            | Tech Used                                         |
 | -------------------- | ------------------------------------------------- |
-| Landing Page         | Next.js 14 (React 18), CSS Modules                |
 | Helpline Dashboard   | Vite + React 18, Tailwind CSS, MUI, Redux Toolkit |
 | Admin Dashboard      | Vite + React 18, Tailwind CSS, RTK Query          |
 | State Management     | Redux Toolkit / RTK Query                         |
@@ -46,11 +43,6 @@ The system is organised as an Nx monorepo with three applications and one shared
 ```
 ally-web/
 ├── apps/
-│   ├── ally-web/                        # Landing page (Next.js 14, port 3000)
-│   │   ├── src/                         # Pages, components, and styles
-│   │   ├── public/                      # Static assets
-│   │   ├── next.config.js               # Next.js configuration
-│   │   └── Dockerfile.dev               # Development Docker image
 │   ├── ally-helpline-dashboard/         # Helpline app for counselors (Vite + React, port 8080)
 │   │   ├── src/
 │   │   │   ├── api/                     # API client and RTK Query endpoints
@@ -149,14 +141,12 @@ docker compose up
 Or start individual services:
 
 ```bash
-docker compose up web        # Ally Web (port 3000)
 docker compose up helpline   # Helpline Dashboard (port 8080)
 docker compose up admin      # Admin Dashboard (port 8081)
 ```
 
 ### 4. Access the Applications
 
-- **Ally Web**: http://localhost:3000
 - **Helpline Dashboard**: http://localhost:8080
 - **Admin Dashboard**: http://localhost:8081
 
@@ -173,7 +163,6 @@ If you prefer to run without Docker:
 2. **Start development servers:**
 
    ```bash
-   npm run start:web        # Ally Web (port 3000)
    npm run start:helpline   # Helpline Dashboard (port 8080)
    npm run start:admin      # Admin Dashboard (port 8081)
    ```
@@ -215,7 +204,6 @@ npm run test:watch
 npm run test:coverage
 
 # Run tests for specific applications
-npm run test:web          # Ally Web tests
 npm run test:helpline     # Helpline Dashboard tests
 npm run test:admin        # Admin Dashboard tests
 npm run test:ui-shared    # Shared UI library tests
@@ -258,18 +246,11 @@ npm run format:check
 - **LiveKit Simulation Preview** - Test simulations in real time
 - **Credit Monitoring** - Track simulation credits and usage
 
-### Ally Web (Landing Page)
-
-- **Document Search** - Advanced search for mental health resources
-- **Category Filtering** - Browse by topic or resource category
-- **Infinite Scroll** - Seamless result loading
-- **Responsive Design** - Optimised for desktop and mobile
-
 ### Shared Infrastructure
 
 - **Shared UI Library** (`libs/ui-shared`) - Common components, feature flags, and logger
-- **Nx Monorepo** - Unified build, test, and lint tooling across all applications
-- **Docker Compose** - Single command to start all three services
+- **Nx Monorepo** - Unified build, test, and lint tooling across both applications
+- **Docker Compose** - Single command to start both services
 
 ## 🐛 Troubleshooting
 
@@ -285,7 +266,6 @@ npm run format:check
 
 ```bash
 # Find and kill the process using the port
-lsof -ti:3000 | xargs kill -9
 lsof -ti:8080 | xargs kill -9
 lsof -ti:8081 | xargs kill -9
 ```

@@ -7,34 +7,21 @@ publishing the draft, and general troubleshooting. This file carries what is spe
 this repo — and this repo is the one that differs most: **three services, released
 independently.**
 
-## Three services, three pipelines, three version series
+## Two services, two pipelines, two version series
 
-Each service versions on its own. `ally-web` at `v1.4.0` says nothing about what version
-the dashboards are on. Always confirm which service you are releasing before picking a
-number.
+Each service versions on its own. The Admin Dashboard at `v1.4.0` says nothing about what
+version the Helpline Dashboard is on. Always confirm which service you are releasing
+before picking a number.
 
 | # | Service | Pipeline | Deploys to | App path | Build |
 |---|---|---|---|---|---|
-| 1 | Ally Web | `production-release-web.yaml` | ECS (Docker) | `apps/ally-web` | Docker image, port 3000 |
-| 2 | Admin Dashboard | `production-release-admin-dashboard.yaml` | S3 + CloudFront | `apps/ally-admin-dashboard` | Nx → `dist/apps/ally-admin-dashboard/` |
-| 3 | Helpline Dashboard | `production-release-helpline-dashboard.yaml` | S3 + CloudFront | `apps/ally-helpline-dashboard` | npm → `apps/ally-helpline-dashboard/dist/` |
+| 1 | Admin Dashboard | `production-release-admin-dashboard.yaml` | S3 + CloudFront | `apps/ally-admin-dashboard` | Nx → `dist/apps/ally-admin-dashboard/` |
+| 2 | Helpline Dashboard | `production-release-helpline-dashboard.yaml` | S3 + CloudFront | `apps/ally-helpline-dashboard` | npm → `apps/ally-helpline-dashboard/dist/` |
 
-Runtime in CI is **Node.js 20** for all three. All three download build-time environment
+Runtime in CI is **Node.js 20** for both. Both download build-time environment
 variables from S3 during the build.
 
-## 1 — Ally Web (ECS)
-
-Builds a Docker image from `apps/ally-web`, pushes the standard tag set, updates the ECS
-task definition and waits for stability.
-
-```bash
-npm run test:web
-npm run test:ui-shared
-```
-
-Required variables: `PRD_AWS_ROLE`, `PRD_AWS_REGION`, `PRD_ECR_REPOSITORY`
-
-## 2 — Admin Dashboard (CDN)
+## 1 — Admin Dashboard (CDN)
 
 Builds with `npx nx build ally-admin-dashboard`, syncs to S3, sets Content-Type for
 `.well-known` files, invalidates CloudFront.
@@ -46,7 +33,7 @@ npx nx test ally-admin-dashboard --coverage
 Required variables: `PRD_AWS_ROLE`, `PRD_AWS_REGION`,
 `PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID`, `PRD_ADMIN_DASHBOARD_S3_BUCKET`
 
-## 3 — Helpline Dashboard (CDN)
+## 2 — Helpline Dashboard (CDN)
 
 Builds with `npm run build` in the app directory, syncs to S3, sets Content-Type for
 `.well-known` files, invalidates CloudFront.
