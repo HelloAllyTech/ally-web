@@ -7,6 +7,7 @@ import { extractValidData } from "../common";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
+  formatVersionConfigToForm,
   buildFeedbackTabsPayload,
   buildToggleDefaultValues,
 } from "../createSimulation";
@@ -1080,4 +1081,52 @@ describe("createSimulation utils", () => {
       expect(guardrailsField).not.toHaveProperty("readOnly");
     });
   });
+
+  describe("formatVersionConfigToForm", () => {
+    it("derives the three primary-language ids from metadata.defaultLanguageId", () => {
+      // A version snapshot stores `defaultLanguageId` (a metadata field); the
+      // live GET instead exposes the three `*PrimaryLanguageId` keys the server
+      // derives from it. Without the derivation a forked Tamil sim loaded with
+      // primary=null, so the panels fell back to English: the Tamil source text
+      // showed under the English tab and the Tamil tab read as blank.
+      const form = formatVersionConfigToForm({
+        title: "t",
+        description: "the brief",
+        defaultLanguageId: 6,
+      });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBe(6);
+      expect(form.openingDialoguePrimaryLanguageId).toBe(6);
+      expect(form.remindersPrimaryLanguageId).toBe(6);
+    });
+
+    it("prefers an explicitly stored primary-language id over the derived one", () => {
+      const form = formatVersionConfigToForm({
+        defaultLanguageId: 6,
+        challengeDescriptionPrimaryLanguageId: 1,
+      });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBe(1);
+      // The other two still derive.
+      expect(form.remindersPrimaryLanguageId).toBe(6);
+    });
+
+    it("leaves the primary-language ids null when the snapshot has no language", () => {
+      const form = formatVersionConfigToForm({ title: "t" });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBeNull();
+    });
+
+    it("carries the challenge description through a version snapshot", () => {
+      const form = formatVersionConfigToForm({
+        title: "t",
+        description: "the brief",
+        translationDescription: { "6": "sample" },
+      });
+
+      expect(form.description).toBe("the brief");
+      expect(form.translationDescription).toEqual({ "6": "sample" });
+    });
+  });
+
 });

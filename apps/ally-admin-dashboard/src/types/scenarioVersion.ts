@@ -12,6 +12,14 @@ export type ScenarioVersion = {
   /** Full UpdateScenarioDto-shaped snapshot of the studio form. */
   config: Record<string, unknown>;
   status: ScenarioVersionStatus;
+  /**
+   * Server-computed: this version MIRRORS the live scenario rather than holding
+   * a snapshot of its own. Editing it means editing the live record (the
+   * studio's default state, when no version is selected), so its `config` is a
+   * stale seed that must never be loaded into the form — the live GET is the
+   * source of truth. Set on the list endpoint only.
+   */
+  isLive?: boolean;
   parentVersionId?: string | null;
   createdBy?: number | null;
   updatedBy?: number | null;

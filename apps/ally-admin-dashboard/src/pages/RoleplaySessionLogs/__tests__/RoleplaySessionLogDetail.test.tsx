@@ -222,6 +222,46 @@ describe("RoleplaySessionLogDetail — actor evaluation applicability", () => {
   });
 });
 
+describe("RoleplaySessionLogDetail — transcript playback highlight", () => {
+  // A turn with unknown timing (startSeconds: null) must never win the
+  // "currently playing" highlight — its real position in the audio isn't
+  // known, so treating it as if it starts at 0:00 would highlight it the
+  // instant playback begins, before the audio has actually reached it.
+  it("does not highlight an early turn with unknown timing as active at playback start", () => {
+    getQueryMock.mockReturnValue({
+      data: {
+        ...baseDetail,
+        transcript: [
+          {
+            id: 1,
+            senderId: -1,
+            content: "Hello",
+            startSeconds: null,
+            endSeconds: null,
+            createdAt: "",
+          },
+          {
+            id: 2,
+            senderId: 42,
+            content: "Hi there",
+            startSeconds: 5,
+            endSeconds: 6,
+            createdAt: "",
+          },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<RoleplaySessionLogDetail />);
+
+    const firstTurn = screen.getByText("Hello").closest("div.max-w-\\[80\\%\\]");
+    expect(firstTurn).not.toBeNull();
+    expect(firstTurn).not.toHaveClass("border-primary-500");
+  });
+});
+
 describe("RoleplaySessionLogDetail — weak performing metrics card", () => {
   const metric = (o: Record<string, unknown> = {}) => ({
     id: "role_inversion",
