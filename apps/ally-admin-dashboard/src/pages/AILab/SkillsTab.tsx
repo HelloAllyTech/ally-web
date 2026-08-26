@@ -32,12 +32,9 @@ const EMPTY_FORM = {
 
 export const SkillsTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetLabSkillsQuery({ search: search || undefined });
+  const { data, isLoading, isError, refetch } = useGetLabSkillsQuery({
+    search: search || undefined,
+  });
   const skills = data?.items ?? [];
 
   const [createSkill] = useCreateLabSkillMutation();

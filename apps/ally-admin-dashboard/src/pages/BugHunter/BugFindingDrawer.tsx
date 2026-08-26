@@ -142,8 +142,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   // failure text only ever lands as an ERROR-stage timeline event (see
   // ally-be's BugFixSessionService). Events are returned oldest-first, so the
   // last ERROR entry is the one that actually explains this state.
-  const latestFailureReason = [...events].reverse().find(event => event.stage === BugHuntEventStage.ERROR)
-    ?.summary;
+  const latestFailureReason = [...events]
+    .reverse()
+    .find(event => event.stage === BugHuntEventStage.ERROR)?.summary;
 
   const inFlight = finding
     ? IN_FLIGHT_STATUSES.includes(finding.status) ||

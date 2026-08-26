@@ -2624,8 +2624,7 @@ export const en = {
     drawerReleasedNotice: "This is live in production as {tag}.",
     drawerReleaseFailedNotice:
       "Release {tag} went red. The fix is still merged to master — it just isn't deployed. Check the run, then ask me to retry.",
-    drawerFixSessionFailedNotice:
-      "The fix session failed. Start a new session to retry.",
+    drawerFixSessionFailedNotice: "The fix session failed. Start a new session to retry.",
     drawerReleaseBlocked: "Why I can't release this from here",
     drawerReleasedBy: "Released by user #{userId}",
     drawerViewReleaseRun: "View release run",

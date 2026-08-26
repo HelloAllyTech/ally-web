@@ -72,7 +72,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   private handleTryAgain = () =>
-    this.setState((prev) => ({ error: null, attempt: prev.attempt + 1 }));
+    this.setState(prev => ({ error: null, attempt: prev.attempt + 1 }));
 
   override render() {
     const { error, attempt } = this.state;
