@@ -17,7 +17,7 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { en, isSuperAdminRole, UserRole, FeatureToggleKey } from "@constants";
+import { en, FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
@@ -60,19 +60,15 @@ interface TabDef {
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
   /**
-   * Optional extra gate, on top of the route's SUPER_ADMIN_ROLES/analytics
-   * feature toggle. Only two tabs need it today (Analytics Agent and
-   * Suggestions), and a tab without it stays visible to everyone who can reach
-   * the page — which is how every other tab here already behaved.
-   *
-   * Dual-gated during the role->toggle migration, same OR pattern as
-   * PrivateLayout's `requiredRole || requiredFeature`: either the legacy
-   * super-duper-admin role or the matching feature toggle unlocks the tab.
+   * Optional extra gate, on top of the route's analytics feature toggle. Only
+   * two tabs need it today (Analytics Agent and Suggestions), and a tab
+   * without it stays visible to everyone who can reach the page — which is
+   * how every other tab here already behaved.
    *
    * A hidden tab, not a disabled one: a reader who can never use it is better
    * served by not knowing it exists than by a tab whose every request 403s.
    */
-  visibleTo?: (ctx: { role?: UserRole | string | null; features: string[] }) => boolean;
+  visibleTo?: (ctx: { features: string[] }) => boolean;
 }
 
 const TABS: TabDef[] = [
@@ -164,23 +160,25 @@ const TABS: TabDef[] = [
     // quarter can hold a handful of items, so a range picker would either draw
     // one bar or hide the years before it.
     //
-    // Visible to both super-admin tiers, like every tab except the two below:
-    // the endpoint it calls is gated on SUPER_ADMIN_ROLES, and reading a delivery
-    // chart is not the privilege that filing onto the roadmap is.
+    // Visible to everyone who can reach this page, like every tab except the
+    // two below: the endpoint it calls is gated on the same route-level
+    // feature toggle, and reading a delivery chart is not the privilege that
+    // filing onto the roadmap is.
     id: "product",
     label: "Product management",
     uses: { language: false, range: false },
     render: () => <ProductManagementTab />,
   },
   {
-    // Ask-anything, in English. Visible to the same SUPER_ADMIN_ROLES tier as
-    // every other tab — this used to sit behind the elevated super-duper-admin
-    // tier (the other tabs answer fixed, reviewed questions, while this one
-    // writes its own query across every readable table at platform scope), but
-    // the product decision was made to give every admin tier parity across all
-    // analytics surfaces. ally-be's ALLOWED_TABLES backs every tenant-
-    // attributable table with a filtered view that already excludes test-tenant
-    // rows, so widening who can ask a question does not widen what it can see.
+    // Ask-anything, in English. Visible to everyone who can reach this page,
+    // like every other tab — this used to sit behind the elevated
+    // super-duper-admin tier (the other tabs answer fixed, reviewed
+    // questions, while this one writes its own query across every readable
+    // table at platform scope), but the product decision was made to give
+    // every admin tier parity across all analytics surfaces. ally-be's
+    // ALLOWED_TABLES backs every tenant-attributable table with a filtered
+    // view that already excludes test-tenant rows, so widening who can ask a
+    // question does not widen what it can see.
     //
     // No page-level pickers: the reader states the period and the grouping in
     // the question itself, and a range picker that silently re-scoped a typed
@@ -189,14 +187,13 @@ const TABS: TabDef[] = [
     label: "Analytics Agent",
     uses: { language: false, range: false },
     render: () => <AnalyticsAgentTab />,
-    visibleTo: ({ role, features }) =>
-      isSuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
+    visibleTo: ({ features }) => hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
   },
   {
     // "What should we build next?", answered from the platform's own numbers and
-    // reviewed card by card. Visible to the same SUPER_ADMIN_ROLES tier as every
-    // other tab — this used to sit on the elevated tier because accepting a
-    // suggestion WRITES onto the product roadmap, a different privilege from
+    // reviewed card by card. Visible to everyone who can reach this page, like
+    // every other tab — this used to sit on the elevated tier because accepting
+    // a suggestion WRITES onto the product roadmap, a different privilege from
     // reading a chart, but the product decision was made to give every admin
     // tier parity across all analytics surfaces instead.
     //
@@ -207,8 +204,7 @@ const TABS: TabDef[] = [
     label: en.analyticsSuggestions.tabLabel,
     uses: { language: false, range: false },
     render: () => <SuggestionsTab />,
-    visibleTo: ({ role, features }) =>
-      isSuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
+    visibleTo: ({ features }) => hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
   },
 ];
 
@@ -223,14 +219,13 @@ export const Analytics = () => {
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
 
-  // Most tabs are visible to everyone who can reach this page (the route gates
-  // on SUPER_ADMIN_ROLES / the analytics feature toggle); a tab may declare a
-  // narrower gate of its own.
-  const role = useSelector((state: RootState) => state.user.user?.role);
+  // Most tabs are visible to everyone who can reach this page (the route
+  // gates on the analytics feature toggle); a tab may declare a narrower gate
+  // of its own.
   const features = useSelector((state: RootState) => state.user.features);
   const tabs = useMemo(
-    () => TABS.filter(t => !t.visibleTo || t.visibleTo({ role, features })),
-    [role, features],
+    () => TABS.filter(t => !t.visibleTo || t.visibleTo({ features })),
+    [features],
   );
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });

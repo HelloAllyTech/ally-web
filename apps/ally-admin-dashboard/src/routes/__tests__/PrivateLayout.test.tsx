@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, afterAll, beforeEach, vi } from "vitest";
 
-import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions, UserRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { PrivateLayout } from "../PrivateLayout";
@@ -199,8 +199,8 @@ describe("PrivateLayout", () => {
     expect(screen.getByText("PreviewContent")).toBeInTheDocument();
   });
 
-  describe("requiredFeature dual-gate", () => {
-    it("grants access via requiredFeature alone when requiredRole doesn't match", async () => {
+  describe("requiredFeature", () => {
+    it("grants access when the caller holds the toggle", async () => {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
       const { useGetFeatureTogglesQuery } = await import("@api");
@@ -216,13 +216,7 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  // The fixed mocked user (id: 1) carries no `role`, so this
-                  // never matches "SUPER_DUPER_ADMIN" — access must come from
-                  // the toggle alone.
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
+                  <PrivateLayout requiredFeature="settings">
                     <div>FeatureGrantedContent</div>
                   </PrivateLayout>
                 }
@@ -235,7 +229,7 @@ describe("PrivateLayout", () => {
       expect(screen.getByText("FeatureGrantedContent")).toBeInTheDocument();
     });
 
-    it("denies access when neither requiredRole nor requiredFeature is satisfied", async () => {
+    it("denies access when the caller lacks the toggle", async () => {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
       const { useGetFeatureTogglesQuery } = await import("@api");
@@ -251,98 +245,7 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
-                    <div>GatedContent</div>
-                  </PrivateLayout>
-                }
-              />
-            </Routes>
-          </MemoryRouter>
-        </Provider>,
-      );
-
-      expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
-      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
-    });
-  });
-
-  describe("role gating reads the roles[] array, not the collapsed role", () => {
-    // The backend collapses a user's additive group memberships to one
-    // `role` field by a priority list that omits some roles — lossy for
-    // exactly the multi-role accounts (e.g. a platform role held alongside a
-    // tenant one) a role-gated route is most likely to matter for. Gating
-    // must read `roles[]` instead.
-    it("grants access when roles[] contains the required role, even if the collapsed role does not", async () => {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-
-      const { useGetUserQuery, useGetFeatureTogglesQuery } = await import("@api");
-      (useGetUserQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        data: { id: 1, role: UserRole.ADMIN, roles: [UserRole.ADMIN, UserRole.SUPER_DUPER_ADMIN] },
-        isLoading: false,
-      });
-      // Pair with an unmet requiredFeature so hasRequiredFeature can't
-      // trivially carry the dual-gate's OR on its own — only hasRole (i.e.
-      // roles[]) can grant access here.
-      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        data: [],
-        isLoading: false,
-      });
-
-      render(
-        <Provider store={mockStore}>
-          <MemoryRouter initialEntries={["/protected"]}>
-            <Routes>
-              <Route
-                path="/protected"
-                element={
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
-                    <div>RoleGrantedContent</div>
-                  </PrivateLayout>
-                }
-              />
-            </Routes>
-          </MemoryRouter>
-        </Provider>,
-      );
-
-      expect(screen.getByText("RoleGrantedContent")).toBeInTheDocument();
-    });
-
-    it("denies access when roles[] does not contain the required role, even if the collapsed role happens to match a decoy", async () => {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-
-      const { useGetUserQuery, useGetFeatureTogglesQuery } = await import("@api");
-      (useGetUserQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        data: { id: 1, role: UserRole.SUPER_DUPER_ADMIN, roles: [UserRole.ADMIN] },
-        isLoading: false,
-      });
-      // requiredRole alone leaves hasRequiredFeature trivially true (no
-      // requiredFeature to fail), which would pass the dual-gate's OR
-      // regardless of hasRole — pair it with an unmet requiredFeature, same
-      // as the existing "neither satisfied" case above, so this isolates
-      // hasRole specifically.
-      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-        data: [],
-        isLoading: false,
-      });
-
-      render(
-        <Provider store={mockStore}>
-          <MemoryRouter initialEntries={["/protected"]}>
-            <Routes>
-              <Route
-                path="/protected"
-                element={
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
+                  <PrivateLayout requiredFeature="settings">
                     <div>GatedContent</div>
                   </PrivateLayout>
                 }
@@ -366,11 +269,9 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  // The mocked user is neither SUPER_DUPER_ADMIN nor a holder
-                  // of the character_library per-user toggle, so only the org
-                  // switch can let them through.
+                  // The mocked user holds no character_library per-user
+                  // toggle, so only the org switch can let them through.
                   <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
                     requiredFeature="character_library"
                     requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
                   >

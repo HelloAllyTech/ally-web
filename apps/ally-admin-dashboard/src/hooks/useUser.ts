@@ -91,12 +91,11 @@ export const useUser = () => {
           } catch (prefError) {
             logger.info(`No user preferences loaded: ${prefError}`);
           }
-          // Feature toggles are the replacement for role-tier gating, but this
-          // endpoint is new: a 403/404 (older backend, or an account this rollout
-          // hasn't reached yet) must not block login, the same non-fatal handling
-          // as preferences above. Falls back to an empty array, which fails every
-          // hasFeature() check closed — the dual-gate `requiredRole` fallback on
-          // routes/nav carries access during this transition, not an open toggle.
+          // Feature toggles replaced role-tier gating, but this endpoint can
+          // still 403/404 (older backend, or a transient outage), which must
+          // not block login — same non-fatal handling as preferences above.
+          // Falls back to an empty array, which fails every hasFeature()
+          // check closed.
           try {
             const featureTogglesData = await getFeatureToggles().unwrap();
             store.dispatch(setFeatures(featureTogglesData ?? []));
