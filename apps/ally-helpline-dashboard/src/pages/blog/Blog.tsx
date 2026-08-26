@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 
 import { BlogPost, useGetPublicBlogsQuery } from "@api";
 import { Ally } from "@assets";
-import { ROUTES } from "@constants";
+
+import { BlogFooter } from "./BlogFooter";
 
 const formatDate = (value?: string | null) =>
   value
@@ -60,38 +61,16 @@ export const Blog: FC = () => {
   }, [posts, search]);
 
   return (
-    <div className="min-h-dvh bg-white font-primary">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="flex min-h-dvh flex-col bg-white font-primary">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
         </div>
-        <header className="mb-10 flex items-start justify-between">
-          <div>
-            <h1 className="font-secondary text-3xl text-typography-900">Blog</h1>
-            <p className="mt-2 text-typography-600">
-              Product updates, research and news from the Ally team.
-            </p>
-          </div>
-          <Link
-            to={ROUTES.CHANGELOG}
-            aria-label="View changelog"
-            title="Changelog"
-            className="text-typography-400 transition-colors hover:text-typography-700"
-          >
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 3" />
-            </svg>
-          </Link>
+        <header className="mb-10">
+          <h1 className="font-secondary text-3xl text-typography-900">Blog</h1>
+          <p className="mt-2 text-typography-600">
+            Product updates, research and news from the Ally team.
+          </p>
         </header>
 
         {isFetching ? (
@@ -140,6 +119,7 @@ export const Blog: FC = () => {
           </>
         )}
       </div>
+      <BlogFooter />
     </div>
   );
 };

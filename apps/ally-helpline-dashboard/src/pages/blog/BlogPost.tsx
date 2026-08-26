@@ -6,6 +6,7 @@ import { RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useGetPublicBlogBySlugQuery } from "@api";
 import { Ally } from "@assets";
 
+import { BlogFooter } from "./BlogFooter";
 import { ShareActions } from "./ShareActions";
 
 const formatDate = (value?: string | null) =>
@@ -26,8 +27,8 @@ export const BlogPost: FC = () => {
   } = useGetPublicBlogBySlugQuery({ slug }, { skip: !slug });
 
   return (
-    <div className="min-h-dvh bg-white font-primary">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="flex min-h-dvh flex-col bg-white font-primary">
+      <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
         </div>
@@ -93,6 +94,7 @@ export const BlogPost: FC = () => {
           </article>
         )}
       </div>
+      <BlogFooter containerClassName="max-w-3xl" />
     </div>
   );
 };

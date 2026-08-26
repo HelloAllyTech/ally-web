@@ -6,6 +6,8 @@ import { ChangelogEntry, useGetPublicChangelogQuery } from "@api";
 import { Ally } from "@assets";
 import { ROUTES } from "@constants";
 
+import { BlogFooter } from "./BlogFooter";
+
 const PAGE_SIZE = 100;
 
 const formatDate = (value?: string | null) =>
@@ -56,8 +58,8 @@ export const Changelog: FC = () => {
   const isInitialLoad = isFetching && offset === 0;
 
   return (
-    <div className="min-h-dvh bg-white font-primary">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="flex min-h-dvh flex-col bg-white font-primary">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
         </div>
@@ -109,6 +111,7 @@ export const Changelog: FC = () => {
           </div>
         )}
       </div>
+      <BlogFooter />
     </div>
   );
 };
