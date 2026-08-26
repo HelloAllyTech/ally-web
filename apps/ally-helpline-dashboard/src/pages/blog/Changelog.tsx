@@ -1,10 +1,12 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 
 import { ChangelogEntry, useGetPublicChangelogQuery } from "@api";
 import { Ally } from "@assets";
 import { ROUTES } from "@constants";
+
+const PAGE_SIZE = 100;
 
 const formatDate = (value?: string | null) =>
   value
@@ -30,9 +32,28 @@ const groupByDate = (entries: ChangelogEntry[]) => {
 };
 
 export const Changelog: FC = () => {
-  const { data, isFetching, isError } = useGetPublicChangelogQuery();
-  const entries = data?.entries ?? [];
+  const [offset, setOffset] = useState(0);
+  const [entries, setEntries] = useState<ChangelogEntry[]>([]);
+  // `data` persists the previous page's result while a new offset is loading
+  // (to avoid UI flicker) — using it here would append that stale page a
+  // second time. `currentData` is undefined until the request for the
+  // *current* args resolves, so it's the only field safe to accumulate from.
+  const { data, currentData, isFetching, isError } = useGetPublicChangelogQuery({
+    offset,
+    limit: PAGE_SIZE,
+  });
+
+  // The feed only ever grows, so a plain single fetch silently truncates to the
+  // most recent PAGE_SIZE entries. Accumulate pages locally rather than relying
+  // on RTK Query's per-arg cache to merge them for us.
+  useEffect(() => {
+    if (!currentData) return;
+    setEntries(prev => (offset === 0 ? currentData.entries : [...prev, ...currentData.entries]));
+  }, [currentData, offset]);
+
   const groups = groupByDate(entries);
+  const hasMore = entries.length < (data?.count ?? 0);
+  const isInitialLoad = isFetching && offset === 0;
 
   return (
     <div className="min-h-dvh bg-white font-primary">
@@ -53,7 +74,7 @@ export const Changelog: FC = () => {
           </p>
         </header>
 
-        {isFetching ? (
+        {isInitialLoad ? (
           <p className="text-typography-700">Loading…</p>
         ) : isError ? (
           <p className="text-typography-700">
@@ -75,6 +96,16 @@ export const Changelog: FC = () => {
                 </ul>
               </div>
             ))}
+            {hasMore && (
+              <button
+                type="button"
+                onClick={() => setOffset(prev => prev + PAGE_SIZE)}
+                disabled={isFetching}
+                className="self-center text-sm font-medium text-primary-500 disabled:opacity-50"
+              >
+                {isFetching ? "Loading..." : "+ Load more"}
+              </button>
+            )}
           </div>
         )}
       </div>

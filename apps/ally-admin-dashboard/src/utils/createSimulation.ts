@@ -31,9 +31,21 @@ export const getCreateSimulationSubSectionById = (id: string) => {
 export const formatVersionConfigToForm = (config: Record<string, any>) => {
   const cfg = config ?? {};
 
+  // The three `*PrimaryLanguageId` keys are read off the live GET, where the
+  // server derives all three from `metadata.defaultLanguageId`. They're absent
+  // from a version snapshot (which stores the metadata field itself), so derive
+  // them the same way. Without this they load as null and the panels fall back
+  // to English — putting a non-English sim's primary text under the English tab
+  // and showing its real language tab as blank.
+  const primaryLanguageId = cfg.defaultLanguageId != null ? Number(cfg.defaultLanguageId) : null;
+
   const adminShape = {
     ...cfg,
     metadata: { ...cfg },
+    openingDialoguePrimaryLanguageId: cfg.openingDialoguePrimaryLanguageId ?? primaryLanguageId,
+    challengeDescriptionPrimaryLanguageId:
+      cfg.challengeDescriptionPrimaryLanguageId ?? primaryLanguageId,
+    remindersPrimaryLanguageId: cfg.remindersPrimaryLanguageId ?? primaryLanguageId,
     competency: cfg.competency ?? (cfg.competencyId ? { id: cfg.competencyId } : undefined),
     // config stores trigger warnings as a string[] of ids; formatSim expects
     // objects under `triggerWarnings`.
