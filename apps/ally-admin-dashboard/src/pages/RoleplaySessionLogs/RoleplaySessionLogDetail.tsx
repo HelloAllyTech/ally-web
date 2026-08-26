@@ -117,58 +117,59 @@ const getStoredPlaybackRate = (): PlaybackRate => {
  * via `onTimeUpdate` so the transcript below can highlight the turn under
  * playback and seek the audio when a turn is clicked.
  */
-const RecordingPlayer = forwardRef<HTMLAudioElement, { url: string; onTimeUpdate?: (seconds: number) => void }>(
-  ({ url, onTimeUpdate }, forwardedRef) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(getStoredPlaybackRate);
+const RecordingPlayer = forwardRef<
+  HTMLAudioElement,
+  { url: string; onTimeUpdate?: (seconds: number) => void }
+>(({ url, onTimeUpdate }, forwardedRef) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(getStoredPlaybackRate);
 
-    useImperativeHandle(forwardedRef, () => audioRef.current as HTMLAudioElement);
+  useImperativeHandle(forwardedRef, () => audioRef.current as HTMLAudioElement);
 
-    useEffect(() => {
-      if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-      // Only on mount: applies the stored/default rate before the user touches the control.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+    // Only on mount: applies the stored/default rate before the user touches the control.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const handleRateChange = (event: ChangeEvent<HTMLSelectElement>) => {
-      const rate = Number(event.target.value);
-      if (!isPlaybackRate(rate)) return;
-      setPlaybackRate(rate);
-      if (audioRef.current) audioRef.current.playbackRate = rate;
-      window.localStorage.setItem(AUDIO_PLAYBACK_RATE_KEY, String(rate));
-    };
+  const handleRateChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const rate = Number(event.target.value);
+    if (!isPlaybackRate(rate)) return;
+    setPlaybackRate(rate);
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+    window.localStorage.setItem(AUDIO_PLAYBACK_RATE_KEY, String(rate));
+  };
 
-    return (
-      <div className="flex items-center gap-2">
-        <audio
-          ref={audioRef}
-          controls
-          preload="none"
-          src={url}
-          className="w-full"
-          onLoadedMetadata={() => {
-            if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-          }}
-          onTimeUpdate={() => {
-            if (audioRef.current) onTimeUpdate?.(audioRef.current.currentTime);
-          }}
-        />
-        <select
-          value={playbackRate}
-          onChange={handleRateChange}
-          aria-label="Playback speed"
-          className="shrink-0 rounded border border-border-light bg-white px-1.5 py-1 text-xs text-typography-700"
-        >
-          {PLAYBACK_RATES.map(rate => (
-            <option key={rate} value={rate}>
-              {rate}x
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  },
-);
+  return (
+    <div className="flex items-center gap-2">
+      <audio
+        ref={audioRef}
+        controls
+        preload="none"
+        src={url}
+        className="w-full"
+        onLoadedMetadata={() => {
+          if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+        }}
+        onTimeUpdate={() => {
+          if (audioRef.current) onTimeUpdate?.(audioRef.current.currentTime);
+        }}
+      />
+      <select
+        value={playbackRate}
+        onChange={handleRateChange}
+        aria-label="Playback speed"
+        className="shrink-0 rounded border border-border-light bg-white px-1.5 py-1 text-xs text-typography-700"
+      >
+        {PLAYBACK_RATES.map(rate => (
+          <option key={rate} value={rate}>
+            {rate}x
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
 
 /**
  * Weak-performing-metric grouping and presentation.
