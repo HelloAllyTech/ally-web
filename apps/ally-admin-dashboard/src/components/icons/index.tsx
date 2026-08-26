@@ -33,6 +33,7 @@ import {
   UserSpeaker as CUserSpeaker,
   Chemistry as CChemistry,
   Roadmap as CRoadmap,
+  Tools as CTools,
   Idea as CIdea,
   Debug as CDebug,
   Pin as CPin,
@@ -164,6 +165,7 @@ export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);
 export const Chemistry = createCarbonIcon(CChemistry);
 export const Roadmap = createCarbonIcon(CRoadmap);
+export const Tools = createCarbonIcon(CTools);
 export const Idea = createCarbonIcon(CIdea);
 // NOTE: @carbon/icons-react has no `Bug` or `Coins`. Debug is the bug glyph and Currency is
 // the coin glyph — do not "correct" these names.

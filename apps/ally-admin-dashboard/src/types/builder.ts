@@ -1,0 +1,360 @@
+/**
+ * Builder types. Mirrors ally-be `src/builder/type/*` and its enums — the two
+ * are hand-kept in step, so a change on either side needs the other.
+ */
+
+export type BuilderSessionStatus =
+  | "INTERVIEWING"
+  | "PRD_READY"
+  | "BUILDING"
+  | "WAITING_FOR_INPUT"
+  | "COMPLETED"
+  | "FAILED"
+  | "CANCELLED";
+
+export type BuilderStage =
+  | "SETUP"
+  | "PLANNING"
+  | "CODING"
+  | "TESTING"
+  | "VERIFYING"
+  | "E2E_VERIFY"
+  | "OPENING_PRS"
+  | "REPORTING"
+  | "DONE";
+
+export interface BuilderSession {
+  id: string;
+  title: string;
+  slug: string;
+  status: BuilderSessionStatus;
+  currentStage: BuilderStage | null;
+  repos: string[] | null;
+  engine: string;
+  model: string | null;
+  lastMessageSeq: number;
+  budgetUsd: string | null;
+  totalCostUsd: string;
+  runnerMinutes: number;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ── PRD document ───────────────────────────────────────────────────────── */
+
+export interface BuilderPrdRequirement {
+  id: string;
+  title: string;
+  description: string;
+  acceptanceCriteria: string[];
+}
+
+export interface BuilderPrdAssumption {
+  id: string;
+  text: string;
+  status: "confirmed" | "unconfirmed";
+}
+
+export interface BuilderPrdRepoPlan {
+  repo: string;
+  changesMd: string;
+}
+
+export interface BuilderPrdDocument {
+  title: string;
+  summary: string;
+  problem: string;
+  usersAndContext: string;
+  goals: string;
+  nonGoals: string;
+  requirements: BuilderPrdRequirement[];
+  assumptions: BuilderPrdAssumption[];
+  technicalPlan: {
+    repos: BuilderPrdRepoPlan[];
+    dataModelMd: string;
+    apiMd: string;
+  };
+  testPlanMd: string;
+  e2ePlanMd: string;
+  openQuestions: string[];
+  ui?: { interview?: Record<string, boolean> };
+}
+
+export interface BuilderPrdReadinessSection {
+  key: string;
+  label: string;
+  ok: boolean;
+  hint: string;
+}
+
+export interface BuilderPrdReadiness {
+  score: number;
+  ready: boolean;
+  sections: BuilderPrdReadinessSection[];
+  blockers: string[];
+}
+
+export interface BuilderPrdVersion {
+  id: string;
+  versionNumber: number;
+  author: "agent" | "admin";
+  changeSummary: string | null;
+  createdAt: string;
+}
+
+/* ── Chat + SSE ─────────────────────────────────────────────────────────── */
+
+export type BuilderQuestionKind = "freeText" | "singleSelect" | "multiSelect" | "dropdown";
+
+export interface BuilderQuestionOption {
+  id: string;
+  label: string;
+  /** The trade-off in one line — what makes an option pickable at a glance. */
+  description?: string;
+  /** At most one per question; the UI focuses it for one-key answering. */
+  recommended?: boolean;
+}
+
+export interface BuilderQuestionEvent {
+  id: string;
+  prompt: string;
+  kind: BuilderQuestionKind;
+  options?: BuilderQuestionOption[];
+  allowCustom?: boolean;
+  allowNone?: boolean;
+  minSelections?: number;
+  maxSelections?: number;
+  /** Why this is being asked; rendered as a subtitle on the card. */
+  rationale?: string;
+}
+
+/** Structured answer payload posted back with the next turn. */
+export interface BuilderStructuredAnswer {
+  selectedOptionIds?: string[];
+  customValues?: string[];
+  none?: boolean;
+}
+
+export interface BuilderDoneEvent {
+  messageSeq: number;
+  sessionStatus: BuilderSessionStatus;
+  readinessScore: number;
+}
+
+export type BuilderStreamEvent =
+  | { type: "token"; data: { delta: string } }
+  | { type: "tool_call"; data: { name: string; input: Record<string, unknown> } }
+  | { type: "tool_result"; data: { name: string; summary: string } }
+  | { type: "question"; data: BuilderQuestionEvent }
+  | {
+      type: "prd_draft";
+      data: { draft: BuilderPrdDocument; versionNumber: number };
+    }
+  | { type: "readiness"; data: BuilderPrdReadiness }
+  | { type: "error"; data: { code: string; message: string } }
+  | { type: "done"; data: BuilderDoneEvent }
+  | { type: "ping"; data: { at: number } };
+
+/** One rendered row in the chat feed. */
+export interface BuilderChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  /** Tool activity for this turn, shown as chips above the bubble. */
+  toolNotes?: string[];
+  question?: BuilderQuestionEvent;
+  /** Set on resume so an answered card renders locked. */
+  answeredWith?: string;
+  answeredAnswer?: BuilderStructuredAnswer;
+  isStreaming?: boolean;
+  interrupted?: boolean;
+  error?: string;
+}
+
+/** Persisted transcript row, as returned by GET /builder/sessions/:id. */
+export interface BuilderServerMessage {
+  id: string;
+  seq: number;
+  role: "user" | "assistant";
+  content: string | null;
+  toolCalls?: { id: string; name: string; input: Record<string, unknown> }[] | null;
+  toolResults?: { toolUseId: string; name: string; result: unknown }[] | null;
+  metadata?: {
+    questions?: BuilderQuestionEvent[];
+    questionId?: string;
+    answer?: BuilderStructuredAnswer;
+    [key: string]: unknown;
+  } | null;
+  createdAt: string;
+}
+
+export interface BuilderSessionDetail extends BuilderSession {
+  messages: BuilderServerMessage[];
+  prd: BuilderPrdDocument;
+  prdVersionNumber: number;
+  readiness: BuilderPrdReadiness;
+}
+
+/* ── Builds ─────────────────────────────────────────────────────────────── */
+
+export type BuilderRunStatus =
+  | "QUEUED"
+  | "RUNNING"
+  | "SUCCEEDED"
+  | "FAILED"
+  | "CANCELLED"
+  | "TIMED_OUT"
+  | "WAITING_FOR_INPUT";
+
+export interface BuilderBuildRun {
+  id: string;
+  sessionId: string;
+  sequence: number;
+  mode: "build" | "resume";
+  status: BuilderRunStatus;
+  engine: string;
+  model: string;
+  branchSlug: string;
+  branches: Record<string, string> | null;
+  githubRunUrl: string | null;
+  dispatchedAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastEventSeq: number;
+  costUsd: string | null;
+  runnerMinutes: number | null;
+  error: string | null;
+}
+
+export type BuilderEventType =
+  | "text"
+  | "tool_call"
+  | "tool_result"
+  | "file_edit"
+  | "todo"
+  | "test_output"
+  | "stage_change"
+  | "plan"
+  | "verification"
+  | "question"
+  | "e2e_evidence"
+  | "e2e_skipped"
+  | "pr_opened"
+  | "report"
+  | "cost"
+  | "error"
+  | "done";
+
+export interface BuilderBuildEvent {
+  id: string;
+  runId: string;
+  seq: number;
+  stage: BuilderStage | null;
+  type: BuilderEventType;
+  payload: Record<string, any>;
+  createdAt: string;
+}
+
+/** One row of the agent's own checklist, replaced wholesale on each change. */
+export interface BuilderTodoItem {
+  id?: string;
+  text: string;
+  status: "pending" | "in_progress" | "done";
+}
+
+export interface BuilderPendingQuestion {
+  id: string;
+  sessionId: string;
+  runId: string;
+  groupId: string;
+  position: number;
+  question: BuilderQuestionEvent;
+  status: "pending" | "answered" | "superseded";
+}
+
+export interface BuilderPullRequest {
+  id: string;
+  repo: string;
+  branch: string;
+  prNumber: number;
+  prUrl: string;
+  title: string | null;
+  ciStatus: string | null;
+  merged: boolean;
+  mergedAt: string | null;
+}
+
+export interface BuilderReport {
+  id: string;
+  runId: string | null;
+  type: "run_report" | "session_report" | "retrospective";
+  contentMd: string;
+  metrics: Record<string, any> | null;
+  createdAt: string;
+}
+
+export interface BuilderSettings {
+  id: string;
+  enabled: boolean;
+  maxConcurrentBuilds: number;
+  defaultBudgetUsd: string | null;
+}
+
+export interface BuilderNotification {
+  id: string;
+  sessionId: string;
+  kind: "question_pending" | "build_completed" | "build_failed" | "prs_opened" | "budget_reached";
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/* ── Requests ───────────────────────────────────────────────────────────── */
+
+export interface CreateBuilderSessionRequest {
+  title?: string;
+}
+
+export interface UpdateBuilderSessionRequest {
+  id: string;
+  title?: string;
+  repos?: string[];
+  engine?: string;
+  model?: string;
+}
+
+export interface BuilderPrdPatchOp {
+  op: "add" | "replace" | "remove";
+  path: string;
+  value?: unknown;
+}
+
+export interface PatchBuilderPrdRequest {
+  id: string;
+  ops: BuilderPrdPatchOp[];
+  changeSummary?: string;
+}
+
+export interface PatchBuilderPrdResponse {
+  prd: BuilderPrdDocument;
+  readiness: BuilderPrdReadiness;
+  versionNumber: number;
+}
+
+export interface BuilderRepoCommand {
+  repo: string;
+  description: string;
+  test: string;
+  lint: string;
+  typecheck: string | null;
+  e2eCapable: boolean;
+  guardedPaths: string[];
+}
+
+export interface BuilderRepoMapSummary {
+  repo: string;
+  commitSha: string | null;
+  generatedAt: string | null;
+  stats: Record<string, unknown> | null;
+}

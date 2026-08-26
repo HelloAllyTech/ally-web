@@ -24,6 +24,7 @@ export * from "./roleplayStudio";
 export * from "./tracks";
 export * from "./blog";
 export * from "./aiLab";
+export * from "./builder";
 export * from "./evaluatorPortal";
 export * from "./productRoadmap";
 export * from "./whatsappBot";

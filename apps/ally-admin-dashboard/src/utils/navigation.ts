@@ -141,6 +141,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.BUG_HUNTER,
   },
   {
+    id: SIDEBAR_ITEMS.BUILDER,
+    label: en.builder.tabLabel,
+    path: ROUTES.BUILDER,
+  },
+  {
     id: SIDEBAR_ITEMS.WHATSAPP_BOT,
     label: en.whatsappBot.navLabel,
     path: ROUTES.WHATSAPP_BOT,
