@@ -423,10 +423,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.BUILDER}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.BUILDER}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
               <Builder />
             </PrivateLayout>
           }
@@ -434,10 +431,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.BUILDER_SESSION(":sessionId")}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.BUILDER}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
               <BuilderSession />
             </PrivateLayout>
           }
