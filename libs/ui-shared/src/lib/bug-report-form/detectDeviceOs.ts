@@ -3,6 +3,11 @@
  * context capture. No dependency added for this — the codebase has no existing device/OS
  * detection util (checked before writing this), and both fields are optional server-side,
  * so a miss here just means a slightly less informative report, not a broken one.
+ *
+ * Lives beside BugReportForm rather than in one app, because every surface that renders
+ * that form owes the same context to whoever triages the report: helpline, and now the
+ * admin roadmap's "Report a bug" button. Two copies would drift into two different
+ * definitions of "Mobile" on the same findings table.
  */
 export interface DeviceOs {
   device?: string;

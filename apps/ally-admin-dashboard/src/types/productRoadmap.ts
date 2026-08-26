@@ -14,13 +14,39 @@ export enum RoadmapOpportunityStage {
 }
 
 /**
- * Who filed it — 'staff' (the admin New Opportunity path, and every pre-existing row) or
- * 'consumer' (a logged-in app user's "Report a problem" form). Admin-side display/filtering
- * only, mirrors ally-be's RoadmapOpportunitySource.
+ * Who filed it — 'staff' (somebody internal, and every pre-existing row) or 'consumer' (an
+ * app user). Answers "who", not "through which client": a bug report is stamped from the
+ * reporter's own roles server-side, so an admin filing from helpline still reads as staff.
+ * Admin-side display/filtering only, mirrors ally-be's RoadmapOpportunitySource.
  */
 export enum RoadmapOpportunitySource {
   STAFF = "staff",
   CONSUMER = "consumer",
+}
+
+/**
+ * Silently-captured triage context sent alongside a bug report. The reporter types one
+ * sentence and never sees any of this — it is shown to a triager in Bug Hunter's drawer as
+ * evidence beside their words. Every field is optional server-side, so a miss degrades the
+ * report rather than failing it. Mirrors ally-be's ReporterContextDto.
+ */
+export interface RoadmapBugReportContext {
+  screen?: string;
+  appVersion?: string;
+  device?: string;
+  os?: string;
+  clientTimestamp?: string;
+}
+
+export interface RoadmapBugReportBody {
+  description: string;
+  context?: RoadmapBugReportContext;
+}
+
+/** One-time confirmation: there is deliberately no "my reports" list to link back to. */
+export interface RoadmapBugReportResponse {
+  id: string;
+  stage: string;
 }
 
 export interface RoadmapUserRef {
