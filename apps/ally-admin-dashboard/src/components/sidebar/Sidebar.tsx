@@ -26,6 +26,7 @@ import {
   Settings,
   SkillLevel,
   Terminal,
+  Tools,
 } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -213,6 +214,8 @@ export const Sidebar: React.FC = () => {
         return <List size={20} />;
       case SIDEBAR_ITEMS.AI_LAB:
         return <Chemistry size={20} />;
+      case SIDEBAR_ITEMS.BUILDER:
+        return <Tools size={20} />;
       case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
         return <Roadmap size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
@@ -296,6 +299,10 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
       case ROUTES.AI_LAB:
         return location.pathname.includes(ROUTES.AI_LAB);
+      // Matches the session detail route too, so the tab stays highlighted
+      // while you are inside a build rather than only on the list.
+      case ROUTES.BUILDER:
+        return location.pathname.includes(ROUTES.BUILDER);
       case ROUTES.PRODUCT_ROADMAP:
         return location.pathname.includes(ROUTES.PRODUCT_ROADMAP);
       case ROUTES.SETTINGS:
