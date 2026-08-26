@@ -28,6 +28,17 @@ import { en } from "@constants";
 
 export interface KeyboardShortcutSheetProps {
   onClose: () => void;
+  /**
+   * False on a surface that can read bugs but not decide them — the roadmap's
+   * Bugs tab. The Act and Select groups are dropped rather than greyed out,
+   * because a reference card that lists three keys which silently do nothing
+   * is worse than a shorter card: the reader concludes the shortcuts are
+   * broken rather than that they are not theirs.
+   *
+   * Defaults to true so Bug Hunter's own tab, where the toggle that reaches the
+   * tab is the same toggle that permits the actions, needs no argument.
+   */
+  canTriage?: boolean;
 }
 
 /** One row of the sheet. `keys` render as separate key caps. */
@@ -41,7 +52,7 @@ interface Shortcut {
  * top-level object off the `@constants` barrel is the pattern that broke nine
  * admin suites once already — see the note in `agentPersona.ts`.
  */
-const shortcutGroups = (): { title: string; shortcuts: Shortcut[] }[] => [
+const shortcutGroups = (canTriage: boolean): { title: string; shortcuts: Shortcut[] }[] => [
   {
     title: en.bugHunter.shortcutsGroupMove,
     shortcuts: [
@@ -53,21 +64,28 @@ const shortcutGroups = (): { title: string; shortcuts: Shortcut[] }[] => [
       { keys: ["?"], label: en.bugHunter.shortcutHelp },
     ],
   },
-  {
-    title: en.bugHunter.shortcutsGroupAct,
-    shortcuts: [
-      { keys: ["a"], label: en.bugHunter.shortcutApprove },
-      { keys: ["r"], label: en.bugHunter.shortcutReject },
-      { keys: ["f"], label: en.bugHunter.shortcutFix },
-    ],
-  },
-  {
-    title: en.bugHunter.shortcutsGroupSelect,
-    shortcuts: [
-      { keys: ["x"], label: en.bugHunter.shortcutToggleSelect },
-      { keys: ["shift", "X"], label: en.bugHunter.shortcutSelectPage },
-    ],
-  },
+  // Both of these are decisions, and both are gated on `canTriage` in the table
+  // itself — the keys are inert for a read-only reader, so the card must not
+  // offer them.
+  ...(canTriage
+    ? [
+        {
+          title: en.bugHunter.shortcutsGroupAct,
+          shortcuts: [
+            { keys: ["a"], label: en.bugHunter.shortcutApprove },
+            { keys: ["r"], label: en.bugHunter.shortcutReject },
+            { keys: ["f"], label: en.bugHunter.shortcutFix },
+          ],
+        },
+        {
+          title: en.bugHunter.shortcutsGroupSelect,
+          shortcuts: [
+            { keys: ["x"], label: en.bugHunter.shortcutToggleSelect },
+            { keys: ["shift", "X"], label: en.bugHunter.shortcutSelectPage },
+          ],
+        },
+      ]
+    : []),
 ];
 
 const KeyCap: FC<{ children: string }> = ({ children }) => (
@@ -76,7 +94,10 @@ const KeyCap: FC<{ children: string }> = ({ children }) => (
   </kbd>
 );
 
-export const KeyboardShortcutSheet: FC<KeyboardShortcutSheetProps> = ({ onClose }) => {
+export const KeyboardShortcutSheet: FC<KeyboardShortcutSheetProps> = ({
+  onClose,
+  canTriage = true,
+}) => {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -119,7 +140,7 @@ export const KeyboardShortcutSheet: FC<KeyboardShortcutSheetProps> = ({ onClose 
         <p className="text-xs text-typography-600 mt-1">{en.bugHunter.shortcutsIntro}</p>
 
         <div className="mt-4 flex flex-col gap-4">
-          {shortcutGroups().map(group => (
+          {shortcutGroups(canTriage).map(group => (
             <div key={group.title}>
               {/* Serif: a group heading is a word, not a key. The `<kbd>` above
                   keeps its monospace, which is what the config's code/ID

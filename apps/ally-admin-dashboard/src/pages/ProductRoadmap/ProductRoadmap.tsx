@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
+  useGetBugFindingsQuery,
   useGetRoadmapBoardQuery,
   useGetRoadmapCoinBudgetQuery,
   useGetRoadmapFacetsQuery,
@@ -29,6 +30,7 @@ import {
 } from "@types";
 
 import { AddOpportunityModal } from "./AddOpportunityModal";
+import { BugsTab } from "./BugsTab";
 import { InterviewsTab } from "./InterviewsTab";
 import { MergeOpportunitiesModal } from "./MergeOpportunitiesModal";
 import { MergeSelectionBar } from "./MergeSelectionBar";
@@ -69,6 +71,8 @@ enum RoadmapTab {
   OPPORTUNITIES = "opportunities",
   INTERVIEWS = "interviews",
   RELEASE_NOTES = "release-notes",
+  /** Bug Hunter's table, read-only. See BugsTab for why it is mirrored here. */
+  BUGS = "bugs",
 }
 
 /**
@@ -94,6 +98,22 @@ export const ProductRoadmap: React.FC = () => {
 
   const canVote = !!permissions?.includes(Permissions.VOTE_PRODUCT_ROADMAP);
   const canManage = !!permissions?.includes(Permissions.EDIT_PRODUCT_ROADMAP);
+  /**
+   * Whether the Bugs tab exists for this reader.
+   *
+   * VIEW_PRODUCT_ROADMAP, which is the same permission the route gate already
+   * required to render this page — so in practice the tab is unconditional, and
+   * this reads as documentation of the rule rather than as a branch.
+   *
+   * It was briefly the BUG_HUNTER toggle instead, mirroring what
+   * `GET /v1/bug-hunter/findings` enforced at the time. That endpoint is now
+   * gated on VIEW_PRODUCT_ROADMAP too, so the tab and the data behind it agree;
+   * keeping the toggle here would hide a tab the server would happily serve.
+   * Naming the permission rather than deleting the check keeps the two sides
+   * greppable as one rule — if ally-be ever narrows that endpoint, this is the
+   * line that has to move with it.
+   */
+  const canViewBugs = !!permissions?.includes(Permissions.VIEW_PRODUCT_ROADMAP);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<RoadmapOpportunityType[]>([]);
@@ -224,6 +244,16 @@ export const ProductRoadmap: React.FC = () => {
   // Counts only — the tab bodies own their own data. Cheap, and the tab strip needs them.
   const { data: interviews } = useGetRoadmapInterviewNotesQuery({ limit: 1 });
   const { data: releaseNotes } = useGetRoadmapReleaseNotesQuery({ limit: 1 });
+  /**
+   * Count only, and skipped entirely without the toggle — the same shape as the
+   * two above. `limit: 1` rather than the table's `limit: 100`: this fires on
+   * every visit to the page including the ones that never open the Bugs tab, and
+   * the tab's own table opens its own (shared, polled) window when it mounts.
+   */
+  const { data: bugs } = useGetBugFindingsQuery(
+    { status: "all", limit: 1 },
+    { skip: !canViewBugs },
+  );
 
   const openOpportunityId = searchParams.get("opportunity");
   const activeViewId = searchParams.get("view");
@@ -372,16 +402,23 @@ export const ProductRoadmap: React.FC = () => {
   const selectedOpportunities = (data?.items ?? []).filter(o => selectedIds.has(o.id));
 
   const requestedTab = searchParams.get("tab") as RoadmapTab | null;
-  const activeTab =
-    requestedTab && Object.values(RoadmapTab).includes(requestedTab)
-      ? requestedTab
-      : RoadmapTab.OPPORTUNITIES;
+  const isTabAvailable = (tab: RoadmapTab | null): tab is RoadmapTab =>
+    !!tab &&
+    Object.values(RoadmapTab).includes(tab) &&
+    // A pasted `?tab=bugs` from someone who holds the toggle must fall back for
+    // someone who doesn't, rather than selecting a tab with no strip entry —
+    // which would render the page with no tab underlined and no body.
+    (tab !== RoadmapTab.BUGS || canViewBugs);
+  const activeTab = isTabAvailable(requestedTab) ? requestedTab : RoadmapTab.OPPORTUNITIES;
 
   const setTab = (id: string) => {
     const next = new URLSearchParams(searchParams);
     next.set("tab", id);
-    // A drawer belongs to the board; leaving it open across a tab switch is confusing.
+    // A drawer belongs to the tab that opened it; leaving one open across a tab
+    // switch is confusing. `bug` is the Bugs tab's equivalent of `opportunity`
+    // — BugFindingsTable reads it out of this same query string.
     next.delete("opportunity");
+    next.delete("bug");
     setSearchParams(next, { replace: true });
   };
 
@@ -477,6 +514,18 @@ export const ProductRoadmap: React.FC = () => {
             label: "Release Notes",
             count: releaseNotes?.count ?? 0,
           },
+          // Last, and conditional. Last because the first three are what this
+          // board is FOR — bugs are context for prioritising them, not a fourth
+          // kind of roadmap item; putting them earlier would say otherwise.
+          ...(canViewBugs
+            ? [
+                {
+                  id: RoadmapTab.BUGS,
+                  label: "Bugs",
+                  count: bugs?.count ?? 0,
+                },
+              ]
+            : []),
         ]}
         activeId={activeTab}
         onChange={setTab}
@@ -487,6 +536,11 @@ export const ProductRoadmap: React.FC = () => {
       )}
 
       {activeTab === RoadmapTab.RELEASE_NOTES && <ReleaseNotesTab canManage={canManage} />}
+
+      {/* `canViewBugs` is already folded into `activeTab`, so this cannot mount
+          without the toggle — but the table polls every 15s once mounted, so
+          the guard is worth being explicit about rather than implied. */}
+      {activeTab === RoadmapTab.BUGS && canViewBugs && <BugsTab />}
 
       {/* Saved-view sub-tabs sit between the top-level strip and the board, so the hierarchy
           reads top-down: section → view → rows. */}
