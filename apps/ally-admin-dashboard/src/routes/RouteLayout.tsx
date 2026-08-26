@@ -119,7 +119,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SIMULATION_STUDIO}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <SimulationStudio />
             </PrivateLayout>
           }
@@ -143,7 +146,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_SIMULATION}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateSimulation />
             </PrivateLayout>
           }
@@ -159,7 +165,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_SIMULATION(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateSimulation />
             </PrivateLayout>
           }
@@ -272,7 +281,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_PATH}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreatePath />
             </PrivateLayout>
           }
@@ -280,7 +292,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_PATH(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreatePath />
             </PrivateLayout>
           }
@@ -288,7 +303,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_TRACK}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateTrack />
             </PrivateLayout>
           }
@@ -296,7 +314,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_TRACK(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateTrack />
             </PrivateLayout>
           }
@@ -304,7 +325,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_CASE}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateCase />
             </PrivateLayout>
           }
@@ -312,7 +336,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_CASE(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateCase />
             </PrivateLayout>
           }

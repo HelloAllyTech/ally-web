@@ -7,6 +7,7 @@ import {
   buildSidebarItemFeatureKeyMap,
   buildSidebarItemOrgToggleMap,
   isRoleplayStudioEmailAllowed,
+  FeatureToggleKey,
   OrgToggle,
 } from "@constants";
 import { store } from "@store";
@@ -247,8 +248,16 @@ export const deriveNavigationItems = ({
       default:
         if (!hasPermissions) return false;
         switch (item.id) {
+          // Deliberately NOT in buildSidebarItemFeatureKeyMap: an entry there
+          // becomes feature-ONLY (the map branch returns before this switch),
+          // which would drop the EDIT_SCENARIO requirement. Content management
+          // needs both — the permission to author, and the toggle to see the
+          // studio at all.
           case SIDEBAR_ITEMS.SIMULATION_STUDIO:
-            return permissions!.includes(Permissions.EDIT_SCENARIO);
+            return (
+              permissions!.includes(Permissions.EDIT_SCENARIO) &&
+              hasFeature(features, FeatureToggleKey.CONTENT_MANAGEMENT)
+            );
           case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
             // Rollout gate: permission AND the temporary email allowlist.
             return (

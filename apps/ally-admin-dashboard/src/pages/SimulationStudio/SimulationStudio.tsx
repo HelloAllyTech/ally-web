@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
@@ -21,7 +22,7 @@ import {
   PATH_STATUS_OPTIONS,
   SIMULATION_CATEGORY_FILTER_OPTIONS,
   SimulationStatus,
-  isSuperAdminRole,
+  FeatureToggleKey,
   isSuperDuperAdminRole,
 } from "@constants";
 import {
@@ -31,6 +32,8 @@ import {
   useTracks,
   useUser,
 } from "@hooks";
+import type { RootState } from "@store";
+import { hasFeature } from "@utils";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
@@ -45,8 +48,6 @@ const TABS_CONFIG = [
   { id: TAB_KEYS.CASES, label: "Cases" },
   { id: TAB_KEYS.COURSES, label: "Courses" },
 ];
-
-const SUPER_ADMIN_TAB_KEYS = [TAB_KEYS.TRACKS, TAB_KEYS.CASES, TAB_KEYS.COURSES];
 
 export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -65,7 +66,20 @@ export const SimulationStudio: React.FC = () => {
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useUser();
-  const isSuperAdmin = isSuperAdminRole(user?.role);
+  const features = useSelector((state: RootState) => state.user.features);
+  /**
+   * One key for all four content types, replacing the old
+   * `isSuperAdminRole(user?.role)` check. That check read the COLLAPSED single
+   * role, which accepts only the retired SUPER_ADMIN/SUPER_DUPER_ADMIN names —
+   * so a PLATFORM_ADMIN minted by the Ally admins tab held every content
+   * permission on the backend and still saw the Tracks/Cases/Courses tabs
+   * disappear.
+   *
+   * The route also carries `requiredFeature`, so reaching this component at
+   * all means the toggle is on; this is the in-page belt to that braces, and
+   * what the query `enabled` flags and create options read.
+   */
+  const hasContentAccess = hasFeature(features, FeatureToggleKey.CONTENT_MANAGEMENT);
   const isSuperDuperAdmin = isSuperDuperAdminRole(user?.role);
 
   // Get active tab from URL params, default to SIMULATIONS
@@ -75,20 +89,6 @@ export const SimulationStudio: React.FC = () => {
   // old tracks is reserved for super-duper-admins. Hide the Create button on
   // that tab for everyone else (a plain super-admin included).
   const hideCreateButton = activeTab === TAB_KEYS.TRACKS && !isSuperDuperAdmin;
-
-  // Effect to redirect unauthorized users from restricted tabs
-  React.useEffect(() => {
-    if (!isSuperAdmin && SUPER_ADMIN_TAB_KEYS.includes(activeTab)) {
-      setSearchParams({ tab: TAB_KEYS.SIMULATIONS });
-    }
-  }, [isSuperAdmin, activeTab, setSearchParams]);
-
-  const filteredTabs = TABS_CONFIG.filter(tab => {
-    if (SUPER_ADMIN_TAB_KEYS.includes(tab.id)) {
-      return isSuperAdmin;
-    }
-    return true;
-  });
 
   // Use the custom hook for simulations
   const {
@@ -153,7 +153,7 @@ export const SimulationStudio: React.FC = () => {
     isPathEditPopupOpen,
     setIsPathEditPopupOpen,
     handleEditPathway,
-  } = useSimulationPathways({ selectedFilters, enabled: isSuperAdmin });
+  } = useSimulationPathways({ selectedFilters, enabled: hasContentAccess });
 
   // Use the custom hook for Track 2.0 ("Courses")
   const {
@@ -180,7 +180,7 @@ export const SimulationStudio: React.FC = () => {
     handleChangeTrackStatus,
     handleDuplicateTrack,
     onDuplicateTrack,
-  } = useTracks({ selectedFilters, enabled: isSuperAdmin });
+  } = useTracks({ selectedFilters, enabled: hasContentAccess });
 
   // Use the custom hook for cases
   const {
@@ -207,7 +207,7 @@ export const SimulationStudio: React.FC = () => {
     isCaseEditPopupOpen,
     setIsCaseEditPopupOpen,
     handleEditCase,
-  } = useSimulationCases({ selectedFilters, enabled: isSuperAdmin });
+  } = useSimulationCases({ selectedFilters, enabled: hasContentAccess });
 
   const handleFilterClick = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -276,11 +276,11 @@ export const SimulationStudio: React.FC = () => {
         return false;
       }
       if (option.id === "New Case" || option.id === "New Course") {
-        return isSuperAdmin;
+        return hasContentAccess;
       }
       return true;
     });
-  }, [createOptions, isSuperAdmin]);
+  }, [createOptions, hasContentAccess]);
 
   const renderFooter = () => {
     const isCasesTab = activeTab === TAB_KEYS.CASES;
@@ -462,7 +462,7 @@ export const SimulationStudio: React.FC = () => {
             onDuplicate={onDuplicateSimulation}
             footer={renderFooter()}
             currentUser={user}
-            isSuperAdmin={isSuperAdmin}
+            isSuperAdmin={hasContentAccess}
           />
         );
       default:
@@ -483,7 +483,7 @@ export const SimulationStudio: React.FC = () => {
     <div className="min-h-full font-secondary">
       {renderHeader()}
       <Tabs
-        items={filteredTabs}
+        items={TABS_CONFIG}
         className="mb-2 mt-6 border-b border-border-light font-primary"
         activeId={activeTab}
         showCount={false}

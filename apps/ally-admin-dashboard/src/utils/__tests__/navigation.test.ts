@@ -93,14 +93,35 @@ describe("deriveNavigationItems", () => {
     expect(result[0].path).toBe(ROUTES.MANAGE_EVENTS);
   });
 
-  it("resolves Simulation Studio as the first tab for a user with EDIT_SCENARIO", () => {
+  it("resolves Simulation Studio as the first tab for a user with EDIT_SCENARIO and the content toggle", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO],
+      features: [FeatureToggleKey.CONTENT_MANAGEMENT],
+      savedOrder: undefined,
+    });
+    expect(result[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+    expect(result[0].path).toBe(ROUTES.SIMULATION_STUDIO);
+  });
+
+  // Both halves are required: the tab is not in buildSidebarItemFeatureKeyMap
+  // (which would make it feature-ONLY and drop the permission), so a missing
+  // toggle and a missing permission each hide it on their own.
+  it("hides Simulation Studio when EDIT_SCENARIO is held but the content toggle is off", () => {
     const result = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       features: [],
       savedOrder: undefined,
     });
-    expect(result[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
-    expect(result[0].path).toBe(ROUTES.SIMULATION_STUDIO);
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+  });
+
+  it("hides Simulation Studio when the content toggle is on but EDIT_SCENARIO is missing", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.VIEW_USERS],
+      features: [FeatureToggleKey.CONTENT_MANAGEMENT],
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.SIMULATION_STUDIO);
   });
 
   it("treats USERS as accessible with either EDIT_USER or VIEW_USERS", () => {
