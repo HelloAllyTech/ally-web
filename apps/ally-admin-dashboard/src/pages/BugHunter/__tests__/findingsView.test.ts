@@ -91,10 +91,34 @@ describe("filtering", () => {
 
     const filters: FindingsFilters = {
       ...EMPTY_FILTERS,
-      repo: "ally-web",
-      severity: BugFindingSeverity.HIGH,
+      repos: ["ally-web"],
+      severities: [BugFindingSeverity.HIGH],
     };
     expect(view(findings, { filters }).rows.map(r => r.finding.id)).toEqual(["match"]);
+  });
+
+  it("treats several values in one facet as OR, and two facets as AND", () => {
+    const findings = [
+      finding({ id: "be-high", repo: "ally-be", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "web-high", repo: "ally-web", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "ai-high", repo: "ally-ai", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "be-low", repo: "ally-be", severity: BugFindingSeverity.LOW }),
+    ];
+
+    const filters: FindingsFilters = {
+      ...EMPTY_FILTERS,
+      repos: ["ally-be", "ally-web"],
+      severities: [BugFindingSeverity.HIGH],
+    };
+    expect(view(findings, { filters }).rows.map(r => r.finding.id).sort()).toEqual([
+      "be-high",
+      "web-high",
+    ]);
+  });
+
+  it("treats an empty facet as no opinion rather than as matching nothing", () => {
+    const findings = [finding({ id: "a" }), finding({ id: "b" })];
+    expect(view(findings, { filters: { ...EMPTY_FILTERS, repos: [] } }).rows).toHaveLength(2);
   });
 
   it("knows when no filter is set, so the table can hide its own clear button", () => {
