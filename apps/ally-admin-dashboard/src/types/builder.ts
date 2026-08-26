@@ -85,13 +85,21 @@ export interface BuilderPrdReadinessSection {
   key: string;
   label: string;
   ok: boolean;
+  /** One short sentence — this is what the section tooltip renders. */
   hint: string;
+  /**
+   * The same gap spelled out for the interview agent (JSON Pointers, field
+   * names, legal values). Deliberately not rendered: it is long by design and
+   * belongs in the agent's tool results, not in a tooltip.
+   */
+  detail?: string;
 }
 
 export interface BuilderPrdReadiness {
   score: number;
   ready: boolean;
   sections: BuilderPrdReadinessSection[];
+  /** `hint` + `detail` per blocked section. Counted here, not read. */
   blockers: string[];
 }
 
