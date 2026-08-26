@@ -17,7 +17,6 @@ import {
   ROUTES,
   OrgToggle,
   Permissions,
-  UserRole,
   en,
   normalizeEmailForAllowlist,
 } from "@constants";
@@ -27,24 +26,19 @@ import { hasPermissions, hasFeature } from "@utils";
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
-  requiredRole?: UserRole | UserRole[];
   /**
    * Feature-toggle key(s) that also grant this route — checked via
-   * `hasFeature`. During the role->toggle migration this is carried
-   * ALONGSIDE `requiredRole` on the same route (see RouteLayout): access is
-   * granted if EITHER the legacy role check or this toggle check passes, a
-   * safety net against an incomplete toggle backfill. A route with only one
-   * of the two props behaves exactly as before (the other check defaults to
-   * pass-through).
+   * `hasFeature`. A route that passes none stays backward compatible
+   * (`hasRequiredFeature` defaults to pass-through).
    */
   requiredFeature?: string | string[];
   /**
-   * Third grant path, alongside `requiredRole` and `requiredFeature`: the
-   * caller's ORG has the feature switched on. Per-user feature toggles only
-   * exist for platform admins, so this is how a tenant's own admins reach a
-   * surface built for Ally staff. Always pair it with `requiredPermissions` —
-   * the org switch says the feature is on for the org, the permission says
-   * this user may use it.
+   * Second grant path, alongside `requiredFeature`: the caller's ORG has the
+   * feature switched on. Per-user feature toggles only exist for platform
+   * admins, so this is how a tenant's own admins reach a surface built for
+   * Ally staff. Always pair it with `requiredPermissions` — the org switch
+   * says the feature is on for the org, the permission says this user may
+   * use it.
    */
   requiredOrgToggle?: OrgToggle;
   isPreview?: boolean;
@@ -60,7 +54,6 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   children,
   isPreview,
   requiredPermissions = [],
-  requiredRole,
   requiredFeature,
   requiredOrgToggle,
   allowedEmails,
@@ -96,7 +89,6 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   // Check if user has permission to access current route
   let hasPermission = true;
-  let hasRole = true;
   let hasRequiredFeature = true;
   let hasOrgToggle = false;
   let hasAllowedEmail = true;
@@ -105,29 +97,9 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasPermission = hasPermissions(permissions, requiredPermissions);
   }
 
-  // Role gating is independent of permissions: routes can require a specific
-  // role (e.g. SUPER_ADMIN) — or any one of a set of roles (e.g. the super-admin
-  // tier: [SUPER_ADMIN, SUPER_DUPER_ADMIN]) — regardless of the permission set.
-  // Routes that pass no requiredRole stay backward compatible (hasRole stays true).
-  //
-  // Gated on `userData?.roles` (the additive array), never the singular
-  // `role` — the backend collapses that field to one value by a priority
-  // list that omits some roles, which misreports exactly the multi-role
-  // accounts a role-gated route is most likely to matter for.
-  if (!isUserLoading) {
-    const userRoles = userData?.roles ?? [];
-    hasRole =
-      !requiredRole ||
-      (Array.isArray(requiredRole)
-        ? requiredRole.some(role => userRoles.includes(role))
-        : userRoles.includes(requiredRole));
-  }
-
   // Feature-toggle gating. `features` defaults to `[]` while still loading or
   // on a genuine fetch error, so `hasFeature` fails CLOSED in both cases — this
-  // must never read as "endpoint doesn't exist, treat as pass". The role check
-  // above is the deliberate escape hatch for that case (both props carried on
-  // the same route during the migration), not a fallback baked in here.
+  // must never read as "endpoint doesn't exist, treat as pass".
   if (!requiredFeature) {
     hasRequiredFeature = true;
   } else if (isFeaturesLoading) {
@@ -140,9 +112,9 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   }
 
   // Org-toggle gating. Fails CLOSED while loading and on a fetch error, same as
-  // the per-user toggles above — the role/feature checks are the escape hatch
-  // for a platform admin, so a slow or failed org read can never be the thing
-  // that grants access.
+  // the per-user toggles above — the feature check is the escape hatch for a
+  // platform admin, so a slow or failed org read can never be the thing that
+  // grants access.
   if (requiredOrgToggle === OrgToggle.CHARACTER_LIBRARY) {
     hasOrgToggle = !isOrgToggleLoading && isCharacterLibraryOrgEnabled === true;
   }
@@ -157,18 +129,13 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     );
   }
 
-  // Dual-gate: a route carrying both `requiredRole` and `requiredFeature`
-  // passes if EITHER check does — the toggle is additive access, not a
-  // narrowing of the legacy role check, until the legacy prop is removed in a
-  // later cleanup pass.
-  const hasAccess =
-    hasPermission && (hasRole || hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
+  const hasAccess = hasPermission && (hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
 
   // Every gate used to read as identical generic copy on AccessDenied. Order
   // matters here roughly by how "fixable by the viewer" each cause is: an
   // allowlist miss and a missing permission are both dead ends for this
-  // account specifically, while the role/feature/org-toggle trio failing
-  // together usually means the surface just isn't turned on yet.
+  // account specifically, while the feature/org-toggle pair failing together
+  // usually means the surface just isn't turned on yet.
   const accessDeniedReason = !hasAccess
     ? !hasPermission
       ? en.accessDenied.reasonMissingPermission

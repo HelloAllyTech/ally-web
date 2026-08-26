@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { useGetBugFindingsQuery, useGetBugHunterSettingsQuery } from "@api";
-import { FeatureToggleKey, isSuperDuperAdminRole } from "@constants";
+import { FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { BugFinding, BugHunterMode } from "@types";
 import { hasFeature } from "@utils";
@@ -93,26 +93,16 @@ export const BugHunter: FC = () => {
   const { setBug } = useBugHunterUrlState();
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  const currentRole = useSelector((state: RootState) => state.user.user?.role);
   const features = useSelector((state: RootState) => state.user.features);
 
   /**
    * Whether this reader may ACT on bugs, or only read them.
    *
-   * Reading the bug table is open to SUPER_ADMIN. Bugs used to be visible on the
-   * product roadmap board, which SUPER_ADMINs can see; moving bugs here and
-   * leaving the table at super-duper-admin would not have left their access
-   * unchanged, it would have silently removed a whole class of item from view.
-   * Deciding what gets FIXED stays at the elevated tier.
-   *
-   * Mirrors the backend's own gate (`@RequireFeatureToggle(BUG_HUNTER, {
-   * legacyRoles: SUPER_DUPER_ADMIN_ROLES })` — the toggle OR the legacy role), so
-   * a SUPER_ADMIN sees a read-only tab rather than buttons that 403. Resolved
-   * once here and threaded down, rather than re-derived in each component: two
-   * copies of an authorisation rule is one copy too many.
+   * Mirrors the backend's own gate (`@RequireFeatureToggle(BUG_HUNTER)`).
+   * Resolved once here and threaded down, rather than re-derived in each
+   * component: two copies of an authorisation rule is one copy too many.
    */
-  const canTriage =
-    isSuperDuperAdminRole(currentRole) || hasFeature(features, FeatureToggleKey.BUG_HUNTER);
+  const canTriage = hasFeature(features, FeatureToggleKey.BUG_HUNTER);
 
   const findings: BugFinding[] = findingsData?.items ?? [];
 

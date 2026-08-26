@@ -32,12 +32,11 @@ vi.mock("@utils", () => ({
   hasFeature: (features: string[], key: string) => features.includes(key),
 }));
 
-// SUPER_DUPER_ADMIN by default, so every existing assertion below — none of
-// which is about the read/act split — keeps seeing the full triage surface.
-// The one test that IS about it overrides this per-case.
+// Holds the bug_hunter toggle by default, so every existing assertion below —
+// none of which is about the read/act split — keeps seeing the full triage
+// surface.
 vi.mock("react-redux", () => ({
-  useSelector: (selector: any) =>
-    selector({ user: { user: { role: "SUPER_DUPER_ADMIN" }, features: [] } }),
+  useSelector: (selector: any) => selector({ user: { user: {}, features: ["bug_hunter"] } }),
 }));
 
 vi.mock("@assets", () => ({
