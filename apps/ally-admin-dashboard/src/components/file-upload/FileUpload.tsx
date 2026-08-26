@@ -565,9 +565,7 @@ export const FileUpload = ({
 
         {formState.errors[id]?.message && (
           <div className="flex items-center gap-2 mt-1">
-            <p className="text-destructive-500 text-sm">
-              {String(formState.errors[id]?.message)}
-            </p>
+            <p className="text-destructive-500 text-sm">{String(formState.errors[id]?.message)}</p>
             {pendingRetryFile && (
               <button
                 type="button"

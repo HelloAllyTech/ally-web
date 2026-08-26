@@ -204,7 +204,10 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
               {hasAccess ? (
                 children
               ) : (
-                <AccessDenied reason={accessDeniedReason} nextStep={en.accessDenied.nextStepContactAdmin} />
+                <AccessDenied
+                  reason={accessDeniedReason}
+                  nextStep={en.accessDenied.nextStepContactAdmin}
+                />
               )}
             </ErrorBoundary>
           </div>

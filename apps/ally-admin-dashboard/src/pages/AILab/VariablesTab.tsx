@@ -23,12 +23,9 @@ const NAME_PATTERN = /^[A-Za-z0-9_.-]+$/;
 
 export const VariablesTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetLabVariablesQuery({ search: search || undefined });
+  const { data, isLoading, isError, refetch } = useGetLabVariablesQuery({
+    search: search || undefined,
+  });
   const variables = data?.items ?? [];
 
   const [createVariable] = useCreateLabVariableMutation();

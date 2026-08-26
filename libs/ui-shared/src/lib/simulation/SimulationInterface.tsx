@@ -447,7 +447,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             aria-live="polite"
             className="rounded-full bg-[#282B31] px-3 py-1 text-[11px] text-[#B6B5B9] shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
           >
-            {translations?.missedSupervisorHints ?? "Some supervisor hints may not have reached you"}
+            {translations?.missedSupervisorHints ??
+              "Some supervisor hints may not have reached you"}
           </div>
         )}
       </div>

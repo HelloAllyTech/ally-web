@@ -493,7 +493,14 @@ export const useCopilotStream = ({
 
       return { userMsgId, assistantId, sessionLost, aborted: controller.signal.aborted };
     },
-    [appendToolNote, dispatch, fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
+    [
+      appendToolNote,
+      dispatch,
+      fetchStreamWithReauth,
+      flushTokens,
+      handleEvent,
+      patchAssistantMessage,
+    ],
   );
 
   const sendMessage = useCallback(
