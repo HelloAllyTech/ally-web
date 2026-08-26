@@ -200,8 +200,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     // (a write), and the version panel is hidden there anyway.
     { skip: !simulationId || viewMode },
   );
+  // With no version explicitly selected the editor is on the live scenario, so
+  // the header must name the version that MIRRORS it (`isLive`) — not merely
+  // the newest one, which after a branch would mislabel live edits as "v2".
   const currentVersion =
     scenarioVersions.find(v => v.id === activeVersionId) ??
+    scenarioVersions.find(v => v.isLive) ??
     scenarioVersions.find(v => v.status === ScenarioVersionStatus.PUBLISHED) ??
     scenarioVersions[0];
   // An explicitly-selected non-draft (archived) version is read-only — edits
@@ -1314,10 +1318,13 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
                 onEditVersion={async version => {
                   // Save the outgoing draft/live edits before the form reset.
                   await flushPendingEdits();
-                  if (version.status === ScenarioVersionStatus.PUBLISHED) {
-                    // The published version IS the live scenario — edit it via
-                    // the live path. Clearing activeVersionId makes the load
-                    // effect re-sync the form from the live record.
+                  if (version.isLive || version.status === ScenarioVersionStatus.PUBLISHED) {
+                    // This version IS the live scenario — edit it via the live
+                    // path. Clearing activeVersionId makes the load effect
+                    // re-sync the form from the live record. Its stored config
+                    // is a stale seed (the studio saves live edits to the
+                    // scenario row, not to this version), so loading that
+                    // instead would blank the form.
                     setActiveVersionId(undefined);
                     setVersionEvents(undefined);
                     draftMappedEventsRef.current = undefined;
