@@ -4,7 +4,13 @@ import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { baseAPI } from "@api";
-import { LOCAL_STORAGE_KEYS, Permissions, SIDEBAR_ITEMS, UserRole } from "@constants";
+import {
+  FeatureToggleKey,
+  LOCAL_STORAGE_KEYS,
+  Permissions,
+  SIDEBAR_ITEMS,
+  UserRole,
+} from "@constants";
 import userSlice from "@reducer/userReducer";
 import { UserAvailabilityStatus } from "@types";
 
@@ -117,7 +123,10 @@ describe("useUser", () => {
           user: null,
           userStatus: UserAvailabilityStatus.OFFLINE,
           permissions: [],
-          features: [],
+          // Simulation Studio needs this alongside EDIT_SCENARIO, and the
+          // backfill migration switches it on for every platform admin — so
+          // "on" is the realistic default for a nav-structure fixture.
+          features: [FeatureToggleKey.CONTENT_MANAGEMENT],
           availableChatTypes: [],
           ...initialState,
         },
