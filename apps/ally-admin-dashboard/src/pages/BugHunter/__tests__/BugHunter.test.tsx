@@ -70,6 +70,23 @@ vi.mock("framer-motion", () => {
 });
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
+  // Matches the real strip's `data-testid={`tab-${id}`}` so a test can address
+  // a tab without going through its label — which matters here because the
+  // About tab sits next to a heading of nearly the same name.
+  Tabs: ({ items, activeId, onChange }: any) => (
+    <div data-testid="tabs">
+      {items.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          aria-pressed={activeId === item.id}
+          onClick={() => onChange(item.id)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
   Search: ({ id, labelText, value, onChange, placeholder }: any) => (
     <input
       id={id}
@@ -259,34 +276,96 @@ describe("BugHunter", () => {
     expect(screen.getByText(/Checks with you \(Manual mode\)/)).toBeInTheDocument();
   });
 
-  // Position, not presence: while nobody has put Bug Hunter on duty there is
-  // nothing in any of the tables, and the introduction is the most useful thing
-  // on the page. Once it is working, eleven accordions above the work are noise.
-  const aboutComesBeforeTheBugsTable = () => {
-    const about = screen.getByText("About me");
-    const bugs = screen.getByText("Bugs I'm tracking");
-    return Boolean(about.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING);
-  };
-
-  it("puts About me directly under the card while it is off duty", () => {
-    render(
-      <MemoryRouter>
-        <BugHunter />
-      </MemoryRouter>,
-    );
-    expect(aboutComesBeforeTheBugsTable()).toBe(true);
-  });
-
-  it("moves About me below the work once it is on duty", () => {
+  const onDuty = () =>
     mockSettingsQuery({
       data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
     });
+
+  // Which tab you land on is the whole of the old "where does About me go"
+  // rule, which used to render the same component in two different places
+  // depending on the mode.
+  it("lands on About while nobody has put it on duty", () => {
     render(
       <MemoryRouter>
         <BugHunter />
       </MemoryRouter>,
     );
-    expect(aboutComesBeforeTheBugsTable()).toBe(false);
+    expect(screen.getByTestId("tab-about")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("heading", { name: "About me" })).toBeInTheDocument();
+    // Nothing on the Work tab has anything in it yet, so it is not rendered.
+    expect(screen.queryByText("Bugs I'm tracking")).not.toBeInTheDocument();
+  });
+
+  it("lands on the work once it is on duty, with About behind its own tab", () => {
+    onDuty();
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("tab-work")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("Bugs I'm tracking")).toBeInTheDocument();
+    // Eleven FAQ accordions under the table were three screens of scroll below
+    // the work — the reason this page is tabbed at all.
+    expect(screen.queryByRole("heading", { name: "About me" })).not.toBeInTheDocument();
+  });
+
+  /**
+   * The scorecard and the shift log answer a governance question asked roughly
+   * monthly, and used to render under the bugs table on every single visit.
+   */
+  it("keeps the governance sections off the work tab, one click away", () => {
+    onDuty();
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByText("How I'm doing")).not.toBeInTheDocument();
+    expect(screen.queryByText("My shift log")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("tab-performance"));
+
+    expect(screen.getByText("How I'm doing")).toBeInTheDocument();
+    expect(screen.getByText("My shift log")).toBeInTheDocument();
+    // And the work is not also on this tab — that would be the old page again.
+    expect(screen.queryByText("Bugs I'm tracking")).not.toBeInTheDocument();
+  });
+
+  // The card is the page's heading and holds the kill switch, so it must be
+  // reachable from every section rather than living on one of them.
+  it("keeps the agent's card above the tabs, whichever section is open", () => {
+    onDuty();
+    render(
+      <MemoryRouter>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByTestId("tab-performance"));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
+
+    fireEvent.click(screen.getByTestId("tab-about"));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
+  });
+
+  it("reads the open section out of the address bar, so a section is linkable", () => {
+    onDuty();
+    render(
+      <MemoryRouter initialEntries={["/?section=performance"]}>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText("How I'm doing")).toBeInTheDocument();
+  });
+
+  it("falls back to the default section for a hand-edited one, rather than erroring", () => {
+    onDuty();
+    render(
+      <MemoryRouter initialEntries={["/?section=telemetry"]}>
+        <BugHunter />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("tab-work")).toHaveAttribute("aria-pressed", "true");
   });
 
   // The queue is the reason the page was re-ordered: the old layout could state
@@ -402,14 +481,20 @@ describe("BugHunter", () => {
     expect(screen.queryByText("On it right now")).not.toBeInTheDocument();
   });
 
-  it("shows the empty state for both the bugs table and the shift log when neither has data yet", () => {
+  it("shows an empty state on each tab that has no data yet", () => {
+    onDuty();
     render(
       <MemoryRouter>
         <BugHunter />
       </MemoryRouter>,
     );
-    const emptyStates = screen.getAllByTestId("empty-state");
-    expect(emptyStates.some(el => el.textContent?.includes("No bugs yet"))).toBe(true);
-    expect(emptyStates.some(el => el.textContent?.includes("No shifts yet"))).toBe(true);
+    expect(
+      screen.getAllByTestId("empty-state").some(el => el.textContent?.includes("No bugs yet")),
+    ).toBe(true);
+
+    fireEvent.click(screen.getByTestId("tab-performance"));
+    expect(
+      screen.getAllByTestId("empty-state").some(el => el.textContent?.includes("No shifts yet")),
+    ).toBe(true);
   });
 });

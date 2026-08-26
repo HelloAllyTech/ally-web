@@ -2448,13 +2448,18 @@ export const en = {
     findingsSubtitle:
       "Everything I know about, from any source. Search it, or filter by what needs doing.",
     findingColumnTitle: "Bug",
-    findingColumnSource: "Source",
     findingColumnRepo: "Repo",
     findingColumnSeverity: "Severity",
     findingColumnStatus: "Status",
-    findingColumnDiscovered: "Discovered",
+    // Sorting by status walks the lifecycle rather than the alphabet, which is
+    // worth saying: "sort by status" reads as an arbitrary ordering until you
+    // know that clicking it brings your own unfinished work to the top.
+    findingColumnStatusTooltip:
+      "Where a bug is in my pipeline. Sorting by it groups the list the way the chips above do — whatever is waiting on you first, then my own work in the order I do it, then what's finished.",
+    // `findingColumnStage` itself already lives with the stage labels below.
+    findingColumnStageTooltip:
+      "The coarse roadmap ladder — New, Prioritised, In development, Released — so a bug reads the same way as an idea on the roadmap board. I derive it from the status on its left unless somebody pinned it by hand.",
     findingColumnPr: "PR",
-    findingFilterAll: "All statuses",
     findingSourceTestFailure: "Failing test",
     findingSourceLintError: "Lint error",
     findingSourceCodeReview: "Code review",
@@ -2529,14 +2534,41 @@ export const en = {
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
     searchLabel: "Search bugs",
-    searchPlaceholder: "Search by title, file or repo…",
-    filterRepoLabel: "Repo",
-    filterRepoAll: "All repos",
-    filterSeverityLabel: "Severity",
-    filterSeverityAll: "Any severity",
-    filterSourceLabel: "Source",
-    filterSourceAll: "Any source",
+    // Names every field it actually looks in. It searched title, file and repo
+    // and said so; it now also reads the description and the reporter's name,
+    // and a placeholder that under-promises is why nobody tried "Priya" in it.
+    searchPlaceholder: "Search title, description, file, repo or reporter…",
     clearFilters: "Clear filters",
+    // ── The filter panel ──────────────────────────────────────────────────────
+    // One button holding eight facets, rather than eight controls on a row that
+    // already wrapped. See FindingsFilterBar for the argument, and for why the
+    // active values stay visible as pills while the panel itself is shut.
+    // ── Page sections ─────────────────────────────────────────────────────────
+    // Named for the question each answers, not for what they contain. "Work" is
+    // a triager's daily surface; "Performance" is the monthly governance one —
+    // see BugHunter.tsx on why those are two readers and not one long page.
+    sectionWork: "Work",
+    sectionPerformance: "Performance",
+    sectionAbout: "About",
+    filtersButton: "Filters",
+    filtersPanelLabel: "Filter bugs",
+    filterSectionStatus: "Status",
+    filterSectionRepo: "Repo",
+    filterSectionSeverity: "Severity",
+    filterSectionSource: "Source",
+    filterSectionStage: "Roadmap stage",
+    filterSectionAge: "Age",
+    filterSectionClear: "Clear",
+    filterAgeAll: "Any age",
+    filterAgeDay: "Found today",
+    // The two "over" bands use the same week/month boundaries as the amber and
+    // red tints in the Age column, so what the filter returns is exactly what
+    // the column had already coloured. Worded as the reader reads the tint.
+    filterAgeWeek: "Under a week old",
+    filterAgeStale: "Over a week old",
+    filterAgeAncient: "Over a month old",
+    filterDuplicatesOnly: "Duplicates only",
+    filterPillRemove: "Remove the {label} filter",
     // Distinct from findingsEmptyTitle on purpose: "Once I'm on duty, anything
     // I find shows up here" is the wrong thing to tell someone who has just
     // typed a typo into the search box.
@@ -2559,6 +2591,17 @@ export const en = {
     pagePrev: "Previous",
     pageNext: "Next",
     pageStatus: "Page {page} of {pages}",
+    pageSizeLabel: "Rows",
+    // Two halves of one sentence: the prompt states the situation, the button
+    // states what clicking it will do — and both name the number, because
+    // "select all" over a filtered list that spans five pages is exactly the
+    // control people press without knowing how much it grabbed.
+    selectAllMatchingPrompt: "Your selection covers this page only.",
+    selectAllMatchingAction: "Select all {count} matching bugs",
+    // A poll failed while rows were already on screen. Deliberately not the
+    // same words as findingsLoadFailed: nothing is missing from the page, the
+    // rows are just from a minute ago.
+    findingsStaleNotice: "Showing the last bugs I loaded — my latest check didn't get through.",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
     // ── Editing the brief ─────────────────────────────────────────────────────
@@ -2866,7 +2909,7 @@ export const en = {
     quickApproveConfirm: "Approve it",
     quickRejectConfirm: "Reject it",
     quickActionNotApplicable: "That doesn't apply to this bug from where it is.",
-    densityLabel: "Rows",
+    densityLabel: "Row height",
     densityComfortable: "Comfortable",
     densityCompact: "Compact",
     // ── Bulk triage ─────────────────────────────────────────────
@@ -2908,7 +2951,6 @@ export const en = {
     shortcutsTitle: "Keyboard shortcuts",
     shortcutsIntro:
       "For working the list without reaching for the mouse. These apply whenever the bugs table is on screen and you aren't typing into a field.",
-    shortcutsHint: "Press ? for shortcuts",
     shortcutsClose: "Close",
     shortcutsGroupMove: "Moving around",
     shortcutsGroupAct: "Acting on the bug you're on",

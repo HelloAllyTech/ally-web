@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -176,13 +176,56 @@ describe("BugFindingsTable — triage controls", () => {
       finding({ id: "b", repo: "ally-web" }),
     ]);
 
-    const repoFilter = screen.getByLabelText("Repo");
-    expect(repoFilter).toContainHTML('<option value="ally-web">ally-web</option>');
-    expect(repoFilter).not.toContainHTML("ally-mobile");
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    const panel = screen.getByRole("dialog", { name: "Filter bugs" });
 
-    fireEvent.change(repoFilter, { target: { value: "ally-web" } });
+    // Only repos in the loaded window — a facet must never offer a value that
+    // matches nothing.
+    expect(within(panel).getByLabelText(/ally-web/)).toBeInTheDocument();
+    expect(within(panel).queryByLabelText(/ally-mobile/)).not.toBeInTheDocument();
+
+    fireEvent.click(within(panel).getByLabelText(/ally-web/));
     expect(screen.getByText("Bug b")).toBeInTheDocument();
     expect(screen.queryByText("Bug a")).not.toBeInTheDocument();
+  });
+
+  it("ORs several values inside one facet instead of replacing the last", () => {
+    mount([
+      finding({ id: "a", repo: "ally-be" }),
+      finding({ id: "b", repo: "ally-web" }),
+      finding({ id: "c", repo: "ally-ai" }),
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    const panel = screen.getByRole("dialog", { name: "Filter bugs" });
+    fireEvent.click(within(panel).getByLabelText(/ally-be/));
+    fireEvent.click(within(panel).getByLabelText(/ally-web/));
+
+    expect(screen.getByText("Bug a")).toBeInTheDocument();
+    expect(screen.getByText("Bug b")).toBeInTheDocument();
+    expect(screen.queryByText("Bug c")).not.toBeInTheDocument();
+  });
+
+  /**
+   * Hiding the facets behind a button is only safe if the state stays visible —
+   * a shut panel with a filter still on is a table silently showing a third of
+   * its rows.
+   */
+  it("shows an active facet as a pill that removes just that value", () => {
+    mount([
+      finding({ id: "a", repo: "ally-be" }),
+      finding({ id: "b", repo: "ally-web" }),
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Filter bugs" })).getByLabelText(/ally-web/),
+    );
+    expect(screen.queryByText("Bug a")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove the ally-web filter" }));
+    expect(screen.getByText("Bug a")).toBeInTheDocument();
+    expect(screen.getByText("Bug b")).toBeInTheDocument();
   });
 
   it("honours the lifecycle bucket the address bar has set", () => {
