@@ -386,13 +386,7 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [
-    room,
-    detachRoomListeners,
-    updateAgentTurnStatus,
-    audioTimer,
-    clearAgentJoinTimer,
-  ]);
+  }, [room, detachRoomListeners, updateAgentTurnStatus, audioTimer, clearAgentJoinTimer]);
 
   // `force` bypasses the already-connected/connecting guard. Only the retry
   // path sets it: after a failed agent-join the room IS connected, so the guard

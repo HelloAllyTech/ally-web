@@ -94,12 +94,9 @@ const PasswordModal: React.FC<{
 
 export const EvaluatorsTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetLabEvaluatorsQuery({ search: search || undefined });
+  const { data, isLoading, isError, refetch } = useGetLabEvaluatorsQuery({
+    search: search || undefined,
+  });
   const evaluators = data?.items ?? [];
 
   const [createEvaluator] = useCreateLabEvaluatorMutation();
