@@ -854,11 +854,14 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
           <Table className="w-full text-left border-collapse">
             <TableHead>
               <TableRow className="border-b border-border-light text-sm text-typography-700">
-                <TableHeader className={`py-3 pr-3 w-8 ${STICKY_HEADER}`}>
-                  {/* No selection column at all for a reader who cannot act —
-                      bulk triage is a decision, same as the row quick actions
-                      and the drawer's buttons, all gated the same way. */}
-                  {canTriage && (
+                {/* No selection column at all for a reader who cannot act —
+                    bulk triage is a decision, same as the row quick actions and
+                    the drawer's buttons, all gated the same way. The whole
+                    <TableHeader> goes, not just the checkbox inside it: an
+                    empty 32px gutter down the left of every row is the "dead
+                    column" this table collapses everywhere else. */}
+                {canTriage && (
+                  <TableHeader className={`py-3 pr-3 w-8 ${STICKY_HEADER}`}>
                     <Tooltip label={en.bugHunter.selectAllTooltip} align="right">
                       <span className="inline-flex">
                         <TriStateCheckbox
@@ -870,8 +873,8 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                         />
                       </span>
                     </Tooltip>
-                  )}
-                </TableHeader>
+                  </TableHeader>
+                )}
                 <SortableHeader
                   sortKey="title"
                   label={en.bugHunter.findingColumnTitle}
@@ -926,9 +929,14 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                     {en.bugHunter.findingColumnPr}
                   </TableHeader>
                 )}
-                <TableHeader className={`py-3 font-medium text-right ${STICKY_HEADER}`}>
-                  {en.bugHunter.quickActionsColumn}
-                </TableHeader>
+                {/* Same rule as the selection column: for a read-only reader
+                    every cell under this heading is empty, so the heading is a
+                    column-width promise of buttons that are never coming. */}
+                {canTriage && (
+                  <TableHeader className={`py-3 font-medium text-right ${STICKY_HEADER}`}>
+                    {en.bugHunter.quickActionsColumn}
+                  </TableHeader>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -956,16 +964,19 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                     // role or tabIndex — see the button in the title cell.
                     onClick={() => setBug(finding.id)}
                   >
-                    <TableCell className={`${rowPadding} pr-3`}>
-                      {canTriage && (
+                    {/* Gated with its header above, never independently — a
+                        body cell that outlives its column shifts every other
+                        cell on the row one place left. */}
+                    {canTriage && (
+                      <TableCell className={`${rowPadding} pr-3`}>
                         <TriStateCheckbox
                           id={`bug-finding-select-${finding.id}`}
                           checked={isSelected}
                           onChange={() => toggleId(finding.id)}
                           label={en.bugHunter.rowSelectLabel.replace("{title}", finding.title)}
                         />
-                      )}
-                    </TableCell>
+                      </TableCell>
+                    )}
 
                     <TableCell className={`${rowPadding} pr-4 max-w-[420px]`}>
                       <div className="flex items-center gap-2">
@@ -1159,42 +1170,44 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                         them, so there is no such thing as a disabled one here —
                         a greyed-out "Approve" on forty rows is noise, and an
                         enabled one that 403s is worse. */}
-                    <TableCell className={`${rowPadding} text-right whitespace-nowrap`}>
-                      <div
-                        className="inline-flex items-center gap-1 justify-end"
-                        // These are the row's actions, not the row: a click on
-                        // one must not also open the drawer behind it.
-                        onClick={event => event.stopPropagation()}
-                      >
-                        {canTriage && canAct("approve", finding) && (
-                          <Button
-                            size="sm"
-                            kind="ghost"
-                            onClick={() => setPending({ action: "approve", finding })}
-                          >
-                            {en.bugHunter.quickApprove}
-                          </Button>
-                        )}
-                        {canTriage && canAct("reject", finding) && (
-                          <Button
-                            size="sm"
-                            kind="ghost"
-                            onClick={() => setPending({ action: "reject", finding })}
-                          >
-                            {en.bugHunter.quickReject}
-                          </Button>
-                        )}
-                        {canTriage && canAct("fix", finding) && (
-                          <Button
-                            size="sm"
-                            kind="ghost"
-                            onClick={() => setPending({ action: "fix", finding })}
-                          >
-                            {en.bugHunter.quickFix}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                    {canTriage && (
+                      <TableCell className={`${rowPadding} text-right whitespace-nowrap`}>
+                        <div
+                          className="inline-flex items-center gap-1 justify-end"
+                          // These are the row's actions, not the row: a click on
+                          // one must not also open the drawer behind it.
+                          onClick={event => event.stopPropagation()}
+                        >
+                          {canAct("approve", finding) && (
+                            <Button
+                              size="sm"
+                              kind="ghost"
+                              onClick={() => setPending({ action: "approve", finding })}
+                            >
+                              {en.bugHunter.quickApprove}
+                            </Button>
+                          )}
+                          {canAct("reject", finding) && (
+                            <Button
+                              size="sm"
+                              kind="ghost"
+                              onClick={() => setPending({ action: "reject", finding })}
+                            >
+                              {en.bugHunter.quickReject}
+                            </Button>
+                          )}
+                          {canAct("fix", finding) && (
+                            <Button
+                              size="sm"
+                              kind="ghost"
+                              onClick={() => setPending({ action: "fix", finding })}
+                            >
+                              {en.bugHunter.quickFix}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}

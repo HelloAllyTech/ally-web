@@ -16,8 +16,10 @@ import {
 } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { ROUTES } from "@constants";
+import { FeatureToggleKey, ROUTES } from "@constants";
+import { useUser } from "@hooks";
 import { RoadmapOpportunityStage, RoadmapOpportunityType, RoadmapTaxonomyItem } from "@types";
+import { hasFeature } from "@utils";
 
 import { GenerateClaudePromptModal } from "./GenerateClaudePromptModal";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
@@ -126,9 +128,16 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
    * drawer can recognise one and forward it rather than answer "no longer exists"
    * about a bug that is very much still open.
    *
-   * Forwards to the bug's own Bug Hunter drawer where a finding exists, and to
-   * the tab itself where none does — a bug filed before that table existed, or
+   * Forwards to the bug's own drawer where a finding exists, and to the bugs
+   * table itself where none does — a bug filed before that table existed, or
    * one whose inbox write failed. Landing somewhere true beats landing nowhere.
+   *
+   * WHICH bugs table depends on the reader. The Bug Hunter tab is the better
+   * destination because it is the one that can act, but it is nav-gated on the
+   * `bug_hunter` toggle — so for a roadmap viewer without it, forwarding there
+   * would replace a stuck drawer with a page they cannot open, which is not an
+   * improvement. They go to the roadmap's own read-only Bugs tab instead, which
+   * hosts the same drawer under the same `?bug=` param.
    */
   const isBug = opportunity?.type === RoadmapOpportunityType.BUG;
   const { data: bugRef, isFetching: isResolvingBug } = useGetBugFindingByReportedBugQuery(
@@ -136,13 +145,17 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     { skip: !isBug },
   );
 
+  const { features } = useUser();
+  const canReachBugHunter = hasFeature(features, FeatureToggleKey.BUG_HUNTER);
+
   useEffect(() => {
     if (!isBug || isResolvingBug || !bugRef) return;
+    const base = canReachBugHunter ? ROUTES.BUG_HUNTER : `${ROUTES.PRODUCT_ROADMAP}?tab=bugs`;
     navigate(
-      bugRef.findingId ? `${ROUTES.BUG_HUNTER}?bug=${bugRef.findingId}` : ROUTES.BUG_HUNTER,
+      bugRef.findingId ? `${base}${canReachBugHunter ? "?" : "&"}bug=${bugRef.findingId}` : base,
       { replace: true },
     );
-  }, [isBug, isResolvingBug, bugRef, navigate]);
+  }, [isBug, isResolvingBug, bugRef, navigate, canReachBugHunter]);
 
   /**
    * The month options. Computed once per mount rather than per render — a memo keyed on nothing
