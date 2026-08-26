@@ -54,6 +54,49 @@ export enum BugHuntEventStage {
   CANCELLED = "cancelled",
   /** An admin rewrote the bug's description — the brief a fix session reads. */
   DESCRIPTION_EDITED = "description_edited",
+  /** An admin pinned or un-pinned the coarse roadmap stage by hand — see ally-be's BugFindingService.setStage. */
+  STAGE_CHANGED = "stage_changed",
+}
+
+/**
+ * The coarse New → Prioritised → In development → Released ladder, mirroring
+ * ally-be's RoadmapOpportunityStage.
+ *
+ * It is the roadmap's own vocabulary, and it appears on a bug because bugs are
+ * no longer listed on the roadmap board — Bug Hunter is now the only place a bug
+ * is shown, so the ladder the team already reads has to be readable here. The
+ * value is DERIVED server-side from the pipeline status unless an admin pinned
+ * it; see `BugFinding.stageIsAuto`.
+ */
+export enum BugFindingStage {
+  NEW = "new",
+  PRIORITISED = "prioritised",
+  UNDER_DEVELOPMENT = "under_development",
+  RELEASED = "released",
+  ARCHIVED = "archived",
+}
+
+/**
+ * Who reported a bug, and what their client captured at the time — present only
+ * on rows a PERSON filed, null on every sweep-found row.
+ *
+ * Read server-side from the linked roadmap opportunity, which still stores the
+ * report even though the board no longer lists it.
+ */
+export interface ReportedBugContext {
+  opportunityId: string;
+  /** "consumer" = the in-app Report-a-problem form; "staff" = somebody internal filed it. */
+  reporterSource: "staff" | "consumer";
+  reportedBy: number | null;
+  reportedByName: string | null;
+  tenantId: string | null;
+  /**
+   * Silently captured at report time: screen/route, device, os, appVersion,
+   * clientTimestamp. Free-form — written by three different clients and never
+   * validated, so treat every key as optional.
+   */
+  reporterContext: Record<string, unknown> | null;
+  reportedAt: string;
 }
 
 /**
@@ -169,6 +212,15 @@ export interface BugFinding {
   touchesGuardedPath: boolean;
   reportedBugId: string | null;
   status: BugFindingStatus;
+  /** The coarse roadmap ladder. Derived from `status` unless pinned — see `stageIsAuto`. */
+  stage: BugFindingStage;
+  /** True while the stage tracks `status`. False once an admin pinned it, after which transitions no longer move it. */
+  stageIsAuto: boolean;
+  stageOverriddenBy: number | null;
+  stageOverriddenByName: string | null;
+  stageOverriddenAt: string | null;
+  /** Present only when a person filed this bug. Null on every finder-discovered row. */
+  report: ReportedBugContext | null;
   prUrl: string | null;
   escalationQuestion: string | null;
   escalationAnswer: string | null;
@@ -288,4 +340,16 @@ export interface BugHuntRunDetail extends BugHuntRun {
 
 export interface ListBugHuntRunsResponse {
   items: BugHuntRun[];
+}
+
+/**
+ * Where a roadmap bug went. Returned by the deep-link lookup so an
+ * `?opportunity=<id>` link to a bug can redirect rather than 404.
+ *
+ * `findingId` is null when no finding was ever opened for that roadmap row — a
+ * bug filed before Bug Hunter's table existed, or one whose inbox write failed
+ * (that write is best-effort by design).
+ */
+export interface BugFindingRef {
+  findingId: string | null;
 }

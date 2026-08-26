@@ -22,6 +22,22 @@ const LEGACY_SORT_FIELDS: Record<string, string> = {
 export const normaliseSortField = (field: string | undefined): string =>
   (field && LEGACY_SORT_FIELDS[field]) || field || "priority";
 
+/**
+ * Drops `bug` from a saved view's type filter.
+ *
+ * Same failure this file's sort normalisation exists for, and the same fix. Bugs
+ * left the board for Bug Hunter, so a saved view filtering to `["bug"]` now
+ * matches nothing: the chips would say "Type: Bug" over an empty table, which
+ * reads as the board being broken rather than as the view being obsolete. A view
+ * that asked for BOTH types keeps working and simply means "everything".
+ *
+ * Normalised on read so views self-heal on their next autosave, and applied in
+ * serializeViewState too — otherwise a legacy view compares unequal to its own
+ * normalised form and shows a permanent unsaved-changes dot.
+ */
+export const normaliseTypeFilter = (types: string[] | undefined): string[] =>
+  (types ?? []).filter(type => type !== "bug");
+
 /** Every key of RoadmapViewState, in a fixed order. See serializeViewState. */
 const STATE_KEYS: (keyof RoadmapViewState)[] = [
   "searchQuery",
@@ -63,8 +79,13 @@ export const serializeViewState = (state: RoadmapViewState | undefined): string 
     const value = state[key];
     if (value === undefined || value === null || value === "") continue;
     if (Array.isArray(value)) {
-      if (value.length === 0) continue;
-      canonical[key] = [...value].sort();
+      // Normalised before the emptiness check, not after: a view whose typeFilter
+      // is exactly ["bug"] normalises to [], and that has to read as "no type
+      // filter" — the same as the key being absent — or it stays permanently dirty.
+      const normalised =
+        key === "typeFilter" ? normaliseTypeFilter(value as string[]) : (value as unknown[]);
+      if (normalised.length === 0) continue;
+      canonical[key] = [...normalised].sort();
     } else if (typeof value === "object") {
       const entries = Object.entries(value as Record<string, unknown>).map(([k, v]) =>
         // Legacy and canonical field names must compare EQUAL, or every migrated view would show

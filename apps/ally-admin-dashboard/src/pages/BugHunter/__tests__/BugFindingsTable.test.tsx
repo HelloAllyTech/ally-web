@@ -170,7 +170,7 @@ const findings = [
 const renderTable = () =>
   render(
     <MemoryRouter>
-      <BugFindingsTable onShowShortcuts={vi.fn()} />
+      <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
     </MemoryRouter>,
   );
 

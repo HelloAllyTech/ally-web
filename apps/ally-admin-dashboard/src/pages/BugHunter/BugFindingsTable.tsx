@@ -37,6 +37,7 @@ import { formatDateTime, formatTimestamp } from "@utils";
 import { BrailleSpinner } from "./BrailleSpinner";
 import { BugFindingDrawer } from "./BugFindingDrawer";
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
+import { BugFindingStageChip } from "./BugFindingStageChip";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { BulkTriageBar } from "./BulkTriageBar";
@@ -64,6 +65,19 @@ import {
 } from "./triage";
 
 const PAGE_SIZE = 20;
+
+/**
+ * The Staff/Consumer badge on a human-filed bug.
+ *
+ * Purple, matching the roadmap board's own consumer badge — the same distinction
+ * carried over from the screen that used to make it, so someone who knows one
+ * recognises the other. Both values get a badge here, unlike on the roadmap where
+ * "staff" was the silent default: on that board almost everything was staff-filed,
+ * whereas here almost nothing is human-filed at all, so which KIND of person filed
+ * it is the informative half.
+ */
+const CONSUMER_BADGE_STYLE =
+  "inline-flex items-center rounded bg-purple-50 px-1 text-[10px] font-semibold text-purple-700";
 
 /** Severity dot colours, so severity is scannable down the column without reading three words. */
 const SEVERITY_DOTS: Record<BugFindingSeverity, string> = {
@@ -196,6 +210,13 @@ const TableSkeleton: FC = () => (
 export interface BugFindingsTableProps {
   /** Opens the shortcut sheet. Owned by the page so `?` works from anywhere on it. */
   onShowShortcuts: () => void;
+  /**
+   * False for a SUPER_ADMIN, who can read this table but not act on it —
+   * resolved once by `BugHunter.tsx` and threaded down here, into the row
+   * quick-actions, the keyboard shortcuts, the bulk bar and the drawer, so
+   * there is exactly one copy of that rule.
+   */
+  canTriage: boolean;
 }
 
 /**
@@ -250,7 +271,7 @@ export interface BugFindingsTableProps {
  * needs to hand a callback to another. See that module for why opening pushes
  * history and typing replaces it.
  */
-export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts }) => {
+export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, canTriage }) => {
   const {
     bug: selectedId,
     bucket,
@@ -526,6 +547,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
   /** Offers a decision for the row the cursor is on, or says why it doesn't apply. */
   const requestFromCursor = useCallback(
     (action: TriageAction) => {
+      if (!canTriage) return;
       if (!cursorFinding) return;
       if (!canAct(action, cursorFinding)) {
         toast.error(en.bugHunter.quickActionNotApplicable);
@@ -533,7 +555,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
       }
       setPending({ action, finding: cursorFinding });
     },
-    [cursorFinding],
+    [cursorFinding, canTriage],
   );
 
   useEffect(() => {
@@ -833,17 +855,22 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
             <TableHead>
               <TableRow className="border-b border-border-light text-sm text-typography-700">
                 <TableHeader className={`py-3 pr-3 w-8 ${STICKY_HEADER}`}>
-                  <Tooltip label={en.bugHunter.selectAllTooltip} align="right">
-                    <span className="inline-flex">
-                      <TriStateCheckbox
-                        id="bug-findings-select-all"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={togglePage}
-                        label={en.bugHunter.selectAllLabel}
-                      />
-                    </span>
-                  </Tooltip>
+                  {/* No selection column at all for a reader who cannot act —
+                      bulk triage is a decision, same as the row quick actions
+                      and the drawer's buttons, all gated the same way. */}
+                  {canTriage && (
+                    <Tooltip label={en.bugHunter.selectAllTooltip} align="right">
+                      <span className="inline-flex">
+                        <TriStateCheckbox
+                          id="bug-findings-select-all"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={togglePage}
+                          label={en.bugHunter.selectAllLabel}
+                        />
+                      </span>
+                    </Tooltip>
+                  )}
                 </TableHeader>
                 <SortableHeader
                   sortKey="title"
@@ -930,12 +957,14 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                     onClick={() => setBug(finding.id)}
                   >
                     <TableCell className={`${rowPadding} pr-3`}>
-                      <TriStateCheckbox
-                        id={`bug-finding-select-${finding.id}`}
-                        checked={isSelected}
-                        onChange={() => toggleId(finding.id)}
-                        label={en.bugHunter.rowSelectLabel.replace("{title}", finding.title)}
-                      />
+                      {canTriage && (
+                        <TriStateCheckbox
+                          id={`bug-finding-select-${finding.id}`}
+                          checked={isSelected}
+                          onChange={() => toggleId(finding.id)}
+                          label={en.bugHunter.rowSelectLabel.replace("{title}", finding.title)}
+                        />
+                      )}
                     </TableCell>
 
                     <TableCell className={`${rowPadding} pr-4 max-w-[420px]`}>
@@ -991,8 +1020,25 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                       {/* Source moved out of its own column and under the title.
                           It reads as provenance rather than as a field, it freed a
                           column, and the facet above is how you scan by it. */}
+                      {/* Source moved out of its own column and under the title.
+                          The reporter joins it for a human-filed bug: with bugs
+                          off the roadmap board this row is the only place a real
+                          user's report can be told apart from an agent-found lint
+                          error, and "who hit this" is the first thing a triager
+                          wants from that distinction. */}
                       <div className="text-xs text-typography-600 truncate">
                         {BUG_FINDING_SOURCE_LABELS[finding.source]}
+                        {finding.report && (
+                          <>
+                            {" · "}
+                            <span className={CONSUMER_BADGE_STYLE}>
+                              {finding.report.reporterSource === "consumer"
+                                ? en.bugHunter.reporterConsumer
+                                : en.bugHunter.reporterStaff}
+                            </span>{" "}
+                            {finding.report.reportedByName ?? en.bugHunter.reporterUnknown}
+                          </>
+                        )}
                         {finding.file ? ` · ${finding.file}` : ""}
                       </div>
                     </TableCell>
@@ -1026,6 +1072,21 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                           <BrailleSpinner className="text-amber-600" />
                         )}
                       </span>
+                      {/* The roadmap ladder, under the status rather than beside
+                          it and deliberately quiet. Bugs are no longer on the
+                          roadmap board, so this is the only place the stage
+                          appears — but the pipeline status is what a triager
+                          acts on, and two equal-weight badges would make them
+                          compete. */}
+                      <div className="mt-0.5">
+                        <BugFindingStageChip
+                          stage={finding.stage}
+                          status={finding.status}
+                          isAuto={finding.stageIsAuto}
+                          pinnedByName={finding.stageOverriddenByName}
+                          pinnedAt={finding.stageOverriddenAt}
+                        />
+                      </div>
                     </TableCell>
 
                     <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
@@ -1105,7 +1166,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                         // one must not also open the drawer behind it.
                         onClick={event => event.stopPropagation()}
                       >
-                        {canAct("approve", finding) && (
+                        {canTriage && canAct("approve", finding) && (
                           <Button
                             size="sm"
                             kind="ghost"
@@ -1114,7 +1175,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                             {en.bugHunter.quickApprove}
                           </Button>
                         )}
-                        {canAct("reject", finding) && (
+                        {canTriage && canAct("reject", finding) && (
                           <Button
                             size="sm"
                             kind="ghost"
@@ -1123,7 +1184,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
                             {en.bugHunter.quickReject}
                           </Button>
                         )}
-                        {canAct("fix", finding) && (
+                        {canTriage && canAct("fix", finding) && (
                           <Button
                             size="sm"
                             kind="ghost"
@@ -1253,7 +1314,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts })
           and a different row starts clean rather than inheriting the error. */}
       {selectedId && (
         <ErrorBoundary variant="panel" resetKey={selectedId} onDismiss={() => setBug(null)}>
-          <BugFindingDrawer id={selectedId} onClose={() => setBug(null)} />
+          <BugFindingDrawer id={selectedId} onClose={() => setBug(null)} canTriage={canTriage} />
         </ErrorBoundary>
       )}
     </div>

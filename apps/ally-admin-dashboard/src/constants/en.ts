@@ -2482,6 +2482,47 @@ export const en = {
     findingStatusRejected: "Rejected",
     findingStatusFailed: "Failed",
     findingStatusCancelled: "Cancelled",
+    // The coarse roadmap ladder, shown beside the pipeline status because bugs
+    // are no longer listed on the roadmap board — this is the vocabulary the
+    // team already reads, and Bug Hunter is now the only place a bug appears.
+    findingStageNew: "New",
+    findingStagePrioritised: "Prioritised",
+    findingStageUnderDevelopment: "In development",
+    findingStageReleased: "Released",
+    findingStageArchived: "Archived",
+    findingColumnStage: "Stage",
+    findingStagePinnedTooltip:
+      "Stage set by hand by {name} on {date}. It no longer follows the fix pipeline.",
+    findingStageAutoTooltip:
+      "Stage follows the fix pipeline automatically — it's {stage} because this bug is {status}.",
+    findingStagePinned: "pinned",
+    stageSectionTitle: "Stage",
+    stageAutoLabel: "Following the pipeline",
+    stageEditLabel: "Set stage by hand",
+    stageEditHint:
+      "Use this when the bug was fixed outside Bug Hunter — a hand-written PR, a config change, a fix that came along with other work. Once set by hand, the stage stops following the pipeline.",
+    stageSelectLabel: "Stage",
+    stageSave: "Set stage",
+    stageBackToAuto: "Back to automatic",
+    stageCancel: "Cancel",
+    stageSaved: "Stage updated.",
+    stageSaveFailed: "Couldn't update the stage.",
+    // The reporter block: only ever present on a bug a person filed, and the
+    // only thing now distinguishing one from an agent-found lint error.
+    reporterSectionTitle: "Reported by",
+    reporterConsumer: "Consumer",
+    reporterStaff: "Staff",
+    reporterUnknown: "Unknown reporter",
+    reporterConsumerTooltip: "Filed through the in-app \u201cReport a problem\u201d form.",
+    reporterStaffTooltip: "Filed by somebody internal.",
+    reporterContextTitle: "Captured with the report",
+    reporterContextEmpty: "Their client captured no extra context.",
+    reporterContextScreen: "Screen",
+    reporterContextDevice: "Device",
+    reporterContextOs: "OS",
+    reporterContextAppVersion: "App version",
+    reporterContextClientTimestamp: "Reported at (their clock)",
+    reporterTenant: "Tenant",
     findingsEmptyTitle: "No bugs yet",
     findingsEmptySubtitle:
       "Once I'm on duty, anything I find — or your team reports — shows up here.",
@@ -2889,6 +2930,186 @@ export const en = {
       "Copies a link that opens this exact bug for whoever you send it to — the address bar carries the open bug and your filters, so a bookmark of this page is a bookmark of this view.",
     drawerCopyLinkDone: "Link copied.",
     drawerCopyLinkFailed: "Couldn't copy the link.",
+  },
+  builder: {
+    tabLabel: "Builder",
+    // ── Voice ────────────────────────────────────────────────────────────
+    // Builder speaks in the first person about the work, present tense, and
+    // says what happens next. The same split as Bug Hunter holds: the agent
+    // speaks about the build ("I couldn't reach the repo"), the app speaks
+    // about itself ("Couldn't load your sessions"). Having the agent
+    // apologise for a failed fetch would misplace the fault.
+    agentName: "Builder",
+    agentRole: "Product engineer",
+
+    // Mission control
+    heroTitle: "What do you want to build?",
+    heroSubtitle:
+      "Describe it in a sentence. I'll ask what I need to know, write the PRD with you, then build it.",
+    heroPlaceholder: "A weekly digest email summarising what shipped…",
+    heroSubmit: "Start",
+    newSession: "New build",
+    needsYouHeading: "Needs you",
+    activeHeading: "In progress",
+    recentHeading: "Recent",
+    emptyTitle: "No builds yet",
+    emptyBody:
+      "Start one above. The first few questions take about a minute, and you can leave and come back to it.",
+    loadFailed: "Couldn't load your Builder sessions.",
+    createFailed: "Couldn't start a new build.",
+
+    // Session states, as a person would say them
+    status: {
+      INTERVIEWING: "Scoping",
+      PRD_READY: "Ready to build",
+      BUILDING: "Building",
+      WAITING_FOR_INPUT: "Waiting on you",
+      COMPLETED: "Done",
+      FAILED: "Failed",
+      CANCELLED: "Stopped",
+    } as Record<string, string>,
+
+    // Interview
+    chat: {
+      heading: "Scoping",
+      placeholder: "Answer, or tell me something I haven't asked about…",
+      send: "Send",
+      stop: "Stop",
+      streamFailed: "That turn didn't finish. Try again.",
+      droppedFrames: (count: number) =>
+        count === 1
+          ? "One update was lost in transit — the chat may be missing a line."
+          : `${count} updates were lost in transit — the chat may be missing some lines.`,
+      thinking: "Thinking",
+      emptyTitle: "Tell me what you want to build",
+      emptyBody:
+        "A sentence is enough to start. I'll read the codebase and ask about what I can't work out on my own.",
+    },
+
+    // Question cards — shared by the interview and mid-build pauses
+    question: {
+      recommended: "Recommended",
+      noneOfThese: "None of these",
+      addCustom: "Something else",
+      addCustomPlaceholder: "Your own answer…",
+      add: "Add",
+      freeTextPlaceholder: "Your answer…",
+      submitAnswer: "Answer",
+      selectPlaceholder: "Choose…",
+      confirmSelection: "Confirm",
+      selectedCountLabel: (count: number) => (count === 1 ? "1 selected" : `${count} selected`),
+      minSelectionsHint: (min: number) => `pick at least ${min}`,
+      answeredLabel: "Answered",
+    },
+
+    // The living PRD
+    prd: {
+      heading: "PRD",
+      versionLabel: (version: number) => `v${version}`,
+      edit: "Edit",
+      save: "Save",
+      cancel: "Cancel",
+      preview: "Preview",
+      write: "Write",
+      emptySection: "Nothing here yet.",
+      saveFailed: "Couldn't save that edit.",
+      lockedWhileBuilding:
+        "The PRD is locked while a build is running — it's what the build is working from. Stop the build to edit it.",
+      sections: {
+        summary: "Summary",
+        problem: "Problem",
+        usersAndContext: "Users & context",
+        goals: "Goals",
+        nonGoals: "Non-goals",
+        requirements: "Requirements",
+        assumptions: "Assumptions",
+        technicalPlan: "Technical plan",
+        testPlanMd: "Test plan",
+        e2ePlanMd: "End-to-end checks",
+        openQuestions: "Open questions",
+      } as Record<string, string>,
+      acceptanceCriteria: "Acceptance criteria",
+      assumptionUnconfirmed: "Unconfirmed",
+      assumptionConfirmed: "Confirmed",
+      unnamedRepo: "Repo not chosen",
+      noRequirements: "No requirements captured yet.",
+      noAssumptions: "Nothing assumed so far.",
+      noOpenQuestions: "Nothing outstanding.",
+    },
+
+    // Readiness
+    readiness: {
+      heading: "Build readiness",
+      ready: "Ready to build",
+      notReady: (count: number) => (count === 1 ? "1 thing left" : `${count} things left`),
+      // Shown when the document is written through but something is still
+      // unsettled — the score and the verdict genuinely disagree here, and
+      // saying so is clearer than hiding one of them.
+      writtenButBlocked: "Written through, but not settled yet",
+      startBuild: "Start build",
+      startBuildEarly: "Start anyway",
+      startBuildBlockedTitle: "Some things are still open",
+      startBuildBlockedBody:
+        "I can start, but I'll have to guess at these — and a guess found at review time costs a whole build:",
+      startBuildDisabledHint: "Finish scoping first.",
+    },
+
+    // Build stages, as a person would name them
+    stages: {
+      SETUP: "Getting oriented",
+      PLANNING: "Planning",
+      CODING: "Writing code",
+      TESTING: "Testing",
+      VERIFYING: "Checking its work",
+      E2E_VERIFY: "End-to-end",
+      OPENING_PRS: "Opening PRs",
+      REPORTING: "Writing up",
+      DONE: "Done",
+    } as Record<string, string>,
+
+    // The build screen
+    build: {
+      todoHeading: "Checklist",
+      todoProgress: (done: number, total: number) => `${done} of ${total}`,
+      planHeading: "Plan",
+      verificationHeading: "Verification",
+      reportHeading: "Report",
+      testOutput: "Test results",
+      e2eEvidence: "End-to-end evidence",
+      e2eSkipped: (reason: string) => `Skipped the end-to-end check — ${reason}`,
+      jumpToLive: "Jump to live",
+      feedStarting: "Waiting for the first update…",
+      feedEmpty: "Nothing recorded for this run.",
+      runLabel: (sequence: number, mode: string) =>
+        mode === "resume" ? `Run ${sequence} (resumed)` : `Run ${sequence}`,
+      watchOnGithub: "Watch on GitHub",
+      pullRequestsHeading: "Pull requests",
+      noPullRequests: "No pull requests opened yet.",
+      prMerged: "Merged",
+      prOpen: "Open",
+      reportsHeading: "Reports",
+      noReports: "Nothing written up yet.",
+      // A pause is a normal turn in the conversation, not a fault — the copy
+      // says so, because an alarming label here would make every question
+      // read as something going wrong.
+      waitingHeading: "I need a decision",
+      waitingBody:
+        "The build is holding here until you answer. Nothing is lost — I'll pick up exactly where I stopped.",
+      answerFailed: "Couldn't record that answer.",
+      resumed: "Thanks — picking it back up.",
+      startFailed: "Couldn't start the build.",
+      tabActivity: "Activity",
+      tabPrd: "PRD",
+      tabReports: "Reports",
+    },
+
+    // Session actions
+    cancelSession: "Stop this build",
+    cancelSessionConfirm: "Stop it?",
+    cancelFailed: "Couldn't stop the build.",
+    costLabel: "Spend",
+    repoLabel: "Repos",
+    noReposYet: "Not decided yet",
   },
   evaluate: {
     title: "Ally Evaluation",

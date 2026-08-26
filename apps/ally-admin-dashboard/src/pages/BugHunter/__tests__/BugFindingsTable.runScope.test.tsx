@@ -138,7 +138,7 @@ const mount = (items: BugFinding[], count?: number, url = "/") => {
   });
   return render(
     <MemoryRouter initialEntries={[url]}>
-      <BugFindingsTable onShowShortcuts={vi.fn()} />
+      <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
     </MemoryRouter>,
   );
 };

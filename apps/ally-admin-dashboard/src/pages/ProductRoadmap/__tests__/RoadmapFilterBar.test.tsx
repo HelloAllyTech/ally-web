@@ -102,8 +102,9 @@ describe("RoadmapFilterBar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Filter" }));
 
     expect(screen.getByTestId("filter-popover")).toBeInTheDocument();
+    // No "Type" section: bugs left the board for Bug Hunter, so every listed
+    // row is an idea — see buildFacetSections in utils/filterSelection.ts.
     expect(captured.dropdown.sections.map((s: any) => s.label)).toEqual([
-      "Type",
       "Stage",
       "Source",
       "Goal",

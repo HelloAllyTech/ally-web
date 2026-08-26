@@ -436,12 +436,39 @@ export const ApiEndpoints = {
     FINDING_REJECT: (id: string) => `/v1/bug-hunter/findings/${id}/reject`,
     FINDING_ANSWER: (id: string) => `/v1/bug-hunter/findings/${id}/answer`,
     FINDING_DESCRIPTION: (id: string) => `/v1/bug-hunter/findings/${id}/description`,
+    FINDING_STAGE: (id: string) => `/v1/bug-hunter/findings/${id}/stage`,
+    FINDING_BY_REPORTED_BUG: (opportunityId: string) =>
+      `/v1/bug-hunter/findings/by-reported-bug/${opportunityId}`,
     FINDING_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/fix-session`,
     FINDING_CANCEL_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/cancel-fix-session`,
     FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,
     NOTIFICATIONS: "/v1/bug-hunter/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/bug-hunter/notifications/read-all",
+  },
+  BUILDER: {
+    SESSIONS: "/v1/builder/sessions",
+    SESSION_BY_ID: (id: string) => `/v1/builder/sessions/${id}`,
+    SESSION_CANCEL: (id: string) => `/v1/builder/sessions/${id}/cancel`,
+    SESSION_PRD: (id: string) => `/v1/builder/sessions/${id}/prd`,
+    SESSION_PRD_VERSIONS: (id: string) => `/v1/builder/sessions/${id}/prd/versions`,
+    // SSE — driven by useBuilderStream (fetch + getReader), not RTK Query.
+    SESSION_MESSAGES_STREAM: (id: string) => `/v1/builder/sessions/${id}/messages/stream`,
+    REPO_COMMANDS: "/v1/builder/repo-commands",
+    REPO_MAPS: "/v1/builder/repo-maps",
+    // Builds
+    SESSION_START_BUILD: (id: string) => `/v1/builder/sessions/${id}/start-build`,
+    SESSION_RUNS: (id: string) => `/v1/builder/sessions/${id}/runs`,
+    RUN_EVENTS: (runId: string) => `/v1/builder/runs/${runId}/events`,
+    SESSION_QUESTIONS: (id: string) => `/v1/builder/sessions/${id}/questions`,
+    ANSWER_QUESTION: (id: string, questionId: string) =>
+      `/v1/builder/sessions/${id}/questions/${questionId}/answer`,
+    SESSION_PULL_REQUESTS: (id: string) => `/v1/builder/sessions/${id}/pull-requests`,
+    SESSION_REPORTS: (id: string) => `/v1/builder/sessions/${id}/reports`,
+    SETTINGS: "/v1/builder/settings",
+    NOTIFICATIONS: "/v1/builder/notifications",
+    NOTIFICATION_READ: (id: string) => `/v1/builder/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -575,6 +602,8 @@ export const ROUTES = {
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
   BUG_HUNTER: "/bug-hunter",
+  BUILDER: "/builder",
+  BUILDER_SESSION: (id: string) => `/builder/${id}`,
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -730,6 +759,13 @@ export const TAG_TYPES = {
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
+  // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag
+  // is silently ignored and its invalidation never fires.
+  BUILDER_SESSIONS: "builderSessions",
+  BUILDER_SESSION: "builderSession",
+  BUILDER_PRD_VERSIONS: "builderPrdVersions",
+  BUILDER_SETTINGS: "builderSettings",
+  BUILDER_NOTIFICATIONS: "builderNotifications",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",

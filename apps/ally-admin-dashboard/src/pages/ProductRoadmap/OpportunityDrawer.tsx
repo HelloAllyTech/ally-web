@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import { Link, TooltipIcon } from "@icons";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Select, SelectItem, TextArea, SkeletonText, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -9,13 +10,14 @@ import {
   useGetRoadmapCommentsQuery,
   useGetRoadmapOpportunityQuery,
   useGetRoadmapEligibleOwnersQuery,
+  useGetBugFindingByReportedBugQuery,
   useDeleteRoadmapOpportunityMutation,
   useUpdateRoadmapOpportunityMutation,
 } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
-import { RoadmapOpportunityStage, RoadmapTaxonomyItem } from "@types";
+import { RoadmapOpportunityStage, RoadmapOpportunityType, RoadmapTaxonomyItem } from "@types";
 
 import { GenerateClaudePromptModal } from "./GenerateClaudePromptModal";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
@@ -71,6 +73,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   canManage,
   onClose,
 }) => {
+  const navigate = useNavigate();
   const { data: opportunity, isLoading, isError } = useGetRoadmapOpportunityQuery(opportunityId);
   const { data: eligibleOwners } = useGetRoadmapEligibleOwnersQuery();
   const { data: comments } = useGetRoadmapCommentsQuery(opportunityId);
@@ -113,6 +116,33 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       onClose();
     }
   }, [isError, onClose]);
+
+  /**
+   * Bugs left the roadmap; their links did not.
+   *
+   * `?opportunity=<id>` links to bugs are in bookmarks, notifications and Slack
+   * scrollback. The board no longer lists bugs, but the row is still there and
+   * `findOneWithScore` is deliberately NOT filtered server-side precisely so this
+   * drawer can recognise one and forward it rather than answer "no longer exists"
+   * about a bug that is very much still open.
+   *
+   * Forwards to the bug's own Bug Hunter drawer where a finding exists, and to
+   * the tab itself where none does — a bug filed before that table existed, or
+   * one whose inbox write failed. Landing somewhere true beats landing nowhere.
+   */
+  const isBug = opportunity?.type === RoadmapOpportunityType.BUG;
+  const { data: bugRef, isFetching: isResolvingBug } = useGetBugFindingByReportedBugQuery(
+    opportunityId,
+    { skip: !isBug },
+  );
+
+  useEffect(() => {
+    if (!isBug || isResolvingBug || !bugRef) return;
+    navigate(
+      bugRef.findingId ? `${ROUTES.BUG_HUNTER}?bug=${bugRef.findingId}` : ROUTES.BUG_HUNTER,
+      { replace: true },
+    );
+  }, [isBug, isResolvingBug, bugRef, navigate]);
 
   /**
    * The month options. Computed once per mount rather than per render — a memo keyed on nothing
@@ -220,9 +250,20 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           </div>
         </header>
 
-        {isLoading || !opportunity ? (
+        {/* A bug is on its way to Bug Hunter — never show it the roadmap editor,
+            not even for the frame between the type arriving and the redirect
+            firing. Stage and owner controls on a bug would write to a row no
+            board reads, and "Delete" would destroy the record of somebody's
+            report. */}
+        {isLoading || !opportunity || isBug ? (
           <div className="p-4">
-            <SkeletonText paragraph lineCount={6} />
+            {isBug ? (
+              <p className="text-typography-secondary text-sm">
+                Bugs live in Bug Hunter now. Taking you there…
+              </p>
+            ) : (
+              <SkeletonText paragraph lineCount={6} />
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-4 p-4">

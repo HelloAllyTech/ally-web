@@ -29,6 +29,15 @@ vi.mock("@utils", () => ({
   formatDate: (d: string) => d,
   formatDateTime: (d: string) => d,
   formatTimestamp: (d: string) => d,
+  hasFeature: (features: string[], key: string) => features.includes(key),
+}));
+
+// SUPER_DUPER_ADMIN by default, so every existing assertion below — none of
+// which is about the read/act split — keeps seeing the full triage surface.
+// The one test that IS about it overrides this per-case.
+vi.mock("react-redux", () => ({
+  useSelector: (selector: any) =>
+    selector({ user: { user: { role: "SUPER_DUPER_ADMIN" }, features: [] } }),
 }));
 
 vi.mock("@assets", () => ({
