@@ -1102,6 +1102,17 @@ export const RoleplaySessionLogDetail: FC = () => {
                         }
                       : undefined
                   }
+                  onKeyDown={
+                    canSeek
+                      ? event => {
+                          if (event.key !== "Enter" && event.key !== " ") return;
+                          event.preventDefault();
+                          if (audioRef.current && turn.startSeconds !== null) {
+                            audioRef.current.currentTime = turn.startSeconds;
+                          }
+                        }
+                      : undefined
+                  }
                   className={`max-w-[80%] rounded-lg px-3 py-2 border-2 ${
                     isActive ? "border-primary-500" : "border-transparent"
                   } ${canSeek ? "cursor-pointer" : ""} ${
