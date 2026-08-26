@@ -138,7 +138,7 @@ const mount = (items: BugFinding[], count?: number, url = "/") => {
   });
   return render(
     <MemoryRouter initialEntries={[url]}>
-      <BugFindingsTable onShowShortcuts={vi.fn()} />
+      <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
     </MemoryRouter>,
   );
 };
@@ -287,7 +287,7 @@ describe("BugFindingsTable — triage controls", () => {
     // a real router is what proves it did.
     render(
       <MemoryRouter initialEntries={["/?bucket=needs_you"]}>
-        <BugFindingsTable onShowShortcuts={vi.fn()} />
+        <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
       </MemoryRouter>,
     );
 
@@ -343,7 +343,7 @@ describe("BugFindingsTable — triage controls", () => {
     });
     const { container } = render(
       <MemoryRouter>
-        <BugFindingsTable onShowShortcuts={vi.fn()} />
+        <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
       </MemoryRouter>,
     );
 

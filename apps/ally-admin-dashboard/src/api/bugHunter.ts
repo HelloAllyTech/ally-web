@@ -2,6 +2,8 @@ import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   BugFinding,
   BugFindingDetail,
+  BugFindingRef,
+  BugFindingStage,
   BugHunterMode,
   BugHunterNotification,
   ListBugHunterNotificationsResponse,
@@ -217,6 +219,42 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       ],
     }),
 
+    /**
+     * Resolve a roadmap opportunity id to the bug it became, for the roadmap's
+     * deep-link redirect. See ally-be's `getFindingByReportedBug`.
+     */
+    getBugFindingByReportedBug: builder.query<BugFindingRef, string>({
+      query: opportunityId => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_BY_REPORTED_BUG(opportunityId),
+      }),
+    }),
+
+    /**
+     * Pin the coarse roadmap stage by hand, or (with `stage: null`) hand it back
+     * to being derived from the pipeline status.
+     *
+     * For the bug fixed OUTSIDE Bug Hunter — a hand-written PR, a config change,
+     * a fix that rode along with unrelated work — where the pipeline never moved
+     * and the status therefore still reads NEW. Pinning sticks: later transitions
+     * no longer move the stage.
+     */
+    setBugFindingStage: builder.mutation<BugFinding, { id: string; stage: BugFindingStage | null }>(
+      {
+        query: ({ id, stage }) => ({
+          url: ApiEndpoints.BUG_HUNTER.FINDING_STAGE(id),
+          method: HttpMethod.PATCH,
+          body: { stage },
+        }),
+        invalidatesTags: (_result, _error, { id }) => [
+          { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+          // The stage renders in the table row as well as the drawer, so the list
+          // cache has to go too — a row still reading "New" behind a drawer saying
+          // "Released" is exactly the kind of disagreement that reads as a bug.
+          { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+        ],
+      },
+    ),
+
     answerBugFinding: builder.mutation<BugFindingDetail, { id: string; answer: string }>({
       query: ({ id, answer }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_ANSWER(id),
@@ -243,6 +281,8 @@ export const {
   useRejectBugFindingMutation,
   useAnswerBugFindingMutation,
   useEditBugFindingDescriptionMutation,
+  useSetBugFindingStageMutation,
+  useGetBugFindingByReportedBugQuery,
   useStartBugFixSessionMutation,
   useCancelBugFixSessionMutation,
   useReleaseBugFindingMutation,

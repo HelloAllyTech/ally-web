@@ -28,14 +28,23 @@ import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
+import { BugFindingStageEditor } from "./BugFindingStageEditor";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
 import { PipelineRail } from "./PipelineRail";
 import { stageFromFindingStatus } from "./pipelineStage";
+import { ReportedBugPanel } from "./ReportedBugPanel";
 
 interface BugFindingDrawerProps {
   id: string;
   onClose: () => void;
+  /**
+   * False for a SUPER_ADMIN, who can read the bug table but not act on it —
+   * resolved once by the tab root (`BugHunter.tsx`) and threaded down, so
+   * there is exactly one copy of that rule. See `BugHunter.tsx`'s `canTriage`
+   * doc for why the tiers differ.
+   */
+  canTriage: boolean;
 }
 
 /** Statuses where something is in flight and the drawer should poll rather than sit stale. */
@@ -77,7 +86,7 @@ const railVariantForStatus = (status: BugFindingStatus): "error" | "waiting" | u
  * a human decision, made after the fix is visibly merged. See ally-be's
  * BugFixSessionService for the full reasoning.
  */
-export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => {
+export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTriage }) => {
   // A dispatched session or release is reconciled server-side minutes later,
   // and there is no push channel for a single finding — the SSE stream is
   // per-run, and a release outlives its run entirely. So the drawer polls, but
@@ -156,23 +165,28 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
     setPollingInterval(inFlight ? 15_000 : 0);
   }, [inFlight]);
 
+  // `canTriage` gates every mutating control in this drawer: false for a
+  // SUPER_ADMIN, who can read a bug's whole history here but not act on it —
+  // see BugHunter.tsx's doc on why the tiers differ.
   const canStartSession = finding
-    ? BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
+    ? canTriage && BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
     : false;
 
   // Mirrors the backend's own gate (QUEUED or FIXING) so a stale click never
   // makes a round trip just to be told 403 — the same reasoning as
   // `canStartSession` above.
   const canStopSession = finding
-    ? finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING
+    ? canTriage &&
+      (finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING)
     : false;
 
   // The description is the fix agent's whole brief (see ally-be's
   // `buildFixSessionPrompt`), so the edit is offered exactly where "Put me on
   // it" is and nowhere else — mirroring the backend's own gate so a stale
-  // click never makes a round trip just to be told 403.
+  // click never makes a round trip just to be told 403. `canTriage` narrows it
+  // further for a SUPER_ADMIN, who can read this drawer but not act in it.
   const canEditDescription = finding
-    ? BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES.includes(finding.status)
+    ? canTriage && BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES.includes(finding.status)
     : false;
 
   const draftTooLong = (descriptionDraft?.trim().length ?? 0) > BUG_FINDING_DESCRIPTION_MAX_LENGTH;
@@ -308,6 +322,20 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             variant={railVariantForStatus(finding.status)}
           />
 
+          {/* The coarse roadmap ladder, below the pipeline rail rather than
+              beside the status badge above: the rail is the fine-grained
+              picture, this is the one-word summary of it, and the two belong
+              together. Bugs are no longer on the roadmap board, so this is the
+              only screen that shows a bug's stage at all. */}
+          <BugFindingStageEditor
+            id={finding.id}
+            stage={finding.stage}
+            isAuto={finding.stageIsAuto}
+            pinnedByName={finding.stageOverriddenByName}
+            pinnedAt={finding.stageOverriddenAt}
+            canEdit={canTriage}
+          />
+
           {finding.source === "reported_bug" && finding.status === BugFindingStatus.NEW && (
             <p className="text-xs text-typography-500 italic">
               {en.bugHunter.drawerReportedBugNotice}
@@ -416,6 +444,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               </div>
             )}
           </div>
+
+          {/* Placed with the evidence, not with the brief. The reporter's own
+              sentence is the brief; this is the silently-captured circumstance
+              around it, which is evidence in exactly the sense a failing test's
+              output is. */}
+          {finding.report && <ReportedBugPanel report={finding.report} />}
 
           {finding.evidence && (
             <div>
@@ -550,7 +584,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
           {/* ── The two on-demand actions ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2">
-            {finding.status === BugFindingStatus.PENDING_APPROVAL && (
+            {canTriage && finding.status === BugFindingStatus.PENDING_APPROVAL && (
               <>
                 <Button
                   size="sm"
@@ -614,7 +648,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               </>
             )}
 
-            {finding.releasable && (
+            {canTriage && finding.releasable && (
               <>
                 <Button
                   size="sm"
@@ -700,7 +734,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                     </p>
                   )}
                 </div>
-              ) : finding.status === BugFindingStatus.NEEDS_INPUT ? (
+              ) : finding.status === BugFindingStatus.NEEDS_INPUT && canTriage ? (
                 <div className="flex flex-col gap-2">
                   <TextArea
                     id={`bug-finding-answer-${finding.id}`}

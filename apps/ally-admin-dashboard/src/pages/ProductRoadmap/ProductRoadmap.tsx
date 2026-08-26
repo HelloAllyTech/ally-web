@@ -41,7 +41,7 @@ import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
 import { useSavedViews } from "./useSavedViews";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
 import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
-import { normaliseSortField } from "./utils/views";
+import { normaliseSortField, normaliseTypeFilter } from "./utils/views";
 
 const PAGE_SIZE = 50;
 
@@ -271,7 +271,10 @@ export const ProductRoadmap: React.FC = () => {
 
   const applyViewState = (state: RoadmapViewState) => {
     setSearch(state.searchQuery ?? "");
-    setTypeFilter((state.typeFilter ?? []) as RoadmapOpportunityType[]);
+    // Normalised, not taken verbatim: a view saved when bugs were still on this
+    // board may filter to `["bug"]`, which now matches nothing. See
+    // normaliseTypeFilter — the view self-heals on its next autosave.
+    setTypeFilter(normaliseTypeFilter(state.typeFilter) as RoadmapOpportunityType[]);
     setStageFilter((state.stageFilter ?? []) as RoadmapOpportunityStage[]);
     // Absent on every view saved before this filter existed — undefined must mean "no filter",
     // not "leave whatever was previously selected", or applying an old view would leave a stale

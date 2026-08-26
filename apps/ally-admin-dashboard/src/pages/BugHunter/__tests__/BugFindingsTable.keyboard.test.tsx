@@ -123,7 +123,7 @@ const mount = (items: BugFinding[], url = "/") => {
   });
   return render(
     <MemoryRouter initialEntries={[url]}>
-      <BugFindingsTable onShowShortcuts={onShowShortcuts} />
+      <BugFindingsTable onShowShortcuts={onShowShortcuts} canTriage />
     </MemoryRouter>,
   );
 };

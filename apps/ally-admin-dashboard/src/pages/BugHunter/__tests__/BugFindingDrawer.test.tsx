@@ -9,6 +9,7 @@ const startFixSession = vi.fn();
 const cancelFixSession = vi.fn();
 const releaseFinding = vi.fn();
 const editDescription = vi.fn();
+const setStage = vi.fn();
 const getBugFinding = vi.fn();
 
 vi.mock("@api", () => ({
@@ -20,6 +21,7 @@ vi.mock("@api", () => ({
   useCancelBugFixSessionMutation: () => [cancelFixSession, { isLoading: false }],
   useReleaseBugFindingMutation: () => [releaseFinding, { isLoading: false }],
   useEditBugFindingDescriptionMutation: () => [editDescription, { isLoading: false }],
+  useSetBugFindingStageMutation: () => [setStage, { isLoading: false }],
 }));
 
 // The @hooks barrel reaches the real Redux store (useScenarioReportsSocket ->
@@ -60,6 +62,12 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     </>
   ),
   Tooltip: ({ children }: any) => <>{children}</>,
+  Select: ({ id, value, onChange, children, labelText }: any) => (
+    <select id={id} aria-label={labelText} value={value} onChange={onChange}>
+      {children}
+    </select>
+  ),
+  SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
   SidePanel: ({ open, title, children }: any) =>
     open ? (
       <div data-testid="side-panel">
@@ -114,6 +122,12 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   releasedAt: null,
   cancelledBy: null,
   cancelledAt: null,
+  stage: "new",
+  stageIsAuto: true,
+  stageOverriddenBy: null,
+  stageOverriddenByName: null,
+  stageOverriddenAt: null,
+  report: null,
   createdAt: "2026-08-17",
   updatedAt: "2026-08-17",
   events: [],
@@ -124,9 +138,9 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const renderDrawer = (data: Record<string, unknown>) => {
+const renderDrawer = (data: Record<string, unknown>, canTriage = true) => {
   getBugFinding.mockReturnValue({ data, isLoading: false, isError: false });
-  return render(<BugFindingDrawer id="finding-1" onClose={vi.fn()} />);
+  return render(<BugFindingDrawer id="finding-1" onClose={vi.fn()} canTriage={canTriage} />);
 };
 
 describe("BugFindingDrawer — fix session", () => {
@@ -645,5 +659,105 @@ describe("BugFindingDrawer — an unsaved rewrite blocks the decisions under it"
 
     await waitFor(() => expect(screen.getByText("Put me on it")).not.toBeDisabled());
     expect(screen.queryByText(/Save or cancel your rewrite first/i)).not.toBeInTheDocument();
+  });
+});
+
+describe("BugFindingDrawer — stage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setStage.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+  });
+
+  it("shows the derived stage as following the pipeline, with no edit control for a read-only reader", () => {
+    renderDrawer(finding({ stage: "under_development", stageIsAuto: true }), false);
+
+    expect(screen.getByText("In development")).toBeInTheDocument();
+    expect(screen.getByText(/Following the pipeline/)).toBeInTheDocument();
+    expect(screen.queryByText("Set stage by hand")).not.toBeInTheDocument();
+  });
+
+  it("offers to pin the stage, and saves the chosen value", async () => {
+    renderDrawer(finding({ stage: "new", stageIsAuto: true }));
+
+    fireEvent.click(screen.getByText("Set stage by hand"));
+    fireEvent.change(screen.getByLabelText("Stage"), { target: { value: "released" } });
+    fireEvent.click(screen.getByText("Set stage"));
+
+    await waitFor(() =>
+      expect(setStage).toHaveBeenCalledWith({ id: "finding-1", stage: "released" }),
+    );
+  });
+
+  it("offers 'Back to automatic' only once a stage is actually pinned", () => {
+    renderDrawer(
+      finding({
+        stage: "released",
+        stageIsAuto: false,
+        stageOverriddenBy: 7,
+        stageOverriddenByName: "Priya",
+      }),
+    );
+    fireEvent.click(screen.getByText("Set stage by hand"));
+
+    expect(screen.getByText("Back to automatic")).toBeInTheDocument();
+  });
+
+  it("clears the pin when 'Back to automatic' is pressed", async () => {
+    renderDrawer(finding({ stage: "released", stageIsAuto: false, stageOverriddenBy: 7 }));
+    fireEvent.click(screen.getByText("Set stage by hand"));
+
+    fireEvent.click(screen.getByText("Back to automatic"));
+
+    await waitFor(() =>
+      expect(setStage).toHaveBeenCalledWith({ id: "finding-1", stage: null }),
+    );
+  });
+});
+
+describe("BugFindingDrawer — reported bug context", () => {
+  it("renders nothing extra for a sweep-found bug with no reporter", () => {
+    renderDrawer(finding({ report: null }));
+    expect(screen.queryByText("Reported by")).not.toBeInTheDocument();
+  });
+
+  it("shows the reporter, their source badge and captured context for a human-filed bug", () => {
+    renderDrawer(
+      finding({
+        source: "reported_bug",
+        report: {
+          opportunityId: "opp-1",
+          reporterSource: "consumer",
+          reportedBy: 12,
+          reportedByName: "Priya",
+          tenantId: "acme",
+          reporterContext: { screen: "/cases", os: "Android 14" },
+          reportedAt: "2026-08-20T10:00:00.000Z",
+        },
+      }),
+    );
+
+    expect(screen.getByText("Reported by")).toBeInTheDocument();
+    expect(screen.getByText("Consumer")).toBeInTheDocument();
+    expect(screen.getByText("Priya")).toBeInTheDocument();
+    expect(screen.getByText("/cases")).toBeInTheDocument();
+    expect(screen.getByText("Android 14")).toBeInTheDocument();
+  });
+});
+
+describe("BugFindingDrawer — read-only for a SUPER_ADMIN (canTriage=false)", () => {
+  it("hides approve/reject even on a pending-approval bug", () => {
+    renderDrawer(finding({ status: BugFindingStatus.PENDING_APPROVAL }), false);
+    expect(screen.queryByText("Approve — go fix it")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reject")).not.toBeInTheDocument();
+  });
+
+  it("hides the fix-session button on an otherwise-eligible new bug", () => {
+    renderDrawer(finding({ status: BugFindingStatus.NEW }), false);
+    expect(screen.queryByText("Put me on it")).not.toBeInTheDocument();
+  });
+
+  it("hides the description rewrite control", () => {
+    renderDrawer(finding({ status: BugFindingStatus.NEW }), false);
+    expect(screen.queryByText("Rewrite this for me")).not.toBeInTheDocument();
   });
 });

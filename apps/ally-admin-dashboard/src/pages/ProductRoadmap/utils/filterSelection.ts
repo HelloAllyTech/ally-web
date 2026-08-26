@@ -126,14 +126,14 @@ export const buildFacetSections = (
   facets?: RoadmapFacets,
 ): RoadmapFacetSection[] => {
   const sections: RoadmapFacetSection[] = [
-    {
-      id: "type",
-      label: "Type",
-      options: Object.values(RoadmapOpportunityType).map(value => ({
-        label: typeLabel(value),
-        value,
-      })),
-    },
+    // No "Type" facet. It offered Idea and Bug, and bugs are no longer listed on
+    // this board at all (they live in Bug Hunter) — so one option matched
+    // everything and the other matched nothing. A filter whose every setting is
+    // either a no-op or an empty table is worse than no filter.
+    //
+    // `typeFilter` itself survives in RoadmapViewState because saved views
+    // migrated from the standalone app carry it; normaliseTypeFilter in views.ts
+    // strips 'bug' on read so such a view shows the board rather than nothing.
     {
       id: "stage",
       label: "Stage",

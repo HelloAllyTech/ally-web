@@ -96,9 +96,12 @@ describe("mergeFacetSelection", () => {
 });
 
 describe("buildFacetSections", () => {
-  it("always offers the three enum-backed facets", () => {
+  // No "type" facet: bugs left the board for Bug Hunter, so every listed row is
+  // an idea and a Bug/Idea filter would offer one no-op option and one that
+  // always empties the table.
+  it("always offers the two enum-backed facets", () => {
     const ids = buildFacetSections([], undefined).map(section => section.id);
-    expect(ids).toEqual(["type", "stage", "source"]);
+    expect(ids).toEqual(["stage", "source"]);
   });
 
   it("adds the data-driven facets once their options exist", () => {
@@ -108,7 +111,6 @@ describe("buildFacetSections", () => {
     );
 
     expect(sections.map(s => s.id)).toEqual([
-      "type",
       "stage",
       "source",
       "productGoal",
