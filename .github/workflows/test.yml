@@ -101,3 +101,46 @@ jobs:
       - name: Check formatting
         continue-on-error: true
         run: npm run format:check
+
+  # NOT report-only, unlike the lint job above: the debt was 11 errors total
+  # (10 admin, 1 helpline, 0 ui-shared) and this PR clears all of them, so there
+  # is nothing to grandfather. Mark "Typecheck" required alongside "Vitest".
+  #
+  # Why this job exists at all: on 2026-08-26 two PRs that were each green in
+  # isolation merged in sequence — one removed PrivateLayout's `requiredRole`
+  # prop and RouteLayout's SUPER_ADMIN_ROLES import, the other added Builder
+  # routes still passing it. That left `ReferenceError: SUPER_ADMIN_ROLES is not
+  # defined` in the admin app's whole route tree, i.e. an admin console that
+  # white-screens on load, and nothing in CI objected: vite/esbuild strip types
+  # without checking them, and the lint job is continue-on-error. It surfaced
+  # only because 15 RouteLayout specs happened to render the crashing component.
+  # `tsc` reports it as four errors in seconds, before any suite runs.
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NX_NO_CLOUD: "true"
+
+      # Per-project tsconfigs rather than one root pass: each app has its own
+      # path aliases and lib set, and the root tsconfig.json is a solution file
+      # with no files of its own.
+      - name: Typecheck admin dashboard
+        run: npx tsc --noEmit -p apps/ally-admin-dashboard/tsconfig.app.json
+
+      - name: Typecheck helpline dashboard
+        run: npx tsc --noEmit -p apps/ally-helpline-dashboard/tsconfig.app.json
+
+      - name: Typecheck ui-shared
+        run: npx tsc --noEmit -p libs/ui-shared/tsconfig.lib.json

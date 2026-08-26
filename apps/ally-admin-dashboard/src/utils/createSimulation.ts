@@ -173,7 +173,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       message: event.message,
     })),
     selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
-    selectedEvaluatorPromptCode: data?.metadata?.selectedEvaluatorPromptCode,
+    selectedEvaluatorPromptCode: (data?.metadata as any)?.selectedEvaluatorPromptCode,
     mainPromptVariantByLanguage: data?.metadata?.mainPromptVariantByLanguage ?? {},
     states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
@@ -246,7 +246,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     // Per-language STT picks, keyed like languageVoices. Absent = inherit.
     sttConfigByLanguage: (data?.metadata as any)?.sttConfigByLanguage ?? {},
     characterProfileText: data?.metadata?.characterProfileText,
-    helperAgentPrompt: data?.metadata?.helperAgentPrompt,
+    helperAgentPrompt: (data?.metadata as any)?.helperAgentPrompt,
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,
     agentBuilderPrompt: (data?.metadata as any)?.agentBuilderPrompt,
     competency: data?.competency,
