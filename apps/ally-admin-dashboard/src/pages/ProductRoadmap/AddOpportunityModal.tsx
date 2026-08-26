@@ -24,11 +24,14 @@ interface AddOpportunityModalProps {
 }
 
 /**
- * File a new opportunity, with the three AI assists from the source: a duplicate check while
- * you type, a review pass, and a rewrite.
+ * File a new opportunity — an IDEA, only. Bugs are reported from the page header's "Report a
+ * bug" button and are triaged in Bug Hunter; see ReportBugModal for why the two are separate
+ * buttons rather than one modal with a Type dropdown.
  *
- * All three degrade silently. Duplicate detection in particular answers `{matches: []}` when
- * ally-ai is unreachable, so a dead vector service can never block someone filing an idea.
+ * Carries the three AI assists from the source: a duplicate check while you type, a review
+ * pass, and a rewrite. All three degrade silently. Duplicate detection in particular answers
+ * `{matches: []}` when ally-ai is unreachable, so a dead vector service can never block
+ * someone filing an idea.
  */
 export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
   goals,
@@ -36,7 +39,6 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
   onOpenExisting,
 }) => {
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<RoadmapOpportunityType>(RoadmapOpportunityType.IDEA);
   const [productGoal, setProductGoal] = useState(goals[0]?.name ?? "");
   const [duplicates, setDuplicates] = useState<RoadmapDuplicateMatch[]>([]);
   const [suggestions, setSuggestions] = useState<{ issue: string; tip: string }[]>([]);
@@ -108,7 +110,10 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
     try {
       await createOpportunity({
         description: description.trim(),
-        type,
+        // Not a state value any more: this modal files ideas, full stop. Still sent
+        // explicitly rather than left to a server default, so the row's type is decided
+        // here where the decision is visible rather than in a DTO fallback.
+        type: RoadmapOpportunityType.IDEA,
         productGoal,
       }).unwrap();
       toast.success("Opportunity filed.");
@@ -131,7 +136,17 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
     <ComposedModal open onClose={onClose} size="lg">
       <ModalBody>
         <div className="flex flex-col gap-4">
-          <h2 className="text-typography-primary text-xl">New opportunity</h2>
+          <div>
+            <h2 className="text-typography-primary text-xl">New opportunity</h2>
+            {/* Signposts the branch this modal no longer offers. Whoever opened it to file a
+                bug used to find that option in a Type dropdown right here, and removing the
+                dropdown without saying where bugs went would leave them re-describing one as
+                an "idea" — which is exactly the row Bug Hunter would then never see. */}
+            <p className="text-typography-secondary mt-1 text-sm">
+              Ideas and problems worth prioritising. Something broken? Close this and use Report a
+              bug — those go to Bug Hunter.
+            </p>
+          </div>
 
           <TextArea
             id="roadmap-description"
@@ -145,28 +160,23 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
             placeholder="Describe the problem, who hits it, and what it costs them."
           />
 
-          <div className="flex gap-3">
-            <Select
-              id="roadmap-type"
-              labelText="Type"
-              value={type}
-              onChange={event => setType(event.target.value as RoadmapOpportunityType)}
-            >
-              <SelectItem value={RoadmapOpportunityType.IDEA} text="Idea" />
-              <SelectItem value={RoadmapOpportunityType.BUG} text="Bug" />
-            </Select>
-
-            <Select
-              id="roadmap-goal"
-              labelText="Product goal"
-              value={productGoal}
-              onChange={event => setProductGoal(event.target.value)}
-            >
-              {goals.map(goal => (
-                <SelectItem key={goal.id} value={goal.name} text={goal.name} />
-              ))}
-            </Select>
-          </div>
+          {/* The Type dropdown that used to sit here (Idea / Bug) is gone. Everything this
+              modal does — a product goal, the duplicate check against other opportunities,
+              and the coin voting the filed row lands in — applies to an idea and to nothing
+              else, and a bug picked from that dropdown quietly left the board entirely for
+              Bug Hunter. "Report a bug" in the page header is the whole other branch, so the
+              choice is made by which button you press rather than by a field you might not
+              notice you had changed. */}
+          <Select
+            id="roadmap-goal"
+            labelText="Product goal"
+            value={productGoal}
+            onChange={event => setProductGoal(event.target.value)}
+          >
+            {goals.map(goal => (
+              <SelectItem key={goal.id} value={goal.name} text={goal.name} />
+            ))}
+          </Select>
 
           <div className="flex gap-2">
             <Button

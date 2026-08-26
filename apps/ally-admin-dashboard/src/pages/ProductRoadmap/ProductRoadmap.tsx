@@ -13,6 +13,8 @@ import {
   useGetRoadmapProductGoalsQuery,
   useGetRoadmapReleaseNotesQuery,
 } from "@api";
+import { Button } from "@components";
+import { ButtonVariant } from "@components/types";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
 import {
@@ -35,6 +37,7 @@ import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunityDrawer } from "./OpportunityDrawer";
 import { ProductGoalsManager } from "./ProductGoalsManager";
 import { ReleaseNotesTab } from "./ReleaseNotesTab";
+import { ReportBugModal } from "./ReportBugModal";
 import { SavedViewTabs } from "./SavedViewTabs";
 import { SplitOpportunityModal } from "./SplitOpportunityModal";
 import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
@@ -106,6 +109,7 @@ export const ProductRoadmap: React.FC = () => {
     useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("priority");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isReportBugOpen, setIsReportBugOpen] = useState(false);
   const [splitTarget, setSplitTarget] = useState<RoadmapOpportunity | null>(null);
   const [isMergeOpen, setIsMergeOpen] = useState(false);
   const [isGoalsOpen, setIsGoalsOpen] = useState(false);
@@ -410,27 +414,47 @@ export const ProductRoadmap: React.FC = () => {
           ally-web/CLAUDE.md. */}
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h1 className="text-typography-primary text-2xl font-primary">Product Roadmap</h1>
-        {budget && (
-          <div className="text-typography-secondary flex items-baseline gap-1.5 text-sm">
-            <span className="text-typography-primary font-mono tabular-nums text-base">
-              {budget.remaining}
-              <span className="text-typography-secondary"> / {budget.coinsPerMonth}</span>
-            </span>
-            <span>coins left · {budget.used} allocated</span>
-            {/* The trigger is a BUTTON wrapping only the icon, per the pattern in
-                ally-web/CLAUDE.md. Wrapping the whole readout in a <div> instead put the coin rule
-                behind a hover no keyboard could reach. `align="bottom"` because this sits at the
-                top of the page — a Tooltip pointing up from here renders off-screen. */}
-            <Tooltip
-              label={`Your coins for ${budget.periodKey}. Spend them on what matters most — coins go to new opportunities only, and anything unspent lapses at the start of next month.`}
-              align="bottom"
-            >
-              <button type="button" className="cursor-pointer inline-flex items-center">
-                <TooltipIcon />
-              </button>
-            </Tooltip>
-          </div>
-        )}
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          {budget && (
+            <div className="text-typography-secondary flex items-baseline gap-1.5 text-sm">
+              <span className="text-typography-primary font-mono tabular-nums text-base">
+                {budget.remaining}
+                <span className="text-typography-secondary"> / {budget.coinsPerMonth}</span>
+              </span>
+              <span>coins left · {budget.used} allocated</span>
+              {/* The trigger is a BUTTON wrapping only the icon, per the pattern in
+                  ally-web/CLAUDE.md. Wrapping the whole readout in a <div> instead put the coin
+                  rule behind a hover no keyboard could reach. `align="bottom"` because this sits
+                  at the top of the page — a Tooltip pointing up from here renders off-screen. */}
+              <Tooltip
+                label={`Your coins for ${budget.periodKey}. Spend them on what matters most — coins go to new opportunities only, and anything unspent lapses at the start of next month.`}
+                align="bottom"
+              >
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
+            </div>
+          )}
+
+          {/* In the page header rather than the board toolbar, and outside the tab strip,
+              because reporting a bug is not one of the things you do TO this board — it is
+              the sibling of everything on it, and it must stay reachable from the Interviews
+              and Release Notes tabs and from both layouts alike.
+
+              Ungated on purpose: filing a bug is not voting. Anyone who can reach this page
+              can report one, and the endpoint behind it takes any logged-in user, so gating
+              it on VOTE_PRODUCT_ROADMAP would hide an affordance the server would have
+              honoured. Secondary, not primary — the board's own call to action is still
+              "New opportunity". */}
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            onClick={() => setIsReportBugOpen(true)}
+            aria-label="Report a bug"
+          >
+            Report a bug
+          </Button>
+        </div>
       </header>
 
       <Tabs
@@ -602,6 +626,8 @@ export const ProductRoadmap: React.FC = () => {
           }}
         />
       )}
+
+      {isReportBugOpen && <ReportBugModal onClose={() => setIsReportBugOpen(false)} />}
 
       {openOpportunityId && (
         <OpportunityDrawer

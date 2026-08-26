@@ -74,6 +74,8 @@ export {
   BUG_REPORT_DESCRIPTION_MAX,
   DEFAULT_BUG_REPORT_LABELS,
 } from "./lib/bug-report-form/BugReportForm";
+export type { DeviceOs } from "./lib/bug-report-form/detectDeviceOs";
+export { detectDeviceOs } from "./lib/bug-report-form/detectDeviceOs";
 
 export {
   Badge,

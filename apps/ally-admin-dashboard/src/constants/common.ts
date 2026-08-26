@@ -280,6 +280,13 @@ export const ApiEndpoints = {
   },
   PRODUCT_ROADMAP: {
     OPPORTUNITIES: "/v1/product-roadmap/opportunities",
+    /**
+     * The same route helpline and mobile file a bug on. Not `/opportunities` with
+     * type=bug: this one captures the reporter's screen/device context for triage and
+     * stamps `source` from the reporter's own roles, so a staff report and a consumer
+     * report arrive in Bug Hunter's findings table in identical shape.
+     */
+    BUG_REPORTS: "/v1/product-roadmap/bug-reports",
     OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
     OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",

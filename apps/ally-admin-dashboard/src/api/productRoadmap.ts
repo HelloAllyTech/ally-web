@@ -3,6 +3,8 @@ import {
   RoadmapBoardMoveResponse,
   RoadmapBoardQuery,
   RoadmapBoardResponse,
+  RoadmapBugReportBody,
+  RoadmapBugReportResponse,
   RoadmapCoinBudget,
   RoadmapComment,
   RoadmapDuplicateMatch,
@@ -190,6 +192,24 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
         TAG_TYPES.PRODUCT_ROADMAP_FACETS,
       ],
+    }),
+
+    /**
+     * File a bug from the roadmap's "Report a bug" button.
+     *
+     * Invalidates the Bug Hunter findings list and NOT the roadmap board, which is the
+     * whole point: a bug lands in Bug Hunter's table and never appears on the board, so
+     * invalidating the board would refetch a list that provably cannot have changed, and
+     * failing to invalidate the findings list would leave a triager staring at a table
+     * missing the row they just filed.
+     */
+    createRoadmapBugReport: builder.mutation<RoadmapBugReportResponse, RoadmapBugReportBody>({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.BUG_REPORTS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
     }),
 
     updateRoadmapOpportunity: builder.mutation<
@@ -662,6 +682,7 @@ export const {
   useGetRoadmapCoinBudgetQuery,
   useGetRoadmapFacetsQuery,
   useCreateRoadmapOpportunityMutation,
+  useCreateRoadmapBugReportMutation,
   useUpdateRoadmapOpportunityMutation,
   useDeleteRoadmapOpportunityMutation,
   useSetRoadmapAllocationMutation,
