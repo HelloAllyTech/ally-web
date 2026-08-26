@@ -293,7 +293,10 @@ export const RoleplaySessionLogDetail: FC = () => {
     let bestIdx = -1;
     let bestStart = -Infinity;
     for (let i = 0; i < transcript.length; i++) {
-      const start = transcript[i].startSeconds ?? 0;
+      const start = transcript[i].startSeconds;
+      // A turn with unknown timing can't win "largest start <= currentTime" —
+      // treating it as start 0 would highlight it before playback gets there.
+      if (start === null) continue;
       if (audioCurrentTime >= start && start >= bestStart) {
         bestStart = start;
         bestIdx = i;
