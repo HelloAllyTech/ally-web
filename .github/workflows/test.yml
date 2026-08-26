@@ -14,9 +14,9 @@
 # it is being fixed. Mark "test" and "lint" as required checks once they are
 # green.
 
-# ally-web ships three independently-released apps plus a shared lib, so a
-# ui-shared change needs all three suites — `npm test` runs them via Nx's
-# run-many, which is why this is one job rather than three.
+# ally-web ships two independently-released apps plus a shared lib, so a
+# ui-shared change needs both suites — `npm test` runs them via Nx's
+# run-many, which is why this is one job rather than two.
 #
 # The suite is known to be red on master (ToggleButtonGroup and createSimulation
 # specs). That is exactly why this lands as a reporting-only workflow: it makes

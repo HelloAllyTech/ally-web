@@ -58,7 +58,6 @@ something Ally-specific.
 
 ## Repo shape
 
-- `apps/ally-web/` — Next.js landing, :3000
 - `apps/ally-helpline-dashboard/` — Vite/React, :8080
 - `apps/ally-admin-dashboard/` — Vite/React, :8081
 - `libs/ui-shared/` — shared components
