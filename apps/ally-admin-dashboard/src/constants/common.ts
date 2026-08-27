@@ -476,6 +476,12 @@ export const ApiEndpoints = {
     NOTIFICATIONS: "/v1/builder/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/builder/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
+    // Scoreboard + knowledge (lessons/exemplars) — the visibility surfaces.
+    SCOREBOARD: "/v1/builder/scoreboard",
+    LESSONS: "/v1/builder/lessons",
+    LESSON_BY_ID: (id: string) => `/v1/builder/lessons/${id}`,
+    LESSONS_CONSOLIDATE: "/v1/builder/lessons/consolidate",
+    EXEMPLARS: "/v1/builder/exemplars",
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -611,6 +617,9 @@ export const ROUTES = {
   BUG_HUNTER: "/bug-hunter",
   BUILDER: "/builder",
   BUILDER_SESSION: (id: string) => `/builder/${id}`,
+  BUILDER_SETTINGS: "/builder/settings",
+  BUILDER_SCOREBOARD: "/builder/scoreboard",
+  BUILDER_KNOWLEDGE: "/builder/knowledge",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -773,6 +782,8 @@ export const TAG_TYPES = {
   BUILDER_PRD_VERSIONS: "builderPrdVersions",
   BUILDER_SETTINGS: "builderSettings",
   BUILDER_NOTIFICATIONS: "builderNotifications",
+  BUILDER_LESSONS: "builderLessons",
+  BUILDER_EXEMPLARS: "builderExemplars",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",

@@ -58,6 +58,7 @@ import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } fro
 import { useClickOutside, useUser } from "@hooks";
 
 import { BugHunterNavBadge } from "./BugHunterNavBadge";
+import { BuilderNavBadge } from "./BuilderNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
 
 const EXPANDED_WIDTH = 1200;
@@ -246,15 +247,17 @@ export const Sidebar: React.FC = () => {
 
   /**
    * Trailing status for a tab, for the rare one that has something waiting on
-   * you elsewhere in the console. Only Bug Hunter has one today; keeping it a
-   * switch rather than a prop on NavigationItem keeps the data-fetching in a
-   * component that can be mounted conditionally, so a user without the
-   * permission never issues the request.
+   * you elsewhere in the console. Only Bug Hunter and Builder have one today;
+   * keeping it a switch rather than a prop on NavigationItem keeps the
+   * data-fetching in a component that can be mounted conditionally, so a user
+   * without the permission never issues the request.
    */
   const renderBadge = (id: string): React.ReactNode | undefined => {
     switch (id) {
       case SIDEBAR_ITEMS.BUG_HUNTER:
         return <BugHunterNavBadge />;
+      case SIDEBAR_ITEMS.BUILDER:
+        return <BuilderNavBadge />;
       default:
         return undefined;
     }

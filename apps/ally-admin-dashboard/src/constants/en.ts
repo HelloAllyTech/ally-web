@@ -2999,6 +2999,13 @@ export const en = {
       "Start one above. The first few questions take about a minute, and you can leave and come back to it.",
     loadFailed: "Couldn't load your Builder sessions.",
     createFailed: "Couldn't start a new build.",
+    searchPlaceholder: "Search builds…",
+    filterButton: "Filter",
+    filterStatusLabel: "Status",
+    settingsLink: "Settings",
+    scoreboardLink: "Scoreboard",
+    knowledgeLink: "Knowledge",
+    noMatchingSessions: "Nothing matches this filter.",
 
     // Session states, as a person would say them
     status: {
@@ -3102,7 +3109,10 @@ export const en = {
       PLANNING: "Planning",
       CODING: "Writing code",
       TESTING: "Testing",
-      VERIFYING: "Checking its work",
+      GATE: "Running the checks",
+      VERIFYING: "Independent review",
+      REMEDIATING: "Fixing what the checks found",
+      FINALISING: "Shipping",
       E2E_VERIFY: "End-to-end",
       OPENING_PRS: "Opening PRs",
       REPORTING: "Writing up",
@@ -3114,7 +3124,36 @@ export const en = {
       todoHeading: "Checklist",
       todoProgress: (done: number, total: number) => `${done} of ${total}`,
       planHeading: "Plan",
-      verificationHeading: "Verification",
+      verificationHeading: "Independent review",
+      verificationRoundHeading: (round: number) => `Independent review · round ${round}`,
+      verificationPassed: "No blocking objections",
+      verificationFailed: "Blocking objections",
+      // A failing review used to end the run. It no longer does, and a red
+      // card that does not say so reads as a dead build.
+      verificationRemediating: "Builder is fixing these and will be reviewed again.",
+      // "Checked" rather than "reported": the gate is the one thing in this
+      // feed the agent did not write about itself.
+      gateVerified: "Checked by Builder, not self-reported",
+      gatePassed: "Passed",
+      gateFailed: "Failed",
+      gateNewFailures: (count: number) =>
+        count === 1 ? "1 failure this change caused" : `${count} failures this change caused`,
+      gatePreExisting: (count: number) =>
+        count === 1
+          ? "1 failure was already there before this change"
+          : `${count} failures were already there before this change`,
+      gateOutput: "Command output",
+      // Tool-call detail: arguments and the paired result, shown once expanded.
+      toolArgumentsHeading: "Arguments",
+      toolResultHeading: "Result",
+      noToolResult: "No result recorded for this call.",
+      // Gap between two events, shown inline so a long silence (a slow test
+      // suite, a big diff) reads as time passing rather than as nothing
+      // having happened.
+      eventGap: (label: string) => `${label} later`,
+      diffNoChange: "No visible change.",
+      diffAdditions: (count: number) => (count === 1 ? "1 addition" : `${count} additions`),
+      diffDeletions: (count: number) => (count === 1 ? "1 deletion" : `${count} deletions`),
       reportHeading: "Report",
       testOutput: "Test results",
       e2eEvidence: "End-to-end evidence",
@@ -3123,7 +3162,33 @@ export const en = {
       feedStarting: "Waiting for the first update…",
       feedEmpty: "Nothing recorded for this run.",
       runLabel: (sequence: number, mode: string) =>
-        mode === "resume" ? `Run ${sequence} (resumed)` : `Run ${sequence}`,
+        mode === "resume"
+          ? `Run ${sequence} (resumed)`
+          : mode === "fix"
+            ? `Run ${sequence} (fix)`
+            : `Run ${sequence}`,
+      // Run history rail — reading an older run's transcript without losing
+      // the live one is the whole point, so the rail says which run is which
+      // rather than leaving that to a bare sequence number.
+      runHistoryHeading: "Runs",
+      runHistoryEmpty: "No runs yet.",
+      runDurationLive: "Running…",
+      runDurationUnknown: "—",
+      runModeLabels: {
+        build: "Build",
+        resume: "Resume",
+        fix: "Fix",
+      } as Record<string, string>,
+      runLiveBadge: "Live",
+      runStatusLabels: {
+        QUEUED: "Queued",
+        RUNNING: "Running",
+        SUCCEEDED: "Succeeded",
+        FAILED: "Failed",
+        CANCELLED: "Stopped",
+        TIMED_OUT: "Timed out",
+        WAITING_FOR_INPUT: "Waiting on you",
+      } as Record<string, string>,
       watchOnGithub: "Watch on GitHub",
       pullRequestsHeading: "Pull requests",
       noPullRequests: "No pull requests opened yet.",
@@ -3148,10 +3213,209 @@ export const en = {
     // Session actions
     cancelSession: "Stop this build",
     cancelSessionConfirm: "Stop it?",
+    cancelSessionConfirmBody:
+      "The current run stops immediately. Nothing already written is lost, but this pass won't finish — you'll need to start again.",
     cancelFailed: "Couldn't stop the build.",
     costLabel: "Spend",
     repoLabel: "Repos",
     noReposYet: "Not decided yet",
+    retryBuild: "Retry build",
+    sessionGone: "This session is gone — start a new one.",
+
+    // Start-build dialog — also used for a retry from FAILED, since the
+    // backend accepts start-build from either state with the same payload.
+    startBuildDialog: {
+      title: "Start build",
+      retryTitle: "Retry build",
+      // Shown above the form on a retry, with the session's own error text —
+      // the point isn't to explain the failure, just to say what is being
+      // retried past before asking for the same decisions again.
+      retryIntro: "The last attempt failed:",
+      reposLabel: "Repos to change",
+      reposHint:
+        "Builder only touches the repos you choose here — pick every repo this PRD's technical plan calls out.",
+      reposPlaceholder: "Choose repos…",
+      reposRequired: "Choose at least one repo before starting.",
+      budgetLabel: "Budget (USD)",
+      budgetHint:
+        "Builder stops itself once this build's spend reaches this figure. Leave the platform default unless you have a reason to change it.",
+      modelOverridesHeading: "Model overrides",
+      modelOverridesHint:
+        "Leave any of these blank to use the platform default for that tier. Only set one if you specifically need a different model for this build.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      saveReposFailed: "Couldn't save the chosen repos.",
+      submit: "Start build",
+      retrySubmit: "Retry build",
+    },
+
+    // Notifications
+    notifications: {
+      title: "Notifications",
+      unreadLabel: (count: number) => (count === 1 ? "1 unread" : `${count} unread`),
+      markAllRead: "Mark all read",
+      empty: "Nothing yet.",
+      kinds: {
+        question_pending: "Needs an answer",
+        build_completed: "Build finished",
+        build_failed: "Build failed",
+        prs_opened: "PRs opened",
+        budget_reached: "Budget reached",
+      } as Record<string, string>,
+    },
+
+    // Platform settings (SUPER_DUPER_ADMIN)
+    settings: {
+      title: "Builder settings",
+      subtitle: "Platform-wide controls — these apply to every build, not one session.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load Builder's settings.",
+      saveFailed: "Couldn't save Builder's settings.",
+      saved: "Saved.",
+      save: "Save",
+      // The kill switch sits alone, first, for the same reason WhatsApp's does:
+      // it's the control someone reaches for in an incident and shouldn't be
+      // buried under thresholds.
+      enabledLabel: "Builder enabled",
+      enabledHelp:
+        "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      maxConcurrentBuildsLabel: "Max concurrent builds",
+      maxConcurrentBuildsHelp:
+        "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",
+      defaultBudgetLabel: "Default budget (USD)",
+      defaultBudgetHelp: "Applied to a new session's spend ceiling unless a build overrides it.",
+      modelsHeading: "Model tiers",
+      modelsHelp:
+        "Per-tier defaults for new runs. Leave a field blank to fall through to the platform default — a per-build override still wins over these.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      repoMapsHeading: "Repo maps",
+      repoMapsHelp:
+        "What Builder's own map of each repo was generated from — read-only here. A stale map is still usable; it just means recent commits aren't reflected in what the agent reads about the repo before it starts.",
+      repoMapNeverGenerated: "Never generated",
+      repoMapGeneratedAt: (age: string, sha: string) => `map from ${age} @ ${sha}`,
+    },
+
+    // Scoreboard — how builds are actually going, not just what one build did.
+    scoreboard: {
+      title: "Builder scoreboard",
+      subtitle: "Cost, review friction, and how often a build actually ships — over time.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the scoreboard.",
+      retry: "Retry",
+      empty: "No builds in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      kpi: {
+        builds: "Builds",
+        mergeRate: "Merge rate",
+        totalCost: "Total spend",
+        medianCost: "Median cost per build",
+      },
+      trend: {
+        buildsHeading: "Builds started, weekly",
+        mergeRateHeading: "Merge rate, weekly",
+        costHeading: "Median cost per build, weekly",
+        fixRunsHeading: "Median fix runs, weekly",
+        timeToMergeHeading: "Median time to merge, weekly",
+      },
+      table: {
+        heading: "Every build in this window",
+        columnTitle: "Build",
+        columnRepos: "Repos",
+        columnOutcome: "Outcome",
+        columnCreated: "Started",
+        columnDuration: "Duration",
+        columnCost: "Cost",
+        columnRuns: "Runs",
+        columnFixRuns: "Fix runs",
+        columnReviewComments: "Review comments",
+        columnCiFailures: "CI failures",
+        columnTimeToMerge: "Time to merge",
+        columnFailureTags: "Failure tags",
+        durationUnknown: "—",
+        noFailureTags: "—",
+      },
+      outcome: {
+        merged: "Merged",
+        open: "Open",
+        failed: "Failed",
+        cancelled: "Stopped",
+      } as Record<string, string>,
+    },
+
+    // Knowledge — what the automatic curator has distilled from past builds,
+    // and the runs worth reading in full because they were unusually clean
+    // or unusually expensive.
+    knowledge: {
+      navLink: "Knowledge",
+      title: "Builder knowledge",
+      subtitle: "What Builder has learned from past builds, and the runs worth learning from.",
+      backToBuilder: "Back to Builder",
+      tabLessons: "Lessons",
+      tabExemplars: "Exemplars",
+
+      lessons: {
+        loadFailed: "Couldn't load Builder's lessons.",
+        empty: "Nothing here yet — lessons appear once a few builds have run.",
+        filterStatusLabel: "Status",
+        filterStatusAll: "All statuses",
+        filterCategoryLabel: "Category",
+        filterCategoryPlaceholder: "Any category…",
+        filterRepoLabel: "Repo",
+        filterRepoPlaceholder: "Any repo…",
+        statusLabels: {
+          candidate: "Candidate",
+          active: "Active",
+          merged: "Merged",
+          retired: "Retired",
+        } as Record<string, string>,
+        columnLesson: "Lesson",
+        columnCategory: "Category",
+        columnStatus: "Status",
+        columnSources: "Sources",
+        columnApplied: "Applied",
+        columnContradicted: "Contradicted",
+        columnRepos: "Repos",
+        columnPinned: "Pinned",
+        edit: "Edit",
+        save: "Save",
+        cancel: "Cancel",
+        saveFailed: "Couldn't save that lesson.",
+        pin: "Pin",
+        unpin: "Unpin",
+        // The curator runs on its own schedule and edits or retires lessons
+        // without asking — pinning is the one way to take a lesson out of its
+        // reach on purpose, and the copy says so rather than just naming the
+        // toggle. (Stacks: "Automated Pipelines as Amplifiers, Not
+        // Replacements" — automation proposes, a person can override it.)
+        pinHint:
+          "A pinned lesson is one the automatic curator may never edit or retire. Pin the ones you've checked and want kept exactly as written.",
+        pinFailed: "Couldn't pin that lesson.",
+        unpinFailed: "Couldn't unpin that lesson.",
+        retire: "Retire",
+        retireConfirmTitle: "Retire this lesson?",
+        retireConfirmBody:
+          "A retired lesson stops being read into new builds. Nothing is deleted — set its status back to bring it back.",
+        retireFailed: "Couldn't retire that lesson.",
+        consolidateNow: "Consolidate now",
+        consolidateHint:
+          "Runs the curator immediately instead of waiting for its next scheduled pass — it reviews candidate lessons and merges duplicates, and never edits or retires a pinned one.",
+        consolidateStarted: "Consolidation started — check back in a moment for the result.",
+        consolidateFailed: "Couldn't start consolidation.",
+      },
+
+      exemplars: {
+        caption: "Builds worth learning from — the cleanest runs, and the costliest ones.",
+        loadFailed: "Couldn't load Builder's exemplars.",
+        empty: "No exemplars recorded yet.",
+        noFailureTags: "No failure tags recorded.",
+      },
+    },
   },
   evaluate: {
     title: "Ally Evaluation",
