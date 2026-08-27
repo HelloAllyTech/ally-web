@@ -51,7 +51,7 @@ export const BlogPost: FC = () => {
   });
 
   return (
-    <div className="blog-sans flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
       <div className="mx-auto w-full max-w-6xl px-6 pt-8">
         <div className="flex items-center justify-between">
           <Ally />
@@ -84,7 +84,7 @@ export const BlogPost: FC = () => {
                 {post.category && <span>{post.category} · </span>}
                 {formatDate(post.publishedAt ?? post.createdAt)}
               </p>
-              <h1 className="blog-serif mt-4 text-4xl leading-[1.15] sm:text-5xl">{post.title}</h1>
+              <h1 className="mt-4 text-4xl leading-[1.15] sm:text-5xl">{post.title}</h1>
               {post.tldr && <p className="mt-6 text-xl leading-8 text-[#5E5D59]">{post.tldr}</p>}
               {post.authorName && (
                 <p className="mt-6 text-sm text-[#87867F]">By {post.authorName}</p>
@@ -106,7 +106,7 @@ export const BlogPost: FC = () => {
             <RichTextRenderer
               content={post.body}
               allowImages
-              className="mt-8 max-w-none text-[17px] leading-[1.75] text-[#33322F] [&_h1]:font-secondary [&_h1]:text-3xl [&_h1]:text-[#141413] [&_h1]:mt-10 [&_h1]:mb-4 [&_h2]:font-secondary [&_h2]:text-2xl [&_h2]:text-[#141413] [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:font-secondary [&_h3]:text-xl [&_h3]:text-[#141413] [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:my-4 [&_a]:underline [&_a]:underline-offset-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_li]:my-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D97757] [&_blockquote]:pl-5 [&_blockquote]:my-6 [&_blockquote]:font-secondary [&_blockquote]:text-lg [&_blockquote]:text-[#5E5D59] [&_img]:rounded-xl"
+              className="mt-8 max-w-none text-[17px] leading-[1.75] text-[#33322F] [&_h1]:text-3xl [&_h1]:text-[#141413] [&_h1]:mt-10 [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:text-[#141413] [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:text-[#141413] [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:my-4 [&_a]:underline [&_a]:underline-offset-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_li]:my-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D97757] [&_blockquote]:pl-5 [&_blockquote]:my-6 [&_blockquote]:text-lg [&_blockquote]:text-[#5E5D59] [&_img]:rounded-xl"
             />
 
             {post.tags?.length > 0 && (
