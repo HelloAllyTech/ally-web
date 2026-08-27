@@ -833,18 +833,18 @@ export interface ChartPreferencesResponse {
   preferences: ChartPreference[];
 }
 
-// Coin-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
+// Vote-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
 // from GET /api/v1/analytics/roadmap-delivery. All-time and month-grained; takes
 // no window and no tenant (the roadmap tables carry no tenant — it is Ally's own
-// backlog). Coins are the board's `priorityScore`: every voter, every period.
+// backlog). Votes are the board's `priorityScore`: every voter, every period.
 export interface RoadmapDeliveryTotals {
   opportunities: number;
   ideaOpportunities: number;
   bugOpportunities: number;
-  /** Σ priorityScore — ideaCoins + bugCoins, sent so both cannot disagree. */
-  coins: number;
-  ideaCoins: number;
-  bugCoins: number;
+  /** Σ priorityScore — ideaVotes + bugVotes, sent so both cannot disagree. */
+  votes: number;
+  ideaVotes: number;
+  bugVotes: number;
 }
 
 export interface RoadmapDeliveryOwner extends RoadmapDeliveryTotals {
@@ -864,7 +864,7 @@ export interface RoadmapDeliveryMonth extends RoadmapDeliveryTotals {
 export interface RoadmapDeliveryResponse {
   /** Oldest first, gap-free; empty when nothing released carries a date. */
   months: RoadmapDeliveryMonth[];
-  /** Every owner band, ranked by all-time coins, context bands last. */
+  /** Every owner band, ranked by all-time votes, context bands last. */
   owners: string[];
   /** Reserved `owner` value for released work with no owner. */
   unassignedOwnerLabel: string;

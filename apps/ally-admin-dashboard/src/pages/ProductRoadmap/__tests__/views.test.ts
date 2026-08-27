@@ -137,7 +137,7 @@ describe("normaliseSortField", () => {
   });
 
   it("passes canonical names through untouched", () => {
-    for (const field of ["priority", "createdAt", "releasedAt", "myCoins", "description"]) {
+    for (const field of ["priority", "createdAt", "releasedAt", "myVotes", "description"]) {
       expect(normaliseSortField(field)).toBe(field);
     }
   });

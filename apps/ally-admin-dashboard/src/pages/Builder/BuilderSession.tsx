@@ -40,9 +40,38 @@ const PRD_FROZEN: BuilderSessionStatus[] = ["BUILDING", "WAITING_FOR_INPUT"];
  * for a round-trip would make it lag the sentence that produced it — which is
  * the one thing this layout exists to show.
  */
-export const BuilderSession: React.FC = () => {
+interface BuilderSessionProps {
+  /**
+   * Renders this session instead of the one in the route. Set when the component is EMBEDDED —
+   * today that is the roadmap's Builder drawer, which has an opportunity in the URL, not a
+   * session. Omitted on the Builder route itself, where the param is the source of truth.
+   */
+  sessionId?: string;
+  /**
+   * The opening turn, for a session created moments ago with an empty transcript.
+   *
+   * Falls back to `location.state.openingMessage`, which is how Builder's own mission control
+   * seeds a session. Both go through the same send-once guard below, so a caller cannot double
+   * up an opening turn by supplying both.
+   */
+  openingMessage?: string;
+  /**
+   * Embedded mode: drop the page chrome that assumes a route — the back arrow becomes this
+   * callback. Without it, the header's "←" navigates the whole admin app away from the roadmap
+   * and the drawer takes the page with it.
+   */
+  onClose?: () => void;
+}
+
+export const BuilderSession: React.FC<BuilderSessionProps> = ({
+  sessionId: sessionIdProp,
+  openingMessage: openingMessageProp,
+  onClose,
+}) => {
   const strings = en.builder;
-  const { sessionId = "" } = useParams<{ sessionId: string }>();
+  const { sessionId: routeSessionId = "" } = useParams<{ sessionId: string }>();
+  const sessionId = sessionIdProp ?? routeSessionId;
+  const isEmbedded = sessionIdProp !== undefined;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -112,16 +141,20 @@ export const BuilderSession: React.FC = () => {
   // The sentence typed on mission control is the opening turn. Guarded by a
   // ref rather than a dependency list because a re-render must not replay it.
   useEffect(() => {
-    const openingMessage = (location.state as { openingMessage?: string } | null)?.openingMessage;
+    const openingMessage =
+      openingMessageProp ??
+      (location.state as { openingMessage?: string } | null)?.openingMessage;
     if (!openingMessage || !hydratedRef.current || openingSentRef.current) return;
     if (session?.messages.length) {
       openingSentRef.current = true;
       return;
     }
     openingSentRef.current = true;
-    navigate(location.pathname, { replace: true, state: null });
+    // Only the route-state form needs clearing; a prop is not replayed by a refetch, and
+    // rewriting the URL here would strip the roadmap's own ?opportunity= param.
+    if (!isEmbedded) navigate(location.pathname, { replace: true, state: null });
     void sendMessage(openingMessage);
-  }, [location, navigate, sendMessage, session]);
+  }, [isEmbedded, location, navigate, openingMessageProp, sendMessage, session]);
 
   const handleAnswer = useCallback(
     (payload: BuilderAnswerPayload) => {
@@ -221,7 +254,11 @@ export const BuilderSession: React.FC = () => {
     <div className="flex h-full flex-col overflow-hidden">
       <header className="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button kind="ghost" size="sm" onClick={() => navigate(ROUTES.BUILDER)}>
+          <Button
+            kind="ghost"
+            size="sm"
+            onClick={() => (onClose ? onClose() : navigate(ROUTES.BUILDER))}
+          >
             ←
           </Button>
           <div className="min-w-0">

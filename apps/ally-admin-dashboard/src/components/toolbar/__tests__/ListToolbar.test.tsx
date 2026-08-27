@@ -68,10 +68,12 @@ describe("ListToolbar", () => {
     });
 
     it("renders search icon", () => {
-      render(<ListToolbar {...defaultProps} />);
+      const { container } = render(<ListToolbar {...defaultProps} />);
 
-      const searchIcon = screen.getByTestId("search-icon");
-      expect(searchIcon).toBeInTheDocument();
+      // Carbon's Search draws its own magnifier, so there is no @assets search-icon testid to
+      // find any more. Asserting on Carbon's magnifier class keeps the original intent —
+      // "the field is visibly a search field" — without reintroducing a hand-rolled icon.
+      expect(container.querySelector(".cds--search-magnifier-icon")).toBeInTheDocument();
     });
 
     it("applies custom className when provided", () => {
@@ -113,19 +115,21 @@ describe("ListToolbar", () => {
     });
 
     it("shows clear button when search value is not empty", () => {
-      render(<ListToolbar {...defaultProps} searchValue="test" />);
+      const { container } = render(<ListToolbar {...defaultProps} searchValue="test" />);
 
-      const clearButtons = screen.getAllByTestId("close-icon");
-      expect(clearButtons.length).toBeGreaterThan(0);
+      // Carbon ALWAYS renders the clear button and hides it with a class, rather than mounting
+      // it conditionally the way the old input did — so "shown" is the absence of that class.
+      const clearButton = container.querySelector(".cds--search-close");
+      expect(clearButton).toBeInTheDocument();
+      expect(clearButton).not.toHaveClass("cds--search-close--hidden");
     });
 
     it("does not show clear button when search value is empty", () => {
-      render(<ListToolbar {...defaultProps} searchValue="" />);
+      const { container } = render(<ListToolbar {...defaultProps} searchValue="" />);
 
-      // Only filter chip close icons might be present, not search clear
-      const searchInput = screen.getByPlaceholderText("Search...");
-      const clearButton = searchInput.parentElement?.querySelector("button");
-      expect(clearButton).not.toBeInTheDocument();
+      expect(container.querySelector(".cds--search-close")).toHaveClass(
+        "cds--search-close--hidden",
+      );
     });
 
     it("clears search value when clear button is clicked", async () => {
@@ -140,7 +144,7 @@ describe("ListToolbar", () => {
         />,
       );
 
-      const clearButton = screen.getAllByTestId("close-icon")[0].parentElement as HTMLElement;
+      const clearButton = screen.getByRole("button", { name: /clear/i });
       await user.click(clearButton);
 
       expect(mockOnSearchChange).toHaveBeenCalledWith("");
@@ -169,7 +173,10 @@ describe("ListToolbar", () => {
 
       const searchInput = screen.getByPlaceholderText("Search...");
       const filter = screen.getByTestId("access-filter");
-      const searchGroup = searchInput.closest("div")?.parentElement;
+      // Walk to the flex row that holds both, rather than a fixed number of parents: Carbon's
+      // Search nests the input deeper than the bare <input> did, and counting levels is what
+      // made this assertion brittle in the first place.
+      const searchGroup = searchInput.closest(".cds--search")?.parentElement?.parentElement;
       expect(searchGroup).toContainElement(filter);
     });
 
@@ -587,8 +594,12 @@ describe("ListToolbar", () => {
     it("search input has correct styling classes", () => {
       render(<ListToolbar {...defaultProps} />);
 
+      // Carbon owns the field's appearance now, so this asserts the Carbon input class and the
+      // md size rather than the Tailwind utilities the hand-rolled input carried. Pinning the
+      // size matters: it is what keeps all 32 toolbars at the same height as before.
       const searchInput = screen.getByPlaceholderText("Search...");
-      expect(searchInput).toHaveClass("block", "w-full", "rounded-md");
+      expect(searchInput).toHaveClass("cds--search-input");
+      expect(searchInput.closest(".cds--search")).toHaveClass("cds--search--md");
     });
 
     it("filter chips have correct styling", () => {
@@ -730,7 +741,10 @@ describe("ListToolbar", () => {
         <ListToolbar {...defaultProps} searchValue="test" onSearchChange={mockOnSearchChange} />,
       );
 
-      const clearButton = screen.getAllByTestId("close-icon")[0].parentElement as HTMLElement;
+      // Reachable BY ROLE AND NAME, which is the point of the test — the old markup had a
+      // bare <button> with an icon and no accessible name at all, so this could only be found
+      // through a testid.
+      const clearButton = screen.getByRole("button", { name: /clear/i });
       await user.click(clearButton);
 
       expect(mockOnSearchChange).toHaveBeenCalledWith("");

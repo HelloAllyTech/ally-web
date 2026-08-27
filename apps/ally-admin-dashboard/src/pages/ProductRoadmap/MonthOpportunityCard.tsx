@@ -4,9 +4,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { RoadmapCoinBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
+import { RoadmapVoteBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
 
-import { CoinAllocator } from "./CoinAllocator";
 import {
   isConsumerSourced,
   SOURCE_BADGE_STYLE,
@@ -15,16 +14,17 @@ import {
   stageStyle,
   typeLabel,
 } from "./utils/stages";
+import { VoteButton } from "./VoteButton";
 
 interface MonthOpportunityCardProps {
   opportunity: RoadmapOpportunity;
   /** Unfiltered max, so the priority bar keeps a stable scale across filters and lanes. */
   maxScore: number;
-  budget?: RoadmapCoinBudget;
+  budget?: RoadmapVoteBudget;
   canVote: boolean;
   /** False for a viewer without manage rights, and for a card whose month is pinned. */
   canDrag: boolean;
-  onCommitCoins: (opportunityId: string, next: number, previous: number) => void;
+  onSetVotes: (opportunityId: string, next: number, previous: number) => void;
   onOpen: () => void;
 }
 
@@ -46,7 +46,7 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
   budget,
   canVote,
   canDrag,
-  onCommitCoins,
+  onSetVotes,
   onOpen,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -111,17 +111,17 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
       </div>
 
       {/* stopPropagation on the wrapper, on BOTH events: click alone is not enough, because
-          dnd-kit's PointerSensor activates on pointerdown — without it, holding the `+` button
-          starts dragging the card instead of adding coins. */}
+          dnd-kit's PointerSensor activates on pointerdown — without it, tapping the vote button
+          starts dragging the card instead of adding a vote. */}
       {budget && (
         <div
           onClick={event => event.stopPropagation()}
           onPointerDown={event => event.stopPropagation()}
         >
-          <CoinAllocator
+          <VoteButton
             opportunity={opportunity}
             budget={budget}
-            onCommit={onCommitCoins}
+            onSetVotes={onSetVotes}
             disabled={!canVote}
           />
         </div>

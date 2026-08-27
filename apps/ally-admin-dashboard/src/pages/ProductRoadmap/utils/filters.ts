@@ -4,7 +4,7 @@
  * Separate from RoadmapAdvancedFilters.tsx on purpose: that component imports Carbon and
  * `@components`, and pulling either into a unit test drags in a module graph that fails to load
  * under vitest. Every other piece of roadmap logic worth testing lives in utils/ for the same
- * reason — see utils/coins.ts and utils/views.ts.
+ * reason — see utils/votes.ts and utils/views.ts.
  */
 
 /** The four range/identity filters, grouped so the parent passes and stores one object. */

@@ -9,6 +9,11 @@
  * a window is a string comparison.
  */
 
+import { RoadmapBoardGroupBy } from "@types";
+
+import { stageLabel } from "./stages";
+
+
 /** The Unscheduled lane's month. Exported so callers stop writing `null` and meaning "no month". */
 export const UNSCHEDULED = null;
 
@@ -17,16 +22,17 @@ const UNSCHEDULED_LANE_KEY = "unscheduled";
 
 /** A lane reduced to what a drop needs to know. */
 export interface LaneSnapshot {
-  month: string | null;
+  /** The lane's value — a month key, or a stage / goal / owner under the other groupings. */
+  key: string | null;
   ids: string[];
 }
 
 export interface DropResult {
-  /** Destination lane. Null is Unscheduled. */
-  month: string | null;
-  /** The destination lane's FULL new order — what PUT board/lane wants. */
+  /** Destination lane. Null is the catch-all lane. */
+  key: string | null;
+  /** The destination lane's FULL new order — what PUT board/lane wants for a MONTH board. */
   orderedIds: string[];
-  /** False when the card changed lane, so the caller knows a month write is involved. */
+  /** False when the card changed lane, so the caller knows a field write is involved. */
   withinLane: boolean;
 }
 
@@ -97,8 +103,8 @@ export const monthLabel = (month: string | null): string => {
  * the empty area of a lane reports the LANE as `over`, and without this the resolver would treat
  * that as "dropped on a card that doesn't exist" and silently discard the drag.
  */
-export const laneDomId = (month: string | null): string =>
-  `${LANE_ID_PREFIX}${month ?? UNSCHEDULED_LANE_KEY}`;
+export const laneDomId = (key: string | null): string =>
+  `${LANE_ID_PREFIX}${key ?? UNSCHEDULED_LANE_KEY}`;
 
 export const isLaneDomId = (id: string): boolean => id.startsWith(LANE_ID_PREFIX);
 
@@ -140,14 +146,14 @@ export const resolveDrop = (
   const from = lanes.find(lane => lane.ids.includes(activeId));
   if (!from) return null;
 
-  const overMonth = monthFromLaneDomId(overId);
+  const overKey = monthFromLaneDomId(overId);
   const to =
-    overMonth === undefined
+    overKey === undefined
       ? lanes.find(lane => lane.ids.includes(overId))
-      : lanes.find(lane => lane.month === overMonth);
+      : lanes.find(lane => lane.key === overKey);
   if (!to) return null;
 
-  if (from.month === to.month) {
+  if (from.key === to.key) {
     const fromIndex = from.ids.indexOf(activeId);
     // Dropped on the lane itself rather than a card: that means the end of the lane.
     const toIndex = isLaneDomId(overId) ? from.ids.length - 1 : from.ids.indexOf(overId);
@@ -156,7 +162,7 @@ export const resolveDrop = (
     // animates, so what the user watched happen is what gets persisted. Hand-rolling the index
     // is where the classic off-by-one on a downward drag comes from.
     return {
-      month: to.month,
+      key: to.key,
       orderedIds: arrayMove(from.ids, fromIndex, toIndex),
       withinLane: true,
     };
@@ -167,7 +173,7 @@ export const resolveDrop = (
   const insertAt = overIndex === -1 ? withoutActive.length : overIndex;
 
   return {
-    month: to.month,
+    key: to.key,
     orderedIds: [...withoutActive.slice(0, insertAt), activeId, ...withoutActive.slice(insertAt)],
     withinLane: false,
   };
@@ -183,3 +189,29 @@ export const resolveDrop = (
  */
 export const isDraggable = (opportunity: { monthPinned?: boolean }): boolean =>
   !opportunity.monthPinned;
+
+/**
+ * A lane's display name, for any grouping.
+ *
+ * Month keys go through monthLabel; every other grouping's key IS its display name, except the
+ * stage enum (which has a label map) and the catch-all lane, whose wording depends on what is
+ * missing — "Unscheduled" and "No owner" are different facts and a shared "None" would say
+ * neither.
+ */
+export const laneLabel = (key: string | null, groupBy: RoadmapBoardGroupBy): string => {
+  if (groupBy === RoadmapBoardGroupBy.MONTH) return monthLabel(key);
+  if (key === null) {
+    return groupBy === RoadmapBoardGroupBy.OWNER ? "No owner" : "No goal";
+  }
+  return groupBy === RoadmapBoardGroupBy.STAGE ? stageLabel(key) : key;
+};
+
+/**
+ * Whether cards can be hand-ordered inside a lane.
+ *
+ * Month only. `boardPosition` is a single column and cannot hold four independent orders, so the
+ * other groupings order by priority — which is the ranking the whole board exists to express. A
+ * second hand-ordering per grouping would quietly compete with the votes.
+ */
+export const laneSupportsReordering = (groupBy: RoadmapBoardGroupBy): boolean =>
+  groupBy === RoadmapBoardGroupBy.MONTH;

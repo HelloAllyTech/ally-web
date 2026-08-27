@@ -82,6 +82,7 @@ import {
   Quotes as CQuotes,
   Renew as CRenew,
   Restart as CRestart,
+  Save as CSave,
   Search as CSearch,
   Settings as CSettings,
   SkillLevel as CSkillLevel,
@@ -167,8 +168,7 @@ export const Chemistry = createCarbonIcon(CChemistry);
 export const Roadmap = createCarbonIcon(CRoadmap);
 export const Tools = createCarbonIcon(CTools);
 export const Idea = createCarbonIcon(CIdea);
-// NOTE: @carbon/icons-react has no `Bug` or `Coins`. Debug is the bug glyph and Currency is
-// the coin glyph — do not "correct" these names.
+// NOTE: @carbon/icons-react has no `Bug`. Debug is the bug glyph.
 export const Debug = createCarbonIcon(CDebug);
 export const Pin = createCarbonIcon(CPin);
 export const Split = createCarbonIcon(CSplit);
@@ -222,6 +222,7 @@ export const Play = createCarbonIcon(CPlay);
 export const PlayIcon = createCarbonIcon(CPlay);
 export const Plus = createCarbonIcon(CAdd);
 export const Refresh = createCarbonIcon(CRenew);
+export const Save = createCarbonIcon(CSave);
 export const Search = createCarbonIcon(CSearch);
 export const TableIcon = createCarbonIcon(CDataTable);
 export const ThreeDot = createCarbonIcon(COverflowMenuHorizontal);
@@ -294,6 +295,53 @@ export const Heading3 = LHeading3;
  * Drop-in for the old `InfoIcon` tooltip trigger; `width`/`height`/`size` are
  * accepted but ignored (sizing is CSS-driven for visual consistency).
  */
+/**
+ * Material Symbols "vertical_align_top" — the votes-budget glyph in the roadmap header.
+ *
+ * A Material Symbol rather than a Carbon icon because Carbon has no equivalent mark: its
+ * arrows are directional, and this is "to the top", which is what a vote does to a queue
+ * position.
+ *
+ * TWO THINGS MAKE THIS WORK, and both are easy to miss:
+ *  1. `index.html` requests a RESTRICTED subset (`icon_names=…`). A symbol missing from that
+ *     list renders as its literal ligature text — "vertical_align_top" in words — not as a
+ *     blank. If you add another symbol anywhere, add its name there too.
+ *  2. The weight/grade/optical-size come from `.material-symbols-outlined` in styles.css, which
+ *     already carries FILL 0 / wght 100 / GRAD -25 / opsz 24. Size is set per use site rather
+ *     than globally, so this cannot restyle the tooltip glyph.
+ */
+/**
+ * Renders one Material Symbol.
+ *
+ * Takes `size` like the Carbon wrappers above so a symbol and a Carbon icon are interchangeable
+ * at a call site — `<Icon size={18} />` has to mean the same thing whichever set it came from,
+ * or every icon map needs to know which kind each entry is. Size lands as font-size because a
+ * symbol is a glyph, not an svg.
+ */
+const materialSymbol = (name: string) => {
+  function Symbol({ size, width, height, className }: IconProps) {
+    // size ?? width ?? height, the same precedence createCarbonIcon uses — so a call site can
+    // pass whichever it likes and a Carbon icon, an SVGR asset and a symbol stay interchangeable.
+    const resolved = size ?? width ?? height ?? DEFAULT_SIZE;
+    return (
+      <span
+        className={["material-symbols-outlined leading-none", className]
+          .filter(Boolean)
+          .join(" ")}
+        style={{ fontSize: typeof resolved === "number" ? `${resolved}px` : resolved }}
+        aria-hidden="true"
+      >
+        {name}
+      </span>
+    );
+  }
+  Symbol.displayName = `MaterialSymbol(${name})`;
+  return Symbol;
+};
+
+export const VerticalAlignTopIcon = materialSymbol("vertical_align_top");
+
+
 export const TooltipIcon = ({ className }: IconProps) => (
   <span
     className={["material-symbols-outlined tooltip-icon", className].filter(Boolean).join(" ")}
@@ -307,6 +355,40 @@ export const TooltipIcon = ({ className }: IconProps) => (
 /* Brand / domain-specific icons — preserved as the original custom SVGs      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Illustrated baby (SVG Repo / Noto). Used for the queue's "Latest first" sort.
+ *
+ * FULL COLOUR, so it does NOT follow `currentColor`: it renders identically whether its button is
+ * selected or not. In a set that signals state through colour, that signal is lost for this one
+ * icon — `aria-pressed` has to carry it instead.
+ *
+ * It also carries an `id` on an internal radialGradient. Harmless while it renders once per page;
+ * two instances would duplicate that id, which is invalid markup even though browsers tolerate it.
+ *
+ * Its hardcoded `width`/`height="800px"` were STRIPPED on import — left in, they beat the props a
+ * call site passes and the icon renders at 800px.
+ */
+export { default as Baby } from "@assets/svg/baby.svg?react";
+
+/**
+ * Illustrated star (SVG Repo). Used for the queue's "By rank" sort.
+ *
+ * Full colour, so it does not follow `currentColor` — see the note on Baby above; the same
+ * caveats about selection colour apply.
+ *
+ * Its hardcoded `width`/`height="800px"` were STRIPPED on import. Left in, they beat the props a
+ * call site passes and the icon renders at 800px — which it did, once, filling the page.
+ */
+export { default as Star } from "@assets/svg/star.svg?react";
+
+/**
+ * Illustrated older woman (SVG Repo / Emoji One). Used for the queue's "Oldest first" sort.
+ *
+ * Pairs with Baby: newest ↔ oldest as an age metaphor rather than two sort arrows. Same caveats
+ * as the other two illustrations — full colour, so no selection tint, and its pixel `width`/
+ * `height` were stripped on import.
+ */
+export { default as OldWoman } from "@assets/svg/old-woman.svg?react";
 export { default as Ally } from "@assets/svg/ally.svg?react";
 export { default as BinaryClassification } from "@assets/svg/binaryClassification.svg?react";
 export { default as Case } from "@assets/svg/case.svg?react";

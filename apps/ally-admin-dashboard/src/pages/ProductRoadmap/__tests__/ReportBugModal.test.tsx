@@ -38,7 +38,7 @@ describe("ReportBugModal", () => {
     renderModal(onClose);
 
     fireEvent.change(screen.getByLabelText(/what went wrong/i), {
-      target: { value: "Coin allocator saved 0 coins silently" },
+      target: { value: "Vote button saved 0 votes silently" },
     });
     fireEvent.click(screen.getByRole("button", { name: /report bug/i }));
 
@@ -46,7 +46,7 @@ describe("ReportBugModal", () => {
     expect(mockToastSuccess).toHaveBeenCalledTimes(1);
 
     const [body] = mockCreateBugReport.mock.calls[0];
-    expect(body.description).toBe("Coin allocator saved 0 coins silently");
+    expect(body.description).toBe("Vote button saved 0 votes silently");
     // The query string is part of the captured screen, not just the path: on this page the
     // open tab and drawer live entirely in ?tab= and ?opportunity=, so a bare pathname would
     // point a triager at the roadmap without saying which of its screens broke.
