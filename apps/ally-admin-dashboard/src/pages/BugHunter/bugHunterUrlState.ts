@@ -339,7 +339,11 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
         current => {
           const next = new URLSearchParams(current);
           Object.entries(patch).forEach(([key, value]) => {
-            if (value === null || value === "" || value === "all") next.delete(key);
+            // "all" is the sentinel for a facet's default, but the search box
+            // has no such default: it is free text, and a searcher typing the
+            // word "all" means the literal text, not "clear this param."
+            const isSentinel = value === "all" && key !== BUG_HUNTER_PARAM.search;
+            if (value === null || value === "" || isSentinel) next.delete(key);
             else next.set(key, value);
           });
           return next;
