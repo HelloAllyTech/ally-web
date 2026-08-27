@@ -66,7 +66,7 @@ export const Changelog: FC = () => {
   const isInitialLoad = isFetching && offset === 0;
 
   return (
-    <div className="blog-sans flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
@@ -78,7 +78,7 @@ export const Changelog: FC = () => {
           >
             ← Blog
           </Link>
-          <h1 className="blog-serif text-4xl sm:text-5xl">Changelog</h1>
+          <h1 className="text-4xl sm:text-5xl">Changelog</h1>
           <p className="mt-4 text-[#5E5D59]">{CHANGELOG_DESCRIPTION}</p>
         </header>
 
@@ -94,7 +94,7 @@ export const Changelog: FC = () => {
           <div className="flex flex-col gap-8">
             {groups.map(group => (
               <div key={group.date}>
-                <h2 className="blog-serif mb-3 text-xl">{group.date}</h2>
+                <h2 className="mb-3 text-xl">{group.date}</h2>
                 <ul className="list-disc space-y-2 pl-5">
                   {group.entries.map(entry => (
                     <li key={entry.id} className="text-sm leading-relaxed text-[#5E5D59]">
