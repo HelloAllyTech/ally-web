@@ -1,7 +1,7 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
-import { useClickOutside } from "./useClickOutside";
 import { useBuilderSocket } from "./useBuilderSocket";
 import { useBuilderStream } from "./useBuilderStream";
+import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
