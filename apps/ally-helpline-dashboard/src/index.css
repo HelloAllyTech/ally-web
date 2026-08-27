@@ -167,6 +167,17 @@
   }
 }
 
+/* ===== Public /blog pages — marketing-style look =====
+ * The public blog diverges from the dashboard's locked serif theme: sans body
+ * with serif display type. Scoped classes keep it out of the token layer. */
+.blog-sans {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.blog-serif {
+  font-family: "IBM Plex Serif", Georgia, serif;
+}
+
 /* ===== Changing colors in an SVG ===== */
 
 .path-fill-current path {
