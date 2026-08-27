@@ -4,7 +4,12 @@ import { Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES } from "@constants";
-import { AnalyticsSuggestion, AnalyticsSuggestionStatus, RoadmapOpportunityType } from "@types";
+import {
+  AnalyticsSuggestion,
+  AnalyticsSuggestionSource,
+  AnalyticsSuggestionStatus,
+  RoadmapOpportunityType,
+} from "@types";
 
 const fill = (template: string, values: Record<string, string | number>): string =>
   Object.entries(values).reduce(
@@ -55,6 +60,12 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         <Tag type={suggestion.suggestedGoal ? "green" : "gray"}>
           {suggestion.suggestedGoal ?? strings.noGoalMatched}
         </Tag>
+        {/* Shown only for telemetry-derived cards. A window run is the queue's
+            default and labelling it would add a tag to every card to say
+            "nothing unusual here". */}
+        {suggestion.source === AnalyticsSuggestionSource.UX_SIGNAL && (
+          <Tag type="purple">{strings.sourceUxSignal}</Tag>
+        )}
       </div>
 
       <p className="text-typography-800 text-sm whitespace-pre-line">{suggestion.body}</p>

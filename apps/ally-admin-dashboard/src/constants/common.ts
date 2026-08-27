@@ -431,6 +431,12 @@ export const ApiEndpoints = {
     ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
     REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
   },
+  // UX Signals — the PostHog scan that files into Bug Hunter and the Suggestions
+  // queue. Its own namespace because it is a producer for both, owned by neither.
+  UX_SIGNALS: {
+    SCAN: "/v1/ux-signals/scan",
+    SCANS: "/v1/ux-signals/scans",
+  },
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
     RUNS: "/v1/bug-hunter/runs",
@@ -775,6 +781,8 @@ export const TAG_TYPES = {
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
+  // UX Signals scan log. Also registered in baseApi.ts's `tagTypes`.
+  UX_SIGNAL_SCANS: "uxSignalScans",
   // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag
   // is silently ignored and its invalidation never fires.
   BUILDER_SESSIONS: "builderSessions",

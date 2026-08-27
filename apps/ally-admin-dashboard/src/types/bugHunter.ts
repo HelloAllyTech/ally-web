@@ -117,6 +117,7 @@ export enum BugFindingSource {
   PRODUCTION_LOG = "production_log",
   REPORTED_BUG = "reported_bug",
   ANALYTICS_SUGGESTION = "analytics_suggestion",
+  UX_SIGNAL = "ux_signal",
 }
 
 export enum BugFindingSeverity {

@@ -22,7 +22,13 @@ export function initAnalytics(): void {
     ui_host: POSTHOG_HOST,
     capture_pageview: false, // Tracked manually via PageviewTracker (React Router)
     capture_pageleave: true,
-    autocapture: true, // Opt-in only — reduces noise, prevents accidental PII capture
+    // Autocapture IS on. (The comment here used to read "opt-in only", which
+    // described the opposite of the value and predates the UX Signals scan.)
+    // Its $rageclick events are what the rage-click detector reads.
+    autocapture: true,
+    // Clicks on things that look interactive and are not. Off by default in
+    // posthog-js, and the dead-click detector has nothing to read without it.
+    capture_dead_clicks: true,
     session_recording: {
       maskAllInputs: true, // PII protection — masks all inputs in session recordings
       blockClass: "ph-no-capture", // This class blocks entire section
