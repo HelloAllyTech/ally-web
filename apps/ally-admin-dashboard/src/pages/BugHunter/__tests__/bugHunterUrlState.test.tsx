@@ -44,6 +44,7 @@ const Probe: FC = () => {
 
       <button onClick={() => state.setBug("bug-1")}>open bug</button>
       <button onClick={() => state.setSearch("terms")}>search terms</button>
+      <button onClick={() => state.setSearch("all")}>search all</button>
       <button onClick={() => state.setBucket("needs_you")}>bucket needs_you</button>
       <button onClick={() => state.setBucket("all")}>bucket all</button>
       <button onClick={() => state.setRun("run-a")}>scope run-a</button>
@@ -242,6 +243,18 @@ describe("writing the query string", () => {
 
     fireEvent.click(screen.getByText("back"));
     expect(search()).toBe("?q=terms");
+  });
+
+  /**
+   * "all" is the sentinel `write` uses to drop a facet back to its default,
+   * but the search box has no default worth defaulting to — a searcher typing
+   * the word "all" means the literal text, not "clear the search."
+   */
+  it("keeps the literal search term 'all' instead of treating it as a clear sentinel", () => {
+    mount();
+    fireEvent.click(screen.getByText("search all"));
+    expect(search()).toBe("?q=all");
+    expect(parsed().search).toBe("all");
   });
 
   it("joins a multi-select facet with commas", () => {
