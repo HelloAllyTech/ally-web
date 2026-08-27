@@ -133,6 +133,11 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
       await onSaveSection(`/${key}`, draftValue);
       setEditingKey(null);
       setDraftValue("");
+    } catch {
+      // onSaveSection already surfaced a toast for this; swallow the
+      // rejection here so the fire-and-forget onClick doesn't also throw it
+      // as an unhandled promise rejection. The editor stays open with the
+      // draft intact so the admin can retry.
     } finally {
       setSaving(false);
     }
