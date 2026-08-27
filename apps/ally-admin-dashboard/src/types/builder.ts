@@ -17,7 +17,13 @@ export type BuilderStage =
   | "PLANNING"
   | "CODING"
   | "TESTING"
+  /** The machine test gate — every touched repo's tests, lint and typecheck. */
+  | "GATE"
   | "VERIFYING"
+  /** A coder pass fixing gate failures or reviewer objections. */
+  | "REMEDIATING"
+  /** E2E, push and PRs — only reached once the gate and reviewer are happy. */
+  | "FINALISING"
   | "E2E_VERIFY"
   | "OPENING_PRS"
   | "REPORTING"
@@ -219,7 +225,8 @@ export interface BuilderBuildRun {
   id: string;
   sessionId: string;
   sequence: number;
-  mode: "build" | "resume";
+  /** `fix` is a run dispatched from Bug Hunter's build-a-fix flow, not a session resume. */
+  mode: "build" | "resume" | "fix";
   status: BuilderRunStatus;
   engine: string;
   model: string;
@@ -245,6 +252,9 @@ export type BuilderEventType =
   | "stage_change"
   | "plan"
   | "verification"
+  /** A machine-run check result — verified, not self-reported. */
+  | "gate_result"
+  | "phase_cost"
   | "question"
   | "e2e_evidence"
   | "e2e_skipped"
@@ -307,6 +317,14 @@ export interface BuilderSettings {
   enabled: boolean;
   maxConcurrentBuilds: number;
   defaultBudgetUsd: string | null;
+  /**
+   * Per-tier model overrides for new runs. Null falls through to the
+   * platform default — same resolution order a per-run override sits above
+   * (see `startBuilderBuild`'s `plannerModel`/`model`/`verifierModel`).
+   */
+  plannerModel: string | null;
+  coderModel: string | null;
+  verifierModel: string | null;
 }
 
 export interface BuilderNotification {
@@ -365,4 +383,95 @@ export interface BuilderRepoMapSummary {
   commitSha: string | null;
   generatedAt: string | null;
   stats: Record<string, unknown> | null;
+}
+
+/* ── Scoreboard ─────────────────────────────────────────────────────────── */
+
+export type BuilderScoreboardOutcome = "merged" | "open" | "failed" | "cancelled";
+
+export interface BuilderScoreboardBuild {
+  sessionId: string;
+  title: string;
+  repos: string[];
+  createdAt: string;
+  outcome: BuilderScoreboardOutcome;
+  durationHours: number | null;
+  costUsd: number;
+  runCount: number;
+  fixRunCount: number;
+  reviewCommentCount: number;
+  ciFailureCount: number;
+  timeToMergeHours: number | null;
+  failureTags: string[];
+}
+
+export interface BuilderScoreboardTrendWeek {
+  weekStart: string;
+  builds: number;
+  mergeRate: number;
+  medianCostUsd: number;
+  medianFixRuns: number;
+  medianTimeToMergeHours: number | null;
+}
+
+export interface BuilderScoreboardTotals {
+  builds: number;
+  merged: number;
+  mergeRate: number;
+  totalCostUsd: number;
+  medianCostUsd: number;
+}
+
+export interface BuilderScoreboard {
+  builds: BuilderScoreboardBuild[];
+  trends: BuilderScoreboardTrendWeek[];
+  totals: BuilderScoreboardTotals;
+}
+
+/* ── Knowledge: lessons + exemplars ────────────────────────────────────── */
+
+export type BuilderLessonStatus = "candidate" | "active" | "merged" | "retired";
+
+export interface BuilderLesson {
+  id: string;
+  lesson: string;
+  category: string;
+  status: BuilderLessonStatus;
+  /**
+   * A pinned lesson is exempt from the automatic curator's edits and
+   * retirement — a person put it there on purpose, and the periodic
+   * consolidation pass must not touch it.
+   */
+  pinned: boolean;
+  sourceCount: number;
+  timesApplied: number;
+  timesContradicted: number;
+  repos: string[];
+  tags: string[];
+  createdAt: string;
+}
+
+export interface PatchBuilderLessonRequest {
+  id: string;
+  lesson?: string;
+  category?: string;
+  status?: BuilderLessonStatus;
+  pinned?: boolean;
+  tags?: string[];
+}
+
+export interface BuilderExemplar {
+  id: string;
+  sessionId: string;
+  title: string;
+  repos: string[];
+  outcome: BuilderScoreboardOutcome;
+  fixRunCount: number;
+  reviewCommentCount: number;
+  ciFailureCount: number;
+  costUsd: number;
+  timeToMergeHours: number | null;
+  failureTags: string[];
+  summaryMd: string;
+  createdAt: string;
 }

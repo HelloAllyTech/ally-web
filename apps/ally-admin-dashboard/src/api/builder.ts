@@ -2,6 +2,9 @@ import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   BuilderBuildEvent,
   BuilderBuildRun,
+  BuilderExemplar,
+  BuilderLesson,
+  BuilderLessonStatus,
   BuilderNotification,
   BuilderPendingQuestion,
   BuilderPrdVersion,
@@ -10,11 +13,13 @@ import {
   BuilderRepoCommand,
   BuilderRepoMapSummary,
   BuilderRunStatus,
+  BuilderScoreboard,
   BuilderSession,
   BuilderSessionDetail,
   BuilderSessionStatus,
   BuilderSettings,
   CreateBuilderSessionRequest,
+  PatchBuilderLessonRequest,
   PatchBuilderPrdRequest,
   PatchBuilderPrdResponse,
   UpdateBuilderSessionRequest,
@@ -127,7 +132,15 @@ export const builderAPI = baseAPI.injectEndpoints({
 
     startBuilderBuild: builder.mutation<
       BuilderBuildRun,
-      { id: string; engine?: string; model?: string; budgetUsd?: number }
+      {
+        id: string;
+        engine?: string;
+        /** The coder tier. Planner and verifier are overridden separately below. */
+        model?: string;
+        plannerModel?: string;
+        verifierModel?: string;
+        budgetUsd?: number;
+      }
     >({
       query: ({ id, ...body }) => ({
         url: ApiEndpoints.BUILDER.SESSION_START_BUILD(id),
@@ -213,7 +226,16 @@ export const builderAPI = baseAPI.injectEndpoints({
 
     updateBuilderSettings: builder.mutation<
       BuilderSettings,
-      { enabled?: boolean; maxConcurrentBuilds?: number; defaultBudgetUsd?: number }
+      {
+        enabled?: boolean;
+        maxConcurrentBuilds?: number;
+        defaultBudgetUsd?: number;
+        // Empty string, not undefined, is how a tier is cleared back to the
+        // platform default — the backend maps "" to null (see the DTO).
+        plannerModel?: string;
+        coderModel?: string;
+        verifierModel?: string;
+      }
     >({
       query: body => ({
         url: ApiEndpoints.BUILDER.SETTINGS,
@@ -241,6 +263,64 @@ export const builderAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.BUILDER_NOTIFICATIONS],
     }),
+
+    /* ── Scoreboard ───────────────────────────────────────────────────── */
+
+    getBuilderScoreboard: builder.query<BuilderScoreboard, { windowDays?: number } | void>({
+      query: params => ({
+        url: ApiEndpoints.BUILDER.SCOREBOARD,
+        method: HttpMethod.GET,
+        params: params?.windowDays ? { windowDays: params.windowDays } : undefined,
+      }),
+    }),
+
+    /* ── Knowledge: lessons + exemplars ──────────────────────────────────
+     * No polling here — a curated list only changes on an admin's own edit
+     * or a "Consolidate now" run, both of which already invalidate the tag,
+     * unlike the build surfaces above where the agent moves on its own. */
+
+    getBuilderLessons: builder.query<
+      BuilderLesson[],
+      { status?: BuilderLessonStatus; category?: string; repo?: string } | void
+    >({
+      query: params => ({
+        url: ApiEndpoints.BUILDER.LESSONS,
+        method: HttpMethod.GET,
+        params: params
+          ? {
+              ...(params.status ? { status: params.status } : {}),
+              ...(params.category ? { category: params.category } : {}),
+              ...(params.repo ? { repo: params.repo } : {}),
+            }
+          : undefined,
+      }),
+      providesTags: [TAG_TYPES.BUILDER_LESSONS],
+    }),
+
+    patchBuilderLesson: builder.mutation<BuilderLesson, PatchBuilderLessonRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.BUILDER.LESSON_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.BUILDER_LESSONS],
+    }),
+
+    consolidateBuilderLessons: builder.mutation<{ ok: boolean }, void>({
+      query: () => ({
+        url: ApiEndpoints.BUILDER.LESSONS_CONSOLIDATE,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.BUILDER_LESSONS],
+    }),
+
+    getBuilderExemplars: builder.query<BuilderExemplar[], void>({
+      query: () => ({
+        url: ApiEndpoints.BUILDER.EXEMPLARS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.BUILDER_EXEMPLARS],
+    }),
   }),
 });
 
@@ -265,4 +345,9 @@ export const {
   useUpdateBuilderSettingsMutation,
   useGetBuilderNotificationsQuery,
   useMarkBuilderNotificationsReadMutation,
+  useGetBuilderScoreboardQuery,
+  useGetBuilderLessonsQuery,
+  usePatchBuilderLessonMutation,
+  useConsolidateBuilderLessonsMutation,
+  useGetBuilderExemplarsQuery,
 } = builderAPI;

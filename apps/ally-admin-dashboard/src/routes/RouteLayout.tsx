@@ -40,7 +40,10 @@ import {
   Logs,
   BugHunter,
   Builder,
+  BuilderKnowledge,
+  BuilderScoreboard,
   BuilderSession,
+  BuilderSettings,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
@@ -433,6 +436,30 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
               <BuilderSession />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SETTINGS}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderSettings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SCOREBOARD}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderScoreboard />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_KNOWLEDGE}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderKnowledge />
             </PrivateLayout>
           }
         />

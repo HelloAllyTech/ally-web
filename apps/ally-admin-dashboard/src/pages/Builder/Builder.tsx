@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
+import { BarChart3, Book, Settings } from "@icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button, InlineNotification, SkeletonText, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { useCreateBuilderSessionMutation, useGetBuilderSessionsQuery } from "@api";
+import { FilterDropdown, ListToolbar } from "@components";
+import { BuilderNotificationInbox } from "@components/builder";
+import { FilterChipProps } from "@components/types";
 import { en, ROUTES } from "@constants";
 import { BuilderSession, BuilderSessionStatus } from "@types";
 
@@ -19,6 +23,20 @@ import {
 /** Sessions the agent cannot move forward without a person. */
 const NEEDS_YOU: BuilderSessionStatus[] = ["WAITING_FOR_INPUT", "PRD_READY", "FAILED"];
 const ACTIVE: BuilderSessionStatus[] = ["BUILDING", "INTERVIEWING"];
+
+const ALL_STATUSES: BuilderSessionStatus[] = [
+  "INTERVIEWING",
+  "PRD_READY",
+  "BUILDING",
+  "WAITING_FOR_INPUT",
+  "COMPLETED",
+  "FAILED",
+  "CANCELLED",
+];
+
+interface SessionFilters {
+  status: string[];
+}
 
 const formatCost = (usd: string) => {
   const value = Number(usd);
@@ -91,29 +109,63 @@ export const Builder: React.FC = () => {
   const strings = en.builder;
   const navigate = useNavigate();
   const [heroValue, setHeroValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<BuilderSessionStatus[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
   const {
     data: sessions,
     isLoading,
     isError,
-  } = useGetBuilderSessionsQuery(undefined, {
-    // Interviews and builds move on their own; a stale list is how a waiting
-    // question goes unnoticed.
-    pollingInterval: 15000,
-    skipPollingIfUnfocused: true,
-  });
+  } = useGetBuilderSessionsQuery(
+    { status: statusFilter.length ? statusFilter : undefined },
+    {
+      // Interviews and builds move on their own; a stale list is how a waiting
+      // question goes unnoticed.
+      pollingInterval: 15000,
+      skipPollingIfUnfocused: true,
+    },
+  );
   const [createSession, { isLoading: isCreating }] = useCreateBuilderSessionMutation();
 
-  const { needsYou, active, recent } = useMemo(() => {
+  // The status facet is server-side (it's a real query param), but a title
+  // search over an already-loaded list has no reason to round-trip — so it
+  // narrows client-side, on top of whatever the server already filtered to.
+  const visibleSessions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     const all = sessions ?? [];
+    return query ? all.filter(session => session.title.toLowerCase().includes(query)) : all;
+  }, [sessions, searchQuery]);
+
+  const { needsYou, active, recent } = useMemo(() => {
     return {
-      needsYou: all.filter(session => NEEDS_YOU.includes(session.status)),
-      active: all.filter(session => ACTIVE.includes(session.status)),
-      recent: all.filter(
+      needsYou: visibleSessions.filter(session => NEEDS_YOU.includes(session.status)),
+      active: visibleSessions.filter(session => ACTIVE.includes(session.status)),
+      recent: visibleSessions.filter(
         session => !NEEDS_YOU.includes(session.status) && !ACTIVE.includes(session.status),
       ),
     };
-  }, [sessions]);
+  }, [visibleSessions]);
+
+  const statusOptions = useMemo(
+    () => ALL_STATUSES.map(status => ({ label: strings.status[status] ?? status, value: status })),
+    [strings.status],
+  );
+
+  const filterChips: FilterChipProps[] = useMemo(() => {
+    if (statusFilter.length === 0) return [];
+    return [
+      {
+        label: strings.filterStatusLabel,
+        value: statusFilter.map(status => strings.status[status] ?? status).join(", "),
+        allValue: ALL_STATUSES.map(status => strings.status[status] ?? status),
+        onClear: () => setStatusFilter([]),
+      },
+    ];
+  }, [statusFilter, strings.filterStatusLabel, strings.status]);
+
+  const isFiltering = statusFilter.length > 0 || searchQuery.trim().length > 0;
 
   const open = (id: string) => navigate(ROUTES.BUILDER_SESSION(id));
 
@@ -157,8 +209,38 @@ export const Builder: React.FC = () => {
   return (
     <div className="mx-auto flex h-full max-w-6xl flex-col overflow-y-auto p-6">
       <header className="mb-6">
-        <h1 className="text-xl font-semibold text-typography-900">{strings.heroTitle}</h1>
-        <p className="mt-1 text-sm text-typography-600">{strings.heroSubtitle}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-typography-900">{strings.heroTitle}</h1>
+            <p className="mt-1 text-sm text-typography-600">{strings.heroSubtitle}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              kind="ghost"
+              size="sm"
+              hasIconOnly
+              iconDescription={strings.scoreboardLink}
+              renderIcon={BarChart3}
+              onClick={() => navigate(ROUTES.BUILDER_SCOREBOARD)}
+            />
+            <Button
+              kind="ghost"
+              size="sm"
+              hasIconOnly
+              iconDescription={strings.knowledgeLink}
+              renderIcon={Book}
+              onClick={() => navigate(ROUTES.BUILDER_KNOWLEDGE)}
+            />
+            <Button
+              kind="ghost"
+              size="sm"
+              hasIconOnly
+              iconDescription={strings.settingsLink}
+              renderIcon={Settings}
+              onClick={() => navigate(ROUTES.BUILDER_SETTINGS)}
+            />
+          </div>
+        </div>
         <div className="mt-3 flex items-end gap-2">
           <AutoExpandableTextarea
             id="builder-hero"
@@ -185,6 +267,10 @@ export const Builder: React.FC = () => {
         </div>
       </header>
 
+      <div className="mb-4">
+        <BuilderNotificationInbox />
+      </div>
+
       {isError && (
         <InlineNotification
           kind="error"
@@ -195,14 +281,39 @@ export const Builder: React.FC = () => {
         />
       )}
 
+      {!isLoading && sessions !== undefined && (
+        <div className="mb-4">
+          <ListToolbar
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            placeholder={strings.searchPlaceholder}
+            filterChips={filterChips}
+            addFilterCta={{ label: strings.filterButton, onClick: () => setIsFilterOpen(o => !o) }}
+            addFilterButtonRef={addFilterBtnRef}
+          />
+          <FilterDropdown<SessionFilters>
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            sections={[{ id: "status", label: strings.filterStatusLabel, options: statusOptions }]}
+            onApplyFilters={next => setStatusFilter((next.status ?? []) as BuilderSessionStatus[])}
+            anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+            currentFilters={{ status: statusFilter }}
+          />
+        </div>
+      )}
+
       {isLoading ? (
         <SkeletonText paragraph lineCount={4} />
-      ) : sessions?.length ? (
+      ) : visibleSessions.length ? (
         <>
           {renderGroup(strings.needsYouHeading, needsYou, 0)}
           {renderGroup(strings.activeHeading, active, needsYou.length)}
           {renderGroup(strings.recentHeading, recent, needsYou.length + active.length)}
         </>
+      ) : isFiltering ? (
+        <div className="mt-8 text-center">
+          <p className="text-sm text-typography-600">{strings.noMatchingSessions}</p>
+        </div>
       ) : (
         <div className="mt-8 text-center">
           <p className="text-sm font-medium text-typography-800">{strings.emptyTitle}</p>

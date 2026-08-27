@@ -67,6 +67,9 @@ vi.mock("@pages", () => ({
   BugHunter: () => <div>BugHunterPage</div>,
   Builder: () => <div>BuilderPage</div>,
   BuilderSession: () => <div>BuilderSessionPage</div>,
+  BuilderSettings: () => <div>BuilderSettingsPage</div>,
+  BuilderScoreboard: () => <div>BuilderScoreboardPage</div>,
+  BuilderKnowledge: () => <div>BuilderKnowledgePage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -105,6 +108,24 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.BUILDER_SESSION("abc-123"));
     render(<RouteLayout />);
     expect(screen.getByText("BuilderSessionPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder settings route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SETTINGS);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderSettingsPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder scoreboard route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SCOREBOARD);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderScoreboardPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder knowledge route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_KNOWLEDGE);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderKnowledgePage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {
