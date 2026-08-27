@@ -44,6 +44,22 @@ export enum Permissions {
   // No delete — a session is cancelled, never removed, because its PRs outlive it.
   VIEW_BUILDER = "view:admin:builder",
   EDIT_BUILDER = "edit:admin:builder",
+  // Per-user preferences (e.g. the saved admin sidebar order). Held by every
+  // platform-tier group — PLATFORM_ADMIN inherited both from SUPER_DUPER_ADMIN
+  // in the role-collapse migration — but NOT by a plain tenant ADMIN or a
+  // MULTI_TENANT_ADMIN, which is why the preferences calls in useUser's
+  // checkAuth are treated as non-fatal. Gate personalisation UI on this rather
+  // than on a role-tier name: permissions union across a user's groups, so a
+  // dual-role account is judged on what it can actually do.
+  VIEW_USER_PREFERENCES = "view:user:preferences",
+  EDIT_USER_PREFERENCES = "edit:user:preferences",
+  // Guards all three custom-field-definition writes (create / update / delete)
+  // on ally-be's CustomFieldsController. Held by the platform tiers *and* by a
+  // tenant-scoped ADMIN, who gets it for the helpline-side
+  // OrgCustomFieldDefinitionsSection — an ADMIN cannot reach the admin console's
+  // Organization Detail route (no view:users / edit:user), so gating this
+  // console's controls on it does not widen them.
+  MANAGE_CUSTOM_FIELD_DEFINITIONS = "manage:custom-field:definitions",
 }
 
 export const SIDEBAR_ITEMS = {
