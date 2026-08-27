@@ -9,6 +9,7 @@ export const BUG_FINDING_SOURCE_LABELS: Record<BugFindingSource, string> = {
   [BugFindingSource.PRODUCTION_LOG]: en.bugHunter.findingSourceProductionLog,
   [BugFindingSource.REPORTED_BUG]: en.bugHunter.findingSourceReportedBug,
   [BugFindingSource.ANALYTICS_SUGGESTION]: en.bugHunter.findingSourceAnalyticsSuggestion,
+  [BugFindingSource.UX_SIGNAL]: en.bugHunter.findingSourceUxSignal,
 };
 
 export const BUG_FINDING_SEVERITY_LABELS: Record<BugFindingSeverity, string> = {

@@ -80,7 +80,18 @@ export const ANALYTICS_PROPS = {
   PAGE_TITLE: "page_title",
 
   // Search
+  /**
+   * ⚠️ DO NOT SEND. Declared only so nobody reintroduces it believing it was an
+   * oversight.
+   *
+   * Helpline search terms describe whatever a caller is going through, so the
+   * raw query is clinical detail about a third party and must not leave the
+   * browser. `QUERY_LENGTH` plus `RESULT_COUNT` is what we capture instead: it
+   * still shows that search is failing people on a route, which is what the
+   * zero-result UX detector acts on, without recording what they typed.
+   */
   SEARCH_QUERY: "search_query",
+  QUERY_LENGTH: "query_length",
   RESULT_COUNT: "result_count",
 
   // Error context

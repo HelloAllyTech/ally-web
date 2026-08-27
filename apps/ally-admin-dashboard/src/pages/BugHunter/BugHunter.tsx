@@ -20,6 +20,7 @@ import { LiveWorkBoard } from "./LiveWorkBoard";
 import { NeedsYouQueue } from "./NeedsYouQueue";
 import { NotificationInbox } from "./NotificationInbox";
 import { RunHistoryTable } from "./RunHistoryTable";
+import { UxSignalsPanel } from "./UxSignalsPanel";
 
 /**
  * Bug Hunter's tab: a colleague's card, and under it the work — with the two
@@ -205,6 +206,13 @@ export const BugHunter: FC = () => {
 
           <div className="mt-6 shrink-0">
             <NotificationInbox onOpenFinding={setBug} />
+          </div>
+
+          {/* Directly above the table its bug-shaped output lands in, which is
+              where a reader would look for the control that produced those rows.
+              Renders null without the UX_SIGNALS toggle. */}
+          <div className="mt-6 shrink-0 empty:mt-0">
+            <UxSignalsPanel />
           </div>
 
           <div className="mt-6 shrink-0">

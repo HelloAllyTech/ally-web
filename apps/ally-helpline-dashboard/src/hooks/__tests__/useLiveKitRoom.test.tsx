@@ -83,7 +83,15 @@ vi.mock("@utils", () => ({
 }));
 
 vi.mock("@constants/analyticsEvents", () => ({
-  ANALYTICS_EVENTS: { SIMULATION_AGENT_AUDIO_TIMING: "simulation_agent_audio_timing" },
+  ANALYTICS_EVENTS: {
+    SIMULATION_AGENT_AUDIO_TIMING: "simulation_agent_audio_timing",
+    SIMULATION_STARTED: "simulation_started",
+    SIMULATION_COMPLETED: "simulation_completed",
+  },
+  ANALYTICS_PROPS: {
+    SIMULATION_ID: "simulation_id",
+    SCENARIO_ID: "scenario_id",
+  },
 }));
 
 import { useLiveKitRoom } from "../useLiveKitRoom";

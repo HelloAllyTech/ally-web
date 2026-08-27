@@ -2226,6 +2226,7 @@ export const en = {
     // from is a claim nobody can check.
     provenance: "{window} · {model}",
     noGoalMatched: "No goal matched",
+    sourceUxSignal: "From UX telemetry",
     rationaleLabel: "Why now",
     evidenceLabel: "From the data",
     accept: "Accept",
@@ -2266,6 +2267,27 @@ export const en = {
     rejectSubmit: "Reject suggestion",
     rejected: "Rejected.",
     rejectFailed: "Could not reject this suggestion.",
+  },
+  uxSignals: {
+    title: "UX Signals",
+    description:
+      "Reads the last seven days of product telemetry, then files what looks broken as a bug below and what looks like a missed opportunity into Analytics \u2192 Suggestions. Nothing is fixed or filed to the roadmap without your decision.",
+    scanNow: "Scan now",
+    scanning: "Scanning telemetry\u2026",
+    scanTooltip: "Takes about two minutes: seven detector queries, then one triage pass.",
+    neverScanned: "No scan has run yet. Scans run automatically once a day.",
+    scanRunning: "A scan is running now.",
+    lastScanSummary: "Last scan {when}: {findings} bugs, {suggestions} suggestions filed.",
+    lastScanFailed: "Last scan {when} failed. Open the scan log for the reason.",
+    // Zero is a real answer, so the copy has to read correctly at zero: "0 bugs
+    // and 0 suggestions filed" is a successful quiet week, not a failure.
+    scanDone: "Scan complete: {findings} bugs and {suggestions} suggestions filed.",
+    scanDetail: "{signals} signals crossed a threshold; {skipped} were already known.",
+    detectorsFailed: "These detectors could not run: {detectors}.",
+    scanConflict: "A scan is already running. Wait for it to finish before starting another.",
+    scanUnavailable:
+      "Product telemetry is unreachable, so there was nothing to scan. Nothing was filed.",
+    scanFailed: "The scan could not be completed. Nothing was filed.",
   },
   bugHunter: {
     tabLabel: "Bug Hunter",
@@ -2466,6 +2488,7 @@ export const en = {
     findingSourceProductionLog: "Production log",
     findingSourceReportedBug: "Reported by team",
     findingSourceAnalyticsSuggestion: "Analytics suggestion",
+    findingSourceUxSignal: "UX signal",
     findingSeverityLow: "Low",
     findingSeverityMedium: "Medium",
     findingSeverityHigh: "High",

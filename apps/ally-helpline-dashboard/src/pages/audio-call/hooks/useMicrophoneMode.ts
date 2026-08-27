@@ -16,7 +16,8 @@ import {
   CallType,
   ScribeSessionMode,
 } from "@constants";
-import { useSocket } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics, useSocket } from "@hooks";
 import { RootState } from "@store";
 import {
   Chat,
@@ -82,6 +83,7 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [isUserJoined, setIsUserJoined] = useState<boolean>(false);
+  const { track } = useAnalytics();
   const [socketDisconnectionReason, setSocketDisconnectionReason] =
     useState<SocketDisconnectionReasons>();
   const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
@@ -109,6 +111,42 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
   const isPauseTranscriptionDisabled =
     !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isSocketDisconnected;
 
+  /**
+   * Call lifecycle analytics.
+   *
+   * `call_started` is keyed on the `isUserJoined` transition rather than on
+   * either of the two places that set it (the USER_JOINED socket event, and
+   * rejoining a chat already ACTIVE): both mean "the call is live", and
+   * instrumenting the transition once means a third start path could not
+   * silently go untracked.
+   *
+   * The ref is what makes the pair a funnel rather than two loose counters. It
+   * supplies the duration and guarantees exactly one `call_ended` per
+   * `call_started` — a call can end through the API or through AUDIO_CHAT_ENDED,
+   * and on a bad network it can attempt both.
+   */
+  const callStartedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isUserJoined || callStartedAtRef.current !== null) return;
+    callStartedAtRef.current = Date.now();
+    track(ANALYTICS_EVENTS.CALL_STARTED, {
+      [ANALYTICS_PROPS.CALL_ID]: microphoneChatId ?? activeChat?.chatId ?? null,
+      [ANALYTICS_PROPS.CALL_TYPE]: CallProvider.MICROPHONE,
+    });
+  }, [isUserJoined, microphoneChatId, activeChat?.chatId, track]);
+
+  const trackCallEnded = (chatId: number | null) => {
+    const startedAt = callStartedAtRef.current;
+    if (startedAt === null) return;
+    callStartedAtRef.current = null;
+    track(ANALYTICS_EVENTS.CALL_ENDED, {
+      [ANALYTICS_PROPS.CALL_ID]: chatId,
+      [ANALYTICS_PROPS.CALL_TYPE]: CallProvider.MICROPHONE,
+      [ANALYTICS_PROPS.CALL_DURATION_SEC]: Math.round((Date.now() - startedAt) / 1000),
+    });
+  };
+
   const endSessionAndNavigate = async (triggerApi: boolean = true, chatId: number) => {
     if (triggerApi) {
       const response = await endCall({ chatId });
@@ -116,6 +154,10 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
         return;
       }
     }
+    // Tracked here rather than in the socket handlers because both the API path
+    // and the AUDIO_CHAT_ENDED path funnel through this function — one call end
+    // is one event however it was reached.
+    trackCallEnded(chatId || activeChat?.chatId || microphoneChatId);
     navigate(ROUTES.STRESS_BUSTER, {
       state: { chatId: chatId || activeChat?.chatId || microphoneChatId },
       replace: true,

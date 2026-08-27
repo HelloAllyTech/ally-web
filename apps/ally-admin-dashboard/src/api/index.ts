@@ -15,6 +15,7 @@ export * from "./analytics";
 export * from "./analyticsAgent";
 export * from "./analyticsSuggestions";
 export * from "./bugHunter";
+export * from "./uxSignals";
 export * from "./superDuperAdmins";
 export * from "./legalContent";
 export * from "./turnEndpointing";

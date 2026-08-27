@@ -34,6 +34,15 @@ vi.mock("@api", () => ({
   useGetSearchResultsMutation: () => [mockGetSearchResults, { isLoading: false }],
 }));
 
+// The component tracks `search_performed`, and useAnalytics reads the provider
+// context, which these tests deliberately render without. Mocked rather than
+// wrapped so `mockTrack` can assert what is sent — the PHI rule (query length,
+// never query text) is a property of this component worth a test of its own.
+const mockTrack = vi.fn();
+vi.mock("@hooks", () => ({
+  useAnalytics: () => ({ track: mockTrack }),
+}));
+
 // FIX: Use vi.mock with a factory function instead of referencing a variable
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   ResourceSearch: vi.fn(props => (
@@ -199,6 +208,26 @@ describe("SearchResources", () => {
         filters: undefined,
       });
     });
+  });
+
+  test("tracks a search by length and result count, never by query text", async () => {
+    // The PHI rule, asserted rather than trusted to a code comment: helpline
+    // search terms describe a caller's situation, so the query must not reach
+    // PostHog. `result_count` is the half the zero-result UX detector reads, so
+    // a change that drops it silently disables that detector.
+    mockWindowLocation("?q=self%20harm%20protocol");
+    mockGetSearchResults.mockResolvedValueOnce(mockApiResponse(0, []));
+    render(<SearchResources />);
+
+    await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1));
+
+    const [event, properties] = mockTrack.mock.calls[0];
+    expect(event).toBe("search_performed");
+    expect(properties).toEqual({
+      query_length: "self harm protocol".length,
+      result_count: 0,
+    });
+    expect(JSON.stringify(properties)).not.toContain("self harm");
   });
 
   test("should handle onCategoryChange, update URL params, and filter results", async () => {

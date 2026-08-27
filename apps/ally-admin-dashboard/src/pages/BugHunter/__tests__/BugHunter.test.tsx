@@ -4,6 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock API hooks — mode state, the findings table, and run history all come entirely from these.
 vi.mock("@api", () => ({
+  // UxSignalsPanel sits on the Work tab. It renders null without the UX_SIGNALS
+  // toggle, which these tests do not grant — but its hooks still run, so the
+  // mock has to supply them.
+  useScanUxSignalsMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useGetUxSignalScansQuery: vi.fn(() => ({ data: { scans: [] } })),
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),

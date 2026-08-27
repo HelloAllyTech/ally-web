@@ -27,6 +27,7 @@ export * from "./productRoadmap";
 export * from "./analyticsAgent";
 export * from "./analyticsSuggestions";
 export * from "./bugHunter";
+export * from "./uxSignals";
 export * from "./builder";
 export * from "./whatsappBot";
 export * from "./characterInterview";
