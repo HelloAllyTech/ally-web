@@ -22,8 +22,8 @@ interface NaturalnessSettingsSectionProps {
 }
 
 /**
- * Voice-naturalness / latency-masking runtime toggles (Thinking Filler, Comfort
- * Audio, Continuous Back-channeling, Interim Reply). These mirror the Roleplay
+ * Voice-naturalness / latency-masking runtime toggles (Comfort Audio,
+ * Continuous Back-channeling, Interim Reply). These mirror the Roleplay
  * Studio 1 metadata flags; they live as top-level spec keys and are honored by
  * the v2 voice worker. Trainer-editable even in the otherwise read-only Spec
  * tab, rendered with Carbon Toggle + Slider.
@@ -38,7 +38,6 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
   if (!spec) return null;
 
   const rows: Array<{ key: RoleplayNaturalnessFlag; label: string; help: string }> = [
-    { key: "fillerEnabled", label: strings.thinkingFiller, help: strings.thinkingFillerHelp },
     { key: "comfortAudioEnabled", label: strings.comfortAudio, help: strings.comfortAudioHelp },
     {
       key: "continuousBackchanneling",
@@ -51,12 +50,7 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
   return (
     <SpecSectionCard
       title={strings.voiceNaturalness}
-      sections={[
-        "fillerEnabled",
-        "comfortAudioEnabled",
-        "continuousBackchanneling",
-        "interimReplyEnabled",
-      ]}
+      sections={["comfortAudioEnabled", "continuousBackchanneling", "interimReplyEnabled"]}
     >
       <div className="flex flex-col gap-4">
         {rows.map(row => {
