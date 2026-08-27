@@ -19,7 +19,7 @@ const DUPLICATE_DEBOUNCE_MS = 700;
 interface AddOpportunityModalProps {
   goals: RoadmapTaxonomyItem[];
   onClose: () => void;
-  /** "Allocate coins to this instead" — closes and opens the existing opportunity's drawer. */
+  /** "Upvote this instead" — closes and opens the existing opportunity's drawer. */
   onOpenExisting: (id: string) => void;
 }
 
@@ -162,7 +162,7 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
 
           {/* The Type dropdown that used to sit here (Idea / Bug) is gone. Everything this
               modal does — a product goal, the duplicate check against other opportunities,
-              and the coin voting the filed row lands in — applies to an idea and to nothing
+              and the voting the filed row lands in — applies to an idea and to nothing
               else, and a bug picked from that dropdown quietly left the board entirely for
               Bug Hunter. "Report a bug" in the page header is the whole other branch, so the
               choice is made by which button you press rather than by a field you might not
@@ -223,7 +223,7 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
                     <div className="text-typography-primary">{match.description}</div>
                     <div className="text-typography-secondary text-xs">{match.reason}</div>
                     <Button variant={ButtonVariant.TEXT} onClick={() => onOpenExisting(match.id)}>
-                      Allocate coins to this instead →
+                      Upvote this instead →
                     </Button>
                   </li>
                 ))}

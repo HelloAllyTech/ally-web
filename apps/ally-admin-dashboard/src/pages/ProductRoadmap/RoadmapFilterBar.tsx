@@ -51,12 +51,22 @@ export interface RoadmapFilterBarProps {
   goals: RoadmapTaxonomyItem[];
   facets?: RoadmapFacets;
   /** Opens the goal-management modal. Manager-only. */
-  onManageGoals: () => void;
   canVote: boolean;
   canManage: boolean;
-  onAddClick: () => void;
   /** Rendered at the right of the control row — the layout toggle lives here. */
   trailing?: React.ReactNode;
+  /**
+   * Rendered at the LEFT of the control row, and unlike the filter buttons it survives
+   * `showFilters={false}` — the Queue hides filters but still offers a sort.
+   */
+  leading?: React.ReactNode;
+  /**
+   * Whether the filter controls are offered at all. False for the Queue view, whose whole
+   * definition IS its filters (New + Prioritised + In development, as a list) — offering Filter,
+   * Dates & score and Clear all there would let someone edit a tab into something that is no
+   * longer a queue. Search stays: narrowing a fixed list is still a reasonable thing to do.
+   */
+  showFilters?: boolean;
 }
 
 /** Whether any filter at all is applied, including the ones inside the collapsed panel. */
@@ -121,11 +131,11 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     onAdvancedChange,
     goals,
     facets,
-    onManageGoals,
     canVote,
     canManage,
-    onAddClick,
     trailing,
+    leading,
+    showFilters = true,
   } = props;
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -176,22 +186,19 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
 
   return (
     <>
+      {/* No action button. "New opportunity" moved up to the page header beside "Report a bug":
+          the two create actions belong together, and this row is now only about finding things.
+          The per-view EMPTY states keep their own "New opportunity" call — there it is the
+          answer to "nothing here", not a permanent toolbar fixture. */}
       <ListToolbar
         searchValue={search}
         onSearchChange={onSearchChange}
         placeholder="Search opportunities"
-        action={
-          canVote
-            ? {
-                label: "New opportunity",
-                onClick: onAddClick,
-                variant: ButtonVariant.PRIMARY,
-              }
-            : undefined
-        }
       />
 
-      <div className="flex flex-wrap items-center gap-2 text-sm">
+      {showFilters ? (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          {leading}
         {/* Two entry points, styled identically because they are the same kind of control: the
             checkbox facets, and the ranges FilterDropdown cannot express. Both keep a STABLE label
             and report open/closed through aria-expanded rather than swapping in "Hide" — a control
@@ -261,17 +268,30 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
           </Button>
         )}
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          {canManage && (
-            <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
-              Manage goals
-            </Button>
-          )}
-          {trailing}
+        {/* "Manage goals" moved OUT of this bar and up beside the page title as an icon: it is
+            a once-in-a-while taxonomy edit, and sitting in the filter row it read as a filter
+            control and competed with the ones people use every visit. */}
+          <div className="ml-auto flex flex-wrap items-center gap-2">{trailing}</div>
         </div>
-      </div>
+      ) : (
+        // Filters hidden, but the row still exists: `leading` (the Queue's sort) on the left and
+        // `trailing` on the right. Rendered even when one is absent rather than assuming the
+        // caller nulled both — coupling props together is how one ends up forgotten.
+        (leading || trailing) && (
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <div className="flex items-center gap-2">{leading}</div>
+            <div className="flex items-center gap-2">{trailing}</div>
+          </div>
+        )
+      )}
 
-      <RoadmapAdvancedFilters isOpen={isRangesOpen} values={advanced} onChange={onAdvancedChange} />
+      {showFilters && (
+        <RoadmapAdvancedFilters
+          isOpen={isRangesOpen}
+          values={advanced}
+          onChange={onAdvancedChange}
+        />
+      )}
 
       <FilterDropdown<RoadmapFacetSelection>
         isOpen={isFilterOpen}

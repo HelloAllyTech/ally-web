@@ -15,9 +15,10 @@ import { useMoveRoadmapOpportunityMutation } from "@api";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
+  RoadmapBoardGroupBy,
   RoadmapBoardQuery,
   RoadmapBoardResponse,
-  RoadmapCoinBudget,
+  RoadmapVoteBudget,
   RoadmapFacets,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
@@ -27,20 +28,28 @@ import {
 
 import { MonthLane } from "./MonthLane";
 import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
-import { useAllocateCoins } from "./useAllocateCoins";
+import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
-import { LaneSnapshot, monthLabel, resolveDrop, shiftMonthKey } from "./utils/monthBoard";
+import {
+  LaneSnapshot,
+  laneSupportsReordering,
+  monthLabel,
+  resolveDrop,
+  shiftMonthKey,
+} from "./utils/monthBoard";
 
 /** How far the prev/next arrows move the window. Mirrors ROADMAP_BOARD_DEFAULTS in ally-be. */
 const WINDOW_STEP_MONTHS = 3;
 
 interface MonthBoardProps {
-  /** MUST be the same memoised object passed to useGetRoadmapBoardQuery — see useAllocateCoins. */
+  /** What the lanes are. Month keeps the window stepper and hand-ordering; the others drop both. */
+  groupBy: RoadmapBoardGroupBy;
+  /** MUST be the same memoised object passed to useGetRoadmapBoardQuery — see useSetVotes. */
   boardArgs: RoadmapBoardQuery;
   data?: RoadmapBoardResponse;
   isLoading: boolean;
   isFetching: boolean;
-  budget?: RoadmapCoinBudget;
+  budget?: RoadmapVoteBudget;
   goals: RoadmapTaxonomyItem[];
   facets?: RoadmapFacets;
   search: string;
@@ -57,11 +66,12 @@ interface MonthBoardProps {
   onOwnerFilterChange: (value: string[]) => void;
   advanced: RoadmapAdvancedFilterValues;
   onAdvancedChange: (next: RoadmapAdvancedFilterValues) => void;
-  onManageGoals: () => void;
   canVote: boolean;
   canManage: boolean;
   onOpenOpportunity: (id: string) => void;
   onAddClick: () => void;
+  /** False on the Queue view, whose filters are its definition. Threaded to RoadmapFilterBar. */
+  showFilters?: boolean;
   /** The month window. Held by the page so a saved view and the URL can carry it. */
   window: { from: string; to: string };
   onWindowChange: (next: { from: string; to: string }) => void;
@@ -107,24 +117,25 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     onOwnerFilterChange,
     advanced,
     onAdvancedChange,
-    onManageGoals,
     canVote,
     canManage,
+    groupBy,
     onOpenOpportunity,
     onAddClick,
+    showFilters,
     window: monthWindow,
     onWindowChange,
     layoutToggle,
   } = props;
 
   const [moveOpportunity] = useMoveRoadmapOpportunityMutation();
-  const allocate = useAllocateCoins({ kind: "board", args: boardArgs });
+  const allocate = useSetVotes({ kind: "board", args: boardArgs });
 
   // Press-and-drag: a click under the threshold opens the drawer, a press-and-move reorders. Same
   // constraint as the saved-view tabs and the sidebar, for the same reason.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
-  const lanes = data ? [data.unscheduled, ...data.months] : [];
+  const lanes = data?.lanes ?? [];
   const activeFilters = hasActiveFilters({
     typeFilter,
     stageFilter,
@@ -139,19 +150,26 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     if (!over || !data) return;
 
     const snapshots: LaneSnapshot[] = lanes.map(lane => ({
-      month: lane.month,
+      key: lane.key,
       ids: lane.items.map(o => o.id),
     }));
     const drop = resolveDrop(snapshots, String(active.id), String(over.id));
     // null means a no-op — dropped where it started, or on something unresolvable. Firing a write
     // anyway would broadcast to every other board for nothing.
     if (!drop) return;
+    // A within-lane drag on a board that has no hand-ordering is also a no-op: only the month
+    // board stores a position, so reordering "Prioritised" would send a write that changes
+    // nothing and then snap the card back on the next fetch.
+    if (drop.withinLane && !laneSupportsReordering(groupBy)) return;
 
     try {
       await moveOpportunity({
         opportunityId: String(active.id),
-        month: drop.month,
-        orderedIds: drop.orderedIds,
+        groupBy,
+        lane: drop.key,
+        // Month only — the other groupings have nothing to reorder, and sending an order they
+        // would ignore invites the client to believe it was applied.
+        orderedIds: laneSupportsReordering(groupBy) ? drop.orderedIds : undefined,
         boardArgs,
       }).unwrap();
     } catch (error) {
@@ -178,6 +196,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
   return (
     <div className="flex flex-col gap-3">
       <RoadmapFilterBar
+        showFilters={showFilters}
         search={search}
         onSearchChange={onSearchChange}
         typeFilter={typeFilter}
@@ -194,33 +213,41 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
         onAdvancedChange={onAdvancedChange}
         goals={goals}
         facets={facets}
-        onManageGoals={onManageGoals}
         canVote={canVote}
         canManage={canManage}
-        onAddClick={onAddClick}
         trailing={layoutToggle}
       />
 
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={() => stepWindow(-WINDOW_STEP_MONTHS)}
-            disabled={!canGoEarlier}
-          >
-            ← Earlier
-          </Button>
-          <span className="text-typography-secondary text-sm">
-            {monthLabel(monthWindow.from)} – {monthLabel(monthWindow.to)}
-          </span>
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={() => stepWindow(WINDOW_STEP_MONTHS)}
-            disabled={!canGoLater}
-          >
-            Later →
-          </Button>
-        </div>
+        {/*
+          The window stepper is MONTH-ONLY. A stage or owner board has no window — the server
+          ignores from/to there and returns every lane — so leaving the arrows up would offer a
+          control that silently does nothing, which reads as broken rather than as inapplicable.
+          The window itself is kept in state, so switching to Month returns to where you were.
+        */}
+        {groupBy === RoadmapBoardGroupBy.MONTH ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={() => stepWindow(-WINDOW_STEP_MONTHS)}
+              disabled={!canGoEarlier}
+            >
+              ← Earlier
+            </Button>
+            <span className="text-typography-secondary text-sm">
+              {monthLabel(monthWindow.from)} – {monthLabel(monthWindow.to)}
+            </span>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={() => stepWindow(WINDOW_STEP_MONTHS)}
+              disabled={!canGoLater}
+            >
+              Later →
+            </Button>
+          </div>
+        ) : (
+          <span />
+        )}
         {isFetching && <span className="text-typography-secondary text-xs">updating…</span>}
       </div>
 
@@ -257,14 +284,18 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
                 and on a board nobody has planned yet it holds everything. */}
             {lanes.map(lane => (
               <MonthLane
-                key={lane.month ?? "unscheduled"}
+                key={lane.key ?? "__none__"}
+                groupBy={groupBy}
                 lane={lane}
-                isCurrentMonth={lane.month === data?.periodKey}
+                // "this month" only means something on a month board.
+                isCurrentMonth={
+                  groupBy === RoadmapBoardGroupBy.MONTH && lane.key === data?.periodKey
+                }
                 maxScore={Math.max(1, data?.maxScore ?? 1)}
                 budget={budget}
                 canVote={canVote}
                 canManage={canManage}
-                onCommitCoins={allocate}
+                onSetVotes={allocate}
                 onOpenOpportunity={onOpenOpportunity}
               />
             ))}

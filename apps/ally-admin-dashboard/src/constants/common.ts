@@ -295,7 +295,7 @@ export const ApiEndpoints = {
     BOARD: "/v1/product-roadmap/board",
     BOARD_LANE: "/v1/product-roadmap/board/lane",
     ALLOCATIONS: "/v1/product-roadmap/allocations",
-    COIN_BUDGET: "/v1/product-roadmap/me/coin-budget",
+    VOTE_BUDGET: "/v1/product-roadmap/me/vote-budget",
     FACETS: "/v1/product-roadmap/facets",
     PRODUCT_GOALS: "/v1/product-roadmap/product-goals",
     PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
@@ -308,8 +308,6 @@ export const ApiEndpoints = {
     OWNERS_USAGE: "/v1/product-roadmap/opportunity-owners/usage",
     INTERVIEW_NOTES: "/v1/product-roadmap/interview-notes",
     INTERVIEW_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/interview-notes/${id}`,
-    RELEASE_NOTES: "/v1/product-roadmap/release-notes",
-    RELEASE_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/release-notes/${id}`,
     VIEWS: "/v1/product-roadmap/views",
     VIEW_BY_ID: (id: string) => `/v1/product-roadmap/views/${id}`,
     VIEW_PIN: (id: string) => `/v1/product-roadmap/views/${id}/pin`,
@@ -319,8 +317,12 @@ export const ApiEndpoints = {
     AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
     AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
-    AI_RELEASE_NOTES: "/v1/product-roadmap/ai/release-notes",
-    AI_GENERATE_CLAUDE_PROMPT: "/v1/product-roadmap/ai/generate-claude-prompt",
+    /**
+     * Open or resume the Builder session for an opportunity. Replaced
+     * AI_GENERATE_CLAUDE_PROMPT, whose output a human pasted into a terminal by hand.
+     */
+    BUILDER_SESSION: (opportunityId: string) =>
+      `/v1/product-roadmap/opportunities/${opportunityId}/builder-session`,
     ADMIN_REINDEX: "/v1/product-roadmap/admin/reindex",
   },
   AI_LAB: {
@@ -765,13 +767,12 @@ export const TAG_TYPES = {
   // Product Roadmap. NOTE: every one of these must ALSO be listed in baseApi.ts's
   // `tagTypes` array — an unregistered tag makes invalidatesTags a silent no-op.
   PRODUCT_ROADMAP_OPPORTUNITIES: "productRoadmapOpportunities",
-  PRODUCT_ROADMAP_COIN_BUDGET: "productRoadmapCoinBudget",
+  PRODUCT_ROADMAP_VOTE_BUDGET: "productRoadmapVoteBudget",
   PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
   PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
-  PRODUCT_ROADMAP_RELEASE_NOTES: "productRoadmapReleaseNotes",
   PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
   // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.

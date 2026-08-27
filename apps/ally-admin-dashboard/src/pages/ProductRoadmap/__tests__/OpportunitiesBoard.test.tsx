@@ -11,12 +11,12 @@ import {
 
 // The board is a table shell around several heavy children. Stub the ones that pull @api / the
 // store in, so this stays a test of the pagination footer rather than of the whole page.
-vi.mock("../useAllocateCoins", () => ({
-  useAllocateCoins: () => vi.fn(),
+vi.mock("../useSetVotes", () => ({
+  useSetVotes: () => vi.fn(),
 }));
 
-vi.mock("../CoinAllocator", () => ({
-  CoinAllocator: () => null,
+vi.mock("../VoteButton", () => ({
+  VoteButton: () => null,
 }));
 
 vi.mock("../RoadmapAdvancedFilters", () => ({
@@ -81,7 +81,7 @@ const row = (n: number, source: RoadmapOpportunitySource = RoadmapOpportunitySou
   claudePrompt: null,
   releasedAt: null,
   priorityScore: n,
-  myCoins: 0,
+  myVotes: 0,
   commentCount: 0,
   source,
   createdAt: "2026-08-01T00:00:00.000Z",

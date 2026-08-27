@@ -10,11 +10,14 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 
-import { ActionConfirmationPopup, Button } from "@components";
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Add } from "@icons";
+import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { RoadmapSavedView } from "@types";
 
 import { SortableViewTab } from "./SortableViewTab";
+import { QUEUE_VIEW_ID } from "./utils/views";
 
 interface SavedViewTabsProps {
   views: RoadmapSavedView[];
@@ -25,7 +28,8 @@ interface SavedViewTabsProps {
   canPin: boolean;
   canSave: boolean;
   onSelect: (id: string | null) => void;
-  onSaveCurrentAs: (name: string) => void;
+  /** Creates a new, EMPTY view — see createNewView in useSavedViews. */
+  onCreateView: (name: string) => void;
   onRename: (id: string, name: string) => void;
   onTogglePinned: (view: RoadmapSavedView) => void;
   onDelete: (view: RoadmapSavedView) => void;
@@ -33,14 +37,21 @@ interface SavedViewTabsProps {
 }
 
 /**
- * The saved-view sub-tab strip: "All" plus one tab per view, drag-reorderable.
+ * The saved-view sub-tab strip: "Queue" and "All", then one tab per saved view,
+ * drag-reorderable.
  *
  * Styled to match the top-level Tabs strip (bottom border, primary-coloured active label with a
  * 3px underline) so the two read as one system, but built bespoke because ui-shared's Tabs
  * cannot carry a pin icon, a dirty dot, an inline rename or a delete affordance.
  *
- * "All" is index 0 and lives OUTSIDE the SortableContext — it is not a saved view and must not
- * be draggable or reorderable.
+ * "Queue" and "All" are indices 0 and 1 IN THAT ORDER, and both live OUTSIDE the SortableContext
+ * — neither is a saved view, so neither is draggable, reorderable, ownable, pinnable, renameable
+ * or deletable. "Queue" is a hardcoded pseudo-view: New + Prioritised + In development
+ * opportunities, opened as a list — see QUEUE_VIEW_ID / QUEUE_VIEW_STATE in utils/views.
+ *
+ * Queue leads because the pipeline is the working surface; "All" is the reference behind it.
+ * NOTE this is position only — the page still LANDS on "All" when no ?view= is present, since
+ * that is what an unparameterised URL has always meant.
  */
 export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
   views,
@@ -51,7 +62,7 @@ export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
   canPin,
   canSave,
   onSelect,
-  onSaveCurrentAs,
+  onCreateView,
   onRename,
   onTogglePinned,
   onDelete,
@@ -84,14 +95,43 @@ export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
     const name = newName.trim();
     setIsNaming(false);
     setNewName("");
-    if (name) onSaveCurrentAs(name);
+    if (name) onCreateView(name);
   };
 
   return (
     <div className="border-border-light flex items-center justify-between gap-4 border-b">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <ul className="flex min-w-0 items-center overflow-x-auto">
-          {/* "All": not a saved view, so outside SortableContext and never draggable. */}
+        {/*
+          pb-5 is for the ACTIVE TAB'S TOOLTIP, not spacing.
+          This <ul> scrolls horizontally, and CSS will not let one axis clip while the other stays
+          visible — so it clips vertically too, at exactly the tab's own height. Carbon's overflow
+          menu portals its MENU out of here, but its trigger tooltip renders as a descendant, so
+          neither `align` nor `autoAlign` can get the bubble out: aligning it top clipped it above,
+          aligning it bottom clipped it below (measured at 18 of its 22px). Twenty pixels of room
+          is the cheapest fix that keeps Carbon's accessible-name wiring intact.
+          `overflow-x-clip` + `overflow-clip-margin` would cost no space but would also stop the
+          strip scrolling, which it needs once there are more views than fit.
+        */}
+        <ul className="flex min-w-0 items-center overflow-x-auto pb-5">
+          {/* "Queue" FIRST: the pipeline is what people come here to work through, and "All" —
+              432 rows including everything shipped and archived — is the reference, not the
+              starting point. Not a saved view, so outside SortableContext like "All". */}
+          <li className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => onSelect(QUEUE_VIEW_ID)}
+              className={`px-3 py-3 text-base whitespace-nowrap ${
+                activeViewId === QUEUE_VIEW_ID ? "text-primary-500" : "text-typography-900"
+              }`}
+            >
+              Queue
+            </button>
+            {activeViewId === QUEUE_VIEW_ID && (
+              <span className="bg-primary-500 absolute inset-x-0 bottom-0 h-[3px] rounded-t-lg" />
+            )}
+          </li>
+
+          {/* "All": not a saved view either. Second, after Queue — see the docblock. */}
           <li className="relative shrink-0">
             <button
               type="button"
@@ -148,9 +188,24 @@ export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
               className="border-border-light w-40 border px-2 py-1 text-sm outline-none"
             />
           ) : (
-            <Button variant={ButtonVariant.TEXT} onClick={() => setIsNaming(true)}>
-              Save current filters as a view
-            </Button>
+            /*
+              Icon, not a text link. The label was the widest thing in this strip and it sat next
+              to the view tabs competing for the same glance, while the action itself is
+              occasional — you save a view once and then use it for months.
+              Icon-only means it MUST carry both a tooltip and an aria-label, per the tooltip
+              convention in ally-web/CLAUDE.md. align="bottom" for the same reason the header's
+              tooltips use it: pointing up from this row renders off the top of the viewport.
+            */
+            <Tooltip label="New view" align="bottom">
+              <button
+                type="button"
+                aria-label="New view"
+                onClick={() => setIsNaming(true)}
+                className="text-typography-secondary hover:text-typography-primary inline-flex cursor-pointer items-center"
+              >
+                <Add size={18} />
+              </button>
+            </Tooltip>
           )}
         </div>
       )}

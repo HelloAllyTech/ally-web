@@ -1,11 +1,41 @@
-import { RoadmapSavedView, RoadmapViewState } from "@types";
+import {
+  RoadmapBoardLayout,
+  RoadmapOpportunityStage,
+  RoadmapSavedView,
+  RoadmapViewState,
+} from "@types";
+
+/**
+ * Sentinel id for the "Queue" pseudo-view, a second hardcoded default sitting next to "All" (see
+ * SavedViewTabs). Not a real RoadmapSavedView row, so it can never collide with one — saved-view
+ * ids are Postgres-generated UUIDs, "queue" is not a valid one.
+ */
+export const QUEUE_VIEW_ID = "queue";
+
+/** What "Queue" shows: every opportunity still active in the pipeline, as a list. */
+export const QUEUE_VIEW_STATE: RoadmapViewState = {
+  stageFilter: [
+    RoadmapOpportunityStage.NEW,
+    RoadmapOpportunityStage.PRIORITISED,
+    RoadmapOpportunityStage.UNDER_DEVELOPMENT,
+  ],
+  layout: RoadmapBoardLayout.LIST,
+  /**
+   * Pinned, not left to the default. The Queue's cards carry a RANK, and a rank is only the
+   * truth if the list is ordered by total votes — applying this view with a sort inherited from
+   * wherever the user just was (filed date, say) would number the cards 1, 2, 3 down an order
+   * that has nothing to do with votes. `normaliseSortField` happens to default to exactly this
+   * today; stating it means a change to that default cannot silently invalidate the ranks.
+   */
+  sort: { field: "priority", dir: "desc" },
+};
 
 /**
  * Sort-field names the STANDALONE app wrote into saved-view state, mapped to the API's names.
  *
  * This is a real data-compatibility problem, not defensive padding: 3 of the 8 views migrated
  * from production carry `created` or `released`, and the API's sortBy enum only accepts
- * `priority | createdAt | releasedAt | myCoins | description`. Applying such a view sent
+ * `priority | createdAt | releasedAt | myVotes | description`. Applying such a view sent
  * `sortBy=created`, the request 400'd, and the board silently kept showing the PREVIOUS rows —
  * the filter chips updated while the table did not, which reads as "filters are broken".
  *
@@ -16,7 +46,7 @@ const LEGACY_SORT_FIELDS: Record<string, string> = {
   created: "createdAt",
   released: "releasedAt",
   score: "priority",
-  coins: "myCoins",
+  coins: "myVotes",
 };
 
 export const normaliseSortField = (field: string | undefined): string =>

@@ -18,7 +18,7 @@ interface ReportBugModalProps {
  * Filing an idea and reporting a bug were one modal with a Type dropdown until bugs left the
  * board for Bug Hunter. Keeping them merged would have meant one form whose Type dropdown
  * silently decides which of two screens the thing you just typed shows up on, with half its
- * controls (product goal, coin voting, the duplicate check) meaningless for one branch. Two
+ * controls (product goal, voting, the duplicate check) meaningless for one branch. Two
  * buttons say plainly where each one goes.
  *
  * The same shared BugReportForm helpline uses, on the same endpoint, so a staff report and a

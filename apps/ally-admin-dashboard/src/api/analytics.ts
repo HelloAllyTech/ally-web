@@ -319,7 +319,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
-    // Coins shipped per month by owner, off the internal product roadmap. Takes
+    // Votes shipped per month by owner, off the internal product roadmap. Takes
     // NO params at all — not even `tenantId`: the roadmap tables carry no tenant
     // (it is Ally's own backlog), and the axis is all-time by construction
     // because a quarter can hold a handful of releases.

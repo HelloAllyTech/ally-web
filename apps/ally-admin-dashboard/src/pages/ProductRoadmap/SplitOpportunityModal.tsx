@@ -25,7 +25,7 @@ interface DraftPart {
 }
 
 /**
- * Split one opportunity into parts, redistributing every contributor's coins by weight.
+ * Split one opportunity into parts, redistributing every contributor's votes by weight.
  *
  * Exactly one part carries the original id. That part is kept and reworded rather than
  * recreated, so its comments, its history and any `?opportunity=<id>` link people have shared all
@@ -33,7 +33,7 @@ interface DraftPart {
  *
  * The preview under the weights runs the SAME largest-remainder (Hamilton) arithmetic the backend
  * uses, so an admin can see exactly how this opportunity's current score will divide before
- * committing. Coins are conserved exactly: the parts always sum to the original.
+ * committing. Votes are conserved exactly: the parts always sum to the original.
  */
 export const SplitOpportunityModal: React.FC<SplitOpportunityModalProps> = ({
   opportunity,
@@ -101,7 +101,7 @@ export const SplitOpportunityModal: React.FC<SplitOpportunityModalProps> = ({
           <div>
             <h2 className="text-typography-primary text-xl">Split opportunity</h2>
             <p className="text-typography-secondary mt-1 text-sm">
-              Everyone&apos;s coins are redistributed across the parts by weight. Nothing is lost:
+              Everyone&apos;s votes are redistributed across the parts by weight. Nothing is lost:
               the parts always add up to the original {opportunity.priorityScore}.
             </p>
           </div>
@@ -117,7 +117,7 @@ export const SplitOpportunityModal: React.FC<SplitOpportunityModalProps> = ({
                   </span>
                   <div className="flex items-center gap-3">
                     <span className="text-typography-secondary font-mono text-xs">
-                      ≈ {preview[index] ?? 0} coins
+                      ≈ {preview[index] ?? 0} votes
                     </span>
                     {!part.id && (
                       <Button variant={ButtonVariant.TEXT} onClick={() => removePart(index)}>

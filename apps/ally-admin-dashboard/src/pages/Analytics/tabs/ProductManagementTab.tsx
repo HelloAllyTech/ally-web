@@ -6,10 +6,10 @@ import { RoadmapDeliveryCard } from "../RoadmapDeliveryCard";
  *
  * Distinct from every other tab on this page in what it reads. The rest measure
  * the PRODUCT — learners, sessions, latency, cost — from tenant-scoped tables.
- * This one measures OUR OWN backlog: the coin-voting board in
+ * This one measures OUR OWN backlog: the vote-based board in
  * `src/product-roadmap`, which carries no tenant and no window. Keeping it on its
  * own tab rather than adding a panel to Highlights is what stops a reader taking
- * "180 coins shipped" as a platform metric.
+ * "180 votes shipped" as a platform metric.
  *
  * No page-level pickers (`uses: { language: false, range: false }`): the roadmap
  * has no language dimension, and its charts are all-time by construction — a

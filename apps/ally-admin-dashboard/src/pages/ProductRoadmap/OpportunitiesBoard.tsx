@@ -15,7 +15,7 @@ import {
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
-  RoadmapCoinBudget,
+  RoadmapVoteBudget,
   RoadmapFacets,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
@@ -26,26 +26,28 @@ import {
   RoadmapTaxonomyItem,
 } from "@types";
 
-import { CoinAllocator } from "./CoinAllocator";
 import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
-import { useAllocateCoins } from "./useAllocateCoins";
+import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
 import { pageRange } from "./utils/paging";
 import {
   isConsumerSourced,
+  isReshapeableStage,
+  reshapeBlockedReason,
   SOURCE_BADGE_STYLE,
   SOURCE_LABEL,
   STAGE_LABEL,
   STAGE_STYLE,
   typeLabel,
 } from "./utils/stages";
+import { VoteButton } from "./VoteButton";
 
 interface OpportunitiesBoardProps {
   listArgs: RoadmapOpportunitiesQuery;
   data?: RoadmapOpportunitiesResponse;
   isLoading: boolean;
   isFetching: boolean;
-  budget?: RoadmapCoinBudget;
+  budget?: RoadmapVoteBudget;
   goals: RoadmapTaxonomyItem[];
   facets?: RoadmapFacets;
   search: string;
@@ -64,7 +66,6 @@ interface OpportunitiesBoardProps {
   advanced: RoadmapAdvancedFilterValues;
   onAdvancedChange: (next: RoadmapAdvancedFilterValues) => void;
   /** Opens the goal-management modal. Manager-only. */
-  onManageGoals: () => void;
   sortBy: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
   order: "ASC" | "DESC";
   onToggleSort: (field: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>) => void;
@@ -72,9 +73,9 @@ interface OpportunitiesBoardProps {
   canManage: boolean;
   onOpenOpportunity: (id: string) => void;
   onAddClick: () => void;
+  /** False on the Queue view, whose filters are its definition. Threaded to RoadmapFilterBar. */
+  showFilters?: boolean;
   /** Merge selection, manager-only. Lifted so the bar can live outside the table. */
-  selectedIds: Set<string>;
-  onToggleSelected: (id: string) => void;
   onSplit: (opportunity: RoadmapOpportunity) => void;
   /** Offset pagination. `offset` is the same value carried in `listArgs`. */
   offset: number;
@@ -89,7 +90,7 @@ interface OpportunitiesBoardProps {
  *
  * BUILT ON THE Table PRIMITIVES rather than GenericTable or NotionTable, deliberately:
  *  - NotionTable is a spreadsheet-editing model (cells are declared as editableText/switch/…)
- *    with no route for putting an arbitrary stateful widget like CoinAllocator in a cell.
+ *    with no route for putting an arbitrary stateful widget like VoteButton in a cell.
  *  - GenericTable fits on paper but has zero production consumers in this app, so adopting it
  *    here would mean debugging it and the roadmap at the same time.
  *  - This is the same shape as pages/AILab/RunsTab.tsx, which is the proven pattern.
@@ -121,7 +122,6 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onOwnerFilterChange,
   advanced,
   onAdvancedChange,
-  onManageGoals,
   sortBy,
   order,
   onToggleSort,
@@ -129,18 +129,16 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   canManage,
   onOpenOpportunity,
   onAddClick,
-  selectedIds,
-  onToggleSelected,
+  showFilters,
   onSplit,
   offset,
   pageSize,
   onOffsetChange,
   layoutToggle,
 }) => {
-  const allocate = useAllocateCoins({ kind: "list", args: listArgs });
+  const allocate = useSetVotes({ kind: "list", args: listArgs });
   const rows = data?.items ?? [];
   // Unfiltered max, so the bars keep a stable scale when a filter is applied.
-  const maxScore = Math.max(1, data?.maxScore ?? 1);
   const total = data?.count ?? 0;
   const { rangeStart, rangeEnd, page, totalPages, canPrev, canNext, prevOffset, nextOffset } =
     pageRange(offset, pageSize, total);
@@ -175,6 +173,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   return (
     <div className="flex flex-col gap-3">
       <RoadmapFilterBar
+        showFilters={showFilters}
         search={search}
         onSearchChange={onSearchChange}
         typeFilter={typeFilter}
@@ -191,10 +190,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         onAdvancedChange={onAdvancedChange}
         goals={goals}
         facets={facets}
-        onManageGoals={onManageGoals}
         canVote={canVote}
         canManage={canManage}
-        onAddClick={onAddClick}
         trailing={layoutToggle}
       />
 
@@ -225,11 +222,19 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
           <Table>
             <TableHead>
               <TableRow>
-                {canManage && <TableHeader className="w-10" aria-label="Select for merge" />}
+                {/* Code first: it is the row's identifier, and an id column that comes after the
+                    data it identifies makes people scan backwards. Not sortable — sorting by code
+                    is sorting by filing order, which the Filed column already does honestly. */}
+                <TableHeader className="w-24">Code</TableHeader>
+                {/* "Total votes" / "Your votes", not "Priority" / "Votes". The old pair named
+                    the same quantity two different ways — the priority score IS the sum of every
+                    vote cast, so "Priority" hid what the number was and "Votes" beside it
+                    read as the same thing again. The sort key stays `priority`: it is the API's
+                    field name, not a label. */}
                 <SortHeader field="priority" className="w-32">
-                  Priority
+                  Total votes
                 </SortHeader>
-                <TableHeader className="w-24">Coins</TableHeader>
+                <TableHeader className="w-24">Your votes</TableHeader>
                 <SortHeader field="description">Opportunity</SortHeader>
                 <TableHeader className="w-32">Stage</TableHeader>
                 <TableHeader className="w-32">Owner</TableHeader>
@@ -246,41 +251,32 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   onClick={() => onOpenOpportunity(opportunity.id)}
                   className="cursor-pointer"
                 >
-                  {canManage && (
-                    // stopPropagation, or ticking the box also opens the drawer.
-                    <TableCell onClick={event => event.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(opportunity.id)}
-                        onChange={() => onToggleSelected(opportunity.id)}
-                        aria-label={`Select for merge: ${opportunity.description.slice(0, 40)}`}
-                      />
-                    </TableCell>
-                  )}
+                  {/* Number only — no bar. The rows are already sorted by priority, so a bar
+                      restated the ordering the reader is looking straight at, and it cost a
+                      column's width doing it. The board cards keep theirs: there the cards are
+                      grouped by something else and the ranking is not otherwise visible.
+
+                      tabular-nums, NOT font-mono: this app is serif-only (IBM Plex Serif, see
+                      styles.css) and font-mono broke out of it for the one column people read
+                      down. Tabular figures give the alignment monospace was really being used
+                      for. */}
+                  {/* tabular-nums so the digits line up down the column; the code is
+                      fixed-width by construction (OPP-0000) so it reads as one block. */}
+                  <TableCell className="text-typography-secondary whitespace-nowrap tabular-nums">
+                    {opportunity.code}
+                  </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono tabular-nums w-8 text-right">
-                        {opportunity.priorityScore}
-                      </span>
-                      <span className="bg-background-secondary h-2 flex-1">
-                        <span
-                          className="bg-primary-500 block h-2"
-                          style={{
-                            width: `${Math.round((opportunity.priorityScore / maxScore) * 100)}%`,
-                          }}
-                        />
-                      </span>
-                    </div>
+                    <span className="tabular-nums">{opportunity.priorityScore}</span>
                   </TableCell>
 
-                  {/* stopPropagation, or every click inside the allocator also opens the
+                  {/* stopPropagation, or every click inside the vote button also opens the
                       drawer. */}
                   <TableCell onClick={event => event.stopPropagation()}>
                     {budget ? (
-                      <CoinAllocator
+                      <VoteButton
                         opportunity={opportunity}
                         budget={budget}
-                        onCommit={allocate}
+                        onSetVotes={allocate}
                         disabled={!canVote}
                       />
                     ) : null}
@@ -338,9 +334,26 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
 
                   {canManage && (
                     <TableCell onClick={event => event.stopPropagation()}>
-                      <Button variant={ButtonVariant.TEXT} onClick={() => onSplit(opportunity)}>
-                        Split
-                      </Button>
+                      {/*
+                        Disabled rather than hidden: a manager who splits things every week and
+                        finds the button simply gone on one row has to guess whether it is the
+                        row, their permissions, or a bug. The reason is on the control.
+                      */}
+                      <span
+                        title={
+                          isReshapeableStage(opportunity.stage)
+                            ? undefined
+                            : reshapeBlockedReason(opportunity.stage)
+                        }
+                      >
+                        <Button
+                          variant={ButtonVariant.TEXT}
+                          disabled={!isReshapeableStage(opportunity.stage)}
+                          onClick={() => onSplit(opportunity)}
+                        >
+                          Split
+                        </Button>
+                      </span>
                     </TableCell>
                   )}
                 </TableRow>

@@ -50,3 +50,27 @@ export const isConsumerSourced = (source: RoadmapOpportunitySource | string): bo
   source === RoadmapOpportunitySource.CONSUMER;
 
 export const SOURCE_BADGE_STYLE = "bg-purple-50 text-purple-700";
+
+/**
+ * Stages that put an opportunity beyond splitting and merging.
+ *
+ * Mirrors ROADMAP_UNRESHAPEABLE_STAGES in ally-be's util/roadmap-stage.util.ts — that one is the
+ * enforcement (a 409), this one only decides whether the control is offered. Keyed by raw wire
+ * strings for the same reason STAGE_STYLE is: a stage the backend adds before this file catches
+ * up falls through to "reshapeable" and the server refuses it, rather than the UI crashing.
+ */
+export const UNRESHAPEABLE_STAGES: string[] = ["released", "archived"];
+
+export const isReshapeableStage = (stage: RoadmapOpportunityStage | string): boolean =>
+  !UNRESHAPEABLE_STAGES.includes(stage);
+
+/**
+ * Why the control is dead, said on the control itself.
+ *
+ * A disabled Split with no explanation reads as a broken page — the same reasoning as the vote
+ * stepper's "locked with a reason" state, which is the precedent this follows. Takes the stage so
+ * the sentence names the one the reader is looking at rather than listing both.
+ */
+export const reshapeBlockedReason = (stage: RoadmapOpportunityStage | string): string =>
+  `Already ${stageLabel(stage).toLowerCase()} — splitting or merging it would rewrite a record ` +
+  `that release notes and its ship date already point at.`;

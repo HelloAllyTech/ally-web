@@ -151,8 +151,8 @@ const TABS: TabDef[] = [
   {
     // The only tab here that measures OUR OWN work rather than the product's.
     // Everything above reads tenant-scoped learner and session data; this reads
-    // the internal coin-voting roadmap, which carries no tenant. Its own tab
-    // rather than a panel on Highlights, so nobody takes "180 coins shipped" for
+    // the internal vote-based roadmap, which carries no tenant. Its own tab
+    // rather than a panel on Highlights, so nobody takes "180 votes shipped" for
     // a platform metric.
     //
     // No page-level pickers: the roadmap has no language dimension, and its

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Link, TooltipIcon } from "@icons";
 import { useNavigate } from "react-router-dom";
@@ -13,20 +13,24 @@ import {
   useGetBugFindingByReportedBugQuery,
   useDeleteRoadmapOpportunityMutation,
   useUpdateRoadmapOpportunityMutation,
+  useOpenRoadmapBuilderSessionMutation,
 } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { FeatureToggleKey, ROUTES } from "@constants";
 import { useUser } from "@hooks";
-import { RoadmapOpportunityStage, RoadmapOpportunityType, RoadmapTaxonomyItem } from "@types";
+import {
+  RoadmapBuilderSessionHandle,
+  RoadmapOpportunityStage,
+  RoadmapOpportunityType,
+  RoadmapTaxonomyItem,
+} from "@types";
 import { hasFeature } from "@utils";
 
-import { GenerateClaudePromptModal } from "./GenerateClaudePromptModal";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
 import { STAGE_LABEL } from "./utils/stages";
 
 const PRD_MAX = 20000;
-const CLAUDE_PROMPT_MAX = 20000;
 const COMMENT_MAX = 500;
 
 const STAGES = Object.values(RoadmapOpportunityStage);
@@ -43,6 +47,14 @@ const PLANNED_MONTHS_FORWARD = 12;
 
 interface OpportunityDrawerProps {
   opportunityId: string;
+  /**
+   * Hands the opened Builder session up to the page, which owns the drawer that renders it.
+   *
+   * Owned there rather than here so the agent drawer is a sibling of this one, not a child: the
+   * opportunity drawer closes on backdrop click and on save, and a Builder conversation must not
+   * be torn down by either.
+   */
+  onOpenBuilderSession: (handle: RoadmapBuilderSessionHandle) => void;
   goals: RoadmapTaxonomyItem[];
   canVote: boolean;
   canManage: boolean;
@@ -70,6 +82,7 @@ interface OpportunityDrawerProps {
  */
 export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   opportunityId,
+  onOpenBuilderSession,
   goals,
   canVote,
   canManage,
@@ -96,7 +109,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   });
   const [commentBody, setCommentBody] = useState("");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+  const [openBuilderSession, { isLoading: isOpeningBuilder }] =
+    useOpenRoadmapBuilderSessionMutation();
 
   useEffect(() => {
     if (!opportunity) return;
@@ -180,14 +194,14 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       draft.plannedMonth !== (opportunity.plannedMonth ?? ""));
 
   /**
-   * Soft-delete. The backend also returns every contributor's coins to them, soft-deletes the
+   * Soft-delete. The backend also returns every contributor's votes to them, soft-deletes the
    * comments, and removes the vector so duplicate detection stops proposing it — so this is not
    * only a visibility change and the confirmation says the part people care about.
    */
   const remove = async () => {
     try {
       await deleteOpportunity(opportunityId).unwrap();
-      toast.success("Deleted. Coins returned to whoever spent them.");
+      toast.success("Deleted. Votes returned to whoever cast them.");
       onClose();
     } catch (error) {
       const message =
@@ -196,6 +210,31 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       toast.error(message);
     }
   };
+
+  /**
+   * Open (or resume) the agent for this opportunity.
+   *
+   * Deliberately does NOT save the drawer's unsaved edits first. The brief is built server-side
+   * from the STORED description and PRD, so what the agent receives is what the roadmap actually
+   * says — and a button that silently commits someone's half-typed edits as a side effect of
+   * opening a panel is the kind of thing nobody expects twice. The hint below the button says
+   * where the text comes from.
+   */
+  const handleOpenBuilder = useCallback(async () => {
+    try {
+      const handle = await openBuilderSession({ opportunityId }).unwrap();
+      onOpenBuilderSession(handle);
+    } catch (error) {
+      // 403 here is its own thing: the caller manages the roadmap but has no Builder access,
+      // which is a grant someone has to make, not a retry.
+      const status = (error as { status?: number })?.status;
+      toast.error(
+        status === 403
+          ? "Builder is not enabled for your account. Ask a super admin for Builder access."
+          : "Could not open the Builder agent. Try again.",
+      );
+    }
+  }, [onOpenBuilderSession, openBuilderSession, opportunityId]);
 
   const save = async () => {
     try {
@@ -252,7 +291,18 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
         onClick={event => event.stopPropagation()}
       >
         <header className="border-border-light flex items-center justify-between border-b p-4">
-          <h2 className="text-typography-primary text-lg">Opportunity</h2>
+          {/* The code sits with the title rather than down among the stats: it is what this
+              drawer IS, and it is the thing someone reads out or pastes into the search box.
+              Rendered from `opportunity`, not from `draft` — it is server-generated and not
+              editable, so it must not follow unsaved edits. */}
+          <h2 className="text-typography-primary flex items-baseline gap-2 text-lg">
+            Opportunity
+            {!!opportunity?.code && (
+              <span className="text-typography-secondary text-sm tabular-nums">
+                {opportunity.code}
+              </span>
+            )}
+          </h2>
           <div className="flex gap-2">
             <Button variant={ButtonVariant.TEXT} onClick={copyLink}>
               <Link size={16} /> Copy link
@@ -282,15 +332,17 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           <div className="flex flex-col gap-4 p-4">
             <div className="flex gap-6">
               <div>
-                <div className="text-typography-secondary text-xs uppercase">Priority</div>
+                {/* Renamed with the table's columns — the same number called two things on
+                    two screens is the confusion the rename set out to remove. */}
+                <div className="text-typography-secondary text-xs uppercase">Total votes</div>
                 <div className="font-mono tabular-nums text-typography-primary text-2xl">
                   {opportunity.priorityScore}
                 </div>
               </div>
               <div>
-                <div className="text-typography-secondary text-xs uppercase">Your coins</div>
+                <div className="text-typography-secondary text-xs uppercase">Your votes</div>
                 <div className="font-mono tabular-nums text-typography-primary text-2xl">
-                  {opportunity.myCoins}
+                  {opportunity.myVotes}
                 </div>
               </div>
               <div>
@@ -426,30 +478,38 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               className="font-mono"
             />
 
-            {/* Same plain-text treatment as PRD above, and saved the same way: filled by the
-                Generate action or typed directly, but only persisted on "Save changes" below —
-                there is no separate write path. */}
-            <TextArea
-              id="drawer-claude-prompt"
-              labelText="Claude Code prompt"
-              rows={8}
-              value={draft.claudePrompt}
-              readOnly={!canManage}
-              maxLength={CLAUDE_PROMPT_MAX}
-              placeholder={canManage ? "Generate one below, or write it yourself." : ""}
-              onChange={event => setDraft(prev => ({ ...prev, claudePrompt: event.target.value }))}
-              className="font-mono"
-            />
+            {/*
+              REPLACED the "Claude Code prompt" textarea and its Generate action.
+              That flow produced a block of text a manager copied into a terminal themselves —
+              the roadmap's involvement ended at the clipboard, and nothing tied the build that
+              followed back to the opportunity that asked for it. This hands the same two inputs
+              (description + PRD) straight to the Builder agent as its opening turn.
 
+              The stored `claudePrompt` column is left in place, unused: it is empty on every
+              existing row, but that is worth confirming on production before anyone drops it.
+            */}
             {canManage && (
-              <div>
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={() => setIsGeneratingPrompt(true)}
-                  disabled={!draft.description.trim()}
-                >
-                  Generate Claude Code prompt
-                </Button>
+              <div className="flex flex-col gap-1">
+                <div>
+                  <Button
+                    variant={ButtonVariant.SECONDARY}
+                    onClick={handleOpenBuilder}
+                    // The description IS the brief, so there is nothing to open with until it
+                    // has one. Unsaved edits are deliberately not required first — see below.
+                    disabled={!draft.description.trim() || isOpeningBuilder}
+                  >
+                    {isOpeningBuilder
+                      ? "Opening…"
+                      : opportunity?.builderSessionId
+                        ? "Resume in Builder Agent"
+                        : "Open in Builder Agent"}
+                  </Button>
+                </div>
+                <p className="text-typography-secondary text-xs">
+                  {opportunity?.builderSessionId
+                    ? "Reopens the existing interview — the brief is already in it."
+                    : "Starts a PRD interview seeded with this description and PRD."}
+                </p>
               </div>
             )}
 
@@ -461,7 +521,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 {isConfirmingDelete ? (
                   <div className="flex items-center gap-2">
                     <span className="text-typography-primary text-sm">
-                      Delete this? Coins go back to whoever spent them.
+                      Delete this? Votes go back to whoever cast them.
                     </span>
                     <Button variant={ButtonVariant.PRIMARY} onClick={remove} disabled={isDeleting}>
                       {isDeleting ? "Deleting…" : "Delete"}
@@ -533,19 +593,6 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
         )}
       </aside>
 
-      {/* React bubbles synthetic events up the COMPONENT tree even across a portal, so without
-          this wrapper a click anywhere in the (portaled) modal would reach the backdrop's
-          onClick above and close the whole drawer along with the modal. */}
-      {isGeneratingPrompt && (
-        <div onClick={event => event.stopPropagation()}>
-          <GenerateClaudePromptModal
-            description={draft.description}
-            prd={draft.prd}
-            onApply={text => setDraft(prev => ({ ...prev, claudePrompt: text }))}
-            onClose={() => setIsGeneratingPrompt(false)}
-          />
-        </div>
-      )}
     </div>
   );
 };

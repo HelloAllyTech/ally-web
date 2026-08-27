@@ -104,7 +104,8 @@ export const RoadmapAdvancedFilters: React.FC<RoadmapAdvancedFiltersProps> = ({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <span className="text-typography-secondary w-24 shrink-0 pb-2">Priority score</span>
+        {/* "Total votes", matching the table column it filters. */}
+        <span className="text-typography-secondary w-24 shrink-0 pb-2">Total votes</span>
         {/* `allowEmpty` is load-bearing, not cosmetic. Carbon's NumberInput treats an empty value
             as failing `min={0}` unless told otherwise, so both bounds rendered in the red invalid
             state — complete with error icons — the entire time no score filter was set, which is
