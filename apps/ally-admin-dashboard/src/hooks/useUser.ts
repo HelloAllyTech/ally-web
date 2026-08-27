@@ -18,10 +18,10 @@ import {
   useUpdateUserPreferencesMutation,
   useGetCharacterLibraryEnabledQuery,
 } from "@api";
-import { LOCAL_STORAGE_KEYS, isSuperAdminRole, OrgToggle } from "@constants";
+import { LOCAL_STORAGE_KEYS, OrgToggle, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions, setFeatures } from "@reducer";
 import { RootState, store } from "@store";
-import { deriveNavigationItems } from "@utils";
+import { deriveNavigationItems, hasPermissions } from "@utils";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -161,8 +161,32 @@ export const useUser = () => {
     [permissions, features, adminSidebarOrder, isCharacterLibraryOrgEnabled],
   );
 
-  // Only super admins may personalize their sidebar order.
-  const canReorder = isSuperAdminRole(user?.role);
+  /**
+   * Gate personalisation on the permission the backend actually enforces on
+   * `POST /users/preferences` (EDIT_USER_PREFERENCES), not on a role-tier name.
+   *
+   * This previously read `isSuperAdminRole(user?.role)`, whose list is only
+   * [SUPER_ADMIN, SUPER_DUPER_ADMIN] — so PLATFORM_ADMIN, the role that
+   * *replaced* those tiers, was refused a feature the backend grants it
+   * (it inherited both preference permissions from SUPER_DUPER_ADMIN in the
+   * collapse migration). Same class of bug as the Tracks/Cases/Courses tabs
+   * vanishing for a PLATFORM_ADMIN — see SimulationStudio's hasContentAccess.
+   *
+   * It was latent rather than visible because the collapse migration
+   * deliberately left the old `user_groups` rows in place for rollback safety,
+   * so a *migrated* admin still resolves to a legacy super tier and kept the
+   * drag handle; only admins minted fresh from the Ally admins tab lost it.
+   * Dropping those old groups would have broken reorder for every platform
+   * admin at once.
+   *
+   * Permission over role also settles the multi-role case structurally, rather
+   * than depending on ADMIN_ROLE_PRECEDENCE picking the right winner: a user's
+   * permissions are the union across every group they hold, so a dual-role
+   * account is judged on what it can actually do instead of on whichever single
+   * tier the collapse happened to report. Fails closed while the list is still
+   * loading, matching the non-fatal 403 handling in checkAuth above.
+   */
+  const canReorder = hasPermissions(permissions, [Permissions.EDIT_USER_PREFERENCES]);
 
   /**
    * Persists a new sidebar order to the current user's preferences.

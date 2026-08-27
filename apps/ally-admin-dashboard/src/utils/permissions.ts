@@ -1,7 +1,12 @@
 import { Permissions } from "@constants";
 
+/**
+ * `userPermissions` is widened to accept plain strings: the RTK Query hook types
+ * this list as `Permissions[]`, but the Redux mirror (`UserState.permissions`)
+ * types it as `string[]`, and both are legitimate callers of the same check.
+ */
 export const hasPermissions = (
-  userPermissions: Permissions[],
+  userPermissions: (Permissions | string)[],
   requiredPermissions: Permissions[] = [],
 ) =>
   !requiredPermissions.length ||
