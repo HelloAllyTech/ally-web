@@ -180,6 +180,9 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   // long. Distinct from a hard failure: the recording is kept so the
   // counsellor can retry or fall back to the manual form.
   const [hasTimedOut, setHasTimedOut] = useState(false);
+  // The request has passed SLOW_NOTICE_MS but is still running. Purely a
+  // labelling state — it changes what the panel says, never what it does.
+  const [isSlow, setIsSlow] = useState(false);
   // The in-flight generateNoteFromAudio trigger result, so a timeout or an
   // explicit cancel can abort the real network request rather than merely
   // ignoring its eventual response.
@@ -222,6 +225,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       transcriptRef.current = "";
       setVoiceOpen(false);
       setHasTimedOut(false);
+      setIsSlow(false);
       activeRequestRef.current = null;
       abortReasonRef.current = null;
       resetRecorder();
@@ -466,30 +470,49 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       activeRequestRef.current = null;
     }
     setHasTimedOut(false);
+    setIsSlow(false);
     resetRecorder();
     setVoiceOpen(false);
   };
 
-  // Voice transcription + LLM field extraction over a real recording can
-  // legitimately take tens of seconds for a longer dictation; 45s is chosen
-  // to comfortably cover that round trip without leaving a merely slow (but
-  // working) request stranded on a spinner with no way out.
-  const GENERATE_TIMEOUT_MS = 45_000;
+  // When we start SAYING this one is slow. Deliberately not a deadline: the
+  // request keeps running. Aborting here aborted the client only — ally-be
+  // carried on through Whisper and Anthropic and finished the work regardless,
+  // so the abort's entire effect was to throw away an answer that was about to
+  // land, and then charge the counsellor a re-record for it. How long the call
+  // takes is driven by how many fields the org has (every one of them goes into
+  // the extraction prompt with its labels and options), so a field-heavy org
+  // crossed this line on every single dictation and the feature became unusable
+  // for them while staying fine everywhere else.
+  const SLOW_NOTICE_MS = 45_000;
+  // The real deadline. It exists so a genuinely hung request ends rather than to
+  // police a merely slow one, so it is set well beyond any plausible honest
+  // round trip — the server's own work is already bounded by the 25MB upload cap
+  // and the extraction token limit.
+  const GENERATE_TIMEOUT_MS = 300_000;
 
   const handleGenerateNotes = async () => {
     if (!recordedBlob) return;
     setHasTimedOut(false);
+    setIsSlow(false);
     const request = generateNoteFromAudio({ audio: recordedBlob, fields: voiceFields });
     activeRequestRef.current = request;
+    // Two timers, and only the second one abandons anything.
+    const slowNoticeId = setTimeout(() => setIsSlow(true), SLOW_NOTICE_MS);
     const timeoutId = setTimeout(() => {
       abortReasonRef.current = "timeout";
       setHasTimedOut(true);
       request.abort();
     }, GENERATE_TIMEOUT_MS);
+    const clearTimers = () => {
+      clearTimeout(slowNoticeId);
+      clearTimeout(timeoutId);
+    };
 
     try {
       const result = await request.unwrap();
-      clearTimeout(timeoutId);
+      clearTimers();
+      setIsSlow(false);
       activeRequestRef.current = null;
       const filledLabels = applyGeneratedValues(result.values);
 
@@ -525,7 +548,8 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
         toast(t("calls.createNote.voice.nothingExtracted"));
       }
     } catch (error) {
-      clearTimeout(timeoutId);
+      clearTimers();
+      setIsSlow(false);
       activeRequestRef.current = null;
       const abortReason = abortReasonRef.current;
       abortReasonRef.current = null;
@@ -698,6 +722,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
             durationMs={recorder.durationMs}
             isGenerating={isGeneratingNotes}
             hasTimedOut={hasTimedOut}
+            isSlow={isSlow}
             generatingMessages={voiceProcessingMessages}
             onPause={recorder.pause}
             onResume={recorder.resume}

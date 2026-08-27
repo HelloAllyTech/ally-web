@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { toast } from "sonner";
@@ -53,11 +53,13 @@ vi.mock("@assets/icons", () => ({ MicIcon: () => <svg data-testid="mic-icon" /> 
 // The recording surface is exercised in its own scope; here just detect that it
 // opened when the mic is clicked and expose a button to trigger generation.
 vi.mock("../VoiceNotePanel", () => ({
-  default: ({ onGenerate }: any) => (
+  default: ({ onGenerate, isSlow, hasTimedOut }: any) => (
     <div data-testid="voice-panel">
       <button data-testid="voice-generate" onClick={onGenerate}>
         generate
       </button>
+      {isSlow && <span data-testid="voice-slow" />}
+      {hasTimedOut && <span data-testid="voice-timed-out" />}
     </div>
   ),
 }));
@@ -493,9 +495,7 @@ describe("CreateNoteDrawer", () => {
 
     // Retrying can never succeed, so it must not read like a transient failure.
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/ask an administrator/i),
-      ),
+      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/ask an administrator/i)),
     );
     expect(toast.error).not.toHaveBeenCalledWith(expect.stringMatching(/try again/i));
   });
@@ -517,5 +517,91 @@ describe("CreateNoteDrawer", () => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/try again/i)),
     );
     expect(mockSaveNoteTranscript).not.toHaveBeenCalled();
+  });
+
+  describe("slow generate calls", () => {
+    // The whole point of the change these cover: passing the slow mark used to
+    // abort a request the server was still working on, so a field-heavy org
+    // lost every dictation at 45s while ally-be went on to finish the job.
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    const pendingRequest = () => {
+      const abort = vi.fn();
+      let settle: (v: any) => void = () => {};
+      const promise = new Promise(resolve => {
+        settle = resolve;
+      });
+      mockGenerateNoteFromAudio.mockReturnValue({ unwrap: () => promise, abort });
+      return { abort, settle: (v: any) => settle(v) };
+    };
+
+    it("says it is still working at 45s without aborting the request", async () => {
+      mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+      const { abort } = pendingRequest();
+      recorderState.status = "stopped";
+      recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+      render(<CreateNoteDrawer open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+      fireEvent.click(screen.getByTestId("voice-generate"));
+
+      await act(async () => {
+        vi.advanceTimersByTime(46_000);
+      });
+
+      expect(screen.getByTestId("voice-slow")).toBeInTheDocument();
+      // The request is still in flight — this is the regression guard.
+      expect(abort).not.toHaveBeenCalled();
+      expect(screen.queryByTestId("voice-timed-out")).not.toBeInTheDocument();
+    });
+
+    it("still applies a slow result that lands after the 45s mark", async () => {
+      mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+      const { settle } = pendingRequest();
+      recorderState.status = "stopped";
+      recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+      render(<CreateNoteDrawer open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+      fireEvent.click(screen.getByTestId("voice-generate"));
+
+      await act(async () => {
+        vi.advanceTimersByTime(90_000);
+      });
+      await act(async () => {
+        settle({ transcript: "Client felt anxious.", values: [{ id: "age", value: "18-24" }] });
+      });
+
+      // A minute and a half is slow, not failed. The work lands and is saved.
+      await waitFor(() =>
+        expect(mockSaveNoteTranscript).toHaveBeenCalledWith({
+          chatId: 123,
+          transcript: "Client felt anxious.",
+        }),
+      );
+    });
+
+    it("does eventually abort at the hard ceiling so a hung request ends", async () => {
+      mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+      const { abort } = pendingRequest();
+      recorderState.status = "stopped";
+      recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+      render(<CreateNoteDrawer open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+      fireEvent.click(screen.getByTestId("voice-generate"));
+
+      await act(async () => {
+        vi.advanceTimersByTime(301_000);
+      });
+
+      expect(abort).toHaveBeenCalled();
+      expect(screen.getByTestId("voice-timed-out")).toBeInTheDocument();
+    });
   });
 });
