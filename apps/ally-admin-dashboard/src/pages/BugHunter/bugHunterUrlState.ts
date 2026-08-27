@@ -213,11 +213,16 @@ export interface BugHunterUrlActions {
   /**
    * Scopes the table to one sweep, or drops the scope with `null`.
    *
-   * Clears the other filters in the same write, deliberately. This is reached
-   * by clicking a count in the shift log — "the 10 that sweep found" — and
-   * intersecting that with a severity filter left over from earlier would
-   * answer a question nobody asked, while still showing "10" in the log. One
-   * `write` call, not five setters, for the reason `write`'s doc gives.
+   * Entering a scope clears the other filters in the same write, deliberately.
+   * This is reached by clicking a count in the shift log — "the 10 that sweep
+   * found" — and intersecting that with a severity filter left over from
+   * earlier would answer a question nobody asked, while still showing "10" in
+   * the log. One `write` call, not five setters, for the reason `write`'s doc
+   * gives.
+   *
+   * Leaving a scope (`null`, "Show all bugs") does not: there is no stale
+   * scope left to collide with, so whatever the admin had filtered on before
+   * or during the scoped view stays exactly as they left it.
    */
   setRun: (runId: string | null) => void;
   setRepos: (repos: string[]) => void;
@@ -369,16 +374,21 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     (runId: string | null) =>
       write({
         [BUG_HUNTER_PARAM.run]: runId,
-        // Same single call, so nothing is clobbered — see `write`'s doc.
-        [BUG_HUNTER_PARAM.bucket]: null,
-        [BUG_HUNTER_PARAM.search]: null,
-        [BUG_HUNTER_PARAM.repo]: null,
-        [BUG_HUNTER_PARAM.severity]: null,
-        [BUG_HUNTER_PARAM.source]: null,
-        [BUG_HUNTER_PARAM.status]: null,
-        [BUG_HUNTER_PARAM.stage]: null,
-        [BUG_HUNTER_PARAM.age]: null,
-        [BUG_HUNTER_PARAM.duplicates]: null,
+        // Only entering a scope clears the rest — see this setter's doc. Leaving
+        // one ("Show all bugs") has no stale-filter problem to guard against, so
+        // whatever the admin had set stays set.
+        ...(runId !== null && {
+          // Same single call, so nothing is clobbered — see `write`'s doc.
+          [BUG_HUNTER_PARAM.bucket]: null,
+          [BUG_HUNTER_PARAM.search]: null,
+          [BUG_HUNTER_PARAM.repo]: null,
+          [BUG_HUNTER_PARAM.severity]: null,
+          [BUG_HUNTER_PARAM.source]: null,
+          [BUG_HUNTER_PARAM.status]: null,
+          [BUG_HUNTER_PARAM.stage]: null,
+          [BUG_HUNTER_PARAM.age]: null,
+          [BUG_HUNTER_PARAM.duplicates]: null,
+        }),
       }),
     [write],
   );
