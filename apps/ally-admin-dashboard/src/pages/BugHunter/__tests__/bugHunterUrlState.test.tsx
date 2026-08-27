@@ -365,6 +365,31 @@ describe("writing the query string", () => {
     expect(search()).toBe("");
   });
 
+  /**
+   * Leaving a sweep scope is not the same gesture as entering one: entering
+   * clears the other filters because a stale filter would silently narrow the
+   * new scope, but "Show all bugs" is the admin asking to go back to what they
+   * had, minus the scope. Wiping every filter on the way out throws away work
+   * for no reason the entry-side doc gives.
+   */
+  it("leaves the other filters alone when dropping the scope", () => {
+    mount(
+      `/?run=run-a&bucket=closed&q=terms&repo=ally-be&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.LINT_ERROR}&status=${BugFindingStatus.NEW}&age=stale&dup=1`,
+    );
+    fireEvent.click(screen.getByText("scope none"));
+
+    const state = parsed();
+    expect(state.run).toBeNull();
+    expect(state.bucket).toBe("closed");
+    expect(state.search).toBe("terms");
+    expect(state.repos).toEqual(["ally-be"]);
+    expect(state.severities).toEqual([BugFindingSeverity.HIGH]);
+    expect(state.sources).toEqual([BugFindingSource.LINT_ERROR]);
+    expect(state.statuses).toEqual([BugFindingStatus.NEW]);
+    expect(state.age).toBe("stale");
+    expect(state.duplicatesOnly).toBe(true);
+  });
+
   it("keeps unrelated params written by anything else on the page", () => {
     mount("/?tab=overview");
     fireEvent.click(screen.getByText("severity high"));
