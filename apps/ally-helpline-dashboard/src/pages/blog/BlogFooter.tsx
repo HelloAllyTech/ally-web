@@ -15,7 +15,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
   containerClassName = "max-w-6xl",
   className = "",
 }) => (
-  <footer className={`blog-sans mt-16 border-t border-[#141413]/10 bg-[#FAF9F5] ${className}`}>
+  <footer className={`blog-serif mt-16 border-t border-[#141413]/10 bg-[#FAF9F5] ${className}`}>
     <div
       className={`mx-auto flex ${containerClassName} flex-col gap-4 px-6 py-8 text-sm text-[#87867F] sm:flex-row sm:items-center sm:justify-between`}
     >

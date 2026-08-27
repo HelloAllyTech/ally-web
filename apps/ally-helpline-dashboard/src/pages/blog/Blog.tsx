@@ -53,7 +53,7 @@ const BlogCard: FC<{ post: BlogPost; index: number }> = ({ post, index }) => (
     <CardCover post={post} index={index} className="aspect-[16/10]" />
     <div className="flex flex-1 flex-col p-5">
       <p className="text-xs text-[#87867F]">{formatDate(postDate(post))}</p>
-      <h3 className="blog-serif mt-2 text-xl leading-snug text-[#141413]">{post.title}</h3>
+      <h3 className="mt-2 text-xl leading-snug text-[#141413]">{post.title}</h3>
       {post.category && (
         <p className="mt-auto flex items-center gap-1.5 pt-6 text-xs text-[#87867F]">
           <svg
@@ -86,9 +86,7 @@ const FeaturedCard: FC<{ post: BlogPost }> = ({ post }) => (
         {post.category && <span>{post.category} · </span>}
         {formatDate(postDate(post))}
       </p>
-      <h2 className="blog-serif mt-4 text-3xl leading-tight text-[#141413] sm:text-4xl">
-        {post.title}
-      </h2>
+      <h2 className="mt-4 text-3xl leading-tight text-[#141413] sm:text-4xl">{post.title}</h2>
       {post.tldr && <p className="mt-4 line-clamp-3 leading-relaxed text-[#5E5D59]">{post.tldr}</p>}
       <span className="mt-8 w-fit rounded-lg bg-[#141413] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors group-hover:bg-[#3D3D3A]">
         Read more
@@ -149,7 +147,7 @@ export const Blog: FC = () => {
   const gridPosts = featuredPost ? filteredPosts.slice(1) : filteredPosts;
 
   return (
-    <div className="blog-sans flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-28 pt-8">
         <div className="flex items-center justify-between">
           <Ally />
@@ -177,7 +175,7 @@ export const Blog: FC = () => {
                     key={category}
                     type="button"
                     onClick={() => setActiveCategory(isActive ? null : category)}
-                    className={`blog-serif group flex items-baseline gap-3 text-left text-4xl leading-tight transition-colors sm:text-5xl ${
+                    className={`group flex items-baseline gap-3 text-left text-4xl leading-tight transition-colors sm:text-5xl ${
                       isActive ? "text-[#D97757]" : "text-[#141413] hover:text-[#5E5D59]"
                     }`}
                   >
