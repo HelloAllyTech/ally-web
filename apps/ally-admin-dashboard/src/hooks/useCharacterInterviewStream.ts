@@ -96,8 +96,20 @@ export const mapServerMessagesToFeed = (
       return;
     }
 
-    if (content) {
-      feed.push({ id: baseId, role: "assistant", content });
+    // A turn that died mid-flight leaves a row with no prose at all. It used to
+    // render as nothing, so after a reload the admin saw their own message
+    // answered by silence — indistinguishable from the agent still thinking.
+    const errored = Boolean(metadata.errored);
+    const errorText = errored
+      ? (metadata.errorMessage ?? en.characterInterview.streamFailed)
+      : undefined;
+    if (content || errored) {
+      feed.push({
+        id: baseId,
+        role: "assistant",
+        content,
+        ...(errorText ? { error: errorText } : {}),
+      });
     }
     for (const question of metadata.questions ?? []) {
       feed.push({
