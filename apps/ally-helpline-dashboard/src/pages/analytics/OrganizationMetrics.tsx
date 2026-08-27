@@ -1,21 +1,75 @@
-import { FunctionComponent, useMemo, useState } from "react";
+import { FunctionComponent, ReactNode, useMemo, useState } from "react";
 
 import "@carbon/charts/styles.css";
 import "./organization-metrics.scss";
 
 import { LineChart, SimpleBarChart } from "@carbon/charts-react";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
-import { InlineNotification, SkeletonText, Tile } from "@ally-ui-mono/ui-shared";
-import { useGetOrganizationMetricsQuery } from "@api";
+import { InlineNotification, SkeletonText, Tile, logger } from "@ally-ui-mono/ui-shared";
+import {
+  useGetOrganizationMetricsQuery,
+  useGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
+  userAPI,
+} from "@api";
 import { ToggleButtonGroup } from "@components";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
+import { store } from "@store";
 import { OrganizationMetricsRange, ORGANIZATION_METRICS_RANGES } from "@types";
 
 import { ChartCard, PALETTE, lineOpts, timeBarOpts } from "./chartKit";
 import { CourseUsageTable } from "./CourseUsageTable";
 import { LearnerUsageTable } from "./LearnerUsageTable";
+import { SortableMetricBlock } from "./SortableMetricBlock";
+
+/**
+ * The 6 reorderable chart/table blocks below the fixed KPI strip. The KPI
+ * strip itself stays a fixed summary row (not reorderable) — see the "Reorder
+ * scope" decision in the org-metrics-drag-reorder plan.
+ */
+const ORG_METRICS_BLOCK_IDS = [
+  "simulationsTrend",
+  "activeUsersTrend",
+  "newLearnersTrend",
+  "mostUsedSimulations",
+  "learnerUsage",
+  "courseUsage",
+] as const;
+type OrgMetricsBlockId = (typeof ORG_METRICS_BLOCK_IDS)[number];
+
+// Blocks that stay full-width regardless of position, same as their previous
+// hardcoded layout (ranked list + the two data tables read better wide; the
+// 3 trend charts stay half-width tiles).
+const WIDE_BLOCK_IDS = new Set<OrgMetricsBlockId>([
+  "mostUsedSimulations",
+  "learnerUsage",
+  "courseUsage",
+]);
+
+/**
+ * Resolves a saved block order into a full render order: drops any id that
+ * isn't a current block (stale/corrupt preference), then appends any current
+ * block missing from the saved order (e.g. a block added after the user last
+ * saved a layout) at the end, in default order.
+ */
+const resolveLayout = (saved: string[] | undefined): OrgMetricsBlockId[] => {
+  const known = new Set<string>(ORG_METRICS_BLOCK_IDS);
+  const validSaved = (saved ?? []).filter((id): id is OrgMetricsBlockId => known.has(id));
+  const missing = ORG_METRICS_BLOCK_IDS.filter(id => !validSaved.includes(id));
+  return [...validSaved, ...missing];
+};
 
 interface KpiTileConfig {
   key: string;
@@ -60,6 +114,46 @@ export const OrganizationMetrics: FunctionComponent = () => {
     { range },
     { skip: !canView },
   );
+
+  // Per-user saved order of the 6 chart/table blocks below — same
+  // per-user preferences store the admin dashboard uses for its sidebar
+  // nav order (admin_sidebar_order). No layout saved yet → default order.
+  const { data: preferences } = useGetUserPreferencesQuery(undefined, { skip: !canView });
+  const [updateUserPreferences] = useUpdateUserPreferencesMutation();
+  const order = resolveLayout(preferences?.data?.org_metrics_layout);
+
+  // Press-and-drag from the block's grip button only (see SortableMetricBlock)
+  // — mirrors the sidebar reorder's activation distance so a stray click on
+  // the handle doesn't misfire as a drag.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  /**
+   * Autosaves a new block order: optimistically patches the RTK Query cache
+   * so the layout reorders immediately (no explicit Save button), then rolls
+   * back and toasts on a failed save. Mirrors reorderSidebar in
+   * ally-admin-dashboard's useUser.ts, the identical pattern for the sidebar
+   * nav's own per-user order.
+   */
+  const handleDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = order.indexOf(active.id as OrgMetricsBlockId);
+    const newIndex = order.indexOf(over.id as OrgMetricsBlockId);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const nextOrder = arrayMove(order, oldIndex, newIndex);
+
+    const patch = store.dispatch(
+      userAPI.util.updateQueryData("getUserPreferences", undefined, draft => {
+        draft.data.org_metrics_layout = nextOrder;
+      }),
+    );
+    try {
+      await updateUserPreferences({ org_metrics_layout: nextOrder }).unwrap();
+    } catch (error) {
+      patch.undo();
+      toast.error(t("organizationMetrics.states.reorderFailed"));
+      logger.info(`Failed to save org metrics layout: ${error}`);
+    }
+  };
 
   const rangeOptions = useMemo(
     () =>
@@ -177,6 +271,110 @@ export const OrganizationMetrics: FunctionComponent = () => {
     );
   }
 
+  // Content for each reorderable block, keyed by id — built here (not in JSX)
+  // so both the default markup and resolveLayout's saved order render the
+  // exact same block regardless of position.
+  const blocks: Record<OrgMetricsBlockId, ReactNode> = {
+    simulationsTrend: (
+      <div data-testid="organization-metrics-block-simulations-trend">
+        <ChartCard
+          title={t("organizationMetrics.charts.simulationsTrend")}
+          empty={!simulationsData.some(point => point.value > 0)}
+          {...chartStates}
+        >
+          <SimpleBarChart
+            data={simulationsData}
+            options={timeBarOpts({
+              leftTitle: t("organizationMetrics.charts.axis.simulations"),
+              bottomTitle: bucketTitle,
+              colorScale: { [simulationsSeries]: PALETTE.blue },
+            })}
+          />
+        </ChartCard>
+      </div>
+    ),
+    activeUsersTrend: (
+      <div data-testid="organization-metrics-block-active-users-trend">
+        <ChartCard
+          title={t("organizationMetrics.charts.activeUsersTrend")}
+          caption={t("organizationMetrics.kpis.activeUsersCaption")}
+          empty={!activeUsersData.some(point => point.value > 0)}
+          {...chartStates}
+        >
+          <LineChart
+            data={activeUsersData}
+            options={lineOpts({
+              leftTitle: t("organizationMetrics.charts.axis.users"),
+              bottomTitle: bucketTitle,
+              legend: false,
+              colorScale: { [activeUsersSeries]: PALETTE.purple },
+            })}
+          />
+        </ChartCard>
+      </div>
+    ),
+    newLearnersTrend: (
+      <div data-testid="organization-metrics-block-new-learners-trend">
+        <ChartCard
+          title={t("organizationMetrics.charts.newLearnersTrend")}
+          caption={t("organizationMetrics.kpis.newLearnersOnboardedCaption")}
+          empty={!newLearnersData.some(point => point.value > 0)}
+          {...chartStates}
+        >
+          <SimpleBarChart
+            data={newLearnersData}
+            options={timeBarOpts({
+              leftTitle: t("organizationMetrics.charts.axis.newLearners"),
+              bottomTitle: bucketTitle,
+              colorScale: { [newLearnersSeries]: PALETTE.teal },
+            })}
+          />
+        </ChartCard>
+      </div>
+    ),
+    mostUsedSimulations: (
+      <div data-testid="organization-metrics-most-used">
+        <ChartCard
+          title={t("organizationMetrics.mostUsedSimulations.title")}
+          caption={t("organizationMetrics.mostUsedSimulations.caption")}
+          empty={mostUsedSimulations.length === 0}
+          {...chartStates}
+        >
+          <ol className="flex flex-col gap-2" data-testid="organization-metrics-most-used-list">
+            {mostUsedSimulations.map((simulation, index) => (
+              <li
+                key={simulation.scenarioId}
+                className="flex items-center justify-between gap-3 border-b border-border-light pb-2 last:border-b-0 last:pb-0"
+              >
+                <span className="flex items-center gap-3 min-w-0">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-background-tertiary text-xs font-medium text-typography-700">
+                    {index + 1}
+                  </span>
+                  <span className="truncate text-sm text-typography-900">{simulation.title}</span>
+                </span>
+                <span className="flex-shrink-0 text-sm text-typography-600">
+                  {t("organizationMetrics.mostUsedSimulations.sessions", {
+                    count: simulation.sessionCount,
+                  })}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </ChartCard>
+      </div>
+    ),
+    learnerUsage: (
+      <Tile className="border border-border-light" data-testid="organization-metrics-learner-usage">
+        <LearnerUsageTable range={range} />
+      </Tile>
+    ),
+    courseUsage: (
+      <Tile className="border border-border-light" data-testid="organization-metrics-course-usage">
+        <CourseUsageTable />
+      </Tile>
+    ),
+  };
+
   return (
     <div className="flex flex-col gap-4 py-4" data-testid="organization-metrics-section">
       <div
@@ -218,96 +416,20 @@ export const OrganizationMetrics: FunctionComponent = () => {
         ))}
       </div>
 
-      <div
-        className="grid grid-cols-1 xl:grid-cols-2 gap-4"
-        data-testid="organization-metrics-charts"
-      >
-        <ChartCard
-          title={t("organizationMetrics.charts.simulationsTrend")}
-          empty={!simulationsData.some(point => point.value > 0)}
-          {...chartStates}
-        >
-          <SimpleBarChart
-            data={simulationsData}
-            options={timeBarOpts({
-              leftTitle: t("organizationMetrics.charts.axis.simulations"),
-              bottomTitle: bucketTitle,
-              colorScale: { [simulationsSeries]: PALETTE.blue },
-            })}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title={t("organizationMetrics.charts.activeUsersTrend")}
-          caption={t("organizationMetrics.kpis.activeUsersCaption")}
-          empty={!activeUsersData.some(point => point.value > 0)}
-          {...chartStates}
-        >
-          <LineChart
-            data={activeUsersData}
-            options={lineOpts({
-              leftTitle: t("organizationMetrics.charts.axis.users"),
-              bottomTitle: bucketTitle,
-              legend: false,
-              colorScale: { [activeUsersSeries]: PALETTE.purple },
-            })}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title={t("organizationMetrics.charts.newLearnersTrend")}
-          caption={t("organizationMetrics.kpis.newLearnersOnboardedCaption")}
-          empty={!newLearnersData.some(point => point.value > 0)}
-          {...chartStates}
-        >
-          <SimpleBarChart
-            data={newLearnersData}
-            options={timeBarOpts({
-              leftTitle: t("organizationMetrics.charts.axis.newLearners"),
-              bottomTitle: bucketTitle,
-              colorScale: { [newLearnersSeries]: PALETTE.teal },
-            })}
-          />
-        </ChartCard>
-      </div>
-
-      <div data-testid="organization-metrics-most-used">
-        <ChartCard
-          title={t("organizationMetrics.mostUsedSimulations.title")}
-          caption={t("organizationMetrics.mostUsedSimulations.caption")}
-          empty={mostUsedSimulations.length === 0}
-          {...chartStates}
-        >
-          <ol className="flex flex-col gap-2" data-testid="organization-metrics-most-used-list">
-            {mostUsedSimulations.map((simulation, index) => (
-              <li
-                key={simulation.scenarioId}
-                className="flex items-center justify-between gap-3 border-b border-border-light pb-2 last:border-b-0 last:pb-0"
-              >
-                <span className="flex items-center gap-3 min-w-0">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-background-tertiary text-xs font-medium text-typography-700">
-                    {index + 1}
-                  </span>
-                  <span className="truncate text-sm text-typography-900">{simulation.title}</span>
-                </span>
-                <span className="flex-shrink-0 text-sm text-typography-600">
-                  {t("organizationMetrics.mostUsedSimulations.sessions", {
-                    count: simulation.sessionCount,
-                  })}
-                </span>
-              </li>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={order} strategy={rectSortingStrategy}>
+          <div
+            className="grid grid-cols-1 xl:grid-cols-2 gap-4"
+            data-testid="organization-metrics-charts"
+          >
+            {order.map(id => (
+              <SortableMetricBlock key={id} id={id} wide={WIDE_BLOCK_IDS.has(id)}>
+                {blocks[id]}
+              </SortableMetricBlock>
             ))}
-          </ol>
-        </ChartCard>
-      </div>
-
-      <div data-testid="organization-metrics-learner-usage">
-        <LearnerUsageTable range={range} />
-      </div>
-
-      <div data-testid="organization-metrics-course-usage">
-        <CourseUsageTable />
-      </div>
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };

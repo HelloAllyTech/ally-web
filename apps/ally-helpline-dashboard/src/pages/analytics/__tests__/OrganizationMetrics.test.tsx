@@ -4,7 +4,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { OrganizationMetrics } from "../OrganizationMetrics";
 
 const mockUseGetOrganizationMetricsQuery = vi.fn();
+const mockUseGetUserPreferencesQuery = vi.fn();
+const mockUpdateUserPreferences = vi.fn();
 const mockRefetch = vi.fn();
+const mockDispatch = vi.fn(() => ({ undo: vi.fn() }));
 
 let mockPermissions: string[] = ["view:organization-metrics"];
 
@@ -12,9 +15,30 @@ vi.mock("@hooks", () => ({
   useUser: () => ({ permissions: mockPermissions }),
 }));
 
+// The reorder autosave path (SortableMetricBlock's drag handle → handleDragEnd
+// → optimistic cache patch) isn't exercised here: dnd-kit drives its sortable
+// context off real PointerEvent sequences, which jsdom can't simulate
+// reliably — the same reason ally-admin-dashboard's Sidebar/reorderSidebar
+// (the identical pattern this mirrors) isn't drag-tested either. `userAPI` is
+// mocked only so the component doesn't throw at import/render time.
 vi.mock("@api", () => ({
   useGetOrganizationMetricsQuery: (...args: unknown[]) =>
     mockUseGetOrganizationMetricsQuery(...args),
+  useGetUserPreferencesQuery: (...args: unknown[]) => mockUseGetUserPreferencesQuery(...args),
+  useUpdateUserPreferencesMutation: () => [
+    (...args: unknown[]) => ({
+      unwrap: () => mockUpdateUserPreferences(...args),
+    }),
+  ],
+  userAPI: { util: { updateQueryData: vi.fn(() => ({ type: "mock-patch" })) } },
+}));
+
+vi.mock("@store", () => ({
+  store: { dispatch: (...args: unknown[]) => mockDispatch(...args) },
+}));
+
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn() },
 }));
 
 // OrganizationMetrics renders the learner and course usage tables as
@@ -64,6 +88,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     </div>
   ),
   Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+  logger: { info: vi.fn() },
 }));
 
 const BASE_RESPONSE = {
@@ -96,14 +121,24 @@ const queryResult = (overrides: Partial<Record<string, unknown>> = {}) => ({
   ...overrides,
 });
 
+// useGetUserPreferencesQuery has no transformResponse (see api/user.ts), so
+// its RTK-Query-level `.data` is the raw server envelope `{ data: UserPreferences }`
+// verbatim — the same double `data` unwrap useScenarioLanguages.ts relies on
+// for `default_language_id`. Mocking the hook's return value therefore needs
+// both layers.
+const preferencesResult = (org_metrics_layout?: string[]) => ({
+  data: { data: { org_metrics_layout } },
+});
+
 describe("OrganizationMetrics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPermissions = ["view:organization-metrics"];
     mockUseGetOrganizationMetricsQuery.mockReturnValue(queryResult({ data: BASE_RESPONSE }));
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
   });
 
-  it("shows the access notice and skips the query for users without the permission", () => {
+  it("shows the access notice and skips both queries for users without the permission", () => {
     mockPermissions = [];
     render(<OrganizationMetrics />);
 
@@ -113,6 +148,7 @@ describe("OrganizationMetrics", () => {
       { range: "30d" },
       { skip: true },
     );
+    expect(mockUseGetUserPreferencesQuery).toHaveBeenCalledWith(undefined, { skip: true });
   });
 
   it("shows a skeleton for every KPI tile while loading", () => {
@@ -214,5 +250,70 @@ describe("OrganizationMetrics", () => {
 
     expect(screen.getAllByTestId("bar-chart")).toHaveLength(2); // simulations + new learners
     expect(screen.getAllByTestId("line-chart")).toHaveLength(1); // active users
+  });
+
+  const blockOrder = () =>
+    screen
+      .getAllByTestId(/^sortable-metric-block-/)
+      .map(el => el.getAttribute("data-testid")?.replace("sortable-metric-block-", ""));
+
+  it("renders the 6 chart/table blocks in the default order when no layout is saved", () => {
+    render(<OrganizationMetrics />);
+
+    expect(blockOrder()).toEqual([
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+      "courseUsage",
+    ]);
+  });
+
+  it("renders blocks in the user's saved order", () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(
+      preferencesResult([
+        "courseUsage",
+        "learnerUsage",
+        "mostUsedSimulations",
+        "newLearnersTrend",
+        "activeUsersTrend",
+        "simulationsTrend",
+      ]),
+    );
+    render(<OrganizationMetrics />);
+
+    expect(blockOrder()).toEqual([
+      "courseUsage",
+      "learnerUsage",
+      "mostUsedSimulations",
+      "newLearnersTrend",
+      "activeUsersTrend",
+      "simulationsTrend",
+    ]);
+  });
+
+  it("drops unknown/stale saved ids and appends any block missing from a saved layout", () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(
+      preferencesResult(["aRemovedBlock", "courseUsage"]),
+    );
+    render(<OrganizationMetrics />);
+
+    // "courseUsage" keeps its saved position first; "aRemovedBlock" is
+    // dropped entirely; every other block appends in default order.
+    expect(blockOrder()).toEqual([
+      "courseUsage",
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+    ]);
+  });
+
+  it("renders a drag handle for every block, labelled for assistive tech", () => {
+    render(<OrganizationMetrics />);
+
+    expect(screen.getAllByLabelText("Drag to reorder")).toHaveLength(6);
   });
 });
