@@ -276,6 +276,10 @@ export interface RoleplayCopilotMessageMetadata {
   /** On assistant rows: structured cards emitted during that turn. */
   questions?: CopilotQuestionEvent[];
   behaviourReviews?: CopilotBehaviourReviewEvent[];
+  /** The turn died — set by the server so a reload still shows the failure. */
+  errored?: boolean;
+  /** What to tell the trainer about it; falls back to generic copy. */
+  errorMessage?: string;
   [key: string]: unknown;
 }
 

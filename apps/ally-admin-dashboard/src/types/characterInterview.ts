@@ -115,6 +115,10 @@ export interface CharacterInterviewServerMessage {
     answer?: CharacterInterviewStructuredAnswer;
     questions?: CharacterInterviewQuestionEvent[];
     characterDraft?: CharacterData;
+    /** The turn died — set by the server so a reload still shows the failure. */
+    errored?: boolean;
+    /** What to tell the admin about it; falls back to generic copy. */
+    errorMessage?: string;
     [key: string]: unknown;
   } | null;
 }

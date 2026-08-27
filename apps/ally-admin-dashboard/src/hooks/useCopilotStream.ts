@@ -121,12 +121,21 @@ export const mapServerMessagesToFeed = (
         return result?.name && typeof summary === "string" ? `${result.name}: ${summary}` : null;
       })
       .filter((note): note is string => Boolean(note));
-    if (content || toolNotes.length > 0) {
+    // A turn that died mid-flight leaves a row with no prose and no tools. It
+    // used to render as nothing at all, so after a reload the trainer saw their
+    // own message answered by silence and no way to tell a broken turn from one
+    // still thinking. `errored` is what keeps the failure on screen.
+    const errored = Boolean(metadata.errored);
+    const errorText = errored
+      ? (metadata.errorMessage ?? en.roleplayStudio.copilot.streamFailed)
+      : undefined;
+    if (content || toolNotes.length > 0 || errored) {
       feed.push({
         id: baseId,
         role: "assistant",
         content,
         ...(toolNotes.length > 0 ? { toolNotes } : {}),
+        ...(errorText ? { error: errorText } : {}),
       });
     }
     for (const question of metadata.questions ?? []) {

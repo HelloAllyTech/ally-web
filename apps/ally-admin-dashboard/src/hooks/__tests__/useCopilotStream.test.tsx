@@ -5,6 +5,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { en } from "@constants";
 import { useCopilotStream, parseSseBuffer } from "@hooks/useCopilotStream";
 import roleplaySpecSlice, { hydrateSpec } from "@reducer/roleplaySpecReducer";
 import { createEmptyRoleplaySpec } from "@utils/roleplaySpec";
@@ -448,6 +449,35 @@ describe("mapServerMessagesToFeed", () => {
     // The answer row strips its bracket prefix.
     const answerBubble = feed.find(m => m.content === "Reflective listening" && m.role === "user");
     expect(answerBubble).toBeDefined();
+  });
+
+  it("keeps a failed turn on screen after a reload", async () => {
+    // A turn that died left a row with no prose and no tool results, which
+    // rendered as nothing at all — so the trainer's own message sat there
+    // answered by silence, indistinguishable from the copilot still thinking.
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const feed = mapServerMessagesToFeed([
+      { id: "u1", seq: 1, role: "user" as const, content: "Rewrite the persona" },
+      {
+        id: "a1",
+        seq: 2,
+        role: "assistant" as const,
+        content: null,
+        metadata: { errored: true, errorMessage: "That turn ran past the response limit." },
+      },
+    ] as never);
+
+    expect(feed).toHaveLength(2);
+    expect(feed[1].error).toBe("That turn ran past the response limit.");
+  });
+
+  it("falls back to generic copy when the server sent no reason", async () => {
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const feed = mapServerMessagesToFeed([
+      { id: "a1", seq: 1, role: "assistant" as const, content: null, metadata: { errored: true } },
+    ] as never);
+
+    expect(feed[0].error).toBe(en.roleplayStudio.copilot.streamFailed);
   });
 
   it("leaves unanswered questions interactive", async () => {
