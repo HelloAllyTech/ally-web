@@ -13,6 +13,13 @@ interface VoiceNotePanelProps {
   isGenerating: boolean;
   /** True once the drawer has aborted a generate call for taking too long. */
   hasTimedOut: boolean;
+  /**
+   * True once a generate call has passed the slow-notice mark but is STILL
+   * RUNNING. Not a failure and not a deadline — the request is still going and
+   * will still land; this only changes what the counsellor is told while they
+   * wait, so they can decide whether to keep waiting or bail out.
+   */
+  isSlow: boolean;
   /** Rotating status lines shown while generating (already translated). */
   generatingMessages: string[];
   onPause: () => void;
@@ -64,6 +71,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   durationMs,
   isGenerating,
   hasTimedOut,
+  isSlow,
   generatingMessages,
   onPause,
   onResume,
@@ -132,14 +140,28 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
         data-testid="voice-note-generating"
       >
         <Loader2 className="h-6 w-6 animate-spin text-[#264D8E]" />
-        <motion.p
-          key={messageIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="font-primary text-sm text-[#525252]"
-        >
-          {generatingMessages[messageIndex] ?? t("calls.createNote.voice.generating")}
-        </motion.p>
+        {isSlow ? (
+          // Stop cycling the stage messages once we're past the expected
+          // window: rotating "Transcribing… / Extracting…" past a minute reads
+          // as a stuck animation rather than progress. Say plainly that it's
+          // slower than usual and that it's still going — the Cancel button
+          // below is already the way out, so this needs no control of its own.
+          <p
+            className="font-primary text-sm text-[#525252] text-center"
+            data-testid="voice-note-slow"
+          >
+            {t("calls.createNote.voice.stillWorking")}
+          </p>
+        ) : (
+          <motion.p
+            key={messageIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="font-primary text-sm text-[#525252]"
+          >
+            {generatingMessages[messageIndex] ?? t("calls.createNote.voice.generating")}
+          </motion.p>
+        )}
         <button
           type="button"
           onClick={onDiscard}
