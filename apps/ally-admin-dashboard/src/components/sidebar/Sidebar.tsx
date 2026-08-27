@@ -335,7 +335,7 @@ export const Sidebar: React.FC = () => {
             onChange={e => setNavSearch(e.target.value)}
             placeholder={en.common.searchMenu}
             aria-label={en.common.searchMenu}
-            className="w-full rounded-lg border border-border-light bg-transparent pl-9 pr-8 py-2 text-sm text-typography-900 placeholder-typography-600 outline-none focus:border-primary-500"
+            className="w-full rounded-none border-0 border-b border-border-dark bg-secondary-50 pl-9 pr-8 py-2 text-sm text-typography-900 placeholder-typography-600 outline-none focus:border-b-2 focus:border-primary-500"
           />
           {navSearch.length > 0 && (
             <button
