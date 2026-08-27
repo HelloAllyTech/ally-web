@@ -1172,7 +1172,9 @@
           "transcribing": "Transcribing your recording…",
           "extracting": "Extracting note details…",
           "populating": "Filling in the fields…"
-        }
+        },
+        "extractionFailed": "We saved what you dictated, but couldn't fill the fields from it. Please fill them in below, or try recording again.",
+        "notEnabled": "Voice notes aren't switched on for your organisation. Ask an administrator to enable them."
       }
     },
     "table": {

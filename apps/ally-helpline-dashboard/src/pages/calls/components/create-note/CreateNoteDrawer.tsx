@@ -534,15 +534,14 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       // that, so there's nothing further to surface here.
       if (abortReason === "timeout" || abortReason === "cancel") return;
 
-      // The backend may throw on field-extraction while having already
-      // produced a transcript — the other half of this fix, landing
-      // separately in ally-be, has it return that transcript alongside the
-      // failure instead of nothing. Treat it as a partial success so a
-      // successful dictation is never thrown away just because extraction
-      // failed. Until that backend change ships, error responses carry no
-      // transcript and this falls through to the generic failure below,
-      // which is today's existing (if regrettable) behaviour.
-      const errorData = (error as { data?: { transcript?: string; message?: string } })?.data;
+      // The backend throws on field-extraction while having already produced a
+      // transcript, and (since the VOICE_NOTE_EXTRACTION_FAILED change in
+      // ally-be) returns that transcript alongside the failure. Salvage it: the
+      // counsellor already spoke the note, and the alternative is making them
+      // record the whole thing again because a model had a bad minute.
+      const errorData = (
+        error as { data?: { transcript?: string; message?: string; errorCode?: string } }
+      )?.data;
       const partialTranscript = errorData?.transcript?.trim();
       if (partialTranscript) {
         transcriptRef.current = transcriptRef.current
@@ -553,12 +552,25 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
           await saveNoteTranscript({ chatId, transcript: transcriptRef.current }).unwrap();
         } catch {
           // Best-effort: even if this save fails, don't turn a partial
-          // success into a hard failure — the counsellor is already told no
-          // fields were extracted.
+          // success into a hard failure — the counsellor is already told the
+          // fields weren't filled.
         }
         resetRecorder();
         setVoiceOpen(false);
-        toast(t("calls.createNote.voice.nothingExtracted"));
+        // NOT `nothingExtracted`: that reads as "the model found nothing in
+        // what you said", which is a legitimate outcome the counsellor should
+        // accept. This is a failure on our side, and saying so is what tells
+        // them retrying might work — and that their words were kept either way.
+        toast.error(t("calls.createNote.voice.extractionFailed"));
+        return;
+      }
+
+      // Three distinct failures used to collapse into one "please try again":
+      // the feature being switched off for the org (retrying can never work —
+      // an admin has to flip a toggle), no speech in the recording, and a
+      // genuine transient upstream failure.
+      if (errorData?.errorCode === "FEATURE_NOT_ENABLED") {
+        toast.error(t("calls.createNote.voice.notEnabled"));
         return;
       }
 

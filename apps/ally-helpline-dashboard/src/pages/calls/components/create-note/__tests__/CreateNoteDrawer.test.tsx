@@ -1,6 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { toast } from "sonner";
+
 import CreateNoteDrawer from "../CreateNoteDrawer";
 
 // --------------------- Mock hooks and modules --------------------- //
@@ -439,5 +441,81 @@ describe("CreateNoteDrawer", () => {
         transcript: "Just some dictation.",
       }),
     );
+  });
+
+  it("salvages the transcript the backend returns alongside an extraction failure", async () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    // ally-be throws VOICE_NOTE_EXTRACTION_FAILED with the transcript attached,
+    // rather than losing a dictation the counsellor already spoke.
+    mockGenerateNoteFromAudio.mockReturnValue({
+      unwrap: () =>
+        Promise.reject({
+          data: {
+            errorCode: "VOICE_NOTE_EXTRACTION_FAILED",
+            message: "We saved what you dictated…",
+            transcript: "Client felt anxious.",
+          },
+        }),
+      abort: vi.fn(),
+    });
+    recorderState.status = "stopped";
+    recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    fireEvent.click(screen.getByTestId("voice-generate"));
+
+    await waitFor(() =>
+      expect(mockSaveNoteTranscript).toHaveBeenCalledWith({
+        chatId: 123,
+        transcript: "Client felt anxious.",
+      }),
+    );
+    // Reported as a failure, not as "the model found nothing" — the counsellor
+    // needs to know retrying could work, and that their words were kept.
+    // Wording is free to change; what must hold is that it reads as a failure
+    // whose words were kept, not as "the model found nothing in what you said".
+    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/saved what you dictated/i));
+  });
+
+  it("tells the counsellor to ask an admin when the org toggle is off", async () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    mockGenerateNoteFromAudio.mockReturnValue({
+      unwrap: () => Promise.reject({ data: { errorCode: "FEATURE_NOT_ENABLED", message: "…" } }),
+      abort: vi.fn(),
+    });
+    recorderState.status = "stopped";
+    recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    fireEvent.click(screen.getByTestId("voice-generate"));
+
+    // Retrying can never succeed, so it must not read like a transient failure.
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/ask an administrator/i),
+      ),
+    );
+    expect(toast.error).not.toHaveBeenCalledWith(expect.stringMatching(/try again/i));
+  });
+
+  it("still shows the generic retry message for an unclassified failure", async () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    mockGenerateNoteFromAudio.mockReturnValue({
+      unwrap: () => Promise.reject({ data: { message: "boom" } }),
+      abort: vi.fn(),
+    });
+    recorderState.status = "stopped";
+    recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    fireEvent.click(screen.getByTestId("voice-generate"));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/try again/i)),
+    );
+    expect(mockSaveNoteTranscript).not.toHaveBeenCalled();
   });
 });
