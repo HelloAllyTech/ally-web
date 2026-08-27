@@ -107,6 +107,11 @@ const customFieldsAPI = baseAPI.injectEndpoints({
 
     getScribeVoiceNoteEnabled: builder.query<boolean, void>({
       query: () => ApiEndpoints.SETTINGS.GET_SCRIBE_VOICE_NOTE_ENABLED,
+      // Same endpoint as organizationSettings.ts's own-tenant query, so it must
+      // carry the same tag: for an account that is both admin and counsellor,
+      // flipping the toggle in Org Settings has to reach the Create Note
+      // drawer's copy too, not just the switch that was clicked.
+      providesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
     }),
   }),
 });
