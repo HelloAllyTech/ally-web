@@ -370,7 +370,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                     kind="tertiary"
                     size="sm"
                     className="mt-2"
-                    onClick={() => navigate(ROUTES.BUILDER)}
+                    onClick={() => (onClose ? onClose() : navigate(ROUTES.BUILDER))}
                   >
                     {strings.newSession}
                   </Button>

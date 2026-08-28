@@ -143,6 +143,12 @@ export const OrganizationMetrics: FunctionComponent = () => {
 
     const patch = store.dispatch(
       userAPI.util.updateQueryData("getUserPreferences", undefined, draft => {
+        // getUserPreferences may still be pending when a drag finishes right
+        // after the page loads (the draggable blocks render regardless of
+        // its status) — the cache draft is undefined until it resolves, so
+        // there's nothing to optimistically patch yet. Skip it; the mutation
+        // below still saves the new order.
+        if (!draft?.data) return;
         draft.data.org_metrics_layout = nextOrder;
       }),
     );
