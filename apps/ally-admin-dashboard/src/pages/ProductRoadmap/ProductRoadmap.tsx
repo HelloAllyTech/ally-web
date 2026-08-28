@@ -53,6 +53,7 @@ import { SavedViewTabs } from "./SavedViewTabs";
 import { SplitOpportunityModal } from "./SplitOpportunityModal";
 import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
 import { useSavedViews } from "./useSavedViews";
+import { canManageRoadmap } from "./utils/access";
 import { seedForHandle } from "./utils/builder";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
 import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
@@ -137,10 +138,11 @@ enum RoadmapTab {
  *   VIEW  — reach the tab and read everything. The route gate.
  *   VOTE  — file an opportunity, cast votes, comment, keep saved views.
  *   EDIT  — manage: stages, editing/deleting anyone's opportunity, taxonomy, split/merge,
- *           release notes, pinning views.
- * A SUPER_ADMIN holds VIEW + VOTE; only a SUPER_DUPER_ADMIN holds EDIT. Every manage affordance
- * below is hidden behind `canManage` — and the backend rejects it independently, so hiding it is
- * a courtesy rather than the enforcement.
+ *           month-board lane moves, opening a Builder session, pinning views.
+ * VIEW and VOTE come from the permission set every platform admin carries. EDIT is the
+ * permission AND the `product_roadmap_manage` feature toggle — see `canManage` below. Every
+ * manage affordance is hidden behind that flag, and the backend rejects it independently, so
+ * hiding it is a courtesy rather than the enforcement.
  *
  * URL is the state store for what should survive a refresh or a shared link:
  *   ?tab=<id>          selects the top-level tab
@@ -148,10 +150,14 @@ enum RoadmapTab {
  */
 export const ProductRoadmap: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { permissions, user } = useUser();
+  const { permissions, features, user } = useUser();
 
   const canVote = !!permissions?.includes(Permissions.VOTE_PRODUCT_ROADMAP);
-  const canManage = !!permissions?.includes(Permissions.EDIT_PRODUCT_ROADMAP);
+  /**
+   * The permission AND the `product_roadmap_manage` toggle — see canManageRoadmap for why the
+   * permission alone stopped meaning anything, and for the fail-closed rule.
+   */
+  const canManage = canManageRoadmap(permissions, features);
   /**
    * Whether the Bugs tab exists for this reader.
    *
