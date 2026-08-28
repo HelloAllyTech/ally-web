@@ -103,7 +103,6 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
   showFilters,
   isQueue,
   leading,
-  loaded,
   onLoadMore,
   layoutToggle,
 }) => {
@@ -198,11 +197,7 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
         </div>
 
         {canLoadMore && (
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            disabled={isFetching}
-            onClick={onLoadMore}
-          >
+          <Button variant={ButtonVariant.SECONDARY} disabled={isFetching} onClick={onLoadMore}>
             {isFetching ? "Loading…" : "Load more"}
           </Button>
         )}

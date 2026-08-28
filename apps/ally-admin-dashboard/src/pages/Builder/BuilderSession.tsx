@@ -142,8 +142,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   // ref rather than a dependency list because a re-render must not replay it.
   useEffect(() => {
     const openingMessage =
-      openingMessageProp ??
-      (location.state as { openingMessage?: string } | null)?.openingMessage;
+      openingMessageProp ?? (location.state as { openingMessage?: string } | null)?.openingMessage;
     if (!openingMessage || !hydratedRef.current || openingSentRef.current) return;
     if (session?.messages.length) {
       openingSentRef.current = true;

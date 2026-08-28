@@ -9,9 +9,9 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { Add } from "@icons";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { Add } from "@icons";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { RoadmapSavedView } from "@types";

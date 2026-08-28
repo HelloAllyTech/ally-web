@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 
+import { Add, Close, Search } from "@icons";
 import { toast } from "sonner";
 
 import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useGetRoadmapOpportunitiesQuery, useMergeRoadmapOpportunitiesMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { Add, Close, Search } from "@icons";
 import { RoadmapOpportunity } from "@types";
 
 const DESCRIPTION_MAX = 1000;
@@ -161,7 +161,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
                       <div className="text-typography-secondary flex items-center gap-2 text-xs tabular-nums">
                         <span>{opportunity.code}</span>
                         <span>{opportunity.priorityScore} votes</span>
-                        {isPrimary && <span className="text-primary-500">keeps code & comments</span>}
+                        {isPrimary && (
+                          <span className="text-primary-500">keeps code & comments</span>
+                        )}
                       </div>
                       <p className="text-typography-primary line-clamp-2 text-sm">
                         {opportunity.description}
@@ -246,10 +248,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
               />
 
               <p className="text-typography-secondary text-sm">
-                {picked.length} opportunities → 1. Votes roll up per person per month, so the
-                merged opportunity ends on{" "}
-                <span className="tabular-nums">{combinedScore}</span> votes. Comments move across;
-                the others are removed from the board.
+                {picked.length} opportunities → 1. Votes roll up per person per month, so the merged
+                opportunity ends on <span className="tabular-nums">{combinedScore}</span> votes.
+                Comments move across; the others are removed from the board.
               </p>
             </>
           )}
@@ -263,9 +264,7 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
               {isLoading ? "Merging…" : `Merge ${picked.length || ""}`.trim()}
             </Button>
             {picked.length < 2 && (
-              <span className="text-typography-secondary text-sm">
-                Pick at least two to merge.
-              </span>
+              <span className="text-typography-secondary text-sm">Pick at least two to merge.</span>
             )}
           </div>
         </div>
