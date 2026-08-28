@@ -13,6 +13,10 @@ const DESCRIPTION_MAX = 1000;
 /** Enough to find something by code or a distinctive phrase without paging. */
 const RESULT_LIMIT = 20;
 
+/** The default primary: whichever pick people have actually voted on and shared the most. */
+const highestScoring = (list: RoadmapOpportunity[]) =>
+  list.reduce((best, o) => (o.priorityScore > best.priorityScore ? o : best), list[0]);
+
 interface MergeDrawerProps {
   onClose: () => void;
   /** Opens the merged opportunity's own drawer, where every remaining setting already lives. */
@@ -51,6 +55,8 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<RoadmapOpportunity[]>([]);
   const [primaryId, setPrimaryId] = useState<string | null>(null);
+  /** Once the manager picks a radio button by hand, stop overriding their choice on later adds. */
+  const [primaryManuallySet, setPrimaryManuallySet] = useState(false);
   /** Null until the user edits it, so the prefill can follow a changed primary. */
   const [descriptionOverride, setDescriptionOverride] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(true);
@@ -76,9 +82,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   const add = (opportunity: RoadmapOpportunity) => {
     setPicked(current => {
       const next = [...current, opportunity];
-      // First pick becomes the primary; later picks only take over if they outscore it, matching
-      // the "highest score survives" default without overriding a deliberate choice.
-      if (primaryId === null) setPrimaryId(opportunity.id);
+      // Re-evaluate the highest-scoring pick on every add, unless the manager already made a
+      // deliberate choice via the radio button.
+      if (!primaryManuallySet) setPrimaryId(highestScoring(next).id);
       return next;
     });
     setSearch("");
@@ -86,9 +92,12 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   };
 
   const remove = (id: string) => {
-    setPicked(current => current.filter(o => o.id !== id));
+    const next = picked.filter(o => o.id !== id);
+    setPicked(next);
     if (primaryId === id) {
-      setPrimaryId(null);
+      // The manual choice is gone with it; fall back to the highest-scoring survivor.
+      setPrimaryManuallySet(false);
+      setPrimaryId(next.length > 0 ? highestScoring(next).id : null);
       // Drop a prefilled description that came from the primary being removed; a hand-edited one
       // is the user's and stays.
       setDescriptionOverride(current => current);
@@ -151,6 +160,7 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
                       checked={isPrimary}
                       onChange={() => {
                         setPrimaryId(opportunity.id);
+                        setPrimaryManuallySet(true);
                         // Re-prefill from the new primary unless the text was hand-edited.
                         setDescriptionOverride(current => current);
                       }}
