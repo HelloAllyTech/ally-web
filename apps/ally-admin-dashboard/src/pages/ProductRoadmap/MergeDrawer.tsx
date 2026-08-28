@@ -1,17 +1,21 @@
 import React, { useMemo, useState } from "react";
 
+import { Add, Close, Search } from "@icons";
 import { toast } from "sonner";
 
 import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useGetRoadmapOpportunitiesQuery, useMergeRoadmapOpportunitiesMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { Add, Close, Search } from "@icons";
 import { RoadmapOpportunity } from "@types";
 
 const DESCRIPTION_MAX = 1000;
 /** Enough to find something by code or a distinctive phrase without paging. */
 const RESULT_LIMIT = 20;
+
+/** The default primary: whichever pick people have actually voted on and shared the most. */
+const highestScoring = (list: RoadmapOpportunity[]) =>
+  list.reduce((best, o) => (o.priorityScore > best.priorityScore ? o : best), list[0]);
 
 interface MergeDrawerProps {
   onClose: () => void;
@@ -51,6 +55,8 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<RoadmapOpportunity[]>([]);
   const [primaryId, setPrimaryId] = useState<string | null>(null);
+  /** Once the manager picks a radio button by hand, stop overriding their choice on later adds. */
+  const [primaryManuallySet, setPrimaryManuallySet] = useState(false);
   /** Null until the user edits it, so the prefill can follow a changed primary. */
   const [descriptionOverride, setDescriptionOverride] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(true);
@@ -76,9 +82,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   const add = (opportunity: RoadmapOpportunity) => {
     setPicked(current => {
       const next = [...current, opportunity];
-      // First pick becomes the primary; later picks only take over if they outscore it, matching
-      // the "highest score survives" default without overriding a deliberate choice.
-      if (primaryId === null) setPrimaryId(opportunity.id);
+      // Re-evaluate the highest-scoring pick on every add, unless the manager already made a
+      // deliberate choice via the radio button.
+      if (!primaryManuallySet) setPrimaryId(highestScoring(next).id);
       return next;
     });
     setSearch("");
@@ -86,9 +92,12 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
   };
 
   const remove = (id: string) => {
-    setPicked(current => current.filter(o => o.id !== id));
+    const next = picked.filter(o => o.id !== id);
+    setPicked(next);
     if (primaryId === id) {
-      setPrimaryId(null);
+      // The manual choice is gone with it; fall back to the highest-scoring survivor.
+      setPrimaryManuallySet(false);
+      setPrimaryId(next.length > 0 ? highestScoring(next).id : null);
       // Drop a prefilled description that came from the primary being removed; a hand-edited one
       // is the user's and stays.
       setDescriptionOverride(current => current);
@@ -151,6 +160,7 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
                       checked={isPrimary}
                       onChange={() => {
                         setPrimaryId(opportunity.id);
+                        setPrimaryManuallySet(true);
                         // Re-prefill from the new primary unless the text was hand-edited.
                         setDescriptionOverride(current => current);
                       }}
@@ -161,7 +171,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
                       <div className="text-typography-secondary flex items-center gap-2 text-xs tabular-nums">
                         <span>{opportunity.code}</span>
                         <span>{opportunity.priorityScore} votes</span>
-                        {isPrimary && <span className="text-primary-500">keeps code & comments</span>}
+                        {isPrimary && (
+                          <span className="text-primary-500">keeps code & comments</span>
+                        )}
                       </div>
                       <p className="text-typography-primary line-clamp-2 text-sm">
                         {opportunity.description}
@@ -246,10 +258,9 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
               />
 
               <p className="text-typography-secondary text-sm">
-                {picked.length} opportunities → 1. Votes roll up per person per month, so the
-                merged opportunity ends on{" "}
-                <span className="tabular-nums">{combinedScore}</span> votes. Comments move across;
-                the others are removed from the board.
+                {picked.length} opportunities → 1. Votes roll up per person per month, so the merged
+                opportunity ends on <span className="tabular-nums">{combinedScore}</span> votes.
+                Comments move across; the others are removed from the board.
               </p>
             </>
           )}
@@ -263,9 +274,7 @@ export const MergeDrawer: React.FC<MergeDrawerProps> = ({ onClose, onMerged }) =
               {isLoading ? "Merging…" : `Merge ${picked.length || ""}`.trim()}
             </Button>
             {picked.length < 2 && (
-              <span className="text-typography-secondary text-sm">
-                Pick at least two to merge.
-              </span>
+              <span className="text-typography-secondary text-sm">Pick at least two to merge.</span>
             )}
           </div>
         </div>
