@@ -36,7 +36,7 @@ interface AcceptSuggestionModalProps {
 /**
  * Review a suggestion, then file it.
  *
- * A sibling of ProductRoadmap's AddOpportunityModal rather than a reuse of it: that
+ * A sibling of ProductRoadmap's AddOpportunityDrawer rather than a reuse of it: that
  * component takes no initial values, hardwires the create mutation, and its
  * duplicate panel navigates into the roadmap drawer — which is the wrong exit from
  * an Analytics tab. The form pieces are the same on purpose, so filing from here

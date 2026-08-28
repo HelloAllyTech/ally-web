@@ -368,3 +368,35 @@ export interface RoadmapBuilderSessionHandle {
   created: boolean;
   seedMessage: string | null;
 }
+
+/**
+ * One item on the readiness checklist, as served by the backend.
+ *
+ * The list is NOT declared in this app: `ROADMAP_READINESS_CRITERIA` on the server is the single
+ * source of truth, and the drawer renders whatever comes back. A second copy here would drift
+ * from the list the grader actually grades against, and the drift would look like a checklist
+ * item that never turns green.
+ */
+export interface RoadmapReadinessCriterion {
+  id: string;
+  label: string;
+  hint: string;
+}
+
+/** One verdict, joined to its criterion by `id`. */
+export interface RoadmapReadinessResult {
+  id: string;
+  passed: boolean;
+  reason: string;
+}
+
+/**
+ * What one readiness check answers: a verdict per criterion, plus a proposed size for the same
+ * draft. The size is a PROPOSAL — the filer can override it before filing — which is why it is
+ * carried alongside the verdicts rather than being another gated item.
+ */
+export interface RoadmapReadinessReport {
+  results: RoadmapReadinessResult[];
+  effort: RoadmapOpportunityEffort | null;
+  effortReason: string;
+}
