@@ -56,7 +56,12 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
 
   const [heading, ...rest] = opportunity.description.split("\n");
   const body = rest.join(" ").trim();
-  const scorePercent = Math.round((opportunity.priorityScore / Math.max(1, maxScore)) * 100);
+  // Clamped like utils/priorityColour.ts's ratio: an unfiltered maxScore fetched before a vote
+  // burst can legitimately be lower than a freshly-boosted score elsewhere on the page.
+  const scorePercent = Math.min(
+    100,
+    Math.round((opportunity.priorityScore / Math.max(1, maxScore)) * 100),
+  );
 
   const card = (
     <div
@@ -102,7 +107,7 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
       {/* Priority bar, same unfiltered scale as the table's, so switching layout doesn't rescale
           every bar and make the same two cards look differently ranked. */}
       <div className="flex items-center gap-2">
-        <div className="bg-background-secondary h-1.5 flex-1">
+        <div className="bg-background-secondary h-1.5 flex-1 overflow-hidden">
           <div className="bg-primary-500 h-full" style={{ width: `${scorePercent}%` }} />
         </div>
         <span className="text-typography-secondary font-mono text-xs tabular-nums">
