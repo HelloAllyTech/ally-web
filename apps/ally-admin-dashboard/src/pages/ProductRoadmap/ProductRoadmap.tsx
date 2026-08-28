@@ -1,16 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-import type { IconProps } from "@icons";
-import {
-  Baby,
-  Debug,
-  Flag,
-  Idea,
-  Merge,
-  OldWoman,
-  Star,
-  VerticalAlignTopIcon,
-} from "@icons";
+import { Baby, Debug, Flag, Idea, Merge, OldWoman, Star, VerticalAlignTopIcon } from "@icons";
 import { useSearchParams } from "react-router-dom";
 
 import { CarbonDropdown, Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -23,8 +13,6 @@ import {
   useGetRoadmapOpportunitiesQuery,
   useGetRoadmapProductGoalsQuery,
 } from "@api";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
 import {
@@ -41,12 +29,12 @@ import {
 
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import { BugsTab } from "./BugsTab";
+import { BuilderSessionDrawer } from "./BuilderSessionDrawer";
 import { InterviewsTab } from "./InterviewsTab";
 import { MergeDrawer } from "./MergeDrawer";
 import { MonthBoard } from "./MonthBoard";
 import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunitiesListView } from "./OpportunitiesListView";
-import { BuilderSessionDrawer } from "./BuilderSessionDrawer";
 import { OpportunityDrawer } from "./OpportunityDrawer";
 import { ProductGoalsManager } from "./ProductGoalsManager";
 import { ReportBugModal } from "./ReportBugModal";
@@ -59,6 +47,8 @@ import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/fil
 import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
 import { QUEUE_SORTS, QueueSortId, queueSortIdFor } from "./utils/queueSort";
 import { QUEUE_VIEW_ID, normaliseSortField, normaliseTypeFilter } from "./utils/views";
+
+import type { IconProps } from "@icons";
 
 const PAGE_SIZE = 50;
 
@@ -317,9 +307,7 @@ export const ProductRoadmap: React.FC = () => {
     isFetching: isBoardFetching,
   } = useGetRoadmapBoardQuery(boardArgs, { skip: !isBoard });
 
-  const boardCount = boardData
-    ? boardData.lanes.reduce((sum, lane) => sum + lane.total, 0)
-    : 0;
+  const boardCount = boardData ? boardData.lanes.reduce((sum, lane) => sum + lane.total, 0) : 0;
   const { data: budget } = useGetRoadmapVoteBudgetQuery();
   const { data: goals } = useGetRoadmapProductGoalsQuery();
   const { data: facets } = useGetRoadmapFacetsQuery();
@@ -574,9 +562,7 @@ export const ProductRoadmap: React.FC = () => {
               // key, so `text-typography-secondary` emits no class at all and the glyph inherits
               // black. Measured: the unselected icons came back rgb(0,0,0) before this.
               className={`inline-flex cursor-pointer items-center p-1 transition-colors ${
-                isSelected
-                  ? "text-primary-500"
-                  : "text-typography-700 hover:text-typography-900"
+                isSelected ? "text-primary-500" : "text-typography-700 hover:text-typography-900"
               }`}
             >
               {/* Sized by CLASS, not width/height props: an imported SVG's own attributes can
@@ -854,7 +840,6 @@ export const ProductRoadmap: React.FC = () => {
       {activeTab === RoadmapTab.INTERVIEWS && (
         <InterviewsTab canVote={canVote} canManage={canManage} currentUserId={user?.id} />
       )}
-
 
       {/* `canViewBugs` is already folded into `activeTab`, so this cannot mount
           without the toggle — but the table polls every 15s once mounted, so

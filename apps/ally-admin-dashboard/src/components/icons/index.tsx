@@ -325,9 +325,7 @@ const materialSymbol = (name: string) => {
     const resolved = size ?? width ?? height ?? DEFAULT_SIZE;
     return (
       <span
-        className={["material-symbols-outlined leading-none", className]
-          .filter(Boolean)
-          .join(" ")}
+        className={["material-symbols-outlined leading-none", className].filter(Boolean).join(" ")}
         style={{ fontSize: typeof resolved === "number" ? `${resolved}px` : resolved }}
         aria-hidden="true"
       >
@@ -340,7 +338,6 @@ const materialSymbol = (name: string) => {
 };
 
 export const VerticalAlignTopIcon = materialSymbol("vertical_align_top");
-
 
 export const TooltipIcon = ({ className }: IconProps) => (
   <span

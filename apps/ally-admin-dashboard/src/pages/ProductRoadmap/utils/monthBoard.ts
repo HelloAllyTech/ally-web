@@ -13,7 +13,6 @@ import { RoadmapBoardGroupBy } from "@types";
 
 import { stageLabel } from "./stages";
 
-
 /** The Unscheduled lane's month. Exported so callers stop writing `null` and meaning "no month". */
 export const UNSCHEDULED = null;
 

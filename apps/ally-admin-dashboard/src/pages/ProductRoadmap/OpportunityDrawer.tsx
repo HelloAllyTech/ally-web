@@ -592,7 +592,6 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           </div>
         )}
       </aside>
-
     </div>
   );
 };
