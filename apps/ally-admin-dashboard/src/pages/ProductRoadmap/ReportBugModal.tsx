@@ -12,7 +12,7 @@ interface ReportBugModalProps {
 }
 
 /**
- * "Report a bug" on the Product Roadmap — the roadmap's counterpart to AddOpportunityModal,
+ * "Report a bug" on the Product Roadmap — the roadmap's counterpart to AddOpportunityDrawer,
  * and deliberately nothing like it.
  *
  * Filing an idea and reporting a bug were one modal with a Type dropdown until bugs left the

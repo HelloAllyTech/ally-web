@@ -36,7 +36,7 @@ import {
   RoadmapViewState,
 } from "@types";
 
-import { AddOpportunityModal } from "./AddOpportunityModal";
+import { AddOpportunityDrawer } from "./AddOpportunityDrawer";
 import { BugsTab } from "./BugsTab";
 import { BuilderSessionDrawer } from "./BuilderSessionDrawer";
 import { InterviewsTab } from "./InterviewsTab";
@@ -1254,7 +1254,7 @@ export const ProductRoadmap: React.FC = () => {
       )}
 
       {isAddOpen && (
-        <AddOpportunityModal
+        <AddOpportunityDrawer
           goals={goals ?? []}
           onClose={() => setIsAddOpen(false)}
           onOpenExisting={id => {

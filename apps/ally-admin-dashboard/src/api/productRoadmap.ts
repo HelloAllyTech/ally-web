@@ -16,6 +16,9 @@ import {
   RoadmapOpportunity,
   RoadmapSavedView,
   RoadmapEligibleOwner,
+  RoadmapOpportunityEffort,
+  RoadmapReadinessCriterion,
+  RoadmapReadinessReport,
   RoadmapTaxonomyItem,
   RoadmapViewState,
   SetAllocationResponse,
@@ -203,7 +206,12 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
 
     createRoadmapOpportunity: builder.mutation<
       RoadmapOpportunity,
-      { description: string; type: string; productGoal: string }
+      {
+        description: string;
+        type: string;
+        productGoal: string;
+        effort?: RoadmapOpportunityEffort | null;
+      }
     >({
       query: body => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITIES,
@@ -598,20 +606,19 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
     }),
 
     // ── AI helpers. None of these carry tags — they are pure compute. ─────────
-    roadmapAiReview: builder.mutation<
-      { suggestions: { issue: string; tip: string }[] },
-      { description: string }
-    >({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_REVIEW,
-        method: HttpMethod.POST,
-        body,
-      }),
+
+    /**
+     * The readiness checklist. A query, not a constant in this bundle: the server owns the
+     * list so that editing it there is the whole change.
+     */
+    getRoadmapReadinessCriteria: builder.query<{ criteria: RoadmapReadinessCriterion[] }, void>({
+      query: () => ({ url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS_CRITERIA }),
     }),
 
-    roadmapAiEnhance: builder.mutation<{ enhanced: string }, { description: string }>({
+    /** Grade a draft against that checklist. Every item must pass before filing is allowed. */
+    checkRoadmapReadiness: builder.mutation<RoadmapReadinessReport, { description: string }>({
       query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_ENHANCE,
+        url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS,
         method: HttpMethod.POST,
         body,
       }),
@@ -711,8 +718,8 @@ export const {
   usePinRoadmapSavedViewMutation,
   useDeleteRoadmapSavedViewMutation,
   useSetRoadmapViewOrderMutation,
-  useRoadmapAiReviewMutation,
-  useRoadmapAiEnhanceMutation,
+  useGetRoadmapReadinessCriteriaQuery,
+  useCheckRoadmapReadinessMutation,
   useRoadmapAiDuplicatesMutation,
   useRoadmapAiClassifyMutation,
   useRoadmapAiSummariseMutation,
