@@ -33,7 +33,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   useEffect(() => {
     const initializeSearchWithQueryParams = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get("q");
+      const query = urlParams.get("q") || "";
       const category = urlParams.get("category");
       if (!query && !category) {
         return;
