@@ -259,6 +259,12 @@ export type BuilderEventType =
   /** A machine-run check result — verified, not self-reported. */
   | "gate_result"
   | "phase_cost"
+  /**
+   * A run parked at a phase boundary because the spend ceiling is gone.
+   * `payload.state`: `held` while it waits, `raised` once a new ceiling let it
+   * carry on, `expired` when nobody answered and the run stopped.
+   */
+  | "budget_hold"
   | "question"
   | "e2e_evidence"
   | "e2e_skipped"
@@ -267,6 +273,24 @@ export type BuilderEventType =
   | "cost"
   | "error"
   | "done";
+
+/**
+ * Live spend against the session's ceiling.
+ *
+ * Polled while a build is running rather than read off the session, whose
+ * detail response is fetched once: the spend moves every phase, and `hold` is
+ * set only while a run is actually sitting on the ceiling waiting for a raise.
+ */
+export interface BuilderBudgetState {
+  budgetUsd: number | null;
+  spentUsd: number;
+  remainingUsd: number | null;
+  exceeded: boolean;
+  /** How long a held run waits before giving up, from the server. */
+  holdSeconds: number;
+  pollSeconds: number;
+  hold: { runId: string; heldAt: string; holdUntil: string } | null;
+}
 
 export interface BuilderBuildEvent {
   id: string;

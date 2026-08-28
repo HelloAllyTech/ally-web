@@ -424,6 +424,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
         currentRepos={session.repos ?? []}
         initialBudgetUsd={session.budgetUsd}
         defaultBudgetUsd={settings?.defaultBudgetUsd}
+        spentUsd={session.totalCostUsd}
         readiness={readiness}
         retryError={retryError}
         onStarted={() => setStatus("BUILDING")}

@@ -152,6 +152,22 @@ describe("StartBuildDialog", () => {
     expect(screen.getByText("Start anyway")).toBeInTheDocument();
   });
 
+  it("seeds a retry above the spend, so the dispatch is not refused by the ceiling that stopped it", () => {
+    // The live failure this came from: $16.77 spent against a $15 ceiling.
+    // Seeding "15" hands back the figure the backend refuses, and "Retry
+    // build" fails on the click.
+    render(
+      <StartBuildDialog
+        {...baseProps}
+        retryError="Budget exhausted mid-run"
+        initialBudgetUsd="15"
+        spentUsd="16.7668"
+      />,
+    );
+
+    expect(screen.getByLabelText("builder-start-budget")).toHaveValue("30");
+  });
+
   it("shows what is being retried past when opened for a retry", () => {
     render(<StartBuildDialog {...baseProps} retryError="npm test failed in ally-be" />);
 

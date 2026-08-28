@@ -1,5 +1,6 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  BuilderBudgetState,
   BuilderBuildEvent,
   BuilderBuildRun,
   BuilderExemplar,
@@ -144,6 +145,41 @@ export const builderAPI = baseAPI.injectEndpoints({
     >({
       query: ({ id, ...body }) => ({
         url: ApiEndpoints.BUILDER.SESSION_START_BUILD(id),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: TAG_TYPES.BUILDER_SESSION, id },
+        TAG_TYPES.BUILDER_SESSIONS,
+      ],
+    }),
+
+    /**
+     * Live spend, the ceiling, and whether a run is parked on it.
+     *
+     * Untagged: the page polls it while a build runs, and hanging it off
+     * BUILDER_SESSION would make every unrelated invalidation refetch it —
+     * and, worse, would not refresh it between invalidations, which is exactly
+     * when the number moves.
+     */
+    getBuilderSessionBudget: builder.query<BuilderBudgetState, string>({
+      query: id => ({
+        url: ApiEndpoints.BUILDER.SESSION_BUDGET(id),
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * Raise the ceiling. Invalidates the session so the header's spend figure
+     * and the start-build dialog's seed both follow, and the budget query is
+     * refetched by the component that made the raise.
+     */
+    raiseBuilderSessionBudget: builder.mutation<
+      BuilderBudgetState & { released: boolean },
+      { id: string; budgetUsd: number }
+    >({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.BUILDER.SESSION_BUDGET(id),
         method: HttpMethod.POST,
         body,
       }),
@@ -335,6 +371,8 @@ export const {
   useGetBuilderRepoCommandsQuery,
   useGetBuilderRepoMapsQuery,
   useStartBuilderBuildMutation,
+  useGetBuilderSessionBudgetQuery,
+  useRaiseBuilderSessionBudgetMutation,
   useGetBuilderRunsQuery,
   useLazyGetBuilderRunEventsQuery,
   useGetBuilderPendingQuestionsQuery,

@@ -474,6 +474,10 @@ export const ApiEndpoints = {
     // Builds
     SESSION_START_BUILD: (id: string) => `/v1/builder/sessions/${id}/start-build`,
     SESSION_RUNS: (id: string) => `/v1/builder/sessions/${id}/runs`,
+    // Raising the ceiling is a POST, not part of the session PATCH: it is
+    // allowed mid-build (which is the case it exists for) and authorises
+    // spend, so it stands on its own.
+    SESSION_BUDGET: (id: string) => `/v1/builder/sessions/${id}/budget`,
     RUN_EVENTS: (runId: string) => `/v1/builder/runs/${runId}/events`,
     SESSION_QUESTIONS: (id: string) => `/v1/builder/sessions/${id}/questions`,
     ANSWER_QUESTION: (id: string, questionId: string) =>
