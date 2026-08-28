@@ -1,9 +1,10 @@
 import React from "react";
 
+import { BackArrowIcon } from "@icons";
+
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 
 import type { IconProps } from "@icons";
-import { BackArrowIcon } from "@icons";
 
 export interface QueueToolbarControlProps {
   isOpen: boolean;

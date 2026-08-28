@@ -327,9 +327,7 @@ const materialSymbol = (name: string) => {
     const resolved = size ?? width ?? height ?? DEFAULT_SIZE;
     return (
       <span
-        className={["material-symbols-outlined leading-none", className]
-          .filter(Boolean)
-          .join(" ")}
+        className={["material-symbols-outlined leading-none", className].filter(Boolean).join(" ")}
         style={{ fontSize: typeof resolved === "number" ? `${resolved}px` : resolved }}
         aria-hidden="true"
       >
@@ -389,7 +387,6 @@ export const BackArrowIcon = materialSymbol("arrow_back");
  * symbol again does not mean touching every call site.
  */
 export const BuilderAgentIcon = materialSymbol("auto_awesome");
-
 
 export const TooltipIcon = ({ className }: IconProps) => (
   <span

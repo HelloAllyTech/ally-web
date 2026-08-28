@@ -874,7 +874,6 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           </div>
         )}
       </aside>
-
       {/*
         The house confirmation popup, not the two-step inline swap this used to do.
         Inline worked when the trigger was a footer button with a row to expand into; an icon in

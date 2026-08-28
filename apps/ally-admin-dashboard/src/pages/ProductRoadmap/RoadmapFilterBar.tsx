@@ -131,8 +131,6 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     onAdvancedChange,
     goals,
     facets,
-    canVote,
-    canManage,
     trailing,
     leading,
     showFilters = true,
@@ -199,76 +197,76 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
       {showFilters ? (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {leading}
-        {/* Two entry points, styled identically because they are the same kind of control: the
+          {/* Two entry points, styled identically because they are the same kind of control: the
             checkbox facets, and the ranges FilterDropdown cannot express. Both keep a STABLE label
             and report open/closed through aria-expanded rather than swapping in "Hide" — a control
             whose text changes under the cursor is harder to re-find than one that doesn't. */}
-        <button
-          ref={filterButtonRef}
-          type="button"
-          onClick={() => setIsFilterOpen(open => !open)}
-          aria-expanded={isFilterOpen}
-          className={chipClass(facetCount > 0 || isFilterOpen)}
-        >
-          Filter{facetCount > 0 ? ` (${facetCount})` : ""}
-        </button>
+          <button
+            ref={filterButtonRef}
+            type="button"
+            onClick={() => setIsFilterOpen(open => !open)}
+            aria-expanded={isFilterOpen}
+            className={chipClass(facetCount > 0 || isFilterOpen)}
+          >
+            Filter{facetCount > 0 ? ` (${facetCount})` : ""}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setIsRangesOpen(open => !open)}
-          aria-expanded={isRangesOpen}
-          className={chipClass(rangeCount > 0 || isRangesOpen)}
-        >
-          Dates &amp; score{rangeCount > 0 ? ` (${rangeCount})` : ""}
-        </button>
+          <button
+            type="button"
+            onClick={() => setIsRangesOpen(open => !open)}
+            aria-expanded={isRangesOpen}
+            className={chipClass(rangeCount > 0 || isRangesOpen)}
+          >
+            Dates &amp; score{rangeCount > 0 ? ` (${rangeCount})` : ""}
+          </button>
 
-        {/* Applied facets. Rendered here rather than through ListToolbar's own `filterChips` slot:
+          {/* Applied facets. Rendered here rather than through ListToolbar's own `filterChips` slot:
             that one runs every label through formatCapitalizedEnum, which lowercases past the
             first character and would render an owner as "Sandeep malhotra" and a goal as "Roleplay
             actor realism". The four other pages using it pass raw enum values, where that is what
             you want — so this borrows the house chip's styling rather than changing its behaviour
             underneath them. */}
-        {chips.map(chip => (
-          <span
-            key={chip.id}
-            className="text-typography-900 border-border-light flex items-center rounded-[20px] border px-2 py-0.5"
-          >
-            <span className="text-typography-secondary mr-1 text-xs">{chip.label}:</span>
-            <Tooltip label={chip.values.join(", ")} align="top">
-              <span className="mr-1 max-w-[16rem] truncate text-xs font-medium">
-                {chip.values.join(", ")}
-              </span>
-            </Tooltip>
-            <button
-              type="button"
-              onClick={() => clearFacet(chip.id)}
-              aria-label={`Clear ${chip.label} filter`}
-              className="text-typography-800 hover:text-typography-900"
+          {chips.map(chip => (
+            <span
+              key={chip.id}
+              className="text-typography-900 border-border-light flex items-center rounded-[20px] border px-2 py-0.5"
             >
-              <Close />
-            </button>
-          </span>
-        ))}
+              <span className="text-typography-secondary mr-1 text-xs">{chip.label}:</span>
+              <Tooltip label={chip.values.join(", ")} align="top">
+                <span className="mr-1 max-w-[16rem] truncate text-xs font-medium">
+                  {chip.values.join(", ")}
+                </span>
+              </Tooltip>
+              <button
+                type="button"
+                onClick={() => clearFacet(chip.id)}
+                aria-label={`Clear ${chip.label} filter`}
+                className="text-typography-800 hover:text-typography-900"
+              >
+                <Close />
+              </button>
+            </span>
+          ))}
 
-        {hasActiveFilters(props) && (
-          <Button
-            variant={ButtonVariant.TEXT}
-            onClick={() => {
-              onTypeFilterChange([]);
-              onStageFilterChange([]);
-              onSourceFilterChange([]);
-              onGoalFilterChange([]);
-              onOwnerFilterChange([]);
-              // Must include the collapsed panel: "Clear all" that leaves a hidden date range
-              // applied is the exact confusion the count badge exists to prevent.
-              onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
-            }}
-          >
-            Clear all
-          </Button>
-        )}
+          {hasActiveFilters(props) && (
+            <Button
+              variant={ButtonVariant.TEXT}
+              onClick={() => {
+                onTypeFilterChange([]);
+                onStageFilterChange([]);
+                onSourceFilterChange([]);
+                onGoalFilterChange([]);
+                onOwnerFilterChange([]);
+                // Must include the collapsed panel: "Clear all" that leaves a hidden date range
+                // applied is the exact confusion the count badge exists to prevent.
+                onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
+              }}
+            >
+              Clear all
+            </Button>
+          )}
 
-        {/* "Manage goals" moved OUT of this bar and up beside the page title as an icon: it is
+          {/* "Manage goals" moved OUT of this bar and up beside the page title as an icon: it is
             a once-in-a-while taxonomy edit, and sitting in the filter row it read as a filter
             control and competed with the ones people use every visit. */}
           <div className="ml-auto flex flex-wrap items-center gap-2">{trailing}</div>

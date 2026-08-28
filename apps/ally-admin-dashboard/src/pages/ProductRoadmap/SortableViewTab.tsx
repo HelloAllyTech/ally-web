@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { OverflowMenu, OverflowMenuItem } from "@ally-ui-mono/ui-shared";
 import { Edit, Pin } from "@icons";
 
+import { OverflowMenu, OverflowMenuItem } from "@ally-ui-mono/ui-shared";
 import { RoadmapSavedView } from "@types";
 
 interface SortableViewTabProps {
@@ -171,10 +171,7 @@ export const SortableViewTab: React.FC<SortableViewTabProps> = ({
               iconDescription={`Actions for ${view.name}`}
             >
               {isOwner && (
-                <OverflowMenuItem
-                  itemText="Rename"
-                  onClick={() => setIsRenaming(true)}
-                />
+                <OverflowMenuItem itemText="Rename" onClick={() => setIsRenaming(true)} />
               )}
               {canPin && (
                 <OverflowMenuItem
@@ -183,12 +180,7 @@ export const SortableViewTab: React.FC<SortableViewTabProps> = ({
                 />
               )}
               {isOwner && (
-                <OverflowMenuItem
-                  isDelete
-                  hasDivider
-                  itemText="Delete"
-                  onClick={onDelete}
-                />
+                <OverflowMenuItem isDelete hasDivider itemText="Delete" onClick={onDelete} />
               )}
             </OverflowMenu>
           </span>
