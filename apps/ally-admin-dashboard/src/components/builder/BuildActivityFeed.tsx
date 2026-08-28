@@ -206,6 +206,7 @@ const pairToolResults = (events: BuilderBuildEvent[]): Map<string, BuilderBuildE
  */
 export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, isLive }) => {
   const strings = en.builder.build;
+  const budgetFeed = en.builder.budget.feed;
   const containerRef = useRef<HTMLDivElement>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
 
@@ -513,6 +514,39 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
             </div>
           </Tile>
         );
+
+      // The one event that is neither progress nor failure: the run stopped
+      // itself at a phase boundary and is waiting on a spend decision. Rendered
+      // as its own row so the feed says where the work got to — the banner
+      // above says what to do about it.
+      case "budget_hold": {
+        const money = (value: unknown) => {
+          const parsed = Number(value);
+          return Number.isFinite(parsed) ? `$${parsed.toFixed(2)}` : "—";
+        };
+        const state = String(payload.state ?? "held");
+        const text =
+          state === "raised"
+            ? budgetFeed.raised(money(payload.budgetUsd))
+            : state === "headroom"
+              ? budgetFeed.headroom(money(payload.budgetUsd))
+              : state === "expired"
+                ? budgetFeed.expired
+                : budgetFeed.held(money(payload.spentUsd), money(payload.budgetUsd));
+        return (
+          <p
+            key={event.id}
+            style={style}
+            className={
+              state === "expired"
+                ? "text-sm text-support-error"
+                : "text-sm font-medium text-typography-800"
+            }
+          >
+            {text}
+          </p>
+        );
+      }
 
       case "error":
         return (

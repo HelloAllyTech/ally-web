@@ -21,6 +21,8 @@ import { TooltipIcon } from "@assets";
 import { en } from "@constants";
 import { BuilderPrdReadiness, BuilderRepoCommand } from "@types";
 
+import { suggestNewCeiling } from "./RaiseBudgetDialog";
+
 interface StartBuildDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,6 +32,8 @@ interface StartBuildDialogProps {
   /** `session.budgetUsd`, falling back to the platform default once settings load. */
   initialBudgetUsd?: string | null;
   defaultBudgetUsd?: string | null;
+  /** `session.totalCostUsd` — what a retry has to be measured against. */
+  spentUsd?: string | null;
   readiness: BuilderPrdReadiness;
   /**
    * Set when opened as a retry from a FAILED build — swaps the copy and shows
@@ -62,6 +66,7 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
   currentRepos,
   initialBudgetUsd,
   defaultBudgetUsd,
+  spentUsd,
   readiness,
   retryError,
   onStarted,
@@ -89,12 +94,22 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
     if (!isOpen) return;
     setSelectedRepos(currentRepos);
     const seedBudget = initialBudgetUsd ?? defaultBudgetUsd;
-    setBudgetUsd(seedBudget ? String(Number(seedBudget)) : "");
+    const spent = Number(spentUsd ?? 0);
+    const ceiling = Number(seedBudget ?? 0);
+    // A session that has already overspent — the usual reason this dialog is
+    // open as a retry — must not be seeded with the ceiling that stopped it:
+    // the backend refuses a dispatch measured against a budget already gone,
+    // so the button would just fail. Suggest headroom above the spend instead.
+    if (ceiling > 0 && spent >= ceiling) {
+      setBudgetUsd(String(suggestNewCeiling(spent, ceiling)));
+    } else {
+      setBudgetUsd(seedBudget ? String(Number(seedBudget)) : "");
+    }
     setPlannerModel("");
     setCoderModel("");
     setVerifierModel("");
     setReposError(false);
-  }, [isOpen, currentRepos, initialBudgetUsd, defaultBudgetUsd]);
+  }, [isOpen, currentRepos, initialBudgetUsd, defaultBudgetUsd, spentUsd]);
 
   const selectedRepoCommands = repos.filter(repo => selectedRepos.includes(repo.repo));
   const unreadySections = readiness.sections.filter(section => !section.ok);

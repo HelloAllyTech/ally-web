@@ -3274,6 +3274,54 @@ export const en = {
       retrySubmit: "Retry build",
     },
 
+    /**
+     * Mid-build budget. The wording follows the graceful-failure model in
+     * Stacks' "Graceful Failure: Transparent Acknowledgment and Fallbacks" and
+     * "Preserve State During Agent Failure in Multistep Tasks": say what
+     * happened, say what is at stake, and put the action that fixes it in the
+     * same place — the run is holding its work, not throwing it away.
+     */
+    budget: {
+      heldTitle: "Paused — this build has spent its budget",
+      heldBody: (spent: string, ceiling: string, remaining: string) =>
+        `It has spent ${spent} of its ${ceiling} ceiling and is holding everything it has written so far. ${remaining} to raise the budget and carry on from where it stopped — after that it gives up and this run's work is lost.`,
+      heldBodyExpiring:
+        "The window to raise it has closed, so this run is stopping. Raising the budget now lets you retry, but the work in progress is gone.",
+      overTitle: "Spend is past the ceiling",
+      overBody: (spent: string, ceiling: string) =>
+        `${spent} of ${ceiling} spent. This build will pause at the end of the current phase and wait for a raise.`,
+      raise: "Raise budget",
+      // Countdown, deliberately coarse: a to-the-second timer on a twenty
+      // minute window reads as more urgent than it is.
+      minutesLeft: (minutes: number) =>
+        minutes <= 1 ? "Less than a minute left" : `About ${minutes} minutes left`,
+      dialog: {
+        title: "Raise budget",
+        heldIntro:
+          "The build is holding its work at a phase boundary. Raise the ceiling and it picks up from there — no retry, nothing re-run.",
+        intro: "Raise this session's spend ceiling.",
+        spentLabel: "Spent so far",
+        currentLabel: "Current ceiling",
+        currentNone: "No ceiling",
+        newLabel: "New ceiling (USD)",
+        newHint:
+          "Has to be above what the session has already spent, or the build would stop again immediately. Set 0 to remove the ceiling entirely.",
+        submit: "Raise budget",
+        submitHeld: "Raise and continue",
+        raised: "Budget raised.",
+        released: "Budget raised — the build is carrying on from where it stopped.",
+        failed: "Couldn't raise the budget.",
+      },
+      // Feed rows for the budget_hold event.
+      feed: {
+        held: (spent: string, ceiling: string) =>
+          `Paused: spent ${spent} of the ${ceiling} ceiling, holding this run's work while it waits for a raise.`,
+        raised: (ceiling: string) => `Budget raised to ${ceiling} — carrying on.`,
+        headroom: (ceiling: string) => `Budget raised to ${ceiling}.`,
+        expired: "Nobody raised the budget in time, so this run stopped.",
+      },
+    },
+
     // Notifications
     notifications: {
       title: "Notifications",

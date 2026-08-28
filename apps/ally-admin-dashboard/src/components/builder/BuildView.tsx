@@ -8,6 +8,7 @@ import {
   useGetBuilderPendingQuestionsQuery,
   useGetBuilderPullRequestsQuery,
   useGetBuilderRunsQuery,
+  useGetBuilderSessionBudgetQuery,
   useLazyGetBuilderRunEventsQuery,
 } from "@api";
 import { en } from "@constants";
@@ -17,6 +18,7 @@ import { BuilderBuildEvent, BuilderSessionStatus, BuilderStage, BuilderTodoItem 
 import { BuildActivityFeed } from "./BuildActivityFeed";
 import { PhaseRail } from "./PhaseRail";
 import { BuilderAnswerPayload, QuestionCard } from "./QuestionCard";
+import { RaiseBudgetDialog } from "./RaiseBudgetDialog";
 import { RunHistoryRail } from "./RunHistoryRail";
 import { TodoPanel } from "./TodoPanel";
 
@@ -31,6 +33,12 @@ const LIVE_STATUSES: BuilderSessionStatus[] = ["BUILDING"];
  */
 const POLL_WITH_SOCKET_MS = 20000;
 const POLL_WITHOUT_SOCKET_MS = 4000;
+
+/**
+ * How often the held-budget banner re-reads the clock. The countdown it draws
+ * is in whole minutes, so anything finer would repaint for nothing.
+ */
+const BUDGET_COUNTDOWN_TICK_MS = 20000;
 
 interface BuildViewProps {
   sessionId: string;
@@ -75,6 +83,38 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
   });
   const [fetchEvents] = useLazyGetBuilderRunEventsQuery();
   const [answerQuestion] = useAnswerBuilderQuestionMutation();
+
+  /**
+   * Live spend against the ceiling. Polled rather than read off the session:
+   * the session detail is fetched once per mount and this number moves every
+   * phase — which is the whole reason a build can hit the ceiling while
+   * somebody is looking at a page that says it had headroom.
+   */
+  const { data: budget, refetch: refetchBudget } = useGetBuilderSessionBudgetQuery(sessionId, {
+    pollingInterval: isLive || isWaiting ? POLL_WITH_SOCKET_MS : 0,
+    skipPollingIfUnfocused: true,
+  });
+  const [showRaiseBudget, setShowRaiseBudget] = useState(false);
+  const [countdownNow, setCountdownNow] = useState(() => Date.now());
+
+  // The hold expires on its own, so the banner has to keep counting even
+  // though nothing new arrives from the server while it waits.
+  const holdUntil = budget?.hold?.holdUntil ?? null;
+  useEffect(() => {
+    if (!holdUntil) return undefined;
+    const interval = window.setInterval(
+      () => setCountdownNow(Date.now()),
+      BUDGET_COUNTDOWN_TICK_MS,
+    );
+    return () => window.clearInterval(interval);
+  }, [holdUntil]);
+
+  const holdMinutesLeft = useMemo(() => {
+    if (!holdUntil) return null;
+    const until = new Date(holdUntil).getTime();
+    if (!Number.isFinite(until)) return null;
+    return Math.max(0, Math.ceil((until - countdownNow) / 60000));
+  }, [holdUntil, countdownNow]);
 
   const newestRun = useMemo(() => runs?.[runs.length - 1] ?? null, [runs]);
   const selectedRun = useMemo(
@@ -235,8 +275,52 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
     }
   };
 
+  const budgetStrings = en.builder.budget;
+  const money = (value: number | null | undefined) =>
+    value === null || value === undefined ? "—" : `$${value.toFixed(2)}`;
+
+  /**
+   * Two states, one control. A held run is the urgent one — its work is intact
+   * but only until the window closes — and the "past the ceiling but still
+   * coding" state is the warning that precedes it by one phase. Both are shown
+   * above the phase rail because they are the only thing on this page a person
+   * can act on to change the outcome.
+   */
+  const budgetHeld = Boolean(budget?.hold);
+  const budgetOver = Boolean(budget?.exceeded) && (isLive || isWaiting);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {(budgetHeld || budgetOver) && budget && (
+        <InlineNotification
+          kind={budgetHeld ? "error" : "warning"}
+          lowContrast
+          hideCloseButton
+          title={budgetHeld ? budgetStrings.heldTitle : budgetStrings.overTitle}
+          subtitle={
+            budgetHeld
+              ? holdMinutesLeft !== null && holdMinutesLeft <= 0
+                ? budgetStrings.heldBodyExpiring
+                : budgetStrings.heldBody(
+                    money(budget.spentUsd),
+                    money(budget.budgetUsd),
+                    budgetStrings.minutesLeft(holdMinutesLeft ?? 0),
+                  )
+              : budgetStrings.overBody(money(budget.spentUsd), money(budget.budgetUsd))
+          }
+          className="m-3"
+        >
+          <Button
+            kind="primary"
+            size="sm"
+            className="mt-2"
+            onClick={() => setShowRaiseBudget(true)}
+          >
+            {budgetStrings.raise}
+          </Button>
+        </InlineNotification>
+      )}
+
       <PhaseRail currentStage={currentStage} active={isLive} />
 
       <RunHistoryRail runs={runs ?? []} selectedRunId={selectedRunId} onSelect={handleSelectRun} />
@@ -308,6 +392,18 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
             {strings.watchOnGithub}
           </Button>
         </div>
+      )}
+
+      {budget && (
+        <RaiseBudgetDialog
+          isOpen={showRaiseBudget}
+          onClose={() => setShowRaiseBudget(false)}
+          sessionId={sessionId}
+          budget={budget}
+          // The banner is driven by this query, so it has to re-read rather
+          // than wait for the next 20s tick to stop saying "paused".
+          onRaised={() => void refetchBudget()}
+        />
       )}
     </div>
   );
