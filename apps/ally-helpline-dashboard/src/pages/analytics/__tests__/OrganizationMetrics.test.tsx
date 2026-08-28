@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -7,20 +9,49 @@ const mockUseGetOrganizationMetricsQuery = vi.fn();
 const mockUseGetUserPreferencesQuery = vi.fn();
 const mockUpdateUserPreferences = vi.fn();
 const mockRefetch = vi.fn();
-const mockDispatch = vi.fn(() => ({ undo: vi.fn() }));
+
+// Mirrors RTK Query's real `updateQueryData`: the recipe only actually runs
+// once something dispatches the patch action it returns, against whatever
+// the cache's current data is at that moment — `undefined` while
+// getUserPreferences is still pending, which is exactly the race this suite
+// covers below (see "still saves the reorder...").
+const mockDispatch = vi.fn((action: { recipe?: (draft: unknown) => void } | undefined) => {
+  action?.recipe?.(undefined);
+  return { undo: vi.fn() };
+});
 
 let mockPermissions: string[] = ["view:organization-metrics"];
+let capturedOnDragEnd:
+  | ((event: { active: { id: string }; over: { id: string } | null }) => void | Promise<void>)
+  | undefined;
 
 vi.mock("@hooks", () => ({
   useUser: () => ({ permissions: mockPermissions }),
 }));
 
-// The reorder autosave path (SortableMetricBlock's drag handle → handleDragEnd
-// → optimistic cache patch) isn't exercised here: dnd-kit drives its sortable
-// context off real PointerEvent sequences, which jsdom can't simulate
-// reliably — the same reason ally-admin-dashboard's Sidebar/reorderSidebar
-// (the identical pattern this mirrors) isn't drag-tested either. `userAPI` is
-// mocked only so the component doesn't throw at import/render time.
+// dnd-kit drives its sortable context off real PointerEvent sequences, which
+// jsdom can't simulate reliably — the same reason ally-admin-dashboard's
+// Sidebar/reorderSidebar (the identical pattern this mirrors) isn't
+// drag-tested that way either. Instead, `DndContext` is mocked just enough to
+// capture the `onDragEnd` handler so the reorder test below can invoke it
+// directly, the same way dnd-kit would after a real drag gesture.
+vi.mock("@dnd-kit/core", async () => {
+  const actual = await vi.importActual<typeof import("@dnd-kit/core")>("@dnd-kit/core");
+  return {
+    ...actual,
+    DndContext: ({
+      children,
+      onDragEnd,
+    }: {
+      children: ReactNode;
+      onDragEnd: typeof capturedOnDragEnd;
+    }) => {
+      capturedOnDragEnd = onDragEnd;
+      return children;
+    },
+  };
+});
+
 vi.mock("@api", () => ({
   useGetOrganizationMetricsQuery: (...args: unknown[]) =>
     mockUseGetOrganizationMetricsQuery(...args),
@@ -30,7 +61,17 @@ vi.mock("@api", () => ({
       unwrap: () => mockUpdateUserPreferences(...args),
     }),
   ],
-  userAPI: { util: { updateQueryData: vi.fn(() => ({ type: "mock-patch" })) } },
+  userAPI: {
+    util: {
+      // The real util returns a thunk that runs the recipe once dispatched
+      // (see mockDispatch above) — not immediately on call, which matters
+      // for the pending-preferences race being tested.
+      updateQueryData: (_endpoint: string, _arg: unknown, recipe: (draft: unknown) => void) => ({
+        type: "mock-patch",
+        recipe,
+      }),
+    },
+  },
 }));
 
 vi.mock("@store", () => ({
@@ -134,6 +175,7 @@ describe("OrganizationMetrics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPermissions = ["view:organization-metrics"];
+    capturedOnDragEnd = undefined;
     mockUseGetOrganizationMetricsQuery.mockReturnValue(queryResult({ data: BASE_RESPONSE }));
     mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
   });
@@ -315,5 +357,32 @@ describe("OrganizationMetrics", () => {
     render(<OrganizationMetrics />);
 
     expect(screen.getAllByLabelText("Drag to reorder")).toHaveLength(6);
+  });
+
+  it("still saves the reorder when the drag finishes before getUserPreferences resolves", async () => {
+    // getUserPreferences is still pending at drag time (the draggable blocks
+    // render regardless of its status) — its RTK Query cache entry has no
+    // `data` yet, so the optimistic patch's recipe runs against `undefined`
+    // (see mockDispatch above).
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    expect(capturedOnDragEnd).toBeDefined();
+    await capturedOnDragEnd?.({
+      active: { id: "activeUsersTrend" },
+      over: { id: "newLearnersTrend" },
+    });
+
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({
+      org_metrics_layout: [
+        "simulationsTrend",
+        "newLearnersTrend",
+        "activeUsersTrend",
+        "mostUsedSimulations",
+        "learnerUsage",
+        "courseUsage",
+      ],
+    });
   });
 });

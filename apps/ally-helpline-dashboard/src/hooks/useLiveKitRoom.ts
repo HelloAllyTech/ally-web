@@ -339,23 +339,31 @@ export const useLiveKitRoom = (
     [audioTimer],
   );
 
-  const onRoomDisconnect = useCallback(() => {
-    // Paired with `simulation_started` via the ref, so a room that disconnected
-    // before the agent ever arrived emits neither event rather than a completion
-    // with no start. `endSessionButtonRef` distinguishes the learner ending the
-    // session on purpose from the room dropping under them — the same signal the
-    // auto-termination sound keys on, and the difference between a completed
-    // practice and an interrupted one.
+  // Paired with `simulation_started` via the ref, so a room that disconnected
+  // before the agent ever arrived emits neither event rather than a completion
+  // with no start. `endSessionButtonRef` distinguishes the learner ending the
+  // session on purpose from the room dropping under them — the same signal the
+  // auto-termination sound keys on, and the difference between a completed
+  // practice and an interrupted one.
+  //
+  // Extracted from onRoomDisconnect so cleanupRoom can call it directly: on an
+  // in-app unmount (route change), cleanupRoom detaches the Disconnected
+  // listener before disconnecting, so onRoomDisconnect never runs for that
+  // path and this is the only place left to capture the completion.
+  const captureSimulationCompleted = useCallback(() => {
     const startedAt = simulationStartedAtRef.current;
-    if (startedAt !== null) {
-      simulationStartedAtRef.current = null;
-      captureEvent(ANALYTICS_EVENTS.SIMULATION_COMPLETED, {
-        [ANALYTICS_PROPS.SIMULATION_ID]: sessionIdsRef.current.simulationId,
-        [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
-        duration_seconds: Math.round((Date.now() - startedAt) / 1000),
-        ended_by_learner: Boolean(endSessionButtonRef.current),
-      });
-    }
+    if (startedAt === null) return;
+    simulationStartedAtRef.current = null;
+    captureEvent(ANALYTICS_EVENTS.SIMULATION_COMPLETED, {
+      [ANALYTICS_PROPS.SIMULATION_ID]: sessionIdsRef.current.simulationId,
+      [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
+      duration_seconds: Math.round((Date.now() - startedAt) / 1000),
+      ended_by_learner: Boolean(endSessionButtonRef.current),
+    });
+  }, []);
+
+  const onRoomDisconnect = useCallback(() => {
+    captureSimulationCompleted();
 
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
     setRoomStatus(RoomStatus.DISCONNECTING);
@@ -416,6 +424,12 @@ export const useLiveKitRoom = (
     audioTimer.flush("abandoned");
     audioTimer.reset();
 
+    // Capture simulation_completed before detaching listeners: an in-app
+    // unmount (route change) never fires RoomEvent.Disconnected with the
+    // listener still attached, so onRoomDisconnect would otherwise be skipped
+    // and the session would silently drop out of the completion funnel.
+    captureSimulationCompleted();
+
     // Remove room-level listeners to prevent duplication on reconnect
     detachRoomListeners();
 
@@ -437,7 +451,14 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, detachRoomListeners, updateAgentTurnStatus, audioTimer, clearAgentJoinTimer]);
+  }, [
+    room,
+    detachRoomListeners,
+    updateAgentTurnStatus,
+    audioTimer,
+    clearAgentJoinTimer,
+    captureSimulationCompleted,
+  ]);
 
   // `force` bypasses the already-connected/connecting guard. Only the retry
   // path sets it: after a failed agent-join the room IS connected, so the guard
