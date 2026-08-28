@@ -1,4 +1,9 @@
-import { RoadmapOpportunitySource, RoadmapOpportunityStage, RoadmapOpportunityType } from "@types";
+import {
+  RoadmapOpportunityEffort,
+  RoadmapOpportunitySource,
+  RoadmapOpportunityStage,
+  RoadmapOpportunityType,
+} from "@types";
 
 /**
  * Stage and type presentation, in one place.
@@ -35,6 +40,21 @@ export const stageLabel = (stage: RoadmapOpportunityStage | string): string =>
 
 export const stageStyle = (stage: RoadmapOpportunityStage | string): string =>
   STAGE_STYLE[stage] ?? STAGE_STYLE.new;
+
+/**
+ * Shirt sizes for display. Stored lowercase (the wire format ally-be validates), shown uppercase
+ * because "S" and "XXL" are how people say them — a select reading "s / m / l" looks like a bug.
+ *
+ * Ordered smallest-first, and this object's key order IS the order the drawer renders: a size
+ * scale sorted any other way is unreadable, and alphabetical would give L, M, S, XL, XXL.
+ */
+export const EFFORT_LABEL: Record<RoadmapOpportunityEffort, string> = {
+  [RoadmapOpportunityEffort.S]: "S",
+  [RoadmapOpportunityEffort.M]: "M",
+  [RoadmapOpportunityEffort.L]: "L",
+  [RoadmapOpportunityEffort.XL]: "XL",
+  [RoadmapOpportunityEffort.XXL]: "XXL",
+};
 
 export const SOURCE_LABEL: Record<string, string> = {
   staff: "Staff",

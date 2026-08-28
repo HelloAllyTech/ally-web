@@ -5,6 +5,22 @@ export enum RoadmapOpportunityType {
   BUG = "bug",
 }
 
+/**
+ * Rough size of the work, on the shirt-size scale teams already use.
+ *
+ * Coarse ON PURPOSE: the roadmap decides what is next, which needs "a week or a quarter", not
+ * "13 points or 21" on something nobody has broken down. Values mirror ally-be's
+ * RoadmapOpportunityEffort and are the wire format — lowercase on the wire, shirt sizes on
+ * screen (see EFFORT_LABEL).
+ */
+export enum RoadmapOpportunityEffort {
+  S = "s",
+  M = "m",
+  L = "l",
+  XL = "xl",
+  XXL = "xxl",
+}
+
 export enum RoadmapOpportunityStage {
   NEW = "new",
   PRIORITISED = "prioritised",
@@ -90,6 +106,11 @@ export interface RoadmapOpportunity {
   releasedAt: string | null;
   /** The month this was PLANNED into, 'YYYY-MM'. Null means Unscheduled. */
   plannedMonth: string | null;
+  /**
+   * Rough size of the work. Null means nobody has sized it — a real and permanent state, not a
+   * gap: every row predating the field is unsized and no backfill can honestly invent one.
+   */
+  effort: RoadmapOpportunityEffort | null;
   /** Manual rank within its month lane, ascending. Only meaningful against its own lane. */
   boardPosition: number;
   /**
@@ -138,7 +159,7 @@ export interface RoadmapOpportunitiesQuery {
   releasedTo?: string;
   priorityMin?: number;
   priorityMax?: number;
-  sortBy?: "priority" | "createdAt" | "releasedAt" | "myVotes" | "description";
+  sortBy?: "priority" | "createdAt" | "releasedAt" | "myVotes" | "description" | "plannedMonth";
   order?: "ASC" | "DESC";
   limit?: number;
   offset?: number;

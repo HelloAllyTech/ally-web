@@ -17,7 +17,6 @@ import { ButtonVariant } from "@components/types";
 import { RoadmapSavedView } from "@types";
 
 import { SortableViewTab } from "./SortableViewTab";
-import { QUEUE_VIEW_ID } from "./utils/views";
 
 interface SavedViewTabsProps {
   views: RoadmapSavedView[];
@@ -113,25 +112,16 @@ export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
           strip scrolling, which it needs once there are more views than fit.
         */}
         <ul className="flex min-w-0 items-center overflow-x-auto pb-5">
-          {/* "Queue" FIRST: the pipeline is what people come here to work through, and "All" —
-              432 rows including everything shipped and archived — is the reference, not the
-              starting point. Not a saved view, so outside SortableContext like "All". */}
-          <li className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => onSelect(QUEUE_VIEW_ID)}
-              className={`px-3 py-3 text-base whitespace-nowrap ${
-                activeViewId === QUEUE_VIEW_ID ? "text-primary-500" : "text-typography-900"
-              }`}
-            >
-              Queue
-            </button>
-            {activeViewId === QUEUE_VIEW_ID && (
-              <span className="bg-primary-500 absolute inset-x-0 bottom-0 h-[3px] rounded-t-lg" />
-            )}
-          </li>
+          {/*
+            "Queue" used to be FIRST here. It is now a top-level tab beside Opportunities, one
+            level up — the pipeline is what people come here to work through, and sitting it a row
+            below the thing it is the working subset of read as though it were one filter preset
+            among eight. The pseudo-view id and state still drive it and `?view=queue` is still
+            its URL, so nothing about the view machinery changed; only where it is offered. This
+            strip is not rendered on the Queue at all — see ProductRoadmap.
 
-          {/* "All": not a saved view either. Second, after Queue — see the docblock. */}
+            "All": not a saved view, so outside SortableContext. First now that Queue has gone up.
+          */}
           <li className="relative shrink-0">
             <button
               type="button"

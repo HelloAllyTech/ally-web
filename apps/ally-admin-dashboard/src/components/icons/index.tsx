@@ -107,6 +107,7 @@ import {
   MachineLearningModel as CMachineLearningModel,
   Catalog as CCatalog,
   Security as CSecurity,
+  Locked as CLocked,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -175,6 +176,7 @@ export const Split = createCarbonIcon(CSplit);
 export const Merge = createCarbonIcon(CMerge);
 export const Bullhorn = createCarbonIcon(CBullhorn);
 export const Link = createCarbonIcon(CLink);
+export const Locked = createCarbonIcon(CLocked);
 export const SortAscending = createCarbonIcon(CSortAscending);
 export const SortDescending = createCarbonIcon(CSortDescending);
 export const Currency = createCarbonIcon(CCurrency);
@@ -338,6 +340,53 @@ const materialSymbol = (name: string) => {
 };
 
 export const VerticalAlignTopIcon = materialSymbol("vertical_align_top");
+
+/*
+ * Material Symbol twins for two Carbon glyphs, used where a row of icons has to read as one
+ * weight. Carbon's icons are FILLED PATHS, not strokes, so there is no thickness to turn down —
+ * next to a `wght 100` symbol they look like a different family, because they are. These carry
+ * the same variation settings as every other symbol (see .material-symbols-outlined in
+ * styles.css), so a row built from them is uniformly thin-line.
+ *
+ * Added rather than swapped into `Idea`/`Debug`: those two are the app-wide Carbon exports with
+ * call sites well outside the roadmap, and changing them would restyle every one of those.
+ *
+ * Both names MUST stay in index.html's `icon_names` subset. The font is requested with an
+ * explicit glyph list, so a symbol missing from it renders as its own name in words.
+ */
+export const LightbulbIcon = materialSymbol("lightbulb");
+export const BugReportIcon = materialSymbol("bug_report");
+/*
+ * An OUTLINED triangle. The Material Symbols name for it is "change_history", which has nothing
+ * to do with what it draws — the glyph is a plain equilateral triangle and the name is a relic of
+ * its original use. Aliased here so call sites read as what they render.
+ *
+ * Not "arrow_drop_up": that one is a solid wedge, and a filled shape ignores the `wght 100` the
+ * rest of this row is drawn at, so it lands noticeably heavier than its neighbours.
+ */
+export const TriangleIcon = materialSymbol("change_history");
+
+/*
+ * Thin-line glyphs for the roadmap Queue's collapsed toolbar controls.
+ *
+ * Material Symbols rather than the Carbon `Filter` / `Flag` / `SortAscending` already exported
+ * above, for the reason given on LightbulbIcon: Carbon draws filled paths with no weight to turn
+ * down, and this toolbar sits under a header row drawn at `wght 100`.
+ *
+ * BackArrowIcon is the collapse affordance, NOT navigation — it returns an expanded control to
+ * its icon. Named for the glyph rather than for "collapse" so a future call site that wants a
+ * back arrow for something else is not misled by the name.
+ */
+export const SortIcon = materialSymbol("sort");
+export const GoalIcon = materialSymbol("flag");
+export const PersonIcon = materialSymbol("person");
+export const BackArrowIcon = materialSymbol("arrow_back");
+/**
+ * The Builder agent — "auto_awesome", the sparkles that read as AI across most products people
+ * already use, rather than a robot. Named for the thing it opens, not the glyph, so swapping the
+ * symbol again does not mean touching every call site.
+ */
+export const BuilderAgentIcon = materialSymbol("auto_awesome");
 
 export const TooltipIcon = ({ className }: IconProps) => (
   <span

@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from "react";
 
-import { Baby, Debug, Flag, Idea, Merge, OldWoman, Star, VerticalAlignTopIcon } from "@icons";
+import {
+  BugReportIcon,
+  Flag,
+  LightbulbIcon,
+  GoalIcon,
+  Merge,
+  PersonIcon,
+  SortIcon,
+  TriangleIcon,
+} from "@icons";
 import { useSearchParams } from "react-router-dom";
 
 import { CarbonDropdown, Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -37,6 +46,8 @@ import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunitiesListView } from "./OpportunitiesListView";
 import { OpportunityDrawer } from "./OpportunityDrawer";
 import { ProductGoalsManager } from "./ProductGoalsManager";
+import { QueueFacetFilter } from "./QueueFacetFilter";
+import { QueueToolbarControl } from "./QueueToolbarControl";
 import { ReportBugModal } from "./ReportBugModal";
 import { SavedViewTabs } from "./SavedViewTabs";
 import { SplitOpportunityModal } from "./SplitOpportunityModal";
@@ -45,12 +56,29 @@ import { useSavedViews } from "./useSavedViews";
 import { seedForHandle } from "./utils/builder";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
 import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
-import { QUEUE_SORTS, QueueSortId, queueSortIdFor } from "./utils/queueSort";
-import { QUEUE_VIEW_ID, normaliseSortField, normaliseTypeFilter } from "./utils/views";
+import { QUEUE_SORTS, queueSortIdFor } from "./utils/queueSort";
+import {
+  QUEUE_VIEW_ID,
+  QUEUE_VIEW_STATE,
+  normaliseSortField,
+  normaliseTypeFilter,
+} from "./utils/views";
 
-import type { IconProps } from "@icons";
-
+/** One page of the TABLE layout, which walks `offset`. */
 const PAGE_SIZE = 50;
+
+/**
+ * How many cards the LIST feed loads at once — its opening depth and its "Load more" step.
+ *
+ * Deliberately NOT the table's page size, which it used to share. The two are different reading
+ * modes: the table is walked a page at a time and 200 rows to a page defeats the pager, while the
+ * feed is SCROLLED, so a shallow first load just means hitting a button to carry on reading. At
+ * 50 the queue ran out four times before reaching the tail.
+ *
+ * Bounded by LIST_MAX_LOADED / ROADMAP_LIST_DEFAULTS.MAX_LIMIT (500), which the server clamps to
+ * silently — 200 sits inside it and reaches the ceiling in two more presses.
+ */
+const FEED_PAGE_SIZE = 200;
 
 /**
  * Default month window: one back, four forward. Mirrors ROADMAP_BOARD_DEFAULTS in ally-be — the
@@ -66,31 +94,6 @@ const defaultWindow = () => {
     from: shiftMonthKey(current, -WINDOW_MONTHS_BACK),
     to: shiftMonthKey(current, WINDOW_MONTHS_FORWARD),
   };
-};
-
-/**
- * One glyph per queue ordering.
- *
- * A numbered list for rank (it IS a ranked list), and the two sort arrows for the date orderings
- * so the pair reads as one axis with two directions. Kept out of utils/queueSort.ts so that stays
- * pure data and logic with no React dependency.
- */
-// Typed as ComponentType<IconProps> — the library's own icon prop surface — because these three
-// entries come from three different families (Carbon wrapper, SVGR asset, Material Symbol) and a
-// narrower hand-written shape is not assignable from an SVGR component's SVGProps.
-const QUEUE_SORT_ICONS: Record<QueueSortId, React.ComponentType<IconProps>> = {
-  // Supplied illustration. Same colour caveat as Baby below: full colour, so selection state
-  // shows only through aria-pressed on this one.
-  rank: Star,
-  // A supplied illustration rather than a sort arrow. Two things this costs, both deliberate
-  // choices by the asset and worth knowing: it is FULL COLOUR so it does not grey out or turn
-  // brand blue with selection (aria-pressed is the only state signal on this one), and "oldest"
-  // is still a sort arrow so the date pair no longer reads as one axis with two directions —
-  // the tooltip and aria-label carry the meaning.
-  latest: Baby,
-  // Completes the age metaphor: Star for rank, Baby for newest, older woman for oldest — so the
-  // trio reads as three distinct ideas rather than one sort axis with a stray face in it.
-  oldest: OldWoman,
 };
 
 /** The board's grouping options, in display order. */
@@ -109,6 +112,17 @@ const GROUP_BY_OPTIONS: { value: RoadmapBoardGroupBy; label: string }[] = [
  * ?tab= as "show the board", so an old bookmark lands on Opportunities rather than a dead tab.
  */
 enum RoadmapTab {
+  /**
+   * The pipeline, promoted out of the saved-view strip to sit beside Opportunities.
+   *
+   * DERIVED, NOT A `?tab=` VALUE. Queue-ness still lives in `?view=queue`, exactly as it did when
+   * this was a pseudo-view, so every existing shared link keeps working and the landing logic in
+   * useSavedViews (absent `?view=` resolves to the queue) needs no change. This id names the tab
+   * in the strip; the URL never carries `tab=queue`. Keeping ONE source of truth is the point —
+   * a separate `?tab=queue` could disagree with `?view=`, and there would be no right answer for
+   * `?tab=opportunities&view=queue`.
+   */
+  QUEUE = "queue",
   OPPORTUNITIES = "opportunities",
   INTERVIEWS = "interviews",
   /** Bug Hunter's table, read-only. See BugsTab for why it is mirrored here. */
@@ -181,6 +195,18 @@ export const ProductRoadmap: React.FC = () => {
    * is how someone casting votes loses their running total without remembering they hid it.
    */
   const [isBudgetOpen, setIsBudgetOpen] = useState(false);
+  /**
+   * Which of the Queue's three toolbar controls is expanded, or null for all collapsed.
+   *
+   * ONE value rather than three booleans, so opening one closes the others by construction — the
+   * row this replaced had a sort disclosure and two 240px multi-selects open at once, which is
+   * most of a toolbar spent on settings a given visit usually does not change.
+   *
+   * Page-local and NOT persisted, like isBudgetOpen: it costs one click to reopen, and each
+   * collapsed glyph carries its current setting in a tooltip and a badge, so nothing a reader
+   * needs in order to trust what they are looking at is hidden behind the click.
+   */
+  const [openControl, setOpenControl] = useState<"sort" | "goal" | "owner" | null>(null);
   /** Offset pagination, PAGE_SIZE rows at a time. See resetPaging for the invalidation rule. */
   const [offset, setOffset] = useState(0);
   /**
@@ -188,7 +214,7 @@ export const ProductRoadmap: React.FC = () => {
    * limit from the top instead of walking `offset` — kept separate from `offset` so switching
    * layout back to the table does not inherit a 200-row limit as a page size.
    */
-  const [listLoaded, setListLoaded] = useState(PAGE_SIZE);
+  const [listLoaded, setListLoaded] = useState(FEED_PAGE_SIZE);
   /**
    * Table, month board, or the single-column list feed. Table stays the default: it is the
    * layout every saved view was written against, and a view with no `layout` key must open the
@@ -215,7 +241,7 @@ export const ProductRoadmap: React.FC = () => {
     setOffset(0);
     // Load-more accumulates, so a filter change has to collapse it back to one slice or the new
     // result set arrives pre-expanded to whatever depth the last one was read to.
-    setListLoaded(PAGE_SIZE);
+    setListLoaded(FEED_PAGE_SIZE);
   };
 
   const withPagingReset =
@@ -323,6 +349,24 @@ export const ProductRoadmap: React.FC = () => {
     { status: "all", limit: 1 },
     { skip: !canViewBugs },
   );
+
+  /*
+   * Counts for the two Opportunities-family tabs.
+   *
+   * The strip's Opportunities count reflects WHAT IS ON SCREEN — the board's lane totals, or the
+   * filtered table count — which is right while that tab is the one you are looking at and wrong
+   * the moment it isn't. Splitting Queue out made that visible: standing on the Queue, `data` is
+   * the queue's own query, so an unguarded Opportunities count would have read 159 rather than
+   * the 432 it holds.
+   *
+   * So each entry falls back to its own count when it is not the active one. `limit: 1` — these
+   * fire on every visit and only the `count` is read, the same shape as the two above.
+   */
+  const { data: queueTotal } = useGetRoadmapOpportunitiesQuery({
+    stage: QUEUE_VIEW_STATE.stageFilter,
+    limit: 1,
+  });
+  const { data: opportunitiesTotal } = useGetRoadmapOpportunitiesQuery({ limit: 1 });
 
   const openOpportunityId = searchParams.get("opportunity");
   const activeViewId = searchParams.get("view");
@@ -503,9 +547,18 @@ export const ProductRoadmap: React.FC = () => {
    * that is actually Carbon.
    */
   /**
-   * Merge trigger. In the toolbar rather than the table, because the drawer searches the whole
-   * board — so merging no longer depends on which layout you are in or which 50 rows are on
-   * screen, which is what the old checkbox column required.
+   * Merge trigger. Rendered ONCE, in the page header beside "Manage product goals".
+   *
+   * It is not a table affordance: the drawer searches the whole board, so merging never depended
+   * on which layout you were in or which 50 rows were on screen — that is what the old checkbox
+   * column required and why it went. Nor is it a toolbar one. It sat in the layout-toggle slot of
+   * all three layouts, which meant three copies of the same button whose position shifted with
+   * the row of controls beside it, sitting among things you touch every visit (search, filters,
+   * layout) rather than among the once-in-a-while admin jobs it belongs with.
+   *
+   * The header already holds the other one of those — the goal taxonomy — under the same
+   * canManage gate, as the same kind of icon-only control with the same tooltip-plus-aria-label
+   * treatment. Two admin jobs by the title, one set of controls in the toolbar.
    */
   const mergeAction = canManage ? (
     <Tooltip label="Merge opportunities" align="bottom">
@@ -528,51 +581,146 @@ export const ProductRoadmap: React.FC = () => {
    * keeping 150 rows loaded would show the first 150 of the NEW order, which is not what the
    * reader asked to see.
    */
-  const queueSortPicker = isQueueView ? (
-    /*
-      Three icons, not a dropdown. Sorting the queue is a two-state-ish choice people flip between
-      while reading, and a dropdown made that two clicks and hid the alternatives behind a menu.
-      Three targets show what is available and what is chosen at a glance.
-
-      role="group" + aria-pressed, not a radiogroup: these are toggle buttons that each apply an
-      ordering immediately, which is what aria-pressed describes. Every one carries a tooltip AND
-      an aria-label because they are icon-only — the glyphs are directional, not self-naming.
-
-      Selected is brand blue, the rest grey. Colour is NOT the only signal: aria-pressed carries
-      it for anyone who cannot see the difference.
-    */
-    <div role="group" aria-label="Sort the queue" className="flex items-center gap-1">
+  /**
+   * The queue's four orderings, as pills.
+   *
+   * Not a dropdown: sorting the queue is a choice people flip between while reading, and a menu
+   * made that two clicks and hid the alternatives behind it. Four targets show what is available
+   * and what is chosen at a glance. The whole group now lives behind one glyph in the toolbar
+   * (see QueueToolbarControl), so it costs nothing while collapsed.
+   *
+   * WORDS, NOT ICONS. These were three illustrations — a star for rank, an infant for "latest",
+   * an older woman for "oldest" — an age metaphor invented here in place of the sort arrows it
+   * replaced. Two costs, both measured rather than assumed:
+   *
+   *   1. SELECTION WAS INVISIBLE ON TWO OF THE THREE. The infant and the older woman are
+   *      full-colour assets with fills baked into the SVG (#e59600, #ffca28, #c28fef and
+   *      friends), so `text-primary-500` could not reach them. Checked in the DOM: the star came
+   *      back rgb(38,77,142) when selected, the other two kept their own palette whether pressed
+   *      or not. A sighted reader could not tell which date ordering was active.
+   *   2. AN INVENTED METAPHOR HAS TO BE LEARNED. A reader who has not been told the scheme
+   *      cannot recover "oldest first" from a drawing of a face, and the arrows it displaced are
+   *      a convention every table in the product already uses. Stacks, "Reuse established
+   *      conventions to minimize comprehension burden": don't spend a new convention where a
+   *      standard one already worked.
+   *
+   * role="group" + aria-pressed, not a radiogroup — these are toggle buttons that each apply an
+   * ordering immediately, which is what aria-pressed describes. Selection carries in weight and a
+   * filled pill as well as in colour, so it never rests on hue alone.
+   */
+  const queueSortOptions = (
+    <div role="group" aria-label="Sort the queue" className="flex flex-wrap items-center gap-1">
       {QUEUE_SORTS.map(option => {
-        const Icon = QUEUE_SORT_ICONS[option.id];
         const isSelected = queueSortIdFor(sortBy, order) === option.id;
         return (
-          <Tooltip key={option.id} label={option.label} align="bottom">
-            <button
-              type="button"
-              aria-label={option.label}
-              aria-pressed={isSelected}
-              onClick={() => {
-                setSortBy(option.sortBy);
-                setOrder(option.order);
-                // A different ordering is a different result set, so the load-more depth resets.
-                resetPaging();
-              }}
-              // typography-700 (rgba(0,0,0,.54)), NOT typography-secondary: the typography scale
-              // in tailwind.config.js is numeric — 50…900 plus Default — and has no `secondary`
-              // key, so `text-typography-secondary` emits no class at all and the glyph inherits
-              // black. Measured: the unselected icons came back rgb(0,0,0) before this.
-              className={`inline-flex cursor-pointer items-center p-1 transition-colors ${
-                isSelected ? "text-primary-500" : "text-typography-700 hover:text-typography-900"
-              }`}
-            >
-              {/* Sized by CLASS, not width/height props: an imported SVG's own attributes can
-                  beat the props, and one of these assets shipped with width/height="800px". A
-                  Tailwind size class overrides both. */}
-              <Icon className="h-[18px] w-[18px]" />
-            </button>
-          </Tooltip>
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => {
+              setSortBy(option.sortBy);
+              setOrder(option.order);
+              // A different ordering is a different result set, so the load-more depth resets.
+              resetPaging();
+            }}
+            // typography-700 (rgba(0,0,0,.54)), NOT typography-secondary: the typography scale in
+            // tailwind.config.js is numeric — 50…900 plus Default — and has no `secondary` key,
+            // so `text-typography-secondary` emits no class at all and the text inherits black.
+            className={`cursor-pointer rounded-full px-2.5 py-1 text-xs transition-colors ${
+              isSelected
+                ? "bg-primary-50 text-primary-500 font-medium"
+                : "text-typography-700 hover:text-typography-900 hover:bg-background-secondary"
+            }`}
+          >
+            {option.label}
+          </button>
         );
       })}
+    </div>
+  );
+
+  /**
+   * The Queue's toolbar: the sort disclosure plus the two facets worth having here.
+   *
+   * The Queue deliberately hides the full filter bar — it is a fixed view of the pipeline rather
+   * than a place to build arbitrary queries — but "what is on this goal" and "what is mine" are
+   * the two cuts people want while working through it, so those two get a control each.
+   *
+   * THE RANK IS UNAFFECTED BY EITHER. queueRank is computed by ally-be in its own subquery over
+   * the whole queue, deliberately not sharing the outer WHERE (see QUEUE_RANK_SQL), so filtering
+   * to one goal shows #3, #14, #57 — their standing in the queue — rather than renumbering them
+   * 1, 2, 3 as though the filtered set were the queue. That is the behaviour to preserve: the
+   * numbers stay flat.
+   *
+   * Each is COLLAPSED to a glyph by default and expands in place — see QueueToolbarControl for
+   * why, and for how the collapsed state still reports what it is set to.
+   */
+  const goalOptions = useMemo(() => (goals ?? []).map(goal => goal.name), [goals]);
+  const ownerOptions = facets?.owners ?? [];
+
+  /**
+   * A facet's setting in words, for the collapsed glyph's tooltip and accessible name.
+   *
+   * `[]` means ALL (see QueueFacetFilter) — so an empty filter reads as "All", not as "0
+   * selected", which would say the opposite of what the feed is showing.
+   */
+  const facetSummary = (value: string[], options: string[], noun: string) =>
+    value.length ? `${value.length} of ${options.length} ${noun}` : `All ${noun}`;
+
+  const queueToolbar = isQueueView ? (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+      <QueueToolbarControl
+        isOpen={openControl === "sort"}
+        onOpen={() => setOpenControl("sort")}
+        onClose={() => setOpenControl(null)}
+        icon={SortIcon}
+        label="Sort the queue"
+        summary={QUEUE_SORTS.find(o => o.id === queueSortIdFor(sortBy, order))?.label ?? ""}
+        // A dot rather than a count: an ordering is one choice, so there is no number to print —
+        // only "this is not the order the queue normally opens in", which is worth flagging
+        // because every rank on screen is read against it.
+        indicator={queueSortIdFor(sortBy, order) === "topRank" ? null : true}
+      >
+        {queueSortOptions}
+      </QueueToolbarControl>
+
+      <QueueToolbarControl
+        isOpen={openControl === "goal"}
+        onOpen={() => setOpenControl("goal")}
+        onClose={() => setOpenControl(null)}
+        icon={GoalIcon}
+        label="Filter by product goal"
+        summary={facetSummary(goalFilter, goalOptions, "goals")}
+        indicator={goalFilter.length || null}
+      >
+        <QueueFacetFilter
+          id="queue-filter-product-goal"
+          label="Product goal"
+          // Goal NAMES, not ids — that is what RoadmapViewState stores and what the API filters
+          // on, and it is what buildFacetSections feeds the full bar.
+          options={goalOptions}
+          value={goalFilter}
+          onChange={withPagingReset(setGoalFilter)}
+        />
+      </QueueToolbarControl>
+
+      <QueueToolbarControl
+        isOpen={openControl === "owner"}
+        onOpen={() => setOpenControl("owner")}
+        onClose={() => setOpenControl(null)}
+        icon={PersonIcon}
+        label="Filter by owner"
+        summary={facetSummary(ownerFilter, ownerOptions, "owners")}
+        indicator={ownerFilter.length || null}
+      >
+        <QueueFacetFilter
+          id="queue-filter-owner"
+          label="Owner"
+          options={ownerOptions}
+          value={ownerFilter}
+          onChange={withPagingReset(setOwnerFilter)}
+        />
+      </QueueToolbarControl>
     </div>
   ) : null;
 
@@ -618,14 +766,52 @@ export const ProductRoadmap: React.FC = () => {
   const isTabAvailable = (tab: RoadmapTab | null): tab is RoadmapTab =>
     !!tab &&
     Object.values(RoadmapTab).includes(tab) &&
+    // QUEUE is derived from `?view=`, never read off `?tab=` — see the enum. A pasted
+    // `?tab=queue` is therefore an unrecognised tab and falls back to Opportunities, the same
+    // way the retired `?tab=release-notes` does.
+    tab !== RoadmapTab.QUEUE &&
     // A pasted `?tab=bugs` from someone who holds the toggle must fall back for
     // someone who doesn't, rather than selecting a tab with no strip entry —
     // which would render the page with no tab underlined and no body.
     (tab !== RoadmapTab.BUGS || canViewBugs);
-  const activeTab = isTabAvailable(requestedTab) ? requestedTab : RoadmapTab.OPPORTUNITIES;
+  /**
+   * Queue and Opportunities are the same `?tab=` value split into two strip entries by which
+   * view is applied. Queue-ness only overrides Opportunities — a reader on Bugs or User
+   * Interviews with `?view=queue` still in the URL stays where they are, and finds the Queue
+   * waiting when they come back.
+   */
+  const baseTab = isTabAvailable(requestedTab) ? requestedTab : RoadmapTab.OPPORTUNITIES;
+  const activeTab =
+    baseTab === RoadmapTab.OPPORTUNITIES && isQueueView ? RoadmapTab.QUEUE : baseTab;
+  /** Both strip entries render the same body; only the applied view differs. */
+  const isOpportunitiesTab =
+    activeTab === RoadmapTab.OPPORTUNITIES || activeTab === RoadmapTab.QUEUE;
 
   const setTab = (id: string) => {
     const next = new URLSearchParams(searchParams);
+    /*
+     * Queue and Opportunities differ by VIEW, not by tab, so selecting either writes
+     * `tab=opportunities` and moves `?view=` instead — and does it in ONE setSearchParams.
+     *
+     * That is not a tidy-up. savedViews.selectView writes the view param from its own closure
+     * over `searchParams`; calling it after a setSearchParams here would rebuild the query
+     * string from the same stale base and drop the tab change on the floor. So the param write
+     * happens once, here, and applyViewState is called directly for the half selectView does
+     * that this cannot: applying the filters, layout and sort.
+     */
+    if (id === RoadmapTab.QUEUE || id === RoadmapTab.OPPORTUNITIES) {
+      const toQueue = id === RoadmapTab.QUEUE;
+      next.set("tab", RoadmapTab.OPPORTUNITIES);
+      if (toQueue) next.set("view", QUEUE_VIEW_ID);
+      // Leaving Queue lands on "All" — the sibling default in the strip below — rather than on
+      // whichever saved view happened to be applied last, which the reader cannot see from here.
+      else next.delete("view");
+      next.delete("opportunity");
+      next.delete("bug");
+      setSearchParams(next, { replace: true });
+      applyViewState(toQueue ? QUEUE_VIEW_STATE : {});
+      return;
+    }
     next.set("tab", id);
     // A drawer belongs to the tab that opened it; leaving one open across a tab
     // switch is confusing. `bug` is the Bugs tab's equivalent of `opportunity`
@@ -683,6 +869,10 @@ export const ProductRoadmap: React.FC = () => {
               </button>
             </Tooltip>
           )}
+          {/* The second of the two once-in-a-while admin jobs, moved up out of the layout
+              toggle — see the docblock on mergeAction. Same gate, same icon-only treatment,
+              so the pair reads as one group rather than as a glyph that wandered up here. */}
+          {mergeAction}
         </div>
         {/* items-CENTER, not baseline. This row is a vote icon and two buttons; an icon has no
             baseline to align to, so baseline alignment left the (now 40px) badge sitting off
@@ -710,26 +900,38 @@ export const ProductRoadmap: React.FC = () => {
                   onClick={() => setIsBudgetOpen(open => !open)}
                   aria-expanded={isBudgetOpen}
                   aria-label={`Vote budget: ${budget.remaining} of ${budget.votesPerMonth} left`}
-                  // h-10 w-10 = 40px square, the measured height of the two buttons beside it,
-                  // and their square corners. Outlined in primary-500 — the same token
-                  // "New opportunity" fills with — so the three controls read as one set, with
-                  // this as the outlined member rather than a third colour. hover deepens to
-                  // primary-600, matching that button's own hover step.
-                  className="border-primary-500 hover:border-primary-600 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center border transition-colors"
+                  // Bare, and sized by its glyph — the SAME className the two icon buttons to
+                  // the right carry, so the three read as one row of icons. It used to be a
+                  // 40px outlined square, which made the leftmost of three peers the only one
+                  // with a box around it and set it a size apart from the other two.
+                  className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
                 >
-                  {/* Material Symbols "vertical_align_top" — "to the top", which is what a vote
-                      does to a queue position. Carbon has no equivalent: its arrows are
-                      directional rather than terminal.
+                  {/* An outlined triangle — see TriangleIcon in @icons for why the underlying
+                      Material Symbol is called "change_history" and why it is not the solid
+                      "arrow_drop_up".
 
-                      Bare inside the square outline, with no filled badge behind it. Coloured
-                      primary-500 to match that outline so the glyph and its border read as one
-                      control rather than a mark sitting in a box.
+                      Third glyph here. "vertical_align_top" described the EFFECT of a vote (it
+                      moves a thing up the queue) and read as a sort or scroll-to-top control;
+                      a thumb read as an approval on a single item rather than as a running
+                      balance. The triangle is the quietest of the three, which suits a control
+                      whose job is to sit still until you have votes left to spend.
 
-                      Its weight comes from `.material-symbols-outlined` (FILL 0 / wght 100 /
-                      GRAD -25 / opsz 24) in styles.css; only the SIZE is set here, so this
-                      cannot restyle the tooltip glyph that shares the class. The symbol must
-                      also be listed in index.html's `icon_names` subset or it renders as the
-                      words "vertical_align_top".
+                      Kept primary-500 while its two neighbours are grey. The outline that this
+                      colour used to match is gone, but the blue is doing separate work: this is
+                      the only one of the three that BLINKS as a nudge, and a nudge that resolves
+                      to the same grey as the buttons around it is not one.
+
+                      SIZED BY THE `size` PROP, not by a text-[Npx] class. materialSymbol writes
+                      font-size as an INLINE style from `size ?? width ?? height ?? 16`, and an
+                      inline style beats a class — so the `text-[22px]` that used to sit here was
+                      dead, and the glyph had been rendering at the 16px default the whole time
+                      while its neighbours were 20. Measured in the DOM: 16x16 against their
+                      20x20.
+
+                      Weight comes from `.material-symbols-outlined` (FILL 0 / wght 100 /
+                      GRAD -25 / opsz 24) in styles.css, shared with the two icons beside it so
+                      the row is one weight. The symbol must also be listed in index.html's
+                      `icon_names` subset or it renders as the words "change_history".
 
                       The ICON is what blinks now that the badge is gone, and only while there
                       are votes left AND the readout is collapsed — once the number is on screen
@@ -739,8 +941,9 @@ export const ProductRoadmap: React.FC = () => {
                       motion-reduce:animate-none is not optional. This is indefinitely blinking
                       content, which WCAG 2.2.2 treats as something the user must be able to
                       stop — honouring the OS reduced-motion setting is that mechanism. */}
-                  <VerticalAlignTopIcon
-                    className={`text-primary-500 text-[22px] ${
+                  <TriangleIcon
+                    size={20}
+                    className={`text-primary-500 ${
                       shouldNudgeVotes ? "animate-fadeInOut motion-reduce:animate-none" : ""
                     }`}
                   />
@@ -783,8 +986,12 @@ export const ProductRoadmap: React.FC = () => {
                 className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
               >
                 {/* A lightbulb, not a plus: every opportunity is badged "Idea", and the plus
-                    said "add a row" where this says what kind of thing gets added. */}
-                <Idea size={20} />
+                    said "add a row" where this says what kind of thing gets added.
+
+                    The Material Symbol rather than Carbon's `Idea`. Carbon icons are filled
+                    paths with no weight to turn down, so beside a `wght 100` symbol they read
+                    as a heavier family — which is exactly what this row looked like. */}
+                <LightbulbIcon size={20} />
               </button>
             </Tooltip>
           )}
@@ -796,8 +1003,10 @@ export const ProductRoadmap: React.FC = () => {
               onClick={() => setIsReportBugOpen(true)}
               className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
             >
-              {/* Carbon ships no `Bug`; Debug is the bug glyph — see the note in @icons. */}
-              <Debug size={20} />
+              {/* Material Symbols DOES ship a bug glyph, so this is `bug_report` rather than the
+                  Carbon stand-in `Debug` the note in @icons describes — and it matches the weight
+                  of the two symbols beside it, which the Carbon one could not. */}
+              <BugReportIcon size={20} />
             </button>
           </Tooltip>
         </div>
@@ -805,13 +1014,33 @@ export const ProductRoadmap: React.FC = () => {
 
       <Tabs
         items={[
+          // FIRST. The queue is the pipeline people come here to work through; "All
+          // opportunities" — every row, shipped and archived included — is the reference behind
+          // it.
+          // Promoted out of the saved-view strip below, where it sat as a pseudo-view.
+          {
+            id: RoadmapTab.QUEUE,
+            label: "Queue",
+            count: activeTab === RoadmapTab.QUEUE ? (data?.count ?? 0) : (queueTotal?.count ?? 0),
+          },
           {
             id: RoadmapTab.OPPORTUNITIES,
-            label: "Opportunities",
-            // On the board this is the sum of the lane totals, which is exactly the number of
-            // cards the board is showing across the current window plus Unscheduled — not the
-            // whole table's count, because the board deliberately only covers a month window.
-            count: isBoard ? boardCount : (data?.count ?? 0),
+            // "All opportunities", not "Opportunities": with the Queue promoted alongside it,
+            // the bare noun read as the section both tabs belong to rather than as the sibling
+            // of the Queue — and the distinction that matters between them is scope. The Queue
+            // is the working subset; this is every row, shipped and archived included.
+            label: "All opportunities",
+            // While THIS tab is the active one the count reflects what is on screen: on the board
+            // the sum of the lane totals, which is exactly the number of cards the board shows
+            // across the current window plus Unscheduled — not the whole table's count, because
+            // the board deliberately only covers a month window. Standing anywhere else, `data`
+            // belongs to another tab's query, so fall back to this tab's own total.
+            count:
+              activeTab === RoadmapTab.OPPORTUNITIES
+                ? isBoard
+                  ? boardCount
+                  : (data?.count ?? 0)
+                : (opportunitiesTotal?.count ?? 0),
           },
           // SECOND, and conditional. Second because what is broken is read as often as what is
           // planned — the two together are the picture someone deciding next month needs, and
@@ -847,7 +1076,12 @@ export const ProductRoadmap: React.FC = () => {
       {activeTab === RoadmapTab.BUGS && canViewBugs && <BugsTab />}
 
       {/* Saved-view sub-tabs sit between the top-level strip and the board, so the hierarchy
-          reads top-down: section → view → rows. */}
+          reads top-down: section → view → rows.
+
+          NOT rendered on the Queue. The Queue is one fixed view with no alternatives to offer, so
+          a strip whose only purpose is switching between views would sit there with nothing in it
+          that applies — and "All" one row under a Queue tab invites the reading that it means
+          "all of the queue". */}
       {activeTab === RoadmapTab.OPPORTUNITIES && (
         <SavedViewTabs
           views={savedViews.views}
@@ -866,7 +1100,7 @@ export const ProductRoadmap: React.FC = () => {
         />
       )}
 
-      {activeTab === RoadmapTab.OPPORTUNITIES && isBoard && (
+      {isOpportunitiesTab && isBoard && (
         <MonthBoard
           showFilters={!isQueueView}
           groupBy={groupBy}
@@ -899,7 +1133,6 @@ export const ProductRoadmap: React.FC = () => {
           onWindowChange={setMonthWindow}
           layoutToggle={
             <div className="flex items-center gap-3">
-              {mergeAction}
               {layoutToggle}
               {groupByPicker}
             </div>
@@ -907,7 +1140,7 @@ export const ProductRoadmap: React.FC = () => {
         />
       )}
 
-      {activeTab === RoadmapTab.OPPORTUNITIES && layout === RoadmapBoardLayout.TABLE && (
+      {isOpportunitiesTab && layout === RoadmapBoardLayout.TABLE && (
         <OpportunitiesBoard
           showFilters={!isQueueView}
           listArgs={listArgs}
@@ -941,25 +1174,20 @@ export const ProductRoadmap: React.FC = () => {
           onSplit={setSplitTarget}
           offset={offset}
           pageSize={PAGE_SIZE}
-          layoutToggle={
-            <div className="flex items-center gap-3">
-              {mergeAction}
-              {layoutToggle}
-            </div>
-          }
+          layoutToggle={layoutToggle}
           onOffsetChange={setOffset}
         />
       )}
 
       {/* Same query/pagination as the table, no drag and no merge-select — see
           OpportunitiesListView's docblock for why those are table/board-only. */}
-      {activeTab === RoadmapTab.OPPORTUNITIES && isList && (
+      {isOpportunitiesTab && isList && (
         <OpportunitiesListView
           // No sort gating: the rank is computed server-side over the whole queue, so it stays
           // correct when the feed is ordered by date. That is the point of moving it to the
           // backend — a client-side position could only ever describe the current ordering.
           isQueue={isQueueView}
-          leading={queueSortPicker}
+          leading={queueToolbar}
           showFilters={!isQueueView}
           listArgs={listArgs}
           data={data}
@@ -987,13 +1215,8 @@ export const ProductRoadmap: React.FC = () => {
           onOpenOpportunity={openOpportunity}
           onAddClick={() => setIsAddOpen(true)}
           loaded={data?.items.length ?? 0}
-          onLoadMore={() => setListLoaded(current => current + PAGE_SIZE)}
-          layoutToggle={
-            <div className="flex items-center gap-3">
-              {mergeAction}
-              {layoutToggle}
-            </div>
-          }
+          onLoadMore={() => setListLoaded(current => current + FEED_PAGE_SIZE)}
+          layoutToggle={layoutToggle}
         />
       )}
 
