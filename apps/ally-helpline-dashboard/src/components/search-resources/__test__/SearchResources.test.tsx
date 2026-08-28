@@ -178,6 +178,37 @@ describe("SearchResources", () => {
     });
   });
 
+  test("should initialize with only a category from URL and not throw", async () => {
+    mockWindowLocation("?category=Docs");
+    const mockCountData = mockApiResponse(50, [mockResource("1")], { All: 50, Docs: 30 });
+    const mockFilteredData = mockApiResponse(30, [mockResource("10"), mockResource("11")]);
+
+    mockGetSearchResults
+      .mockResolvedValueOnce(mockCountData)
+      .mockResolvedValueOnce(mockFilteredData);
+
+    render(<SearchResources />);
+
+    await waitFor(() => {
+      expect(mockGetSearchResults).toHaveBeenCalledWith({
+        query: "",
+        limit: 10,
+        filters: undefined,
+      });
+      expect(mockGetSearchResults).toHaveBeenCalledWith({
+        query: "",
+        limit: 10,
+        filters: { category: "Docs" },
+      });
+
+      const props = getLastResourceSearchProps();
+      expect(props.searchQuery).toBe("");
+      expect(props.selectedCategory).toBe("Docs");
+      expect(props.resources.length).toBe(2);
+      expect(props.categoryCountList).toEqual({ All: 50, Docs: 30 });
+    });
+  });
+
   test("should handle onSearch, update URL params, and fetch new results", async () => {
     mockWindowLocation("?q=initial&category=OldCategory");
     // Mock for initial load (will be called twice due to category)
