@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { ArrowDown, ArrowUp } from "@icons";
+import { ArrowDown, ArrowUp, Locked } from "@icons";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
@@ -143,11 +143,30 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
       // align="bottom" because the plain Carbon Tooltip has no autoAlign and renders inline;
       // top-aligned it clips inside the table's scroll container.
       <Tooltip label={reason} align="bottom">
+        {/*
+          role="img" + aria-label, NOT aria-label on its own. A bare <div> is a generic element,
+          and generic elements cannot take an accessible name — the label was being dropped on
+          the floor, so a locked row announced as nothing but its number. There are a dozen of
+          them on a normal queue. role="img" makes this a nameable leaf and hides the glyph and
+          the digits inside it, so the whole control announces once, as one sentence.
+
+          A padlock rather than the dead ArrowUp this used to render. A greyed-out chevron reads
+          as a button that is broken or momentarily disabled, which invites the click that does
+          nothing; a padlock says the state is deliberate. It also drops a false asymmetry — an
+          up chevron with no down chevron under it looked like half a stepper had failed to
+          render, rather than like a control that is closed.
+
+          The number is YOUR votes, the same quantity the unlocked control shows. It is named in
+          the label because the card beside it shows the TOTAL, and an unqualified "0" sitting
+          next to "60 votes" reads as a contradiction until you know the two count different
+          things.
+        */}
         <div
+          role="img"
+          aria-label={`Your votes: ${serverVotes}. Locked — ${reason}`}
           className="flex flex-col items-center gap-0.5 opacity-45"
-          aria-label={`Votes locked: ${reason}`}
         >
-          <ArrowUp size={16} />
+          <Locked size={16} aria-hidden />
           <span className="tabular-nums text-typography-primary text-xs">{serverVotes}</span>
         </div>
       </Tooltip>
@@ -186,7 +205,17 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
     <button
       key="add"
       type="button"
-      aria-label={`Add a vote — ${pending} of ${budget.votesPerMonth} used this month`}
+      /*
+        TWO different quantities, named as two. `pending` is the votes on THIS row; the budget is
+        the monthly allowance spent across every row. The old string read
+        "${pending} of ${votesPerMonth} used this month", which stated the first as if it were
+        the second — a row holding 24 votes announced "24 of 100 used this month" while the
+        header correctly said 59 of 100 left, i.e. 41 used. Two numbers on one screen
+        contradicting each other, and the wrong one is the one attached to the button you are
+        about to press. `remaining` is the pending-aware figure the disabled state already gates
+        on, so the label cannot drift from the behaviour.
+      */
+      aria-label={`Add a vote — you have ${pending} on this, ${remaining} of ${budget.votesPerMonth} left this month`}
       title={remaining === 0 ? "No votes left this month" : "Add a vote"}
       disabled={remaining === 0}
       onClick={() => step(1)}
@@ -200,7 +229,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
     <button
       key="remove"
       type="button"
-      aria-label={`Remove a vote — ${pending} of ${budget.votesPerMonth} used this month`}
+      aria-label={`Remove a vote — you have ${pending} on this, ${remaining} of ${budget.votesPerMonth} left this month`}
       title={pending === 0 ? "You have no votes on this to remove" : "Remove a vote"}
       disabled={pending === 0}
       onClick={() => step(-1)}

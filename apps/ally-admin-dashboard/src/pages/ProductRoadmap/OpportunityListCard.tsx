@@ -2,6 +2,7 @@ import React from "react";
 
 import { RoadmapVoteBudget, RoadmapOpportunity } from "@types";
 
+import { monthLabel } from "./utils/monthBoard";
 import { priorityBorderColour } from "./utils/priorityColour";
 import {
   isConsumerSourced,
@@ -11,6 +12,32 @@ import {
   stageStyle,
 } from "./utils/stages";
 import { VoteButton } from "./VoteButton";
+
+/**
+ * The queue card's three chips: what, who, when — a colour each.
+ *
+ * A hue per category, rather than one neutral for all three, so the row can be read by POSITION
+ * AND COLOUR instead of by reading every chip. Scanning 159 cards for "what is Jan 2027" is a
+ * different job from reading one card, and the contents alone (a goal, a person, a month) only
+ * separate once you have read them.
+ *
+ * Colour is never the ONLY signal: each chip's text says what it is, and the order is fixed, so
+ * nothing here depends on distinguishing the hues.
+ *
+ * NO RED AND NO GREEN, deliberately. The card's left border is a continuous red-to-green priority
+ * ramp (see priorityBorderColour), and a green chip beside a green edge would read as related to
+ * it. Green is also `released` in STAGE_STYLE. Blue, purple and sand sit outside both languages.
+ */
+const CHIP_BASE = "px-1.5 py-0.5";
+/** Goal — brand blue: it is the categorisation the whole board is organised around. */
+const GOAL_CHIP_STYLE = `${CHIP_BASE} bg-primary-50 text-primary-700`;
+/**
+ * Owner — purple. Shares its pair with SOURCE_BADGE_STYLE, which is safe here because the source
+ * badge is non-queue only (see the meta row below), so the two never appear on one card.
+ */
+const OWNER_CHIP_STYLE = `${CHIP_BASE} bg-purple-50 text-purple-700`;
+/** Planned month — Carbon's yellow-10/80 sand. Warm, and distinct from the two cool chips. */
+const MONTH_CHIP_STYLE = `${CHIP_BASE} bg-warning-50 text-warning-700`;
 
 interface OpportunityListCardProps {
   opportunity: RoadmapOpportunity;
@@ -76,10 +103,25 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
       */}
       {isQueueCard && rank !== null && (
         <div
-          className="text-typography-primary shrink-0 text-2xl font-semibold tabular-nums"
+          className="text-typography-primary flex shrink-0 flex-col items-center"
           title={`#${rank} in the queue by total votes`}
         >
-          #{rank}
+          <span className="text-2xl font-semibold leading-none tabular-nums">#{rank}</span>
+          {/*
+            Total votes sits UNDER the rank, not in the meta row, because it is the thing the
+            rank is computed from — "#1" and "60 votes" are one fact stated twice, at two levels
+            of precision, and reading them together is what makes the ranking legible. In the
+            meta row it was a trailing item in a line of small grey text, so comparing two cards
+            meant scanning to a different horizontal position on each one; stacked, the numbers
+            line up in a column down the feed.
+
+            Kept as a NUMBER and not left to the priority-coloured edge alone: a hue cannot be
+            read by someone who cannot distinguish these hues, and cannot be compared precisely
+            by anyone.
+          */}
+          <span className="text-typography-secondary text-xs tabular-nums">
+            {opportunity.priorityScore} votes
+          </span>
         </div>
       )}
 
@@ -97,8 +139,9 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
         {!!body && <p className="text-typography-secondary line-clamp-2 text-sm">{body}</p>}
 
         {/*
-          A QUEUE card carries five things and no more: rank, description, product goal, total
-          votes, your votes. Stage is dropped because the queue is defined as exactly the three
+          A QUEUE card carries: rank, description, product goal, owner, planned month, total
+          votes and your votes — rank and total votes together in the left column, your votes in
+          the control on the right, and this row for goal, owner and month. Stage is dropped because the queue is defined as exactly the three
           working stages, so the badge only ever says one of three things and never changes what
           you would do about the card. Owner, source, filed date, comment count and author are
           dropped for the same reason — the queue is for deciding what is next, and everything
@@ -112,7 +155,43 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
               {stageLabel(opportunity.stage)}
             </span>
           )}
-          <span className="text-typography-secondary truncate">{opportunity.productGoal}</span>
+          {/*
+            The product goal, as a chip on the queue and as plain text everywhere else.
+
+            On a queue card it is one of three peer facts — goal, owner, month — and leaving it
+            unstyled made the row read as "one label, then two chips", implying a hierarchy that
+            is not there. Outside the queue this span sits in a "·"-separated meta line with the
+            owner, source and vote count, where a single chip among separators would be the odd
+            one out instead.
+          */}
+          {isQueueCard ? (
+            <span className={GOAL_CHIP_STYLE}>{opportunity.productGoal}</span>
+          ) : (
+            <span className="text-typography-secondary truncate">{opportunity.productGoal}</span>
+          )}
+
+          {/*
+            Owner and planned month, queue-only. The two questions a triage pass asks after "what
+            is it" are "whose is it" and "when is it meant to land", and both were a drawer click
+            away. The non-queue card already carries owner in its meta line and does not need
+            these.
+
+            RENDERED ONLY WHEN SET. No "No owner" / "Unscheduled" placeholder, because on this
+            board unowned and unscheduled ARE the common case — a chip on every one of 159 rows
+            saying so is noise rather than signal, the same reasoning that keeps the 'staff'
+            source badge off every row (Stacks: "Default to Common Case, Hide Alternatives"). The
+            absence of a chip is the fact. Those two labels exist in laneLabel for the board's
+            catch-all lanes, where a lane must be named even when its contents are defined by
+            what they lack.
+          */}
+          {isQueueCard && !!opportunity.owner && (
+            <span className={OWNER_CHIP_STYLE}>{opportunity.owner}</span>
+          )}
+          {isQueueCard && !!opportunity.plannedMonth && (
+            // monthLabel, not the raw "2026-08": it renders "Aug 2026", and it is the same helper
+            // the month board's lane headings use, so a card and its lane cannot disagree.
+            <span className={MONTH_CHIP_STYLE}>{monthLabel(opportunity.plannedMonth)}</span>
+          )}
           {!isQueueCard && !!opportunity.owner && (
             <span className="text-typography-secondary truncate">· {opportunity.owner}</span>
           )}
@@ -121,12 +200,14 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
               {SOURCE_LABEL[opportunity.source]}
             </span>
           )}
-          {/* Total votes. Kept as a NUMBER and not left to the edge colour alone: a hue cannot be
-              read by someone who cannot distinguish these hues, and cannot be compared precisely
-              by anyone. */}
-          <span className="text-typography-secondary tabular-nums">
-            · {opportunity.priorityScore} votes
-          </span>
+          {/* Total votes, for the cards that have no rank to sit under — outside the queue
+              there is no rank column, so this stays where it always was. Same reasoning as the
+              queue placement: a number, not just the edge colour. */}
+          {!isQueueCard && (
+            <span className="text-typography-secondary tabular-nums">
+              · {opportunity.priorityScore} votes
+            </span>
+          )}
         </div>
 
         {!isQueueCard && (
