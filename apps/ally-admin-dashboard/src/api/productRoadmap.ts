@@ -135,7 +135,10 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
               } else if (groupBy === RoadmapBoardGroupBy.STAGE) {
                 moving.stage = lane as RoadmapOpportunityStage;
               } else if (groupBy === RoadmapBoardGroupBy.PRODUCT_GOAL) {
-                if (lane !== null) moving.productGoal = lane;
+                // productGoal is non-nullable on the wire, unlike owner below — "" is its
+                // catch-all-lane value, so the null lane key must coerce to "" rather than be
+                // skipped, or the card keeps showing its old goal until the next real fetch.
+                moving.productGoal = lane ?? "";
               } else {
                 moving.owner = lane;
               }
