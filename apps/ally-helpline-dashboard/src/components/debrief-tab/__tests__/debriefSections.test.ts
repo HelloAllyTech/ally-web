@@ -63,6 +63,47 @@ describe("parseDebriefSections", () => {
     ]);
   });
 
+  it("lifts a key the model wrote inline with its first sentence", () => {
+    // The drift that actually reached learners: the marker arrived at the head
+    // of the paragraph rather than on a line of its own, so the note read
+    // "## [what_worked] You effectively acknowledged…" on screen.
+    const inlineNote = [
+      "Sandeep, today we focused on deepening emotional exploration.",
+      "",
+      "## [what_worked] You effectively acknowledged the client's challenges.",
+      "",
+      "## [what_it_cost] There were moments where you suggested solutions early.",
+      "",
+      "## [try_next] Try prompting the client to reflect more.",
+      "",
+      "## [closing] Feel free to reach out.",
+    ].join("\n");
+
+    const sections = parseDebriefSections(inlineNote);
+
+    expect(sections.map(section => section.key)).toEqual([
+      null,
+      "what_worked",
+      "what_it_cost",
+      "try_next",
+      "closing",
+    ]);
+    expect(sections[1].paragraphs).toEqual([
+      "You effectively acknowledged the client's challenges.",
+    ]);
+    expect(sections.flatMap(section => section.paragraphs).join(" ")).not.toContain("[");
+  });
+
+  it("leaves prose alone when a key-like word opens a sentence without brackets", () => {
+    // Only a bracketed key is lifted mid-prose. "Closing that door early…" is a
+    // sentence, not a marker, and must not lose its first word to a heading.
+    const sections = parseDebriefSections("Closing that door early cost you the moment.");
+
+    expect(sections).toEqual([
+      { key: null, paragraphs: ["Closing that door early cost you the moment."] },
+    ]);
+  });
+
   it("keeps a heading attached to prose on the very next line", () => {
     const sections = parseDebriefSections("## [what_worked]\nYou named the feeling first.");
 
