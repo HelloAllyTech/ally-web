@@ -659,7 +659,7 @@ describe("WeakPerformingMetricsTab", () => {
       refetch: refetchMock,
     });
     render(<WeakPerformingMetricsTab {...filters} />);
-    expect(screen.getByText(/Could not load weak performing metrics/)).toBeInTheDocument();
+    expect(screen.getByText(/Could not load actor quality metrics/)).toBeInTheDocument();
   });
 
   it("renders a loading state before the first response", () => {

@@ -531,10 +531,10 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
   if (isError) {
     return (
       <ChartCard
-        title="Weak performing metrics"
+        title="Actor quality metrics"
         error
         onRetry={() => refetch()}
-        errorTitle="Could not load weak performing metrics"
+        errorTitle="Could not load actor quality metrics"
       >
         <span />
       </ChartCard>
@@ -630,7 +630,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           tab, which is where a reader goes looking for it rather than past it. */}
 
       {isFetching && !data ? (
-        <ChartCard title="Weak performing metrics" loading>
+        <ChartCard title="Actor quality metrics" loading>
           <span />
         </ChartCard>
       ) : (
