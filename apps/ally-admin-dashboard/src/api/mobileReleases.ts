@@ -64,18 +64,6 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.MOBILE_RELEASE_RUNS],
     }),
-
-    // Submits the latest TestFlight build to the external testers group,
-    // which starts Apple's own asynchronous Beta App Review — this does not
-    // make the build instantly available to external testers. Same stricter
-    // permission gate as triggerAndroidPromotion above.
-    triggerIosTestflightPromotion: builder.mutation<TriggerMobileReleaseResponse, void>({
-      query: () => ({
-        url: ApiEndpoints.MOBILE_RELEASES.PROMOTE_IOS_TESTFLIGHT,
-        method: HttpMethod.POST,
-      }),
-      invalidatesTags: [TAG_TYPES.MOBILE_RELEASE_RUNS],
-    }),
   }),
 });
 
@@ -85,5 +73,4 @@ export const {
   useGetIosTestflightStatusQuery,
   useTriggerMobileReleaseMutation,
   useTriggerAndroidPromotionMutation,
-  useTriggerIosTestflightPromotionMutation,
 } = mobileReleasesAPI;

@@ -3,16 +3,17 @@
  * version and triggers the existing App Store / Play Store production build
  * workflows every ~2 days) and the GitHub Actions workflows it drives.
  *
- * "Promote Android" / "Promote iOS External" are the manually-triggered
- * promotion workflows (see triggerAndroidPromotion / triggerIosTestflightPromotion
- * below) rather than the scheduled pipeline itself.
+ * "Promote Android" is the manually-triggered production-promotion workflow
+ * (see triggerAndroidPromotion below) rather than the scheduled pipeline
+ * itself. iOS TestFlight-external promotion used to have a matching manual
+ * workflow/entry here too; removed once submission became fully automatic
+ * and this org's actual testers turned out to all be Internal, not External.
  */
 export type MobileReleaseWorkflowName =
   | "Scheduled Check"
   | "iOS Build"
   | "Android Build"
-  | "Promote Android"
-  | "Promote iOS External";
+  | "Promote Android";
 
 /** GitHub Actions' own run-status values — not our own enum, so this stays a passthrough of their API. */
 export type MobileReleaseRunStatus = "queued" | "in_progress" | "completed";

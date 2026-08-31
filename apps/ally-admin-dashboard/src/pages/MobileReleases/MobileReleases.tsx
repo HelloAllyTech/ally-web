@@ -16,11 +16,7 @@ import {
   Tag,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
-import {
-  useTriggerAndroidPromotionMutation,
-  useTriggerIosTestflightPromotionMutation,
-  useTriggerMobileReleaseMutation,
-} from "@api";
+import { useTriggerAndroidPromotionMutation, useTriggerMobileReleaseMutation } from "@api";
 import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
@@ -115,27 +111,6 @@ export const MobileReleases: FC = () => {
     }
   };
 
-  const [isConfirmingIosPromotion, setIsConfirmingIosPromotion] = useState(false);
-  const [triggerIosTestflightPromotion, { isLoading: isPromotingIos }] =
-    useTriggerIosTestflightPromotionMutation();
-
-  const handlePromoteIosTestflight = async () => {
-    try {
-      await triggerIosTestflightPromotion().unwrap();
-      toast.success(
-        "Submitted to TestFlight external testers — new run should appear in the history below shortly.",
-      );
-      setIsConfirmingIosPromotion(false);
-    } catch (error) {
-      // Same pattern as handleTrigger above: leave the dialog open on failure
-      // so the operator can see the error message and retry.
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ??
-        "Failed to submit the iOS build to TestFlight. Please try again.";
-      toast.error(message);
-    }
-  };
-
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex items-start justify-between gap-4">
@@ -149,7 +124,6 @@ export const MobileReleases: FC = () => {
         <div className="flex items-center gap-2 shrink-0">
           {isTriggering && <InlineLoading description="Triggering…" />}
           {isPromotingAndroid && <InlineLoading description="Promoting…" />}
-          {isPromotingIos && <InlineLoading description="Submitting…" />}
           <Button
             kind="primary"
             size="md"
@@ -168,14 +142,6 @@ export const MobileReleases: FC = () => {
             }}
           >
             Promote Android to Production
-          </Button>
-          <Button
-            kind="secondary"
-            size="md"
-            disabled={isPromotingIos}
-            onClick={() => setIsConfirmingIosPromotion(true)}
-          >
-            Submit iOS Build to TestFlight External Testers
           </Button>
         </div>
       </div>
@@ -421,25 +387,6 @@ export const MobileReleases: FC = () => {
             />
           </div>
         </ActionConfirmationPopup>
-      )}
-
-      {isConfirmingIosPromotion && (
-        <ActionConfirmationPopup
-          isOpen={isConfirmingIosPromotion}
-          onClose={() => setIsConfirmingIosPromotion(false)}
-          title="Submit iOS build to TestFlight external testers?"
-          description="This submits the latest TestFlight build to your external testers group. Apple's own Beta App Review (~24h typical) must still clear before external testers can install it — this button only starts that process."
-          primaryButton={{
-            label: isPromotingIos ? "Submitting…" : "Submit for review",
-            onClick: () => void handlePromoteIosTestflight(),
-            disabled: isPromotingIos,
-          }}
-          secondaryButton={{
-            label: en.common.cancel,
-            onClick: () => setIsConfirmingIosPromotion(false),
-            disabled: isPromotingIos,
-          }}
-        />
       )}
     </div>
   );

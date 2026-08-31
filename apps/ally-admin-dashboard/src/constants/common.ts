@@ -311,8 +311,7 @@ export const ApiEndpoints = {
     STRATEGY_GOALS_ORDER: "/v1/product-roadmap/strategy-goals/order",
     STRATEGY_GOALS_ASSESS_MISSING: "/v1/product-roadmap/strategy-goals/assess-missing",
     RANK_WEIGHTS: "/v1/product-roadmap/rank-weights",
-    OPPORTUNITY_GOAL_IMPACT: (id: string) =>
-      `/v1/product-roadmap/opportunities/${id}/goal-impact`,
+    OPPORTUNITY_GOAL_IMPACT: (id: string) => `/v1/product-roadmap/opportunities/${id}/goal-impact`,
     OWNERS: "/v1/product-roadmap/opportunity-owners",
     OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
     OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
@@ -558,7 +557,6 @@ export const ApiEndpoints = {
     CURRENT_VERSION: "/v1/mobile-releases/current-version",
     TRIGGER: "/v1/mobile-releases/trigger",
     PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
-    PROMOTE_IOS_TESTFLIGHT: "/v1/mobile-releases/promote-ios-testflight",
     IOS_TESTFLIGHT_STATUS: "/v1/mobile-releases/ios-testflight-status",
   },
   SETTINGS: {
