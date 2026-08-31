@@ -619,7 +619,10 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
     }),
 
     /** Grade a draft against that checklist. Every item must pass before filing is allowed. */
-    checkRoadmapReadiness: builder.mutation<RoadmapReadinessReport, { description: string }>({
+    checkRoadmapReadiness: builder.mutation<
+      RoadmapReadinessReport,
+      { description: string; productGoal?: string }
+    >({
       query: body => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS,
         method: HttpMethod.POST,
