@@ -8,6 +8,7 @@ import {
   Merge,
   PersonIcon,
   SortIcon,
+  StrategyRankIcon,
   TriangleIcon,
 } from "@icons";
 import { useSearchParams } from "react-router-dom";
@@ -51,6 +52,7 @@ import { QueueToolbarControl } from "./QueueToolbarControl";
 import { ReportBugModal } from "./ReportBugModal";
 import { SavedViewTabs } from "./SavedViewTabs";
 import { SplitOpportunityModal } from "./SplitOpportunityModal";
+import { StrategyRankingManager } from "./StrategyRankingManager";
 import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
 import { useSavedViews } from "./useSavedViews";
 import { canManageRoadmap } from "./utils/access";
@@ -185,14 +187,21 @@ export const ProductRoadmap: React.FC = () => {
   const [advanced, setAdvanced] = useState<RoadmapAdvancedFilterValues>({
     ...EMPTY_ADVANCED_FILTERS,
   });
+  /**
+   * Composite is the default: vote count alone answers "what is most wanted", which is not the
+   * same question as "what should we do next". The raw vote ordering stays one click away in the
+   * sort control, so the composite can always be checked against the signal it was built from.
+   */
   const [sortBy, setSortBy] =
-    useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("priority");
+    useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("composite");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isReportBugOpen, setIsReportBugOpen] = useState(false);
   const [splitTarget, setSplitTarget] = useState<RoadmapOpportunity | null>(null);
   const [isMergeOpen, setIsMergeOpen] = useState(false);
   const [isGoalsOpen, setIsGoalsOpen] = useState(false);
+  /** The strategy-and-ranking settings modal. Same once-in-a-while treatment as isGoalsOpen. */
+  const [isStrategyOpen, setIsStrategyOpen] = useState(false);
   /**
    * Whether the vote budget is expanded. Collapsed by default, per the header being a place for
    * actions rather than a permanent readout.
@@ -875,6 +884,22 @@ export const ProductRoadmap: React.FC = () => {
               </button>
             </Tooltip>
           )}
+          {/* Strategy goals and the ranking weights. A SEPARATE control from the flag above,
+              not a section inside it: those are the filing categories, these are the outcomes
+              the board is ranked against, and one dialog holding both is how the two get
+              confused. Same icon-only treatment, so both carry a tooltip and an aria-label. */}
+          {canManage && (
+            <Tooltip label="Strategy & ranking" align="bottom">
+              <button
+                type="button"
+                aria-label="Manage product strategy goals and ranking weights"
+                onClick={() => setIsStrategyOpen(true)}
+                className="text-typography-secondary hover:text-typography-primary inline-flex cursor-pointer items-center"
+              >
+                <StrategyRankIcon size={18} />
+              </button>
+            </Tooltip>
+          )}
           {/* The second of the two once-in-a-while admin jobs, moved up out of the layout
               toggle — see the docblock on mergeAction. Same gate, same icon-only treatment,
               so the pair reads as one group rather than as a glyph that wandered up here. */}
@@ -1233,6 +1258,8 @@ export const ProductRoadmap: React.FC = () => {
           onClose={() => setIsGoalsOpen(false)}
         />
       )}
+
+      {isStrategyOpen && <StrategyRankingManager onClose={() => setIsStrategyOpen(false)} />}
 
       {splitTarget && (
         <SplitOpportunityModal opportunity={splitTarget} onClose={() => setSplitTarget(null)} />

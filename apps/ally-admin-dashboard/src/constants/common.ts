@@ -304,6 +304,15 @@ export const ApiEndpoints = {
     PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
     PRODUCT_GOALS_ORDER: "/v1/product-roadmap/product-goals/order",
     PRODUCT_GOALS_USAGE: "/v1/product-roadmap/product-goals/usage",
+    // Product STRATEGY goals — the outcomes the composite rank scores against. A different
+    // concept from PRODUCT_GOALS above, which is the one-per-opportunity filing category.
+    STRATEGY_GOALS: "/v1/product-roadmap/strategy-goals",
+    STRATEGY_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/strategy-goals/${id}`,
+    STRATEGY_GOALS_ORDER: "/v1/product-roadmap/strategy-goals/order",
+    STRATEGY_GOALS_ASSESS_MISSING: "/v1/product-roadmap/strategy-goals/assess-missing",
+    RANK_WEIGHTS: "/v1/product-roadmap/rank-weights",
+    OPPORTUNITY_GOAL_IMPACT: (id: string) =>
+      `/v1/product-roadmap/opportunities/${id}/goal-impact`,
     OWNERS: "/v1/product-roadmap/opportunity-owners",
     OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
     OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
@@ -748,6 +757,9 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_VOTE_BUDGET: "productRoadmapVoteBudget",
   PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
   PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
+  PRODUCT_ROADMAP_STRATEGY_GOALS: "productRoadmapStrategyGoals",
+  PRODUCT_ROADMAP_RANK_WEIGHTS: "productRoadmapRankWeights",
+  PRODUCT_ROADMAP_GOAL_IMPACT: "productRoadmapGoalImpact",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",

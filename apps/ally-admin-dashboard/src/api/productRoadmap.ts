@@ -25,6 +25,11 @@ import {
   RoadmapBuilderSessionHandle,
   RoadmapBoardGroupBy,
   RoadmapOpportunityStage,
+  RoadmapStrategyGoal,
+  RoadmapStrategyGoalsResponse,
+  RoadmapRankWeights,
+  RoadmapGoalImpactVerdict,
+  RoadmapBulkAssessResult,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -467,6 +472,112 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PRODUCT_ROADMAP_GOALS],
     }),
 
+    // ── strategy goals & composite rank ───────────────────────────────────────
+    getRoadmapStrategyGoals: builder.query<RoadmapStrategyGoalsResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.STRATEGY_GOALS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS],
+    }),
+
+    createRoadmapStrategyGoal: builder.mutation<
+      { goal: RoadmapStrategyGoal; unassessed: number },
+      { name: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.STRATEGY_GOALS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // Adding a goal grows the coverage denominator, so EVERY score changes — the opportunity
+      // list is stale, not just the goal list.
+      invalidatesTags: [
+        TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+      ],
+    }),
+
+    renameRoadmapStrategyGoal: builder.mutation<RoadmapStrategyGoal, { id: string; name: string }>({
+      query: ({ id, name }) => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.STRATEGY_GOAL_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body: { name },
+      }),
+      // Verdicts cascade to the new name, so scores do NOT change — but the stored verdict
+      // labels the drawer shows do.
+      invalidatesTags: [
+        TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+        TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT,
+      ],
+    }),
+
+    deleteRoadmapStrategyGoal: builder.mutation<{ discardedVerdicts: number }, string>({
+      query: id => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.STRATEGY_GOAL_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [
+        TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+        TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT,
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+      ],
+    }),
+
+    getRoadmapRankWeights: builder.query<RoadmapRankWeights, void>({
+      query: () => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.RANK_WEIGHTS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_RANK_WEIGHTS],
+    }),
+
+    updateRoadmapRankWeights: builder.mutation<RoadmapRankWeights, Partial<RoadmapRankWeights>>({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.RANK_WEIGHTS,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      // Costs nothing but a re-sort — no LLM calls — but the re-sort is the whole point, so the
+      // list has to refetch.
+      invalidatesTags: [
+        TAG_TYPES.PRODUCT_ROADMAP_RANK_WEIGHTS,
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+      ],
+    }),
+
+    getRoadmapGoalImpact: builder.query<RoadmapGoalImpactVerdict[], string>({
+      query: id => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITY_GOAL_IMPACT(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_r, _e, id) => [{ type: TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT, id }],
+    }),
+
+    reassessRoadmapGoalImpact: builder.mutation<RoadmapGoalImpactVerdict[], string>({
+      query: id => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITY_GOAL_IMPACT(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (_r, _e, id) => [
+        { type: TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT, id },
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+        TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+      ],
+    }),
+
+    assessMissingRoadmapGoalImpact: builder.mutation<RoadmapBulkAssessResult, void>({
+      query: () => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.STRATEGY_GOALS_ASSESS_MISSING,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [
+        TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+        TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT,
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+      ],
+    }),
+
     createRoadmapOwner: builder.mutation<RoadmapTaxonomyItem, { name: string }>({
       query: body => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.OWNERS,
@@ -716,6 +827,15 @@ export const {
   useCreateRoadmapProductGoalMutation,
   useRenameRoadmapProductGoalMutation,
   useDeleteRoadmapProductGoalMutation,
+  useGetRoadmapStrategyGoalsQuery,
+  useCreateRoadmapStrategyGoalMutation,
+  useRenameRoadmapStrategyGoalMutation,
+  useDeleteRoadmapStrategyGoalMutation,
+  useGetRoadmapRankWeightsQuery,
+  useUpdateRoadmapRankWeightsMutation,
+  useGetRoadmapGoalImpactQuery,
+  useReassessRoadmapGoalImpactMutation,
+  useAssessMissingRoadmapGoalImpactMutation,
   useCreateRoadmapOwnerMutation,
   useRenameRoadmapOwnerMutation,
   useDeleteRoadmapOwnerMutation,

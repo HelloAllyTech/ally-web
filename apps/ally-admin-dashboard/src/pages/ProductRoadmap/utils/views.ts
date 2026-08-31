@@ -22,12 +22,16 @@ export const QUEUE_VIEW_STATE: RoadmapViewState = {
   layout: RoadmapBoardLayout.LIST,
   /**
    * Pinned, not left to the default. The Queue's cards carry a RANK, and a rank is only the
-   * truth if the list is ordered by total votes — applying this view with a sort inherited from
-   * wherever the user just was (filed date, say) would number the cards 1, 2, 3 down an order
-   * that has nothing to do with votes. `normaliseSortField` happens to default to exactly this
-   * today; stating it means a change to that default cannot silently invalidate the ranks.
+   * truth if the list is ordered by the same thing the rank is computed from — applying this
+   * view with a sort inherited from wherever the user just was (filed date, say) would number
+   * the cards 1, 2, 3 down an order that has nothing to do with the ranking.
+   *
+   * `composite` since the board started ranking on four factors rather than on votes alone.
+   * ally-be's queueRankSql orders by exactly the same expression, deliberately, so the two
+   * cannot drift. `normaliseSortField` happens to default to this too; stating it means a
+   * change to that default cannot silently invalidate the ranks.
    */
-  sort: { field: "priority", dir: "desc" },
+  sort: { field: "composite", dir: "desc" },
 };
 
 /**
@@ -49,8 +53,16 @@ const LEGACY_SORT_FIELDS: Record<string, string> = {
   coins: "myVotes",
 };
 
+/*
+ * NOTE on `score: "priority"` above, now that ranking is a composite: a saved view that asked
+ * for the vote order still GETS the vote order. That is intentional and is not an oversight —
+ * a saved view records what its author chose to look at, and silently upgrading it to the new
+ * default would change what an existing view shows without anyone touching it. The default
+ * below is what moves; explicitly-saved sorts are left alone.
+ */
+
 export const normaliseSortField = (field: string | undefined): string =>
-  (field && LEGACY_SORT_FIELDS[field]) || field || "priority";
+  (field && LEGACY_SORT_FIELDS[field]) || field || "composite";
 
 /**
  * Drops `bug` from a saved view's type filter.

@@ -14,6 +14,8 @@ import {
   useDeleteRoadmapOpportunityMutation,
   useUpdateRoadmapOpportunityMutation,
   useOpenRoadmapBuilderSessionMutation,
+  useGetRoadmapGoalImpactQuery,
+  useReassessRoadmapGoalImpactMutation,
 } from "@api";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -28,6 +30,7 @@ import {
 } from "@types";
 import { hasFeature } from "@utils";
 
+import { RankBreakdownPanel } from "./RankBreakdown";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
 import { EFFORT_LABEL, STAGE_LABEL } from "./utils/stages";
 
@@ -196,6 +199,33 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
    * hosts the same drawer under the same `?bug=` param.
    */
   const isBug = opportunity?.type === RoadmapOpportunityType.BUG;
+
+  /**
+   * The per-goal verdicts behind the rank breakdown. Skipped for a bug — bugs are not on the
+   * board, so they have no rank to explain — and until the opportunity itself has loaded.
+   */
+  const { data: goalImpact, isLoading: isGoalImpactLoading } = useGetRoadmapGoalImpactQuery(
+    opportunityId,
+    { skip: !opportunity || isBug },
+  );
+  const [reassessGoalImpact, { isLoading: isReassessing }] = useReassessRoadmapGoalImpactMutation();
+
+  /**
+   * Re-run the assessment against the CURRENT description. This is the only correction path for
+   * a verdict somebody disagrees with — the verdicts are deliberately not editable, so the way
+   * to change one is to change the case the model is reading.
+   */
+  const handleReassess = useCallback(async () => {
+    try {
+      await reassessGoalImpact(opportunityId).unwrap();
+      toast.success("Reassessed against the current strategy.");
+    } catch (error) {
+      toast.error(
+        (error as { data?: { message?: string } })?.data?.message ??
+          "Could not reassess this opportunity.",
+      );
+    }
+  }, [opportunityId, reassessGoalImpact]);
   const { data: bugRef, isFetching: isResolvingBug } = useGetBugFindingByReportedBugQuery(
     opportunityId,
     { skip: !isBug },
@@ -761,6 +791,29 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 </p>
               )}
             </div>
+
+            {/*
+              Why the rank breakdown sits HERE, under the fields it is computed from, rather than
+              beside the vote total in the header: two of its four factors (effort, and the
+              description the goal assessment reads) are edited on this screen, so the score and
+              the things that move it belong in one place. The header line stays the raw vote
+              count — the fact people came for — and this is the explanation.
+
+              Bugs are excluded, like every other ranking surface: they are not on the board.
+            */}
+            {!isBug && (
+              <div className="border-border-light flex flex-col gap-2 border-t pt-4">
+                <h3 className="text-typography-primary text-sm">Why it ranks here</h3>
+                <RankBreakdownPanel
+                  opportunity={opportunity}
+                  verdicts={goalImpact}
+                  isLoadingVerdicts={isGoalImpactLoading}
+                  canManage={canManage}
+                  isReassessing={isReassessing}
+                  onReassess={handleReassess}
+                />
+              </div>
+            )}
 
             {/* Labelled "Notes", but the column, the constant and the agent payload are all still
                 `prd` — this renames what a reader sees, not the field. The old label leaked an

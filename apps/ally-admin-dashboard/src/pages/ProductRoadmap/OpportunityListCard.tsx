@@ -2,6 +2,7 @@ import React from "react";
 
 import { RoadmapVoteBudget, RoadmapOpportunity } from "@types";
 
+import { RankScore } from "./RankBreakdown";
 import { monthLabel } from "./utils/monthBoard";
 import { priorityBorderColour } from "./utils/priorityColour";
 import {
@@ -119,9 +120,11 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
             read by someone who cannot distinguish these hues, and cannot be compared precisely
             by anyone.
           */}
-          <span className="text-typography-secondary text-xs tabular-nums">
-            {opportunity.priorityScore} votes
-          </span>
+          {/* The rank SCORE, not the vote total: the badge above is a position in the composite
+              ordering, so the number under it has to be the one that ordering came from. The
+              four factors that produced it — votes included — are one hover away, which is what
+              keeps a blended number arguable rather than merely believed. */}
+          <RankScore opportunity={opportunity} />
         </div>
       )}
 
@@ -206,6 +209,10 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
           {!isQueueCard && (
             <span className="text-typography-secondary tabular-nums">
               · {opportunity.priorityScore} votes
+              {/* Outside the queue there is no rank badge for a score to sit under, so the vote
+                  total stays the headline and the composite is not shown at all. A rank score
+                  with nothing to be a rank IN would invite comparison across two different
+                  populations. */}
             </span>
           )}
         </div>
