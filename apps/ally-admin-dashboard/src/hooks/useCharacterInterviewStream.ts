@@ -18,7 +18,7 @@ import { logger } from "@utils";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 let messageIdCounter = 0;
-/** Collision-proof client message id (see useCopilotStream for the rationale). */
+/** Collision-proof client message id: Date.now() collides under fast sends. */
 const nextMessageId = () => {
   const uuid = globalThis.crypto?.randomUUID?.();
   if (uuid) return `msg_${uuid}`;

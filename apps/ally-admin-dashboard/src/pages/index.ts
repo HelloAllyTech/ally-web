@@ -32,7 +32,6 @@ export * from "./AgentTestCases/AgentTestCases";
 export * from "./Competencies/Competencies";
 export * from "./RoleplaySessionLogs/RoleplaySessionLogs";
 export * from "./RoleplaySessionLogs/RoleplaySessionLogDetail";
-export * from "./RoleplayStudio";
 export * from "./Terms/Terms";
 export * from "./Privacy/Privacy";
 export * from "./ProductRoadmap";

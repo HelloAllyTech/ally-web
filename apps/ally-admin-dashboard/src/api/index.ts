@@ -21,7 +21,6 @@ export * from "./legalContent";
 export * from "./turnEndpointing";
 export * from "./roleplaySessionLogs";
 export * from "./awsLogs";
-export * from "./roleplayStudio";
 export * from "./tracks";
 export * from "./blog";
 export * from "./aiLab";

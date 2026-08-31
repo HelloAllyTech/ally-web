@@ -34,7 +34,7 @@ interface QuestionCardProps {
 
 /**
  * Structured `question` SSE events render as an answer card (same pattern as
- * the Roleplay Studio copilot's QuestionCard, adapted to the interview
+ * the retired Roleplay Studio copilot's QuestionCard, adapted to the interview
  * agent's own event/answer types). Single-select and free-text answer
  * inline; multi-select and dropdown collect a set then Confirm. "None of
  * these" and an "add your own" entry are offered when the question allows

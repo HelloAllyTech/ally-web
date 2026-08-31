@@ -6,11 +6,9 @@ import {
   Permissions,
   buildSidebarItemFeatureKeyMap,
   buildSidebarItemOrgToggleMap,
-  isRoleplayStudioEmailAllowed,
   FeatureToggleKey,
   OrgToggle,
 } from "@constants";
-import { store } from "@store";
 
 import { hasFeature } from "./permissions";
 
@@ -25,11 +23,6 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
     label: en.simulation.rolePlays,
     path: ROUTES.SIMULATION_STUDIO,
-  },
-  {
-    id: SIDEBAR_ITEMS.ROLEPLAY_STUDIO,
-    label: en.roleplayStudio.navLabel,
-    path: ROUTES.ROLEPLAY_STUDIO,
   },
   {
     id: SIDEBAR_ITEMS.EVENTS,
@@ -195,7 +188,6 @@ export const deriveNavigationItems = ({
   permissions,
   features,
   savedOrder,
-  email,
   orgToggles,
 }: {
   // Accepts `string[]` to match how permissions/features are stored in Redux;
@@ -203,12 +195,6 @@ export const deriveNavigationItems = ({
   permissions: string[] | undefined;
   features: string[] | undefined;
   savedOrder: string[] | undefined;
-  /**
-   * Logged-in user's email, used for allowlist-gated items (Roleplay Studio).
-   * Optional for backward compatibility: when omitted, falls back to the user
-   * slice in the store (read lazily at call time to avoid init-order issues).
-   */
-  email?: string;
   /**
    * Org-level (per-tenant) toggles the caller's organisation has switched on.
    * A tab whose per-user feature toggle is absent can still appear via this
@@ -220,7 +206,6 @@ export const deriveNavigationItems = ({
   const navigationItems = buildNavigationItems();
   const featureGatedItems = buildSidebarItemFeatureKeyMap(SIDEBAR_ITEMS);
   const orgGatedItems = buildSidebarItemOrgToggleMap(SIDEBAR_ITEMS);
-  const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const hasPermissions = Boolean(permissions && permissions.length > 0);
 
   const visible = navigationItems.filter(item => {
@@ -257,12 +242,6 @@ export const deriveNavigationItems = ({
             return (
               permissions!.includes(Permissions.EDIT_SCENARIO) &&
               hasFeature(features, FeatureToggleKey.CONTENT_MANAGEMENT)
-            );
-          case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
-            // Rollout gate: permission AND the temporary email allowlist.
-            return (
-              permissions!.includes(Permissions.VIEW_ROLEPLAY_SPECS) &&
-              isRoleplayStudioEmailAllowed(resolvedEmail)
             );
           case SIDEBAR_ITEMS.EVENTS:
             return permissions!.includes(Permissions.EDIT_EVENT);

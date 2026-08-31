@@ -20,7 +20,7 @@ interface ComfortAudioDropdownProps {
  * metadata / spec to the voice worker). Includes a native audio preview of the
  * current selection. Deselecting falls back to the default room tone.
  *
- * Works in two modes: react-hook-form (`formMethods` + `id`) for Roleplay Studio
+ * Works in two modes: react-hook-form (`formMethods` + `id`)
  * v1, and controlled (`value` + `onChange`) for the Redux-driven v2 studio.
  */
 export const ComfortAudioDropdown: React.FC<ComfortAudioDropdownProps> = ({

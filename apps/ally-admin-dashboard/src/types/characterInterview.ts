@@ -4,7 +4,7 @@ import { CharacterData } from "./simulation";
  * Character Library interview agent — mirrors the backend SSE contract in
  * ally-be src/scenario-character/type/character-interview-sse.type.ts.
  *
- * The question widget types are deliberately identical to the Roleplay Studio
+ * The question widget types were taken from the retired Roleplay Studio
  * copilot's so the same QuestionCard renders both.
  */
 export type CharacterInterviewQuestionKind =

@@ -2,10 +2,10 @@ import { Components } from "react-markdown";
 
 /**
  * Compact markdown renderers for the copilot chat. Kept local to
- * roleplay-studio (report-content keeps its own map) with tighter spacing
+ * the builder surfaces (report-content keeps its own map) with tighter spacing
  * suited to chat bubbles and side panels.
  */
-export const roleplayMarkdownComponents: Components = {
+export const sharedMarkdownComponents: Components = {
   h1: ({ children }) => (
     <h1 className="text-lg font-semibold text-typography-900 mt-4 mb-2">{children}</h1>
   ),

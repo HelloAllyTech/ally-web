@@ -2,13 +2,7 @@ import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import {
-  Permissions,
-  ROLEPLAY_STUDIO_ALLOWED_EMAILS,
-  ROUTES,
-  FeatureToggleKey,
-  OrgToggle,
-} from "@constants";
+import { Permissions, ROUTES, FeatureToggleKey, OrgToggle } from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -48,9 +42,6 @@ import {
   Competencies,
   RoleplaySessionLogs,
   RoleplaySessionLogDetail,
-  RoleplayLivePreview,
-  RoleplayStudioList,
-  RoleplayStudioWorkspace,
   Terms,
   Privacy,
   EvaluateLogin,
@@ -511,56 +502,6 @@ export const RouteLayout: React.FC = () => {
             </PrivateLayout>
           }
         />
-        {/* Roleplay Studio v2 — permission + email-allowlist gated rollout */}
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO}
-          element={
-            <PrivateLayout
-              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioList />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_NEW}
-          element={
-            <PrivateLayout
-              requiredPermissions={[Permissions.EDIT_ROLEPLAY_SPEC]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioWorkspace />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_PREVIEW(":id")}
-          element={
-            <PrivateLayout
-              isPreview={true}
-              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayLivePreview />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_SPEC(":specId")}
-          element={
-            <PrivateLayout
-              requiredPermissions={[
-                Permissions.VIEW_ROLEPLAY_SPECS,
-                Permissions.EDIT_ROLEPLAY_SPEC,
-              ]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioWorkspace />
-            </PrivateLayout>
-          }
-        />
-
         <Route path="/" element={<DefaultRedirect />} />
 
         <Route path="*" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />

@@ -546,35 +546,6 @@ export const ApiEndpoints = {
     PRIVACY: "/v1/settings/privacy",
     TURN_ENDPOINTING: "/v1/settings/turn-endpointing",
   },
-  ROLEPLAY_STUDIO: {
-    SPECS: "/v1/roleplay-studio/specs",
-    SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
-    SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
-    // Draft saves are spec-scoped: the draft lives on the spec row and the
-    // backend appends an immutable version snapshot on every save.
-    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
-    PUBLISH_VERSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
-    // specId travels in the POST body (backend DTO), not the URL.
-    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
-    COPILOT_SESSION_MESSAGES: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
-    COPILOT_SESSION_STREAM: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
-    CREATE_SESSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
-    SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
-    SESSION_RUBRIC_SCORES: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
-    // Improve: test-case-driven test runs + per-case reports.
-    TEST_RUNS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-runs`,
-    TEST_REPORTS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-reports`,
-    TEST_REPORT_BY_ID: (reportId: string) => `/v1/roleplay-studio/test-reports/${reportId}`,
-    TEST_RUN_CANCEL: (runId: string) => `/v1/roleplay-studio/test-runs/${runId}/cancel`,
-  },
 };
 
 export const ROUTES = {
@@ -619,10 +590,6 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   // Fully public, no-login gallery of the centralised design-system components.
   DESIGN_SYSTEM: "/designsystem",
-  ROLEPLAY_STUDIO: "/roleplay-studio",
-  ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
-  ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
-  ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
@@ -738,10 +705,6 @@ export const TAG_TYPES = {
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
-  ROLEPLAY_SPECS: "roleplaySpecs",
-  ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
-  ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
-  ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   WHATSAPP_BOT_DOCUMENTS: "whatsAppBotDocuments",
   WHATSAPP_BOT_DOCUMENT_CHUNKS: "whatsAppBotDocumentChunks",
