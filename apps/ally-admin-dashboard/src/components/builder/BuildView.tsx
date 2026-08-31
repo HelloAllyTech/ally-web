@@ -286,7 +286,7 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
    * above the phase rail because they are the only thing on this page a person
    * can act on to change the outcome.
    */
-  const budgetHeld = Boolean(budget?.hold);
+  const budgetHeld = Boolean(budget?.hold) && (isLive || isWaiting);
   const budgetOver = Boolean(budget?.exceeded) && (isLive || isWaiting);
 
   return (

@@ -34,6 +34,7 @@ const behavioursById: Record<string, { helpful: any[]; unhelpful: any[] }> = {
 const mockCreateCompetency = vi.fn();
 const mockSetCompetencyBehaviours = vi.fn();
 const mockFetchBehaviours = vi.fn();
+const mockDeleteCompetency = vi.fn();
 
 vi.mock("@api", () => {
   // The @constants barrel transitively wires up the configured store, so the
@@ -55,7 +56,7 @@ vi.mock("@api", () => {
     useCreateCompetencyMutation: () => [mockCreateCompetency],
     useSetCompetencyBehavioursMutation: () => [mockSetCompetencyBehaviours],
     useUpdateCompetencyMutation: () => [vi.fn()],
-    useDeleteCompetencyMutation: () => [vi.fn()],
+    useDeleteCompetencyMutation: () => [mockDeleteCompetency],
     useGetActiveTooltipsQuery: () => ({ data: [] }),
   };
 });
@@ -144,6 +145,7 @@ beforeEach(() => {
     unwrap: async () => ({ id: "c-custom", name: "7_custom_1", isCustom: true }),
   }));
   mockSetCompetencyBehaviours.mockImplementation(() => ({ unwrap: async () => ({}) }));
+  mockDeleteCompetency.mockImplementation(() => ({ unwrap: async () => ({}) }));
 });
 
 afterEach(() => {
@@ -206,6 +208,11 @@ describe("Competency — picking a competency", () => {
 
     expect(competencyValue()?.id).toBe("c-risk");
     expect(triggerLabel()).toBe("Risk Assessment");
+
+    // The custom competency materialised mid-flight is now orphaned — nothing
+    // ever references "c-custom" again — so it must be cleaned up server-side
+    // instead of being left behind as clutter.
+    expect(mockDeleteCompetency).toHaveBeenCalledWith("c-custom");
   });
 
   it("still materialises and selects a custom competency for a hand-edited rubric", async () => {
