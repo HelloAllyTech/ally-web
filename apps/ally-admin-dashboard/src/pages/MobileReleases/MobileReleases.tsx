@@ -16,7 +16,11 @@ import {
   Tag,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
-import { useTriggerAndroidPromotionMutation, useTriggerMobileReleaseMutation } from "@api";
+import {
+  useSubmitIosAppStoreReviewMutation,
+  useTriggerAndroidPromotionMutation,
+  useTriggerMobileReleaseMutation,
+} from "@api";
 import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
@@ -114,6 +118,28 @@ export const MobileReleases: FC = () => {
     }
   };
 
+  const [isConfirmingAppStoreReview, setIsConfirmingAppStoreReview] = useState(false);
+  const [submitAppStoreReview, { isLoading: isSubmittingAppStoreReview }] =
+    useSubmitIosAppStoreReviewMutation();
+
+  const handleSubmitAppStoreReview = async () => {
+    try {
+      await submitAppStoreReview().unwrap();
+      toast.success(
+        "App Store review submitted — Apple's review clock has started. New run should appear in the history below shortly.",
+      );
+      setIsConfirmingAppStoreReview(false);
+    } catch (error) {
+      // Same pattern as handleTrigger/handlePromoteAndroid above: leave the
+      // dialog open on failure so the operator can see why (e.g. Apple
+      // rejecting an unready App Store Connect listing) and retry.
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to submit the app for App Store review. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex items-start justify-between gap-4">
@@ -127,6 +153,7 @@ export const MobileReleases: FC = () => {
         <div className="flex items-center gap-2 shrink-0">
           {isTriggering && <InlineLoading description="Triggering…" />}
           {isPromotingAndroid && <InlineLoading description="Promoting…" />}
+          {isSubmittingAppStoreReview && <InlineLoading description="Submitting…" />}
           <Button
             kind="primary"
             size="md"
@@ -145,6 +172,14 @@ export const MobileReleases: FC = () => {
             }}
           >
             Promote Android to Production
+          </Button>
+          <Button
+            kind="danger"
+            size="md"
+            disabled={isSubmittingAppStoreReview}
+            onClick={() => setIsConfirmingAppStoreReview(true)}
+          >
+            Submit for Full App Store Review
           </Button>
         </div>
       </div>
@@ -446,6 +481,25 @@ export const MobileReleases: FC = () => {
             />
           </div>
         </ActionConfirmationPopup>
+      )}
+
+      {isConfirmingAppStoreReview && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingAppStoreReview}
+          onClose={() => setIsConfirmingAppStoreReview(false)}
+          title="Submit for full App Store review?"
+          description="This submits the app for Apple's **full App Store review** — real public distribution, not TestFlight. It assumes the App Store Connect listing (screenshots, description, export compliance, etc.) is already fully prepared for the current version; if it isn't, Apple will reject the submission. Once Apple approves it, someone still has to manually release it in App Store Connect before real users see it — release is **not** automatic — but the review submission itself is real and Apple's review clock starts immediately. This is the most consequential action on this page."
+          primaryButton={{
+            label: isSubmittingAppStoreReview ? "Submitting…" : "Submit for review",
+            onClick: () => void handleSubmitAppStoreReview(),
+            disabled: isSubmittingAppStoreReview,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingAppStoreReview(false),
+            disabled: isSubmittingAppStoreReview,
+          }}
+        />
       )}
     </div>
   );
