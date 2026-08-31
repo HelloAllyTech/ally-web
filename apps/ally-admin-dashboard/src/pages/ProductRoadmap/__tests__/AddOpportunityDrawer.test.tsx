@@ -248,6 +248,31 @@ describe("AddOpportunityDrawer", () => {
     );
   });
 
+  /**
+   * The docblock claims verdicts are bound to both the description AND the product goal, and
+   * the gate re-closes on either changing (see the tests above and below). That's only true if
+   * the goal is actually sent to the grader — otherwise a goal change forcing a re-check is
+   * theatre: the same description would pass identically under any goal.
+   */
+  it("sends the product goal to the readiness check, not just the description", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass());
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "A well-formed opportunity, checked and green" },
+    });
+    fireEvent.click(screen.getByRole("combobox", { name: /product goal/i }));
+    fireEvent.click(screen.getByRole("option", { name: "Learner Outcomes" }));
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await waitFor(() =>
+      expect(stableTriggers.readiness).toHaveBeenCalledWith({
+        description: "A well-formed opportunity, checked and green",
+        productGoal: "Learner Outcomes",
+      }),
+    );
+  });
+
   /** The product goal is an input the reader weighed, so changing it re-closes the gate. */
   it("re-closes the gate when the product goal changes", async () => {
     stableTriggers.readiness.mockReturnValue(allPass());

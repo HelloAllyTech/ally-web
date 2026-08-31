@@ -157,7 +157,10 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   const runCheck = async () => {
     const trimmed = description.trim();
     try {
-      const result = await checkReadiness({ description: trimmed }).unwrap();
+      const result = await checkReadiness({
+        description: trimmed,
+        productGoal: productGoal || undefined,
+      }).unwrap();
       setVerdicts(Object.fromEntries((result.results ?? []).map(r => [r.id, r])));
       // Overwrites any earlier human correction, deliberately: this is a fresh reading of a
       // draft that has changed since, so the previous size described different text.
