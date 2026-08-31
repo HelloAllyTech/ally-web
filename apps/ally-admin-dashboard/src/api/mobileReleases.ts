@@ -2,6 +2,7 @@ import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   CurrentMobileVersionsResponse,
+  IosTestflightStatusResponse,
   MobileReleaseRun,
   TriggerAndroidPromotionRequest,
   TriggerMobileReleaseResponse,
@@ -21,6 +22,17 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
     getCurrentMobileVersions: builder.query<CurrentMobileVersionsResponse, void>({
       query: () => ({
         url: ApiEndpoints.MOBILE_RELEASES.CURRENT_VERSION,
+      }),
+    }),
+
+    // Live TestFlight state for the current iOS build, read straight from
+    // App Store Connect by the backend — same permission gate as the reads
+    // above, no new permission. Polled from useMobileReleases the same as
+    // getMobileReleaseRuns so the admin sees Apple's Beta App Review move
+    // through states without refreshing the page.
+    getIosTestflightStatus: builder.query<IosTestflightStatusResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.IOS_TESTFLIGHT_STATUS,
       }),
     }),
 
@@ -70,6 +82,7 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
 export const {
   useGetMobileReleaseRunsQuery,
   useGetCurrentMobileVersionsQuery,
+  useGetIosTestflightStatusQuery,
   useTriggerMobileReleaseMutation,
   useTriggerAndroidPromotionMutation,
   useTriggerIosTestflightPromotionMutation,

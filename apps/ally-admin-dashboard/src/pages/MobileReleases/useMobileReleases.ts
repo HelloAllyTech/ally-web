@@ -1,4 +1,8 @@
-import { useGetCurrentMobileVersionsQuery, useGetMobileReleaseRunsQuery } from "@api";
+import {
+  useGetCurrentMobileVersionsQuery,
+  useGetIosTestflightStatusQuery,
+  useGetMobileReleaseRunsQuery,
+} from "@api";
 
 /**
  * How often the run-history list re-polls. Mirrors the interval useAwsLogs
@@ -11,8 +15,9 @@ const RUNS_POLL_MS = 30_000;
 
 /**
  * Data-fetching for the super-duper-admin Mobile Releases page: the current
- * live App Store / Play Store versions, and the automated release pipeline's
- * recent GitHub Actions run history.
+ * live App Store / Play Store versions, the automated release pipeline's
+ * recent GitHub Actions run history, and the current iOS build's live
+ * TestFlight state.
  */
 export function useMobileReleases() {
   const {
@@ -28,6 +33,15 @@ export function useMobileReleases() {
     isError: isVersionsError,
   } = useGetCurrentMobileVersionsQuery();
 
+  // Same poll cadence as the run history above — Apple's Beta App Review can
+  // move through states (waiting → in review → approved/rejected) without
+  // any action on this page, so this needs to keep polling the same way.
+  const {
+    data: testflightStatus,
+    isLoading: isTestflightStatusLoading,
+    isError: isTestflightStatusError,
+  } = useGetIosTestflightStatusQuery(undefined, { pollingInterval: RUNS_POLL_MS });
+
   return {
     runs: runs ?? [],
     isRunsLoading,
@@ -36,5 +50,8 @@ export function useMobileReleases() {
     versions,
     isVersionsLoading,
     isVersionsError,
+    testflightStatus,
+    isTestflightStatusLoading,
+    isTestflightStatusError,
   };
 }

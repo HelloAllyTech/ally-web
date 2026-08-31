@@ -1,4 +1,8 @@
-import { MobileReleaseRunConclusion, MobileReleaseRunStatus } from "@types";
+import {
+  IosTestflightStatusResponse,
+  MobileReleaseRunConclusion,
+  MobileReleaseRunStatus,
+} from "@types";
 
 /**
  * Status-tag colour + label for a mobile-release CI run, following the same
@@ -46,5 +50,44 @@ export const getMobileReleaseRunStatusDisplay = (
       // Completed with no recognised conclusion — surface the raw value
       // rather than silently mislabeling it as one of the known outcomes.
       return { type: "cool-gray", label: conclusion ?? status };
+  }
+};
+
+/**
+ * Status-tag colour + label for the current iOS build's live TestFlight
+ * state — same idea as getMobileReleaseRunStatusDisplay above, collapsing
+ * the backend's `{ buildVersion, betaReviewState, externalGroupAssigned }`
+ * (GET /v1/mobile-releases/ios-testflight-status) into one Carbon Tag type +
+ * label.
+ *
+ * `betaReviewState` is Apple's own raw Beta App Review value, passed through
+ * by the backend — mirrors how this file already treats GitHub Actions'
+ * status/conclusion as a passthrough rather than remapping it to our own
+ * enum.
+ */
+export const getTestflightStatusDisplay = (
+  status: IosTestflightStatusResponse,
+): MobileReleaseStatusDisplay => {
+  // No processed build exists yet — distinct from "never submitted for
+  // review", which is a state a real build can be in.
+  if (status.buildVersion === null) return { type: "cool-gray", label: "No processed build yet" };
+
+  switch (status.betaReviewState) {
+    case null:
+      // App Store Connect itself calls this state "Ready to Submit".
+      return { type: "cool-gray", label: "Ready to Submit" };
+    case "WAITING_FOR_REVIEW":
+      return { type: "blue", label: "Waiting for Review" };
+    case "IN_REVIEW":
+      return { type: "blue", label: "In Review" };
+    case "APPROVED":
+      // What Apple actually calls it once approved for external testers.
+      return { type: "green", label: "Ready to Test" };
+    case "REJECTED":
+      return { type: "red", label: "Rejected" };
+    default:
+      // Unrecognised value from Apple — surface it raw rather than silently
+      // mislabeling it as one of the known states.
+      return { type: "cool-gray", label: status.betaReviewState };
   }
 };

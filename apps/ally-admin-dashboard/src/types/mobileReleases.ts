@@ -89,3 +89,22 @@ export interface TriggerAndroidPromotionRequest {
  * instantly available. Response shape is TriggerMobileReleaseResponse, reused
  * for the same reason as the Android promotion above.
  */
+
+/**
+ * GET /v1/mobile-releases/ios-testflight-status — the current iOS build's
+ * live TestFlight state, read straight from App Store Connect, so the admin
+ * can see it without opening App Store Connect themselves.
+ */
+export interface IosTestflightStatusResponse {
+  /** Null if no processed build exists yet. */
+  buildVersion: string | null;
+  buildId: string | null;
+  /**
+   * Apple's own raw Beta App Review state — passed through rather than
+   * remapped, same approach as MobileReleaseRunStatus/MobileReleaseRunConclusion
+   * above for GitHub Actions. Null if the build was never submitted for
+   * review (App Store Connect itself calls that state "Ready to Submit").
+   */
+  betaReviewState: "WAITING_FOR_REVIEW" | "IN_REVIEW" | "REJECTED" | "APPROVED" | null;
+  externalGroupAssigned: boolean;
+}

@@ -28,7 +28,10 @@ import { en } from "@constants";
 import { MobileReleaseRun } from "@types";
 import { formatDateTime, openLinkInNewTab } from "@utils";
 
-import { getMobileReleaseRunStatusDisplay } from "./mobileReleaseStatus";
+import {
+  getMobileReleaseRunStatusDisplay,
+  getTestflightStatusDisplay,
+} from "./mobileReleaseStatus";
 import { useMobileReleases } from "./useMobileReleases";
 
 /** First 7 chars of a commit SHA — the length GitHub's own UI uses for a short SHA. */
@@ -54,7 +57,14 @@ export const MobileReleases: FC = () => {
     versions,
     isVersionsLoading,
     isVersionsError,
+    testflightStatus,
+    isTestflightStatusLoading,
+    isTestflightStatusError,
   } = useMobileReleases();
+
+  const testflightStatusDisplay = testflightStatus
+    ? getTestflightStatusDisplay(testflightStatus)
+    : null;
 
   const [isConfirmingTrigger, setIsConfirmingTrigger] = useState(false);
   const [triggerRelease, { isLoading: isTriggering }] = useTriggerMobileReleaseMutation();
@@ -207,6 +217,41 @@ export const MobileReleases: FC = () => {
               <p className="text-xl text-typography-900 font-secondary mt-1">
                 {versions.ios.marketingVersion}
               </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
+          <MobileIcon size={24} className="text-typography-600 shrink-0" />
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs uppercase tracking-wide text-typography-600">
+                iOS — TestFlight status
+              </p>
+              <Tooltip
+                label="Live status of the current iOS build in App Store Connect, from Apple's own Beta App Review — no need to open App Store Connect to check."
+                align="top"
+              >
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
+            </div>
+            {isTestflightStatusLoading ? (
+              <p className="text-typography-700 mt-1">Loading…</p>
+            ) : isTestflightStatusError || !testflightStatus || !testflightStatusDisplay ? (
+              <p className="text-destructive-500 mt-1">Failed to load TestFlight status.</p>
+            ) : (
+              <div className="mt-1 flex items-center gap-2">
+                <Tag type={testflightStatusDisplay.type} size="sm">
+                  {testflightStatusDisplay.label}
+                </Tag>
+                {testflightStatus.buildVersion && (
+                  <span className="text-sm text-typography-600">
+                    Build {testflightStatus.buildVersion}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
