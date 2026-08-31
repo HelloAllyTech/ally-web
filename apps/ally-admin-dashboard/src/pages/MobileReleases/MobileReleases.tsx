@@ -56,6 +56,9 @@ export const MobileReleases: FC = () => {
     testflightStatus,
     isTestflightStatusLoading,
     isTestflightStatusError,
+    testflightHistory,
+    isTestflightHistoryLoading,
+    isTestflightHistoryError,
   } = useMobileReleases();
 
   const testflightStatusDisplay = testflightStatus
@@ -333,6 +336,62 @@ export const MobileReleases: FC = () => {
           <span className="text-sm text-typography-700">{isRunsFetching ? "Updating…" : ""}</span>
         </div>
       )}
+
+      {/* iOS TestFlight submission history — separate from the run history
+          table above: these rows are past TestFlight builds' Beta App Review
+          state (from App Store Connect), not GitHub Actions runs, so they
+          don't share a shape with MobileReleaseRun. */}
+      <div className="shrink-0">
+        <h2 className="text-lg text-typography-900 font-secondary mt-6">
+          iOS TestFlight submissions
+        </h2>
+        <div className="mt-3">
+          {isTestflightHistoryLoading ? (
+            <p className="text-typography-700">Loading…</p>
+          ) : isTestflightHistoryError ? (
+            <p className="text-destructive-500">Failed to load TestFlight submission history.</p>
+          ) : testflightHistory.length === 0 ? (
+            <EmptyState
+              title="No submissions yet"
+              subtitle="No iOS build has been uploaded to TestFlight yet — check back after the next automated build."
+              hideActionButton
+            />
+          ) : (
+            <Table className="w-full text-left border-collapse">
+              <TableHead>
+                <TableRow className="border-b border-border-light text-sm text-typography-700">
+                  <TableHeader className="py-3 pr-4 font-medium">Version</TableHeader>
+                  <TableHeader className="py-3 pr-4 font-medium">Uploaded</TableHeader>
+                  <TableHeader className="py-3 pr-4 font-medium">Beta review status</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {testflightHistory.map(entry => {
+                  const statusDisplay = getTestflightStatusDisplay(entry);
+                  return (
+                    <TableRow
+                      key={entry.buildId}
+                      className="border-b border-border-light text-sm text-typography-900 align-top"
+                    >
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        {entry.buildVersion}
+                      </TableCell>
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        {formatDateTime(entry.uploadedDate)}
+                      </TableCell>
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        <Tag type={statusDisplay.type} size="sm">
+                          {statusDisplay.label}
+                        </Tag>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </div>
 
       {isConfirmingTrigger && (
         <ActionConfirmationPopup

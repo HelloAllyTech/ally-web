@@ -2,6 +2,7 @@ import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   CurrentMobileVersionsResponse,
+  IosTestflightHistoryEntry,
   IosTestflightStatusResponse,
   MobileReleaseRun,
   TriggerAndroidPromotionRequest,
@@ -34,6 +35,18 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
       query: () => ({
         url: ApiEndpoints.MOBILE_RELEASES.IOS_TESTFLIGHT_STATUS,
       }),
+    }),
+
+    // Past TestFlight submissions for iOS builds, distinct from the
+    // current-build-only status above — same permission gate as the reads
+    // above, no new permission. Polled from useMobileReleases the same as
+    // getMobileReleaseRuns/getIosTestflightStatus.
+    getIosTestflightHistory: builder.query<IosTestflightHistoryEntry[], void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.IOS_TESTFLIGHT_HISTORY,
+      }),
+      // Backend wraps the array as { history: [...] } (IosTestflightHistoryResponse).
+      transformResponse: (response: { history: IosTestflightHistoryEntry[] }) => response.history,
     }),
 
     // Manually dispatches the release pipeline for both platforms right now —
@@ -71,6 +84,7 @@ export const {
   useGetMobileReleaseRunsQuery,
   useGetCurrentMobileVersionsQuery,
   useGetIosTestflightStatusQuery,
+  useGetIosTestflightHistoryQuery,
   useTriggerMobileReleaseMutation,
   useTriggerAndroidPromotionMutation,
 } = mobileReleasesAPI;

@@ -109,3 +109,24 @@ export interface IosTestflightStatusResponse {
   betaReviewState: "WAITING_FOR_REVIEW" | "IN_REVIEW" | "REJECTED" | "APPROVED" | null;
   externalGroupAssigned: boolean;
 }
+
+/**
+ * One row of GET /v1/mobile-releases/ios-testflight-history — a past iOS
+ * build's TestFlight submission state, distinct from
+ * IosTestflightStatusResponse above which only covers the *current* build.
+ * Unlike that current-build status, buildVersion/buildId here are always
+ * present since a history row only exists for a build that was actually
+ * uploaded.
+ */
+export interface IosTestflightHistoryEntry {
+  buildVersion: string;
+  buildId: string;
+  uploadedDate: string;
+  /** Null if the build was never submitted for review — same states as IosTestflightStatusResponse.betaReviewState. */
+  betaReviewState: "WAITING_FOR_REVIEW" | "IN_REVIEW" | "REJECTED" | "APPROVED" | null;
+}
+
+/** GET /v1/mobile-releases/ios-testflight-history — sorted newest-uploaded first, up to 15 entries. */
+export interface IosTestflightHistoryResponse {
+  history: IosTestflightHistoryEntry[];
+}

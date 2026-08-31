@@ -1,5 +1,6 @@
 import {
   useGetCurrentMobileVersionsQuery,
+  useGetIosTestflightHistoryQuery,
   useGetIosTestflightStatusQuery,
   useGetMobileReleaseRunsQuery,
 } from "@api";
@@ -14,10 +15,24 @@ import {
 const RUNS_POLL_MS = 30_000;
 
 /**
+ * How often the two App Store Connect-backed queries re-poll. Deliberately much
+ * slower than RUNS_POLL_MS: GitHub's API is cheap and this module already says
+ * so in its own module doc comment, but Apple's isn't — ios-testflight-history
+ * alone makes up to ~17 App Store Connect calls per request (1 app lookup + 1
+ * build list + up to 15 per-build review-submission lookups), and that API key
+ * is shared with the actual release pipeline (build uploads, TestFlight
+ * submissions). At RUNS_POLL_MS a single open tab would burn roughly 2,000+
+ * Apple API calls/hour for state that only meaningfully changes over hours,
+ * not seconds — risking a rate-limit that breaks real releases, not just this
+ * page. 5 minutes is still fast enough to notice a review outcome promptly.
+ */
+const TESTFLIGHT_POLL_MS = 5 * 60_000;
+
+/**
  * Data-fetching for the super-duper-admin Mobile Releases page: the current
  * live App Store / Play Store versions, the automated release pipeline's
- * recent GitHub Actions run history, and the current iOS build's live
- * TestFlight state.
+ * recent GitHub Actions run history, the current iOS build's live TestFlight
+ * state, and past iOS builds' TestFlight submission history.
  */
 export function useMobileReleases() {
   const {
@@ -33,14 +48,19 @@ export function useMobileReleases() {
     isError: isVersionsError,
   } = useGetCurrentMobileVersionsQuery();
 
-  // Same poll cadence as the run history above — Apple's Beta App Review can
-  // move through states (waiting → in review → approved/rejected) without
-  // any action on this page, so this needs to keep polling the same way.
+  // TESTFLIGHT_POLL_MS, not RUNS_POLL_MS — see that constant's doc comment.
   const {
     data: testflightStatus,
     isLoading: isTestflightStatusLoading,
     isError: isTestflightStatusError,
-  } = useGetIosTestflightStatusQuery(undefined, { pollingInterval: RUNS_POLL_MS });
+  } = useGetIosTestflightStatusQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
+
+  // TESTFLIGHT_POLL_MS, not RUNS_POLL_MS — see that constant's doc comment.
+  const {
+    data: testflightHistory,
+    isLoading: isTestflightHistoryLoading,
+    isError: isTestflightHistoryError,
+  } = useGetIosTestflightHistoryQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
 
   return {
     runs: runs ?? [],
@@ -53,5 +73,8 @@ export function useMobileReleases() {
     testflightStatus,
     isTestflightStatusLoading,
     isTestflightStatusError,
+    testflightHistory: testflightHistory ?? [],
+    isTestflightHistoryLoading,
+    isTestflightHistoryError,
   };
 }

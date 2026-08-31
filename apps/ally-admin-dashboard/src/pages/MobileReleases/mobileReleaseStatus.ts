@@ -54,19 +54,24 @@ export const getMobileReleaseRunStatusDisplay = (
 };
 
 /**
- * Status-tag colour + label for the current iOS build's live TestFlight
- * state — same idea as getMobileReleaseRunStatusDisplay above, collapsing
- * the backend's `{ buildVersion, betaReviewState, externalGroupAssigned }`
- * (GET /v1/mobile-releases/ios-testflight-status) into one Carbon Tag type +
- * label.
+ * Status-tag colour + label for an iOS build's TestFlight review state —
+ * same idea as getMobileReleaseRunStatusDisplay above, collapsing
+ * `{ buildVersion, betaReviewState }` into one Carbon Tag type + label.
  *
  * `betaReviewState` is Apple's own raw Beta App Review value, passed through
  * by the backend — mirrors how this file already treats GitHub Actions'
  * status/conclusion as a passthrough rather than remapping it to our own
  * enum.
+ *
+ * Takes only the two fields it needs (rather than the full
+ * IosTestflightStatusResponse from GET /v1/mobile-releases/ios-testflight-status)
+ * so the same function also works for each row of
+ * IosTestflightHistoryEntry (GET /v1/mobile-releases/ios-testflight-history)
+ * — both shapes carry buildVersion + betaReviewState, so there's no need for
+ * a second, near-duplicate mapping function for the history table.
  */
 export const getTestflightStatusDisplay = (
-  status: IosTestflightStatusResponse,
+  status: Pick<IosTestflightStatusResponse, "buildVersion" | "betaReviewState">,
 ): MobileReleaseStatusDisplay => {
   // No processed build exists yet — distinct from "never submitted for
   // review", which is a state a real build can be in.
