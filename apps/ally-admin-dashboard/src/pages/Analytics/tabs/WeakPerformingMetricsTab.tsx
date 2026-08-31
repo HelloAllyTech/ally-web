@@ -548,11 +548,36 @@ const BUCKETS_FOR_RANGE: Record<AnalyticsRange, Array<"week" | "month">> = {
   all: ["month", "week"],
 };
 
+/**
+ * Granularity a range OPENS ON, which is not the same question as which ones
+ * are legal.
+ *
+ * 90 days is the page default, and 90 days of months is the one pairing that
+ * can only ever hold two complete buckets: the window spans three months and
+ * the newest is always the accruing one. Two columns is what the whole tab
+ * showed by default, under a caption about not having enough data — and no
+ * threshold could rescue it, because two points is genuinely not a trend. The
+ * window was wrong for the granularity, not the other way round.
+ *
+ * The same 90 days by week is about twelve complete buckets, which is a real
+ * time series and draws as a line. So short ranges open on weeks and long ones
+ * on months, and both stay switchable — a reader who wants the two-month
+ * comparison can still ask for it.
+ */
+const DEFAULT_BUCKET_FOR_RANGE: Record<AnalyticsRange, "week" | "month"> = {
+  "30d": "week",
+  "90d": "week",
+  "12m": "month",
+  all: "month",
+};
+
 export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, language }) => {
   const [llmModel, setLlmModel] = useState<string>("");
   const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
   const [promptVersion, setPromptVersion] = useState<string>("");
-  const [bucketPreference, setBucketPreference] = useState<"week" | "month">("month");
+  // Null until the reader actually picks one, so a range change can move the
+  // default without ever overriding a choice someone made on purpose.
+  const [bucketPreference, setBucketPreference] = useState<"week" | "month" | null>(null);
 
   // Memoised for a stable `items` identity: Carbon's Dropdown is a Downshift
   // that rebuilds its menu state when the array changes, and this one is
@@ -561,7 +586,13 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
     () => BUCKETS_FOR_RANGE[query.range ?? "12m"] ?? ["month", "week"],
     [query.range],
   );
-  const bucket = bucketItems.includes(bucketPreference) ? bucketPreference : bucketItems[0];
+  const fallbackBucket = DEFAULT_BUCKET_FOR_RANGE[query.range ?? "12m"];
+  const bucket =
+    bucketPreference && bucketItems.includes(bucketPreference)
+      ? bucketPreference
+      : bucketItems.includes(fallbackBucket)
+        ? fallbackBucket
+        : bucketItems[0];
 
   const { data, isFetching, isError, refetch } = useGetWeakPerformingMetricsQuery({
     range: query.range,
@@ -691,7 +722,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             selectedItem={bucket}
             itemToString={(i: string) => (i === "week" ? "By week" : "By month")}
             onChange={({ selectedItem }: { selectedItem: "week" | "month" }) =>
-              setBucketPreference(selectedItem ?? "month")
+              setBucketPreference(selectedItem ?? null)
             }
           />
         </div>
