@@ -8,6 +8,8 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
       query: () => ({
         url: ApiEndpoints.MOBILE_RELEASES.RUNS,
       }),
+      // Backend wraps the array as { runs: [...] } (MobileReleaseRunsResponseDto).
+      transformResponse: (response: { runs: MobileReleaseRun[] }) => response.runs,
     }),
 
     getCurrentMobileVersions: builder.query<CurrentMobileVersionsResponse, void>({
