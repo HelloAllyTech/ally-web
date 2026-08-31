@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AddOpportunityDrawer } from "../AddOpportunityDrawer";
 
@@ -18,20 +18,34 @@ const stableTriggers = {
   duplicates: vi.fn(),
   readiness: vi.fn(),
 };
+
+/**
+ * The checklist query's answer, swappable per test. A box rather than a `vi.fn`: the factory
+ * below is hoisted above every `const`, so it may only READ this lazily — and the component
+ * re-renders several times per test, which a `mockReturnValueOnce` would not survive.
+ */
+const criteriaResult: { current: unknown } = { current: null };
 const idle = { isLoading: false };
 
 const CRITERIA = [
-  { id: "problem_not_solution", label: "Describes a problem, not a solution", hint: "hint one" },
-  { id: "specific", label: "Specific enough to act on", hint: "hint two" },
+  { id: "pain_or_gain", label: "Names a real pain or a real gain", hint: "hint one" },
+  { id: "specific", label: "Narrow enough to act on", hint: "hint two" },
 ];
 
-/** Every criterion green, which is what the gate demands, plus the size the same call proposes. */
+/** The server owns the size threshold too; the drawer must not hold its own copy. */
+const FILEABLE = ["s", "m"];
+
+/**
+ * Every criterion green AND a fileable size, which is what the gate demands. `redraft` is null
+ * here for the same reason the server sends null: there is nothing to fix.
+ */
 const allPass = (effort: string | null = "m") => ({
   unwrap: () =>
     Promise.resolve({
       results: CRITERIA.map(c => ({ id: c.id, passed: true, reason: "Met." })),
       effort,
       effortReason: "About a sprint.",
+      redraft: null,
     }),
 });
 
@@ -39,10 +53,7 @@ vi.mock("@api", () => ({
   useCreateRoadmapOpportunityMutation: () => [mockCreate, idle],
   useRoadmapAiDuplicatesMutation: () => [stableTriggers.duplicates, idle],
   useCheckRoadmapReadinessMutation: () => [stableTriggers.readiness, idle],
-  useGetRoadmapReadinessCriteriaQuery: () => ({
-    data: { criteria: CRITERIA },
-    isLoading: false,
-  }),
+  useGetRoadmapReadinessCriteriaQuery: () => criteriaResult.current,
   useGetRoadmapEligibleOwnersQuery: () => ({
     data: [
       { id: 7, name: "Ada Admin", email: "ada@helloally.ai" },
@@ -110,6 +121,13 @@ const fileableDraft = async (text: string) => {
 };
 
 describe("AddOpportunityDrawer", () => {
+  beforeEach(() => {
+    criteriaResult.current = {
+      data: { criteria: CRITERIA, fileableEfforts: FILEABLE },
+      isLoading: false,
+    };
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -182,9 +200,12 @@ describe("AddOpportunityDrawer", () => {
       unwrap: () =>
         Promise.resolve({
           results: [
-            { id: "problem_not_solution", passed: true, reason: "Met." },
+            { id: "pain_or_gain", passed: true, reason: "Met." },
             { id: "specific", passed: false, reason: "Too broad — name the moment it happens." },
           ],
+          effort: "m",
+          effortReason: "About a sprint.",
+          redraft: null,
         }),
     });
     renderDrawer();
@@ -267,15 +288,91 @@ describe("AddOpportunityDrawer", () => {
     );
 
     fireEvent.click(screen.getByRole("combobox", { name: /effort/i }));
-    fireEvent.click(screen.getByRole("option", { name: "XL" }));
+    fireEvent.click(screen.getByRole("option", { name: "S" }));
 
     expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled();
     expect(screen.queryByText(/edited since the last check/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /file opportunity/i }));
     await waitFor(() =>
-      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ effort: "xl" })),
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ effort: "s" })),
     );
+  });
+
+  /**
+   * The size gate. An L or larger is a SET of opportunities, and filing one puts something on
+   * the board no single slice of work can finish — so every criterion being green is no longer
+   * enough on its own.
+   */
+  it("blocks filing when the draft is sized above what may be filed", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass("xl"));
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "Rebuild the whole learner experience" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await screen.findByText(/a set of opportunities rather than one/i);
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
+  });
+
+  /**
+   * The size row reads the CURRENT effort, not the checked one, so the filer who knows the
+   * model sized it wrong can answer the row directly. Without this the gate is unanswerable,
+   * and an unanswerable gate gets routed around by writing vaguer drafts.
+   */
+  it("opens the gate when the size is corrected down to a fileable one", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass("l"));
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "A well-formed opportunity the model over-sized" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled(),
+    );
+
+    fireEvent.click(screen.getByRole("combobox", { name: /effort/i }));
+    fireEvent.click(screen.getByRole("option", { name: "M" }));
+
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled();
+  });
+
+  /**
+   * Deploy skew: this bundle can reach a server that does not serve `fileableEfforts` yet. The
+   * size row is hidden then, and a HIDDEN rule that disables filing outright is worse than not
+   * checking the size at all — so the gate falls back to the five criteria rather than to "no".
+   */
+  it("does not gate on size when the server declares no threshold", async () => {
+    criteriaResult.current = { data: { criteria: CRITERIA }, isLoading: false };
+    stableTriggers.readiness.mockReturnValue(allPass("xxl"));
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "A well-formed opportunity, checked and green" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled(),
+    );
+    expect(screen.queryByText(/small enough to ship/i)).not.toBeInTheDocument();
+  });
+
+  /** "Not sized" is a fail, not a shrug: it is exactly the state a vague draft lands in. */
+  it("blocks filing when the check could not size the draft", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass(null));
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "Make the product better somehow" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await screen.findByText(/not sized/i);
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
   });
 
   /**
@@ -301,6 +398,59 @@ describe("AddOpportunityDrawer", () => {
         productGoal: "Learner Outcomes",
       }),
     );
+  });
+
+  /**
+   * The redraft's whole safety property: it is a PROPOSAL. The old "Improve wording" button
+   * rewrote in place and silently replaced the filer's own words — which are what everyone
+   * voting on the card later reads. If this ever lands in the field without a click, that
+   * regression is back and nothing else in the app would notice.
+   */
+  it("shows the proposed rewrite without touching the draft, until it is accepted", async () => {
+    stableTriggers.readiness.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          results: [
+            { id: "pain_or_gain", passed: false, reason: "No benefit stated." },
+            { id: "specific", passed: true, reason: "Met." },
+          ],
+          effort: "m",
+          effortReason: "About a sprint.",
+          redraft: "As a counsellor, [what is the pain?] — so that [what changes?].",
+        }),
+    });
+    renderDrawer();
+
+    const field = screen.getByLabelText(/what is the opportunity/i);
+    fireEvent.change(field, { target: { value: "Add a dashboard" } });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await screen.findByText(/suggested rewrite/i);
+    expect(field).toHaveValue("Add a dashboard");
+
+    fireEvent.click(screen.getByRole("button", { name: /use this draft/i }));
+
+    expect(field).toHaveValue("As a counsellor, [what is the pain?] — so that [what changes?].");
+    // Accepting is an edit like any other: the verdicts described the OLD text, so the gate
+    // re-closes and the accepted wording is graded on its own merits before it can be filed.
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
+    expect(screen.getByText(/edited since the last check/i)).toBeInTheDocument();
+  });
+
+  /** Offering a rewrite of a draft that already passed trains people to replace good words. */
+  it("offers no rewrite when the draft is ready", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass());
+    renderDrawer();
+
+    fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+      target: { value: "A well-formed opportunity, checked and green" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled(),
+    );
+    expect(screen.queryByText(/suggested rewrite/i)).not.toBeInTheDocument();
   });
 
   /** The product goal is an input the reader weighed, so changing it re-closes the gate. */

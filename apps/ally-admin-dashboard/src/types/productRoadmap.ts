@@ -383,6 +383,16 @@ export interface RoadmapReadinessCriterion {
   hint: string;
 }
 
+/**
+ * The checklist, plus the sizes a draft may be filed at. Both come from the server for the
+ * same reason: they gate filing, so a copy in this bundle would be a second source of truth
+ * that drifts silently the first time either changes.
+ */
+export interface RoadmapReadinessChecklist {
+  criteria: RoadmapReadinessCriterion[];
+  fileableEfforts: RoadmapOpportunityEffort[];
+}
+
 /** One verdict, joined to its criterion by `id`. */
 export interface RoadmapReadinessResult {
   id: string;
@@ -399,4 +409,10 @@ export interface RoadmapReadinessReport {
   results: RoadmapReadinessResult[];
   effort: RoadmapOpportunityEffort | null;
   effortReason: string;
+  /**
+   * A rewrite that would pass, offered only when something did not — null when the draft is
+   * ready. May carry [square-bracketed questions] where the original genuinely lacked
+   * something; the model is instructed to ask rather than invent a user group or a benefit.
+   */
+  redraft: string | null;
 }

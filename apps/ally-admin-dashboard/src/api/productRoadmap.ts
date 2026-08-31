@@ -17,7 +17,7 @@ import {
   RoadmapSavedView,
   RoadmapEligibleOwner,
   RoadmapOpportunityEffort,
-  RoadmapReadinessCriterion,
+  RoadmapReadinessChecklist,
   RoadmapReadinessReport,
   RoadmapTaxonomyItem,
   RoadmapViewState,
@@ -620,7 +620,7 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
      * The readiness checklist. A query, not a constant in this bundle: the server owns the
      * list so that editing it there is the whole change.
      */
-    getRoadmapReadinessCriteria: builder.query<{ criteria: RoadmapReadinessCriterion[] }, void>({
+    getRoadmapReadinessCriteria: builder.query<RoadmapReadinessChecklist, void>({
       query: () => ({ url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS_CRITERIA }),
     }),
 
