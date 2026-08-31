@@ -4,9 +4,18 @@ type SortBy = NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
 type Order = "ASC" | "DESC";
 
 /**
- * The Queue's five orderings, in the vocabulary a reader uses rather than the API's.
+ * The Queue's orderings, in the vocabulary a reader uses rather than the API's.
  *
- * Rank IS total votes, so the two rank orderings are `priority` in each direction. It used to be
+ * RANK IS THE COMPOSITE — votes, how many admins backed it, effort and strategy-goal coverage,
+ * weighted in settings. "Most votes" is kept as its own pair of orderings rather than dropped,
+ * and that is deliberate: the composite is only trustworthy if you can check it against the raw
+ * signal it was built from. A reader who thinks the ranking looks wrong needs to be able to see
+ * the vote order it departed from.
+ *
+ * "Most backers" is the third pair, and answers a question neither of the others can: forty
+ * admins voting once each and one admin spending forty votes are the same total.
+ *
+ * The two rank orderings are `composite` in each direction. It used to be
  * a single "By rank" button, which only ever meant DESCENDING — there was no way to reach the
  * bottom of the queue except by paging to the end of it. Splitting it names both ends: "top rank
  * first" is what is winning, "bottom rank first" is what nobody has voted for, and that second
@@ -22,7 +31,15 @@ type Order = "ASC" | "DESC";
  * rather than from the card's position on screen; ordering the feed by date or by month reorders
  * the cards without changing what any of them is ranked.
  */
-export type QueueSortId = "topRank" | "bottomRank" | "latest" | "oldest" | "expected";
+export type QueueSortId =
+  | "topRank"
+  | "bottomRank"
+  | "topVotes"
+  | "bottomVotes"
+  | "mostBackers"
+  | "latest"
+  | "oldest"
+  | "expected";
 
 export const QUEUE_SORTS: {
   id: QueueSortId;
@@ -30,8 +47,12 @@ export const QUEUE_SORTS: {
   sortBy: SortBy;
   order: Order;
 }[] = [
-  { id: "topRank", label: "Top rank first", sortBy: "priority", order: "DESC" },
-  { id: "bottomRank", label: "Bottom rank first", sortBy: "priority", order: "ASC" },
+  { id: "topRank", label: "Top rank first", sortBy: "composite", order: "DESC" },
+  { id: "bottomRank", label: "Bottom rank first", sortBy: "composite", order: "ASC" },
+  // The raw signal, kept reachable so the composite can be checked against it.
+  { id: "topVotes", label: "Most votes first", sortBy: "priority", order: "DESC" },
+  { id: "bottomVotes", label: "Fewest votes first", sortBy: "priority", order: "ASC" },
+  { id: "mostBackers", label: "Most admins backing", sortBy: "voters", order: "DESC" },
   { id: "latest", label: "Latest first", sortBy: "createdAt", order: "DESC" },
   { id: "oldest", label: "Oldest first", sortBy: "createdAt", order: "ASC" },
   // ASC: 'YYYY-MM' sorts lexicographically, so ascending IS soonest-first.
