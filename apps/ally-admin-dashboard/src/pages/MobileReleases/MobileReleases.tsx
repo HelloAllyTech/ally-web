@@ -1,10 +1,12 @@
 import { FC, useState } from "react";
 
+import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { toast } from "sonner";
 
 import {
   Button,
   InlineLoading,
+  NumberInput,
   Table,
   TableBody,
   TableCell,
@@ -14,12 +16,15 @@ import {
   Tag,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
-import { useTriggerMobileReleaseMutation } from "@api";
+import {
+  useTriggerAndroidPromotionMutation,
+  useTriggerIosTestflightPromotionMutation,
+  useTriggerMobileReleaseMutation,
+} from "@api";
 import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
 import { en } from "@constants";
-import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { MobileReleaseRun } from "@types";
 import { formatDateTime, openLinkInNewTab } from "@utils";
 
@@ -28,6 +33,11 @@ import { useMobileReleases } from "./useMobileReleases";
 
 /** First 7 chars of a commit SHA — the length GitHub's own UI uses for a short SHA. */
 const shortSha = (sha: string) => sha.slice(0, 7);
+
+/** Rollout percentage the Android promotion dialog opens on — a conservative staged start. */
+const DEFAULT_ANDROID_ROLLOUT_PERCENTAGE = 20;
+const MIN_ROLLOUT_PERCENTAGE = 1;
+const MAX_ROLLOUT_PERCENTAGE = 100;
 
 const runDisplayDuration = (run: MobileReleaseRun): string => {
   if (run.status !== "completed") return "In progress";
@@ -66,6 +76,56 @@ export const MobileReleases: FC = () => {
     }
   };
 
+  const [isConfirmingAndroidPromotion, setIsConfirmingAndroidPromotion] = useState(false);
+  const [androidRolloutPercentage, setAndroidRolloutPercentage] = useState(
+    DEFAULT_ANDROID_ROLLOUT_PERCENTAGE,
+  );
+  const [triggerAndroidPromotion, { isLoading: isPromotingAndroid }] =
+    useTriggerAndroidPromotionMutation();
+  const isAndroidRolloutPercentageValid =
+    Number.isInteger(androidRolloutPercentage) &&
+    androidRolloutPercentage >= MIN_ROLLOUT_PERCENTAGE &&
+    androidRolloutPercentage <= MAX_ROLLOUT_PERCENTAGE;
+
+  const handlePromoteAndroid = async () => {
+    if (!isAndroidRolloutPercentageValid) return;
+    try {
+      await triggerAndroidPromotion({ rolloutPercentage: androidRolloutPercentage }).unwrap();
+      toast.success(
+        "Android promotion dispatched — new run should appear in the history below shortly.",
+      );
+      setIsConfirmingAndroidPromotion(false);
+    } catch (error) {
+      // Same pattern as handleTrigger above: leave the dialog open on failure
+      // so the operator can see the error message and retry.
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to promote the Android build. Please try again.";
+      toast.error(message);
+    }
+  };
+
+  const [isConfirmingIosPromotion, setIsConfirmingIosPromotion] = useState(false);
+  const [triggerIosTestflightPromotion, { isLoading: isPromotingIos }] =
+    useTriggerIosTestflightPromotionMutation();
+
+  const handlePromoteIosTestflight = async () => {
+    try {
+      await triggerIosTestflightPromotion().unwrap();
+      toast.success(
+        "Submitted to TestFlight external testers — new run should appear in the history below shortly.",
+      );
+      setIsConfirmingIosPromotion(false);
+    } catch (error) {
+      // Same pattern as handleTrigger above: leave the dialog open on failure
+      // so the operator can see the error message and retry.
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to submit the iOS build to TestFlight. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex items-start justify-between gap-4">
@@ -78,6 +138,8 @@ export const MobileReleases: FC = () => {
 
         <div className="flex items-center gap-2 shrink-0">
           {isTriggering && <InlineLoading description="Triggering…" />}
+          {isPromotingAndroid && <InlineLoading description="Promoting…" />}
+          {isPromotingIos && <InlineLoading description="Submitting…" />}
           <Button
             kind="primary"
             size="md"
@@ -85,6 +147,25 @@ export const MobileReleases: FC = () => {
             onClick={() => setIsConfirmingTrigger(true)}
           >
             Trigger release now
+          </Button>
+          <Button
+            kind="danger"
+            size="md"
+            disabled={isPromotingAndroid}
+            onClick={() => {
+              setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
+              setIsConfirmingAndroidPromotion(true);
+            }}
+          >
+            Promote Android to Production
+          </Button>
+          <Button
+            kind="secondary"
+            size="md"
+            disabled={isPromotingIos}
+            onClick={() => setIsConfirmingIosPromotion(true)}
+          >
+            Submit iOS Build to TestFlight External Testers
           </Button>
         </div>
       </div>
@@ -257,6 +338,61 @@ export const MobileReleases: FC = () => {
             label: en.common.cancel,
             onClick: () => setIsConfirmingTrigger(false),
             disabled: isTriggering,
+          }}
+        />
+      )}
+
+      {isConfirmingAndroidPromotion && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingAndroidPromotion}
+          onClose={() => setIsConfirmingAndroidPromotion(false)}
+          title="Promote Android to production?"
+          description={`This promotes the current Android build to the **production** track for real Play Store users, starting at ${androidRolloutPercentage}% rollout. This is separate from — and more consequential than — the internal release trigger above.`}
+          primaryButton={{
+            label: isPromotingAndroid ? "Promoting…" : "Promote to production",
+            onClick: () => void handlePromoteAndroid(),
+            disabled: isPromotingAndroid || !isAndroidRolloutPercentageValid,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingAndroidPromotion(false),
+            disabled: isPromotingAndroid,
+          }}
+        >
+          <div className="w-full mt-2">
+            <NumberInput
+              id="android-promotion-rollout-percentage"
+              label="Rollout percentage"
+              hideSteppers
+              min={MIN_ROLLOUT_PERCENTAGE}
+              max={MAX_ROLLOUT_PERCENTAGE}
+              value={androidRolloutPercentage}
+              invalid={!isAndroidRolloutPercentageValid}
+              invalidText={`Enter a whole number between ${MIN_ROLLOUT_PERCENTAGE} and ${MAX_ROLLOUT_PERCENTAGE}.`}
+              disabled={isPromotingAndroid}
+              onChange={(_event: unknown, state: { value: number | string } | undefined) =>
+                setAndroidRolloutPercentage(state?.value === undefined ? NaN : Number(state.value))
+              }
+            />
+          </div>
+        </ActionConfirmationPopup>
+      )}
+
+      {isConfirmingIosPromotion && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingIosPromotion}
+          onClose={() => setIsConfirmingIosPromotion(false)}
+          title="Submit iOS build to TestFlight external testers?"
+          description="This submits the latest TestFlight build to your external testers group. Apple's own Beta App Review (~24h typical) must still clear before external testers can install it — this button only starts that process."
+          primaryButton={{
+            label: isPromotingIos ? "Submitting…" : "Submit for review",
+            onClick: () => void handlePromoteIosTestflight(),
+            disabled: isPromotingIos,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingIosPromotion(false),
+            disabled: isPromotingIos,
           }}
         />
       )}

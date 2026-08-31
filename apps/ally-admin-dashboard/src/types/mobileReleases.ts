@@ -2,8 +2,17 @@
  * The automated mobile release pipeline (a scheduled job that bumps the app
  * version and triggers the existing App Store / Play Store production build
  * workflows every ~2 days) and the GitHub Actions workflows it drives.
+ *
+ * "Promote Android" / "Promote iOS External" are the manually-triggered
+ * promotion workflows (see triggerAndroidPromotion / triggerIosTestflightPromotion
+ * below) rather than the scheduled pipeline itself.
  */
-export type MobileReleaseWorkflowName = "Scheduled Check" | "iOS Build" | "Android Build";
+export type MobileReleaseWorkflowName =
+  | "Scheduled Check"
+  | "iOS Build"
+  | "Android Build"
+  | "Promote Android"
+  | "Promote iOS External";
 
 /** GitHub Actions' own run-status values — not our own enum, so this stays a passthrough of their API. */
 export type MobileReleaseRunStatus = "queued" | "in_progress" | "completed";
@@ -59,3 +68,24 @@ export interface CurrentMobileVersionsResponse {
 export interface TriggerMobileReleaseResponse {
   dispatched: boolean;
 }
+
+/**
+ * POST /v1/mobile-releases/promote-android request body — promotes the
+ * current internal-track Android build straight to the Play Store
+ * **production** track at a staged rollout. `rolloutPercentage` is an
+ * integer 1–100.
+ *
+ * Response shape is identical to TriggerMobileReleaseResponse
+ * ({ dispatched: boolean }) — reused rather than duplicated.
+ */
+export interface TriggerAndroidPromotionRequest {
+  rolloutPercentage: number;
+}
+
+/**
+ * POST /v1/mobile-releases/promote-ios-testflight — no request body. Submits
+ * the latest TestFlight build to the external testers group, which kicks off
+ * Apple's own asynchronous Beta App Review; it does not make the build
+ * instantly available. Response shape is TriggerMobileReleaseResponse, reused
+ * for the same reason as the Android promotion above.
+ */

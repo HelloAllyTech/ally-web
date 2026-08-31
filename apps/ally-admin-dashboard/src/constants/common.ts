@@ -545,6 +545,8 @@ export const ApiEndpoints = {
     RUNS: "/v1/mobile-releases/runs",
     CURRENT_VERSION: "/v1/mobile-releases/current-version",
     TRIGGER: "/v1/mobile-releases/trigger",
+    PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
+    PROMOTE_IOS_TESTFLIGHT: "/v1/mobile-releases/promote-ios-testflight",
   },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
