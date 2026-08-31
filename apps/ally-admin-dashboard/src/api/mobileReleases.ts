@@ -5,6 +5,7 @@ import {
   IosTestflightHistoryEntry,
   IosTestflightStatusResponse,
   MobileReleaseRun,
+  SubmitIosAppStoreReviewRequest,
   TriggerAndroidPromotionRequest,
   TriggerMobileReleaseResponse,
 } from "@types";
@@ -79,21 +80,26 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
     }),
 
     // Submits the current iOS build for Apple's full App Store review — real
-    // public distribution, not TestFlight. No request body. This is the most
-    // consequential action on this page: unlike triggerAndroidPromotion above,
-    // there's no rollout percentage to soften it, and Apple's review clock
-    // starts for real the moment this call succeeds. The backend doesn't
-    // verify the App Store Connect listing is ready first — an unready
-    // listing surfaces as an Apple error through the same error-toast path as
-    // every other mutation here. Release itself is still forced to manual, so
-    // approval alone doesn't ship it to users. Re-fetches the run list on
-    // success for the same reason as the mutations above, though whether this
-    // workflow actually appears there depends on backend support that may
-    // land separately.
-    submitIosAppStoreReview: builder.mutation<TriggerMobileReleaseResponse, void>({
-      query: () => ({
+    // public distribution, not TestFlight. Optional `whatsNew` body — see
+    // SubmitIosAppStoreReviewRequest. This is the most consequential action
+    // on this page: unlike triggerAndroidPromotion above, there's no rollout
+    // percentage to soften it, and Apple's review clock starts for real the
+    // moment this call succeeds. The backend doesn't verify the App Store
+    // Connect listing is ready first — an unready listing surfaces as an
+    // Apple error through the same error-toast path as every other mutation
+    // here. Release itself is still forced to manual, so approval alone
+    // doesn't ship it to users. Re-fetches the run list on success for the
+    // same reason as the mutations above, though whether this workflow
+    // actually appears there depends on backend support that may land
+    // separately.
+    submitIosAppStoreReview: builder.mutation<
+      TriggerMobileReleaseResponse,
+      SubmitIosAppStoreReviewRequest
+    >({
+      query: body => ({
         url: ApiEndpoints.MOBILE_RELEASES.SUBMIT_APP_STORE_REVIEW,
         method: HttpMethod.POST,
+        body,
       }),
       invalidatesTags: [TAG_TYPES.MOBILE_RELEASE_RUNS],
     }),

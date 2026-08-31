@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
   Tag,
+  TextArea,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
@@ -119,12 +120,13 @@ export const MobileReleases: FC = () => {
   };
 
   const [isConfirmingAppStoreReview, setIsConfirmingAppStoreReview] = useState(false);
+  const [whatsNewText, setWhatsNewText] = useState("");
   const [submitAppStoreReview, { isLoading: isSubmittingAppStoreReview }] =
     useSubmitIosAppStoreReviewMutation();
 
   const handleSubmitAppStoreReview = async () => {
     try {
-      await submitAppStoreReview().unwrap();
+      await submitAppStoreReview({ whatsNew: whatsNewText.trim() || undefined }).unwrap();
       toast.success(
         "App Store review submitted — Apple's review clock has started. New run should appear in the history below shortly.",
       );
@@ -177,7 +179,10 @@ export const MobileReleases: FC = () => {
             kind="danger"
             size="md"
             disabled={isSubmittingAppStoreReview}
-            onClick={() => setIsConfirmingAppStoreReview(true)}
+            onClick={() => {
+              setWhatsNewText("");
+              setIsConfirmingAppStoreReview(true);
+            }}
           >
             Submit for Full App Store Review
           </Button>
@@ -499,7 +504,20 @@ export const MobileReleases: FC = () => {
             onClick: () => setIsConfirmingAppStoreReview(false),
             disabled: isSubmittingAppStoreReview,
           }}
-        />
+        >
+          <div className="w-full mt-2">
+            <TextArea
+              id="ios-app-store-review-whats-new"
+              labelText="What's New in This Version (optional)"
+              helperText="Shown to users in the App Store update notes. Leave blank to keep whatever's already set in App Store Connect."
+              placeholder="e.g. Bug fixes and performance improvements"
+              value={whatsNewText}
+              onChange={e => setWhatsNewText(e.target.value)}
+              disabled={isSubmittingAppStoreReview}
+              rows={4}
+            />
+          </div>
+        </ActionConfirmationPopup>
       )}
     </div>
   );

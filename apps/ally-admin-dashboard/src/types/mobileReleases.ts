@@ -92,6 +92,19 @@ export interface TriggerAndroidPromotionRequest {
  */
 
 /**
+ * POST /v1/mobile-releases/submit-ios-app-store-review request body. Both
+ * fields are optional — `whatsNew` should be omitted (not sent as an empty
+ * string) when the operator leaves the field blank, so the backend/workflow
+ * leaves whatever "What's New" text is already set in App Store Connect
+ * untouched rather than clearing it. Response shape is
+ * TriggerMobileReleaseResponse, reused for the same reason as the Android
+ * promotion above.
+ */
+export interface SubmitIosAppStoreReviewRequest {
+  whatsNew?: string;
+}
+
+/**
  * GET /v1/mobile-releases/ios-testflight-status — the current iOS build's
  * live TestFlight state, read straight from App Store Connect, so the admin
  * can see it without opening App Store Connect themselves.
