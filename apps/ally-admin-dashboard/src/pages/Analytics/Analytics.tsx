@@ -100,7 +100,7 @@ const TABS: TabDef[] = [
     // regressions, so segmentation here is part of the metric rather than a
     // convenience.
     id: "weak-metrics",
-    label: "Weak performing metrics",
+    label: "Actor quality metrics",
     uses: { language: true, range: true },
     render: f => <WeakPerformingMetricsTab {...f} />,
   },

@@ -162,6 +162,8 @@ export const TAG_TYPES = {
   LEARN_TRACK_NEXT: "LearnTrackNext",
   // Character Library (own-tenant list)
   CHARACTER_LIBRARY: "CharacterLibrary",
+  // The per-user preferences blob (default language, org-metrics layout, ...)
+  USER_PREFERENCES: "UserPreferences",
 };
 
 export const SORT_ORDER = {

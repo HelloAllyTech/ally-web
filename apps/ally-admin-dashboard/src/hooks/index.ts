@@ -2,7 +2,6 @@ import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useBuilderSocket } from "./useBuilderSocket";
 import { useBuilderStream } from "./useBuilderStream";
 import { useClickOutside } from "./useClickOutside";
-import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
 import { useIsPlaceholderUsed } from "./useIsPlaceholderUsed";
@@ -13,11 +12,9 @@ import { useScenarioTranslationsSocket } from "./useScenarioTranslationsSocket";
 import { useSimulationCases } from "./useSimulationCases";
 import { useSimulationPathways } from "./useSimulationPathways";
 import { useSimulations } from "./useSimulations";
-import { useSpecAutosave } from "./useSpecAutosave";
 import { useTracks } from "./useTracks";
 import { useTrackTranslationsSocket } from "./useTrackTranslationsSocket";
 import { useTranscriptDisclaimer } from "./useTranscriptDisclaimer";
-import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
 
 export {
@@ -35,12 +32,9 @@ export {
   useScenarioReportsSocket,
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
-  useCopilotStream,
   useBuilderStream,
   useBuilderSocket,
   useTranscriptDisclaimer,
-  useTryRoleplayLive,
-  useSpecAutosave,
   useTracks,
   useTrackTranslationsSocket,
 };

@@ -15,7 +15,7 @@ import {
   prefersReducedMotion,
   staggerDelayMs,
 } from "../../pages/Builder/builderMotion";
-import { roleplayMarkdownComponents } from "../roleplay-studio/markdownComponents";
+import { sharedMarkdownComponents } from "../markdown/markdownComponents";
 
 /** Human labels for engine tool names — the raw names leak plumbing. */
 const TOOL_LABELS: Record<string, string> = {
@@ -253,7 +253,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
       case "text":
         return (
           <div key={event.id} style={style} className="prose prose-sm max-w-none text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
               {String(payload.text ?? "")}
             </ReactMarkdown>
           </div>
@@ -301,7 +301,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
               {strings.planHeading}
             </p>
             <div className="prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
                 {String(payload.text ?? "")}
               </ReactMarkdown>
             </div>
@@ -459,7 +459,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
 
             {asAgentText(payload.notes) ? (
               <div className="prose prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
                   {asAgentText(payload.notes)}
                 </ReactMarkdown>
               </div>
@@ -508,7 +508,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
               {strings.reportHeading}
             </p>
             <div className="prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
                 {String(payload.text ?? payload.contentMd ?? "")}
               </ReactMarkdown>
             </div>

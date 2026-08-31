@@ -101,7 +101,7 @@ export * from "./autofill-button";
 export * from "./add-item-button";
 export * from "./legal-page";
 export * from "./agent-builder-copilot";
-export * from "./roleplay-studio";
 export * from "./entity-table";
 export * from "./entity-side-panel";
 export * from "./list-pagination";
+export * from "./markdown";

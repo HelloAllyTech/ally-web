@@ -325,7 +325,7 @@ describe("RoleplaySessionLogDetail — weak performing metrics card", () => {
       isError: false,
     });
     render(<RoleplaySessionLogDetail />);
-    expect(screen.queryByText("Weak performing metrics")).not.toBeInTheDocument();
+    expect(screen.queryByText("Actor quality metrics")).not.toBeInTheDocument();
   });
 
   it("groups metrics under their metric heading", () => {
@@ -340,7 +340,7 @@ describe("RoleplaySessionLogDetail — weak performing metrics card", () => {
       ]),
     );
     render(<RoleplaySessionLogDetail />);
-    expect(screen.getByText("Weak performing metrics")).toBeInTheDocument();
+    expect(screen.getByText("Actor quality metrics")).toBeInTheDocument();
     expect(screen.getByText("Actor clienthood")).toBeInTheDocument();
     expect(screen.getByText("Conversational progression")).toBeInTheDocument();
   });

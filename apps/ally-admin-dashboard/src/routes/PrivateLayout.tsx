@@ -119,7 +119,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasOrgToggle = !isOrgToggleLoading && isCharacterLibraryOrgEnabled === true;
   }
 
-  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
+  // Email allowlist gating for staged rollouts. Case-insensitive and
   // +tag-tolerant (a +tag sub-address matches its base email, via
   // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
   if (!isUserLoading && allowedEmails) {

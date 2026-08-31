@@ -11,7 +11,6 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
-  Branch,
   Chat,
   Chemistry,
   MachineLearningModel,
@@ -22,6 +21,7 @@ import {
   Info,
   Languages,
   List,
+  Mobile,
   Search,
   Settings,
   SkillLevel,
@@ -224,12 +224,12 @@ export const Sidebar: React.FC = () => {
       // Deliberately NOT the List icon that ROLEPLAY_SESSION_LOGS uses. These are raw CloudWatch
       // streams rather than a browsable list of sessions, and two log entries sharing one glyph are
       // indistinguishable once the sidebar is collapsed to icons.
-      // Branching, not a book: the v2 studio authors a state machine, where SIMULATION_STUDIO
-      // authors linear scenarios and already holds Book.
-      case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
-        return <Branch size={20} />;
       case SIDEBAR_ITEMS.LOGS:
         return <Terminal size={20} />;
+      // A phone, not the Terminal glyph Logs uses: this page is about the app's
+      // shipped versions and the pipeline that ships them, not raw log output.
+      case SIDEBAR_ITEMS.MOBILE_RELEASES:
+        return <Mobile size={20} />;
       case SIDEBAR_ITEMS.WHATSAPP_BOT:
         return <Chat size={20} />;
       // Bug Hunter is the one tab that is a *someone* rather than a section:

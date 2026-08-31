@@ -28,6 +28,7 @@ export const FeatureToggleKey = {
   MANAGE_TOOLTIPS: "manage_tooltips",
   SETTINGS: "settings",
   LOGS: "logs",
+  MOBILE_RELEASES: "mobile_releases",
   AGENT_TEST_CASES: "agent_test_cases",
   WHATSAPP_BOT: "whatsapp_bot",
   KNOWLEDGE_BASE: "knowledge_base",
@@ -92,6 +93,7 @@ export const buildSidebarItemFeatureKeyMap = (
     [sidebarItems.AGENT_TEST_CASES, FeatureToggleKey.AGENT_TEST_CASES],
     [sidebarItems.SETTINGS, FeatureToggleKey.SETTINGS],
     [sidebarItems.LOGS, FeatureToggleKey.LOGS],
+    [sidebarItems.MOBILE_RELEASES, FeatureToggleKey.MOBILE_RELEASES],
     [sidebarItems.WHATSAPP_BOT, FeatureToggleKey.WHATSAPP_BOT],
     [sidebarItems.BUG_HUNTER, FeatureToggleKey.BUG_HUNTER],
     [sidebarItems.BUILDER, FeatureToggleKey.BUILDER],
@@ -140,6 +142,7 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
 
   [FeatureToggleKey.SETTINGS]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.LOGS]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
+  [FeatureToggleKey.MOBILE_RELEASES]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.KNOWLEDGE_BASE]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.WHATSAPP_BOT]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.OPERATIONAL_ADMIN_ACTIONS]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,

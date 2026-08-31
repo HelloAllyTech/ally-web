@@ -15,7 +15,7 @@ import {
   BUILDER_EASING,
   prefersReducedMotion,
 } from "../../pages/Builder/builderMotion";
-import { roleplayMarkdownComponents } from "../roleplay-studio/markdownComponents";
+import { sharedMarkdownComponents } from "../markdown/markdownComponents";
 
 /**
  * Every list in this panel is written by the agent, so none of it can be
@@ -193,7 +193,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
     const value = asAgentText(raw);
     return value.trim() ? (
       <div className="prose prose-sm mt-1 max-w-none text-sm text-typography-800">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
           {value}
         </ReactMarkdown>
       </div>

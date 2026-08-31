@@ -18,7 +18,6 @@ const filesToCheck = [
   "apps/ally-admin-dashboard/src/pages/AILab/VariablesTab.tsx",
   "apps/ally-admin-dashboard/src/components/file-upload/FileUpload.tsx",
   "apps/ally-admin-dashboard/src/constants/en.ts",
-  "apps/ally-admin-dashboard/src/hooks/useCopilotStream.ts",
   "apps/ally-admin-dashboard/src/pages/BugHunter/BugFindingDrawer.tsx",
   "apps/ally-admin-dashboard/src/routes/PrivateLayout.tsx",
   "apps/ally-helpline-dashboard/src/components/error-boundary/ErrorBoundary.tsx",
