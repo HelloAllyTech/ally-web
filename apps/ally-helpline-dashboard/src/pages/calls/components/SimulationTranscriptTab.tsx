@@ -94,7 +94,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       startSeconds: item.startSeconds,
       id: item.id || null,
       senderId: item.senderId || null,
-      tags: item.tags,
     }));
   }, [transcriptData]);
 
@@ -129,7 +128,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
               ? user?.id
               : -1,
         startSeconds: item.startSeconds,
-        tags: item.tags,
       }));
 
       // One request returns the whole transcript, so this is a replace, never an
@@ -170,7 +168,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     >
       <div className="flex items-center justify-between gap-2">
         <span className="text-typography-900 font-primary text-base font-medium">
-          {t("postSim.tabs.annotatedTranscript")}
+          {t("postSim.tabs.transcript")}
         </span>
         <div className="w-full max-w-[200px] min-w-[140px]">
           <DropdownField

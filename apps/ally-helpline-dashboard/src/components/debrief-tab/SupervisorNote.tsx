@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { AskAiIcon } from "@assets";
 
+import { DebriefSection, isLabelledSectionKey, parseDebriefSections } from "./debriefSections";
+
 /**
  * Ally anchors specific moments in the note as `[[msg:<messageId>]]`. The
  * learner never sees the raw id — it becomes a chip that opens that moment in
@@ -51,11 +53,76 @@ interface SupervisorNoteProps {
    * plain text rather than as chips that would go nowhere.
    */
   onOpenMoment?: (messageId: string) => void;
+  /**
+   * Drops the note's closing invitation to reply. Set where there is no reply
+   * thread to accept one — the Roleplay Logs surfaces — because a note that
+   * ends "reply and we'll talk it through" next to nothing to reply in reads
+   * like a broken screen. Only works on notes carrying the `[closing]` marker;
+   * a note written before sections existed has the invitation buried in its
+   * prose and keeps it.
+   */
+  hideClosing?: boolean;
 }
 
-export const SupervisorNote: FC<SupervisorNoteProps> = ({ note, onOpenMoment }) => {
+export const SupervisorNote: FC<SupervisorNoteProps> = ({
+  note,
+  onOpenMoment,
+  hideClosing = false,
+}) => {
   const { t } = useTranslation();
-  const paragraphs = useMemo(() => note.split(/\n{2,}/).filter(p => p.trim()), [note]);
+  const sections = useMemo(() => {
+    const parsed = parseDebriefSections(note);
+    return hideClosing ? parsed.filter(section => section.key !== "closing") : parsed;
+  }, [note, hideClosing]);
+
+  const renderParagraph = (paragraph: string, paragraphIndex: number) => (
+    <p key={paragraphIndex} className="font-primary text-base leading-relaxed text-typography-900">
+      {paragraph.split("\n").map((line, lineIndex) => (
+        <Fragment key={lineIndex}>
+          {lineIndex > 0 && <br />}
+          {parseSegments(line).map((segment, segmentIndex) => {
+            if (segment.type === "bold") {
+              return (
+                <strong key={segmentIndex} className="font-semibold">
+                  {segment.value}
+                </strong>
+              );
+            }
+            if (segment.type === "moment") {
+              if (!onOpenMoment) return null;
+              return (
+                <button
+                  key={segmentIndex}
+                  type="button"
+                  onClick={() => onOpenMoment(segment.messageId)}
+                  aria-label={t("postSim.debrief.momentLabel")}
+                  title={t("postSim.debrief.momentLabel")}
+                  className="mx-0.5 inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 align-baseline font-primary text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100"
+                >
+                  {t("postSim.debrief.momentLabel")}
+                </button>
+              );
+            }
+            return <span key={segmentIndex}>{segment.value}</span>;
+          })}
+        </Fragment>
+      ))}
+    </p>
+  );
+
+  const renderSection = (section: DebriefSection, sectionIndex: number) => (
+    <div key={sectionIndex} className="flex flex-col gap-1.5">
+      {/* The heading is a signpost, not a title: set quieter than the prose it
+          introduces, so a scanning learner finds the part they want without the
+          note starting to read like a report. */}
+      {isLabelledSectionKey(section.key) && (
+        <h3 className="font-primary text-xs font-semibold uppercase tracking-wide text-typography-700">
+          {t(`postSim.debrief.section.${section.key}`)}
+        </h3>
+      )}
+      <div className="flex flex-col gap-3">{section.paragraphs.map(renderParagraph)}</div>
+    </div>
+  );
 
   return (
     <div className="flex w-full gap-3" data-testid="supervisor-note">
@@ -78,43 +145,11 @@ export const SupervisorNote: FC<SupervisorNoteProps> = ({ note, onOpenMoment }) 
           </Tooltip>
         </div>
 
-        {paragraphs.map((paragraph, paragraphIndex) => (
-          <p
-            key={paragraphIndex}
-            className="font-primary text-base leading-relaxed text-typography-900"
-          >
-            {paragraph.split("\n").map((line, lineIndex) => (
-              <Fragment key={lineIndex}>
-                {lineIndex > 0 && <br />}
-                {parseSegments(line).map((segment, segmentIndex) => {
-                  if (segment.type === "bold") {
-                    return (
-                      <strong key={segmentIndex} className="font-semibold">
-                        {segment.value}
-                      </strong>
-                    );
-                  }
-                  if (segment.type === "moment") {
-                    if (!onOpenMoment) return null;
-                    return (
-                      <button
-                        key={segmentIndex}
-                        type="button"
-                        onClick={() => onOpenMoment(segment.messageId)}
-                        aria-label={t("postSim.debrief.momentLabel")}
-                        title={t("postSim.debrief.momentLabel")}
-                        className="mx-0.5 inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 align-baseline font-primary text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100"
-                      >
-                        {t("postSim.debrief.momentLabel")}
-                      </button>
-                    );
-                  }
-                  return <span key={segmentIndex}>{segment.value}</span>;
-                })}
-              </Fragment>
-            ))}
-          </p>
-        ))}
+        {/* Sections sit further apart than the paragraphs inside them, which is
+            what makes the structure readable without drawing rules across the
+            note. An unsectioned note has exactly one child here and looks the
+            way it always did. */}
+        <div className="flex flex-col gap-5">{sections.map(renderSection)}</div>
       </div>
     </div>
   );

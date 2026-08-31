@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableLanguagesQuery, useGetSimulationSummaryQuery } from "@api";
+import { DebriefTab } from "@components";
 import { SimulationSummary, useSimulationSummaryPolling } from "@containers";
+import { resolveFeedbackTabs } from "@utils";
 
 import { SimulationTranscriptTab } from "../../../calls/components";
 
@@ -13,9 +15,9 @@ interface RoleplaySessionLogPanelProps {
 }
 
 /**
- * Inline "full log" for a completed roleplay item — the same Session Review /
- * Annotated Transcript content as the Roleplay Logs drawer, expanded in place
- * under the summary card rather than navigated to.
+ * Inline "full log" for a completed roleplay item — the same Debrief / Session
+ * Review / Annotated Transcript content as the Roleplay Logs drawer, expanded
+ * in place under the summary card rather than navigated to.
  */
 export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sessionId }) => {
   const { t, i18n } = useTranslation();
@@ -36,10 +38,30 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
     return matchedLanguage?.value?.split("-")[0] ?? "en";
   }, [summary?.metadata?.languageId, availableLanguages]);
 
+  const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
+
   const tabList = [
+    // Read-only here as in the Roleplay Logs drawer: this is the note being read
+    // back, not the moment it was written, and there is no reply thread on a log.
+    ...(feedbackTabs.debrief
+      ? [
+          {
+            id: "debrief",
+            label: t("postSim.tabs.debrief"),
+            content: (
+              <DebriefTab
+                sessionId={sessionId}
+                summaryData={summaryData}
+                retryMaxReached={retryMaxReached}
+                readOnly
+              />
+            ),
+          },
+        ]
+      : []),
     {
       id: "transcript",
-      label: t("postSim.tabs.annotatedTranscript"),
+      label: t("postSim.tabs.transcript"),
       content: (
         <SimulationTranscriptTab
           sessionId={sessionId}

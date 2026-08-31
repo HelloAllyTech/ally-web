@@ -61,6 +61,15 @@ interface DebriefTabProps {
   checkAgain?: () => void;
   /** True while a manual `checkAgain` is in flight. */
   isCheckingAgain?: boolean;
+  /**
+   * Read-only: show the note alone, with no reply thread and no composer. Set
+   * on the Roleplay Logs surfaces, where the debrief is being read back — by
+   * the learner revisiting a past session, or by an admin reviewing someone
+   * else's. An admin must not be able to type into the learner's own
+   * conversation with Ally, and the thread is keyed by session id, so there is
+   * no per-reader thread to put them in.
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -68,6 +77,9 @@ interface DebriefTabProps {
  * learner can reply to. The note and the replies are one continuous thread
  * rather than a summary with a chat bolted beneath it, because the note ends by
  * inviting a reply — the conversation is the point, not a secondary feature.
+ *
+ * In `readOnly` mode the same note is mounted in the Roleplay Logs surfaces
+ * with the thread removed entirely — see the prop for why.
  */
 export const DebriefTab: FC<DebriefTabProps> = ({
   sessionId,
@@ -76,6 +88,7 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   onOpenMoment,
   checkAgain,
   isCheckingAgain = false,
+  readOnly = false,
 }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -84,7 +97,12 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   const sessionExists = useSelector((state: RootState) => state.chatHistory.sessions[sessionId]);
   const { messages, streamingMessage, isStreaming, error, sendMessage, retryLastMessage } =
     useSendMessage(sessionId);
-  const { data: history, isLoading: isHistoryLoading } = useGetChatHistoryQuery({ sessionId });
+  const { data: history, isLoading: isHistoryLoading } = useGetChatHistoryQuery(
+    { sessionId },
+    // No thread on screen, so no reason to fetch one — this also keeps an admin
+    // reading a log from pulling the learner's conversation into their store.
+    { skip: readOnly },
+  );
 
   useEffect(() => {
     if (sessionExists) return;
@@ -139,7 +157,7 @@ export const DebriefTab: FC<DebriefTabProps> = ({
               </p>
             </div>
           ) : viewState === "note" ? (
-            <SupervisorNote note={note} onOpenMoment={onOpenMoment} />
+            <SupervisorNote note={note} onOpenMoment={onOpenMoment} hideClosing={readOnly} />
           ) : viewState === "timedOut" ? (
             // Not a failure: the summary is likely still being written for a
             // longer session. Say so, and let the learner ask again instead
@@ -175,39 +193,46 @@ export const DebriefTab: FC<DebriefTabProps> = ({
             </p>
           )}
 
-          {note && !messages.length && !isHistoryLoading && (
-            <p className="font-primary text-sm text-typography-600">
-              {t("postSim.debrief.replyPrompt")}
-            </p>
-          )}
+          {/* Everything below the note is the conversation it opens. In
+              read-only mode there is none: no invitation, no replies, no
+              composer — just the note as it was written. */}
+          {!readOnly && (
+            <>
+              {note && !messages.length && !isHistoryLoading && (
+                <p className="font-primary text-sm text-typography-600">
+                  {t("postSim.debrief.replyPrompt")}
+                </p>
+              )}
 
-          {messages.map((message, index) => (
-            <ReplyBubble
-              key={`${message.role}-${index}`}
-              role={message.role}
-              content={message.content}
-            />
-          ))}
-          {streamingMessage && (
-            <ReplyBubble role={streamingMessage.role} content={streamingMessage.content} />
+              {messages.map((message, index) => (
+                <ReplyBubble
+                  key={`${message.role}-${index}`}
+                  role={message.role}
+                  content={message.content}
+                />
+              ))}
+              {streamingMessage && (
+                <ReplyBubble role={streamingMessage.role} content={streamingMessage.content} />
+              )}
+              {error && (
+                <div className="flex w-full justify-start">
+                  <button
+                    onClick={retryLastMessage}
+                    className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2.5 font-primary text-sm text-red-600 transition-colors hover:bg-red-100"
+                  >
+                    <Refresh className="h-4 w-4" />
+                    {t("common.somethingWentWrong")} {t("common.retry")}
+                  </button>
+                </div>
+              )}
+              <div ref={threadEndRef} />
+              {/* Replying only makes sense once there is a note to reply to. The
+                composer sits at the end of the thread and sticks to the bottom of
+                the viewport while the card is on screen, so a long thread never
+                puts it out of reach and it never covers the note. */}
+              {note && <DebriefReplyInput onSend={sendMessage} disabled={isStreaming} />}
+            </>
           )}
-          {error && (
-            <div className="flex w-full justify-start">
-              <button
-                onClick={retryLastMessage}
-                className="flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2.5 font-primary text-sm text-red-600 transition-colors hover:bg-red-100"
-              >
-                <Refresh className="h-4 w-4" />
-                {t("common.somethingWentWrong")} {t("common.retry")}
-              </button>
-            </div>
-          )}
-          <div ref={threadEndRef} />
-          {/* Replying only makes sense once there is a note to reply to. The
-              composer sits at the end of the thread and sticks to the bottom of
-              the viewport while the card is on screen, so a long thread never
-              puts it out of reach and it never covers the note. */}
-          {note && <DebriefReplyInput onSend={sendMessage} disabled={isStreaming} />}
         </div>
       </div>
     </div>
