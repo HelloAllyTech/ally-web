@@ -1,6 +1,10 @@
-import { FC } from "react";
+import { FC, useState } from "react";
+
+import { toast } from "sonner";
 
 import {
+  Button,
+  InlineLoading,
   Table,
   TableBody,
   TableCell,
@@ -8,9 +12,13 @@ import {
   TableHeader,
   TableRow,
   Tag,
+  Tooltip,
 } from "@ally-ui-mono/ui-shared";
-import { EmptyState } from "@components";
+import { useTriggerMobileReleaseMutation } from "@api";
+import { TooltipIcon } from "@assets";
+import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
+import { en } from "@constants";
 import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { MobileReleaseRun } from "@types";
 import { formatDateTime, openLinkInNewTab } from "@utils";
@@ -38,16 +46,50 @@ export const MobileReleases: FC = () => {
     isVersionsError,
   } = useMobileReleases();
 
+  const [isConfirmingTrigger, setIsConfirmingTrigger] = useState(false);
+  const [triggerRelease, { isLoading: isTriggering }] = useTriggerMobileReleaseMutation();
+
+  const handleTrigger = async () => {
+    try {
+      await triggerRelease().unwrap();
+      toast.success("Release triggered — new run should appear in the history below shortly.");
+      setIsConfirmingTrigger(false);
+    } catch (error) {
+      // Leave the dialog open on failure so the operator sees why (e.g. the
+      // GitHub Actions token isn't write-scoped) and can retry, rather than
+      // losing that context to a closed popup — same as RaiseBudgetDialog and
+      // StartBuildDialog elsewhere in Builder.
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to trigger the release. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="h-full font-primary flex flex-col">
-      <div>
-        <h1 className="text-2xl text-typography-900 font-secondary">Mobile Releases</h1>
-        <p className="text-sm text-typography-700 mt-1">
-          Current live app versions and recent runs of the automated mobile release pipeline.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl text-typography-900 font-secondary">Mobile Releases</h1>
+          <p className="text-sm text-typography-700 mt-1">
+            Current live app versions and recent runs of the automated mobile release pipeline.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isTriggering && <InlineLoading description="Triggering…" />}
+          <Button
+            kind="primary"
+            size="md"
+            disabled={isTriggering}
+            onClick={() => setIsConfirmingTrigger(true)}
+          >
+            Trigger release now
+          </Button>
+        </div>
       </div>
 
-      {/* Current live version, per platform. */}
+      {/* Current live version, per platform, plus the next automated check. */}
       <div className="flex flex-wrap gap-4 mt-6 shrink-0">
         <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
           <MobileIcon size={24} className="text-typography-600 shrink-0" />
@@ -83,6 +125,36 @@ export const MobileReleases: FC = () => {
             ) : (
               <p className="text-xl text-typography-900 font-secondary mt-1">
                 {versions.ios.marketingVersion}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
+          <MobileIcon size={24} className="text-typography-600 shrink-0" />
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs uppercase tracking-wide text-typography-600">
+                Next automated check
+              </p>
+              <Tooltip
+                label="This is only an estimate of when the automated pipeline could next run — it still depends on there being new commits by then, which can't be known in advance."
+                align="top"
+              >
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
+            </div>
+            {isVersionsLoading ? (
+              <p className="text-typography-700 mt-1">Loading…</p>
+            ) : isVersionsError || !versions ? (
+              <p className="text-destructive-500 mt-1">Failed to load current version.</p>
+            ) : (
+              <p className="text-xl text-typography-900 font-secondary mt-1">
+                {versions.nextEligibleCheckAt
+                  ? formatDateTime(versions.nextEligibleCheckAt)
+                  : "Unknown"}
               </p>
             )}
           </div>
@@ -168,6 +240,25 @@ export const MobileReleases: FC = () => {
         <div className="flex items-center justify-end shrink-0 border-t border-border-light pt-3 mt-2">
           <span className="text-sm text-typography-700">{isRunsFetching ? "Updating…" : ""}</span>
         </div>
+      )}
+
+      {isConfirmingTrigger && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingTrigger}
+          onClose={() => setIsConfirmingTrigger(false)}
+          title="Trigger mobile release now?"
+          description="This immediately kicks off real production builds for **both Android and iOS** — uploading to the Play Store internal track and TestFlight. This is a real production action and can't be undone once it starts."
+          primaryButton={{
+            label: isTriggering ? "Triggering…" : "Trigger release",
+            onClick: () => void handleTrigger(),
+            disabled: isTriggering,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingTrigger(false),
+            disabled: isTriggering,
+          }}
+        />
       )}
     </div>
   );

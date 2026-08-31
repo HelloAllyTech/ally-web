@@ -544,6 +544,7 @@ export const ApiEndpoints = {
   MOBILE_RELEASES: {
     RUNS: "/v1/mobile-releases/runs",
     CURRENT_VERSION: "/v1/mobile-releases/current-version",
+    TRIGGER: "/v1/mobile-releases/trigger",
   },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
@@ -775,6 +776,9 @@ export const TAG_TYPES = {
   AI_LAB_QUESTION_SETS: "aiLabQuestionSets",
   // Evaluator portal (separate evaluatorAPI)
   EVAL_ASSIGNMENTS: "evalAssignments",
+  // Mobile Releases. Also registered in baseApi.ts's `tagTypes` — an
+  // unregistered tag is silently ignored and its invalidation never fires.
+  MOBILE_RELEASE_RUNS: "mobileReleaseRuns",
 };
 
 /**

@@ -46,4 +46,16 @@ export interface MobileReleaseIosVersion {
 export interface CurrentMobileVersionsResponse {
   android: MobileReleaseAndroidVersion;
   ios: MobileReleaseIosVersion;
+  /**
+   * Estimate of when the automated pipeline could next act — `null` when the
+   * backend has no estimate. Not a guarantee: the scheduled check still does
+   * nothing unless there are new commits by then, which the backend can't
+   * know in advance.
+   */
+  nextEligibleCheckAt: string | null;
+}
+
+/** POST /v1/mobile-releases/trigger — fires both platforms' build workflows immediately. */
+export interface TriggerMobileReleaseResponse {
+  dispatched: boolean;
 }
