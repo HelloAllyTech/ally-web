@@ -99,10 +99,10 @@ export const FillerTagPicker: React.FC<FillerTagPickerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!openDropdown || !hasMore) return;
+    if (!openDropdown || !hasMore) return undefined;
     const element = loadingRef.current;
     const root = scrollContainerRef.current;
-    if (!element) return;
+    if (!element) return undefined;
     const observer = new IntersectionObserver(handleObserver, {
       root,
       rootMargin: "20px",
@@ -135,7 +135,7 @@ export const FillerTagPicker: React.FC<FillerTagPickerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!openDropdown) return;
+    if (!openDropdown) return undefined;
     const handleMouseDown = (event: MouseEvent) => {
       const t = event.target as Node;
       if (dropdownRef.current?.contains(t)) return;

@@ -306,7 +306,7 @@ export const builderAPI = baseAPI.injectEndpoints({
       query: params => ({
         url: ApiEndpoints.BUILDER.SCOREBOARD,
         method: HttpMethod.GET,
-        params: params?.windowDays ? { windowDays: params.windowDays } : undefined,
+        params: params && params.windowDays ? { windowDays: params.windowDays } : undefined,
       }),
     }),
 
