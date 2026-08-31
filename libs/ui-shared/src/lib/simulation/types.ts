@@ -107,7 +107,7 @@ export interface SimulationEventType {
 export interface SimulationEventsProps {
   events: SimulationEventType[];
   /** Suppress the "AI Feedback" header bar (redundant when rendered under a
-   * tab already labeled "Live"). */
+   * tab already labeled "Live events"). */
   hideHeader?: boolean;
 }
 
@@ -151,7 +151,7 @@ export interface SessionSidebarProps {
    * with zero notes, because its empty state is the point (it tells the learner
    * someone is watching). */
   supervisorNotesEnabled?: boolean;
-  /** Whether this roleplay has the Live transcript/events tab turned on. Opt-out,
+  /** Whether this roleplay has the Live events tab turned on. Opt-out,
    * so the tab appears unless explicitly disabled with `false`. */
   liveTabEnabled?: boolean;
   translations?: SimulationTranslations;
