@@ -318,7 +318,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           stage: draft.stage,
           productGoal: draft.productGoal,
           // null un-assigns. The legacy free-text `owner` is no longer writable — an owner must be
-          // a super-admin user, and the backend answers 422 for anyone else.
+          // one of the named accounts the picker lists, and the backend answers 422 for anyone
+          // else it has not already got on the row.
           ownerUserId: draft.ownerUserId ? Number(draft.ownerUserId) : null,
           prd: draft.prd || null,
           claudePrompt: draft.claudePrompt || null,
@@ -402,16 +403,27 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     ],
     [],
   );
-  const ownerItems = useMemo(
-    () => [
+  const ownerItems = useMemo(() => {
+    const items = [
       { value: "", label: "Unassigned" },
       ...(eligibleOwners ?? []).map(owner => ({
         value: String(owner.id),
         label: owner.name || owner.email,
       })),
-    ],
-    [eligibleOwners],
-  );
+    ];
+    // The picker lists a short, named set of owners, so a row assigned before someone left that
+    // set has an owner with no matching option — and a Dropdown with no match renders its
+    // "Unassigned" placeholder, which reads as data loss over a name the board still shows.
+    // Keep the current owner visible and re-selectable; the backend only re-validates a CHANGE.
+    const currentOwnerId = opportunity?.ownerUserId;
+    if (currentOwnerId && !items.some(item => item.value === String(currentOwnerId))) {
+      items.push({
+        value: String(currentOwnerId),
+        label: `${opportunity?.owner ?? "Unknown user"} (current owner)`,
+      });
+    }
+    return items;
+  }, [eligibleOwners, opportunity?.ownerUserId, opportunity?.owner]);
 
   /**
    * The Builder trigger's one string: what it does, what it will do, or why it cannot.
@@ -787,7 +799,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               {!opportunity.ownerUserId && opportunity.owner && (
                 <p className="text-typography-secondary text-xs">
                   Currently <strong>{opportunity.owner}</strong>, migrated from the old roadmap and
-                  not yet linked to an Ally account. Pick a super-admin above to link it.
+                  not yet linked to an Ally account. Pick an owner above to link it.
                 </p>
               )}
             </div>
