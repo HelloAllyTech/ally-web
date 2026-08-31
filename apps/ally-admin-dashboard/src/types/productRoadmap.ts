@@ -425,7 +425,7 @@ export interface RoadmapListEnvelope<T> {
   count: number;
 }
 
-/** An Ally super-admin who may be assigned as an opportunity owner. */
+/** One of the named Ally accounts who may be assigned as an opportunity owner. */
 export interface RoadmapEligibleOwner {
   id: number;
   name: string;
