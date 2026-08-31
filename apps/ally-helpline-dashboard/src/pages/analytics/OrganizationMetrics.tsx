@@ -7,12 +7,18 @@ import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 import {
   DndContext,
   DragEndEvent,
+  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -21,12 +27,10 @@ import {
   useGetOrganizationMetricsQuery,
   useGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
-  userAPI,
 } from "@api";
 import { ToggleButtonGroup } from "@components";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
-import { store } from "@store";
 import { OrganizationMetricsRange, ORGANIZATION_METRICS_RANGES } from "@types";
 
 import { ChartCard, PALETTE, lineOpts, timeBarOpts } from "./chartKit";
@@ -120,19 +124,38 @@ export const OrganizationMetrics: FunctionComponent = () => {
   // nav order (admin_sidebar_order). No layout saved yet → default order.
   const { data: preferences } = useGetUserPreferencesQuery(undefined, { skip: !canView });
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
-  const order = resolveLayout(preferences?.data?.org_metrics_layout);
+
+  // The order this session has dragged to, which takes precedence over the
+  // saved one until the page is reloaded and reads the save back.
+  //
+  // The rendered order deliberately isn't derived from the preferences query
+  // alone. `GET /users/me/preferences` answers `null` for a user who has no
+  // preferences row yet (getUserPreferencesByUserId does a plain `getOne()`),
+  // so for exactly those users there is no cache entry for an optimistic
+  // `updateQueryData` patch to write into — the drop then had nothing to move
+  // and the block animated back to where it started even though the save
+  // itself succeeded.
+  const [draggedOrder, setDraggedOrder] = useState<OrgMetricsBlockId[] | null>(null);
+  const order = draggedOrder ?? resolveLayout(preferences?.data?.org_metrics_layout);
 
   // Press-and-drag from the block's grip button only (see SortableMetricBlock)
   // — mirrors the sidebar reorder's activation distance so a stray click on
-  // the handle doesn't misfire as a drag.
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  // the handle doesn't misfire as a drag. The keyboard sensor is what makes
+  // the handle's own "press space to lift" instructions (dnd-kit puts them on
+  // every draggable via aria-describedby) true rather than advertised-only.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   /**
-   * Autosaves a new block order: optimistically patches the RTK Query cache
-   * so the layout reorders immediately (no explicit Save button), then rolls
-   * back and toasts on a failed save. Mirrors reorderSidebar in
-   * ally-admin-dashboard's useUser.ts, the identical pattern for the sidebar
-   * nav's own per-user order.
+   * Autosaves a new block order: the blocks land in their new positions
+   * immediately (no explicit Save button), then the save runs in the
+   * background and rolls the layout back with a toast if it fails. Same
+   * intent as reorderSidebar in ally-admin-dashboard's useUser.ts, which does
+   * this for the sidebar nav's own per-user order; the save itself lands in
+   * the same preferences blob and invalidates its query, so a later refetch
+   * (or another tab) reads the new order back rather than the stale one.
    */
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
@@ -141,21 +164,15 @@ export const OrganizationMetrics: FunctionComponent = () => {
     if (oldIndex === -1 || newIndex === -1) return;
     const nextOrder = arrayMove(order, oldIndex, newIndex);
 
-    const patch = store.dispatch(
-      userAPI.util.updateQueryData("getUserPreferences", undefined, draft => {
-        // getUserPreferences may still be pending when a drag finishes right
-        // after the page loads (the draggable blocks render regardless of
-        // its status) — the cache draft is undefined until it resolves, so
-        // there's nothing to optimistically patch yet. Skip it; the mutation
-        // below still saves the new order.
-        if (!draft?.data) return;
-        draft.data.org_metrics_layout = nextOrder;
-      }),
-    );
+    // On a failed save, fall back to whatever was on screen before this drag:
+    // the previous dragged order, or the saved one when this is the session's
+    // first drag.
+    const previousOrder = draggedOrder;
+    setDraggedOrder(nextOrder);
     try {
       await updateUserPreferences({ org_metrics_layout: nextOrder }).unwrap();
     } catch (error) {
-      patch.undo();
+      setDraggedOrder(previousOrder);
       toast.error(t("organizationMetrics.states.reorderFailed"));
       logger.info(`Failed to save org metrics layout: ${error}`);
     }

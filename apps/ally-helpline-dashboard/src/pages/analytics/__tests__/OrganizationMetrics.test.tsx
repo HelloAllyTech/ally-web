@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { toast } from "sonner";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { OrganizationMetrics } from "../OrganizationMetrics";
@@ -9,16 +10,6 @@ const mockUseGetOrganizationMetricsQuery = vi.fn();
 const mockUseGetUserPreferencesQuery = vi.fn();
 const mockUpdateUserPreferences = vi.fn();
 const mockRefetch = vi.fn();
-
-// Mirrors RTK Query's real `updateQueryData`: the recipe only actually runs
-// once something dispatches the patch action it returns, against whatever
-// the cache's current data is at that moment — `undefined` while
-// getUserPreferences is still pending, which is exactly the race this suite
-// covers below (see "still saves the reorder...").
-const mockDispatch = vi.fn((action: { recipe?: (draft: unknown) => void } | undefined) => {
-  action?.recipe?.(undefined);
-  return { undo: vi.fn() };
-});
 
 let mockPermissions: string[] = ["view:organization-metrics"];
 let capturedOnDragEnd:
@@ -61,21 +52,6 @@ vi.mock("@api", () => ({
       unwrap: () => mockUpdateUserPreferences(...args),
     }),
   ],
-  userAPI: {
-    util: {
-      // The real util returns a thunk that runs the recipe once dispatched
-      // (see mockDispatch above) — not immediately on call, which matters
-      // for the pending-preferences race being tested.
-      updateQueryData: (_endpoint: string, _arg: unknown, recipe: (draft: unknown) => void) => ({
-        type: "mock-patch",
-        recipe,
-      }),
-    },
-  },
-}));
-
-vi.mock("@store", () => ({
-  store: { dispatch: (...args: unknown[]) => mockDispatch(...args) },
 }));
 
 vi.mock("sonner", () => ({
@@ -359,30 +335,74 @@ describe("OrganizationMetrics", () => {
     expect(screen.getAllByLabelText("Drag to reorder")).toHaveLength(6);
   });
 
+  const drop = async (activeId: string, overId: string) => {
+    expect(capturedOnDragEnd).toBeDefined();
+    await act(async () => {
+      await capturedOnDragEnd?.({ active: { id: activeId }, over: { id: overId } });
+    });
+  };
+
+  const REORDERED = [
+    "simulationsTrend",
+    "newLearnersTrend",
+    "activeUsersTrend",
+    "mostUsedSimulations",
+    "learnerUsage",
+    "courseUsage",
+  ];
+
+  it("moves the block and saves the new order when a drag is dropped", async () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(preferencesResult());
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual(REORDERED);
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
+  it("still moves the block when the user has no saved preferences at all", async () => {
+    // GET /users/me/preferences answers `null` for a user with no preferences
+    // row yet, so there is no `{ data }` envelope to read a layout out of —
+    // the drop must still land, which it didn't while the rendered order came
+    // only from that query's cache.
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: null });
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual(REORDERED);
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
   it("still saves the reorder when the drag finishes before getUserPreferences resolves", async () => {
-    // getUserPreferences is still pending at drag time (the draggable blocks
-    // render regardless of its status) — its RTK Query cache entry has no
-    // `data` yet, so the optimistic patch's recipe runs against `undefined`
-    // (see mockDispatch above).
+    // The draggable blocks render regardless of that query's status.
     mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
     mockUpdateUserPreferences.mockResolvedValue({ success: true });
     render(<OrganizationMetrics />);
 
-    expect(capturedOnDragEnd).toBeDefined();
-    await capturedOnDragEnd?.({
-      active: { id: "activeUsersTrend" },
-      over: { id: "newLearnersTrend" },
-    });
+    await drop("activeUsersTrend", "newLearnersTrend");
 
-    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({
-      org_metrics_layout: [
-        "simulationsTrend",
-        "newLearnersTrend",
-        "activeUsersTrend",
-        "mostUsedSimulations",
-        "learnerUsage",
-        "courseUsage",
-      ],
-    });
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
+  it("puts the blocks back and warns when the save fails", async () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(preferencesResult());
+    mockUpdateUserPreferences.mockRejectedValue(new Error("500"));
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual([
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+      "courseUsage",
+    ]);
+    expect(toast.error).toHaveBeenCalledWith("Couldn't save the new layout");
   });
 });
