@@ -17,8 +17,17 @@ export enum FilterType {
  * @template T - The type of data for each row.
  */
 export interface Column<T> {
-  /** Unique key for the column (can be string or keyof T) */
-  key: keyof T | string;
+  /**
+   * Unique key for the column.
+   *
+   * `string`, not `keyof T | string`: that union collapsed to `string` for
+   * every concrete T, so it never checked anything, while for `T = any` it
+   * widened to `string | number | symbol` — which made the callers' documented
+   * `Column<any>[]` convention unassignable to the `Column<Record<string, any>>[]`
+   * that GenericTable's forwardRef pins its prop to. The key is only ever read
+   * as an object index and compared against TableSort/TableFilter's `key: string`.
+   */
+  key: string;
   /** Optional icon to display in the header */
   icon?: React.ReactNode;
   /** Header label for the column */

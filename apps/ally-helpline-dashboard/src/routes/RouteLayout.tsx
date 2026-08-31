@@ -26,12 +26,7 @@ import PublicLayout from "./PublicRouteLayout";
 
 const RouteLayout = () => {
   return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
+    <BrowserRouter>
       {/* Fires $pageview to PostHog on every route transition */}
       <PageviewTracker />
       <Routes>
