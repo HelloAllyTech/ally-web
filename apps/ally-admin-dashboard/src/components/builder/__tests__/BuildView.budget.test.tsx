@@ -117,4 +117,16 @@ describe("BuildView budget banner", () => {
     expect(screen.queryByText("Paused — this build has spent its budget")).toBeNull();
     expect(screen.queryByText("Spend is past the ceiling")).toBeNull();
   });
+
+  it("drops a stale held banner once the run has ended on its own", () => {
+    // The budget query stops polling once the session goes terminal, so a
+    // FAILED/CANCELLED/expired-hold session can still be sitting on a cached
+    // response whose `hold` is truthy from before it stopped. Nothing is
+    // live to raise money for any more, so the banner must not render.
+    budget = held;
+    render(<BuildView sessionId="session-1" status="FAILED" currentStage="CODING" />);
+
+    expect(screen.queryByText("Paused — this build has spent its budget")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Raise budget" })).toBeNull();
+  });
 });
