@@ -372,6 +372,28 @@ describe("WeakPerformingMetricsTab", () => {
       render(<WeakPerformingMetricsTab {...filters} query={{ range: "12m" }} />);
       expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" }));
     });
+
+    /**
+     * 90 days is the page default, and 90 days of months holds at most two
+     * complete buckets — the window spans three and the newest is always
+     * accruing. That is the default view of the whole tab, and no line
+     * threshold can rescue two points. Weeks make the same window about twelve
+     * buckets.
+     */
+    it("opens 90 days on weeks, which the window can actually fill", () => {
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "90d" }} />);
+      expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "week" }));
+    });
+
+    it("still offers months on 90 days, and honours the pick", async () => {
+      const user = userEvent.setup();
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "90d" }} />);
+
+      await user.click(screen.getByRole("combobox", { name: /granularity/i }));
+      await user.click(screen.getByRole("option", { name: "By month" }));
+
+      expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" }));
+    });
   });
 
   it("renders each group with its series", () => {
