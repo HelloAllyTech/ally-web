@@ -417,6 +417,14 @@ export const Competency: React.FC<CompetencyProps> = ({
       const selectedNow =
         (formMethods.getValues("competency") as CompetencyType | undefined)?.id ?? null;
       if (selectedNow !== competencyId) {
+        // The author picked something else while this was in flight, so the
+        // custom just materialised above is already orphaned — nothing will
+        // ever reference it again. Clean it up rather than leaving it behind.
+        try {
+          await deleteCompetency(custom.id).unwrap();
+        } catch {
+          // Non-fatal: worst case an unused custom lingers.
+        }
         baselineRef.current = null;
         return;
       }
