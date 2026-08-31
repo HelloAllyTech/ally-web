@@ -155,7 +155,6 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
       t("organizationMetrics.learnerUsage.columns.roleplaySessionsStarted"),
       t("organizationMetrics.learnerUsage.columns.roleplaySessionsCompleted"),
       "Roleplay completion rate %",
-      t("organizationMetrics.learnerUsage.columns.avgScore"),
       t("organizationMetrics.learnerUsage.columns.totalPracticeMinutes"),
       t("organizationMetrics.learnerUsage.columns.coursesAssigned"),
       t("organizationMetrics.learnerUsage.columns.coursesStarted"),
@@ -171,7 +170,6 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
       csvCell(r.roleplaySessionsStarted),
       csvCell(r.roleplaySessionsCompleted),
       csvCell(r.roleplayCompletionRatePct),
-      csvCell(r.avgScore),
       csvCell(r.totalPracticeMinutes),
       csvCell(r.coursesAssigned),
       csvCell(r.coursesStarted),
@@ -232,12 +230,6 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
         row.roleplayCompletionRatePct != null
           ? `${value} (${row.roleplayCompletionRatePct}%)`
           : value,
-    },
-    {
-      key: "avgScore",
-      header: t("organizationMetrics.learnerUsage.columns.avgScore"),
-      sortable: true,
-      render: (value: number | null) => value ?? "—",
     },
     {
       key: "totalPracticeMinutes",
