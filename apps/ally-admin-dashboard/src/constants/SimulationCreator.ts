@@ -547,8 +547,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 2500,
         isMandatory: false,
         enhanceType: ENHANCE_TYPE.CHARACTER_PROFILE_TEXT,
-        promptVariable: "character_profile_text",
-        hideWhenUnused: true,
+        // No promptVariable, and deliberately never hidden. This field has a
+        // parallel consumer, which is exactly the case hideWhenUnused documents
+        // as out of scope. Main Agent Prompt #3 drops {character_profile_text}
+        // from its body, but ai-learn's working-memory corpus (corpus.py) builds
+        // the client's recall pool FROM this text — so under #3 the backstory is
+        // MORE load-bearing than before, not less. Gating it on the placeholder
+        // hid the field for every scenario migrated to #3 and left curators
+        // unable to author the thing the recall pool is made of.
       },
       {
         id: "customFields",
@@ -568,12 +574,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         tooltipLocation: TooltipLocation.KNOWLEDGE_SOURCES,
         fullWidth: true,
-        // Knowledge sources feed RAG retrieval, which substitutes
-        // into `{retrieved_context}`. Variants that don't reference
-        // that placeholder won't surface retrieved knowledge at
-        // render time, so the field is useless.
-        promptVariable: "retrieved_context",
-        hideWhenUnused: true,
+        // No promptVariable, and deliberately never hidden. The old reasoning
+        // here — "variants that don't reference {retrieved_context} won't
+        // surface retrieved knowledge, so the field is useless" — is not how
+        // the runtime works: RETRIEVED_CONTEXT_DEFER_TO_SUFFIX defaults true
+        // (ai-learn config.py) and appends retrieval as a trailing
+        // SystemMessage AFTER history, so knowledge reaches the model whether
+        // or not the body names the placeholder. Prompt #3 omits the
+        // placeholder for precisely that reason. Gating on it hid a field that
+        // was still fully wired.
       },
       {
         id: "coverImageUrl",
