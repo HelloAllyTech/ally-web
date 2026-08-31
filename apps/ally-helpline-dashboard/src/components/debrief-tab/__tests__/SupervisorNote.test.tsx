@@ -50,7 +50,9 @@ describe("SupervisorNote", () => {
 
   it("turns an anchor into a chip carrying its message id", () => {
     const onOpenMoment = vi.fn();
-    render(<SupervisorNote note="Right here [[msg:abc-123]] you paused." onOpenMoment={onOpenMoment} />);
+    render(
+      <SupervisorNote note="Right here [[msg:abc-123]] you paused." onOpenMoment={onOpenMoment} />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "See this moment" }));
 
@@ -117,7 +119,9 @@ describe("SupervisorNote", () => {
   it("renders the closing without a heading", () => {
     render(
       <SupervisorNote
-        note={"## [try_next]\nAsk one more question.\n\n## [closing]\nReply and we'll talk it through."}
+        note={
+          "## [try_next]\nAsk one more question.\n\n## [closing]\nReply and we'll talk it through."
+        }
       />,
     );
 
@@ -130,7 +134,9 @@ describe("SupervisorNote", () => {
     // through" next to no composer reads as a broken screen.
     render(
       <SupervisorNote
-        note={"## [try_next]\nAsk one more question.\n\n## [closing]\nReply and we'll talk it through."}
+        note={
+          "## [try_next]\nAsk one more question.\n\n## [closing]\nReply and we'll talk it through."
+        }
         hideClosing
       />,
     );
@@ -182,5 +188,16 @@ describe("SupervisorNote", () => {
     expect(chips).toHaveLength(2);
     fireEvent.click(chips[1]);
     expect(onOpenMoment).toHaveBeenCalledWith("2");
+  });
+  it("never leaves a machine key in the prose when the model wrote it inline", () => {
+    render(
+      <SupervisorNote note="## [what_it_cost] You suggested solutions early instead of waiting." />,
+    );
+
+    const rendered = screen.getByTestId("supervisor-note").textContent ?? "";
+    expect(screen.getByText("What it cost")).toBeInTheDocument();
+    expect(rendered).not.toContain("[what_it_cost]");
+    expect(rendered).not.toContain("##");
+    expect(rendered).toContain("You suggested solutions early instead of waiting.");
   });
 });
