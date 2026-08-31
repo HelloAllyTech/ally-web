@@ -341,7 +341,7 @@ export const MobileReleases: FC = () => {
       <div className="flex-1 overflow-y-auto custom-scrollbar mt-6">
         {isRunsLoading ? (
           <p className="text-typography-700">Loading…</p>
-        ) : isRunsError ? (
+        ) : isRunsError && runs.length === 0 ? (
           <p className="text-destructive-500">Failed to load run history.</p>
         ) : runs.length === 0 ? (
           <EmptyState
@@ -414,7 +414,15 @@ export const MobileReleases: FC = () => {
 
       {runs.length > 0 && (
         <div className="flex items-center justify-end shrink-0 border-t border-border-light pt-3 mt-2">
-          <span className="text-sm text-typography-700">{isRunsFetching ? "Updating…" : ""}</span>
+          <span
+            className={isRunsError ? "text-sm text-destructive-500" : "text-sm text-typography-700"}
+          >
+            {isRunsFetching
+              ? "Updating…"
+              : isRunsError
+                ? "Couldn't refresh just now — showing the last known runs."
+                : ""}
+          </span>
         </div>
       )}
 
