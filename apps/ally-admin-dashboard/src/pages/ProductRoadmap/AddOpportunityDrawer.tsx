@@ -28,6 +28,44 @@ const DESCRIPTION_MAX = 1000;
 const EFFORTS = Object.values(RoadmapOpportunityEffort);
 const DUPLICATE_DEBOUNCE_MS = 700;
 
+/**
+ * One checklist row. Extracted so the size row — which is derived here rather than graded by
+ * the model — is pixel-identical to the five the server sends. A row that gates filing but
+ * looks like a footnote gets read as a footnote.
+ *
+ * Colour is never the only signal: each state keeps its glyph and its text, because red-green
+ * is exactly the distinction a colour-blind reader cannot make and this list gates the primary
+ * action.
+ */
+const ChecklistRow: React.FC<{
+  state: "pending" | "pass" | "fail";
+  label: string;
+  detail: string;
+}> = ({ state, label, detail }) => {
+  // Carbon's notification shape: a tinted field with a heavier left edge in the status colour.
+  // Pending stays white so "not looked at yet" never reads as a soft pass.
+  const tone =
+    state === "pending"
+      ? "bg-white border-l-secondary-200"
+      : state === "pass"
+        ? "bg-success-50 border-l-success-400"
+        : "bg-destructive-50 border-l-destructive-500";
+
+  return (
+    <li className={`border-border-light flex items-start gap-2 border border-l-4 p-3 ${tone}`}>
+      <span className="mt-0.5 shrink-0">
+        {state === "pending" && <Minus size={16} className="text-secondary-300" />}
+        {state === "pass" && <Tick size={16} className="text-success-500" />}
+        {state === "fail" && <FailIcon size={16} className="text-destructive-500" />}
+      </span>
+      <div className="min-w-0">
+        <div className="text-typography-primary text-sm">{label}</div>
+        <div className="text-typography-secondary text-xs">{detail}</div>
+      </div>
+    </li>
+  );
+};
+
 interface AddOpportunityDrawerProps {
   goals: RoadmapTaxonomyItem[];
   /**
@@ -59,6 +97,13 @@ interface AddOpportunityDrawerProps {
  * comes from the server (`ai/readiness/criteria`) rather than from a constant here, and
  * "Check readiness" grades the current text against it.
  *
+ * SIZE IS THE LAST ROW AND IT IS PART OF THE GATE. An opportunity larger than the server's
+ * fileable sizes is a SET of opportunities, not one, and filing it puts something on the board
+ * that no single slice of work can finish. The row is not graded by the model like the others
+ * — it reads the effort field — so it stays answerable: the filer who knows the model sized it
+ * wrong corrects the size and the row goes green. That is deliberate. A gate a human cannot
+ * answer to gets routed around by writing vaguer drafts, which is the opposite of the point.
+ *
  * THE VERDICTS ARE BOUND TO THE INPUTS THEY JUDGED (`checkedAgainst`: the trimmed description
  * and the product goal). Change either and every row reverts to pending and the gate closes
  * again. Without that the check is theatre: pass a throwaway sentence, replace it with
@@ -79,12 +124,29 @@ interface AddOpportunityDrawerProps {
  * degrade that way. It is a gate, so an unavailable grader means "not yet", not "waved
  * through" — the same fail-closed rule the backend applies per item.
  *
+ * ## The redraft is a proposal, never a replacement
+ *
+ * When the check comes back with anything red, the same response carries a rewritten draft
+ * that would pass. It is shown under the checklist behind an explicit "Use this draft" — it
+ * never lands in the field on its own.
+ *
+ * That distinction is the whole reason it is allowed to exist. The old "Improve wording"
+ * button (below) rewrote in place, and what it silently replaced were the filer's own words,
+ * which are what everyone voting on the card later reads. Here the rewrite is a thing you can
+ * read next to your own text and reject, it appears only when the draft has actually failed
+ * something, and accepting it is an edit like any other — so the gate re-closes and the
+ * accepted text is graded on its own merits before it can be filed.
+ *
+ * It may contain [bracketed questions] where the original genuinely lacked something. The
+ * model is told to ask rather than invent, because an invented user group filed as an
+ * opportunity is worse than a visible gap — and since accepting re-opens the gate, a bracket
+ * left unfilled fails the next check rather than reaching the board.
+ *
  * The two buttons that used to sit under the goal picker are both deprecated. "Review"
  * critiqued the draft into an issue/tip list; "Improve wording" rewrote it in place. Each put
  * a round trip between writing and filing, on a form whose whole job is to capture a thought
- * before it is lost — and a rewrite in particular replaced the filer's own words, which are
- * what the people voting on this later read. The `ai/review` and `ai/enhance` endpoints are
- * still served and marked deprecated; nothing calls either.
+ * before it is lost. The `ai/review` and `ai/enhance` endpoints are still served and marked
+ * deprecated; nothing calls either.
  */
 export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   goals,
@@ -101,6 +163,12 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   const [effortReason, setEffortReason] = useState("");
   /** "" is Unassigned, which is where every filing starts and a perfectly good end state. */
   const [ownerUserId, setOwnerUserId] = useState<string>("");
+  /**
+   * The rewrite the last check proposed, or null when it had nothing to fix. Rendered only
+   * while `hasChecked`, so an edit hides it without any clearing of its own: it describes the
+   * text that was graded, exactly like the verdicts do.
+   */
+  const [redraft, setRedraft] = useState<string | null>(null);
   /** The inputs `verdicts` describes. Null until the check has run once. */
   const [checkedAgainst, setCheckedAgainst] = useState<{
     description: string;
@@ -146,6 +214,7 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   const { data: criteriaData, isLoading: isLoadingCriteria } =
     useGetRoadmapReadinessCriteriaQuery();
   const criteria = criteriaData?.criteria ?? [];
+  const fileableEfforts = criteriaData?.fileableEfforts ?? [];
 
   const [createOpportunity, { isLoading: isSaving }] = useCreateRoadmapOpportunityMutation();
   const [checkReadiness, { isLoading: isChecking }] = useCheckRoadmapReadinessMutation();
@@ -197,6 +266,7 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       // draft that has changed since, so the previous size described different text.
       setEffort(result.effort ?? "");
       setEffortReason(result.effort ? (result.effortReason ?? "") : "");
+      setRedraft(result.redraft?.trim() || null);
       setCheckedAgainst({ description: trimmed, productGoal });
       if ((result.results ?? []).every(r => r.passed)) {
         toast.success("Ready to file.");
@@ -208,6 +278,7 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       setVerdicts({});
       setEffort("");
       setEffortReason("");
+      setRedraft(null);
       setCheckedAgainst(null);
       toast.error("Could not run the readiness check right now.");
     }
@@ -247,6 +318,29 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       checkedAgainst.productGoal !== productGoal);
   const hasChecked = checkedAgainst !== null && !isStale;
   const allGreen = criteria.length > 0 && criteria.every(c => verdicts[c.id]?.passed);
+  /**
+   * The size row. Read off the CURRENT effort, not the checked one, so a human correcting a
+   * size the model got wrong answers this row directly — see the note at the top of the file.
+   * "Not sized" is a fail: an unsized draft is one nobody has weighed, and waving it through
+   * would make the row decorative for exactly the drafts too vague to size.
+   */
+  const sizeFileable =
+    // An empty list is a server that does not gate on size — an older one, or a deploy where
+    // this bundle landed first. Gate on nothing rather than on everything: the row is hidden
+    // in that case, and a hidden rule that disables filing outright is the one failure mode
+    // worse than not checking the size at all. The five criteria still gate.
+    fileableEfforts.length === 0 || fileableEfforts.includes(effort as RoadmapOpportunityEffort);
+
+  /** "S or M" — built from the server's list so the row never names a threshold it does not use. */
+  const fileableSizeLabels = fileableEfforts.map(size => EFFORT_LABEL[size]).join(" or ");
+
+  const sizeDetail = !hasChecked
+    ? `The check proposes a size. Anything above ${fileableSizeLabels} has to be narrowed before it can be filed.`
+    : sizeFileable
+      ? effortReason || `Sized ${EFFORT_LABEL[effort as RoadmapOpportunityEffort]}.`
+      : effort === ""
+        ? "Not sized. Nobody can weigh an opportunity against the others without one — narrow it until it is sizeable, or set the size yourself."
+        : `${effortReason ? `${effortReason} ` : ""}This is a set of opportunities rather than one. Narrow it to the smallest slice that still delivers something, or correct the size if it is wrong.`;
 
   const canSave =
     description.trim().length > 0 &&
@@ -254,6 +348,7 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
     !!productGoal &&
     hasChecked &&
     allGreen &&
+    sizeFileable &&
     !isSaving;
 
   return (
@@ -297,7 +392,14 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
               must not collect, since bugs belong in Bug Hunter. The signpost paragraph that
               used to say so is gone too: the page header's two buttons make that choice, and
               a standing disclaimer taxed everyone filing an idea to redirect the few who
-              opened the wrong one. */}
+              opened the wrong one.
+
+              The placeholder carries the user-story shape. It is NOT a checklist item and
+              must not become one: the criteria grade whether the who, the pain-or-gain and
+              the outcome are THERE, and a clear plain-English opportunity that happens not to
+              be in this shape satisfies all three. The shape is here because it is the
+              fastest way to write one that does — and because the redraft rewrites into it,
+              so a filer who ignores it and fails still ends up shown the pattern. */}
           {/* `justify-end` on Carbon's label row: it is `space-between` for label-then-counter,
               and a visually-hidden label is `position:absolute`, so the counter falls out of
               the flow's right-hand slot and lands at the left margin on its own.
@@ -316,7 +418,10 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
               enableCounter
               maxLength={DESCRIPTION_MAX}
               onChange={event => setDescription(event.target.value)}
-              placeholder="Describe the opportunity — who it is for, and what it would change for them."
+              placeholder={
+                "As a <who>, <the pain or the gain> — so that <what changes for them>.\n" +
+                "Possible approach: <only if you have one>."
+              }
             />
           </div>
 
@@ -377,9 +482,9 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
                 setEffortReason("");
               }}
             />
-            {!!effortReason && hasChecked && (
-              <p className="text-typography-secondary mt-1 text-xs">{effortReason}</p>
-            )}
+            {/* The proposed size's rationale is NOT repeated here: it is the detail line of the
+                size row in the checklist below, which is the thing that gates filing. Two
+                copies of one sentence 200px apart read as two different findings. */}
             {!hasChecked && !effort && (
               <p className="text-typography-secondary mt-1 text-xs">
                 The readiness check proposes a size. You can change it.
@@ -432,18 +537,9 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
             </div>
           )}
 
-          {/* The checklist. Rendered from the server's criteria, one BLOCK per item rather than
-              a bordered list: the state of each criterion is carried by the block itself —
-              white while unassessed, green when it passes, red when it fails — so the panel
-              reads at a glance without a container drawing a box around the whole thing.
-
-              Colour is never the only signal. Each block keeps its glyph (dash / tick / cross)
-              and its text, because a red-green pair is exactly the distinction a colour-blind
-              reader cannot make, and this one gates the primary action.
-
-              A red block shows the grader's reason — the only thing that tells the writer what
-              to change — and an unassessed block shows the criterion's hint instead, so the
-              list is useful to write against before the check has ever run. */}
+          {/* The checklist: the server's criteria, then the size row this drawer derives. One
+              block per item rather than a bordered list, so the panel reads at a glance
+              without a container drawing a box around the whole thing — see ChecklistRow. */}
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-typography-primary text-sm">Readiness</h3>
@@ -468,37 +564,65 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
             <ul className="flex flex-col gap-2">
               {criteria.map(criterion => {
                 const verdict = hasChecked ? verdicts[criterion.id] : undefined;
-                // Carbon's notification shape: a tinted field with a heavier left edge in the
-                // status colour. Unassessed stays white so "not looked at yet" never reads as
-                // a soft pass.
-                const tone = !verdict
-                  ? "bg-white border-l-secondary-200"
-                  : verdict.passed
-                    ? "bg-success-50 border-l-success-400"
-                    : "bg-destructive-50 border-l-destructive-500";
-
                 return (
-                  <li
+                  <ChecklistRow
                     key={criterion.id}
-                    className={`border-border-light flex items-start gap-2 border border-l-4 p-3 ${tone}`}
-                  >
-                    <span className="mt-0.5 shrink-0">
-                      {!verdict && <Minus size={16} className="text-secondary-300" />}
-                      {verdict?.passed && <Tick size={16} className="text-success-500" />}
-                      {verdict && !verdict.passed && (
-                        <FailIcon size={16} className="text-destructive-500" />
-                      )}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-typography-primary text-sm">{criterion.label}</div>
-                      <div className="text-typography-secondary text-xs">
-                        {verdict ? verdict.reason : criterion.hint}
-                      </div>
-                    </div>
-                  </li>
+                    state={!verdict ? "pending" : verdict.passed ? "pass" : "fail"}
+                    label={criterion.label}
+                    // A red row shows the grader's reason — the only thing that tells the
+                    // writer what to change — and a pending row shows the hint instead, so the
+                    // list is useful to write against before the check has ever run.
+                    detail={verdict ? verdict.reason : criterion.hint}
+                  />
                 );
               })}
+
+              {/* The size row. Last, and derived rather than graded — see the file docblock.
+                  It stays pending until a check has run, like the rest: the effort field is
+                  empty before then, and showing a red "too big" against a draft nobody has
+                  read yet would be a scold rather than a verdict. */}
+              {fileableEfforts.length > 0 && (
+                <ChecklistRow
+                  state={!hasChecked ? "pending" : sizeFileable ? "pass" : "fail"}
+                  label={`Small enough to ship in one go (${fileableSizeLabels})`}
+                  detail={sizeDetail}
+                />
+              )}
             </ul>
+
+            {/* The redraft. Under the rows, not above them: the reasons are what the writer
+                acts on, and a rewrite offered before them invites accepting without reading
+                why. Shown only while the verdicts it came with are current.
+
+                Their own text is not replaced until they press the button — see the docblock
+                for why that line matters here specifically. */}
+            {hasChecked && !!redraft && (
+              <div className="border-border-light bg-secondary-50 flex flex-col gap-2 border p-3">
+                <div className="text-typography-primary text-sm">Suggested rewrite</div>
+                <p className="text-typography-secondary text-sm whitespace-pre-wrap">{redraft}</p>
+                {/* Only when there is something to fill in. A standing instruction under every
+                    rewrite would train people to stop reading it. */}
+                {redraft.includes("[") && (
+                  <p className="text-typography-secondary text-xs">
+                    Anything in [brackets] is missing from your draft — fill it in rather than
+                    filing it. The check will fail again while one is left.
+                  </p>
+                )}
+                <div>
+                  <Button
+                    variant={ButtonVariant.SECONDARY}
+                    onClick={() => {
+                      // An edit like any other: `checkedAgainst` no longer matches, so every
+                      // row reverts to pending and the gate closes until this text is graded
+                      // on its own merits. Nothing here marks it pre-approved.
+                      setDescription(redraft);
+                    }}
+                  >
+                    Use this draft
+                  </Button>
+                </div>
+              </div>
+            )}
           </section>
 
           {duplicates.length > 0 && (
