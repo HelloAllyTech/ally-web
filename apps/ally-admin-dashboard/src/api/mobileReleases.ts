@@ -4,6 +4,7 @@ import {
   CurrentMobileVersionsResponse,
   IosTestflightHistoryEntry,
   IosTestflightStatusResponse,
+  IosWhatsNewSuggestionResponse,
   MobileReleaseRun,
   SubmitIosAppStoreReviewRequest,
   TriggerAndroidPromotionRequest,
@@ -103,6 +104,18 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.MOBILE_RELEASE_RUNS],
     }),
+
+    // LLM-generated draft "What's New" text, summarized server-side from the
+    // commits since the last release — same permission gate as the submit
+    // mutation above (SUBMIT_APP_STORE_REVIEW). Deliberately a lazy query,
+    // not a regular one: it calls an LLM and costs real tokens, so it must
+    // only be triggered on-demand (right as the submit dialog opens), never
+    // fetched automatically or kept in sync via polling/tags.
+    getIosWhatsNewSuggestion: builder.query<IosWhatsNewSuggestionResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.IOS_WHATS_NEW_SUGGESTION,
+      }),
+    }),
   }),
 });
 
@@ -114,4 +127,5 @@ export const {
   useTriggerMobileReleaseMutation,
   useTriggerAndroidPromotionMutation,
   useSubmitIosAppStoreReviewMutation,
+  useLazyGetIosWhatsNewSuggestionQuery,
 } = mobileReleasesAPI;

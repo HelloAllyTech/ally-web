@@ -1,6 +1,5 @@
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 
-import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { toast } from "sonner";
 
 import {
@@ -18,6 +17,7 @@ import {
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
+  useLazyGetIosWhatsNewSuggestionQuery,
   useSubmitIosAppStoreReviewMutation,
   useTriggerAndroidPromotionMutation,
   useTriggerMobileReleaseMutation,
@@ -26,6 +26,7 @@ import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
 import { en } from "@constants";
+import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { MobileReleaseRun } from "@types";
 import { formatDateTime, openLinkInNewTab } from "@utils";
 
@@ -42,6 +43,14 @@ const shortSha = (sha: string) => sha.slice(0, 7);
 const DEFAULT_ANDROID_ROLLOUT_PERCENTAGE = 20;
 const MIN_ROLLOUT_PERCENTAGE = 1;
 const MAX_ROLLOUT_PERCENTAGE = 100;
+
+/** Default helper text under the "What's New" field, regardless of suggestion state. */
+const WHATS_NEW_HELPER_TEXT =
+  "Shown to users in the App Store update notes. Leave blank to keep whatever's already set in App Store Connect.";
+const WHATS_NEW_NO_NEW_COMMITS_NOTE =
+  "No new commits since the last release to summarize — write your own, or leave blank.";
+const WHATS_NEW_SUGGESTION_FAILED_NOTE =
+  "Couldn't generate a suggestion — write your own, or leave blank.";
 
 const runDisplayDuration = (run: MobileReleaseRun): string => {
   if (run.status !== "completed") return "In progress";
@@ -121,8 +130,43 @@ export const MobileReleases: FC = () => {
 
   const [isConfirmingAppStoreReview, setIsConfirmingAppStoreReview] = useState(false);
   const [whatsNewText, setWhatsNewText] = useState("");
+  const [whatsNewSuggestionNote, setWhatsNewSuggestionNote] = useState<string | null>(null);
   const [submitAppStoreReview, { isLoading: isSubmittingAppStoreReview }] =
     useSubmitIosAppStoreReviewMutation();
+  const [fetchIosWhatsNewSuggestion, { isFetching: isFetchingWhatsNewSuggestion }] =
+    useLazyGetIosWhatsNewSuggestionQuery();
+  // Guards against a stale suggestion (or failure note) landing after the
+  // dialog's been reopened — e.g. closed and reopened while the first fetch
+  // was still in flight — clobbering whatever the second open's fetch found,
+  // or worse, text the operator already started editing.
+  const whatsNewSuggestionRequestIdRef = useRef(0);
+
+  const handleOpenAppStoreReviewDialog = () => {
+    const requestId = ++whatsNewSuggestionRequestIdRef.current;
+    setWhatsNewText("");
+    setWhatsNewSuggestionNote(null);
+    setIsConfirmingAppStoreReview(true);
+
+    // Fires only now, on open — not automatically/on a poll — since this
+    // calls an LLM server-side and costs real tokens.
+    fetchIosWhatsNewSuggestion()
+      .unwrap()
+      .then(response => {
+        if (whatsNewSuggestionRequestIdRef.current !== requestId) return;
+        if (response.suggestion) {
+          setWhatsNewText(response.suggestion);
+        } else {
+          setWhatsNewSuggestionNote(WHATS_NEW_NO_NEW_COMMITS_NOTE);
+        }
+      })
+      .catch(() => {
+        if (whatsNewSuggestionRequestIdRef.current !== requestId) return;
+        // A nice-to-have prefill failing shouldn't block or interrupt the
+        // submit flow — no error toast, just an explanation next to the
+        // now-empty, still-fully-editable field.
+        setWhatsNewSuggestionNote(WHATS_NEW_SUGGESTION_FAILED_NOTE);
+      });
+  };
 
   const handleSubmitAppStoreReview = async () => {
     try {
@@ -179,10 +223,7 @@ export const MobileReleases: FC = () => {
             kind="danger"
             size="md"
             disabled={isSubmittingAppStoreReview}
-            onClick={() => {
-              setWhatsNewText("");
-              setIsConfirmingAppStoreReview(true);
-            }}
+            onClick={handleOpenAppStoreReviewDialog}
           >
             Submit for Full App Store Review
           </Button>
@@ -509,11 +550,19 @@ export const MobileReleases: FC = () => {
             <TextArea
               id="ios-app-store-review-whats-new"
               labelText="What's New in This Version (optional)"
-              helperText="Shown to users in the App Store update notes. Leave blank to keep whatever's already set in App Store Connect."
-              placeholder="e.g. Bug fixes and performance improvements"
+              helperText={
+                whatsNewSuggestionNote
+                  ? `${whatsNewSuggestionNote} ${WHATS_NEW_HELPER_TEXT}`
+                  : WHATS_NEW_HELPER_TEXT
+              }
+              placeholder={
+                isFetchingWhatsNewSuggestion
+                  ? "Generating a suggestion from recent commits…"
+                  : "e.g. Bug fixes and performance improvements"
+              }
               value={whatsNewText}
               onChange={e => setWhatsNewText(e.target.value)}
-              disabled={isSubmittingAppStoreReview}
+              disabled={isSubmittingAppStoreReview || isFetchingWhatsNewSuggestion}
               rows={4}
             />
           </div>

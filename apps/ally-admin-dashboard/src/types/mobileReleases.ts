@@ -143,3 +143,16 @@ export interface IosTestflightHistoryEntry {
 export interface IosTestflightHistoryResponse {
   history: IosTestflightHistoryEntry[];
 }
+
+/**
+ * GET /v1/mobile-releases/ios-whats-new-suggestion — an LLM-generated draft of
+ * the "What's New" App Store text, summarized server-side from the commits
+ * since the last release. Gated by the same permission as the submit button
+ * itself (SUBMIT_APP_STORE_REVIEW), but calls an LLM and costs real tokens,
+ * so the frontend must only fetch this on-demand (when the operator is about
+ * to open the submit dialog) — never automatically or on a poll.
+ */
+export interface IosWhatsNewSuggestionResponse {
+  /** Null when there are no new commits since the last release to summarize. */
+  suggestion: string | null;
+}
