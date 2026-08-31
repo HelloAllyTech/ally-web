@@ -1,7 +1,7 @@
 /**
  * User preferences APIs
  */
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import { UserPreferences } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -22,6 +22,7 @@ export const userAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.USER.GET_USER_PREFERENCES,
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
 
     /**
@@ -35,6 +36,11 @@ export const userAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: preferences,
       }),
+      // The read is cached for the session, so without this a saved
+      // preference (e.g. the org-metrics block order) stayed invisible to
+      // anything that remounted and re-read it — see the note on
+      // SCRIBE_VOICE_NOTE_ENABLED in baseAPI.ts for the same trap.
+      invalidatesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
   }),
 });
