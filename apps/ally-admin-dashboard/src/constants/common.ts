@@ -858,15 +858,15 @@ export enum TooltipLocation {
   // superadmins author the text and enable each under Manage Tooltips.
   SESSION_TIMER = "session_timer",
   SCORE = "score",
-  // Post-session feedback master switch (was "AI Feedback Summary" — the
-  // label changed but the slug stays put so any already-authored Manage
-  // Tooltips row keeps applying) plus its three per-tab sub-toggles, nested
-  // under it via dependsOn/visibleWhen in SimulationCreator.ts. Seeded blank
-  // + inactive; superadmins author the text and enable each under Manage
-  // Tooltips.
-  AI_FEEDBACK_SUMMARY = "ai_feedback_summary",
+  // The two post-session tab toggles. The `ai_feedback_summary` (master
+  // switch) and `feedback_tab_skills` slugs were dropped on 2026-08-31 when
+  // those controls were retired — any Manage Tooltips row a superadmin
+  // already authored against them is left in the DB rather than deleted: the
+  // Tooltips page lists rows from the DB, not from this enum, so the text
+  // stays visible and editable there, it simply no longer attaches to a
+  // control. Seeded blank + inactive; superadmins author the text and enable
+  // each under Manage Tooltips.
   FEEDBACK_TAB_DEBRIEF = "feedback_tab_debrief",
-  FEEDBACK_TAB_SKILLS = "feedback_tab_skills",
   FEEDBACK_TAB_TRANSCRIPT = "feedback_tab_transcript",
   ALLOW_PAUSE_RESUME = "allow_pause_resume",
   // Live supervisor notes: an AI supervisor watching the session sends the

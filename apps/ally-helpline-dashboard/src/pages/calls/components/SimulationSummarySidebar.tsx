@@ -14,15 +14,9 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import {
-  AskAiTab,
-  DebriefTab,
-  SessionRatingTrigger,
-  ToggleSwitch,
-  ShareForReview,
-} from "@components";
+import { DebriefTab, SessionRatingTrigger, ToggleSwitch, ShareForReview } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
+import { FeedbackDialog, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
 import { SessionType, ShareForReviewsInput } from "@types";
 import { resolveFeedbackTabs } from "@utils";
@@ -198,11 +192,15 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     </div>
   );
 
-  // A roleplay whose author switched the debrief off has no note to show here —
-  // the backend strips it from this very response — so the tab follows the same
-  // toggle the post-session screen reads.
+  // A roleplay whose author switched a tab off meant nobody to read it, the org
+  // admin included — the backend strips the note from this very response — so
+  // the same two gates apply here as on the learner's just-finished screen.
   const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
 
+  // This drawer is the REVISIT surface — reached from the learner's own session
+  // logs and from their org admin's org logs, both of which mount this same
+  // component. The debrief note carries over; the conversation it opened does
+  // not (see DebriefTab's `readOnly`).
   const tabList = [
     // Read-only, and first: the note is the fastest way to understand a session,
     // for the learner revisiting their own and for an admin reviewing someone
@@ -225,42 +223,23 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           },
         ]
       : []),
-    {
-      id: 3,
-      label: t("postSim.tabs.transcript", "Transcript"),
-      content: (
-        <SimulationTranscriptTab
-          sessionId={summaryId}
-          councellorName={councellorName}
-          agentName={summary?.scenario?.metadata?.name}
-          originalLanguageCode={originalLanguageCode}
-          className=" px-4 pt-[10px]"
-        />
-      ),
-    },
-    {
-      id: 2,
-      label: t("postSim.tabs.askAi", "Ask AI"),
-      content: (
-        <AskAiTab
-          sessionId={summaryId}
-          councellorName={councellorName}
-          agentName={summary?.scenario?.metadata?.name}
-        />
-      ),
-    },
-    {
-      id: 1,
-      label: t("postSim.tabs.sessionReview", "Session Review"),
-      content: (
-        <SimulationSummary
-          sessionId={summaryId}
-          summaryData={summaryData}
-          retryMaxReached={retryMaxReached}
-          className="h-full min-h-0 flex flex-col overflow-hidden"
-        />
-      ),
-    },
+    ...(feedbackTabs.transcript
+      ? [
+          {
+            id: 3,
+            label: t("postSim.tabs.transcript", "Transcript"),
+            content: (
+              <SimulationTranscriptTab
+                sessionId={summaryId}
+                councellorName={councellorName}
+                agentName={summary?.scenario?.metadata?.name}
+                originalLanguageCode={originalLanguageCode}
+                className=" px-4 pt-[10px]"
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 
   const onSidebarClose = () => {

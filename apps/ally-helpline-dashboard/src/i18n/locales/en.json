@@ -593,21 +593,6 @@
       }
     ]
   },
-  "askAi": {
-    "initial": {
-      "titlePrefix": "What would you like",
-      "titleSuffix": " feedback on?",
-      "subtitle": "Select a prompt or ask your own."
-    },
-    "cards": {
-      "responseEffectiveness": "Where did I respond most effectively in this session?",
-      "pacingPresence": "How was my pacing and presence overall?",
-      "missedClientCues": "Where might I have missed or misread the client?",
-      "therapeuticTechniques": "What therapeutic techniques/moves were most helpful?"
-    },
-    "transcriptReferences": "Transcript References",
-    "inputPlaceholder": "Ask a question about the session...."
-  },
   "postSim": {
     "titlePrefix": "Role play",
     "skills": {
@@ -631,9 +616,6 @@
     },
     "tabs": {
       "transcript": "Transcript",
-      "upNext": "Up next",
-      "askAi": "Ask AI",
-      "skillsDemonstrated": "Skills  Demonstrated",
       "sessionReview": "Session Review",
       "debrief": "Debrief"
     },
@@ -646,8 +628,6 @@
       "description": "It looks like we lost you for a bit — often a dropped connection. Your progress up to that point was saved, so feel free to start again."
     },
     "feedback": {
-      "generating": "Generating your feedback…",
-      "sessionFeedback": "Session Feedback",
       "noData": "No data found",
       "dialog": {
         "header": "Did this feel like useful practice for real sessions?",
@@ -658,41 +638,11 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": [
-              "Poor",
-              "Not helpful",
-              "Very bad",
-              "Disappointing",
-              "Unhelpful"
-            ],
-            "2": [
-              "Below average",
-              "Lacking",
-              "Unsatisfying",
-              "Weak",
-              "Needs improvement"
-            ],
-            "3": [
-              "Neutral",
-              "Okay",
-              "Average",
-              "Moderate",
-              "Acceptable"
-            ],
-            "4": [
-              "Good",
-              "Helpful",
-              "Satisfying",
-              "Effective",
-              "Worthwhile"
-            ],
-            "5": [
-              "Excellent",
-              "Amazing",
-              "Highly useful",
-              "Outstanding",
-              "Very effective"
-            ]
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
           }
         }
       }
@@ -737,6 +687,7 @@
         "try_next": "Try this next"
       },
       "replyPlaceholder": "Reply to Ally about this session…",
+      "transcriptReferences": "Transcript References",
       "replyPrompt": "Have a question about any of this? Reply below."
     }
   },

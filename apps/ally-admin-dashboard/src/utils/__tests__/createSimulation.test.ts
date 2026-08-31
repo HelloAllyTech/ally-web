@@ -136,35 +136,49 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(false);
       });
 
-      it("should keep enableFeedback's field id stable while its label describes the whole post-session experience", () => {
+      it("should expose exactly two post-session tab toggles, both defaulting ON", () => {
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const field = section?.fields.find(f => f.id === "enableFeedback");
-        expect(field).toBeDefined();
-        expect(field?.label).toBe("Post-Session Feedback");
+        const tabFields = section?.fields.filter(f => f.id.startsWith("feedbackTab")) ?? [];
+
+        expect(tabFields.map(f => f.id)).toEqual(["feedbackTabDebrief", "feedbackTabTranscript"]);
+        expect(tabFields.map(f => f.label)).toEqual(["Debrief", "Transcript"]);
+        tabFields.forEach(field => {
+          expect(field.defaultValue).toBe(true);
+        });
       });
 
-      it("should nest the three feedback-tab toggles under enableFeedback, hidden until it's on", () => {
+      it("should no longer expose the enableFeedback master switch or the Skills toggle", () => {
+        // Retired 2026-08-31. The master switch only ever meant "both of the
+        // two off", which the surviving toggles say for themselves; migration
+        // 1944200000000 translated the stored flag into that shape.
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const tabFieldIds = ["feedbackTabDebrief", "feedbackTabSkills", "feedbackTabTranscript"];
 
-        tabFieldIds.forEach(id => {
+        expect(section?.fields.find(f => f.id === "enableFeedback")).toBeUndefined();
+        expect(section?.fields.find(f => f.id === "feedbackTabSkills")).toBeUndefined();
+      });
+
+      it("should show both tab toggles unconditionally, with nothing gating them", () => {
+        // They used to be nested under enableFeedback via dependsOn/visibleWhen.
+        // With the master gone there is nothing left to hide them behind, and a
+        // toggle the author cannot see is how a roleplay ends up silently dark.
+        const section = getCreateSimulationSubSectionById("basic-settings");
+
+        ["feedbackTabDebrief", "feedbackTabTranscript"].forEach(id => {
           const field = section?.fields.find(f => f.id === id);
           expect(field).toBeDefined();
-          expect(field?.dependsOn).toBe("enableFeedback");
-          expect(field?.visibleWhen?.({ enableFeedback: true })).toBe(true);
-          expect(field?.visibleWhen?.({ enableFeedback: false })).toBe(false);
-          expect(field?.visibleWhen?.({})).toBe(false);
+          expect(field?.dependsOn).toBeUndefined();
+          expect(field?.visibleWhen).toBeUndefined();
         });
       });
 
       it("should give each feedback-tab toggle its own tooltip location, not a reused one", () => {
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const locations = ["feedbackTabDebrief", "feedbackTabSkills", "feedbackTabTranscript"].map(
+        const locations = ["feedbackTabDebrief", "feedbackTabTranscript"].map(
           id => section?.fields.find(f => f.id === id)?.tooltipLocation,
         );
 
-        expect(locations).toEqual(["feedback_tab_debrief", "feedback_tab_skills", "feedback_tab_transcript"]);
-        expect(new Set(locations).size).toBe(3);
+        expect(locations).toEqual(["feedback_tab_debrief", "feedback_tab_transcript"]);
+        expect(new Set(locations).size).toBe(2);
       });
     });
   });
@@ -248,11 +262,9 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         agentTestCaseIds: [],
         showScoreMeter: undefined,
-        enableFeedback: true,
         // Response's metadata has no feedbackTabs at all — absent reads as
-        // debrief/transcript ON, skills OFF, mirroring the backend resolver.
+        // both tabs ON, mirroring the backend resolver.
         feedbackTabDebrief: true,
-        feedbackTabSkills: false,
         feedbackTabTranscript: true,
         pauseEnabled: false,
         // Opt-in: a roleplay saved before live supervisor notes existed
@@ -711,134 +723,123 @@ describe("createSimulation utils", () => {
       });
     });
 
-  describe("buildFeedbackTabsPayload (write side)", () => {
-    // The bug this locks in: on a brand-new simulation the form's
-    // TOGGLE_BUTTON defaultValue never reaches the controller, so debrief and
-    // transcript arrive undefined. Coerced with Boolean() that saved as
-    // all-false and the learner finished a session to a blank post-session
-    // screen. Skills is the exception (defaultValue: false, opt-in since
-    // Skills Demonstrated was switched off platform-wide 2026-08-24), so an
-    // untouched toggle there must persist as false, not true.
-    it("should treat an untouched (undefined) debrief/transcript toggle as ON, skills as OFF", () => {
-      expect(buildFeedbackTabsPayload({})).toEqual({
-        debrief: true,
-        skills: false,
-        transcript: true,
+    describe("buildFeedbackTabsPayload (write side)", () => {
+      // The bug this locks in: on a brand-new simulation the form's
+      // TOGGLE_BUTTON defaultValue never reaches the controller, so both toggles
+      // arrive undefined. Coerced with Boolean() that saved as all-false and the
+      // learner finished a session to a blank post-session screen.
+      it("should treat an untouched (undefined) toggle as ON", () => {
+        expect(buildFeedbackTabsPayload({})).toEqual({
+          debrief: true,
+          transcript: true,
+        });
+      });
+
+      it("should honor an explicit false on one tab while its untouched sibling stays ON", () => {
+        expect(buildFeedbackTabsPayload({ feedbackTabDebrief: false })).toEqual({
+          debrief: false,
+          transcript: true,
+        });
+      });
+
+      it("should send both off when the author turned every tab off", () => {
+        // Not a bug state: this is the wholesale opt-out the retired
+        // enableFeedback master switch used to express.
+        expect(
+          buildFeedbackTabsPayload({
+            feedbackTabDebrief: false,
+            feedbackTabTranscript: false,
+          }),
+        ).toEqual({ debrief: false, transcript: false });
+      });
+
+      it("should never emit a skills key", () => {
+        expect(buildFeedbackTabsPayload({})).not.toHaveProperty("skills");
+      });
+
+      it("should round-trip with formatSimulationResponseData", () => {
+        const written = buildFeedbackTabsPayload({ feedbackTabTranscript: false });
+        const rehydrated = formatSimulationResponseData({
+          id: "sim-1",
+          title: "T",
+          description: "D",
+          status: "DRAFT",
+          metadata: { feedbackTabs: written },
+        } as any);
+
+        expect(rehydrated.feedbackTabDebrief).toBe(true);
+        expect(rehydrated.feedbackTabTranscript).toBe(false);
       });
     });
-
-    it("should honor an explicit true on skills while untouched siblings stay ON", () => {
-      expect(buildFeedbackTabsPayload({ feedbackTabSkills: true })).toEqual({
-        debrief: true,
-        skills: true,
-        transcript: true,
-      });
-    });
-
-    it("should send all three off when the author turned every tab off", () => {
-      expect(
-        buildFeedbackTabsPayload({
-          feedbackTabDebrief: false,
-          feedbackTabSkills: false,
-          feedbackTabTranscript: false,
-        }),
-      ).toEqual({ debrief: false, skills: false, transcript: false });
-    });
-
-    it("should round-trip with formatSimulationResponseData", () => {
-      const written = buildFeedbackTabsPayload({ feedbackTabTranscript: false });
-      const rehydrated = formatSimulationResponseData({
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: { feedbackTabs: written },
-      } as any);
-
-      expect(rehydrated.feedbackTabDebrief).toBe(true);
-      expect(rehydrated.feedbackTabSkills).toBe(false);
-      expect(rehydrated.feedbackTabTranscript).toBe(false);
-    });
-  });
 
     describe("feedbackTabs (post-session tab visibility)", () => {
-      it("should hydrate debrief/transcript ON and skills OFF when metadata has no feedbackTabs at all", () => {
-        const mockResponse = {
+      const responseWith = (metadata?: unknown) =>
+        ({
           id: "sim-1",
           title: "T",
           description: "D",
           status: "DRAFT",
-          metadata: {},
-        } as any;
+          ...(metadata === undefined ? {} : { metadata }),
+        }) as any;
 
-        const result = formatSimulationResponseData(mockResponse);
+      it("should hydrate both tabs ON when metadata has no feedbackTabs at all", () => {
+        const result = formatSimulationResponseData(responseWith({}));
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(false);
         expect(result.feedbackTabTranscript).toBe(true);
       });
 
-      it("should hydrate debrief/transcript ON and skills OFF when metadata itself is absent", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
+      it("should hydrate both tabs ON when metadata itself is absent", () => {
+        const result = formatSimulationResponseData(responseWith(undefined));
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(false);
         expect(result.feedbackTabTranscript).toBe(true);
       });
 
-      it("should honor an explicit true on skills while debrief/transcript default ON", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { skills: true } },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
+      it("should read a partially written object's missing key as ON", () => {
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { transcript: false } }),
+        );
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(true);
-        expect(result.feedbackTabTranscript).toBe(true);
-      });
-
-      it("should read all three as OFF when every key is explicitly false", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { debrief: false, skills: false, transcript: false } },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.feedbackTabDebrief).toBe(false);
-        expect(result.feedbackTabSkills).toBe(false);
         expect(result.feedbackTabTranscript).toBe(false);
       });
 
-      it("should read all three as ON when every key is explicitly true", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } },
-        } as any;
+      it("should read both as OFF when every key is explicitly false", () => {
+        // What migration 1944200000000 wrote for every roleplay that had the
+        // old enableFeedback master switch turned off.
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { debrief: false, transcript: false } }),
+        );
 
-        const result = formatSimulationResponseData(mockResponse);
+        expect(result.feedbackTabDebrief).toBe(false);
+        expect(result.feedbackTabTranscript).toBe(false);
+      });
+
+      it("should read both as ON when every key is explicitly true", () => {
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { debrief: true, transcript: true } }),
+        );
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(true);
         expect(result.feedbackTabTranscript).toBe(true);
+      });
+
+      it("should ignore a leftover skills key and a leftover enableFeedback flag", () => {
+        // Both are stripped by the migration, but a cached admin response or a
+        // row written by an older build can still carry them. Neither may
+        // influence what the two surviving toggles show.
+        const result = formatSimulationResponseData(
+          responseWith({
+            enableFeedback: false,
+            feedbackTabs: { debrief: true, skills: true, transcript: true },
+          }),
+        );
+
+        expect(result.feedbackTabDebrief).toBe(true);
+        expect(result.feedbackTabTranscript).toBe(true);
+        expect(result).not.toHaveProperty("feedbackTabSkills");
+        expect(result).not.toHaveProperty("enableFeedback");
       });
     });
   });
@@ -977,7 +978,6 @@ describe("createSimulation utils", () => {
       // explicitly rather than derived from the same config the function
       // reads, so a default silently flipped in SimulationCreator.ts fails
       // here instead of quietly agreeing with itself.
-      expect(defaults.enableFeedback).toBe(true);
       expect(defaults.feedbackTabDebrief).toBe(true);
       expect(defaults.feedbackTabTranscript).toBe(true);
       expect(defaults.optGuardrails).toBe(true);
@@ -988,8 +988,10 @@ describe("createSimulation utils", () => {
     });
 
     it("should leave the OFF-by-default and undeclared toggles off", () => {
-      // Skills Demonstrated was switched off platform-wide (2026-08-24).
-      expect(defaults.feedbackTabSkills).toBe(false);
+      // The Skills toggle and the enableFeedback master switch were retired
+      // on 2026-08-31, so they are not seeded at all any more.
+      expect(defaults).not.toHaveProperty("feedbackTabSkills");
+      expect(defaults).not.toHaveProperty("enableFeedback");
       expect(defaults.summaryChecklistEnabled).toBe(false);
       expect(defaults.pauseEnabled).toBe(false);
       expect(defaults.comfortAudioEnabled).toBe(false);
@@ -1013,7 +1015,8 @@ describe("createSimulation utils", () => {
         ...defaults,
       });
 
-      expect(saved.enableFeedback).toBe(true);
+      expect(saved.feedbackTabDebrief).toBe(true);
+      expect(saved.feedbackTabTranscript).toBe(true);
       expect(saved.historyTrimEnabled).toBe(true);
       expect(saved.interimReplyEnabled).toBe(true);
       expect(saved.languageGlossaryEnabled).toBe(true);
@@ -1036,7 +1039,8 @@ describe("createSimulation utils", () => {
         metadata: saved,
       } as any);
 
-      expect(reloaded.enableFeedback).toBe(true);
+      expect(reloaded.feedbackTabDebrief).toBe(true);
+      expect(reloaded.feedbackTabTranscript).toBe(true);
       expect(reloaded.historyTrimEnabled).toBe(true);
       expect(reloaded.interimReplyEnabled).toBe(true);
       expect(reloaded.languageGlossaryEnabled).toBe(true);
@@ -1128,5 +1132,4 @@ describe("createSimulation utils", () => {
       expect(form.translationDescription).toEqual({ "6": "sample" });
     });
   });
-
 });

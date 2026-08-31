@@ -91,6 +91,22 @@ describe("SummarySidebarWrapper", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("hides the tab strip when there is only one tab", () => {
+    // The roleplay drawer is down to a single Annotated Transcript tab, whose
+    // own content already renders that heading — a one-item strip would just
+    // repeat it, and there is nothing to switch to.
+    render(
+      <SummarySidebarWrapper
+        title="Test Sidebar"
+        tabList={[mockTabList[0]]}
+        onSidebarClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Content One")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Tab One/i })).not.toBeInTheDocument();
+  });
+
   it("renders children content", () => {
     render(
       <SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList}>
