@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Close, FailIcon, Minus, Tick } from "@icons";
+import { Close, FailIcon, Minus, Tick, TooltipIcon } from "@icons";
 import { toast } from "sonner";
 
-import { CarbonDropdown, TextArea } from "@ally-ui-mono/ui-shared";
+import { CarbonDropdown, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCheckRoadmapReadinessMutation,
   useCreateRoadmapOpportunityMutation,
+  useGetRoadmapEligibleOwnersQuery,
   useGetRoadmapReadinessCriteriaQuery,
   useRoadmapAiDuplicatesMutation,
 } from "@api";
@@ -29,6 +30,12 @@ const DUPLICATE_DEBOUNCE_MS = 700;
 
 interface AddOpportunityDrawerProps {
   goals: RoadmapTaxonomyItem[];
+  /**
+   * EDIT_PRODUCT_ROADMAP plus the manage toggle — the same value the board and the edit drawer
+   * gate on. Here it gates ONE control, the owner picker; everything else in this drawer is
+   * open to any filer, because filing itself sits on the vote tier.
+   */
+  canManage: boolean;
   onClose: () => void;
   /** "Upvote this instead" — closes and opens the existing opportunity's drawer. */
   onOpenExisting: (id: string) => void;
@@ -81,6 +88,7 @@ interface AddOpportunityDrawerProps {
  */
 export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   goals,
+  canManage,
   onClose,
   onOpenExisting,
 }) => {
@@ -91,6 +99,8 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   /** Empty until a check proposes one, or a human picks one. "" is "Not sized". */
   const [effort, setEffort] = useState<string>("");
   const [effortReason, setEffortReason] = useState("");
+  /** "" is Unassigned, which is where every filing starts and a perfectly good end state. */
+  const [ownerUserId, setOwnerUserId] = useState<string>("");
   /** The inputs `verdicts` describes. Null until the check has run once. */
   const [checkedAgainst, setCheckedAgainst] = useState<{
     description: string;
@@ -110,6 +120,27 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       ...EFFORTS.map(size => ({ value: size as string, label: EFFORT_LABEL[size] })),
     ],
     [],
+  );
+
+  /**
+   * Skipped entirely for a filer who cannot manage the board: the picker is hidden from them,
+   * so fetching the list would be a request whose only possible use is a control they will
+   * never see.
+   */
+  const { data: eligibleOwners } = useGetRoadmapEligibleOwnersQuery(undefined, {
+    skip: !canManage,
+  });
+
+  /** Same shape and same "Unassigned" first entry as OpportunityDrawer's picker. */
+  const ownerItems = useMemo(
+    () => [
+      { value: "", label: "Unassigned" },
+      ...(eligibleOwners ?? []).map(owner => ({
+        value: String(owner.id),
+        label: owner.name || owner.email,
+      })),
+    ],
+    [eligibleOwners],
   );
 
   const { data: criteriaData, isLoading: isLoadingCriteria } =
@@ -194,6 +225,10 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
         // Whatever is in the field at the moment of filing: the check's proposal, or the
         // human's correction of it. "" means Not sized, which the API takes as null.
         effort: (effort || null) as RoadmapOpportunityEffort | null,
+        // Omitted rather than sent as null by a filer who cannot manage: the field is not
+        // theirs to send at all, and an explicit null from them would be a 403 waiting to
+        // happen the day the backend stops treating null as "nothing to assign".
+        ...(canManage ? { ownerUserId: ownerUserId ? Number(ownerUserId) : null } : {}),
       }).unwrap();
       toast.success("Opportunity filed.");
       onClose();
@@ -351,6 +386,51 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
               </p>
             )}
           </div>
+
+          {/* Owner, for a filer who can also manage the board.
+
+              Hidden rather than disabled for everyone else. A greyed-out picker on the ONE form
+              most people reach — filing sits on the vote tier, managing does not — advertises a
+              control they can never use, on the screen where they have least context for why.
+              The drawer they would see it in again (OpportunityDrawer) does disable it instead,
+              because there the row already HAS an owner worth reading.
+
+              NOT part of the readiness gate, and deliberately below the checklist's inputs: an
+              unowned opportunity is a perfectly good thing to file — that is what triage is for
+              — and gating a captured thought on knowing who will pick it up is exactly the
+              round trip this drawer exists to avoid. It is here at all because the person who
+              already knows the answer at filing time should not have to reopen the row to say
+              so. */}
+          {canManage && (
+            <div>
+              <div className="flex items-center gap-1">
+                <div className="min-w-0 flex-1">
+                  <CarbonDropdown
+                    id="roadmap-owner"
+                    titleText="Owner"
+                    label="Unassigned"
+                    items={ownerItems}
+                    itemToString={item => item?.label ?? ""}
+                    selectedItem={
+                      ownerItems.find(item => item.value === ownerUserId) ?? ownerItems[0]
+                    }
+                    onChange={({ selectedItem }) => {
+                      if (!selectedItem) return;
+                      setOwnerUserId(selectedItem.value);
+                    }}
+                  />
+                </div>
+                <Tooltip
+                  label="Who will take this forward, if you already know. Only Ally platform admins can own an opportunity, and leaving it Unassigned is normal — an owner can be set or changed any time from the opportunity itself."
+                  align="bottom"
+                >
+                  <button type="button" className="inline-flex cursor-pointer items-center">
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </div>
+            </div>
+          )}
 
           {/* The checklist. Rendered from the server's criteria, one BLOCK per item rather than
               a bordered list: the state of each criterion is carried by the block itself —

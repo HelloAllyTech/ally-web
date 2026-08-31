@@ -43,6 +43,12 @@ vi.mock("@api", () => ({
     data: { criteria: CRITERIA },
     isLoading: false,
   }),
+  useGetRoadmapEligibleOwnersQuery: () => ({
+    data: [
+      { id: 7, name: "Ada Admin", email: "ada@helloally.ai" },
+      { id: 9, name: "", email: "pat@helloally.ai" },
+    ],
+  }),
 }));
 
 /**
@@ -61,6 +67,7 @@ vi.mock("@icons", () => ({
   FailIcon: () => null,
   Minus: () => null,
   Tick: () => null,
+  TooltipIcon: () => null,
 }));
 
 vi.mock("@components/types", () => ({
@@ -76,8 +83,31 @@ const goals = [
   { id: "g2", name: "Learner Outcomes" },
 ];
 
-const renderDrawer = (onClose = vi.fn()) =>
-  render(<AddOpportunityDrawer goals={goals} onClose={onClose} onOpenExisting={vi.fn()} />);
+/**
+ * `canManage` defaults to FALSE — the tier most people filing are on. Every assertion about
+ * the payload therefore describes what a plain filer sends, and the owner field has to be
+ * asked for explicitly to appear at all.
+ */
+const renderDrawer = (onClose = vi.fn(), canManage = false) =>
+  render(
+    <AddOpportunityDrawer
+      goals={goals}
+      canManage={canManage}
+      onClose={onClose}
+      onOpenExisting={vi.fn()}
+    />,
+  );
+
+/** Green checklist, description typed, gate open — the shared preamble of the owner tests. */
+const fileableDraft = async (text: string) => {
+  fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+    target: { value: text },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled(),
+  );
+};
 
 describe("AddOpportunityDrawer", () => {
   afterEach(() => {
@@ -291,5 +321,71 @@ describe("AddOpportunityDrawer", () => {
 
     expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
     expect(screen.getByText(/edited since the last check/i)).toBeInTheDocument();
+  });
+
+  // ── the owner picker ────────────────────────────────────────────────────────
+
+  /**
+   * Filing sits on the vote tier and assigning does not, so most people who open this drawer
+   * must not see the control at all — hidden, not disabled. The backend refuses the field from
+   * them too (403), so this is the visible half of one rule rather than the whole of it.
+   */
+  it("hides the owner picker from a filer who cannot manage the roadmap", () => {
+    renderDrawer();
+
+    expect(screen.queryByRole("combobox", { name: /owner/i })).not.toBeInTheDocument();
+  });
+
+  it("offers the owner picker to a manager, unassigned to begin with", () => {
+    renderDrawer(vi.fn(), true);
+
+    expect(screen.getByRole("combobox", { name: /owner/i })).toHaveTextContent(/unassigned/i);
+  });
+
+  it("files with the picked owner", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass());
+    mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+    renderDrawer(vi.fn(), true);
+
+    await fileableDraft("Let coaches bulk-assign a track to a cohort");
+
+    fireEvent.click(screen.getByRole("combobox", { name: /owner/i }));
+    fireEvent.click(screen.getByRole("option", { name: "Ada Admin" }));
+    // Picking an owner is not one of the inputs the check read, so it must not re-close the
+    // gate — see the effort exemption for the same reasoning.
+    expect(screen.getByRole("button", { name: /file opportunity/i })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: /file opportunity/i }));
+
+    await waitFor(() =>
+      // A number, not the string the dropdown carries: the API takes an Ally user id.
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: 7 })),
+    );
+  });
+
+  /**
+   * Unassigned is a normal way to file — triage is what the board is for — so a manager who
+   * leaves it alone files an unowned row rather than being nudged into naming someone.
+   */
+  it("files unassigned when a manager leaves the owner alone", async () => {
+    stableTriggers.readiness.mockReturnValue(allPass());
+    mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+    renderDrawer(vi.fn(), true);
+
+    await fileableDraft("Let coaches bulk-assign a track to a cohort");
+    fireEvent.click(screen.getByRole("button", { name: /file opportunity/i }));
+
+    await waitFor(() =>
+      expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: null })),
+    );
+  });
+
+  /** An account with no display name still has to be pickable by something. */
+  it("falls back to the email when an eligible owner has no name", () => {
+    renderDrawer(vi.fn(), true);
+
+    fireEvent.click(screen.getByRole("combobox", { name: /owner/i }));
+
+    expect(screen.getByRole("option", { name: "pat@helloally.ai" })).toBeInTheDocument();
   });
 });

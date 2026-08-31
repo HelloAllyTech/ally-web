@@ -214,6 +214,12 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         type: string;
         productGoal: string;
         effort?: RoadmapOpportunityEffort | null;
+        /**
+         * Only sent by a filer who can manage the roadmap — the drawer hides the picker from
+         * everyone else, and the backend answers 403 rather than filing unassigned if it
+         * arrives from someone without edit:admin:product-roadmap.
+         */
+        ownerUserId?: number | null;
       }
     >({
       query: body => ({

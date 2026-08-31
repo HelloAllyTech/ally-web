@@ -1256,6 +1256,7 @@ export const ProductRoadmap: React.FC = () => {
       {isAddOpen && (
         <AddOpportunityDrawer
           goals={goals ?? []}
+          canManage={canManage}
           onClose={() => setIsAddOpen(false)}
           onOpenExisting={id => {
             setIsAddOpen(false);
