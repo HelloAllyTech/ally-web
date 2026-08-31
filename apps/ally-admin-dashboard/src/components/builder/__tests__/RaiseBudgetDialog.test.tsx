@@ -117,6 +117,16 @@ describe("RaiseBudgetDialog", () => {
     await vi.waitFor(() => expect(success).toHaveBeenCalledWith("Budget raised."));
   });
 
+  it("does not submit a zero-budget removal when the field is cleared", async () => {
+    render(<RaiseBudgetDialog {...baseProps} />);
+
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Raise and continue" }));
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(raiseBudget).not.toHaveBeenCalled();
+  });
+
   it("surfaces the server's own refusal, which names the figure it wanted", async () => {
     raiseBudget.mockReturnValue({
       unwrap: () =>
