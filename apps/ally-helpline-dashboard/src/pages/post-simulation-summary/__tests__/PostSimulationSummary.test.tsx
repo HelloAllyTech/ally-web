@@ -548,7 +548,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
+      expect(screen.getByTestId("tab-2")).toHaveTextContent("Transcript");
     });
 
     it("should have Debrief tab selected by default", () => {
@@ -784,7 +784,7 @@ describe("PostSimulationSummary Component", () => {
       expect(skillsTab).toHaveTextContent("Skills");
     });
 
-    it("should have Annotated Transcript as a tab with id 2", () => {
+    it("should have Transcript as a tab with id 2", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -792,7 +792,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const transcriptionTab = screen.getByTestId("tab-2");
-      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
+      expect(transcriptionTab).toHaveTextContent("Transcript");
     });
   });
 
@@ -1175,7 +1175,7 @@ describe("PostSimulationSummary Component", () => {
    * the page used to be `fixed`, which pulls it out of the flex column's flow
    * so it floats on top of whatever is beneath it instead of reserving its
    * own space. That covered the bottom of the tab panel — e.g. the last
-   * utterance under the Annotated Transcript tab — making it inaccessible.
+   * utterance under the Transcript tab — making it inaccessible.
    */
   describe("Bottom footer layout", () => {
     afterEach(() => {

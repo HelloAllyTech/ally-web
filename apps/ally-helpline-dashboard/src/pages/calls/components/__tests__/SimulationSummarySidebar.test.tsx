@@ -164,12 +164,43 @@ describe("SimulationSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Session Review");
       expect(screen.getByTestId("tab-3")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcript");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
+      // The debrief note is readable from the logs too, for the learner
+      // revisiting a session and for an admin reviewing someone else's.
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Debrief");
       // Skills Demonstrated was switched off platform-wide (2026-08-24).
       expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("tab-4")).not.toBeInTheDocument();
+    });
+
+    it("shows the debrief note read-only, with no way to reply from a log", () => {
+      // The reply thread is keyed by session id, so a composer here would let an
+      // admin type into the learner's own conversation with Ally. The note's
+      // closing invitation goes with it — there is nothing to reply in.
+      mockPolling.mockReturnValue({
+        summaryData: {
+          details: {
+            summary: {
+              feedback: {
+                supervisorNote:
+                  "You left the silence alone.\n\n## [closing]\nReply and we'll talk it through.",
+              },
+            },
+          },
+        },
+        retryMaxReached: false,
+        isShortSession: false,
+      } as any);
+
+      renderComponent();
+
+      expect(screen.getByText("You left the silence alone.")).toBeInTheDocument();
+      expect(screen.queryByText("Reply and we'll talk it through.")).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText("Reply to Ally about this session…"),
+      ).not.toBeInTheDocument();
     });
 
     it("should render simulation summary component in summary tab", () => {

@@ -14,11 +14,18 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, SessionRatingTrigger, ToggleSwitch, ShareForReview } from "@components";
+import {
+  AskAiTab,
+  DebriefTab,
+  SessionRatingTrigger,
+  ToggleSwitch,
+  ShareForReview,
+} from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
 import { SessionType, ShareForReviewsInput } from "@types";
+import { resolveFeedbackTabs } from "@utils";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SimulationSummarySidebarProps } from "./types";
@@ -191,10 +198,36 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     </div>
   );
 
+  // A roleplay whose author switched the debrief off has no note to show here —
+  // the backend strips it from this very response — so the tab follows the same
+  // toggle the post-session screen reads.
+  const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
+
   const tabList = [
+    // Read-only, and first: the note is the fastest way to understand a session,
+    // for the learner revisiting their own and for an admin reviewing someone
+    // else's. Moment chips need the reader to be able to switch to the
+    // transcript, which this drawer keeps as internal state, so anchors render
+    // as plain prose here instead of as chips that would go nowhere.
+    ...(feedbackTabs.debrief
+      ? [
+          {
+            id: 4,
+            label: t("postSim.tabs.debrief", "Debrief"),
+            content: (
+              <DebriefTab
+                sessionId={summaryId}
+                summaryData={summaryData}
+                retryMaxReached={retryMaxReached}
+                readOnly
+              />
+            ),
+          },
+        ]
+      : []),
     {
       id: 3,
-      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
+      label: t("postSim.tabs.transcript", "Transcript"),
       content: (
         <SimulationTranscriptTab
           sessionId={summaryId}

@@ -39,7 +39,7 @@ import {
   ShareForReviewsInput,
   TranscriptFocusRequest,
 } from "@types";
-import { readTrackContext } from "@utils";
+import { readTrackContext, resolveFeedbackTabs } from "@utils";
 
 import { StreakMoment, UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -120,15 +120,7 @@ export const PostSimulationSummary: FC = () => {
     return matchedLanguage?.value?.split("-")[0] ?? "en";
   }, [summary?.metadata?.languageId, availableLanguages]);
 
-  // Which post-session tabs this roleplay shows. The backend sends this
-  // already resolved; the fallback here only covers a response cached from
-  // before the sub-toggles existed. Mirrors the backend's DEFAULT_FEEDBACK_TABS:
-  // debrief/transcript on, skills off (switched off platform-wide 2026-08-24).
-  const feedbackTabs = summary?.scenario?.metadata?.feedbackTabs ?? {
-    debrief: true,
-    skills: false,
-    transcript: true,
-  };
+  const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
 
   const tabList = [
     ...(feedbackTabs.debrief
@@ -164,7 +156,7 @@ export const PostSimulationSummary: FC = () => {
       ? [
           {
             id: TAB_IDS.TRANSCRIPT,
-            label: t("postSim.tabs.annotatedTranscript"),
+            label: t("postSim.tabs.transcript"),
             content: (
               <SimulationTranscriptTab
                 sessionId={sessionId}

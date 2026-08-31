@@ -267,7 +267,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
-              Annotated Transcript 
+              Transcript 
             </button>
           </nav>
         </div>
@@ -582,7 +582,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
-              Annotated Transcript 
+              Transcript 
             </button>
           </nav>
         </div>
