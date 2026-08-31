@@ -630,7 +630,7 @@
       "feedbackUnavailable": "Feedback couldn't be generated for this session"
     },
     "tabs": {
-      "annotatedTranscript": "Annotated Transcript",
+      "transcript": "Transcript",
       "upNext": "Up next",
       "askAi": "Ask AI",
       "skillsDemonstrated": "Skills  Demonstrated",
@@ -731,6 +731,11 @@
       "notAvailable": "This session doesn't have a written debrief — it took place before Ally started writing them.",
       "momentLabel": "See this moment",
       "momentNotFound": "We couldn't jump to that moment — here's the full transcript instead.",
+      "section": {
+        "what_worked": "What worked",
+        "what_it_cost": "What it cost",
+        "try_next": "Try this next"
+      },
       "replyPlaceholder": "Reply to Ally about this session…",
       "replyPrompt": "Have a question about any of this? Reply below."
     }

@@ -562,7 +562,7 @@
       "feedbackUnavailable": "इस सत्र के लिए फ़ीडबैक तैयार नहीं किया जा सका"
     },
     "tabs": {
-      "annotatedTranscript": "नोट्स सहित शब्दांकन",
+      "transcript": "ट्रांस्क्रिप्ट",
       "upNext": "इसके बाद",
       "askAi": "AI से पूछें",
       "skillsDemonstrated": "दिखाए गए कौशल",
@@ -625,6 +625,11 @@
       "failed": "Ally इस सेशन के लिए डीब्रीफ़ नहीं लिख सका।",
       "momentLabel": "यह पल देखें",
       "momentNotFound": "हम उस पल तक नहीं पहुँच सके — इसके बजाय पूरा ट्रांसक्रिप्ट यहाँ है।",
+      "section": {
+        "what_worked": "क्या काम आया",
+        "what_it_cost": "इससे क्या छूट गया",
+        "try_next": "अगली बार यह आज़माएँ"
+      },
       "replyPlaceholder": "इस सेशन के बारे में Ally को जवाब दें…",
       "replyPrompt": "इसके बारे में कोई सवाल है? नीचे जवाब दें।"
     }
