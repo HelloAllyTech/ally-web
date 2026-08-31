@@ -148,6 +148,55 @@ describe("SessionSidebar", () => {
     expect(screen.queryByTestId("session-sidebar-tab-live")).not.toBeInTheDocument();
   });
 
+  describe("Host-supplied extra tabs", () => {
+    // The admin Studio hangs the client's internal monologue here. It is
+    // opt-in from the host precisely so a learner's session can never render
+    // it — nothing in this library should be able to turn it on.
+    const extraTabs = [
+      { id: "internal-monologue", label: "Internal monologue", content: <p>the client thinks</p> },
+    ];
+
+    it("adds nothing when the host passes none", () => {
+      const { container } = render(<SessionSidebar {...baseProps} />);
+
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it("earns the sidebar on its own", () => {
+      render(<SessionSidebar {...baseProps} extraTabs={extraTabs} />);
+
+      expect(screen.getByRole("tab", { name: "Internal monologue" })).toBeInTheDocument();
+    });
+
+    it("renders its content when selected", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          events={[{ score: 1, emoji: "x", message: "m", timestamp: "t" }]}
+          extraTabs={extraTabs}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("tab", { name: "Internal monologue" }));
+
+      expect(screen.getByText("the client thinks")).toBeInTheDocument();
+    });
+
+    it("comes last, so it never steals the tab a learner lands on", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          events={[{ score: 1, emoji: "x", message: "m", timestamp: "t" }]}
+          extraTabs={extraTabs}
+        />,
+      );
+
+      // Live events was the default tab before; adding a tab must not move it.
+      expect(screen.getByTestId("simulation-events")).toBeInTheDocument();
+      expect(screen.queryByText("the client thinks")).not.toBeInTheDocument();
+    });
+  });
+
   describe("Supervisor tab (live coaching notes)", () => {
     it("is absent when the roleplay has live notes switched off", () => {
       // Opt-in: notes arriving without the flag must not conjure a tab.

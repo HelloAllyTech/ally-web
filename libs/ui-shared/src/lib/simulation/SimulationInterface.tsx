@@ -18,6 +18,7 @@ import {
   StateInstruction,
   SimulationTranslations,
   SupervisorNoteType,
+  SessionSidebarExtraTab,
 } from "./types";
 import { UserCallCard } from "./UserCallCard";
 import { FEATURE_FLAGS_MAP } from "../../featureFlag";
@@ -54,6 +55,7 @@ export interface SimulationInterfaceProps {
   supervisorNotes?: SupervisorNoteType[];
   supervisorNotesEnabled?: boolean;
   liveTabEnabled?: boolean;
+  sidebarExtraTabs?: SessionSidebarExtraTab[];
   isFocusMode: boolean;
   isMuted: boolean;
   isPaused?: boolean;
@@ -93,6 +95,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   supervisorNotes = [],
   supervisorNotesEnabled = false,
   liveTabEnabled = true,
+  sidebarExtraTabs,
   isFocusMode,
   isMuted,
   isPaused = false,
@@ -229,7 +232,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
       (checklistMode === ChecklistMode.OFF && events?.length > 0 && liveTabEnabled) ||
       // The Supervisor tab earns the sidebar on its own: it shows from the
       // start of the session, before any note has arrived.
-      supervisorNotesEnabled === true);
+      supervisorNotesEnabled === true ||
+      // An extra tab earns the sidebar too: a preview whose only sidebar
+      // content is the monologue should still get somewhere to put it.
+      (sidebarExtraTabs?.length ?? 0) > 0);
 
   const renderConnectedContent = () => (
     <>
@@ -262,6 +268,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               supervisorNotes={supervisorNotes}
               supervisorNotesEnabled={supervisorNotesEnabled}
               liveTabEnabled={liveTabEnabled}
+              extraTabs={sidebarExtraTabs}
               translations={translations}
             />
           </div>

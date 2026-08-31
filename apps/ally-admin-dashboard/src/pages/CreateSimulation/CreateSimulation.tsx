@@ -27,6 +27,7 @@ import {
   CreateSimulationSubSection,
   ReportSection,
   ReportSectionHandle,
+  PreviewMonologueRuns,
   ReportPrimaryTab,
   ScenarioVersionPanel,
   SimulationEventMapTable,
@@ -172,6 +173,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
   const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPreviewRunsOpen, setIsPreviewRunsOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
   // Agent Builder Copilot tab: whether the right-half chat pane is collapsed.
   // Default expanded; collapsing hands the full canvas to the Basic Settings
@@ -1374,6 +1376,19 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
           >
             {en.simulation.preview}
           </Button>
+          {/* Sits next to Preview because it is the record of Preview: past
+              runs are the only way to read a preview's internal monologue
+              after it ended. Hidden until the simulation exists — an unsaved
+              one cannot have been previewed. */}
+          {simulationId && (
+            <Button
+              variant={ButtonVariant.TEXT}
+              onClick={() => setIsPreviewRunsOpen(true)}
+              className="px-4 h-[40px] text-typography-900"
+            >
+              {en.previewMonologueRuns.trigger}
+            </Button>
+          )}
           {viewMode ? (
             <Button
               variant={ButtonVariant.PRIMARY}
@@ -1488,6 +1503,13 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         }}
       />
 
+      {simulationId && (
+        <PreviewMonologueRuns
+          scenarioId={Number(simulationId)}
+          isOpen={isPreviewRunsOpen}
+          onClose={() => setIsPreviewRunsOpen(false)}
+        />
+      )}
       {previewSimulation && (
         <SimulationPreview
           simulation={previewSimulation}

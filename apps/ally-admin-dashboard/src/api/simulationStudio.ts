@@ -32,6 +32,8 @@ import {
   triggerWarningsRequest,
   createTriggerResponse,
   ScenarioLanguage,
+  PreviewMonologueRun,
+  PreviewMonologueRunSummary,
   triggerWarning,
   GetLanguagesQuery,
   Language,
@@ -599,6 +601,28 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_LANGUAGES,
         method: HttpMethod.GET,
         params: params, // This will pass through any params you provide
+      }),
+    }),
+
+    /**
+     * Internal-monologue runs recorded for this scenario's previews, newest
+     * first, without their turns. Previews are ephemeral everywhere else in
+     * the platform, so this is the only way to read one back after it ended.
+     */
+    getPreviewMonologues: builder.query<PreviewMonologueRunSummary[], { scenarioId: number }>({
+      query: ({ scenarioId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_MONOLOGUES(scenarioId),
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * One recorded run, with its turns.
+     */
+    getPreviewMonologueRun: builder.query<PreviewMonologueRun, { runId: string }>({
+      query: ({ runId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_MONOLOGUE_RUN(runId),
+        method: HttpMethod.GET,
       }),
     }),
 
@@ -1511,6 +1535,8 @@ export const {
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,
+  useGetPreviewMonologuesQuery,
+  useLazyGetPreviewMonologueRunQuery,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,

@@ -130,6 +130,18 @@ export interface SupervisorNotesProps {
   >;
 }
 
+/**
+ * A tab the host application adds to the session sidebar, after the built-in
+ * ones. Opt-in by construction: an app that passes nothing gets exactly the
+ * tabs it always had, which is what keeps admin-only surfaces — the client's
+ * internal monologue, say — out of a learner's session.
+ */
+export interface SessionSidebarExtraTab {
+  id: string;
+  label: string;
+  content: ReactNode;
+}
+
 export interface SessionSidebarProps {
   reminders?: string[];
   description?: string;
@@ -154,6 +166,8 @@ export interface SessionSidebarProps {
   /** Whether this roleplay has the Live events tab turned on. Opt-out,
    * so the tab appears unless explicitly disabled with `false`. */
   liveTabEnabled?: boolean;
+  /** Host-supplied tabs, appended after the built-in ones. */
+  extraTabs?: SessionSidebarExtraTab[];
   translations?: SimulationTranslations;
 }
 
@@ -201,6 +215,8 @@ export interface TriggerWarning {
 }
 
 export interface SimulationPageProps {
+  /** Host-supplied sidebar tabs, appended after the built-in ones. */
+  sidebarExtraTabs?: SessionSidebarExtraTab[];
   room: any; // LiveKit Room instance; typed as any to avoid hard dependency for consumers
   roomData: any;
   sessionId?: string;

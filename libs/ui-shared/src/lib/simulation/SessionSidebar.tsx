@@ -42,6 +42,7 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
   supervisorNotes = [],
   supervisorNotesEnabled = false,
   liveTabEnabled = true,
+  extraTabs = [],
   translations,
 }) => {
   const showReminders = reminders.length > 0;
@@ -70,11 +71,21 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
           id: SidebarTab.SUPERVISOR,
           label: translations?.supervisorTab ?? "Supervisor",
         },
-      ].filter(Boolean) as { id: SidebarTab; label: string }[],
-    [showReminders, showDescription, showChecklist, showLive, showSupervisor, translations],
+        // Host tabs last, so adding one never moves the tab a learner lands on.
+        ...extraTabs.map(({ id, label }) => ({ id, label })),
+      ].filter(Boolean) as { id: string; label: string }[],
+    [
+      showReminders,
+      showDescription,
+      showChecklist,
+      showLive,
+      showSupervisor,
+      extraTabs,
+      translations,
+    ],
   );
 
-  const [selectedTab, setSelectedTab] = useState<SidebarTab | null>(null);
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const activeTab =
     selectedTab && tabs.some(t => t.id === selectedTab) ? selectedTab : (tabs[0]?.id ?? null);
 
@@ -185,6 +196,13 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
             {activeTab === SidebarTab.LIVE && <SimulationEvents events={events} hideHeader />}
             {activeTab === SidebarTab.SUPERVISOR && (
               <SupervisorNotes notes={supervisorNotes} translations={translations} />
+            )}
+            {extraTabs.map(tab =>
+              activeTab === tab.id ? (
+                <div key={tab.id} data-testid={`session-sidebar-${tab.id}`} className="h-full">
+                  {tab.content}
+                </div>
+              ) : null,
             )}
           </div>
         </>

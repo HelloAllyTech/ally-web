@@ -34,3 +34,4 @@ export * from "./whatsappBot";
 export * from "./characterInterview";
 export * from "./featureToggles";
 export * from "./cohorts";
+export * from "./internalMonologue";

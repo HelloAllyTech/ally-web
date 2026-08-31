@@ -12,6 +12,8 @@ import reportUploadReducer from "@reducer/reportUploadReducer";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({
+  // The header's "Past runs" control opens the recorded preview monologues.
+  previewMonologueRuns: { trigger: "Past runs" },
   simulation: {
     unsaved: "Unsaved",
     changes: "Changes",
@@ -142,6 +144,8 @@ vi.mock("@components", () => ({
         <button onClick={onClose}>Close</button>
       </div>
     ) : null,
+  PreviewMonologueRuns: ({ isOpen }: any) =>
+    isOpen ? <div data-testid="preview-monologue-runs" /> : null,
   SimulationPreview: ({ isOpen, onClose, simulation }: any) =>
     isOpen ? (
       <div data-testid="simulation-preview">

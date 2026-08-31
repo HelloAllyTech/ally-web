@@ -3253,4 +3253,54 @@ export const en = {
     readOnlyNote: "This evaluation was submitted and can no longer be edited.",
     loadFailed: "Failed to load",
   },
+
+  /**
+   * Copy for the internal-monologue panel (Studio preview + session detail).
+   * Sentences rather than labels: the reader is following a mind, and a
+   * labelled grid makes them assemble the narrative themselves.
+   */
+  internalMonologue: {
+    title: "Internal monologue",
+    subtitle: "What the client is thinking, turn by turn",
+    waiting: "Waiting for the first turn…",
+    emptyStored: "No monologue was recorded for this session.",
+    turn: "Turn",
+    score: "score",
+    sentToActor: "Sent to the actor this turn",
+    hide: "Hide",
+    show: "Internal monologue",
+    counsellor: "Counsellor",
+    client: "Client",
+    staleTurn: "This turn ran on the previous turn's memory — the update timed out.",
+    moved: (from: string, to: string) => `Moved from ${from} to ${to}.`,
+    heldFor: (stance: string, turns: number) => `Still at ${stance}, for ${turns} turns now.`,
+    nowAt: (stance: string) => `Now at ${stance}.`,
+    credited: (events: string) => `Credited to the counsellor: ${events}.`,
+    feels: (affect: string) => `Feels ${affect}.`,
+    privately: (appraisal: string) => `Privately, she reads him as: "${appraisal}"`,
+    speaking: (register: string) => `Speaking ${register}.`,
+    justSaid: (facts: string) => `Just told him: ${facts}.`,
+    notSaying: (topics: string) => `Still not talking about: ${topics}.`,
+    leftHanging: (topics: string) => `Left hanging: ${topics}.`,
+    finished: (topics: string) => `Finished with: ${topics}.`,
+    onMind: (facts: string) => `On her mind from her own life: ${facts}.`,
+    willLookFor: (cues: string) => `Listening next for: ${cues}.`,
+  },
+  previewMonologueRuns: {
+    trigger: "Past runs",
+    title: "Preview runs",
+    subtitle: "Reopen a preview and read what the client was thinking.",
+    close: "Close",
+    empty:
+      "No preview of this simulation has been recorded yet. Run a preview and its monologue will appear here.",
+    loading: "Loading runs…",
+    failed: "Could not load preview runs.",
+    pickRun: "Pick a run on the left to read it.",
+    noTurns: "This run ended before the client formed any thoughts.",
+    inProgress: "Still running",
+    stillRunning: "This preview is still running — open the live panel to watch it.",
+    turns: (count: number) => `${count} ${count === 1 ? "turn" : "turns"}`,
+    ranBy: (name: string) => `by ${name}`,
+    draftVersion: "draft version",
+  },
 };

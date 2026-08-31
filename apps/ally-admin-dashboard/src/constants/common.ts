@@ -94,6 +94,9 @@ export const ApiEndpoints = {
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     DISPATCH_PREVIEW_AGENT: "/v1/learn/scenarios/preview/dispatch-agent",
+    PREVIEW_MONOLOGUES: (scenarioId: number) =>
+      `/v1/learn/scenarios/${scenarioId}/preview-monologues`,
+    PREVIEW_MONOLOGUE_RUN: (runId: string) => `/v1/learn/preview-monologues/${runId}`,
     END_SCENARIO_PREVIEW: (sessionId: number | string) =>
       `/v1/learn/scenarios/preview/${sessionId}/end`,
     SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,

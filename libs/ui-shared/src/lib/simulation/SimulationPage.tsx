@@ -76,6 +76,7 @@ const useWakeLock = (sessionId: string | undefined) => {
 
 export const SimulationPage: FC<SimulationPageProps> = ({
   room,
+  sidebarExtraTabs,
   roomData = {},
   roomStatus,
   sessionId,
@@ -441,6 +442,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           // Opt-out per roleplay, unlike supervisorNotesEnabled/pauseEnabled above:
           // only an explicit false hides the tab, so missing/undefined keeps it shown.
           liveTabEnabled={roomData?.liveTabEnabled !== false}
+          sidebarExtraTabs={sidebarExtraTabs}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           isPaused={isPaused}
