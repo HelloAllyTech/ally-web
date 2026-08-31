@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Button, Tag, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { BuilderPrdDocument, BuilderPrdReadiness } from "@types";
+import { asAgentText, asAgentTextList } from "@utils";
 
 import { ReadinessRing } from "./ReadinessRing";
 import {
@@ -14,7 +15,7 @@ import {
   BUILDER_EASING,
   prefersReducedMotion,
 } from "../../pages/Builder/builderMotion";
-import { roleplayMarkdownComponents } from "../roleplay-studio/markdownComponents";
+import { sharedMarkdownComponents } from "../markdown/markdownComponents";
 
 /**
  * Every list in this panel is written by the agent, so none of it can be
@@ -24,6 +25,11 @@ import { roleplayMarkdownComponents } from "../roleplay-studio/markdownComponent
  * `?.length > 0` is not a sufficient guard — a string has a length and then
  * fails on `.map`, which is exactly how this panel first crashed. Read every
  * agent-authored array through here instead.
+ *
+ * The array being well-shaped says nothing about its items: the second crash
+ * was `openQuestions` holding `{ id, text }` rows, which React refuses to
+ * render as a child. Every leaf below goes through `asAgentText` for the same
+ * reason this goes through `asArray`.
  */
 const asArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
@@ -108,7 +114,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
   const repoPlans = asArray<BuilderPrdDocument["technicalPlan"]["repos"][number]>(
     prd.technicalPlan?.repos,
   );
-  const openQuestions = asArray<string>(prd.openQuestions);
+  const openQuestions = asAgentTextList(prd.openQuestions);
 
   const beginEdit = (key: string, value: string) => {
     setEditingKey(key);
@@ -127,6 +133,11 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
       await onSaveSection(`/${key}`, draftValue);
       setEditingKey(null);
       setDraftValue("");
+    } catch {
+      // onSaveSection already surfaced a toast for this; swallow the
+      // rejection here so the fire-and-forget onClick doesn't also throw it
+      // as an unhandled promise rejection. The editor stays open with the
+      // draft intact so the admin can retry.
     } finally {
       setSaving(false);
     }
@@ -175,16 +186,21 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
     );
   };
 
-  const renderMarkdown = (value: string) =>
-    value?.trim() ? (
+  // Takes `unknown`, not `string`: every markdown section on this panel is
+  // agent-written, and one that arrived as an object used to reach
+  // ReactMarkdown and throw.
+  const renderMarkdown = (raw: unknown) => {
+    const value = asAgentText(raw);
+    return value.trim() ? (
       <div className="prose prose-sm mt-1 max-w-none text-sm text-typography-800">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
           {value}
         </ReactMarkdown>
       </div>
     ) : (
       <p className="mt-1 text-sm italic text-typography-400">{strings.emptySection}</p>
     );
+  };
 
   const renderEditor = (key: string) => (
     <div className="mt-2 flex flex-col gap-2">
@@ -239,7 +255,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {PROSE_SECTIONS.map(key => {
           const stringKey = String(key);
-          const value = String(prd[key] ?? "");
+          const value = asAgentText(prd[key]);
           return (
             <section key={stringKey} className="mb-4 rounded p-1" style={sectionStyle(stringKey)}>
               {renderSectionHeader(stringKey, strings.sections[stringKey] ?? stringKey, value)}
@@ -253,23 +269,25 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
           {requirements.length ? (
             <ul className="mt-1 flex flex-col gap-2">
               {requirements.map((requirement, requirementIndex) => {
-                const criteria = asArray<string>(requirement.acceptanceCriteria);
+                const criteria = asAgentTextList(requirement.acceptanceCriteria);
                 return (
                   <li
                     key={`${requirement.id ?? "req"}-${requirementIndex}`}
                     className="rounded border border-neutral-200 p-2"
                   >
                     <div className="flex items-baseline gap-2">
-                      {requirement.id && (
+                      {asAgentText(requirement.id) && (
                         <Tag type="blue" size="sm">
-                          {requirement.id}
+                          {asAgentText(requirement.id)}
                         </Tag>
                       )}
                       <span className="text-sm font-medium text-typography-900">
-                        {requirement.title}
+                        {asAgentText(requirement.title)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-typography-700">{requirement.description}</p>
+                    <p className="mt-1 text-sm text-typography-700">
+                      {asAgentText(requirement.description)}
+                    </p>
                     {criteria.length > 0 && (
                       <>
                         <p className="mt-2 text-xs font-medium uppercase tracking-wide text-typography-500">
@@ -312,7 +330,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
                     </Tag>
                   </span>
                   <span className="min-w-0 flex-1 text-sm text-typography-700">
-                    {assumption.text}
+                    {asAgentText(assumption.text)}
                   </span>
                 </li>
               ))}
@@ -329,14 +347,17 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
               {/* Keyed by index, not by `repo`: the agent writes this array and
                   can leave a plan's repo name unset while it is still working
                   the section out. A null key is not a key. */}
-              {repoPlans.map((plan, index) => (
-                <li key={`${plan.repo ?? "unnamed"}-${index}`}>
-                  <Tag type={plan.repo ? "purple" : "warm-gray"} size="sm">
-                    {plan.repo || strings.unnamedRepo}
-                  </Tag>
-                  {renderMarkdown(plan.changesMd)}
-                </li>
-              ))}
+              {repoPlans.map((plan, index) => {
+                const repoName = asAgentText(plan.repo).trim();
+                return (
+                  <li key={`${repoName || "unnamed"}-${index}`}>
+                    <Tag type={repoName ? "purple" : "warm-gray"} size="sm">
+                      {repoName || strings.unnamedRepo}
+                    </Tag>
+                    {renderMarkdown(plan.changesMd)}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="mt-1 text-sm italic text-typography-400">{strings.emptySection}</p>

@@ -16,6 +16,8 @@ import { store } from "@store";
 import { RoadmapSavedView, RoadmapViewState } from "@types";
 
 import {
+  QUEUE_VIEW_ID,
+  QUEUE_VIEW_STATE,
   applySavedViewOrder,
   isValidViewDrop,
   isViewDirty,
@@ -129,6 +131,12 @@ export const useSavedViews = ({
   const selectView = useCallback(
     (id: string | null) => {
       setActiveViewId(id);
+      // "Queue" is a hardcoded pseudo-view like "All" (see QUEUE_VIEW_ID), not a row in `views`,
+      // so it needs its own branch rather than falling into the find-by-id below.
+      if (id === QUEUE_VIEW_ID) {
+        onApply(QUEUE_VIEW_STATE);
+        return;
+      }
       const view = id ? views.find(v => v.id === id) : null;
       // Selecting "All" resets to an empty snapshot rather than leaving the last view's filters
       // applied under a tab that claims to be unfiltered.
@@ -137,19 +145,76 @@ export const useSavedViews = ({
     [views, setActiveViewId, onApply],
   );
 
-  const saveCurrentAs = useCallback(
+  /**
+   * Create a NEW, EMPTY view — not a snapshot of whatever is applied right now.
+   *
+   * The old behaviour ("save current filters as a view") made the button's result depend on
+   * invisible state: the same click produced a different view depending on what you happened to
+   * have filtered, and there was no way to make a fresh one without first clearing everything by
+   * hand. Creating empty and then filtering into it is the order people actually work in.
+   *
+   * `onApply({})` IS LOAD-BEARING, not a tidy-up. The autosave above writes `current` onto the
+   * active owned view, so creating an empty view while filters are still applied would have the
+   * autosave immediately save those filters into it — the new view would silently be a copy of
+   * the old one, which is the exact behaviour this change removes.
+   */
+  // ── landing view ──────────────────────────────────────────────────────────
+  /**
+   * Apply the active view's STATE on first render, not just its highlight.
+   *
+   * Two problems, one fix:
+   *
+   * 1. LANDING. A visit to /product-roadmap with no `?view=` should open the Queue. It cannot be
+   *    done by defaulting `activeViewId` to the queue, because "All" selects itself by DELETING
+   *    the param — absent would then mean Queue and All would be unreachable. So the absence is
+   *    resolved once, here, and written into the URL as `?view=queue`; from then on absent never
+   *    recurs and All keeps its own meaning.
+   *
+   * 2. DEEP LINKS. `selectView` is what applies a view's filters, layout and sort, and it only
+   *    ran on click — so opening a shared `?view=<id>` link (or refreshing on one) showed the
+   *    tab highlighted over UNFILTERED rows. That was already broken before the Queue existed;
+   *    it just became conspicuous once the Queue started hiding its own filter controls.
+   *
+   * Runs ONCE, ref-guarded. A saved-view id has to wait for `views` to load before its state can
+   * be read, so the guard is only set when the view is actually resolved — otherwise the first
+   * render would consume the one chance while `views` was still empty.
+   */
+  const hasAppliedLandingView = useRef(false);
+  useEffect(() => {
+    if (hasAppliedLandingView.current) return;
+
+    if (activeViewId === null) {
+      hasAppliedLandingView.current = true;
+      selectView(QUEUE_VIEW_ID);
+      return;
+    }
+    if (activeViewId === QUEUE_VIEW_ID) {
+      hasAppliedLandingView.current = true;
+      onApply(QUEUE_VIEW_STATE);
+      return;
+    }
+    // A saved view: nothing to apply until its row has arrived.
+    const view = views.find(v => v.id === activeViewId);
+    if (!view) return;
+    hasAppliedLandingView.current = true;
+    onApply(view.state);
+  }, [activeViewId, views, selectView, onApply]);
+
+  const createNewView = useCallback(
     async (name: string) => {
       try {
-        const created = await createView({ name, state: current }).unwrap();
+        const created = await createView({ name, state: {} }).unwrap();
+        onApply({});
         setActiveViewId(created.id);
-        toast.success(`Saved "${created.name}".`);
+        toast.success(`Created "${created.name}". Filters you set now are saved to it.`);
       } catch (error) {
         const message =
-          (error as { data?: { message?: string } })?.data?.message ?? "Could not save that view.";
+          (error as { data?: { message?: string } })?.data?.message ??
+          "Could not create that view.";
         toast.error(message);
       }
     },
-    [createView, current, setActiveViewId],
+    [createView, onApply, setActiveViewId],
   );
 
   const renameView = useCallback(
@@ -233,7 +298,7 @@ export const useSavedViews = ({
     canReorder: canVote,
     canPin: canManage,
     selectView,
-    saveCurrentAs,
+    createNewView,
     renameView,
     togglePinned,
     removeView,

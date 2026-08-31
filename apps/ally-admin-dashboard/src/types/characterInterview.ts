@@ -4,7 +4,7 @@ import { CharacterData } from "./simulation";
  * Character Library interview agent — mirrors the backend SSE contract in
  * ally-be src/scenario-character/type/character-interview-sse.type.ts.
  *
- * The question widget types are deliberately identical to the Roleplay Studio
+ * The question widget types were taken from the retired Roleplay Studio
  * copilot's so the same QuestionCard renders both.
  */
 export type CharacterInterviewQuestionKind =
@@ -115,6 +115,10 @@ export interface CharacterInterviewServerMessage {
     answer?: CharacterInterviewStructuredAnswer;
     questions?: CharacterInterviewQuestionEvent[];
     characterDraft?: CharacterData;
+    /** The turn died — set by the server so a reload still shows the failure. */
+    errored?: boolean;
+    /** What to tell the admin about it; falls back to generic copy. */
+    errorMessage?: string;
     [key: string]: unknown;
   } | null;
 }

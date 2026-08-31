@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Pin } from "@icons";
+import { Edit, Pin } from "@icons";
 
+import { OverflowMenu, OverflowMenuItem } from "@ally-ui-mono/ui-shared";
 import { RoadmapSavedView } from "@types";
 
 interface SortableViewTabProps {
@@ -128,40 +129,60 @@ export const SortableViewTab: React.FC<SortableViewTabProps> = ({
           </button>
         )}
 
-        {/* Affordances only on the ACTIVE tab, so the strip stays quiet. Rename and delete are
-            owner-only; pinning additionally needs manage permission. */}
-        {isActive && !isRenaming && (
-          <span className="flex items-center gap-1">
-            {isOwner && (
-              <button
-                type="button"
-                onClick={() => setIsRenaming(true)}
-                aria-label={`Rename ${view.name}`}
-                className="text-typography-secondary hover:text-primary-500 text-xs"
-              >
-                Rename
-              </button>
-            )}
-            {canPin && (
-              <button
-                type="button"
-                onClick={onTogglePinned}
-                aria-label={view.pinned ? `Unpin ${view.name}` : `Pin ${view.name}`}
-                className="text-typography-secondary hover:text-primary-500 text-xs"
-              >
-                {view.pinned ? "Unpin" : "Pin"}
-              </button>
-            )}
-            {isOwner && (
-              <button
-                type="button"
-                onClick={onDelete}
-                aria-label={`Delete ${view.name}`}
-                className="text-typography-secondary hover:text-destructive-500 text-xs"
-              >
-                Delete
-              </button>
-            )}
+        {/*
+          Affordances only on the ACTIVE tab, so the strip stays quiet — and now behind ONE edit
+          icon instead of up to three inline text buttons, which made the active tab three times
+          the width of its neighbours and shifted the whole strip every time you changed tab.
+
+          Carbon's OverflowMenu rather than a bespoke popover: it brings keyboard navigation,
+          click-outside and focus return with it, and this is a menu attached to a draggable
+          element where getting any of those wrong is easy.
+
+          ORDER: Rename, Pin/Unpin, then Delete — not the requested unpin/delete/rename. Delete
+          is last and marked `isDelete` because it is the one irreversible item here; sitting it
+          between two benign options is how it gets clicked by muscle memory.
+
+          Rendered only when there is at least one thing to offer: a non-owner without manage
+          permission gets no menu rather than an empty one.
+        */}
+        {isActive && !isRenaming && (isOwner || canPin) && (
+          <span
+            // stopPropagation on both: the tab is a drag source and a select target, so a
+            // pointerdown inside the menu would otherwise start a drag or re-select the tab.
+            onClick={event => event.stopPropagation()}
+            onPointerDown={event => event.stopPropagation()}
+          >
+            <OverflowMenu
+              size="sm"
+              flipped
+              // The trigger's tooltip was being CLIPPED. It renders above the button by default,
+              // and the tab strip is `overflow-x-auto` — CSS will not let one axis clip while the
+              // other stays visible, so the strip cropped it vertically too. `align="bottom"`
+              // drops it below the icon, `autoAlign` lets floating-ui shift it if that edge is
+              // constrained as well.
+              align="bottom"
+              autoAlign
+              renderIcon={Edit}
+              // iconDescription, NOT aria-label. Carbon renders its own tooltip on this trigger
+              // and points the button at it with aria-labelledby, so an aria-label is dropped on
+              // the floor and the button keeps Carbon's default name of "Options" — verified in
+              // the DOM. iconDescription is the string that tooltip actually shows, which makes
+              // it both the accessible name and the hover label.
+              iconDescription={`Actions for ${view.name}`}
+            >
+              {isOwner && (
+                <OverflowMenuItem itemText="Rename" onClick={() => setIsRenaming(true)} />
+              )}
+              {canPin && (
+                <OverflowMenuItem
+                  itemText={view.pinned ? "Unpin" : "Pin"}
+                  onClick={onTogglePinned}
+                />
+              )}
+              {isOwner && (
+                <OverflowMenuItem isDelete hasDivider itemText="Delete" onClick={onDelete} />
+              )}
+            </OverflowMenu>
           </span>
         )}
       </div>

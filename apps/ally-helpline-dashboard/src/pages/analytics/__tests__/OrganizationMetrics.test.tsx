@@ -1,20 +1,61 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { ReactNode } from "react";
+
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { toast } from "sonner";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { OrganizationMetrics } from "../OrganizationMetrics";
 
 const mockUseGetOrganizationMetricsQuery = vi.fn();
+const mockUseGetUserPreferencesQuery = vi.fn();
+const mockUpdateUserPreferences = vi.fn();
 const mockRefetch = vi.fn();
 
 let mockPermissions: string[] = ["view:organization-metrics"];
+let capturedOnDragEnd:
+  | ((event: { active: { id: string }; over: { id: string } | null }) => void | Promise<void>)
+  | undefined;
 
 vi.mock("@hooks", () => ({
   useUser: () => ({ permissions: mockPermissions }),
 }));
 
+// dnd-kit drives its sortable context off real PointerEvent sequences, which
+// jsdom can't simulate reliably — the same reason ally-admin-dashboard's
+// Sidebar/reorderSidebar (the identical pattern this mirrors) isn't
+// drag-tested that way either. Instead, `DndContext` is mocked just enough to
+// capture the `onDragEnd` handler so the reorder test below can invoke it
+// directly, the same way dnd-kit would after a real drag gesture.
+vi.mock("@dnd-kit/core", async () => {
+  const actual = await vi.importActual<typeof import("@dnd-kit/core")>("@dnd-kit/core");
+  return {
+    ...actual,
+    DndContext: ({
+      children,
+      onDragEnd,
+    }: {
+      children: ReactNode;
+      onDragEnd: typeof capturedOnDragEnd;
+    }) => {
+      capturedOnDragEnd = onDragEnd;
+      return children;
+    },
+  };
+});
+
 vi.mock("@api", () => ({
   useGetOrganizationMetricsQuery: (...args: unknown[]) =>
     mockUseGetOrganizationMetricsQuery(...args),
+  useGetUserPreferencesQuery: (...args: unknown[]) => mockUseGetUserPreferencesQuery(...args),
+  useUpdateUserPreferencesMutation: () => [
+    (...args: unknown[]) => ({
+      unwrap: () => mockUpdateUserPreferences(...args),
+    }),
+  ],
+}));
+
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn() },
 }));
 
 // OrganizationMetrics renders the learner and course usage tables as
@@ -64,6 +105,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     </div>
   ),
   Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+  logger: { info: vi.fn() },
 }));
 
 const BASE_RESPONSE = {
@@ -96,14 +138,25 @@ const queryResult = (overrides: Partial<Record<string, unknown>> = {}) => ({
   ...overrides,
 });
 
+// useGetUserPreferencesQuery has no transformResponse (see api/user.ts), so
+// its RTK-Query-level `.data` is the raw server envelope `{ data: UserPreferences }`
+// verbatim — the same double `data` unwrap useScenarioLanguages.ts relies on
+// for `default_language_id`. Mocking the hook's return value therefore needs
+// both layers.
+const preferencesResult = (org_metrics_layout?: string[]) => ({
+  data: { data: { org_metrics_layout } },
+});
+
 describe("OrganizationMetrics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPermissions = ["view:organization-metrics"];
+    capturedOnDragEnd = undefined;
     mockUseGetOrganizationMetricsQuery.mockReturnValue(queryResult({ data: BASE_RESPONSE }));
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
   });
 
-  it("shows the access notice and skips the query for users without the permission", () => {
+  it("shows the access notice and skips both queries for users without the permission", () => {
     mockPermissions = [];
     render(<OrganizationMetrics />);
 
@@ -113,6 +166,7 @@ describe("OrganizationMetrics", () => {
       { range: "30d" },
       { skip: true },
     );
+    expect(mockUseGetUserPreferencesQuery).toHaveBeenCalledWith(undefined, { skip: true });
   });
 
   it("shows a skeleton for every KPI tile while loading", () => {
@@ -214,5 +268,141 @@ describe("OrganizationMetrics", () => {
 
     expect(screen.getAllByTestId("bar-chart")).toHaveLength(2); // simulations + new learners
     expect(screen.getAllByTestId("line-chart")).toHaveLength(1); // active users
+  });
+
+  const blockOrder = () =>
+    screen
+      .getAllByTestId(/^sortable-metric-block-/)
+      .map(el => el.getAttribute("data-testid")?.replace("sortable-metric-block-", ""));
+
+  it("renders the 6 chart/table blocks in the default order when no layout is saved", () => {
+    render(<OrganizationMetrics />);
+
+    expect(blockOrder()).toEqual([
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+      "courseUsage",
+    ]);
+  });
+
+  it("renders blocks in the user's saved order", () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(
+      preferencesResult([
+        "courseUsage",
+        "learnerUsage",
+        "mostUsedSimulations",
+        "newLearnersTrend",
+        "activeUsersTrend",
+        "simulationsTrend",
+      ]),
+    );
+    render(<OrganizationMetrics />);
+
+    expect(blockOrder()).toEqual([
+      "courseUsage",
+      "learnerUsage",
+      "mostUsedSimulations",
+      "newLearnersTrend",
+      "activeUsersTrend",
+      "simulationsTrend",
+    ]);
+  });
+
+  it("drops unknown/stale saved ids and appends any block missing from a saved layout", () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(
+      preferencesResult(["aRemovedBlock", "courseUsage"]),
+    );
+    render(<OrganizationMetrics />);
+
+    // "courseUsage" keeps its saved position first; "aRemovedBlock" is
+    // dropped entirely; every other block appends in default order.
+    expect(blockOrder()).toEqual([
+      "courseUsage",
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+    ]);
+  });
+
+  it("renders a drag handle for every block, labelled for assistive tech", () => {
+    render(<OrganizationMetrics />);
+
+    expect(screen.getAllByLabelText("Drag to reorder")).toHaveLength(6);
+  });
+
+  const drop = async (activeId: string, overId: string) => {
+    expect(capturedOnDragEnd).toBeDefined();
+    await act(async () => {
+      await capturedOnDragEnd?.({ active: { id: activeId }, over: { id: overId } });
+    });
+  };
+
+  const REORDERED = [
+    "simulationsTrend",
+    "newLearnersTrend",
+    "activeUsersTrend",
+    "mostUsedSimulations",
+    "learnerUsage",
+    "courseUsage",
+  ];
+
+  it("moves the block and saves the new order when a drag is dropped", async () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(preferencesResult());
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual(REORDERED);
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
+  it("still moves the block when the user has no saved preferences at all", async () => {
+    // GET /users/me/preferences answers `null` for a user with no preferences
+    // row yet, so there is no `{ data }` envelope to read a layout out of —
+    // the drop must still land, which it didn't while the rendered order came
+    // only from that query's cache.
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: null });
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual(REORDERED);
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
+  it("still saves the reorder when the drag finishes before getUserPreferences resolves", async () => {
+    // The draggable blocks render regardless of that query's status.
+    mockUseGetUserPreferencesQuery.mockReturnValue({ data: undefined });
+    mockUpdateUserPreferences.mockResolvedValue({ success: true });
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(mockUpdateUserPreferences).toHaveBeenCalledWith({ org_metrics_layout: REORDERED });
+  });
+
+  it("puts the blocks back and warns when the save fails", async () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(preferencesResult());
+    mockUpdateUserPreferences.mockRejectedValue(new Error("500"));
+    render(<OrganizationMetrics />);
+
+    await drop("activeUsersTrend", "newLearnersTrend");
+
+    expect(blockOrder()).toEqual([
+      "simulationsTrend",
+      "activeUsersTrend",
+      "newLearnersTrend",
+      "mostUsedSimulations",
+      "learnerUsage",
+      "courseUsage",
+    ]);
+    expect(toast.error).toHaveBeenCalledWith("Couldn't save the new layout");
   });
 });

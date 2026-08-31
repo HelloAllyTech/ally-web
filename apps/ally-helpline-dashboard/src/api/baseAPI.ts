@@ -170,6 +170,7 @@ export const baseAPI = createApi({
     TAG_TYPES.SCENARIOS,
     TAG_TYPES.SIMULATION_CREDITS,
     TAG_TYPES.USER,
+    TAG_TYPES.USER_PREFERENCES,
     TAG_TYPES.SCENARIO_PATHWAY_DETAILS,
     TAG_TYPES.SIMULATION_SUMMARY,
     TAG_TYPES.REVIEW,
@@ -183,6 +184,14 @@ export const baseAPI = createApi({
     TAG_TYPES.CUSTOM_FIELD_TYPES,
     TAG_TYPES.CUSTOM_FIELDS_ENABLED,
     TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED,
+    // Was missing while its sibling above was registered, which is exactly the
+    // trap the PRACTICE_STREAK note below describes: organizationSettings.ts
+    // declared providesTags/invalidatesTags for it, RTK Query silently dropped
+    // the unknown tag, and flipping the voice-note toggle never invalidated the
+    // read. The org-settings switch only looked correct because it keeps its own
+    // optimistic local state; a remount inside the 60s cache window showed the
+    // stale value back.
+    TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED,
     TAG_TYPES.ORG_SCENARIOS,
     TAG_TYPES.ORG_SCENARIO_PATHS,
     TAG_TYPES.ORG_CASES,

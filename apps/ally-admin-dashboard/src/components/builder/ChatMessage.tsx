@@ -13,7 +13,7 @@ import {
   prefersReducedMotion,
   staggerDelayMs,
 } from "../../pages/Builder/builderMotion";
-import { roleplayMarkdownComponents } from "../roleplay-studio/markdownComponents";
+import { sharedMarkdownComponents } from "../markdown/markdownComponents";
 
 /** Human-readable labels for the agent's tools — the raw names leak plumbing. */
 const TOOL_LABELS: Record<string, string> = {
@@ -89,17 +89,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index, onAnsw
         </div>
       )}
 
-      {(hasBody || message.isStreaming) && (
+      {(hasBody || message.isStreaming || message.interrupted) && (
         <Tile className="w-full max-w-[92%]">
           {hasBody ? (
             <div className="prose prose-sm max-w-none text-sm text-typography-900">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
                 {message.content}
               </ReactMarkdown>
             </div>
-          ) : (
+          ) : message.isStreaming ? (
             <InlineLoading description={en.builder.chat.thinking} />
-          )}
+          ) : null}
           {message.interrupted && (
             <p className="mt-2 text-xs italic text-typography-500">Stopped.</p>
           )}

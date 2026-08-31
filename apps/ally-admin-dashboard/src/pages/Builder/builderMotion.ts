@@ -88,6 +88,30 @@ export const BUILDER_STATUS_TAG_TYPE: Record<string, BuilderTagType> = {
   CANCELLED: "cool-gray",
 };
 
+/** Same idea, one run's own status — distinct enum from the session's. */
+export const BUILDER_RUN_STATUS_TAG_TYPE: Record<string, BuilderTagType> = {
+  QUEUED: "cool-gray",
+  RUNNING: "purple",
+  SUCCEEDED: "green",
+  FAILED: "red",
+  CANCELLED: "cool-gray",
+  TIMED_OUT: "red",
+  WAITING_FOR_INPUT: "magenta",
+};
+
+/**
+ * Same idea again, for a scoreboard/exemplar row's `outcome` — a coarser,
+ * merge-centric view than a run's own status (an "open" outcome can cover
+ * several in-flight run statuses at once), so it gets its own map rather than
+ * being folded into either of the two above.
+ */
+export const BUILDER_OUTCOME_TAG_TYPE: Record<string, BuilderTagType> = {
+  merged: "green",
+  open: "purple",
+  failed: "red",
+  cancelled: "cool-gray",
+};
+
 /**
  * The agent's visible state. This drives the avatar, the header line and
  * which (if any) motion is running — one enum so those three can never

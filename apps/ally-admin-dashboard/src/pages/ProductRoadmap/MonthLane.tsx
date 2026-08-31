@@ -3,20 +3,22 @@ import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
-import { RoadmapCoinBudget, RoadmapMonthLane } from "@types";
+import { RoadmapBoardGroupBy, RoadmapBoardLane, RoadmapVoteBudget } from "@types";
 
 import { MonthOpportunityCard } from "./MonthOpportunityCard";
-import { isDraggable, laneDomId, monthLabel } from "./utils/monthBoard";
+import { isDraggable, laneDomId, laneLabel } from "./utils/monthBoard";
 
 interface MonthLaneProps {
-  lane: RoadmapMonthLane;
+  lane: RoadmapBoardLane;
+  /** Decides how the lane is labelled and whether it can be hand-ordered. */
+  groupBy: RoadmapBoardGroupBy;
   /** Highlights the lane for the month we are currently in. */
   isCurrentMonth: boolean;
   maxScore: number;
-  budget?: RoadmapCoinBudget;
+  budget?: RoadmapVoteBudget;
   canVote: boolean;
   canManage: boolean;
-  onCommitCoins: (opportunityId: string, next: number, previous: number) => void;
+  onSetVotes: (opportunityId: string, next: number, previous: number) => void;
   onOpenOpportunity: (id: string) => void;
 }
 
@@ -38,10 +40,11 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
   budget,
   canVote,
   canManage,
-  onCommitCoins,
+  onSetVotes,
   onOpenOpportunity,
+  groupBy,
 }) => {
-  const { setNodeRef, isOver } = useDroppable({ id: laneDomId(lane.month) });
+  const { setNodeRef, isOver } = useDroppable({ id: laneDomId(lane.key) });
   const hidden = lane.total - lane.items.length;
 
   return (
@@ -54,7 +57,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
         <h3
           className={`text-sm ${isCurrentMonth ? "text-primary-600" : "text-typography-primary"}`}
         >
-          {monthLabel(lane.month)}
+          {laneLabel(lane.key, groupBy)}
           {isCurrentMonth && (
             <span className="text-typography-secondary ml-1 text-xs">· this month</span>
           )}
@@ -81,7 +84,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
               // Manage rights AND an unpinned month. A shipped card is locked to the month it
               // shipped in and says so in a tooltip, rather than being dragged into a 422.
               canDrag={canManage && isDraggable(opportunity)}
-              onCommitCoins={onCommitCoins}
+              onSetVotes={onSetVotes}
               onOpen={() => onOpenOpportunity(opportunity.id)}
             />
           ))}

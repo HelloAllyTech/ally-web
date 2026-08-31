@@ -15,7 +15,7 @@ import {
   SUPERVISOR_NOTE_EVENT_TYPE,
   EVENT_FEED_TOPICS,
 } from "@constants";
-import { ANALYTICS_EVENTS } from "@constants/analyticsEvents";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
 import { RoomStatus } from "@types";
 import { captureEvent, createAgentAudioTimer, decodeUint8ToJson } from "@utils";
 
@@ -95,6 +95,25 @@ export const useLiveKitRoom = (
   // Room status to restore when a transient reconnect finishes.
   const preReconnectStatusRef = useRef<RoomStatus | null>(null);
 
+  // When the agent actually joined, so the practice funnel can be paired and
+  // timed. Null means no `simulation_started` was emitted for this session, and
+  // therefore no `simulation_completed` may be either.
+  const simulationStartedAtRef = useRef<number | null>(null);
+
+  /**
+   * Session identity for the funnel events, refreshed every render.
+   *
+   * The room callbacks below are intentionally stable (empty or near-empty dep
+   * arrays) because re-creating them would detach and re-attach LiveKit
+   * listeners mid-call. Reading `id`/`roomData` directly inside them would
+   * therefore close over the first render's values, so they are mirrored here —
+   * the same trick the audio timer already uses for `getRoomName` above.
+   */
+  const sessionIdsRef = useRef<{ simulationId: string | null; scenarioId: string | null }>({
+    simulationId: null,
+    scenarioId: null,
+  });
+
   // Diagnostic only: measures how long after the agent joins the learner can
   // actually hear it, split so a silent agent can be attributed to the
   // subscribe step rather than guessed at. See utils/agentAudioTiming.
@@ -112,6 +131,11 @@ export const useLiveKitRoom = (
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
+
+  sessionIdsRef.current = {
+    simulationId: id ?? null,
+    scenarioId: roomData?.scenarioId ?? null,
+  };
 
   const updateAgentTurnStatus = useCallback((status: AgentTurnStatus) => {
     agentTurnStatusRef.current = status;
@@ -209,6 +233,16 @@ export const useLiveKitRoom = (
   const transitionToAgentJoined = useCallback(() => {
     if (agentJoinedRef.current) return;
     agentJoinedRef.current = true;
+    // `simulation_started` means the learner can actually practise, not merely
+    // that a room was opened — a session that never got an agent is a failure,
+    // and counting it as a start would make the completion funnel read as a
+    // product problem when it is an infrastructure one. The same ref that
+    // makes this transition idempotent bounds the event to once per session.
+    simulationStartedAtRef.current = Date.now();
+    captureEvent(ANALYTICS_EVENTS.SIMULATION_STARTED, {
+      [ANALYTICS_PROPS.SIMULATION_ID]: sessionIdsRef.current.simulationId,
+      [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
+    });
     if (silentGraceTimerRef.current) {
       clearTimeout(silentGraceTimerRef.current);
       silentGraceTimerRef.current = null;
@@ -305,7 +339,32 @@ export const useLiveKitRoom = (
     [audioTimer],
   );
 
+  // Paired with `simulation_started` via the ref, so a room that disconnected
+  // before the agent ever arrived emits neither event rather than a completion
+  // with no start. `endSessionButtonRef` distinguishes the learner ending the
+  // session on purpose from the room dropping under them — the same signal the
+  // auto-termination sound keys on, and the difference between a completed
+  // practice and an interrupted one.
+  //
+  // Extracted from onRoomDisconnect so cleanupRoom can call it directly: on an
+  // in-app unmount (route change), cleanupRoom detaches the Disconnected
+  // listener before disconnecting, so onRoomDisconnect never runs for that
+  // path and this is the only place left to capture the completion.
+  const captureSimulationCompleted = useCallback(() => {
+    const startedAt = simulationStartedAtRef.current;
+    if (startedAt === null) return;
+    simulationStartedAtRef.current = null;
+    captureEvent(ANALYTICS_EVENTS.SIMULATION_COMPLETED, {
+      [ANALYTICS_PROPS.SIMULATION_ID]: sessionIdsRef.current.simulationId,
+      [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
+      duration_seconds: Math.round((Date.now() - startedAt) / 1000),
+      ended_by_learner: Boolean(endSessionButtonRef.current),
+    });
+  }, []);
+
   const onRoomDisconnect = useCallback(() => {
+    captureSimulationCompleted();
+
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
     setRoomStatus(RoomStatus.DISCONNECTING);
     logger.info("Disconnected from room");
@@ -365,6 +424,12 @@ export const useLiveKitRoom = (
     audioTimer.flush("abandoned");
     audioTimer.reset();
 
+    // Capture simulation_completed before detaching listeners: an in-app
+    // unmount (route change) never fires RoomEvent.Disconnected with the
+    // listener still attached, so onRoomDisconnect would otherwise be skipped
+    // and the session would silently drop out of the completion funnel.
+    captureSimulationCompleted();
+
     // Remove room-level listeners to prevent duplication on reconnect
     detachRoomListeners();
 
@@ -386,7 +451,14 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, detachRoomListeners, updateAgentTurnStatus, audioTimer, clearAgentJoinTimer]);
+  }, [
+    room,
+    detachRoomListeners,
+    updateAgentTurnStatus,
+    audioTimer,
+    clearAgentJoinTimer,
+    captureSimulationCompleted,
+  ]);
 
   // `force` bypasses the already-connected/connecting guard. Only the retry
   // path sets it: after a failed agent-join the room IS connected, so the guard

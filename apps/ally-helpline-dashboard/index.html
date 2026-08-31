@@ -7,8 +7,19 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Ally</title>
-    <meta name="description" content="Ally UI project" />
+    <!--
+      Link-preview scrapers (WhatsApp, Slack, LinkedIn) don't run JavaScript, so
+      these are the tags they see for every route, including /blog/:slug. The
+      per-page tags set in usePageMeta only reach the browser tab and JS-rendering
+      crawlers; serving per-post tags to scrapers needs server-rendered HTML.
+    -->
+    <meta name="description" content="Ally — training and support tools for helplines." />
     <meta name="author" content="Ally" />
+    <meta property="og:site_name" content="Ally" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ally" />
+    <meta property="og:description" content="Ally — training and support tools for helplines." />
+    <meta name="twitter:card" content="summary" />
     <link
       href="https://fonts.googleapis.com/css2?family=ReplayPro:wght@400;500;600;700&display=swap"
       rel="stylesheet"

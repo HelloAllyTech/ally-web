@@ -27,7 +27,7 @@ const STRICT_MODE_GUARD_MS = 100;
 const AGENT_SILENT_GRACE_MS = 1500;
 
 /**
- * Optional behavior overrides so non-simulation flows (e.g. Roleplay Studio
+ * Optional behavior overrides so non-simulation flows (e.g. preview
  * live preview) can reuse this hook. Every field defaults to the original
  * simulation-preview behavior, so existing call sites are unchanged.
  */

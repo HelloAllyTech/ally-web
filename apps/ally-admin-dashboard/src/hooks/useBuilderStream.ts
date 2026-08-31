@@ -99,12 +99,21 @@ export const mapServerMessagesToFeed = (
     }
 
     const toolNotes = (message.toolResults ?? []).map(result => result.name);
-    if (content || toolNotes.length) {
+    // A turn that died mid-flight leaves a row with no prose and no tools. It
+    // used to render as nothing at all, so after a reload the admin saw their
+    // own message answered by silence and no way to tell a broken turn from
+    // one still thinking. `errored` is what keeps the failure on screen.
+    const errored = Boolean(message.metadata?.errored);
+    const errorText = errored
+      ? (message.metadata?.errorMessage ?? en.builder.chat.streamFailed)
+      : undefined;
+    if (content || toolNotes.length || errored) {
       feed.push({
         id: `srv_${message.id}`,
         role: "assistant",
         content,
         ...(toolNotes.length ? { toolNotes } : {}),
+        ...(errorText ? { error: errorText } : {}),
       });
     }
 

@@ -22,6 +22,7 @@ import { useGetWeakPerformingMetricsQuery } from "@api";
 import { TooltipIcon } from "@assets";
 import { ROUTES } from "@constants";
 import {
+  AnalyticsRange,
   WeakMetricGroup,
   WeakMetricSeries,
   WeakMetricState,
@@ -31,7 +32,7 @@ import {
 } from "@types";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
-import { inProgressCaption, withoutInProgress } from "../analyticsGrouping";
+import { inProgressCaption, isInProgress, withoutInProgress } from "../analyticsGrouping";
 import { ChartCard, buildSource, lineOpts, single, timeBarOpts } from "../chartKit";
 import { PALETTE } from "../chartScales";
 import { TabControls } from "../tabControlsSlot";
@@ -127,16 +128,26 @@ const deltaLabel = (s: WeakMetricSeries): string | null => {
  * form heuristic, a current value plus a delta is a stat, not a chart.
  *
  *   0 valued buckets -> empty state, no axes
- *   1-4              -> COLUMNS, one per bucket
- *   5+               -> line chart
+ *   1-3              -> COLUMNS, one per bucket
+ *   4+               -> line chart
  *
  * Columns rather than a line for the sparse case because a column compares
  * magnitudes without asserting anything about what happens between them — which
  * is exactly the claim two points cannot support. Not a pie: these are rates
  * over time, not parts of a whole, and a pie of two slices is the form the
  * dataviz reference names as the wrong answer to a single ratio.
+ *
+ * The cut sat at 5 and moved to 4. The argument above is an argument about TWO
+ * points — a single slope, which is a comparison wearing the costume of a
+ * trend — and it does not reach four, where three consecutive slopes can
+ * disagree with each other and the shape carries information a row of columns
+ * makes the reader assemble by eye. Four is also what the drift judge's own
+ * history holds right now, so the strictest reading of the old rule denied a
+ * line to the densest series on the tab. The genuinely two-point series (the
+ * language judge, which started in July) still draw as columns, which is where
+ * this rule was aimed in the first place.
  */
-const MIN_BUCKETS_FOR_A_LINE = 5;
+const MIN_BUCKETS_FOR_A_LINE = 4;
 
 type SeriesForm = "empty" | "clean" | "stat" | "line";
 
@@ -186,6 +197,28 @@ const SeriesCard: FC<{
 
   const totalDenominator = series.points.reduce((a, p) => a + p.denominator, 0);
   const tag = STATE_TAG[series.state];
+
+  /**
+   * Whether the headline number is the bucket that is still accruing.
+   *
+   * The backend picks `latest` from every point with a readable value and does
+   * NOT skip the in-progress one, while the plot above drops it. Both are
+   * defensible alone and together they read as a fault: the card led with
+   * "6.37 — worsening" over a chart whose last bar was July, so the number
+   * shown was on no bar the reader could find, and the tab looked a month
+   * behind while actually reporting today.
+   *
+   * Saying which period the number covers is the cheap half of the fix. The
+   * delta is left comparing it to the last complete bucket because every series
+   * here is a RATE — per-100-turns or a percentage — so a part-month is a fair
+   * comparison, unlike the counts elsewhere on the platform that this
+   * convention was written for.
+   */
+  const valued = series.points.filter(p => p.value !== null && !p.sparse);
+  const headlineIsAccruing =
+    series.state !== "none" &&
+    valued.length > 0 &&
+    isInProgress(valued[valued.length - 1].bucket, inProgressBucket);
 
   // A "none" series still renders its chart — but captioned as an
   // instrumentation gap, so an empty or flat line is read as "we are not
@@ -252,6 +285,11 @@ const SeriesCard: FC<{
             {tag.label}
           </Tag>
           <strong>{series.state === "none" ? "—" : formatValue(series.latest, series.unit)}</strong>
+          {headlineIsAccruing && (
+            <span style={{ opacity: 0.75 }}>
+              {bucket === "week" ? "this week so far" : "this month so far"}
+            </span>
+          )}
           {deltaLabel(series) && <span style={{ opacity: 0.75 }}>{deltaLabel(series)}</span>}
         </span>
       }
@@ -302,9 +340,16 @@ const SeriesCard: FC<{
             })}
           />
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", opacity: 0.7 }}>
+            {/* Names the WINDOW, not the data. "2 months of data so far" reads
+                as "this metric has barely been collected", and on the default
+                90-day range that sentence sat under every card on the tab —
+                90 days spans three months, one of which is always the accruing
+                one that comes off the plot, so two bars is what a healthy
+                metric looks like there. The reader's next move is the range
+                picker, so the caption points at it. */}
             {points.length === 1
-              ? "One measured bucket — compared, not trended."
-              : `${points.length} ${bucket === "week" ? "weeks" : "months"} of data so far — not enough to show a trend.`}
+              ? `One complete ${bucket === "week" ? "week" : "month"} in this window — compared, not trended.`
+              : `${points.length} complete ${bucket === "week" ? "weeks" : "months"} in this window — widen the time range to see a trend.`}
           </p>
         </>
       ) : null}
@@ -483,11 +528,40 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
   );
 };
 
+/**
+ * Granularities that can actually produce a plottable bucket for a range.
+ *
+ * A monthly bucket over a 30-day window can only ever yield the month
+ * containing today — which is the accruing bucket every chart here drops. The
+ * result was not a thin chart but an empty one: picking "Last 30 days" blanked
+ * all 21 series at once, captioned "No data in this window", while the data
+ * behind them was fine. An impossible combination should not be offerable.
+ *
+ * The user's choice is kept as a preference rather than overwritten, so a visit
+ * to the 30-day view does not silently rewrite the granularity they set for a
+ * 12-month read.
+ */
+const BUCKETS_FOR_RANGE: Record<AnalyticsRange, Array<"week" | "month">> = {
+  "30d": ["week"],
+  "90d": ["month", "week"],
+  "12m": ["month", "week"],
+  all: ["month", "week"],
+};
+
 export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, language }) => {
   const [llmModel, setLlmModel] = useState<string>("");
   const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
   const [promptVersion, setPromptVersion] = useState<string>("");
-  const [bucket, setBucket] = useState<"week" | "month">("month");
+  const [bucketPreference, setBucketPreference] = useState<"week" | "month">("month");
+
+  // Memoised for a stable `items` identity: Carbon's Dropdown is a Downshift
+  // that rebuilds its menu state when the array changes, and this one is
+  // recomputed on every keystroke in the filters above it.
+  const bucketItems = useMemo<Array<"week" | "month">>(
+    () => BUCKETS_FOR_RANGE[query.range ?? "12m"] ?? ["month", "week"],
+    [query.range],
+  );
+  const bucket = bucketItems.includes(bucketPreference) ? bucketPreference : bucketItems[0];
 
   const { data, isFetching, isError, refetch } = useGetWeakPerformingMetricsQuery({
     range: query.range,
@@ -531,10 +605,10 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
   if (isError) {
     return (
       <ChartCard
-        title="Weak performing metrics"
+        title="Actor quality metrics"
         error
         onRetry={() => refetch()}
-        errorTitle="Could not load weak performing metrics"
+        errorTitle="Could not load actor quality metrics"
       >
         <span />
       </ChartCard>
@@ -613,11 +687,11 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             titleText="Granularity"
             hideLabel
             label="By month"
-            items={["month", "week"]}
+            items={bucketItems}
             selectedItem={bucket}
             itemToString={(i: string) => (i === "week" ? "By week" : "By month")}
             onChange={({ selectedItem }: { selectedItem: "week" | "month" }) =>
-              setBucket(selectedItem ?? "month")
+              setBucketPreference(selectedItem ?? "month")
             }
           />
         </div>
@@ -630,7 +704,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           tab, which is where a reader goes looking for it rather than past it. */}
 
       {isFetching && !data ? (
-        <ChartCard title="Weak performing metrics" loading>
+        <ChartCard title="Actor quality metrics" loading>
           <span />
         </ChartCard>
       ) : (

@@ -4,27 +4,7 @@ import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { BugFindingStage, BugFindingStatus } from "@types";
 
-import { BUG_FINDING_STAGE_LABELS } from "./bugFindingLabels";
-
-const STATUS_LABELS_FOR_TOOLTIP: Record<string, string> = {
-  [BugFindingStatus.NEW]: en.bugHunter.findingStatusNew,
-  [BugFindingStatus.PENDING_APPROVAL]: en.bugHunter.findingStatusPendingApproval,
-  [BugFindingStatus.APPROVED]: en.bugHunter.findingStatusApproved,
-  [BugFindingStatus.QUEUED]: en.bugHunter.findingStatusQueued,
-  [BugFindingStatus.BLOCKED]: en.bugHunter.findingStatusBlocked,
-  [BugFindingStatus.COORDINATING]: en.bugHunter.findingStatusCoordinating,
-  [BugFindingStatus.FIXING]: en.bugHunter.findingStatusFixing,
-  [BugFindingStatus.NEEDS_INPUT]: en.bugHunter.findingStatusNeedsInput,
-  [BugFindingStatus.PR_OPENED]: en.bugHunter.findingStatusPrOpened,
-  [BugFindingStatus.MERGED]: en.bugHunter.findingStatusMerged,
-  [BugFindingStatus.RELEASING]: en.bugHunter.findingStatusReleasing,
-  [BugFindingStatus.RELEASED]: en.bugHunter.findingStatusReleased,
-  [BugFindingStatus.RELEASE_FAILED]: en.bugHunter.findingStatusReleaseFailed,
-  [BugFindingStatus.DISMISSED]: en.bugHunter.findingStatusDismissed,
-  [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
-  [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
-  [BugFindingStatus.CANCELLED]: en.bugHunter.findingStatusCancelled,
-};
+import { BUG_FINDING_STAGE_LABELS, BUG_FINDING_STATUS_LABELS } from "./bugFindingLabels";
 
 const formatDate = (iso: string | null): string => (iso ? new Date(iso).toLocaleDateString() : "—");
 
@@ -61,7 +41,7 @@ export const BugFindingStageChip: React.FC<{
   const tooltip = isAuto
     ? en.bugHunter.findingStageAutoTooltip
         .replace("{stage}", label.toLowerCase())
-        .replace("{status}", (STATUS_LABELS_FOR_TOOLTIP[status] ?? status).toLowerCase())
+        .replace("{status}", BUG_FINDING_STATUS_LABELS[status].toLowerCase())
     : en.bugHunter.findingStagePinnedTooltip
         .replace("{name}", pinnedByName ?? en.bugHunter.reporterUnknown)
         .replace("{date}", formatDate(pinnedAt ?? null));

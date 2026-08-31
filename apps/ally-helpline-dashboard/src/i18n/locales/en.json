@@ -473,8 +473,10 @@
       "noAccess": "Organization metrics are available to organization admins only.",
       "retry": "Retry",
       "empty": "No data for this range",
-      "notEnoughData": "Not enough data yet"
+      "notEnoughData": "Not enough data yet",
+      "reorderFailed": "Couldn't save the new layout"
     },
+    "dragHandleLabel": "Drag to reorder",
     "mostUsedSimulations": {
       "title": "Most practiced simulations",
       "caption": "Top scenarios by completed sessions in the selected period",
@@ -503,7 +505,6 @@
         "signupDate": "Signup date",
         "roleplaySessionsStarted": "Roleplay sessions started",
         "roleplaySessionsCompleted": "Roleplay sessions completed",
-        "avgScore": "Avg score",
         "totalPracticeMinutes": "Total practice minutes",
         "coursesStartedAssigned": "Courses started / assigned",
         "coursesAssigned": "Courses assigned",
@@ -1172,7 +1173,10 @@
           "transcribing": "Transcribing your recording…",
           "extracting": "Extracting note details…",
           "populating": "Filling in the fields…"
-        }
+        },
+        "stillWorking": "Still working — this one is taking longer than usual. You can keep waiting, or cancel and fill the form in yourself.",
+        "extractionFailed": "We saved what you dictated, but couldn't fill the fields from it. Please fill them in below, or try recording again.",
+        "notEnabled": "Voice notes aren't switched on for your organisation. Ask an administrator to enable them."
       }
     },
     "table": {

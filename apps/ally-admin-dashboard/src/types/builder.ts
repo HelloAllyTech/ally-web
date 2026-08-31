@@ -17,7 +17,13 @@ export type BuilderStage =
   | "PLANNING"
   | "CODING"
   | "TESTING"
+  /** The machine test gate — every touched repo's tests, lint and typecheck. */
+  | "GATE"
   | "VERIFYING"
+  /** A coder pass fixing gate failures or reviewer objections. */
+  | "REMEDIATING"
+  /** E2E, push and PRs — only reached once the gate and reviewer are happy. */
+  | "FINALISING"
   | "E2E_VERIFY"
   | "OPENING_PRS"
   | "REPORTING"
@@ -85,13 +91,21 @@ export interface BuilderPrdReadinessSection {
   key: string;
   label: string;
   ok: boolean;
+  /** One short sentence — this is what the section tooltip renders. */
   hint: string;
+  /**
+   * The same gap spelled out for the interview agent (JSON Pointers, field
+   * names, legal values). Deliberately not rendered: it is long by design and
+   * belongs in the agent's tool results, not in a tooltip.
+   */
+  detail?: string;
 }
 
 export interface BuilderPrdReadiness {
   score: number;
   ready: boolean;
   sections: BuilderPrdReadinessSection[];
+  /** `hint` + `detail` per blocked section. Counted here, not read. */
   blockers: string[];
 }
 
@@ -184,6 +198,10 @@ export interface BuilderServerMessage {
     questions?: BuilderQuestionEvent[];
     questionId?: string;
     answer?: BuilderStructuredAnswer;
+    /** The turn died — set by the server so a reload still shows the failure. */
+    errored?: boolean;
+    /** What to tell the admin about it; falls back to generic copy. */
+    errorMessage?: string;
     [key: string]: unknown;
   } | null;
   createdAt: string;
@@ -211,7 +229,8 @@ export interface BuilderBuildRun {
   id: string;
   sessionId: string;
   sequence: number;
-  mode: "build" | "resume";
+  /** `fix` is a run dispatched from Bug Hunter's build-a-fix flow, not a session resume. */
+  mode: "build" | "resume" | "fix";
   status: BuilderRunStatus;
   engine: string;
   model: string;
@@ -237,6 +256,15 @@ export type BuilderEventType =
   | "stage_change"
   | "plan"
   | "verification"
+  /** A machine-run check result — verified, not self-reported. */
+  | "gate_result"
+  | "phase_cost"
+  /**
+   * A run parked at a phase boundary because the spend ceiling is gone.
+   * `payload.state`: `held` while it waits, `raised` once a new ceiling let it
+   * carry on, `expired` when nobody answered and the run stopped.
+   */
+  | "budget_hold"
   | "question"
   | "e2e_evidence"
   | "e2e_skipped"
@@ -245,6 +273,24 @@ export type BuilderEventType =
   | "cost"
   | "error"
   | "done";
+
+/**
+ * Live spend against the session's ceiling.
+ *
+ * Polled while a build is running rather than read off the session, whose
+ * detail response is fetched once: the spend moves every phase, and `hold` is
+ * set only while a run is actually sitting on the ceiling waiting for a raise.
+ */
+export interface BuilderBudgetState {
+  budgetUsd: number | null;
+  spentUsd: number;
+  remainingUsd: number | null;
+  exceeded: boolean;
+  /** How long a held run waits before giving up, from the server. */
+  holdSeconds: number;
+  pollSeconds: number;
+  hold: { runId: string; heldAt: string; holdUntil: string } | null;
+}
 
 export interface BuilderBuildEvent {
   id: string;
@@ -299,6 +345,14 @@ export interface BuilderSettings {
   enabled: boolean;
   maxConcurrentBuilds: number;
   defaultBudgetUsd: string | null;
+  /**
+   * Per-tier model overrides for new runs. Null falls through to the
+   * platform default — same resolution order a per-run override sits above
+   * (see `startBuilderBuild`'s `plannerModel`/`model`/`verifierModel`).
+   */
+  plannerModel: string | null;
+  coderModel: string | null;
+  verifierModel: string | null;
 }
 
 export interface BuilderNotification {
@@ -357,4 +411,95 @@ export interface BuilderRepoMapSummary {
   commitSha: string | null;
   generatedAt: string | null;
   stats: Record<string, unknown> | null;
+}
+
+/* ── Scoreboard ─────────────────────────────────────────────────────────── */
+
+export type BuilderScoreboardOutcome = "merged" | "open" | "failed" | "cancelled";
+
+export interface BuilderScoreboardBuild {
+  sessionId: string;
+  title: string;
+  repos: string[];
+  createdAt: string;
+  outcome: BuilderScoreboardOutcome;
+  durationHours: number | null;
+  costUsd: number;
+  runCount: number;
+  fixRunCount: number;
+  reviewCommentCount: number;
+  ciFailureCount: number;
+  timeToMergeHours: number | null;
+  failureTags: string[];
+}
+
+export interface BuilderScoreboardTrendWeek {
+  weekStart: string;
+  builds: number;
+  mergeRate: number;
+  medianCostUsd: number;
+  medianFixRuns: number;
+  medianTimeToMergeHours: number | null;
+}
+
+export interface BuilderScoreboardTotals {
+  builds: number;
+  merged: number;
+  mergeRate: number;
+  totalCostUsd: number;
+  medianCostUsd: number;
+}
+
+export interface BuilderScoreboard {
+  builds: BuilderScoreboardBuild[];
+  trends: BuilderScoreboardTrendWeek[];
+  totals: BuilderScoreboardTotals;
+}
+
+/* ── Knowledge: lessons + exemplars ────────────────────────────────────── */
+
+export type BuilderLessonStatus = "candidate" | "active" | "merged" | "retired";
+
+export interface BuilderLesson {
+  id: string;
+  lesson: string;
+  category: string;
+  status: BuilderLessonStatus;
+  /**
+   * A pinned lesson is exempt from the automatic curator's edits and
+   * retirement — a person put it there on purpose, and the periodic
+   * consolidation pass must not touch it.
+   */
+  pinned: boolean;
+  sourceCount: number;
+  timesApplied: number;
+  timesContradicted: number;
+  repos: string[];
+  tags: string[];
+  createdAt: string;
+}
+
+export interface PatchBuilderLessonRequest {
+  id: string;
+  lesson?: string;
+  category?: string;
+  status?: BuilderLessonStatus;
+  pinned?: boolean;
+  tags?: string[];
+}
+
+export interface BuilderExemplar {
+  id: string;
+  sessionId: string;
+  title: string;
+  repos: string[];
+  outcome: BuilderScoreboardOutcome;
+  fixRunCount: number;
+  reviewCommentCount: number;
+  ciFailureCount: number;
+  costUsd: number;
+  timeToMergeHours: number | null;
+  failureTags: string[];
+  summaryMd: string;
+  createdAt: string;
 }

@@ -2,13 +2,13 @@
  * Largest-remainder (Hamilton) split, mirroring ally-be's
  * src/product-roadmap/util/largest-remainder.util.ts.
  *
- * This exists ONLY to preview how a split will divide coins before an admin commits. The backend
+ * This exists ONLY to preview how a split will divide votes before an admin commits. The backend
  * is the authority and runs the same algorithm per (user, period) allocation row, so the real
  * per-part totals are the sum of many small splits and can differ from this single-total preview
- * by a coin or two. That is expected, and the UI labels the numbers with "≈".
+ * by a vote or two. That is expected, and the UI labels the numbers with "≈".
  *
  * Exactness still matters here: the previewed parts must sum to the total, or the preview would
- * imply coins are being created or lost — which is precisely the thing the split guarantees never
+ * imply votes are being created or lost — which is precisely the thing the split guarantees never
  * happens.
  */
 export const largestRemainderPreview = (total: number, weights: number[]): number[] => {

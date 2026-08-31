@@ -666,9 +666,7 @@ export const RoleplaySessionLogDetail: FC = () => {
           can be opened here and read turn by turn. */}
       {data.weakMetrics && (
         <section className="mt-6">
-          <h2 className="text-lg font-secondary text-typography-900 mb-2">
-            Weak performing metrics
-          </h2>
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Actor quality metrics</h2>
           <p className="text-xs text-typography-500 mb-2">
             Parameters {data.weakMetrics.metricsVersion}
             {data.weakMetrics.judged

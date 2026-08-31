@@ -34,6 +34,24 @@ interface BehavioursAndStatesInstructionProps {
 
 const STATE_NAMES_ROW_ID = "state-names-row";
 
+// The two rubric categories ("Helper should do" / "Helper should not do")
+// differ only by the word "not", and "not" is the first thing a narrow column
+// clips — a truncated "Helper sho..." reads identically for both, which made it
+// impossible to tell at a glance how a behaviour class was scored. So the
+// category column is wide enough to hold the longer label in full, and each row
+// additionally carries a colour accent (and colour-matched select text) so the
+// rubric can be scanned without reading every cell. Colour is redundant with
+// the now-untruncated text, never the only signal.
+const RUBRIC_GRID = "grid grid-cols-[1fr_248px_40px]";
+
+const rubricAccent = (isShould: boolean) =>
+  isShould ? "border-l-success-400" : "border-l-destructive-400";
+
+const rubricSelectTone = (isShould: boolean) =>
+  isShould
+    ? "[&_select]:!text-success-600 [&_select]:!font-medium"
+    : "[&_select]:!text-destructive-600 [&_select]:!font-medium";
+
 // A stable per-row id. The table identifies the row to mutate by this id, and
 // the edit handler ignores changes whose rowId is null — so every row reaching
 // the table must carry one.
@@ -340,7 +358,9 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     <>
       <div className="w-full border border-border-light rounded overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_180px_40px] bg-white border-b border-border-light">
+        <div
+          className={`${RUBRIC_GRID} border-l-[3px] border-l-transparent bg-white border-b border-border-light`}
+        >
           <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide">
             Helper Behaviour Class
           </div>
@@ -359,7 +379,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
           rubricRows.map(({ rowId, tag, isShould }, i) => (
             <div
               key={`${rowId}-${tag.id}`}
-              className={`grid grid-cols-[1fr_180px_40px] items-center border-b border-border-light last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-background-secondary/40"} group`}
+              className={`${RUBRIC_GRID} items-center border-b border-border-light last:border-b-0 border-l-[3px] ${rubricAccent(isShould)} ${i % 2 === 0 ? "bg-white" : "bg-background-secondary/40"} group`}
             >
               <div className="px-4 py-2.5 text-sm text-typography-900">{tag.name}</div>
               <div className="px-3 py-2 border-l border-border-light">
@@ -369,7 +389,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
                   hideLabel
                   value={isShould ? "SHOULD_DO" : "SHOULD_NOT_DO"}
                   onChange={e => handleRubricRowCategoryChange(rowId, tag.id, e.target.value)}
-                  className="w-full"
+                  className={`w-full ${rubricSelectTone(isShould)}`}
                 >
                   {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
                     <SelectItem key={opt.value} value={opt.value} text={opt.label} />
@@ -391,7 +411,9 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
 
         {/* Pending new row */}
         {pendingRow && (
-          <div className="grid grid-cols-[1fr_180px_40px] items-center border-t border-border-light bg-white">
+          <div
+            className={`${RUBRIC_GRID} items-center border-t border-border-light border-l-[3px] ${rubricAccent(pendingRow.category === "SHOULD_DO")} bg-white`}
+          >
             <div className="px-4 py-2">
               <HelperTag
                 tags={[]}
@@ -412,7 +434,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
                 onChange={e =>
                   setPendingRow(prev => (prev ? { ...prev, category: e.target.value } : null))
                 }
-                className="w-full"
+                className={`w-full ${rubricSelectTone(pendingRow.category === "SHOULD_DO")}`}
               >
                 {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
                   <SelectItem key={opt.value} value={opt.value} text={opt.label} />

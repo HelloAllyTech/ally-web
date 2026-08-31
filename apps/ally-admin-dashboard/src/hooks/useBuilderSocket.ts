@@ -36,7 +36,12 @@ export const useBuilderSocket = ({
   onMissedWindow,
 }: UseBuilderSocketOptions) => {
   const [joined, setJoined] = useState(false);
-  const seenSeqRef = useRef<Set<number>>(new Set());
+  // Keyed by `${runId}:${seq}`, not seq alone — a resume keeps the same
+  // sessionId but starts a new run whose seq numbers restart from a low
+  // count, so a seq-only key would wrongly treat the new run's earliest
+  // events as duplicates of the old run's.
+  const seenSeqRef = useRef<Set<string>>(new Set());
+  const seenKey = (event: BuilderBuildEvent) => `${event.runId}:${event.seq}`;
 
   // Held in refs so a fresh callback identity each render does not tear the
   // socket down and rebuild it — `handlers` must be referentially stable.
@@ -64,9 +69,9 @@ export const useBuilderSocket = ({
       // De-duplicate by seq: a reconnect replays, and the polling fallback may
       // already have fetched the same rows. Cheaper and far more reliable than
       // trying to make delivery exactly-once.
-      const fresh = payload.events.filter(event => !seenSeqRef.current.has(event.seq));
+      const fresh = payload.events.filter(event => !seenSeqRef.current.has(seenKey(event)));
       if (!fresh.length) return;
-      for (const event of fresh) seenSeqRef.current.add(event.seq);
+      for (const event of fresh) seenSeqRef.current.add(seenKey(event));
       onEventsRef.current(fresh);
     },
   });
@@ -114,7 +119,7 @@ export const useBuilderSocket = ({
 
   /** Called by the page when it fetches events itself, to keep dedup honest. */
   const markSeen = useCallback((events: BuilderBuildEvent[]) => {
-    for (const event of events) seenSeqRef.current.add(event.seq);
+    for (const event of events) seenSeqRef.current.add(seenKey(event));
   }, []);
 
   return { connected: joined, markSeen };

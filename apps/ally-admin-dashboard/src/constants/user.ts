@@ -391,11 +391,24 @@ export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean 
 // source for those. Any future platform-tier role added to
 // ADMIN_PORTAL_LOGIN_ROLES must be added here too, or a multi-role account
 // misreports everywhere this collapsed value is still read.
+//
+// Ordering, which is the whole point of the list — "highest tier held":
+//   - PLATFORM_ADMIN outranks MULTI_TENANT_ADMIN because it is a strict
+//     superset of it (the collapse migration seeded PLATFORM_ADMIN from
+//     SUPER_DUPER_ADMIN, and MULTI_TENANT_ADMIN's permissions are a verified
+//     subset). A dual-holder previously reported the *weaker* of the two.
+//   - PLATFORM_ADMIN stays BELOW the two super tiers on purpose, for as long
+//     as the collapse migration's rollback window keeps the old `user_groups`
+//     rows alive. A migrated ex-SUPER_DUPER_ADMIN holds
+//     [PLATFORM_ADMIN, SUPER_DUPER_ADMIN]; hoisting PLATFORM_ADMIN above them
+//     would resolve such an account to PLATFORM_ADMIN and fail
+//     isSuperDuperAdminRole, silently dropping the SDA-only surfaces. Do not
+//     "simplify" this by moving PLATFORM_ADMIN to the top.
 const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
   UserRole.SUPER_DUPER_ADMIN,
   UserRole.SUPER_ADMIN,
-  UserRole.MULTI_TENANT_ADMIN,
   UserRole.PLATFORM_ADMIN,
+  UserRole.MULTI_TENANT_ADMIN,
 ];
 
 export const resolveAdminRole = (user?: {

@@ -10,15 +10,21 @@ import {
 } from "../../pages/Builder/builderMotion";
 
 /** The stages a build moves through, in order. */
-const STAGES: BuilderStage[] = [
-  "PLANNING",
-  "CODING",
-  "TESTING",
-  "VERIFYING",
-  "E2E_VERIFY",
-  "OPENING_PRS",
-  "DONE",
-];
+const STAGES: BuilderStage[] = ["PLANNING", "CODING", "GATE", "VERIFYING", "FINALISING", "DONE"];
+
+/**
+ * Stages that happen inside one of the rail's steps rather than beside it.
+ * REMEDIATING is a second pass at CODING, and TESTING / E2E_VERIFY /
+ * OPENING_PRS / REPORTING all sit within the gate or the finalise phase — so
+ * they light up the step that owns them instead of adding a step of their own.
+ */
+const STAGE_OWNER: Partial<Record<BuilderStage, BuilderStage>> = {
+  REMEDIATING: "CODING",
+  TESTING: "GATE",
+  E2E_VERIFY: "FINALISING",
+  OPENING_PRS: "FINALISING",
+  REPORTING: "FINALISING",
+};
 
 interface PhaseRailProps {
   currentStage: BuilderStage | null;
@@ -29,15 +35,16 @@ interface PhaseRailProps {
 /**
  * Where the build has got to.
  *
- * SETUP and REPORTING are deliberately not shown: they are bookkeeping either
- * side of the work, and a rail that lists every internal step makes the
- * interesting ones harder to find. A stage the build skipped (E2E on a
- * backend-only change) still renders — showing it greyed says "considered and
- * skipped", where hiding it would say "never existed".
+ * Six steps, matching the phases the runner actually posts at each boundary:
+ * plan, code, gate, verify, finalise, done. Sub-stages fold into the step that
+ * owns them (see STAGE_OWNER) — a rail that listed every internal step would
+ * make the interesting ones harder to find, and a remediation round is not
+ * progress past coding, it is coding again.
  */
 export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active }) => {
   const strings = en.builder.stages;
-  const currentIndex = currentStage ? STAGES.indexOf(currentStage) : -1;
+  const railStage = currentStage ? (STAGE_OWNER[currentStage] ?? currentStage) : null;
+  const currentIndex = railStage ? STAGES.indexOf(railStage) : -1;
   const reduced = prefersReducedMotion();
 
   return (
@@ -76,7 +83,12 @@ export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active }) =>
                   isCurrent && active && !reduced ? "animate-pulse" : "",
                 ].join(" ")}
               />
-              {strings[stage] ?? stage}
+              {/* On the step in flight, name the sub-stage when it differs —
+                  "Writing code" and "Fixing what the checks found" are the
+                  same step of the rail but not the same news. */}
+              {isCurrent && currentStage && currentStage !== stage
+                ? (strings[currentStage] ?? strings[stage] ?? stage)
+                : (strings[stage] ?? stage)}
             </span>
             {index < STAGES.length - 1 && (
               <span

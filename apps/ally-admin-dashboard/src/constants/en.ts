@@ -931,283 +931,6 @@ export const en = {
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
   },
-  roleplayStudio: {
-    navLabel: "Roleplay Studio",
-    title: "Roleplay Studio",
-    subtitle: "Design state-driven roleplay personas with the copilot",
-    newRoleplay: "New Roleplay",
-    untitledRoleplay: "Untitled roleplay",
-    open: "Open",
-    delete: "Delete",
-    deleteTitle: "Delete this",
-    deleteTitleItalic: "Roleplay?",
-    deleteDescription:
-      "This will permanently delete the roleplay spec, its versions, and its rehearsal history. This action cannot be undone.",
-    emptyTitle: "No roleplays yet",
-    emptySubtitle: "Create your first roleplay and let the copilot interview you into a spec.",
-    loadFailed: "Failed to load roleplays",
-    createFailed: "Failed to create roleplay",
-    deleteFailed: "Failed to delete roleplay",
-    duplicate: "Duplicate",
-    duplicating: "Duplicating…",
-    duplicateFailed: "Failed to duplicate roleplay",
-    copyOfPrefix: "Copy of ",
-    columns: {
-      title: "Title",
-      status: "Status",
-      updatedAt: "Last updated",
-      actions: "",
-    },
-    steps: {
-      chat: "Chat",
-      spec: "Spec",
-      publish: "Publish",
-    },
-    workbench: {
-      specView: "Spec",
-      stateMachineView: "State machine",
-      copilotManaged: "Copilot-managed — only voice toggles are editable",
-      editToggle: "Edit spec directly",
-      editingHint: "Direct edits autosave",
-      editLockedHint: "Editing is paused while the copilot is active",
-    },
-    autosave: {
-      saving: "Saving…",
-      saved: "Draft saved",
-      failed: "Couldn’t save — retrying shortly",
-      conflict: "Newer draft on server — reloaded",
-    },
-    titlePlaceholder: "Name this roleplay",
-    copilot: {
-      title: "Copilot",
-      placeholder: "Describe the persona, scenario, or ask for changes…",
-      send: "Send",
-      stop: "Stop",
-      interrupted: "(interrupted)",
-      thinking: "Thinking…",
-      resumeFailed: "Couldn’t resume the copilot session",
-      startFailed: "Couldn’t start a copilot session",
-      streamFailed: "The copilot stream failed — please try again",
-      streamFramesDropped: (count: number) =>
-        count === 1
-          ? "A part of this response could not be read and was skipped."
-          : `${count} parts of this response could not be read and were skipped.`,
-      emptyTitle: "Start the interview",
-      emptySubtitle:
-        "Tell the copilot who the trainee will be talking to. It will draft the persona, states, secrets, and rubric live on the right.",
-      toolRunning: "Working",
-      answer: "Answer",
-      submitAnswer: "Submit answer",
-      freeTextPlaceholder: "Type your answer…",
-      confirmSelection: "Confirm",
-      noneOfThese: "None of these",
-      addCustom: "Add your own",
-      addCustomPlaceholder: "Add your own…",
-      add: "Add",
-      selectPlaceholder: "Select…",
-      minSelectionsHint: (n: number) => `Select at least ${n}`,
-      behaviourReviewHelpful: "Helpful behaviours",
-      behaviourReviewUnhelpful: "Unhelpful behaviours",
-      behaviourReviewConfirm: "Confirm behaviours",
-      behaviourReviewEmpty: "No behaviours selected yet",
-      selectedCountLabel: (n: number) => `${n} selected`,
-    },
-    spec: {
-      personaBible: "Persona Bible",
-      identityCore: "Identity core",
-      scenarioContext: "Scenario context",
-      chunks: "Persona chunks",
-      addChunk: "Add chunk",
-      chunkTopics: "Topics (comma separated)",
-      chunkContent: "Content",
-      stateMachine: "State Machine",
-      disclosureLedger: "Disclosure Ledger",
-      addSecret: "Add secret",
-      secretTopic: "Topic",
-      secretContent: "Content",
-      secretUnlockConditions: "Unlock conditions",
-      secretLockedDeflection: "Locked deflection",
-      secretTier: "Tier",
-      rubric: "Rubric",
-      addBehavior: "Add behavior",
-      behaviorName: "Name",
-      behaviorDescription: "Description",
-      behaviorWeight: "Weight",
-      behaviorExamples: "Examples",
-      polarityPositive: "Positive",
-      polarityNegative: "Negative",
-      engineeredEvents: "Engineered Events",
-      addEvent: "Add event",
-      eventName: "Name",
-      eventDescription: "Description",
-      voiceAndLanguage: "Voice & Language",
-      languages: "Languages the actor can be played in",
-      languagesPlaceholder: "Select one or more languages",
-      voicesPerLanguage: "Voice per language",
-      voicePending: "Voice assigned by the copilot",
-      openingStatement: "Opening statement",
-      difficulty: "Difficulty",
-      voiceNaturalness: "Voice Naturalness",
-      thinkingFiller: "Thinking Filler",
-      thinkingFillerHelp:
-        "Play a brief 'thinking' sound the instant the learner stops speaking, masking reply latency.",
-      comfortAudio: "Comfort Audio",
-      comfortAudioHelp:
-        "Loop a faint ambient room tone so the line never sounds dead between turns.",
-      continuousBackchanneling: "Continuous Back-channeling",
-      continuousBackchannelingHelp:
-        'Play brief listener affirmations ("mm-hmm") while the learner speaks on long turns.',
-      interimReply: "Interim Reply",
-      interimReplyHelp:
-        "Speak a short holding reply from the partial transcript while the learner finishes, then cut to the real reply.",
-      emptySection: "Nothing here yet — the copilot fills this in during the interview.",
-      remove: "Remove",
-    },
-    stateMachine: {
-      addState: "Add state",
-      maxStatesTooltip: "A roleplay supports at most 6 states",
-      minStatesTooltip: "A roleplay needs at least 3 states",
-      editState: "Edit state",
-      editTransition: "Edit transition",
-      deleteStateTitle: "Delete this",
-      deleteStateTitleItalic: "State?",
-      deleteStateDescription: "Deleting this state also removes the transitions listed below.",
-      orphanedTransitions: "Transitions that will be removed:",
-      noOrphanedTransitions: "No transitions reference this state.",
-      stateName: "Name",
-      emotionalRegister: "Emotional register",
-      disclosurePosture: "Disclosure posture",
-      resistanceLevel: "Resistance level",
-      stateCard: "State card",
-      defaultStageDirection: "Default stage direction",
-      prosodyHints: "Prosody hints",
-      initialState: "Initial state",
-      transitionDescription: "Description",
-      whenBehaviorsAny: "When any of these behaviors",
-      whenBehaviorsAll: "When all of these behaviors",
-      minTurnsInState: "Min turns in state",
-      minCumulativeScore: "Min cumulative score",
-      toState: "To state",
-      readOnly: "Read-only",
-      viewJourney: "Journey",
-      viewOutline: "Outline",
-      viewCanvas: "Canvas",
-      viewLabel: "State machine view",
-      addTransition: "Add transition",
-      addTransitionFrom: "Add a transition from this state",
-      deleteState: "Delete state",
-      transitionTo: (name: string) => `Advances to ${name}`,
-      skipsTo: (name: string) => `Skips ahead to ${name}`,
-      returnsTo: (name: string) => `Falls back to ${name}`,
-      loopsOn: "Stays in this state",
-      unknownTarget: "missing state",
-      danglingTransition: "Points at a deleted state",
-      unreachable: "Not reachable from the initial state",
-      guardAnyOf: (names: string) => `any of: ${names}`,
-      guardAllOf: (names: string) => `all of: ${names}`,
-      guardMinTurns: (n: number) => `≥${n} turn${n === 1 ? "" : "s"} in state`,
-      guardMinScore: (n: number) => `score ≥ ${n}`,
-      guardAlways: "always (no conditions)",
-      outgoingTransitions: "Leads to",
-      incomingTransitions: "Reached from",
-      noOutgoingTransitions: "No transitions out of this state yet.",
-      noIncomingTransitions: "Nothing transitions into this state.",
-      arcHint: "The client's emotional arc, from the opening state onward.",
-    },
-    publish: {
-      title: "Publish",
-      readiness: "Readiness checklist",
-      checkStates: "3–6 states in the state machine",
-      checkSecret: "At least one secret in the disclosure ledger",
-      checkRubric: "Rubric has at least one behavior",
-      checkVoice: "A voice is selected",
-      versions: "Versions",
-      publish: "Publish",
-      publishing: "Publishing…",
-      published: "Version published",
-      publishFailed: "Failed to publish version",
-      newVersion: "New version",
-      tryLive: "Try live",
-      preview: "Preview",
-      previewLanguage: "Preview language",
-      previewHint: "Add 3–6 states and a voice to preview the draft",
-      publishHint: "Complete the readiness checklist to publish",
-      startingSession: "Starting session…",
-      sessionFailed: "Failed to start a live session",
-      noVersions: "No versions yet",
-    },
-    improve: {
-      button: "Improve",
-      buttonHint: "Add 3–6 states and a voice to run test cases",
-      drawerTitle: "Improve",
-      drawerSubtitle:
-        "Run agent test cases against the current draft, then feed a report back to the copilot to fix the spec.",
-      testCasesHeading: "Test cases",
-      searchPlaceholder: "Filter test cases…",
-      noTestCases: "No agent test cases yet — create some under Agent Test Cases first.",
-      noMatchingTestCases: "No test cases match this filter.",
-      loadTestCasesFailed: "Failed to load test cases",
-      typeCondition: "Condition",
-      typeFullSession: "Full session",
-      runTestCases: (n: number) => `Run test cases (${n})`,
-      startingRun: "Starting…",
-      runInProgressHint: "A test run is already in progress",
-      selectCasesHint: "Select at least one test case",
-      runStarted: "Test run started",
-      runStartFailed: "Failed to start the test run",
-      reportsHeading: "Test reports",
-      reportsEmpty: "No test reports yet — select test cases above and run them.",
-      loadReportsFailed: "Failed to load test reports",
-      pending: "Running…",
-      progressLabel: (completed: number, total: number) => `${completed}/${total} complete`,
-      cancelRun: "Cancel run",
-      runCancelled: "Test run cancelled",
-      cancelFailed: "Failed to cancel the test run",
-      statusFailed: "Failed",
-      statusCancelled: "Cancelled",
-      viewFailureReason: "View reason",
-      verdictPassed: "Passed",
-      verdictFailed: "Failed",
-      verdictInconclusive: "Inconclusive",
-      versionLabel: (n: number | string) => `v${n}`,
-      autoImprove: "Auto improve",
-      autoImproveHint:
-        "Send this report to the copilot; it patches the spec, then the same test case re-runs",
-      autoImproveQueued: "Sent to the copilot — watch it patch the spec in Chat",
-      autoImprovePrompt: (title: string) =>
-        `Auto-improve the spec from the test report for "${title}".`,
-      autoImproveRejected:
-        "Auto-improve was rejected — the report is already improving or a run is in flight",
-      turnInProgress: "The copilot is already mid-turn — try again once it finishes",
-      improving: "Improving…",
-      rerunning: "Re-running…",
-      noChanges: "Copilot made no changes — see its explanation in Chat",
-      improveFailed: "Auto-improve failed",
-      improvedFrom: "Improved from an earlier report",
-      overallScore: "Overall score",
-      rubricScores: "Rubric scores",
-      sessionQuality: "Session quality",
-      judgeNotes: "Judge notes",
-      reportSection: "Report",
-      transcript: "Transcript",
-      showTranscript: "Show transcript",
-      hideTranscript: "Hide transcript",
-      detailLoadFailed: "Failed to load the report",
-      noReportContent: "No report content available.",
-    },
-    preview: {
-      directorFeed: "Director feed",
-      turn: "Turn",
-      behaviors: "Behaviors",
-      stateChange: "State",
-      unlocks: "Unlocks",
-      score: "Score",
-      feedback: "Feedback",
-      stale: "stale",
-      waiting: "Waiting for the director…",
-    },
-    saveConflict: "Someone else saved this draft — reloaded the latest version",
-  },
   characterInterview: {
     title: "Character interview",
     subtitle: "Answer a few questions and the agent will draft a rich, consistent character.",
@@ -2226,6 +1949,7 @@ export const en = {
     // from is a claim nobody can check.
     provenance: "{window} · {model}",
     noGoalMatched: "No goal matched",
+    sourceUxSignal: "From UX telemetry",
     rationaleLabel: "Why now",
     evidenceLabel: "From the data",
     accept: "Accept",
@@ -2266,6 +1990,27 @@ export const en = {
     rejectSubmit: "Reject suggestion",
     rejected: "Rejected.",
     rejectFailed: "Could not reject this suggestion.",
+  },
+  uxSignals: {
+    title: "UX Signals",
+    description:
+      "Reads the last seven days of product telemetry, then files what looks broken as a bug below and what looks like a missed opportunity into Analytics \u2192 Suggestions. Nothing is fixed or filed to the roadmap without your decision.",
+    scanNow: "Scan now",
+    scanning: "Scanning telemetry\u2026",
+    scanTooltip: "Takes about two minutes: seven detector queries, then one triage pass.",
+    neverScanned: "No scan has run yet. Scans run automatically once a day.",
+    scanRunning: "A scan is running now.",
+    lastScanSummary: "Last scan {when}: {findings} bugs, {suggestions} suggestions filed.",
+    lastScanFailed: "Last scan {when} failed. Open the scan log for the reason.",
+    // Zero is a real answer, so the copy has to read correctly at zero: "0 bugs
+    // and 0 suggestions filed" is a successful quiet week, not a failure.
+    scanDone: "Scan complete: {findings} bugs and {suggestions} suggestions filed.",
+    scanDetail: "{signals} signals crossed a threshold; {skipped} were already known.",
+    detectorsFailed: "These detectors could not run: {detectors}.",
+    scanConflict: "A scan is already running. Wait for it to finish before starting another.",
+    scanUnavailable:
+      "Product telemetry is unreachable, so there was nothing to scan. Nothing was filed.",
+    scanFailed: "The scan could not be completed. Nothing was filed.",
   },
   bugHunter: {
     tabLabel: "Bug Hunter",
@@ -2448,19 +2193,25 @@ export const en = {
     findingsSubtitle:
       "Everything I know about, from any source. Search it, or filter by what needs doing.",
     findingColumnTitle: "Bug",
-    findingColumnSource: "Source",
     findingColumnRepo: "Repo",
     findingColumnSeverity: "Severity",
     findingColumnStatus: "Status",
-    findingColumnDiscovered: "Discovered",
+    // Sorting by status walks the lifecycle rather than the alphabet, which is
+    // worth saying: "sort by status" reads as an arbitrary ordering until you
+    // know that clicking it brings your own unfinished work to the top.
+    findingColumnStatusTooltip:
+      "Where a bug is in my pipeline. Sorting by it groups the list the way the chips above do — whatever is waiting on you first, then my own work in the order I do it, then what's finished.",
+    // `findingColumnStage` itself already lives with the stage labels below.
+    findingColumnStageTooltip:
+      "The coarse roadmap ladder — New, Prioritised, In development, Released — so a bug reads the same way as an idea on the roadmap board. I derive it from the status on its left unless somebody pinned it by hand.",
     findingColumnPr: "PR",
-    findingFilterAll: "All statuses",
     findingSourceTestFailure: "Failing test",
     findingSourceLintError: "Lint error",
     findingSourceCodeReview: "Code review",
     findingSourceProductionLog: "Production log",
     findingSourceReportedBug: "Reported by team",
     findingSourceAnalyticsSuggestion: "Analytics suggestion",
+    findingSourceUxSignal: "UX signal",
     findingSeverityLow: "Low",
     findingSeverityMedium: "Medium",
     findingSeverityHigh: "High",
@@ -2529,14 +2280,41 @@ export const en = {
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
     searchLabel: "Search bugs",
-    searchPlaceholder: "Search by title, file or repo…",
-    filterRepoLabel: "Repo",
-    filterRepoAll: "All repos",
-    filterSeverityLabel: "Severity",
-    filterSeverityAll: "Any severity",
-    filterSourceLabel: "Source",
-    filterSourceAll: "Any source",
+    // Names every field it actually looks in. It searched title, file and repo
+    // and said so; it now also reads the description and the reporter's name,
+    // and a placeholder that under-promises is why nobody tried "Priya" in it.
+    searchPlaceholder: "Search title, description, file, repo or reporter…",
     clearFilters: "Clear filters",
+    // ── The filter panel ──────────────────────────────────────────────────────
+    // One button holding eight facets, rather than eight controls on a row that
+    // already wrapped. See FindingsFilterBar for the argument, and for why the
+    // active values stay visible as pills while the panel itself is shut.
+    // ── Page sections ─────────────────────────────────────────────────────────
+    // Named for the question each answers, not for what they contain. "Work" is
+    // a triager's daily surface; "Performance" is the monthly governance one —
+    // see BugHunter.tsx on why those are two readers and not one long page.
+    sectionWork: "Work",
+    sectionPerformance: "Performance",
+    sectionAbout: "About",
+    filtersButton: "Filters",
+    filtersPanelLabel: "Filter bugs",
+    filterSectionStatus: "Status",
+    filterSectionRepo: "Repo",
+    filterSectionSeverity: "Severity",
+    filterSectionSource: "Source",
+    filterSectionStage: "Roadmap stage",
+    filterSectionAge: "Age",
+    filterSectionClear: "Clear",
+    filterAgeAll: "Any age",
+    filterAgeDay: "Found today",
+    // The two "over" bands use the same week/month boundaries as the amber and
+    // red tints in the Age column, so what the filter returns is exactly what
+    // the column had already coloured. Worded as the reader reads the tint.
+    filterAgeWeek: "Under a week old",
+    filterAgeStale: "Over a week old",
+    filterAgeAncient: "Over a month old",
+    filterDuplicatesOnly: "Duplicates only",
+    filterPillRemove: "Remove the {label} filter",
     // Distinct from findingsEmptyTitle on purpose: "Once I'm on duty, anything
     // I find shows up here" is the wrong thing to tell someone who has just
     // typed a typo into the search box.
@@ -2559,6 +2337,17 @@ export const en = {
     pagePrev: "Previous",
     pageNext: "Next",
     pageStatus: "Page {page} of {pages}",
+    pageSizeLabel: "Rows",
+    // Two halves of one sentence: the prompt states the situation, the button
+    // states what clicking it will do — and both name the number, because
+    // "select all" over a filtered list that spans five pages is exactly the
+    // control people press without knowing how much it grabbed.
+    selectAllMatchingPrompt: "Your selection covers this page only.",
+    selectAllMatchingAction: "Select all {count} matching bugs",
+    // A poll failed while rows were already on screen. Deliberately not the
+    // same words as findingsLoadFailed: nothing is missing from the page, the
+    // rows are just from a minute ago.
+    findingsStaleNotice: "Showing the last bugs I loaded — my latest check didn't get through.",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
     // ── Editing the brief ─────────────────────────────────────────────────────
@@ -2866,7 +2655,7 @@ export const en = {
     quickApproveConfirm: "Approve it",
     quickRejectConfirm: "Reject it",
     quickActionNotApplicable: "That doesn't apply to this bug from where it is.",
-    densityLabel: "Rows",
+    densityLabel: "Row height",
     densityComfortable: "Comfortable",
     densityCompact: "Compact",
     // ── Bulk triage ─────────────────────────────────────────────
@@ -2908,7 +2697,6 @@ export const en = {
     shortcutsTitle: "Keyboard shortcuts",
     shortcutsIntro:
       "For working the list without reaching for the mouse. These apply whenever the bugs table is on screen and you aren't typing into a field.",
-    shortcutsHint: "Press ? for shortcuts",
     shortcutsClose: "Close",
     shortcutsGroupMove: "Moving around",
     shortcutsGroupAct: "Acting on the bug you're on",
@@ -2957,6 +2745,13 @@ export const en = {
       "Start one above. The first few questions take about a minute, and you can leave and come back to it.",
     loadFailed: "Couldn't load your Builder sessions.",
     createFailed: "Couldn't start a new build.",
+    searchPlaceholder: "Search builds…",
+    filterButton: "Filter",
+    filterStatusLabel: "Status",
+    settingsLink: "Settings",
+    scoreboardLink: "Scoreboard",
+    knowledgeLink: "Knowledge",
+    noMatchingSessions: "Nothing matches this filter.",
 
     // Session states, as a person would say them
     status: {
@@ -3060,7 +2855,10 @@ export const en = {
       PLANNING: "Planning",
       CODING: "Writing code",
       TESTING: "Testing",
-      VERIFYING: "Checking its work",
+      GATE: "Running the checks",
+      VERIFYING: "Independent review",
+      REMEDIATING: "Fixing what the checks found",
+      FINALISING: "Shipping",
       E2E_VERIFY: "End-to-end",
       OPENING_PRS: "Opening PRs",
       REPORTING: "Writing up",
@@ -3072,7 +2870,36 @@ export const en = {
       todoHeading: "Checklist",
       todoProgress: (done: number, total: number) => `${done} of ${total}`,
       planHeading: "Plan",
-      verificationHeading: "Verification",
+      verificationHeading: "Independent review",
+      verificationRoundHeading: (round: number) => `Independent review · round ${round}`,
+      verificationPassed: "No blocking objections",
+      verificationFailed: "Blocking objections",
+      // A failing review used to end the run. It no longer does, and a red
+      // card that does not say so reads as a dead build.
+      verificationRemediating: "Builder is fixing these and will be reviewed again.",
+      // "Checked" rather than "reported": the gate is the one thing in this
+      // feed the agent did not write about itself.
+      gateVerified: "Checked by Builder, not self-reported",
+      gatePassed: "Passed",
+      gateFailed: "Failed",
+      gateNewFailures: (count: number) =>
+        count === 1 ? "1 failure this change caused" : `${count} failures this change caused`,
+      gatePreExisting: (count: number) =>
+        count === 1
+          ? "1 failure was already there before this change"
+          : `${count} failures were already there before this change`,
+      gateOutput: "Command output",
+      // Tool-call detail: arguments and the paired result, shown once expanded.
+      toolArgumentsHeading: "Arguments",
+      toolResultHeading: "Result",
+      noToolResult: "No result recorded for this call.",
+      // Gap between two events, shown inline so a long silence (a slow test
+      // suite, a big diff) reads as time passing rather than as nothing
+      // having happened.
+      eventGap: (label: string) => `${label} later`,
+      diffNoChange: "No visible change.",
+      diffAdditions: (count: number) => (count === 1 ? "1 addition" : `${count} additions`),
+      diffDeletions: (count: number) => (count === 1 ? "1 deletion" : `${count} deletions`),
       reportHeading: "Report",
       testOutput: "Test results",
       e2eEvidence: "End-to-end evidence",
@@ -3081,7 +2908,33 @@ export const en = {
       feedStarting: "Waiting for the first update…",
       feedEmpty: "Nothing recorded for this run.",
       runLabel: (sequence: number, mode: string) =>
-        mode === "resume" ? `Run ${sequence} (resumed)` : `Run ${sequence}`,
+        mode === "resume"
+          ? `Run ${sequence} (resumed)`
+          : mode === "fix"
+            ? `Run ${sequence} (fix)`
+            : `Run ${sequence}`,
+      // Run history rail — reading an older run's transcript without losing
+      // the live one is the whole point, so the rail says which run is which
+      // rather than leaving that to a bare sequence number.
+      runHistoryHeading: "Runs",
+      runHistoryEmpty: "No runs yet.",
+      runDurationLive: "Running…",
+      runDurationUnknown: "—",
+      runModeLabels: {
+        build: "Build",
+        resume: "Resume",
+        fix: "Fix",
+      } as Record<string, string>,
+      runLiveBadge: "Live",
+      runStatusLabels: {
+        QUEUED: "Queued",
+        RUNNING: "Running",
+        SUCCEEDED: "Succeeded",
+        FAILED: "Failed",
+        CANCELLED: "Stopped",
+        TIMED_OUT: "Timed out",
+        WAITING_FOR_INPUT: "Waiting on you",
+      } as Record<string, string>,
       watchOnGithub: "Watch on GitHub",
       pullRequestsHeading: "Pull requests",
       noPullRequests: "No pull requests opened yet.",
@@ -3106,10 +2959,257 @@ export const en = {
     // Session actions
     cancelSession: "Stop this build",
     cancelSessionConfirm: "Stop it?",
+    cancelSessionConfirmBody:
+      "The current run stops immediately. Nothing already written is lost, but this pass won't finish — you'll need to start again.",
     cancelFailed: "Couldn't stop the build.",
     costLabel: "Spend",
     repoLabel: "Repos",
     noReposYet: "Not decided yet",
+    retryBuild: "Retry build",
+    sessionGone: "This session is gone — start a new one.",
+
+    // Start-build dialog — also used for a retry from FAILED, since the
+    // backend accepts start-build from either state with the same payload.
+    startBuildDialog: {
+      title: "Start build",
+      retryTitle: "Retry build",
+      // Shown above the form on a retry, with the session's own error text —
+      // the point isn't to explain the failure, just to say what is being
+      // retried past before asking for the same decisions again.
+      retryIntro: "The last attempt failed:",
+      reposLabel: "Repos to change",
+      reposHint:
+        "Builder only touches the repos you choose here — pick every repo this PRD's technical plan calls out.",
+      reposPlaceholder: "Choose repos…",
+      reposRequired: "Choose at least one repo before starting.",
+      budgetLabel: "Budget (USD)",
+      budgetHint:
+        "Builder stops itself once this build's spend reaches this figure. Leave the platform default unless you have a reason to change it.",
+      modelOverridesHeading: "Model overrides",
+      modelOverridesHint:
+        "Leave any of these blank to use the platform default for that tier. Only set one if you specifically need a different model for this build.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      saveReposFailed: "Couldn't save the chosen repos.",
+      submit: "Start build",
+      retrySubmit: "Retry build",
+    },
+
+    /**
+     * Mid-build budget. The wording follows the graceful-failure model in
+     * Stacks' "Graceful Failure: Transparent Acknowledgment and Fallbacks" and
+     * "Preserve State During Agent Failure in Multistep Tasks": say what
+     * happened, say what is at stake, and put the action that fixes it in the
+     * same place — the run is holding its work, not throwing it away.
+     */
+    budget: {
+      heldTitle: "Paused — this build has spent its budget",
+      heldBody: (spent: string, ceiling: string, remaining: string) =>
+        `It has spent ${spent} of its ${ceiling} ceiling and is holding everything it has written so far. ${remaining} to raise the budget and carry on from where it stopped — after that it gives up and this run's work is lost.`,
+      heldBodyExpiring:
+        "The window to raise it has closed, so this run is stopping. Raising the budget now lets you retry, but the work in progress is gone.",
+      overTitle: "Spend is past the ceiling",
+      overBody: (spent: string, ceiling: string) =>
+        `${spent} of ${ceiling} spent. This build will pause at the end of the current phase and wait for a raise.`,
+      raise: "Raise budget",
+      // Countdown, deliberately coarse: a to-the-second timer on a twenty
+      // minute window reads as more urgent than it is.
+      minutesLeft: (minutes: number) =>
+        minutes <= 1 ? "Less than a minute left" : `About ${minutes} minutes left`,
+      dialog: {
+        title: "Raise budget",
+        heldIntro:
+          "The build is holding its work at a phase boundary. Raise the ceiling and it picks up from there — no retry, nothing re-run.",
+        intro: "Raise this session's spend ceiling.",
+        spentLabel: "Spent so far",
+        currentLabel: "Current ceiling",
+        currentNone: "No ceiling",
+        newLabel: "New ceiling (USD)",
+        newHint:
+          "Has to be above what the session has already spent, or the build would stop again immediately. Set 0 to remove the ceiling entirely.",
+        submit: "Raise budget",
+        submitHeld: "Raise and continue",
+        raised: "Budget raised.",
+        released: "Budget raised — the build is carrying on from where it stopped.",
+        failed: "Couldn't raise the budget.",
+      },
+      // Feed rows for the budget_hold event.
+      feed: {
+        held: (spent: string, ceiling: string) =>
+          `Paused: spent ${spent} of the ${ceiling} ceiling, holding this run's work while it waits for a raise.`,
+        raised: (ceiling: string) => `Budget raised to ${ceiling} — carrying on.`,
+        headroom: (ceiling: string) => `Budget raised to ${ceiling}.`,
+        expired: "Nobody raised the budget in time, so this run stopped.",
+      },
+    },
+
+    // Notifications
+    notifications: {
+      title: "Notifications",
+      unreadLabel: (count: number) => (count === 1 ? "1 unread" : `${count} unread`),
+      markAllRead: "Mark all read",
+      empty: "Nothing yet.",
+      kinds: {
+        question_pending: "Needs an answer",
+        build_completed: "Build finished",
+        build_failed: "Build failed",
+        prs_opened: "PRs opened",
+        budget_reached: "Budget reached",
+      } as Record<string, string>,
+    },
+
+    // Platform settings (SUPER_DUPER_ADMIN)
+    settings: {
+      title: "Builder settings",
+      subtitle: "Platform-wide controls — these apply to every build, not one session.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load Builder's settings.",
+      saveFailed: "Couldn't save Builder's settings.",
+      saved: "Saved.",
+      save: "Save",
+      // The kill switch sits alone, first, for the same reason WhatsApp's does:
+      // it's the control someone reaches for in an incident and shouldn't be
+      // buried under thresholds.
+      enabledLabel: "Builder enabled",
+      enabledHelp:
+        "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      maxConcurrentBuildsLabel: "Max concurrent builds",
+      maxConcurrentBuildsHelp:
+        "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",
+      defaultBudgetLabel: "Default budget (USD)",
+      defaultBudgetHelp: "Applied to a new session's spend ceiling unless a build overrides it.",
+      modelsHeading: "Model tiers",
+      modelsHelp:
+        "Per-tier defaults for new runs. Leave a field blank to fall through to the platform default — a per-build override still wins over these.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      repoMapsHeading: "Repo maps",
+      repoMapsHelp:
+        "What Builder's own map of each repo was generated from — read-only here. A stale map is still usable; it just means recent commits aren't reflected in what the agent reads about the repo before it starts.",
+      repoMapNeverGenerated: "Never generated",
+      repoMapGeneratedAt: (age: string, sha: string) => `map from ${age} @ ${sha}`,
+    },
+
+    // Scoreboard — how builds are actually going, not just what one build did.
+    scoreboard: {
+      title: "Builder scoreboard",
+      subtitle: "Cost, review friction, and how often a build actually ships — over time.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the scoreboard.",
+      retry: "Retry",
+      empty: "No builds in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      kpi: {
+        builds: "Builds",
+        mergeRate: "Merge rate",
+        totalCost: "Total spend",
+        medianCost: "Median cost per build",
+      },
+      trend: {
+        buildsHeading: "Builds started, weekly",
+        mergeRateHeading: "Merge rate, weekly",
+        costHeading: "Median cost per build, weekly",
+        fixRunsHeading: "Median fix runs, weekly",
+        timeToMergeHeading: "Median time to merge, weekly",
+      },
+      table: {
+        heading: "Every build in this window",
+        columnTitle: "Build",
+        columnRepos: "Repos",
+        columnOutcome: "Outcome",
+        columnCreated: "Started",
+        columnDuration: "Duration",
+        columnCost: "Cost",
+        columnRuns: "Runs",
+        columnFixRuns: "Fix runs",
+        columnReviewComments: "Review comments",
+        columnCiFailures: "CI failures",
+        columnTimeToMerge: "Time to merge",
+        columnFailureTags: "Failure tags",
+        durationUnknown: "—",
+        noFailureTags: "—",
+      },
+      outcome: {
+        merged: "Merged",
+        open: "Open",
+        failed: "Failed",
+        cancelled: "Stopped",
+      } as Record<string, string>,
+    },
+
+    // Knowledge — what the automatic curator has distilled from past builds,
+    // and the runs worth reading in full because they were unusually clean
+    // or unusually expensive.
+    knowledge: {
+      navLink: "Knowledge",
+      title: "Builder knowledge",
+      subtitle: "What Builder has learned from past builds, and the runs worth learning from.",
+      backToBuilder: "Back to Builder",
+      tabLessons: "Lessons",
+      tabExemplars: "Exemplars",
+
+      lessons: {
+        loadFailed: "Couldn't load Builder's lessons.",
+        empty: "Nothing here yet — lessons appear once a few builds have run.",
+        filterStatusLabel: "Status",
+        filterStatusAll: "All statuses",
+        filterCategoryLabel: "Category",
+        filterCategoryPlaceholder: "Any category…",
+        filterRepoLabel: "Repo",
+        filterRepoPlaceholder: "Any repo…",
+        statusLabels: {
+          candidate: "Candidate",
+          active: "Active",
+          merged: "Merged",
+          retired: "Retired",
+        } as Record<string, string>,
+        columnLesson: "Lesson",
+        columnCategory: "Category",
+        columnStatus: "Status",
+        columnSources: "Sources",
+        columnApplied: "Applied",
+        columnContradicted: "Contradicted",
+        columnRepos: "Repos",
+        columnPinned: "Pinned",
+        edit: "Edit",
+        save: "Save",
+        cancel: "Cancel",
+        saveFailed: "Couldn't save that lesson.",
+        pin: "Pin",
+        unpin: "Unpin",
+        // The curator runs on its own schedule and edits or retires lessons
+        // without asking — pinning is the one way to take a lesson out of its
+        // reach on purpose, and the copy says so rather than just naming the
+        // toggle. (Stacks: "Automated Pipelines as Amplifiers, Not
+        // Replacements" — automation proposes, a person can override it.)
+        pinHint:
+          "A pinned lesson is one the automatic curator may never edit or retire. Pin the ones you've checked and want kept exactly as written.",
+        pinFailed: "Couldn't pin that lesson.",
+        unpinFailed: "Couldn't unpin that lesson.",
+        retire: "Retire",
+        retireConfirmTitle: "Retire this lesson?",
+        retireConfirmBody:
+          "A retired lesson stops being read into new builds. Nothing is deleted — set its status back to bring it back.",
+        retireFailed: "Couldn't retire that lesson.",
+        consolidateNow: "Consolidate now",
+        consolidateHint:
+          "Runs the curator immediately instead of waiting for its next scheduled pass — it reviews candidate lessons and merges duplicates, and never edits or retires a pinned one.",
+        consolidateStarted: "Consolidation started — check back in a moment for the result.",
+        consolidateFailed: "Couldn't start consolidation.",
+      },
+
+      exemplars: {
+        caption: "Builds worth learning from — the cleanest runs, and the costliest ones.",
+        loadFailed: "Couldn't load Builder's exemplars.",
+        empty: "No exemplars recorded yet.",
+        noFailureTags: "No failure tags recorded.",
+      },
+    },
   },
   evaluate: {
     title: "Ally Evaluation",

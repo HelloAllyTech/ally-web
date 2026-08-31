@@ -340,9 +340,18 @@ export const Competency: React.FC<CompetencyProps> = ({
     if (isSyncingRef.current) return;
     if (pendingCompetency) return; // awaiting the change-confirmation popup
 
-    const tableKeys = tableBehaviourKeys(behaviourRows);
+    // Read the table and the selection LIVE rather than from the watched
+    // snapshot this debounced callback closed over 700ms ago: a competency
+    // change writes the new mapping into the table and re-points `baselineRef`
+    // synchronously, so a stale snapshot compares the OLD table against the
+    // NEW baseline and mistakes a competency change for a hand edit.
+    const liveRows = formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) as
+      | { category?: string; behaviors?: HelperTagItem[] }[]
+      | undefined;
+    const liveCompetency = formMethods.getValues("competency") as CompetencyType | undefined;
+    const tableKeys = tableBehaviourKeys(liveRows);
     const signature = signatureOf(tableKeys);
-    const competencyId = selectedCompetency?.id ?? null;
+    const competencyId = liveCompetency?.id ?? null;
 
     // (Re)establish the baseline when the selected competency changes (a fresh
     // selection or a loaded simulation). Never materialise in that same cycle.
@@ -361,10 +370,25 @@ export const Competency: React.FC<CompetencyProps> = ({
       return;
     }
 
-    const payload = behaviourRowsToPayload(behaviourRows);
+    // …but only if the author actually made that edit. Rows that arrived from
+    // the server are not a divergence to capture: the editor loads a scenario
+    // with `formMethods.reset()`, and the behaviour table's own housekeeping
+    // writes (empty-row seeding, row-id backfill) deliberately pass
+    // `shouldDirty: false` for exactly this reason. Without this gate, a
+    // simulation GET that resolves after the first debounce tick leaves an
+    // "empty table" baseline recorded, so the freshly loaded rows read as a
+    // hand edit — and a draft that merely has a filled Scoring Rubric and no
+    // competency yet silently acquires a machine-made `your_custom_N` the
+    // moment it's opened.
+    if (!formMethods.getFieldState(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS).isDirty) {
+      baselineRef.current = { competencyId, signature };
+      return;
+    }
+
+    const payload = behaviourRowsToPayload(liveRows);
 
     // Case 1: editing an already-custom competency → keep its mapping in sync.
-    if (selectedCompetency?.isCustom && competencyId) {
+    if (liveCompetency?.isCustom && competencyId) {
       isSyncingRef.current = true;
       try {
         await setCompetencyBehaviours({ id: competencyId, data: payload }).unwrap();
@@ -384,6 +408,26 @@ export const Competency: React.FC<CompetencyProps> = ({
     try {
       const custom = await createCompetency({ isCustom: true }).unwrap();
       await setCompetencyBehaviours({ id: custom.id, data: payload }).unwrap();
+      // Two round-trips happened above, and picking from the dropdown is not
+      // blocked while they're in flight. If the author chose a competency by
+      // hand in the meantime, that choice wins — writing the materialised
+      // custom now would silently replace it, which reads as "the dropdown
+      // won't let me select a competency". Drop the baseline so the next tick
+      // re-establishes it against whatever they picked.
+      const selectedNow =
+        (formMethods.getValues("competency") as CompetencyType | undefined)?.id ?? null;
+      if (selectedNow !== competencyId) {
+        // The author picked something else while this was in flight, so the
+        // custom just materialised above is already orphaned — nothing will
+        // ever reference it again. Clean it up rather than leaving it behind.
+        try {
+          await deleteCompetency(custom.id).unwrap();
+        } catch {
+          // Non-fatal: worst case an unused custom lingers.
+        }
+        baselineRef.current = null;
+        return;
+      }
       baselineRef.current = { competencyId: custom.id, signature };
       fieldRef.current?.onChange(custom.id);
       formMethods.setValue("competency", custom);

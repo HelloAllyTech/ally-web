@@ -83,8 +83,18 @@ vi.mock("@utils", () => ({
 }));
 
 vi.mock("@constants/analyticsEvents", () => ({
-  ANALYTICS_EVENTS: { SIMULATION_AGENT_AUDIO_TIMING: "simulation_agent_audio_timing" },
+  ANALYTICS_EVENTS: {
+    SIMULATION_AGENT_AUDIO_TIMING: "simulation_agent_audio_timing",
+    SIMULATION_STARTED: "simulation_started",
+    SIMULATION_COMPLETED: "simulation_completed",
+  },
+  ANALYTICS_PROPS: {
+    SIMULATION_ID: "simulation_id",
+    SCENARIO_ID: "scenario_id",
+  },
 }));
+
+import { captureEvent } from "@utils";
 
 import { useLiveKitRoom } from "../useLiveKitRoom";
 
@@ -313,5 +323,38 @@ describe("useLiveKitRoom", () => {
     });
 
     expect(result.current.agentTurnStatus).toBe("user_turn");
+  });
+
+  describe("simulation_completed tracking", () => {
+    it("records simulation_completed when the learner navigates away in-app instead of ending the session", async () => {
+      // Reproduces leaving a live simulation via an in-app route change: React
+      // unmounts the hook (effect cleanup -> cleanupRoom), not a
+      // RoomEvent.Disconnected firing while listeners are still attached.
+      const { result, unmount } = renderHook(() =>
+        useLiveKitRoom(handleDisconnect, endSessionButtonRef),
+      );
+
+      await waitForConnection();
+
+      // Agent starts speaking, which transitions the session into
+      // AGENT_JOINED and marks simulation_started as having fired.
+      await act(async () => {
+        const handler = roomEventHandlers.get("activeSpeakersChanged");
+        handler?.([{ identity: "agent-user" }]);
+      });
+      expect(result.current.agentTurnStatus).toBe("speaking");
+
+      (captureEvent as any).mockClear();
+
+      unmount();
+
+      expect(captureEvent).toHaveBeenCalledWith(
+        "simulation_completed",
+        expect.objectContaining({
+          simulation_id: "session-123",
+          ended_by_learner: false,
+        }),
+      );
+    });
   });
 });

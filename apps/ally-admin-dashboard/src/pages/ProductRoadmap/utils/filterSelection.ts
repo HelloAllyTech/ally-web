@@ -10,7 +10,7 @@
  * The board's own state is not that shape — three facets are enums, two are name arrays, and
  * creator is `number[]`. Converting in a pure module (rather than inline in the component) keeps it
  * testable without pulling Carbon or `@components` into the test's module graph, which is the same
- * reason utils/filters.ts and utils/coins.ts exist.
+ * reason utils/filters.ts and utils/votes.ts exist.
  */
 import {
   RoadmapFacets,

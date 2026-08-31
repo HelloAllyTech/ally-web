@@ -51,11 +51,9 @@ vi.mock("@pages", () => ({
   Competencies: () => <div>CompetenciesPage</div>,
   RoleplaySessionLogs: () => <div>RoleplaySessionLogsPage</div>,
   RoleplaySessionLogDetail: () => <div>RoleplaySessionLogDetailPage</div>,
-  RoleplayStudioList: () => <div>RoleplayStudioListPage</div>,
-  RoleplayStudioWorkspace: () => <div>RoleplayStudioWorkspacePage</div>,
-  RoleplayLivePreview: () => <div>RoleplayLivePreviewPage</div>,
   Settings: () => <div>SettingsPage</div>,
   Logs: () => <div>LogsPage</div>,
+  MobileReleases: () => <div>MobileReleasesPage</div>,
   WhatsAppBot: () => <div>WhatsAppBotPage</div>,
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
@@ -67,6 +65,9 @@ vi.mock("@pages", () => ({
   BugHunter: () => <div>BugHunterPage</div>,
   Builder: () => <div>BuilderPage</div>,
   BuilderSession: () => <div>BuilderSessionPage</div>,
+  BuilderSettings: () => <div>BuilderSettingsPage</div>,
+  BuilderScoreboard: () => <div>BuilderScoreboardPage</div>,
+  BuilderKnowledge: () => <div>BuilderKnowledgePage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -105,6 +106,24 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.BUILDER_SESSION("abc-123"));
     render(<RouteLayout />);
     expect(screen.getByText("BuilderSessionPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder settings route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SETTINGS);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderSettingsPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder scoreboard route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SCOREBOARD);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderScoreboardPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder knowledge route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_KNOWLEDGE);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderKnowledgePage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {

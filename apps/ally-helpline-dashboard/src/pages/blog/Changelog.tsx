@@ -6,6 +6,10 @@ import { ChangelogEntry, useGetPublicChangelogQuery } from "@api";
 import { Ally } from "@assets";
 import { ROUTES } from "@constants";
 
+import { BlogFooter } from "./BlogFooter";
+import { CHANGELOG_DESCRIPTION, CHANGELOG_TITLE } from "./blogMeta";
+import { usePageMeta } from "./usePageMeta";
+
 const PAGE_SIZE = 100;
 
 const formatDate = (value?: string | null) =>
@@ -32,6 +36,12 @@ const groupByDate = (entries: ChangelogEntry[]) => {
 };
 
 export const Changelog: FC = () => {
+  usePageMeta({
+    title: CHANGELOG_TITLE,
+    description: CHANGELOG_DESCRIPTION,
+    url: "/blog/changelog",
+  });
+
   const [offset, setOffset] = useState(0);
   const [entries, setEntries] = useState<ChangelogEntry[]>([]);
   // `data` persists the previous page's result while a new offset is loading
@@ -56,40 +66,38 @@ export const Changelog: FC = () => {
   const isInitialLoad = isFetching && offset === 0;
 
   return (
-    <div className="min-h-dvh bg-white font-primary">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
         </div>
-        <header className="mb-10">
+        <header className="mb-12">
           <Link
             to={ROUTES.BLOG}
-            className="mb-4 inline-block text-sm text-typography-600 hover:text-typography-900"
+            className="mb-6 inline-block text-sm text-[#87867F] transition-colors hover:text-[#141413]"
           >
-            ← Back to Blog
+            ← Blog
           </Link>
-          <h1 className="font-secondary text-3xl text-typography-900">Changelog</h1>
-          <p className="mt-2 text-typography-600">
-            Every update we&apos;ve shipped, in plain language.
-          </p>
+          <h1 className="text-4xl sm:text-5xl">Changelog</h1>
+          <p className="mt-4 text-[#5E5D59]">{CHANGELOG_DESCRIPTION}</p>
         </header>
 
         {isInitialLoad ? (
-          <p className="text-typography-700">Loading…</p>
+          <p className="text-[#5E5D59]">Loading…</p>
         ) : isError ? (
-          <p className="text-typography-700">
+          <p className="text-[#5E5D59]">
             Something went wrong loading the changelog. Please try again later.
           </p>
         ) : entries.length === 0 ? (
-          <p className="text-typography-700">No updates yet. Check back soon!</p>
+          <p className="text-[#5E5D59]">No updates yet. Check back soon!</p>
         ) : (
           <div className="flex flex-col gap-8">
             {groups.map(group => (
               <div key={group.date}>
-                <h2 className="mb-3 font-secondary text-lg text-typography-900">{group.date}</h2>
+                <h2 className="mb-3 text-xl">{group.date}</h2>
                 <ul className="list-disc space-y-2 pl-5">
                   {group.entries.map(entry => (
-                    <li key={entry.id} className="text-sm text-typography-700">
+                    <li key={entry.id} className="text-sm leading-relaxed text-[#5E5D59]">
                       {entry.releaseNoteText}
                     </li>
                   ))}
@@ -101,14 +109,15 @@ export const Changelog: FC = () => {
                 type="button"
                 onClick={() => setOffset(prev => prev + PAGE_SIZE)}
                 disabled={isFetching}
-                className="self-center text-sm font-medium text-primary-500 disabled:opacity-50"
+                className="self-center rounded-lg bg-[#141413]/5 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#141413]/10 disabled:opacity-50"
               >
-                {isFetching ? "Loading..." : "+ Load more"}
+                {isFetching ? "Loading..." : "View more"}
               </button>
             )}
           </div>
         )}
       </div>
+      <BlogFooter />
     </div>
   );
 };

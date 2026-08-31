@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";
 import { Resource, SearchVariant } from "@ally-ui-mono/ui-shared/types";
 import { useGetSearchResultsMutation } from "@api";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 
 import { SearchResourcesProps } from "./types";
 
@@ -18,6 +20,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   fullWidth = false,
 }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const [, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +33,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   useEffect(() => {
     const initializeSearchWithQueryParams = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get("q");
+      const query = urlParams.get("q") || "";
       const category = urlParams.get("category");
       if (!query && !category) {
         return;
@@ -60,6 +63,16 @@ const SearchResources: FC<SearchResourcesProps> = ({
       filters,
     });
     setHasMore(response.data?.total > response.data?.documents?.length);
+
+    // Every search funnels through here — a typed query, a category change, and
+    // the query-param restore on load — so this is the one place the event has
+    // to be. Note what is NOT sent: the query text itself is clinical detail
+    // about a caller (see ANALYTICS_PROPS.SEARCH_QUERY), so only its length
+    // travels. `result_count` is the half the zero-result detector reads.
+    track(ANALYTICS_EVENTS.SEARCH_PERFORMED, {
+      [ANALYTICS_PROPS.QUERY_LENGTH]: query.trim().length,
+      [ANALYTICS_PROPS.RESULT_COUNT]: response.data?.total ?? 0,
+    });
 
     // Only process the response if it's from the most recent request
     if (requestId > lastRequestId.current) {

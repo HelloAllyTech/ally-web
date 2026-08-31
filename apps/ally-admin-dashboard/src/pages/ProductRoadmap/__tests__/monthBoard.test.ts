@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { RoadmapBoardGroupBy } from "@types";
+
 import {
   LaneSnapshot,
   isDraggable,
   isLaneDomId,
   laneDomId,
+  laneLabel,
+  laneSupportsReordering,
   monthFromLaneDomId,
   monthKeyOf,
   monthKeyRange,
@@ -14,9 +18,9 @@ import {
 } from "../utils/monthBoard";
 
 const lanes = (): LaneSnapshot[] => [
-  { month: null, ids: ["u1", "u2", "u3"] },
-  { month: "2026-08", ids: ["a1", "a2"] },
-  { month: "2026-09", ids: [] },
+  { key: null, ids: ["u1", "u2", "u3"] },
+  { key: "2026-08", ids: ["a1", "a2"] },
+  { key: "2026-09", ids: [] },
 ];
 
 describe("monthKeyOf", () => {
@@ -94,12 +98,12 @@ describe("resolveDrop — within one lane", () => {
     // filter-then-insert-at-indexOf produces ["u2","u1","u3"] here, which visibly snaps back
     // because it disagrees with the preview dnd-kit already animated.
     const result = resolveDrop(lanes(), "u1", "u3");
-    expect(result).toEqual({ month: null, orderedIds: ["u2", "u3", "u1"], withinLane: true });
+    expect(result).toEqual({ key: null, orderedIds: ["u2", "u3", "u1"], withinLane: true });
   });
 
   it("moves a card UP to the dropped-on card's index", () => {
     const result = resolveDrop(lanes(), "u3", "u1");
-    expect(result).toEqual({ month: null, orderedIds: ["u3", "u1", "u2"], withinLane: true });
+    expect(result).toEqual({ key: null, orderedIds: ["u3", "u1", "u2"], withinLane: true });
   });
 
   it("returns null when a card is dropped on itself", () => {
@@ -110,7 +114,7 @@ describe("resolveDrop — within one lane", () => {
 
   it("sends the card to the end when dropped on its own lane's empty space", () => {
     const result = resolveDrop(lanes(), "u1", laneDomId(null));
-    expect(result).toEqual({ month: null, orderedIds: ["u2", "u3", "u1"], withinLane: true });
+    expect(result).toEqual({ key: null, orderedIds: ["u2", "u3", "u1"], withinLane: true });
   });
 });
 
@@ -118,7 +122,7 @@ describe("resolveDrop — across lanes", () => {
   it("inserts at the dropped-on card's position and reports the crossing", () => {
     const result = resolveDrop(lanes(), "u1", "a2");
     expect(result).toEqual({
-      month: "2026-08",
+      key: "2026-08",
       orderedIds: ["a1", "u1", "a2"],
       withinLane: false,
     });
@@ -127,7 +131,7 @@ describe("resolveDrop — across lanes", () => {
   it("appends when dropped on a lane rather than a card", () => {
     const result = resolveDrop(lanes(), "u1", laneDomId("2026-08"));
     expect(result).toEqual({
-      month: "2026-08",
+      key: "2026-08",
       orderedIds: ["a1", "a2", "u1"],
       withinLane: false,
     });
@@ -137,13 +141,13 @@ describe("resolveDrop — across lanes", () => {
     // The case a SortableContext alone cannot serve — an empty lane has no cards to collide with,
     // so this only works because the lane is a droppable in its own right.
     const result = resolveDrop(lanes(), "a1", laneDomId("2026-09"));
-    expect(result).toEqual({ month: "2026-09", orderedIds: ["a1"], withinLane: false });
+    expect(result).toEqual({ key: "2026-09", orderedIds: ["a1"], withinLane: false });
   });
 
   it("moves a card back to Unscheduled", () => {
     const result = resolveDrop(lanes(), "a1", "u2");
     expect(result).toEqual({
-      month: null,
+      key: null,
       orderedIds: ["u1", "a1", "u2", "u3"],
       withinLane: false,
     });
@@ -161,8 +165,8 @@ describe("resolveDrop — across lanes", () => {
     // Defensive: a stale snapshot could list the same id in two lanes. Emitting it twice would
     // give the same card two positions and make the lane order nondeterministic.
     const stale: LaneSnapshot[] = [
-      { month: null, ids: ["x1", "x2"] },
-      { month: "2026-08", ids: ["x1", "b1"] },
+      { key: null, ids: ["x1", "x2"] },
+      { key: "2026-08", ids: ["x1", "b1"] },
     ];
     const result = resolveDrop(stale, "x1", "b1");
     expect(result?.orderedIds.filter(id => id === "x1")).toHaveLength(1);
@@ -193,5 +197,35 @@ describe("isDraggable", () => {
 
   it("treats a missing flag as draggable", () => {
     expect(isDraggable({})).toBe(true);
+  });
+});
+
+describe("laneLabel", () => {
+  it("formats month keys and names the catch-all lane per grouping", () => {
+    expect(laneLabel("2026-08", RoadmapBoardGroupBy.MONTH)).toBe("Aug 2026");
+    // "Unscheduled" and "No owner" are different facts; a shared "None" would say neither.
+    expect(laneLabel(null, RoadmapBoardGroupBy.MONTH)).toBe("Unscheduled");
+    expect(laneLabel(null, RoadmapBoardGroupBy.OWNER)).toBe("No owner");
+    expect(laneLabel(null, RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe("No goal");
+  });
+
+  it("labels a stage through the display map, not its wire value", () => {
+    expect(laneLabel("under_development", RoadmapBoardGroupBy.STAGE)).toBe("In development");
+  });
+
+  it("passes goal and owner names through — they ARE their display names", () => {
+    expect(laneLabel("Scribe", RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe("Scribe");
+    expect(laneLabel("Ajey Gore", RoadmapBoardGroupBy.OWNER)).toBe("Ajey Gore");
+  });
+});
+
+describe("laneSupportsReordering", () => {
+  it("is month-only", () => {
+    // boardPosition is one column and cannot hold four independent orders; the other groupings
+    // order by priority, which is the ranking the board exists to express.
+    expect(laneSupportsReordering(RoadmapBoardGroupBy.MONTH)).toBe(true);
+    expect(laneSupportsReordering(RoadmapBoardGroupBy.STAGE)).toBe(false);
+    expect(laneSupportsReordering(RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe(false);
+    expect(laneSupportsReordering(RoadmapBoardGroupBy.OWNER)).toBe(false);
   });
 });

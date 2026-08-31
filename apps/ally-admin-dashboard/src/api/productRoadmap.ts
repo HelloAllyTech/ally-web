@@ -3,7 +3,9 @@ import {
   RoadmapBoardMoveResponse,
   RoadmapBoardQuery,
   RoadmapBoardResponse,
-  RoadmapCoinBudget,
+  RoadmapBugReportBody,
+  RoadmapBugReportResponse,
+  RoadmapVoteBudget,
   RoadmapComment,
   RoadmapDuplicateMatch,
   RoadmapFacets,
@@ -12,12 +14,17 @@ import {
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
   RoadmapOpportunity,
-  RoadmapReleaseNote,
   RoadmapSavedView,
   RoadmapEligibleOwner,
+  RoadmapOpportunityEffort,
+  RoadmapReadinessChecklist,
+  RoadmapReadinessReport,
   RoadmapTaxonomyItem,
   RoadmapViewState,
   SetAllocationResponse,
+  RoadmapBuilderSessionHandle,
+  RoadmapBoardGroupBy,
+  RoadmapOpportunityStage,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -57,7 +64,7 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       }),
       providesTags: result => [
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
-        ...[...(result?.months ?? []), ...(result?.unscheduled ? [result.unscheduled] : [])]
+        ...(result?.lanes ?? [])
           .flatMap(lane => lane.items)
           .map(o => ({ type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: o.id })),
       ],
@@ -79,30 +86,34 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       RoadmapBoardMoveResponse,
       {
         opportunityId: string;
-        month: string | null;
-        orderedIds: string[];
+        /** Which grouping the drag happened on — decides which field the server writes. */
+        groupBy: RoadmapBoardGroupBy;
+        /** Destination lane value: a month key, or a stage / goal / owner. */
+        lane: string | null;
+        /** Month only; omitted on the other groupings, which have no hand-ordering. */
+        orderedIds?: string[];
         /**
          * The board query args to patch. Must be the SAME memoised object the board subscription
          * uses, or updateQueryData targets a cache entry nobody is rendering — the trap documented
-         * on useAllocateCoins.
+         * on useSetVotes.
          */
         boardArgs: RoadmapBoardQuery;
       }
     >({
-      query: ({ opportunityId, month, orderedIds }) => ({
+      query: ({ opportunityId, groupBy, lane, orderedIds }) => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.BOARD_LANE,
         method: HttpMethod.PUT,
-        body: { opportunityId, month, orderedIds },
+        body: { opportunityId, groupBy, lane, orderedIds },
       }),
       onQueryStarted: async (
-        { opportunityId, month, orderedIds, boardArgs },
+        { opportunityId, groupBy, lane, orderedIds, boardArgs },
         { dispatch, queryFulfilled },
       ) => {
         const patch = dispatch(
           productRoadmapAPI.util.updateQueryData("getRoadmapBoard", boardArgs, draft => {
-            const lanes = [...draft.months, draft.unscheduled];
+            const lanes = draft.lanes;
             const source = lanes.find(lane => lane.items.some(o => o.id === opportunityId));
-            const destination = lanes.find(lane => lane.month === month);
+            const destination = lanes.find(l => l.key === lane);
             // A drop into a lane outside the current window has nothing to patch — the server
             // still performs it, and the card correctly disappears on the next read.
             if (!source || !destination) return;
@@ -114,30 +125,49 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
               source.items = source.items.filter(o => o.id !== opportunityId);
               source.total = Math.max(0, source.total - 1);
               destination.total += 1;
-              // plannedMonth is the field that actually moved; effectiveMonth follows it because
-              // a draggable card is by definition not pinned.
-              moving.plannedMonth = month;
-              moving.effectiveMonth = month;
+              // Patch the field the drop actually wrote. Guessing wrong here is not cosmetic:
+              // the card would sit in the new lane showing the old value until the next read.
+              if (groupBy === RoadmapBoardGroupBy.MONTH) {
+                // plannedMonth is what moved; effectiveMonth follows it because a draggable card
+                // is by definition not pinned.
+                moving.plannedMonth = lane;
+                moving.effectiveMonth = lane;
+              } else if (groupBy === RoadmapBoardGroupBy.STAGE) {
+                moving.stage = lane as RoadmapOpportunityStage;
+              } else if (groupBy === RoadmapBoardGroupBy.PRODUCT_GOAL) {
+                // productGoal is non-nullable on the wire, unlike owner below — "" is its
+                // catch-all-lane value, so the null lane key must coerce to "" rather than be
+                // skipped, or the card keeps showing its old goal until the next real fetch.
+                moving.productGoal = lane ?? "";
+              } else {
+                moving.owner = lane;
+              }
+              destination.items = [moving, ...destination.items];
             }
 
-            const byId = new Map(destination.items.map(o => [o.id, o]));
-            byId.set(moving.id, moving);
-            const reordered = orderedIds
-              .map(id => byId.get(id))
-              .filter((o): o is NonNullable<typeof o> => !!o);
-            // Anything the client's order didn't mention stays, after the ordered block — a lane
-            // truncated by laneLimit holds cards this drag never knew about.
-            const untouched = destination.items.filter(o => !orderedIds.includes(o.id));
-            destination.items = [...reordered, ...untouched];
-            destination.items.forEach((o, index) => {
-              o.boardPosition = index;
-            });
+            // Hand-ordering is a month-board concept; the other lanes are ordered by priority and
+            // the server ignores orderedIds there, so applying one would show an order that
+            // vanishes on the next fetch.
+            if (groupBy === RoadmapBoardGroupBy.MONTH && orderedIds) {
+              const byId = new Map(destination.items.map(o => [o.id, o]));
+              byId.set(moving.id, moving);
+              const reordered = orderedIds
+                .map(id => byId.get(id))
+                .filter((o): o is NonNullable<typeof o> => !!o);
+              // Anything the client's order didn't mention stays, after the ordered block — a lane
+              // truncated by laneLimit holds cards this drag never knew about.
+              const untouched = destination.items.filter(o => !orderedIds.includes(o.id));
+              destination.items = [...reordered, ...untouched];
+              destination.items.forEach((o, index) => {
+                o.boardPosition = index;
+              });
+            }
           }),
         );
 
         try {
           const { data } = await queryFulfilled;
-          if (data.reordered.length !== orderedIds.length) {
+          if (orderedIds && data.reordered.length !== orderedIds.length) {
             dispatch(
               productRoadmapAPI.util.invalidateTags([
                 { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
@@ -161,12 +191,12 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       providesTags: (_r, _e, id) => [{ type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id }],
     }),
 
-    getRoadmapCoinBudget: builder.query<RoadmapCoinBudget, void>({
+    getRoadmapVoteBudget: builder.query<RoadmapVoteBudget, void>({
       query: () => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.COIN_BUDGET,
+        url: ApiEndpoints.PRODUCT_ROADMAP.VOTE_BUDGET,
         method: HttpMethod.GET,
       }),
-      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET],
+      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET],
     }),
 
     getRoadmapFacets: builder.query<RoadmapFacets, void>({
@@ -179,7 +209,18 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
 
     createRoadmapOpportunity: builder.mutation<
       RoadmapOpportunity,
-      { description: string; type: string; productGoal: string }
+      {
+        description: string;
+        type: string;
+        productGoal: string;
+        effort?: RoadmapOpportunityEffort | null;
+        /**
+         * Only sent by a filer who can manage the roadmap — the drawer hides the picker from
+         * everyone else, and the backend answers 403 rather than filing unassigned if it
+         * arrives from someone without edit:admin:product-roadmap.
+         */
+        ownerUserId?: number | null;
+      }
     >({
       query: body => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITIES,
@@ -190,6 +231,24 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
         TAG_TYPES.PRODUCT_ROADMAP_FACETS,
       ],
+    }),
+
+    /**
+     * File a bug from the roadmap's "Report a bug" button.
+     *
+     * Invalidates the Bug Hunter findings list and NOT the roadmap board, which is the
+     * whole point: a bug lands in Bug Hunter's table and never appears on the board, so
+     * invalidating the board would refetch a list that provably cannot have changed, and
+     * failing to invalidate the findings list would leave a triager staring at a table
+     * missing the row they just filed.
+     */
+    createRoadmapBugReport: builder.mutation<RoadmapBugReportResponse, RoadmapBugReportBody>({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.BUG_REPORTS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
     }),
 
     updateRoadmapOpportunity: builder.mutation<
@@ -213,30 +272,46 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITY_BY_ID(id),
         method: HttpMethod.DELETE,
       }),
-      // Deleting returns coins to their owners, so the budget changes too.
+      // Deleting returns votes to their owners, so the budget changes too.
       invalidatesTags: [
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
-        TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+        TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
         TAG_TYPES.PRODUCT_ROADMAP_FACETS,
       ],
     }),
 
     /**
-     * Set the caller's coins on one opportunity.
+     * Set the caller's votes on one opportunity.
      *
-     * ⚠️ DELIBERATELY NO invalidatesTags. Invalidating the list here would refetch on every
-     * coin click and stomp the optimistic patch mid-interaction — the reconciliation in
-     * useAllocateCoins uses this response instead. Only split/merge/delete invalidate.
+     * INVALIDATES THE LIST — a reversal of the earlier "never invalidate on a vote" rule, and
+     * worth explaining because the reasoning behind that rule stopped holding.
+     *
+     * It used to be true that this response contained everything a vote changed: the row's total
+     * and the caller's balance, both patched optimistically and then reconciled from here. Since
+     * `queueRank` moved into ally-be, that is no longer true. A vote changes the rank of EVERY
+     * card below the one voted on, and it can change the list's ORDER — neither of which this
+     * single-row response can express and neither of which a client can derive, because the
+     * queue extends past the loaded page.
+     *
+     * Symptom without this: the count moved instantly while the rank and position did not, so a
+     * card showing 48 votes sat below one showing 47 until something else happened to refetch.
+     *
+     * The optimistic patch in useSetVotes still runs and still owns the instant feedback; this
+     * only makes the correction prompt instead of eventual. The vote control debounces, so the
+     * refetch fires once per settled interaction rather than once per tap.
      */
     setRoadmapAllocation: builder.mutation<
       SetAllocationResponse,
-      { opportunityId: string; coins: number }
+      { opportunityId: string; votes: number }
     >({
       query: body => ({
         url: ApiEndpoints.PRODUCT_ROADMAP.ALLOCATIONS,
         method: HttpMethod.PUT,
         body,
       }),
+      // The LIST tag is shared by the table, the list feed and the board (see getRoadmapBoard),
+      // so all three pick up the new ranks and ordering from one invalidation.
+      invalidatesTags: [{ type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" }],
     }),
 
     splitRoadmapOpportunity: builder.mutation<
@@ -248,10 +323,10 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { parts },
       }),
-      // Split moves coins across rows, so both the list and every budget change.
+      // Split moves votes across rows, so both the list and every budget change.
       invalidatesTags: [
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
-        TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+        TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
       ],
     }),
 
@@ -266,7 +341,7 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
-        TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+        TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
       ],
     }),
 
@@ -471,50 +546,6 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
     }),
 
     // ── release notes ─────────────────────────────────────────────────────────
-    getRoadmapReleaseNotes: builder.query<
-      RoadmapListEnvelope<RoadmapReleaseNote>,
-      { limit?: number; offset?: number } | void
-    >({
-      query: params => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.RELEASE_NOTES,
-        method: HttpMethod.GET,
-        params: params || undefined,
-      }),
-      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES],
-    }),
-
-    createRoadmapReleaseNote: builder.mutation<
-      RoadmapReleaseNote,
-      { title?: string | null; content: string; opportunityIds: string[] }
-    >({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.RELEASE_NOTES,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES],
-    }),
-
-    updateRoadmapReleaseNote: builder.mutation<
-      RoadmapReleaseNote,
-      { id: string; body: Partial<RoadmapReleaseNote> }
-    >({
-      query: ({ id, body }) => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.RELEASE_NOTE_BY_ID(id),
-        method: HttpMethod.PATCH,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES],
-    }),
-
-    deleteRoadmapReleaseNote: builder.mutation<void, string>({
-      query: id => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.RELEASE_NOTE_BY_ID(id),
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES],
-    }),
-
     // ── saved views ───────────────────────────────────────────────────────────
     getRoadmapSavedViews: builder.query<RoadmapSavedView[], void>({
       query: () => ({
@@ -584,20 +615,22 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
     }),
 
     // ── AI helpers. None of these carry tags — they are pure compute. ─────────
-    roadmapAiReview: builder.mutation<
-      { suggestions: { issue: string; tip: string }[] },
-      { description: string }
-    >({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_REVIEW,
-        method: HttpMethod.POST,
-        body,
-      }),
+
+    /**
+     * The readiness checklist. A query, not a constant in this bundle: the server owns the
+     * list so that editing it there is the whole change.
+     */
+    getRoadmapReadinessCriteria: builder.query<RoadmapReadinessChecklist, void>({
+      query: () => ({ url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS_CRITERIA }),
     }),
 
-    roadmapAiEnhance: builder.mutation<{ enhanced: string }, { description: string }>({
+    /** Grade a draft against that checklist. Every item must pass before filing is allowed. */
+    checkRoadmapReadiness: builder.mutation<
+      RoadmapReadinessReport,
+      { description: string; productGoal?: string }
+    >({
       query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_ENHANCE,
+        url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS,
         method: HttpMethod.POST,
         body,
       }),
@@ -633,23 +666,27 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       }),
     }),
 
-    roadmapAiReleaseNotes: builder.mutation<{ text: string }, { opportunityIds: string[] }>({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_RELEASE_NOTES,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
-
-    roadmapAiGenerateClaudePrompt: builder.mutation<
-      { text: string },
-      { description: string; prd?: string }
+    /**
+     * Open (or resume) the Builder session for an opportunity.
+     *
+     * REPLACES roadmapAiGenerateClaudePrompt, which produced a block of text a human then
+     * pasted into a terminal themselves. Idempotent server-side, so this is safe to fire on
+     * every press of the button.
+     *
+     * Invalidates the opportunity so the drawer's button flips from "Open" to "Resume" without
+     * a manual refetch — `builderSessionId` is on the opportunity, not on the session.
+     */
+    openRoadmapBuilderSession: builder.mutation<
+      RoadmapBuilderSessionHandle,
+      { opportunityId: string }
     >({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_GENERATE_CLAUDE_PROMPT,
+      query: ({ opportunityId }) => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.BUILDER_SESSION(opportunityId),
         method: HttpMethod.POST,
-        body,
       }),
+      invalidatesTags: (_result, _error, { opportunityId }) => [
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: opportunityId },
+      ],
     }),
   }),
 });
@@ -659,9 +696,10 @@ export const {
   useGetRoadmapBoardQuery,
   useMoveRoadmapOpportunityMutation,
   useGetRoadmapOpportunityQuery,
-  useGetRoadmapCoinBudgetQuery,
+  useGetRoadmapVoteBudgetQuery,
   useGetRoadmapFacetsQuery,
   useCreateRoadmapOpportunityMutation,
+  useCreateRoadmapBugReportMutation,
   useUpdateRoadmapOpportunityMutation,
   useDeleteRoadmapOpportunityMutation,
   useSetRoadmapAllocationMutation,
@@ -685,10 +723,6 @@ export const {
   useCreateRoadmapInterviewNoteMutation,
   useUpdateRoadmapInterviewNoteMutation,
   useDeleteRoadmapInterviewNoteMutation,
-  useGetRoadmapReleaseNotesQuery,
-  useCreateRoadmapReleaseNoteMutation,
-  useUpdateRoadmapReleaseNoteMutation,
-  useDeleteRoadmapReleaseNoteMutation,
   useGetRoadmapSavedViewsQuery,
   useGetRoadmapViewOrderQuery,
   useCreateRoadmapSavedViewMutation,
@@ -696,11 +730,10 @@ export const {
   usePinRoadmapSavedViewMutation,
   useDeleteRoadmapSavedViewMutation,
   useSetRoadmapViewOrderMutation,
-  useRoadmapAiReviewMutation,
-  useRoadmapAiEnhanceMutation,
+  useGetRoadmapReadinessCriteriaQuery,
+  useCheckRoadmapReadinessMutation,
   useRoadmapAiDuplicatesMutation,
   useRoadmapAiClassifyMutation,
   useRoadmapAiSummariseMutation,
-  useRoadmapAiReleaseNotesMutation,
-  useRoadmapAiGenerateClaudePromptMutation,
+  useOpenRoadmapBuilderSessionMutation,
 } = productRoadmapAPI;

@@ -280,6 +280,13 @@ export const ApiEndpoints = {
   },
   PRODUCT_ROADMAP: {
     OPPORTUNITIES: "/v1/product-roadmap/opportunities",
+    /**
+     * The same route helpline and mobile file a bug on. Not `/opportunities` with
+     * type=bug: this one captures the reporter's screen/device context for triage and
+     * stamps `source` from the reporter's own roles, so a staff report and a consumer
+     * report arrive in Bug Hunter's findings table in identical shape.
+     */
+    BUG_REPORTS: "/v1/product-roadmap/bug-reports",
     OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
     OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
@@ -288,7 +295,7 @@ export const ApiEndpoints = {
     BOARD: "/v1/product-roadmap/board",
     BOARD_LANE: "/v1/product-roadmap/board/lane",
     ALLOCATIONS: "/v1/product-roadmap/allocations",
-    COIN_BUDGET: "/v1/product-roadmap/me/coin-budget",
+    VOTE_BUDGET: "/v1/product-roadmap/me/vote-budget",
     FACETS: "/v1/product-roadmap/facets",
     PRODUCT_GOALS: "/v1/product-roadmap/product-goals",
     PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
@@ -301,19 +308,21 @@ export const ApiEndpoints = {
     OWNERS_USAGE: "/v1/product-roadmap/opportunity-owners/usage",
     INTERVIEW_NOTES: "/v1/product-roadmap/interview-notes",
     INTERVIEW_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/interview-notes/${id}`,
-    RELEASE_NOTES: "/v1/product-roadmap/release-notes",
-    RELEASE_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/release-notes/${id}`,
     VIEWS: "/v1/product-roadmap/views",
     VIEW_BY_ID: (id: string) => `/v1/product-roadmap/views/${id}`,
     VIEW_PIN: (id: string) => `/v1/product-roadmap/views/${id}/pin`,
     VIEW_TAB_ORDER: "/v1/product-roadmap/views/tab-order",
-    AI_REVIEW: "/v1/product-roadmap/ai/review",
-    AI_ENHANCE: "/v1/product-roadmap/ai/enhance",
+    AI_READINESS: "/v1/product-roadmap/ai/readiness",
+    AI_READINESS_CRITERIA: "/v1/product-roadmap/ai/readiness/criteria",
     AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
     AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
-    AI_RELEASE_NOTES: "/v1/product-roadmap/ai/release-notes",
-    AI_GENERATE_CLAUDE_PROMPT: "/v1/product-roadmap/ai/generate-claude-prompt",
+    /**
+     * Open or resume the Builder session for an opportunity. Replaced
+     * AI_GENERATE_CLAUDE_PROMPT, whose output a human pasted into a terminal by hand.
+     */
+    BUILDER_SESSION: (opportunityId: string) =>
+      `/v1/product-roadmap/opportunities/${opportunityId}/builder-session`,
     ADMIN_REINDEX: "/v1/product-roadmap/admin/reindex",
   },
   AI_LAB: {
@@ -424,6 +433,12 @@ export const ApiEndpoints = {
     ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
     REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
   },
+  // UX Signals — the PostHog scan that files into Bug Hunter and the Suggestions
+  // queue. Its own namespace because it is a producer for both, owned by neither.
+  UX_SIGNALS: {
+    SCAN: "/v1/ux-signals/scan",
+    SCANS: "/v1/ux-signals/scans",
+  },
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
     RUNS: "/v1/bug-hunter/runs",
@@ -459,6 +474,10 @@ export const ApiEndpoints = {
     // Builds
     SESSION_START_BUILD: (id: string) => `/v1/builder/sessions/${id}/start-build`,
     SESSION_RUNS: (id: string) => `/v1/builder/sessions/${id}/runs`,
+    // Raising the ceiling is a POST, not part of the session PATCH: it is
+    // allowed mid-build (which is the case it exists for) and authorises
+    // spend, so it stands on its own.
+    SESSION_BUDGET: (id: string) => `/v1/builder/sessions/${id}/budget`,
     RUN_EVENTS: (runId: string) => `/v1/builder/runs/${runId}/events`,
     SESSION_QUESTIONS: (id: string) => `/v1/builder/sessions/${id}/questions`,
     ANSWER_QUESTION: (id: string, questionId: string) =>
@@ -469,6 +488,12 @@ export const ApiEndpoints = {
     NOTIFICATIONS: "/v1/builder/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/builder/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
+    // Scoreboard + knowledge (lessons/exemplars) — the visibility surfaces.
+    SCOREBOARD: "/v1/builder/scoreboard",
+    LESSONS: "/v1/builder/lessons",
+    LESSON_BY_ID: (id: string) => `/v1/builder/lessons/${id}`,
+    LESSONS_CONSOLIDATE: "/v1/builder/lessons/consolidate",
+    EXEMPLARS: "/v1/builder/exemplars",
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -516,39 +541,14 @@ export const ApiEndpoints = {
     LIST: "/v1/aws-logs",
     STREAMS: "/v1/aws-logs/streams",
   },
+  MOBILE_RELEASES: {
+    RUNS: "/v1/mobile-releases/runs",
+    CURRENT_VERSION: "/v1/mobile-releases/current-version",
+  },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
     TURN_ENDPOINTING: "/v1/settings/turn-endpointing",
-  },
-  ROLEPLAY_STUDIO: {
-    SPECS: "/v1/roleplay-studio/specs",
-    SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
-    SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
-    // Draft saves are spec-scoped: the draft lives on the spec row and the
-    // backend appends an immutable version snapshot on every save.
-    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
-    PUBLISH_VERSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
-    // specId travels in the POST body (backend DTO), not the URL.
-    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
-    COPILOT_SESSION_MESSAGES: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
-    COPILOT_SESSION_STREAM: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
-    CREATE_SESSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
-    SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
-    SESSION_RUBRIC_SCORES: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
-    // Improve: test-case-driven test runs + per-case reports.
-    TEST_RUNS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-runs`,
-    TEST_REPORTS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-reports`,
-    TEST_REPORT_BY_ID: (reportId: string) => `/v1/roleplay-studio/test-reports/${reportId}`,
-    TEST_RUN_CANCEL: (runId: string) => `/v1/roleplay-studio/test-runs/${runId}/cancel`,
   },
 };
 
@@ -589,21 +589,21 @@ export const ROUTES = {
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
   LOGS: "/logs",
+  MOBILE_RELEASES: "/mobile-releases",
   WHATSAPP_BOT: "/whatsapp-bot",
   TERMS: "/terms",
   PRIVACY: "/privacy",
   // Fully public, no-login gallery of the centralised design-system components.
   DESIGN_SYSTEM: "/designsystem",
-  ROLEPLAY_STUDIO: "/roleplay-studio",
-  ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
-  ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
-  ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
   BUG_HUNTER: "/bug-hunter",
   BUILDER: "/builder",
   BUILDER_SESSION: (id: string) => `/builder/${id}`,
+  BUILDER_SETTINGS: "/builder/settings",
+  BUILDER_SCOREBOARD: "/builder/scoreboard",
+  BUILDER_KNOWLEDGE: "/builder/knowledge",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -710,10 +710,6 @@ export const TAG_TYPES = {
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
-  ROLEPLAY_SPECS: "roleplaySpecs",
-  ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
-  ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
-  ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   WHATSAPP_BOT_DOCUMENTS: "whatsAppBotDocuments",
   WHATSAPP_BOT_DOCUMENT_CHUNKS: "whatsAppBotDocumentChunks",
@@ -743,13 +739,12 @@ export const TAG_TYPES = {
   // Product Roadmap. NOTE: every one of these must ALSO be listed in baseApi.ts's
   // `tagTypes` array — an unregistered tag makes invalidatesTags a silent no-op.
   PRODUCT_ROADMAP_OPPORTUNITIES: "productRoadmapOpportunities",
-  PRODUCT_ROADMAP_COIN_BUDGET: "productRoadmapCoinBudget",
+  PRODUCT_ROADMAP_VOTE_BUDGET: "productRoadmapVoteBudget",
   PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
   PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
-  PRODUCT_ROADMAP_RELEASE_NOTES: "productRoadmapReleaseNotes",
   PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
   // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
@@ -759,6 +754,8 @@ export const TAG_TYPES = {
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
+  // UX Signals scan log. Also registered in baseApi.ts's `tagTypes`.
+  UX_SIGNAL_SCANS: "uxSignalScans",
   // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag
   // is silently ignored and its invalidation never fires.
   BUILDER_SESSIONS: "builderSessions",
@@ -766,6 +763,8 @@ export const TAG_TYPES = {
   BUILDER_PRD_VERSIONS: "builderPrdVersions",
   BUILDER_SETTINGS: "builderSettings",
   BUILDER_NOTIFICATIONS: "builderNotifications",
+  BUILDER_LESSONS: "builderLessons",
+  BUILDER_EXEMPLARS: "builderExemplars",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",

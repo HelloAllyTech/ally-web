@@ -294,6 +294,84 @@ describe("WeakPerformingMetricsTab", () => {
       render(<WeakPerformingMetricsTab {...filters} />);
       expect(screen.queryByText(/still accruing/i)).not.toBeInTheDocument();
     });
+
+    it("says the headline covers the part-period it came from", () => {
+      // The backend picks `latest` from every readable point INCLUDING the
+      // accruing one, while the plot drops it. The card led with "6.37 —
+      // worsening" over a chart whose last bar was July: a number on no bar the
+      // reader could find, so the tab read as a month behind while actually
+      // reporting today. This is that exact case.
+      queryMock.mockReturnValue({
+        data: response({
+          bucket: "month",
+          inProgressBucket: "2026-08-01",
+          groups: [
+            group({
+              series: [
+                series({
+                  points: [
+                    {
+                      bucket: "2026-06-01",
+                      numerator: 10,
+                      denominator: 500,
+                      value: 0.02,
+                      sparse: false,
+                    },
+                    {
+                      bucket: "2026-07-01",
+                      numerator: 30,
+                      denominator: 500,
+                      value: 0.06,
+                      sparse: false,
+                    },
+                    // Two-thirds of the month in — real, and not on the plot.
+                    {
+                      bucket: "2026-08-01",
+                      numerator: 21,
+                      denominator: 300,
+                      value: 0.07,
+                      sparse: false,
+                    },
+                  ],
+                  latest: 0.07,
+                  previous: 0.06,
+                }),
+              ],
+            }),
+          ],
+        }),
+        isFetching: false,
+        isError: false,
+        refetch: refetchMock,
+      });
+      render(<WeakPerformingMetricsTab {...filters} />);
+
+      expect(screen.getByText("this month so far")).toBeInTheDocument();
+    });
+
+    it("does not qualify a headline that came from a complete period", () => {
+      render(<WeakPerformingMetricsTab {...filters} />);
+      expect(screen.queryByText(/so far$/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe("granularity the range can actually support", () => {
+    /**
+     * A monthly bucket over a 30-day window can only produce the month
+     * containing today, which is the bucket every chart here drops — so the
+     * whole tab rendered "No data in this window" on all 21 series while the
+     * data behind them was fine. The combination must not be offerable.
+     */
+    it("does not ask the API for months when the range is 30 days", () => {
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "30d" }} />);
+      expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "week" }));
+      expect(queryMock).not.toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" }));
+    });
+
+    it("keeps months on offer for a range that can fill one", () => {
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "12m" }} />);
+      expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" }));
+    });
   });
 
   it("renders each group with its series", () => {
@@ -441,7 +519,56 @@ describe("WeakPerformingMetricsTab", () => {
     });
     render(<WeakPerformingMetricsTab {...filters} />);
     // Columns, with a caption that says what the reader may and may not infer.
-    expect(screen.getByText(/not enough to show a trend/i)).toBeInTheDocument();
+    expect(screen.getByText(/widen the time range to see a trend/i)).toBeInTheDocument();
+  });
+
+  /**
+   * Boundary of MIN_BUCKETS_FOR_A_LINE, which moved 5 -> 4.
+   *
+   * The rule exists to stop a single slope being drawn as a trend; it was
+   * denying a line to the drift-derived series, which is the densest data on
+   * the tab and had four complete months behind it.
+   */
+  it("still draws columns at three buckets", () => {
+    const pts = ["2026-05", "2026-06", "2026-07"].map((m, i) => ({
+      bucket: `${m}-01`,
+      numerator: i,
+      denominator: 100,
+      value: i / 100,
+      sparse: false,
+    }));
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [group({ series: [series({ points: pts, latest: 0.02, previous: 0.01 })] })],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+    expect(screen.getByText(/widen the time range to see a trend/i)).toBeInTheDocument();
+  });
+
+  it("draws a line at four buckets", () => {
+    const pts = ["2026-04", "2026-05", "2026-06", "2026-07"].map((m, i) => ({
+      bucket: `${m}-01`,
+      numerator: i,
+      denominator: 100,
+      value: i / 100,
+      sparse: false,
+    }));
+    queryMock.mockReturnValue({
+      data: response({
+        groups: [group({ series: [series({ points: pts, latest: 0.03, previous: 0.02 })] })],
+      }),
+      isFetching: false,
+      isError: false,
+      refetch: refetchMock,
+    });
+    render(<WeakPerformingMetricsTab {...filters} />);
+    // The "not a trend" caption belongs to the columns form; a line must not
+    // carry it.
+    expect(screen.queryByText(/widen the time range to see a trend/i)).not.toBeInTheDocument();
   });
 
   it("draws a line once there are five or more buckets", () => {
@@ -492,7 +619,7 @@ describe("WeakPerformingMetricsTab", () => {
       refetch: refetchMock,
     });
     render(<WeakPerformingMetricsTab {...filters} />);
-    expect(screen.getByText(/One measured bucket/i)).toBeInTheDocument();
+    expect(screen.getByText(/One complete month in this window/i)).toBeInTheDocument();
   });
 
   it("plots nothing for a not-measured series, even when rows exist", () => {
@@ -659,7 +786,7 @@ describe("WeakPerformingMetricsTab", () => {
       refetch: refetchMock,
     });
     render(<WeakPerformingMetricsTab {...filters} />);
-    expect(screen.getByText(/Could not load weak performing metrics/)).toBeInTheDocument();
+    expect(screen.getByText(/Could not load actor quality metrics/)).toBeInTheDocument();
   });
 
   it("renders a loading state before the first response", () => {
@@ -821,9 +948,13 @@ describe("WeakPerformingMetricsTab", () => {
     expect(screen.getByText(/worsening/)).toBeInTheDocument();
   });
 
-  it("says how much data there is in words a reader already knows", () => {
+  it("blames the window for a short series, not the data", () => {
     // Was: "2 measured buckets — compared, not trended: too few points to read
     // a direction." Reported as not understandable, and it is jargon twice over.
+    // Then "2 months of data so far", which was understandable and WRONG: on the
+    // default 90-day range every healthy series says it, and readers took it to
+    // mean the metric had only just started being collected. The reader's next
+    // move is the range picker, so the sentence has to point there.
     queryMock.mockReturnValue({
       data: response({
         groups: [
@@ -858,7 +989,7 @@ describe("WeakPerformingMetricsTab", () => {
     render(<WeakPerformingMetricsTab {...filters} />);
 
     expect(
-      screen.getByText("2 months of data so far — not enough to show a trend."),
+      screen.getByText("2 complete months in this window — widen the time range to see a trend."),
     ).toBeInTheDocument();
     expect(screen.queryByText(/compared, not trended/)).not.toBeInTheDocument();
   });

@@ -167,6 +167,23 @@
   }
 }
 
+/* ===== Public /blog pages — marketing-style look =====
+ * The blog is serif throughout — body and display type both. One scoped class
+ * on each page root keeps it out of the token layer; the elements below default
+ * to a monospace or system font in the browser rather than inheriting, so they
+ * are pulled back onto the serif stack explicitly. */
+.blog-serif,
+.blog-serif pre,
+.blog-serif code,
+.blog-serif kbd,
+.blog-serif samp,
+.blog-serif input,
+.blog-serif button,
+.blog-serif select,
+.blog-serif textarea {
+  font-family: "IBM Plex Serif", Georgia, serif;
+}
+
 /* ===== Changing colors in an SVG ===== */
 
 .path-fill-current path {

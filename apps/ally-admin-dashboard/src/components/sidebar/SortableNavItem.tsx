@@ -59,12 +59,12 @@ export const SortableNavItem: FC<SortableNavItemProps> = ({
       <button
         onClick={() => onNavigate(item.path)}
         {...dragProps}
-        className={`w-full flex items-center px-3 py-3 mb-3 rounded-lg text-left transition-colors ${
+        className={`w-full flex items-center px-3 py-3 mb-3 rounded-none border-l-4 text-left transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500 ${
           canReorder ? "cursor-grab active:cursor-grabbing" : ""
         } ${
           isActive
-            ? "bg-neutral-100 text-typography-900 font-medium "
-            : "text-typography-800 hover:bg-background-secondary hover:text-typography-900"
+            ? "border-primary-500 bg-neutral-100 text-typography-900 font-medium "
+            : "border-transparent text-typography-800 hover:bg-background-secondary hover:text-typography-900"
         }`}
         title={!isExpanded ? item.label : ""}
       >

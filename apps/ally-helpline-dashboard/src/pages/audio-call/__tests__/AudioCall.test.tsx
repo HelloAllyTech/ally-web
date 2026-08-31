@@ -173,6 +173,9 @@ vi.mock("@hooks", () => ({
     disconnect: vi.fn(),
     emitSocketEvent: vi.fn(),
   })),
+  // useMicrophoneMode tracks the call lifecycle, and useAnalytics reads the
+  // provider context these tests render without.
+  useAnalytics: vi.fn(() => ({ track: vi.fn() })),
 }));
 
 // Mock audio call utils and constants
