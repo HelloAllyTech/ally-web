@@ -26,6 +26,7 @@ export * from "./AILab";
 export * from "./Evaluate";
 export * from "./Settings/Settings";
 export * from "./Logs/Logs";
+export * from "./MobileReleases/MobileReleases";
 export * from "./BugHunter";
 export * from "./Builder";
 export * from "./AgentTestCases/AgentTestCases";

@@ -83,6 +83,7 @@ export const SIDEBAR_ITEMS = {
   AI_LAB: "ai-lab",
   SETTINGS: "settings",
   LOGS: "logs",
+  MOBILE_RELEASES: "mobile-releases",
   WHATSAPP_BOT: "whatsapp-bot",
   BUG_HUNTER: "bug-hunter",
   BUILDER: "builder",

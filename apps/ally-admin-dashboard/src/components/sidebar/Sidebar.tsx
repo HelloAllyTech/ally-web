@@ -21,6 +21,7 @@ import {
   Info,
   Languages,
   List,
+  Mobile,
   Search,
   Settings,
   SkillLevel,
@@ -225,6 +226,10 @@ export const Sidebar: React.FC = () => {
       // indistinguishable once the sidebar is collapsed to icons.
       case SIDEBAR_ITEMS.LOGS:
         return <Terminal size={20} />;
+      // A phone, not the Terminal glyph Logs uses: this page is about the app's
+      // shipped versions and the pipeline that ships them, not raw log output.
+      case SIDEBAR_ITEMS.MOBILE_RELEASES:
+        return <Mobile size={20} />;
       case SIDEBAR_ITEMS.WHATSAPP_BOT:
         return <Chat size={20} />;
       // Bug Hunter is the one tab that is a *someone* rather than a section:

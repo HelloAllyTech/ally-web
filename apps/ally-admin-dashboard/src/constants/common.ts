@@ -541,6 +541,10 @@ export const ApiEndpoints = {
     LIST: "/v1/aws-logs",
     STREAMS: "/v1/aws-logs/streams",
   },
+  MOBILE_RELEASES: {
+    RUNS: "/v1/mobile-releases/runs",
+    CURRENT_VERSION: "/v1/mobile-releases/current-version",
+  },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
@@ -585,6 +589,7 @@ export const ROUTES = {
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
   LOGS: "/logs",
+  MOBILE_RELEASES: "/mobile-releases",
   WHATSAPP_BOT: "/whatsapp-bot",
   TERMS: "/terms",
   PRIVACY: "/privacy",

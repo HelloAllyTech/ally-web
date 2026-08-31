@@ -32,6 +32,7 @@ import {
   ProductRoadmap,
   Settings,
   Logs,
+  MobileReleases,
   BugHunter,
   Builder,
   BuilderKnowledge,
@@ -459,6 +460,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredFeature={FeatureToggleKey.LOGS}>
               <Logs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MOBILE_RELEASES}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.MOBILE_RELEASES}>
+              <MobileReleases />
             </PrivateLayout>
           }
         />

@@ -19,6 +19,7 @@ export * from "./dynamicI18n";
 export * from "./tooltip";
 export * from "./roleplaySessionLogs";
 export * from "./awsLogs";
+export * from "./mobileReleases";
 export * from "./tracks";
 export * from "./organizationAccess";
 export * from "./superDuperAdmins";

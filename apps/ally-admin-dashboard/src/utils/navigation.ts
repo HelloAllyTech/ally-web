@@ -130,6 +130,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.LOGS,
   },
   {
+    id: SIDEBAR_ITEMS.MOBILE_RELEASES,
+    label: "Mobile Releases",
+    path: ROUTES.MOBILE_RELEASES,
+  },
+  {
     id: SIDEBAR_ITEMS.BUG_HUNTER,
     label: en.bugHunter.tabLabel,
     path: ROUTES.BUG_HUNTER,
@@ -173,8 +178,8 @@ export const applySavedOrder = (
  * landing route after login. Tabs fall into two gating tiers:
  *  - Feature-toggle-gated (Characters, Speech Recognition, Language Model,
  *    Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
- *    WhatsApp Bot, Bug Hunter, Analytics, Competencies, AI Lab, Roleplay
- *    Session Logs, Languages): shown once the user's feature-toggle list is
+ *    Mobile Releases, WhatsApp Bot, Bug Hunter, Analytics, Competencies,
+ *    AI Lab, Roleplay Session Logs, Languages): shown once the user's feature-toggle list is
  *    loaded and holds the matching key (see `buildSidebarItemFeatureKeyMap`),
  *    independent of permissions. This one map replaces the former
  *    buildSuperDuperAdminOnlyItems() set and the SUPER_ADMIN_ROLES switch
