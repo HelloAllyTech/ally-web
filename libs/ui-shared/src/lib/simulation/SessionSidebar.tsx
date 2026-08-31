@@ -65,7 +65,7 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
           label: translations?.descriptionTab ?? "Description",
         },
         showChecklist && { id: SidebarTab.CHECKLIST, label: "Checklist" },
-        showLive && { id: SidebarTab.LIVE, label: "Live" },
+        showLive && { id: SidebarTab.LIVE, label: "Live events" },
         showSupervisor && {
           id: SidebarTab.SUPERVISOR,
           label: translations?.supervisorTab ?? "Supervisor",

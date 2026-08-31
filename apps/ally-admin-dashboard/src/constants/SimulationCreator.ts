@@ -837,7 +837,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "liveTabEnabled",
-        label: "Live transcript tab",
+        label: "Live events tab",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,

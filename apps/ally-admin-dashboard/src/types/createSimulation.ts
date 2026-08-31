@@ -70,7 +70,7 @@ export type FormData = {
   pauseEnabled?: boolean;
   /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
   supervisorNotesEnabled?: boolean;
-  /** Learner-facing Live transcript/events tab. Opt-out — only an explicit false hides it. */
+  /** Learner-facing Live events tab. Opt-out — only an explicit false hides it. */
   liveTabEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
