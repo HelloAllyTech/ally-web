@@ -2830,6 +2830,23 @@ export const en = {
       noRequirements: "No requirements captured yet.",
       noAssumptions: "Nothing assumed so far.",
       noOpenQuestions: "Nothing outstanding.",
+      export: {
+        // "Download" rather than "Export": the file lands in the browser's
+        // downloads folder, and nothing is sent anywhere.
+        menuLabel: "Download this PRD",
+        pdf: "Download as PDF",
+        markdown: "Download as Markdown (.md)",
+        // Says what the download is and, just as importantly, that it is a
+        // snapshot — the agent keeps writing after you take one.
+        hint: "Downloads the PRD as it stands right now — a snapshot, not a live copy. PDF to share or print; Markdown to paste into a ticket or a repo.",
+        failed: "Couldn't build that file.",
+        // Sub-title inside the exported file itself.
+        metaLine: ({ version, repos, date }: { version: number; repos: string; date: string }) =>
+          `PRD v${version} · ${repos} · exported ${date}`,
+        dataModel: "Data model",
+        api: "API",
+        pageLabel: (page: number, total: number) => `Page ${page} of ${total}`,
+      },
     },
 
     // Readiness

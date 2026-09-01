@@ -7,7 +7,7 @@ import type { BuilderPrdDocument, BuilderPrdReadiness } from "@types";
 // BugHunter tests), so the barrel is stubbed rather than loaded for real.
 vi.mock("@components", () => ({ cellTypes: {} }));
 
-vi.mock("@icons", () => ({ Edit: () => <svg /> }));
+vi.mock("@icons", () => ({ Download: () => <svg />, Edit: () => <svg /> }));
 
 vi.mock("react-markdown", () => ({
   default: ({ children }: { children: string }) => <div>{children}</div>,
@@ -25,6 +25,19 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tag: ({ children }: any) => <span>{children}</span>,
   TextArea: ({ id, value, onChange, disabled }: any) => (
     <textarea id={id} value={value} onChange={onChange} disabled={disabled} />
+  ),
+  OverflowMenu: ({ children, iconDescription }: any) => (
+    <div>
+      <button type="button" aria-label={iconDescription}>
+        {iconDescription}
+      </button>
+      {children}
+    </div>
+  ),
+  OverflowMenuItem: ({ itemText, onClick }: any) => (
+    <button type="button" onClick={onClick}>
+      {itemText}
+    </button>
   ),
   Tooltip: ({ children }: any) => <>{children}</>,
 }));
