@@ -27,12 +27,14 @@ import {
 import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
 
+import { AndroidReleasePipeline } from "./components/AndroidReleasePipeline";
 import { IosReleasePipeline } from "./components/IosReleasePipeline";
 import { NextCheckPanel } from "./components/NextCheckPanel";
 import { PlatformStatusCard } from "./components/PlatformStatusCard";
 import { RecommendedActionBanner } from "./components/RecommendedActionBanner";
 import {
   deriveRecommendedAction,
+  findLastRun,
   findLastSuccessfulRun,
   getTestflightStatusDisplay,
   isReleaseInProgress,
@@ -96,7 +98,9 @@ export const MobileReleases: FC = () => {
     testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
     null;
 
-  const androidLastReleaseDate = findLastSuccessfulRun(runs, "Android Build")?.updatedAt ?? null;
+  const lastAndroidBuildRun = findLastSuccessfulRun(runs, "Android Build");
+  const lastAndroidPromoteRun = findLastRun(runs, "Promote Android");
+  const androidLastReleaseDate = lastAndroidBuildRun?.updatedAt ?? null;
   const iosLastReleaseDate =
     testflightHistory[0]?.uploadedDate ??
     findLastSuccessfulRun(runs, "iOS Build")?.updatedAt ??
@@ -224,7 +228,8 @@ export const MobileReleases: FC = () => {
   // live on the store, which nothing here can verify automatically.
   const { data: currentMinIosVersion, isLoading: isMinIosVersionLoading } =
     useGetMinimumIosVersionQuery();
-  const { data: currentMinAndroidVersion } = useGetMinimumAndroidVersionQuery();
+  const { data: currentMinAndroidVersion, isLoading: isMinAndroidVersionLoading } =
+    useGetMinimumAndroidVersionQuery();
   const [updateMinimumAppVersion, { isLoading: isUpdatingMinVersion }] =
     useUpdateMinimumAppVersionMutation();
 
@@ -334,6 +339,23 @@ export const MobileReleases: FC = () => {
           action={recommendedAction}
           onSubmitReview={handleOpenAppStoreReviewDialog}
         />
+
+        {!isVersionsLoading && !isVersionsError && versions?.android.versionName && (
+          <div>
+            <h3 className="text-sm font-medium text-typography-900 mb-2">
+              Current Android build's pipeline
+            </h3>
+            <AndroidReleasePipeline
+              androidVersionName={versions.android.versionName}
+              androidVersionCode={versions.android.versionCode}
+              lastBuildRun={lastAndroidBuildRun}
+              lastPromoteRun={lastAndroidPromoteRun}
+              currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
+              isMinAndroidVersionLoading={isMinAndroidVersionLoading}
+              onUpdateMinVersion={handleOpenMinVersionDialog}
+            />
+          </div>
+        )}
 
         {!isTestflightStatusLoading &&
           !isTestflightStatusError &&

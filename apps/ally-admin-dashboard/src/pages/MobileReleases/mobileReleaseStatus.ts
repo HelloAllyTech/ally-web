@@ -148,6 +148,12 @@ export const findLastSuccessfulRun = (
 ): MobileReleaseRun | null =>
   runs.find(run => run.workflowName === workflowName && run.conclusion === "success") ?? null;
 
+/** Most recent run of a workflow regardless of outcome — unlike findLastSuccessfulRun above, this surfaces a still-running or failed attempt too. */
+export const findLastRun = (
+  runs: MobileReleaseRun[],
+  workflowName: MobileReleaseWorkflowName,
+): MobileReleaseRun | null => runs.find(run => run.workflowName === workflowName) ?? null;
+
 /**
  * The single most useful thing to tell an admin about what to do next,
  * derived only from signals this page can actually verify — never a guess
