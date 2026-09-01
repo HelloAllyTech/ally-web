@@ -91,6 +91,9 @@ export const MobileReleases: FC = () => {
     appStoreReviewHistory,
     isAppStoreReviewHistoryLoading,
     isAppStoreReviewHistoryError,
+    androidProductionStatus,
+    isAndroidProductionStatusLoading,
+    isAndroidProductionStatusError,
   } = useMobileReleases();
 
   const testflightStatusDisplay = testflightStatus
@@ -396,6 +399,9 @@ export const MobileReleases: FC = () => {
               androidVersionCode={versions.android.versionCode}
               lastBuildRun={lastAndroidBuildRun}
               lastPromoteRun={lastAndroidPromoteRun}
+              productionStatus={androidProductionStatus}
+              isProductionStatusLoading={isAndroidProductionStatusLoading}
+              isProductionStatusError={isAndroidProductionStatusError}
               currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
               isMinAndroidVersionLoading={isMinAndroidVersionLoading}
               onUpdateMinVersion={handleOpenMinVersionDialog}
