@@ -1,14 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Edit } from "@icons";
+import { Download, Edit } from "@icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 
-import { Button, Tag, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  OverflowMenu,
+  OverflowMenuItem,
+  Tag,
+  TextArea,
+  Tooltip,
+} from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { BuilderPrdDocument, BuilderPrdReadiness } from "@types";
 import { asAgentText, asAgentTextList } from "@utils";
 
+import { downloadPrdMarkdown, downloadPrdPdf, PrdExportMeta } from "./prdExport";
 import { ReadinessRing } from "./ReadinessRing";
 import {
   BUILDER_DURATION,
@@ -51,6 +60,10 @@ interface PrdDocPanelProps {
   /** False while a build is running — the PRD is what the build reads. */
   editable: boolean;
   onSaveSection: (path: string, value: string) => Promise<void>;
+  /** Names the export file when the agent hasn't titled the PRD itself. */
+  sessionTitle?: string;
+  /** Recorded in the exported file's header, so a PRD names its own repos. */
+  repos?: string[];
 }
 
 /**
@@ -70,6 +83,8 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
   versionNumber,
   editable,
   onSaveSection,
+  sessionTitle = "",
+  repos = [],
 }) => {
   const strings = en.builder.prd;
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -140,6 +155,28 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
       // draft intact so the admin can retry.
     } finally {
       setSaving(false);
+    }
+  };
+
+  /**
+   * Export is deliberately NOT gated on `editable`: it reads the document and
+   * writes a file, so it stays available while a build is running — which is
+   * exactly when someone wants to send the spec the build is working from to a
+   * stakeholder.
+   */
+  const runExport = (format: "pdf" | "md") => {
+    const meta: PrdExportMeta = { sessionTitle, repos, versionNumber };
+    try {
+      if (format === "pdf") {
+        downloadPrdPdf(prd, meta);
+      } else {
+        downloadPrdMarkdown(prd, meta);
+      }
+    } catch {
+      // The document is agent-written, so a shape neither exporter expected is
+      // a real possibility. A toast beats an unhandled throw taking the panel
+      // down with it — the PRD is still on screen and still readable.
+      toast.error(strings.export.failed);
     }
   };
 
@@ -241,9 +278,37 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
         <ReadinessRing readiness={readiness} />
-        <Tag type="cool-gray" size="sm">
-          {strings.versionLabel(versionNumber)}
-        </Tag>
+        <div className="flex items-center gap-1">
+          <Tag type="cool-gray" size="sm">
+            {strings.versionLabel(versionNumber)}
+          </Tag>
+          {/* A download is a one-way trip out of the tool and the two formats
+              are for different jobs, so the tooltip says which is which rather
+              than leaving an admin to download both and compare. */}
+          <Tooltip label={strings.export.hint} align="top">
+            <span className="inline-flex items-center">
+              {/* Carbon's OverflowMenu, not two buttons: it brings keyboard
+                  navigation, click-outside and focus return with it, and
+                  `iconDescription` (not aria-label) is what names the trigger —
+                  Carbon points the button at its own tooltip with
+                  aria-labelledby and drops an aria-label on the floor. */}
+              <OverflowMenu
+                size="sm"
+                flipped
+                align="bottom"
+                autoAlign
+                renderIcon={Download}
+                iconDescription={strings.export.menuLabel}
+              >
+                <OverflowMenuItem itemText={strings.export.pdf} onClick={() => runExport("pdf")} />
+                <OverflowMenuItem
+                  itemText={strings.export.markdown}
+                  onClick={() => runExport("md")}
+                />
+              </OverflowMenu>
+            </span>
+          </Tooltip>
+        </div>
       </div>
 
       {!editable && (
