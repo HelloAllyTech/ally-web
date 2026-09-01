@@ -563,6 +563,7 @@ export const ApiEndpoints = {
     CURRENT_VERSION: "/v1/mobile-releases/current-version",
     TRIGGER: "/v1/mobile-releases/trigger",
     PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
+    ANDROID_PRODUCTION_STATUS: "/v1/mobile-releases/android-production-status",
     IOS_TESTFLIGHT_STATUS: "/v1/mobile-releases/ios-testflight-status",
     IOS_TESTFLIGHT_HISTORY: "/v1/mobile-releases/ios-testflight-history",
     IOS_APP_STORE_REVIEW_HISTORY: "/v1/mobile-releases/ios-app-store-review-history",

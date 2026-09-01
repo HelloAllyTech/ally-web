@@ -1,4 +1,5 @@
 import {
+  useGetAndroidProductionStatusQuery,
   useGetCurrentMobileVersionsQuery,
   useGetIosAppStoreReviewHistoryQuery,
   useGetIosTestflightHistoryQuery,
@@ -74,6 +75,15 @@ export function useMobileReleases() {
     isError: isAppStoreReviewHistoryError,
   } = useGetIosAppStoreReviewHistoryQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
 
+  // Same "be gentle with an external API" reasoning as TESTFLIGHT_POLL_MS above — this fans out
+  // to insert/get/delete calls against the Play Developer API each time, sharing that quota with
+  // the actual release pipeline (builds, promotions).
+  const {
+    data: androidProductionStatus,
+    isLoading: isAndroidProductionStatusLoading,
+    isError: isAndroidProductionStatusError,
+  } = useGetAndroidProductionStatusQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
+
   return {
     runs: runs ?? [],
     isRunsLoading,
@@ -91,5 +101,8 @@ export function useMobileReleases() {
     appStoreReviewHistory: appStoreReviewHistory ?? [],
     isAppStoreReviewHistoryLoading,
     isAppStoreReviewHistoryError,
+    androidProductionStatus,
+    isAndroidProductionStatusLoading,
+    isAndroidProductionStatusError,
   };
 }

@@ -1,6 +1,7 @@
 import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  AndroidProductionStatusResponse,
   CurrentMobileVersionsResponse,
   IosAppStoreReviewSubmissionEntry,
   IosTestflightHistoryEntry,
@@ -26,6 +27,17 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
     getCurrentMobileVersions: builder.query<CurrentMobileVersionsResponse, void>({
       query: () => ({
         url: ApiEndpoints.MOBILE_RELEASES.CURRENT_VERSION,
+      }),
+    }),
+
+    // Live Play Developer API production-track state, read straight from
+    // Google — same permission gate as the reads above, no new permission.
+    // Polled from useMobileReleases at the same slower cadence as the App
+    // Store Connect-backed queries, not the fast GitHub-runs one: this
+    // fans out to insert/get/delete calls against Google's API each time.
+    getAndroidProductionStatus: builder.query<AndroidProductionStatusResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.ANDROID_PRODUCTION_STATUS,
       }),
     }),
 
@@ -137,6 +149,7 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
 export const {
   useGetMobileReleaseRunsQuery,
   useGetCurrentMobileVersionsQuery,
+  useGetAndroidProductionStatusQuery,
   useGetIosTestflightStatusQuery,
   useGetIosTestflightHistoryQuery,
   useGetIosAppStoreReviewHistoryQuery,
