@@ -7,6 +7,7 @@ export * from "./ConfirmCancelDialog";
 export * from "./DiffBlock";
 export * from "./diffLines";
 export * from "./PhaseRail";
+export * from "./prdExport";
 export * from "./runFormat";
 export * from "./StartBuildDialog";
 export * from "./TodoPanel";

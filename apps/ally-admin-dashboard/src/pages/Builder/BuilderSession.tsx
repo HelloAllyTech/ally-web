@@ -328,6 +328,8 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   versionNumber={versionNumber}
                   editable={prdEditable}
                   onSaveSection={handleSaveSection}
+                  sessionTitle={session.title}
+                  repos={session.repos ?? []}
                 />
               </ErrorBoundary>
             </aside>
@@ -409,6 +411,8 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   versionNumber={versionNumber}
                   editable={prdEditable}
                   onSaveSection={handleSaveSection}
+                  sessionTitle={session.title}
+                  repos={session.repos ?? []}
                 />
               </ErrorBoundary>
               <div className="border-t border-neutral-200 p-3">{startBuildAction}</div>
