@@ -1,5 +1,6 @@
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
+import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { toast } from "sonner";
 
 import {
@@ -14,23 +15,27 @@ import {
   TableRow,
   Tag,
   TextArea,
+  TextInput,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
+  useGetMinimumAndroidVersionQuery,
+  useGetMinimumIosVersionQuery,
   useLazyGetIosWhatsNewSuggestionQuery,
   useSubmitIosAppStoreReviewMutation,
   useTriggerAndroidPromotionMutation,
   useTriggerMobileReleaseMutation,
+  useUpdateMinimumAppVersionMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
 import { ActionConfirmationPopup, EmptyState } from "@components";
 import { formatRunDuration } from "@components/builder/runFormat";
 import { en } from "@constants";
-import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
 import { MobileReleaseRun } from "@types";
 import { formatDateTime, openLinkInNewTab } from "@utils";
 
 import {
+  getAppStoreReviewSubmissionStatusDisplay,
   getMobileReleaseRunStatusDisplay,
   getTestflightStatusDisplay,
 } from "./mobileReleaseStatus";
@@ -73,6 +78,9 @@ export const MobileReleases: FC = () => {
     testflightHistory,
     isTestflightHistoryLoading,
     isTestflightHistoryError,
+    appStoreReviewHistory,
+    isAppStoreReviewHistoryLoading,
+    isAppStoreReviewHistoryError,
   } = useMobileReleases();
 
   const testflightStatusDisplay = testflightStatus
@@ -186,6 +194,73 @@ export const MobileReleases: FC = () => {
     }
   };
 
+  // Force-update minimum supported version — a separate ally-be module
+  // (app-version, backed by a global_settings row) from everything else on
+  // this page, but the natural place for an admin to change it is right next
+  // to the versions it's compared against. Takes effect immediately, no
+  // deploy, so the confirmation copy below carries the same safety framing
+  // as the force-update-version-bump runbook: the target must already be
+  // live on the store, which nothing here can verify automatically.
+  const { data: currentMinIosVersion } = useGetMinimumIosVersionQuery();
+  const { data: currentMinAndroidVersion } = useGetMinimumAndroidVersionQuery();
+  const [updateMinimumAppVersion, { isLoading: isUpdatingMinVersion }] =
+    useUpdateMinimumAppVersionMutation();
+
+  const [minIosVersionInput, setMinIosVersionInput] = useState("");
+  const [minAndroidVersionInput, setMinAndroidVersionInput] = useState("");
+  const [isConfirmingMinVersionUpdate, setIsConfirmingMinVersionUpdate] = useState(false);
+
+  // Seed the fields once the current thresholds arrive — same pattern as
+  // Settings.tsx's TurnEndpointingSettings.
+  useEffect(() => {
+    if (!currentMinIosVersion) return;
+    setMinIosVersionInput(currentMinIosVersion.minimumSupportedVersion);
+  }, [currentMinIosVersion]);
+
+  useEffect(() => {
+    if (!currentMinAndroidVersion) return;
+    setMinAndroidVersionInput(currentMinAndroidVersion.minimumSupportedVersion);
+  }, [currentMinAndroidVersion]);
+
+  const trimmedMinIosVersion = minIosVersionInput.trim();
+  const trimmedMinAndroidVersion = minAndroidVersionInput.trim();
+  const isIosMinVersionChanged =
+    trimmedMinIosVersion !== "" &&
+    trimmedMinIosVersion !== currentMinIosVersion?.minimumSupportedVersion;
+  const isAndroidMinVersionChanged =
+    trimmedMinAndroidVersion !== "" &&
+    trimmedMinAndroidVersion !== currentMinAndroidVersion?.minimumSupportedVersion;
+  const hasMinVersionChange = isIosMinVersionChanged || isAndroidMinVersionChanged;
+
+  const handleOpenMinVersionDialog = () => {
+    // Re-seed from the latest known thresholds every time the dialog opens,
+    // in case an edit was left half-typed and abandoned on a previous open.
+    if (currentMinIosVersion) setMinIosVersionInput(currentMinIosVersion.minimumSupportedVersion);
+    if (currentMinAndroidVersion) {
+      setMinAndroidVersionInput(currentMinAndroidVersion.minimumSupportedVersion);
+    }
+    setIsConfirmingMinVersionUpdate(true);
+  };
+
+  const handleUpdateMinimumVersion = async () => {
+    if (!hasMinVersionChange) return;
+    try {
+      await updateMinimumAppVersion({
+        ios: isIosMinVersionChanged ? trimmedMinIosVersion : undefined,
+        android: isAndroidMinVersionChanged ? trimmedMinAndroidVersion : undefined,
+      }).unwrap();
+      toast.success(
+        "Minimum supported app version updated — affected users will see the force-update screen on next launch.",
+      );
+      setIsConfirmingMinVersionUpdate(false);
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to update the minimum supported app version. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex items-start justify-between gap-4">
@@ -226,6 +301,9 @@ export const MobileReleases: FC = () => {
             onClick={handleOpenAppStoreReviewDialog}
           >
             Submit for Full App Store Review
+          </Button>
+          <Button kind="danger" size="md" onClick={handleOpenMinVersionDialog}>
+            Update Minimum Version
           </Button>
         </div>
       </div>
@@ -482,6 +560,70 @@ export const MobileReleases: FC = () => {
         </div>
       </div>
 
+      {/* Apple's own full App Store review submission history — real public
+          distribution, distinct from the TestFlight table above. Shows the
+          version submitted and where it stands (e.g. "Waiting for Review",
+          "Review Completed"), the same pair App Store Connect's own "App
+          Store" tab shows. */}
+      <div className="shrink-0">
+        <h2 className="text-lg text-typography-900 font-secondary mt-6">
+          iOS App Store review submissions
+        </h2>
+        <div className="mt-3">
+          {isAppStoreReviewHistoryLoading ? (
+            <p className="text-typography-700">Loading…</p>
+          ) : isAppStoreReviewHistoryError ? (
+            <p className="text-destructive-500">
+              Failed to load App Store review submission history.
+            </p>
+          ) : appStoreReviewHistory.length === 0 ? (
+            <EmptyState
+              title="No submissions yet"
+              subtitle="No iOS build has been submitted for full App Store review yet."
+              hideActionButton
+            />
+          ) : (
+            <Table className="w-full text-left border-collapse">
+              <TableHead>
+                <TableRow className="border-b border-border-light text-sm text-typography-700">
+                  <TableHeader className="py-3 pr-4 font-medium">Version</TableHeader>
+                  <TableHeader className="py-3 pr-4 font-medium">Submitted</TableHeader>
+                  <TableHeader className="py-3 pr-4 font-medium">Status</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {appStoreReviewHistory.map((entry, index) => {
+                  const statusDisplay = getAppStoreReviewSubmissionStatusDisplay(entry.state);
+                  return (
+                    <TableRow
+                      // Apple's reviewSubmissions resource has its own id, but the
+                      // backend doesn't surface it (only what's shown here is
+                      // needed) — submittedDate is unique per submission in
+                      // practice, same reasoning buildId serves for the
+                      // TestFlight table above.
+                      key={`${entry.submittedDate}-${index}`}
+                      className="border-b border-border-light text-sm text-typography-900 align-top"
+                    >
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        {entry.versionString}
+                      </TableCell>
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        {formatDateTime(entry.submittedDate)}
+                      </TableCell>
+                      <TableCell className="py-3 pr-4 whitespace-nowrap">
+                        <Tag type={statusDisplay.type} size="sm">
+                          {statusDisplay.label}
+                        </Tag>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </div>
+
       {isConfirmingTrigger && (
         <ActionConfirmationPopup
           isOpen={isConfirmingTrigger}
@@ -572,6 +714,52 @@ export const MobileReleases: FC = () => {
               onChange={e => setWhatsNewText(e.target.value)}
               disabled={isSubmittingAppStoreReview || isFetchingWhatsNewSuggestion}
               rows={4}
+            />
+          </div>
+        </ActionConfirmationPopup>
+      )}
+
+      {isConfirmingMinVersionUpdate && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingMinVersionUpdate}
+          onClose={() => setIsConfirmingMinVersionUpdate(false)}
+          title="Update minimum supported app version?"
+          description="This takes effect **immediately, with no deploy** — any user below this version sees a non-dismissable force-update screen on next launch. Setting a version **above** what's actually published on the App Store / Play Store locks out **every** user on that platform onto a version they can't yet download. Confirm the target version is genuinely live on the store before proceeding."
+          primaryButton={{
+            label: isUpdatingMinVersion ? "Updating…" : "Update minimum version",
+            onClick: () => void handleUpdateMinimumVersion(),
+            disabled: isUpdatingMinVersion || !hasMinVersionChange,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingMinVersionUpdate(false),
+            disabled: isUpdatingMinVersion,
+          }}
+        >
+          <div className="w-full mt-2 flex flex-col gap-4">
+            <TextInput
+              id="min-ios-version"
+              labelText="Minimum iOS version"
+              helperText={
+                currentMinIosVersion
+                  ? `Current: ${currentMinIosVersion.minimumSupportedVersion}`
+                  : "Loading current threshold…"
+              }
+              value={minIosVersionInput}
+              onChange={e => setMinIosVersionInput(e.target.value)}
+              disabled={isUpdatingMinVersion}
+            />
+            <TextInput
+              id="min-android-version"
+              labelText="Minimum Android version"
+              helperText={
+                currentMinAndroidVersion
+                  ? `Current: ${currentMinAndroidVersion.minimumSupportedVersion}`
+                  : "Loading current threshold…"
+              }
+              value={minAndroidVersionInput}
+              onChange={e => setMinAndroidVersionInput(e.target.value)}
+              disabled={isUpdatingMinVersion}
             />
           </div>
         </ActionConfirmationPopup>

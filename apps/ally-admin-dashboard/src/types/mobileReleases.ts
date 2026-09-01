@@ -145,6 +145,31 @@ export interface IosTestflightHistoryResponse {
 }
 
 /**
+ * One row of GET /v1/mobile-releases/ios-app-store-review-history — one of
+ * Apple's own full App Store review submissions (real public distribution),
+ * distinct from IosTestflightHistoryEntry above which only ever covers
+ * TestFlight builds.
+ */
+export interface IosAppStoreReviewSubmissionEntry {
+  versionString: string;
+  submittedDate: string;
+  /** Apple's raw reviewSubmissions state enum value, passed through verbatim. */
+  state:
+    | "READY_FOR_REVIEW"
+    | "WAITING_FOR_REVIEW"
+    | "IN_REVIEW"
+    | "UNRESOLVED_ISSUES"
+    | "CANCELING"
+    | "COMPLETING"
+    | "COMPLETE";
+}
+
+/** GET /v1/mobile-releases/ios-app-store-review-history — sorted newest-submitted first, up to 15 entries. */
+export interface IosAppStoreReviewSubmissionsResponse {
+  submissions: IosAppStoreReviewSubmissionEntry[];
+}
+
+/**
  * GET /v1/mobile-releases/ios-whats-new-suggestion — an LLM-generated draft of
  * the "What's New" App Store text, summarized server-side from the commits
  * since the last release. Gated by the same permission as the submit button

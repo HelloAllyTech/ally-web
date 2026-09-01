@@ -1,4 +1,5 @@
 import {
+  IosAppStoreReviewSubmissionEntry,
   IosTestflightStatusResponse,
   MobileReleaseRunConclusion,
   MobileReleaseRunStatus,
@@ -94,5 +95,38 @@ export const getTestflightStatusDisplay = (
       // Unrecognised value from Apple — surface it raw rather than silently
       // mislabeling it as one of the known states.
       return { type: "cool-gray", label: status.betaReviewState };
+  }
+};
+
+/**
+ * Status-tag colour + label for one of Apple's own full App Store review
+ * submissions (the reviewSubmissions `state` enum) — distinct from
+ * getTestflightStatusDisplay above, which covers TestFlight's separate
+ * betaAppReviewSubmissions state. Same passthrough-rather-than-remap
+ * approach as the rest of this file.
+ */
+export const getAppStoreReviewSubmissionStatusDisplay = (
+  state: IosAppStoreReviewSubmissionEntry["state"],
+): MobileReleaseStatusDisplay => {
+  switch (state) {
+    case "READY_FOR_REVIEW":
+      return { type: "cool-gray", label: "Ready for Review" };
+    case "WAITING_FOR_REVIEW":
+      return { type: "blue", label: "Waiting for Review" };
+    case "IN_REVIEW":
+      return { type: "blue", label: "In Review" };
+    case "UNRESOLVED_ISSUES":
+      return { type: "red", label: "Unresolved Issues" };
+    case "CANCELING":
+      return { type: "cool-gray", label: "Canceling" };
+    case "COMPLETING":
+      return { type: "teal", label: "Completing" };
+    case "COMPLETE":
+      // What App Store Connect's own UI calls this state ("Review Completed").
+      return { type: "green", label: "Review Completed" };
+    default:
+      // Unrecognised value from Apple — surface it raw rather than silently
+      // mislabeling it as one of the known states.
+      return { type: "cool-gray", label: state };
   }
 };

@@ -22,6 +22,7 @@ export * from "./turnEndpointing";
 export * from "./roleplaySessionLogs";
 export * from "./awsLogs";
 export * from "./mobileReleases";
+export * from "./appVersion";
 export * from "./tracks";
 export * from "./blog";
 export * from "./aiLab";

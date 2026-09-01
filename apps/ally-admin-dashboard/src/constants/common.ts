@@ -559,8 +559,14 @@ export const ApiEndpoints = {
     PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
     IOS_TESTFLIGHT_STATUS: "/v1/mobile-releases/ios-testflight-status",
     IOS_TESTFLIGHT_HISTORY: "/v1/mobile-releases/ios-testflight-history",
+    IOS_APP_STORE_REVIEW_HISTORY: "/v1/mobile-releases/ios-app-store-review-history",
     SUBMIT_APP_STORE_REVIEW: "/v1/mobile-releases/submit-ios-app-store-review",
     IOS_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/ios-whats-new-suggestion",
+  },
+  APP_VERSION: {
+    IOS: "/v1/app-version/ios",
+    ANDROID: "/v1/app-version/android",
+    UPDATE: "/v1/app-version/app-version",
   },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
@@ -798,6 +804,10 @@ export const TAG_TYPES = {
   // Mobile Releases. Also registered in baseApi.ts's `tagTypes` — an
   // unregistered tag is silently ignored and its invalidation never fires.
   MOBILE_RELEASE_RUNS: "mobileReleaseRuns",
+  // Force-update minimum app version (ally-be's app-version module, not
+  // mobile-releases — shared with the same admin page though). Also
+  // registered in baseApi.ts's `tagTypes`, same caveat as above.
+  MIN_APP_VERSION: "minAppVersion",
 };
 
 /**

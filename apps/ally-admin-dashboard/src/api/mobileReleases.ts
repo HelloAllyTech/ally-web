@@ -2,6 +2,7 @@ import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   CurrentMobileVersionsResponse,
+  IosAppStoreReviewSubmissionEntry,
   IosTestflightHistoryEntry,
   IosTestflightStatusResponse,
   IosWhatsNewSuggestionResponse,
@@ -49,6 +50,20 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
       }),
       // Backend wraps the array as { history: [...] } (IosTestflightHistoryResponse).
       transformResponse: (response: { history: IosTestflightHistoryEntry[] }) => response.history,
+    }),
+
+    // Apple's own full App Store review submission history (real public
+    // distribution), distinct from getIosTestflightHistory above which only
+    // ever covers TestFlight builds. Same permission gate, polled from
+    // useMobileReleases at TESTFLIGHT_POLL_MS same as the other App Store
+    // Connect-backed queries.
+    getIosAppStoreReviewHistory: builder.query<IosAppStoreReviewSubmissionEntry[], void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.IOS_APP_STORE_REVIEW_HISTORY,
+      }),
+      // Backend wraps the array as { submissions: [...] } (IosAppStoreReviewSubmissionsResponseDto).
+      transformResponse: (response: { submissions: IosAppStoreReviewSubmissionEntry[] }) =>
+        response.submissions,
     }),
 
     // Manually dispatches the release pipeline for both platforms right now —
@@ -124,6 +139,7 @@ export const {
   useGetCurrentMobileVersionsQuery,
   useGetIosTestflightStatusQuery,
   useGetIosTestflightHistoryQuery,
+  useGetIosAppStoreReviewHistoryQuery,
   useTriggerMobileReleaseMutation,
   useTriggerAndroidPromotionMutation,
   useSubmitIosAppStoreReviewMutation,

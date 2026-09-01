@@ -1,5 +1,6 @@
 import {
   useGetCurrentMobileVersionsQuery,
+  useGetIosAppStoreReviewHistoryQuery,
   useGetIosTestflightHistoryQuery,
   useGetIosTestflightStatusQuery,
   useGetMobileReleaseRunsQuery,
@@ -62,6 +63,17 @@ export function useMobileReleases() {
     isError: isTestflightHistoryError,
   } = useGetIosTestflightHistoryQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
 
+  // Same App Store Connect-backed cadence as the two queries above — this is
+  // a separate resource (reviewSubmissions) from TestFlight's
+  // betaAppReviewSubmissions, so it needs its own query, but it's cheap (2
+  // Apple API calls, no per-build fan-out) so TESTFLIGHT_POLL_MS is generous
+  // for it, not a bottleneck.
+  const {
+    data: appStoreReviewHistory,
+    isLoading: isAppStoreReviewHistoryLoading,
+    isError: isAppStoreReviewHistoryError,
+  } = useGetIosAppStoreReviewHistoryQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
+
   return {
     runs: runs ?? [],
     isRunsLoading,
@@ -76,5 +88,8 @@ export function useMobileReleases() {
     testflightHistory: testflightHistory ?? [],
     isTestflightHistoryLoading,
     isTestflightHistoryError,
+    appStoreReviewHistory: appStoreReviewHistory ?? [],
+    isAppStoreReviewHistoryLoading,
+    isAppStoreReviewHistoryError,
   };
 }
