@@ -85,13 +85,15 @@ const NativeSelect: React.FC<{
   placeholder: string;
   ariaLabel: string;
   invalid?: boolean;
-}> = ({ value, onChange, options, placeholder, ariaLabel, invalid }) => (
+  disabled?: boolean;
+}> = ({ value, onChange, options, placeholder, ariaLabel, invalid, disabled }) => (
   <select
     value={value}
     onChange={e => onChange(e.target.value)}
     aria-label={ariaLabel}
     aria-invalid={invalid || undefined}
-    className={`w-full text-base border-b bg-transparent py-2 focus:outline-none focus:border-primary-500 ${
+    disabled={disabled}
+    className={`w-full text-base border-b bg-transparent py-2 focus:outline-none focus:border-primary-500 disabled:opacity-70 disabled:cursor-not-allowed ${
       invalid ? "border-destructive-500" : "border-border-light"
     }`}
   >
@@ -110,16 +112,28 @@ interface CharacterFormPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (character: CharacterData) => void;
-  /** Prefills the form (e.g. from the interview agent's finished draft). */
+  /** Prefills the form (e.g. from the interview agent's finished draft, or an
+   * existing row opened in `readOnly` mode). */
   initialCharacter?: CharacterData | null;
+  /**
+   * Opens the panel as a locked, non-editable view of `initialCharacter`
+   * instead of a create form: every field is disabled, the repeatable
+   * dialect-sample/knowledge-source rows drop their add/remove controls, and
+   * the footer is a single Close button rather than Save+Cancel. This is how
+   * a tenant admin opens a character they already built — the ADMIN group
+   * only holds view+create on scenario-character (no edit), so there is
+   * nothing here for them to change.
+   */
+  readOnly?: boolean;
 }
 
 /**
- * Create-only character form for tenant admins — a leaner port of
- * ally-admin-dashboard's CharacterSidePanel. There is no edit/delete mode
- * here: the ADMIN group only holds view+create on scenario-character (see
+ * Character form for tenant admins — a leaner port of
+ * ally-admin-dashboard's CharacterSidePanel. There is no edit mode here:
+ * the ADMIN group only holds view+create on scenario-character (see
  * ally-be migration 1905000000000-AddTenantScopedCharacterLibrary), so this
- * app never offers an affordance the backend would reject.
+ * app only ever creates a new row or shows an existing one read-only — it
+ * never offers an affordance the backend would reject.
  *
  * Voice selection and cover image/video are intentionally left out of this
  * first pass — they call additional endpoints (scenario voices, file-upload
@@ -131,6 +145,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   onClose,
   onSave,
   initialCharacter,
+  readOnly = false,
 }) => {
   const [formData, setFormData] = useState<CharacterData>(initialCharacter || emptyCharacter);
   const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
@@ -166,9 +181,11 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
     });
   }, []);
 
+  // Always false in readOnly: nothing on the form can change, so there is
+  // never anything to discard, and closing should never prompt for it.
   const isDirty = useMemo(
-    () => JSON.stringify(formData) !== JSON.stringify(baseline),
-    [formData, baseline],
+    () => !readOnly && JSON.stringify(formData) !== JSON.stringify(baseline),
+    [readOnly, formData, baseline],
   );
 
   const findMissingFields = useCallback(() => {
@@ -291,7 +308,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
           >
             <ArrowLeft width={14} height={14} />
             <span id={TITLE_ID} className="text-base font-tertiary font-[500]">
-              {strings.createNewCharacter}
+              {readOnly ? strings.viewCharacter : strings.createNewCharacter}
             </span>
           </button>
           {/* The back arrow doubled as the title, which read as a heading
@@ -319,6 +336,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               onChange={e => handleFieldChange("name", e.target.value)}
               placeholder="Enter name"
               invalid={missingFields.has("name")}
+              readOnly={readOnly}
               className="w-full"
             />
           </Field>
@@ -343,6 +361,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               max="150"
               aria-label="Age"
               aria-invalid={missingFields.has("age") || undefined}
+              readOnly={readOnly}
               // Matches the underline every sibling field has; this one used
               // to sit borderless in the middle of the form.
               className={`w-full px-0 py-2 text-base bg-transparent border-b focus:outline-none focus:border-primary-500 ${
@@ -362,6 +381,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               placeholder="Select gender"
               ariaLabel="Gender"
               invalid={missingFields.has("gender")}
+              disabled={readOnly}
             />
           </Field>
 
@@ -374,6 +394,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               onChange={e => handleFieldChange("profession", e.target.value)}
               placeholder="Enter profession"
               invalid={missingFields.has("profession")}
+              readOnly={readOnly}
               className="w-full"
             />
           </Field>
@@ -387,6 +408,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               onChange={e => handleFieldChange("currentLocation", e.target.value)}
               placeholder="Enter current location"
               invalid={missingFields.has("currentLocation")}
+              readOnly={readOnly}
               className="w-full"
             />
           </Field>
@@ -399,6 +421,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               placeholder="Select gender identity"
               ariaLabel="Gender identity"
               invalid={missingFields.has("genderIdentity")}
+              disabled={readOnly}
             />
           </Field>
 
@@ -410,6 +433,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               placeholder="Select sexual orientation"
               ariaLabel="Sexual orientation"
               invalid={missingFields.has("sexualOrientation")}
+              disabled={readOnly}
             />
           </Field>
 
@@ -422,6 +446,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               onChange={e => handleFieldChange("characterProfileText", e.target.value)}
               maxLength={2500}
               placeholder="Enter character backstory"
+              readOnly={readOnly}
               rows={3}
             />
           </Field>
@@ -435,6 +460,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
               onChange={e => handleFieldChange("languageCharacteristics", e.target.value)}
               maxLength={1000}
               placeholder={strings.enterLanguageStyle}
+              readOnly={readOnly}
               rows={2}
             />
           </Field>
@@ -443,6 +469,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
             <DialectSamplesField
               samples={formData.linguisticStyleSamples || []}
               onChange={samples => handleFieldChange("linguisticStyleSamples", samples)}
+              readOnly={readOnly}
             />
           </Field>
 
@@ -450,27 +477,38 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
             <CharacterKnowledgeSourcesField
               sources={formData.knowledgeSources || []}
               onChange={sources => handleFieldChange("knowledgeSources", sources)}
+              readOnly={readOnly}
             />
           </Field>
         </div>
 
         <div className="flex items-center justify-center gap-4 p-4 bg-white shrink-0 mt-auto relative z-10 w-full">
-          <Button
-            kind="primary"
-            onClick={handleSave}
-            disabled={isCreating}
-            className="min-w-[120px]"
-          >
-            {isCreating ? "Saving..." : strings.save}
-          </Button>
-          <Button
-            kind="secondary"
-            onClick={requestClose}
-            className="min-w-[120px]"
-            disabled={isCreating}
-          >
-            {strings.cancel}
-          </Button>
+          {readOnly ? (
+            // Nothing here is editable, so there is nothing to save or
+            // cancel — a single Close is the only action that makes sense.
+            <Button kind="secondary" onClick={requestClose} className="min-w-[120px]">
+              {strings.close}
+            </Button>
+          ) : (
+            <>
+              <Button
+                kind="primary"
+                onClick={handleSave}
+                disabled={isCreating}
+                className="min-w-[120px]"
+              >
+                {isCreating ? "Saving..." : strings.save}
+              </Button>
+              <Button
+                kind="secondary"
+                onClick={requestClose}
+                className="min-w-[120px]"
+                disabled={isCreating}
+              >
+                {strings.cancel}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
