@@ -26,6 +26,7 @@ import {
 } from "@api";
 import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
+import { formatDateTime } from "@utils";
 
 import { AndroidReleasePipeline } from "./components/AndroidReleasePipeline";
 import { IosReleasePipeline } from "./components/IosReleasePipeline";
@@ -36,8 +37,12 @@ import {
   deriveRecommendedAction,
   findLastRun,
   findLastSuccessfulRun,
+  getAppStoreReviewSubmissionStatusDisplay,
   getTestflightStatusDisplay,
   isReleaseInProgress,
+  isRunAfter,
+  isValidVersionFormat,
+  isVersionGreaterThan,
 } from "./mobileReleaseStatus";
 import { AndroidReleasesTab } from "./tabs/AndroidReleasesTab";
 import { AppStoreSubmissionsTab } from "./tabs/AppStoreSubmissionsTab";
@@ -49,6 +54,9 @@ import { useMobileReleases } from "./useMobileReleases";
 const DEFAULT_ANDROID_ROLLOUT_PERCENTAGE = 20;
 const MIN_ROLLOUT_PERCENTAGE = 1;
 const MAX_ROLLOUT_PERCENTAGE = 100;
+
+/** Matches the backend DTOs' @MaxLength(4000) on both platforms' What's New fields. */
+const WHATS_NEW_MAX_LENGTH = 4000;
 
 /** Default helper text under the "What's New" field, regardless of suggestion state. */
 const WHATS_NEW_HELPER_TEXT =
@@ -93,6 +101,13 @@ export const MobileReleases: FC = () => {
   const matchingSubmission = testflightStatus?.buildVersion
     ? appStoreReviewHistory.find(entry => entry.versionString === testflightStatus.buildVersion)
     : undefined;
+  // Validation signal for the App Store review dialog: warn, don't block — re-submitting after
+  // Apple rejected it (DEVELOPER_REJECTED, METADATA_REJECTED equivalents surface as no matching
+  // submission once a new one starts, but a same-day resubmission attempt is still worth flagging)
+  // is a real, legitimate thing to do, just one the operator should do knowingly.
+  const iosAlreadySubmittedWarning = matchingSubmission
+    ? `Build ${testflightStatus?.buildVersion} was already submitted on ${formatDateTime(matchingSubmission.submittedDate)} — status: ${getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state).label}. Submitting again may error or create a duplicate submission.`
+    : null;
   const recommendedAction = deriveRecommendedAction(testflightStatus, appStoreReviewHistory);
   const currentBuildUploadedDate =
     testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
@@ -100,6 +115,11 @@ export const MobileReleases: FC = () => {
 
   const lastAndroidBuildRun = findLastSuccessfulRun(runs, "Android Build");
   const lastAndroidPromoteRun = findLastRun(runs, "Promote Android");
+  // Validation signal for the promotion dialog: warn, don't block, since re-promoting the same
+  // build (e.g. to raise the rollout percentage) is a legitimate, common thing to do.
+  const isAndroidAlreadyPromoted =
+    isRunAfter(lastAndroidPromoteRun, lastAndroidBuildRun) &&
+    lastAndroidPromoteRun?.conclusion === "success";
   const androidLastReleaseDate = lastAndroidBuildRun?.updatedAt ?? null;
   const iosLastReleaseDate =
     testflightHistory[0]?.uploadedDate ??
@@ -251,12 +271,38 @@ export const MobileReleases: FC = () => {
 
   const trimmedMinIosVersion = minIosVersionInput.trim();
   const trimmedMinAndroidVersion = minAndroidVersionInput.trim();
+
+  // Format + safety-ceiling validation: never allow a target above the version this page
+  // even knows was built yet (a stricter check than the runbook's own "must be live" gate,
+  // which nothing here can verify — but a version that hasn't even been built definitely
+  // isn't live, so this much is always safe to enforce automatically).
+  const minIosVersionError =
+    trimmedMinIosVersion === ""
+      ? null
+      : !isValidVersionFormat(trimmedMinIosVersion)
+        ? "Enter a version in X.Y.Z format (e.g. 1.23.16)."
+        : versions?.ios.marketingVersion &&
+            isVersionGreaterThan(trimmedMinIosVersion, versions.ios.marketingVersion)
+          ? `Cannot exceed the current build (${versions.ios.marketingVersion}) — that version may not even be published yet.`
+          : null;
+  const minAndroidVersionError =
+    trimmedMinAndroidVersion === ""
+      ? null
+      : !isValidVersionFormat(trimmedMinAndroidVersion)
+        ? "Enter a version in X.Y.Z format (e.g. 1.23.16)."
+        : versions?.android.versionName &&
+            isVersionGreaterThan(trimmedMinAndroidVersion, versions.android.versionName)
+          ? `Cannot exceed the current build (${versions.android.versionName}) — that version may not even be published yet.`
+          : null;
+
   const isIosMinVersionChanged =
     trimmedMinIosVersion !== "" &&
-    trimmedMinIosVersion !== currentMinIosVersion?.minimumSupportedVersion;
+    trimmedMinIosVersion !== currentMinIosVersion?.minimumSupportedVersion &&
+    !minIosVersionError;
   const isAndroidMinVersionChanged =
     trimmedMinAndroidVersion !== "" &&
-    trimmedMinAndroidVersion !== currentMinAndroidVersion?.minimumSupportedVersion;
+    trimmedMinAndroidVersion !== currentMinAndroidVersion?.minimumSupportedVersion &&
+    !minAndroidVersionError;
   const hasMinVersionChange = isIosMinVersionChanged || isAndroidMinVersionChanged;
 
   const handleOpenMinVersionDialog = () => {
@@ -410,7 +456,12 @@ export const MobileReleases: FC = () => {
                 <Button
                   kind="danger--tertiary"
                   size="md"
-                  disabled={isPromotingAndroid}
+                  disabled={
+                    isPromotingAndroid ||
+                    isVersionsLoading ||
+                    isVersionsError ||
+                    !versions?.android.versionName
+                  }
                   onClick={() => {
                     setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
                     setAndroidWhatsNewText("");
@@ -424,7 +475,12 @@ export const MobileReleases: FC = () => {
                 <Button
                   kind="danger--tertiary"
                   size="md"
-                  disabled={isSubmittingAppStoreReview}
+                  disabled={
+                    isSubmittingAppStoreReview ||
+                    isTestflightStatusLoading ||
+                    isTestflightStatusError ||
+                    !testflightStatus?.buildVersion
+                  }
                   onClick={handleOpenAppStoreReviewDialog}
                 >
                   Submit for Full App Store Review
@@ -526,7 +582,14 @@ export const MobileReleases: FC = () => {
             onClick: () => setIsConfirmingTrigger(false),
             disabled: isTriggering,
           }}
-        />
+        >
+          {releaseInProgress && (
+            <p className="w-full mt-2 text-sm text-warning-text">
+              A release is already running — this will queue behind it rather than run concurrently,
+              but confirm that's what you want before proceeding.
+            </p>
+          )}
+        </ActionConfirmationPopup>
       )}
 
       {isConfirmingAndroidPromotion && (
@@ -538,7 +601,10 @@ export const MobileReleases: FC = () => {
           primaryButton={{
             label: isPromotingAndroid ? "Promoting…" : "Promote to production",
             onClick: () => void handlePromoteAndroid(),
-            disabled: isPromotingAndroid || !isAndroidRolloutPercentageValid,
+            disabled:
+              isPromotingAndroid ||
+              !isAndroidRolloutPercentageValid ||
+              androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH,
           }}
           secondaryButton={{
             label: en.common.cancel,
@@ -547,6 +613,17 @@ export const MobileReleases: FC = () => {
           }}
         >
           <div className="w-full mt-2 flex flex-col gap-4">
+            {isAndroidAlreadyPromoted && (
+              <p className="text-sm text-warning-text">
+                This build ({versions?.android.versionName}) may already be promoted to production —
+                last promotion:{" "}
+                {lastAndroidPromoteRun?.runStartedAt
+                  ? formatDateTime(lastAndroidPromoteRun.runStartedAt)
+                  : "unknown time"}
+                . Promoting again will re-submit it, which is fine if you're only raising the
+                rollout percentage.
+              </p>
+            )}
             <NumberInput
               id="android-promotion-rollout-percentage"
               label="Rollout percentage"
@@ -564,7 +641,12 @@ export const MobileReleases: FC = () => {
             <TextArea
               id="android-promotion-whats-new"
               labelText="What's New (optional)"
-              helperText="Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+              helperText={
+                androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH
+                  ? `${androidWhatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before promoting.`
+                  : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+              }
+              invalid={androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH}
               placeholder="e.g. Bug fixes and performance improvements"
               value={androidWhatsNewText}
               onChange={e => setAndroidWhatsNewText(e.target.value)}
@@ -584,7 +666,7 @@ export const MobileReleases: FC = () => {
           primaryButton={{
             label: isSubmittingAppStoreReview ? "Submitting…" : "Submit for review",
             onClick: () => void handleSubmitAppStoreReview(),
-            disabled: isSubmittingAppStoreReview,
+            disabled: isSubmittingAppStoreReview || whatsNewText.length > WHATS_NEW_MAX_LENGTH,
           }}
           secondaryButton={{
             label: en.common.cancel,
@@ -592,15 +674,21 @@ export const MobileReleases: FC = () => {
             disabled: isSubmittingAppStoreReview,
           }}
         >
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 flex flex-col gap-3">
+            {iosAlreadySubmittedWarning && (
+              <p className="text-sm text-warning-text">{iosAlreadySubmittedWarning}</p>
+            )}
             <TextArea
               id="ios-app-store-review-whats-new"
               labelText="What's New in This Version (optional)"
               helperText={
-                whatsNewSuggestionNote
-                  ? `${whatsNewSuggestionNote} ${WHATS_NEW_HELPER_TEXT}`
-                  : WHATS_NEW_HELPER_TEXT
+                whatsNewText.length > WHATS_NEW_MAX_LENGTH
+                  ? `${whatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before submitting.`
+                  : whatsNewSuggestionNote
+                    ? `${whatsNewSuggestionNote} ${WHATS_NEW_HELPER_TEXT}`
+                    : WHATS_NEW_HELPER_TEXT
               }
+              invalid={whatsNewText.length > WHATS_NEW_MAX_LENGTH}
               placeholder={
                 isFetchingWhatsNewSuggestion
                   ? "Generating a suggestion from recent commits…"
@@ -637,10 +725,14 @@ export const MobileReleases: FC = () => {
               id="min-ios-version"
               labelText="Minimum iOS version"
               helperText={
-                currentMinIosVersion
-                  ? `Current: ${currentMinIosVersion.minimumSupportedVersion}`
-                  : "Loading current threshold…"
+                minIosVersionError
+                  ? minIosVersionError
+                  : currentMinIosVersion
+                    ? `Current: ${currentMinIosVersion.minimumSupportedVersion}`
+                    : "Loading current threshold…"
               }
+              invalid={!!minIosVersionError}
+              invalidText={minIosVersionError ?? ""}
               value={minIosVersionInput}
               onChange={e => setMinIosVersionInput(e.target.value)}
               disabled={isUpdatingMinVersion}
@@ -649,10 +741,14 @@ export const MobileReleases: FC = () => {
               id="min-android-version"
               labelText="Minimum Android version"
               helperText={
-                currentMinAndroidVersion
-                  ? `Current: ${currentMinAndroidVersion.minimumSupportedVersion}`
-                  : "Loading current threshold…"
+                minAndroidVersionError
+                  ? minAndroidVersionError
+                  : currentMinAndroidVersion
+                    ? `Current: ${currentMinAndroidVersion.minimumSupportedVersion}`
+                    : "Loading current threshold…"
               }
+              invalid={!!minAndroidVersionError}
+              invalidText={minAndroidVersionError ?? ""}
               value={minAndroidVersionInput}
               onChange={e => setMinAndroidVersionInput(e.target.value)}
               disabled={isUpdatingMinVersion}

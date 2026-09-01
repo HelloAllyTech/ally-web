@@ -155,6 +155,19 @@ export const findLastRun = (
 ): MobileReleaseRun | null => runs.find(run => run.workflowName === workflowName) ?? null;
 
 /**
+ * True if `laterRun`'s createdAt is strictly after `earlierRun`'s — used to approximate "this
+ * run is for the build that just happened," since Android runs carry no version string to match
+ * on directly the way iOS's App Store Connect resources do.
+ */
+export const isRunAfter = (
+  laterRun: MobileReleaseRun | null | undefined,
+  earlierRun: MobileReleaseRun | null | undefined,
+): boolean => {
+  if (!laterRun || !earlierRun) return false;
+  return new Date(laterRun.createdAt).getTime() > new Date(earlierRun.createdAt).getTime();
+};
+
+/**
  * The single most useful thing to tell an admin about what to do next,
  * derived only from signals this page can actually verify — never a guess
  * dressed up as certainty. Deliberately silent on Android: there is no
@@ -220,4 +233,35 @@ export const deriveRecommendedAction = (
   // — already submitted and moving through Apple's own process; nothing for
   // the admin to do but wait.
   return NO_ACTION;
+};
+
+/**
+ * X.Y.Z is the only format ally-mobile's build.gradle/pbxproj ever produce —
+ * same format ally-be's app-version DTOs now require at the API boundary.
+ * Validating it here too means a typo is caught before the confirmation
+ * dialog's primary button even goes live, not after a failed request.
+ */
+const VERSION_FORMAT_REGEX = /^\d+\.\d+\.\d+$/;
+
+export const isValidVersionFormat = (version: string): boolean =>
+  VERSION_FORMAT_REGEX.test(version.trim());
+
+/**
+ * True only when both `candidate` and `reference` are well-formed X.Y.Z and
+ * `candidate` is numerically greater — never true for a malformed value, so
+ * this can't be used to wave through something format validation should
+ * have already rejected. Used to stop a force-update minimum from being set
+ * above the version this page even knows was built yet, let alone
+ * published — the cheapest version of the runbook's safety gate this page
+ * can check on its own, though it still can't confirm a version is actually
+ * *live*, only that it's at least been built.
+ */
+export const isVersionGreaterThan = (candidate: string, reference: string): boolean => {
+  if (!isValidVersionFormat(candidate) || !isValidVersionFormat(reference)) return false;
+  const a = candidate.trim().split(".").map(Number);
+  const b = reference.trim().split(".").map(Number);
+  for (let i = 0; i < 3; i += 1) {
+    if (a[i] !== b[i]) return a[i] > b[i];
+  }
+  return false;
 };

@@ -6,6 +6,7 @@ import { formatDateTime } from "@utils";
 
 import {
   getMobileReleaseRunStatusDisplay,
+  isRunAfter,
   MobileReleaseStatusDisplay,
 } from "../mobileReleaseStatus";
 
@@ -57,12 +58,8 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
   }
 
   // A promote run only counts as being "for" the current build if it happened after that build's
-  // own upload finished — otherwise it's a promotion of some earlier version, not this one. This
-  // is a timestamp-ordering approximation, not a real per-version link (Android runs don't carry
-  // a version string the way iOS's App Store Connect resources do).
-  const isPromoteForCurrentBuild =
-    !!lastPromoteRun &&
-    new Date(lastPromoteRun.createdAt).getTime() > new Date(lastBuildRun.createdAt).getTime();
+  // own upload finished — otherwise it's a promotion of some earlier version, not this one.
+  const isPromoteForCurrentBuild = isRunAfter(lastPromoteRun, lastBuildRun);
 
   const isMinVersionCurrent = currentMinAndroidVersion === androidVersionName;
 
