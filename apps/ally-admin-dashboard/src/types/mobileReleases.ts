@@ -13,7 +13,8 @@ export type MobileReleaseWorkflowName =
   | "Scheduled Check"
   | "iOS Build"
   | "Android Build"
-  | "Promote Android";
+  | "Promote Android"
+  | "App Store Review Submission";
 
 /** GitHub Actions' own run-status values — not our own enum, so this stays a passthrough of their API. */
 export type MobileReleaseRunStatus = "queued" | "in_progress" | "completed";
@@ -74,13 +75,17 @@ export interface TriggerMobileReleaseResponse {
  * POST /v1/mobile-releases/promote-android request body — promotes the
  * current internal-track Android build straight to the Play Store
  * **production** track at a staged rollout. `rolloutPercentage` is an
- * integer 1–100.
+ * integer 1–100. `whatsNew` is optional — Google Play doesn't carry a
+ * release's notes across tracks automatically, so omitting it (rather than
+ * sending an empty string) promotes with no release notes at all, same as
+ * before this field existed.
  *
  * Response shape is identical to TriggerMobileReleaseResponse
  * ({ dispatched: boolean }) — reused rather than duplicated.
  */
 export interface TriggerAndroidPromotionRequest {
   rolloutPercentage: number;
+  whatsNew?: string;
 }
 
 /**
@@ -102,6 +107,29 @@ export interface TriggerAndroidPromotionRequest {
  */
 export interface SubmitIosAppStoreReviewRequest {
   whatsNew?: string;
+}
+
+/**
+ * GET /v1/mobile-releases/android-production-status — the current live Play
+ * Developer API state of the Android production track, read straight from
+ * Google, so the admin can see it without opening Play Console themselves.
+ * Distinct from androidStatus fields elsewhere on this page, which only ever
+ * reflect our own automation's dispatch outcome, not Google's real state.
+ */
+export interface AndroidProductionStatusResponse {
+  /**
+   * Google's own raw release status, passed through rather than remapped:
+   * "draft" | "inProgress" | "halted" | "completed". Null if there's no
+   * release on the production track yet. "completed" only means genuinely
+   * live to every user once Managed Publishing is off for this app — with
+   * it on, this can still read "completed" while Google is still holding
+   * the change for review or a manual publish click.
+   */
+  status: "draft" | "inProgress" | "halted" | "completed" | null;
+  /** versionCodes in the current highest-versionCode production release. Empty if there is none. */
+  versionCodes: number[];
+  /** Fraction (0-1) of users on a staged rollout — only meaningful when status is "inProgress" or "halted". Null otherwise. */
+  userFraction: number | null;
 }
 
 /**
