@@ -515,7 +515,7 @@ export const MobileReleases: FC = () => {
         <div className="mt-3">
           {isTestflightHistoryLoading ? (
             <p className="text-typography-700">Loading…</p>
-          ) : isTestflightHistoryError ? (
+          ) : isTestflightHistoryError && testflightHistory.length === 0 ? (
             <p className="text-destructive-500">Failed to load TestFlight submission history.</p>
           ) : testflightHistory.length === 0 ? (
             <EmptyState
@@ -557,6 +557,11 @@ export const MobileReleases: FC = () => {
               </TableBody>
             </Table>
           )}
+          {isTestflightHistoryError && testflightHistory.length > 0 && (
+            <p className="text-sm text-destructive-500 mt-2">
+              Couldn't refresh just now — showing the last known submissions.
+            </p>
+          )}
         </div>
       </div>
 
@@ -572,7 +577,7 @@ export const MobileReleases: FC = () => {
         <div className="mt-3">
           {isAppStoreReviewHistoryLoading ? (
             <p className="text-typography-700">Loading…</p>
-          ) : isAppStoreReviewHistoryError ? (
+          ) : isAppStoreReviewHistoryError && appStoreReviewHistory.length === 0 ? (
             <p className="text-destructive-500">
               Failed to load App Store review submission history.
             </p>
@@ -620,6 +625,11 @@ export const MobileReleases: FC = () => {
                 })}
               </TableBody>
             </Table>
+          )}
+          {isAppStoreReviewHistoryError && appStoreReviewHistory.length > 0 && (
+            <p className="text-sm text-destructive-500 mt-2">
+              Couldn't refresh just now — showing the last known submissions.
+            </p>
           )}
         </div>
       </div>
