@@ -89,6 +89,18 @@ export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ 
   const [editingName, setEditingName] = useState("");
   /** Two-step delete, so the count of discarded assessments is read before acting. */
   const [confirmingDelete, setConfirmingDelete] = useState<RoadmapStrategyGoal | null>(null);
+  /**
+   * What the admin has typed into a weight box since it last committed. Needed because the
+   * box is controlled: without it, rejecting an out-of-range value would have nothing to show
+   * back except the last-saved number, silently erasing what was just typed.
+   */
+  const [weightDrafts, setWeightDrafts] = useState<
+    Partial<Record<keyof RoadmapRankWeights, string>>
+  >({});
+  /** Keys currently showing the invalid state, so the box and its error text stay in sync. */
+  const [invalidWeightKeys, setInvalidWeightKeys] = useState<
+    Partial<Record<keyof RoadmapRankWeights, boolean>>
+  >({});
 
   const goals = data?.goals ?? [];
   const needingAssessment = data?.needingAssessment ?? 0;
@@ -167,7 +179,16 @@ export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ 
    */
   const commitWeight = async (key: keyof RoadmapRankWeights, raw: string) => {
     const value = Number(raw);
-    if (!Number.isInteger(value) || value < 0 || value > 10) return;
+    if (!Number.isInteger(value) || value < 0 || value > 10) {
+      setInvalidWeightKeys(prev => ({ ...prev, [key]: true }));
+      return;
+    }
+    setInvalidWeightKeys(prev => ({ ...prev, [key]: false }));
+    setWeightDrafts(prev => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
     if (weights && weights[key] === value) return;
     try {
       await updateWeights({ [key]: value }).unwrap();
@@ -381,7 +402,12 @@ export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ 
                           type="number"
                           min={0}
                           max={10}
-                          defaultValue={String(value)}
+                          value={weightDrafts[factor.key] ?? String(value)}
+                          invalid={!!invalidWeightKeys[factor.key]}
+                          invalidText="Enter a whole number between 0 and 10."
+                          onChange={event =>
+                            setWeightDrafts(prev => ({ ...prev, [factor.key]: event.target.value }))
+                          }
                           onBlur={event => commitWeight(factor.key, event.target.value)}
                         />
                       </div>
