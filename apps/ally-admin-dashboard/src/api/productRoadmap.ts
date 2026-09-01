@@ -14,6 +14,8 @@ import {
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
   RoadmapOpportunity,
+  RoadmapReferenceImage,
+  RoadmapReferenceImageUpload,
   RoadmapSavedView,
   RoadmapEligibleOwner,
   RoadmapOpportunityEffort,
@@ -225,6 +227,11 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
          * arrives from someone without edit:admin:product-roadmap.
          */
         ownerUserId?: number | null;
+        /**
+         * Attached at filing time, so the screenshot lands with the words that describe it. Only
+         * URLs this API presigned are accepted; the backend answers 422 for anything else.
+         */
+        referenceImages?: RoadmapReferenceImage[];
       }
     >({
       query: body => ({
@@ -270,6 +277,25 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
         TAG_TYPES.PRODUCT_ROADMAP_FACETS,
       ],
+    }),
+
+    /**
+     * Presign one reference-image upload. A mutation rather than a query because it is not
+     * idempotent — each call signs a new key — and because nothing should cache it: the URL
+     * expires in ten minutes.
+     *
+     * Invalidates nothing. An upload is not an attachment: the object exists once the browser's
+     * PUT lands, but no opportunity points at it until a create or update sends the URL back.
+     */
+    getRoadmapReferenceImageUploadUrl: builder.mutation<
+      RoadmapReferenceImageUpload,
+      { fileName: string; fileSize: number; contentType: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.REFERENCE_IMAGE_UPLOAD_URL,
+        method: HttpMethod.POST,
+        body,
+      }),
     }),
 
     deleteRoadmapOpportunity: builder.mutation<void, string>({
@@ -813,6 +839,7 @@ export const {
   useCreateRoadmapBugReportMutation,
   useUpdateRoadmapOpportunityMutation,
   useDeleteRoadmapOpportunityMutation,
+  useGetRoadmapReferenceImageUploadUrlMutation,
   useSetRoadmapAllocationMutation,
   useSplitRoadmapOpportunityMutation,
   useMergeRoadmapOpportunitiesMutation,

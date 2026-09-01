@@ -26,12 +26,15 @@ import {
   RoadmapOpportunityEffort,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
+  RoadmapReferenceImage,
   RoadmapTaxonomyItem,
 } from "@types";
 import { hasFeature } from "@utils";
 
 import { RankBreakdownPanel } from "./RankBreakdown";
+import { ReferenceImagesField } from "./ReferenceImagesField";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
+import { sameReferenceImages } from "./utils/referenceImages";
 import { EFFORT_LABEL, STAGE_LABEL } from "./utils/stages";
 
 const PRD_MAX = 20000;
@@ -123,6 +126,13 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     plannedMonth: "",
     /** A shirt size, or "" for unsized — the same ""-means-null shape plannedMonth uses. */
     effort: "",
+    /**
+     * Attached images. Part of the DRAFT rather than written straight through, so they ride the
+     * same debounce, the same dirty check and the same "Unsaved changes" line as every other
+     * field — an attachment that saved by its own path would be the one edit the status line
+     * lied about.
+     */
+    referenceImages: [] as RoadmapReferenceImage[],
   });
   const [commentBody, setCommentBody] = useState("");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -167,6 +177,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       claudePrompt: opportunity.claudePrompt ?? "",
       plannedMonth: opportunity.plannedMonth ?? "",
       effort: opportunity.effort ?? "",
+      // `?? []` for a row read from a cache written before the field existed.
+      referenceImages: opportunity.referenceImages ?? [],
     });
   }, [opportunity]);
 
@@ -264,7 +276,11 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       draft.prd !== (opportunity.prd ?? "") ||
       draft.claudePrompt !== (opportunity.claudePrompt ?? "") ||
       draft.plannedMonth !== (opportunity.plannedMonth ?? "") ||
-      draft.effort !== (opportunity.effort ?? ""));
+      draft.effort !== (opportunity.effort ?? "") ||
+      // By VALUE, not identity. Every keystroke in a caption rebuilds the array, so an identity
+      // check would leave this drawer permanently dirty and re-arm the autosave every 800ms for
+      // as long as it stayed open — see sameReferenceImages.
+      !sameReferenceImages(draft.referenceImages, opportunity.referenceImages ?? []));
 
   /**
    * Soft-delete. The backend also returns every contributor's votes to them, soft-deletes the
@@ -329,6 +345,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           // "" is the Not-sized option and must send null, the same way plannedMonth's
           // Unscheduled does — the column is nullable and "" would fail the enum check.
           effort: (draft.effort || null) as RoadmapOpportunityEffort | null,
+          // The full resulting list, which is what the API takes — `[]` clears them.
+          referenceImages: draft.referenceImages,
         },
       }).unwrap();
       setHasSavedOnce(true);
@@ -826,6 +844,21 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 />
               </div>
             )}
+
+            {/* Reference images.
+
+                Between the ranking panel and Notes: they are part of what the opportunity SAYS,
+                so they sit with the description's neighbours rather than under the comments where
+                a reader would find them only after deciding.
+
+                `canEdit={canManage}` matches every other field here — editing is manage-gated,
+                and a viewer gets the same thumbnails with no controls rather than an empty
+                section. Removing one from this list never deletes the uploaded file. */}
+            <ReferenceImagesField
+              images={draft.referenceImages}
+              onChange={referenceImages => setDraft(prev => ({ ...prev, referenceImages }))}
+              canEdit={canManage}
+            />
 
             {/* Labelled "Notes", but the column, the constant and the agent payload are all still
                 `prd` — this renames what a reader sees, not the field. The old label leaked an
