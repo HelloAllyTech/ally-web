@@ -128,6 +128,7 @@ export const MobileReleases: FC = () => {
   const [androidRolloutPercentage, setAndroidRolloutPercentage] = useState(
     DEFAULT_ANDROID_ROLLOUT_PERCENTAGE,
   );
+  const [androidWhatsNewText, setAndroidWhatsNewText] = useState("");
   const [triggerAndroidPromotion, { isLoading: isPromotingAndroid }] =
     useTriggerAndroidPromotionMutation();
   const isAndroidRolloutPercentageValid =
@@ -138,7 +139,10 @@ export const MobileReleases: FC = () => {
   const handlePromoteAndroid = async () => {
     if (!isAndroidRolloutPercentageValid) return;
     try {
-      await triggerAndroidPromotion({ rolloutPercentage: androidRolloutPercentage }).unwrap();
+      await triggerAndroidPromotion({
+        rolloutPercentage: androidRolloutPercentage,
+        whatsNew: androidWhatsNewText.trim() || undefined,
+      }).unwrap();
       toast.success(
         "Android promotion dispatched — new run should appear in Release History shortly.",
       );
@@ -387,6 +391,7 @@ export const MobileReleases: FC = () => {
                   disabled={isPromotingAndroid}
                   onClick={() => {
                     setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
+                    setAndroidWhatsNewText("");
                     setIsConfirmingAndroidPromotion(true);
                   }}
                 >
@@ -519,7 +524,7 @@ export const MobileReleases: FC = () => {
             disabled: isPromotingAndroid,
           }}
         >
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 flex flex-col gap-4">
             <NumberInput
               id="android-promotion-rollout-percentage"
               label="Rollout percentage"
@@ -533,6 +538,16 @@ export const MobileReleases: FC = () => {
               onChange={(_event: unknown, state: { value: number | string } | undefined) =>
                 setAndroidRolloutPercentage(state?.value === undefined ? NaN : Number(state.value))
               }
+            />
+            <TextArea
+              id="android-promotion-whats-new"
+              labelText="What's New (optional)"
+              helperText="Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+              placeholder="e.g. Bug fixes and performance improvements"
+              value={androidWhatsNewText}
+              onChange={e => setAndroidWhatsNewText(e.target.value)}
+              disabled={isPromotingAndroid}
+              rows={4}
             />
           </div>
         </ActionConfirmationPopup>

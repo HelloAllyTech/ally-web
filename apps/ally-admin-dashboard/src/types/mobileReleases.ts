@@ -75,13 +75,17 @@ export interface TriggerMobileReleaseResponse {
  * POST /v1/mobile-releases/promote-android request body — promotes the
  * current internal-track Android build straight to the Play Store
  * **production** track at a staged rollout. `rolloutPercentage` is an
- * integer 1–100.
+ * integer 1–100. `whatsNew` is optional — Google Play doesn't carry a
+ * release's notes across tracks automatically, so omitting it (rather than
+ * sending an empty string) promotes with no release notes at all, same as
+ * before this field existed.
  *
  * Response shape is identical to TriggerMobileReleaseResponse
  * ({ dispatched: boolean }) — reused rather than duplicated.
  */
 export interface TriggerAndroidPromotionRequest {
   rolloutPercentage: number;
+  whatsNew?: string;
 }
 
 /**
