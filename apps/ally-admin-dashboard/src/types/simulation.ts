@@ -117,15 +117,16 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   /**
-   * Which post-session tabs this roleplay shows its learners, gated under
-   * `enableFeedback` (the master switch — false there means everything off
-   * regardless of these). Always sent with all three keys present: the
-   * backend resolver treats an absent `feedbackTabs` object as debrief/
-   * transcript-on, skills-off, and reads each key the same way when the
-   * object is only partially written — debrief/transcript on unless
-   * explicitly `false`, skills on only if explicitly `true`.
+   * Which post-session tabs this roleplay shows its learners — the debrief
+   * note and the annotated transcript, and nothing else. Always sent with
+   * both keys present: the backend resolver reads an absent object, and an
+   * absent key within one, as ON, which is right for a legacy roleplay but
+   * wrong for a deliberate save.
+   *
+   * Both false is the wholesale opt-out; there is no master switch above
+   * these two any more (`enableFeedback`, retired 2026-08-31).
    */
-  feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
+  feedbackTabs?: { debrief: boolean; transcript: boolean };
   fillerEnabled?: boolean;
   languageGlossaryEnabled?: boolean;
   comfortAudioEnabled?: boolean;
@@ -236,9 +237,8 @@ export interface GetSimulationByIdResponse {
     summaryChecklistEnabled?: boolean;
     timerMode?: boolean;
     showScoreMeter?: boolean;
-    enableFeedback?: boolean;
-    /** See SimulationInput.feedbackTabs — debrief/transcript default on, skills defaults off. */
-    feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
+    /** See SimulationInput.feedbackTabs — each tab defaults on when unset. */
+    feedbackTabs?: { debrief: boolean; transcript: boolean };
     pauseEnabled?: boolean;
     /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
     supervisorNotesEnabled?: boolean;
@@ -331,7 +331,6 @@ export interface StartSimulationResponse {
       checklistType?: string;
       summaryChecklistEnabled?: boolean;
       showScoreMeter?: boolean;
-      enableFeedback?: boolean;
       pauseEnabled?: boolean;
       supervisorNotesEnabled?: boolean;
       liveTabEnabled?: boolean;

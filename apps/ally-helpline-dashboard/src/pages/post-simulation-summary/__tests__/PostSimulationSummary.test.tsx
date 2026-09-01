@@ -92,22 +92,16 @@ vi.mock("../../calls/components", () => ({
   ),
 }));
 
-// Stub DebriefTab and SkillsTab. DebriefTab now leads the tab order and is
-// what the page renders on open; SkillsTab is the next one a test switches
-// to. Both drive their own queries (chat history / skills), so left real they
-// render a loading skeleton on one render and an error on the next, making
-// both the snapshots and the render-consistency assertion timing-dependent.
+// Stub DebriefTab. It leads the tab order and is what the page renders on
+// open, and it drives its own chat-history query, so left real it renders a
+// loading skeleton on one render and an error on the next, making both the
+// snapshots and the render-consistency assertion timing-dependent.
 // Everything else in the barrel stays real (the star rating and footer button
 // are asserted against directly).
 vi.mock("@components", async importOriginal => {
   const actual = await importOriginal<typeof import("@components")>();
   return {
     ...actual,
-    SkillsTab: ({ sessionId, retryMaxReached }: any) => (
-      <div data-testid="skills-tab" data-retry-max={String(retryMaxReached)}>
-        <div data-testid="skills-session-id">{sessionId}</div>
-      </div>
-    ),
     DebriefTab: ({ sessionId, summaryData, retryMaxReached, onOpenMoment }: any) => (
       <div
         data-testid="debrief-tab"
@@ -742,7 +736,7 @@ describe("PostSimulationSummary Component", () => {
         typeof useGetSimulationSummaryQuery
       >;
 
-    it("should have Debrief and Transcript configured, with Skills off by default", () => {
+    it("should have exactly two tabs configured: Debrief and Transcript", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -750,9 +744,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      // Skills Demonstrated defaults off platform-wide.
-      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      // Skills (5) and the legacy Up next (3) were retired on 2026-08-31.
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("tab-3")).not.toBeInTheDocument();
     });
 
     it("should have Debrief as first tab with id 6", () => {
@@ -766,10 +761,15 @@ describe("PostSimulationSummary Component", () => {
       expect(debriefTab).toHaveTextContent("Debrief");
     });
 
-    it("should render Skills as a tab with id 5 when a scenario explicitly opts back in", () => {
+    it("should NOT bring Skills back even for a roleplay whose stored config still asks for it", () => {
+      // The tab is gone from the product, not merely defaulted off. A row
+      // written before migration 1944200000000 stripped the key can still
+      // carry `skills: true`, and it must be inert.
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } } },
+          scenario: {
+            metadata: { feedbackTabs: { debrief: true, transcript: true } },
+          },
           hasFeedback: false,
         }),
       );
@@ -780,8 +780,10 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const skillsTab = screen.getByTestId("tab-5");
-      expect(skillsTab).toHaveTextContent("Skills");
+      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("skills-tab")).not.toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
     });
 
     it("should have Transcript as a tab with id 2", () => {
@@ -901,11 +903,14 @@ describe("PostSimulationSummary Component", () => {
   });
 
   /**
-   * TEST GROUP: Feedback toggle (enableFeedback)
-   * Verifies the trainer-controlled enableFeedback flag gates the post-session
-   * evaluation summary vs. a rating-only flow.
+   * TEST GROUP: Wholesale post-session opt-out
+   * Both tabs switched off is how an author says "no post-session evaluation
+   * surface at all" — the thing the retired `enableFeedback` master switch
+   * used to say. It gates the evaluation surface vs. a rating-only flow.
+   * Migration 1944200000000 rewrote every enableFeedback: false roleplay into
+   * this shape, and the flag itself is now inert (covered below).
    */
-  describe("Feedback toggle (enableFeedback)", () => {
+  describe("Wholesale post-session opt-out (both tabs off)", () => {
     const mockedSummaryQuery = vi.mocked(useGetSimulationSummaryQuery);
 
     const summaryQueryResult = (data: unknown, isLoading = false) =>
@@ -930,7 +935,7 @@ describe("PostSimulationSummary Component", () => {
     it("renders the full evaluation summary when feedback is enabled", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { enableFeedback: true } },
+          scenario: { metadata: { feedbackTabs: { debrief: true, transcript: true } } },
           hasFeedback: false,
         }),
       );
@@ -946,7 +951,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
 
-    it("treats a missing flag as enabled (legacy scenarios)", () => {
+    it("treats missing config as enabled (legacy scenarios)", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({ scenario: { metadata: {} }, hasFeedback: false }),
       );
@@ -963,7 +968,7 @@ describe("PostSimulationSummary Component", () => {
     it("hides the evaluation summary and only prompts for a rating when feedback is disabled", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { enableFeedback: false } },
+          scenario: { metadata: { feedbackTabs: { debrief: false, transcript: false } } },
           hasFeedback: false,
         }),
       );
@@ -982,7 +987,7 @@ describe("PostSimulationSummary Component", () => {
     it("returns to the role-play list after the rating dialog is dismissed", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { enableFeedback: false } },
+          scenario: { metadata: { feedbackTabs: { debrief: false, transcript: false } } },
           hasFeedback: false,
         }),
       );
@@ -1001,7 +1006,7 @@ describe("PostSimulationSummary Component", () => {
     it("skips straight to the role-play list when feedback is disabled and a rating already exists", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
-          scenario: { metadata: { enableFeedback: false } },
+          scenario: { metadata: { feedbackTabs: { debrief: false, transcript: false } } },
           hasFeedback: true,
           sessionFeedback: { rating: 4 },
         }),
@@ -1020,10 +1025,10 @@ describe("PostSimulationSummary Component", () => {
 
   /**
    * TEST GROUP: feedbackTabs gating
-   * Verifies the backend-resolved `scenario.metadata.feedbackTabs` sub-toggles
-   * ({ debrief, skills, transcript }) control which tabs render, that the
-   * page lands on the first tab still present, and that switching every
-   * sub-toggle off is equivalent to enableFeedback: false.
+   * Verifies the backend-resolved `scenario.metadata.feedbackTabs` toggles
+   * ({ debrief, transcript }) control which tabs render, that the page lands
+   * on the first tab still present, and that switching both off falls through
+   * to the rating-only flow.
    */
   describe("feedbackTabs gating", () => {
     const mockedSummaryQuery = vi.mocked(useGetSimulationSummaryQuery);
@@ -1033,7 +1038,7 @@ describe("PostSimulationSummary Component", () => {
         typeof useGetSimulationSummaryQuery
       >;
 
-    it("falls back to Debrief and Transcript (no Skills) when feedbackTabs is absent (legacy roleplay)", () => {
+    it("falls back to both tabs when feedbackTabs is absent (legacy roleplay)", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({ scenario: { metadata: {} }, hasFeedback: false }),
       );
@@ -1045,19 +1050,16 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      // Skills Demonstrated defaults off platform-wide; only an explicit
-      // feedbackTabs.skills: true brings it back.
-      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       // Debrief still leads, and is still the landing tab.
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
     });
 
-    it("hides the Debrief tab and lands on Skills when debrief is off", () => {
+    it("hides the Debrief tab and lands on Transcript when debrief is off", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
           scenario: {
-            metadata: { feedbackTabs: { debrief: false, skills: true, transcript: true } },
+            metadata: { feedbackTabs: { debrief: false, transcript: true } },
           },
           hasFeedback: false,
         }),
@@ -1070,18 +1072,16 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.queryByTestId("tab-6")).not.toBeInTheDocument();
-      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      // Skills is now the first tab in the list, so the page lands there.
-      expect(screen.getByTestId("skills-tab")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-5").className).toContain("text-primary-500");
+      // Transcript is now the only tab, so the page lands there.
+      expect(screen.getByTestId("tab-2").className).toContain("text-primary-500");
     });
 
-    it("renders only Debrief when skills and transcript are off", () => {
+    it("renders only Debrief when transcript is off", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
           scenario: {
-            metadata: { feedbackTabs: { debrief: true, skills: false, transcript: false } },
+            metadata: { feedbackTabs: { debrief: true, transcript: false } },
           },
           hasFeedback: false,
         }),
@@ -1094,7 +1094,6 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
       expect(screen.queryByTestId("tab-2")).not.toBeInTheDocument();
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
       // No transcript tab exists to jump to, so the moment-open callback is
@@ -1102,11 +1101,14 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.queryByTestId("debrief-open-moment")).not.toBeInTheDocument();
     });
 
-    it("renders Debrief plus Up Next when only debrief is on and the session belongs to a track", () => {
+    it("adds no third tab for a session that belongs to a track", () => {
+      // The legacy "Up next" tab used to appear here. Track 2.0 sessions get
+      // the breadcrumb + continue CTA below the tabs instead, and the legacy
+      // pathway/case tab was retired on 2026-08-31.
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
           scenario: {
-            metadata: { feedbackTabs: { debrief: true, skills: false, transcript: false } },
+            metadata: { feedbackTabs: { debrief: true, transcript: true } },
           },
           hasFeedback: false,
           scenarioPathSessionItemId: "path-item-1",
@@ -1120,16 +1122,16 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-6")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.queryByTestId("tab-3")).not.toBeInTheDocument();
       expect(screen.queryByTestId("tab-5")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("tab-2")).not.toBeInTheDocument();
     });
 
-    it("falls through to the feedback-disabled branch when every sub-toggle is off", () => {
+    it("falls through to the rating-only branch when both toggles are off", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
           scenario: {
-            metadata: { feedbackTabs: { debrief: false, skills: false, transcript: false } },
+            metadata: { feedbackTabs: { debrief: false, transcript: false } },
           },
           hasFeedback: false,
         }),
@@ -1141,17 +1143,17 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      // Same branch as enableFeedback: false — only the star-rating dialog.
+      // The wholesale opt-out — only the star-rating dialog.
       expect(screen.queryByTestId("tabs")).toBeNull();
       expect(screen.queryByTestId("debrief-tab")).toBeNull();
       expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
     });
 
-    it("lands on Debrief by default when it is present alongside the other tabs", () => {
+    it("lands on Debrief by default when it is present alongside the transcript", () => {
       mockedSummaryQuery.mockReturnValue(
         summaryQueryResult({
           scenario: {
-            metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } },
+            metadata: { feedbackTabs: { debrief: true, transcript: true } },
           },
           hasFeedback: false,
         }),
@@ -1165,7 +1167,6 @@ describe("PostSimulationSummary Component", () => {
 
       expect(screen.getByTestId("tab-6").className).toContain("text-primary-500");
       expect(screen.getByTestId("debrief-tab")).toBeInTheDocument();
-      expect(screen.queryByTestId("skills-tab")).not.toBeInTheDocument();
     });
   });
 

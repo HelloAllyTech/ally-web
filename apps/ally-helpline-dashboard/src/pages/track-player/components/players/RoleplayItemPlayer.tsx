@@ -28,7 +28,7 @@ interface RoleplayItemPlayerProps {
 }
 
 /**
- * Persists the return-to-track context so the post-simulation UpNext tab can
+ * Persists the return-to-track context so the post-simulation screen can
  * route the learner back into the player when the roleplay/case ends.
  */
 const persistTrackContext = (ctx: ActiveTrackContext) => {

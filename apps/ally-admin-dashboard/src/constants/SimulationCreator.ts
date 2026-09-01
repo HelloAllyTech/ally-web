@@ -210,9 +210,7 @@ export const FORM_FIELD_IDS = {
   TIMER_MODE: "timerMode",
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
-  ENABLE_FEEDBACK: "enableFeedback",
   FEEDBACK_TAB_DEBRIEF: "feedbackTabDebrief",
-  FEEDBACK_TAB_SKILLS: "feedbackTabSkills",
   FEEDBACK_TAB_TRANSCRIPT: "feedbackTabTranscript",
   SUPERVISOR_NOTES_ENABLED: "supervisorNotesEnabled",
   LIVE_TAB_ENABLED: "liveTabEnabled",
@@ -762,61 +760,33 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.SCORE,
       },
       {
-        // Master switch for the whole post-session experience — the debrief
-        // note + reply thread from Ally, the score/skills view, and the
-        // annotated transcript. Renamed from "AI Feedback Summary": that
-        // label undersold it once the feature grew from a single summary
-        // into three distinct tabs. The FIELD ID stays `enableFeedback`
-        // (it's what's already persisted) — only the human-facing label
-        // and tooltip copy changed.
-        id: "enableFeedback",
-        label: "Post-Session Feedback",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: true,
-        tooltipLocation: TooltipLocation.AI_FEEDBACK_SUMMARY,
-      },
-      {
-        // Nested sub-toggle: only meaningful (and only shown) while
-        // enableFeedback is on. Turning enableFeedback off hides this
-        // control but does NOT clear its stored value — re-enabling the
-        // master switch restores whatever tab visibility was configured
-        // before. Persists to scenarios.metadata.feedbackTabs.debrief
-        // (see CreateSimulation.tsx's payload builder); absent metadata
-        // reads as ON everywhere the backend resolves it.
+        // One of exactly two post-session controls, one per tab the learner
+        // gets. There is no master switch above them any more: "Post-Session
+        // Feedback" plus three sub-toggles was four controls for two
+        // outcomes, and the wholesale opt-out it expressed is just both of
+        // these switched off. Migration 1944200000000 translated every
+        // roleplay that had it off into that shape, so those roleplays now
+        // show their real state here instead of hiding it behind a collapsed
+        // master. Skills went in the same pass — off platform-wide since
+        // 2026-08-24.
+        //
+        // Persists to scenarios.metadata.feedbackTabs.debrief; absent
+        // metadata reads as ON everywhere the backend resolves it.
         id: "feedbackTabDebrief",
         label: "Debrief",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_DEBRIEF,
       },
       {
-        // See feedbackTabDebrief above, with one difference: Skills
-        // Demonstrated was switched off platform-wide (2026-08-24), so unlike
-        // debrief/transcript this one defaults OFF — only an explicit `true`
-        // persisted to scenarios.metadata.feedbackTabs.skills turns it on.
-        id: "feedbackTabSkills",
-        label: "Skills",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: false,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
-        tooltipLocation: TooltipLocation.FEEDBACK_TAB_SKILLS,
-      },
-      {
-        // See feedbackTabDebrief above — same nesting/persistence rules.
+        // See feedbackTabDebrief above — same persistence rules.
         // Persists to scenarios.metadata.feedbackTabs.transcript.
         id: "feedbackTabTranscript",
         label: "Transcript",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_TRANSCRIPT,
       },
       {

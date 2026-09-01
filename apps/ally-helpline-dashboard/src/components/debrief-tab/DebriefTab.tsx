@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useGetChatHistoryQuery } from "@api";
-import { AskAiIcon, Refresh } from "@assets";
+import { Refresh } from "@assets";
 import { useSendMessage } from "@hooks";
 import { initSession } from "@reducer";
 import { RootState } from "@store";
@@ -12,6 +12,7 @@ import { ChatMessagePayload, SimulationSummary as SimulationSummaryType } from "
 
 import { DebriefReplyInput } from "./DebriefReplyInput";
 import { getDebriefViewState } from "./debriefViewState";
+import { ReplyBubble } from "./ReplyBubble";
 import { SupervisorNote } from "./SupervisorNote";
 
 const NoteSkeleton = () => (
@@ -25,31 +26,6 @@ const NoteSkeleton = () => (
     </div>
   </div>
 );
-
-/**
- * A reply in the conversation the note opened. Deliberately plainer than the
- * note itself: the note is the thing being read, the replies are a
- * conversation about it.
- */
-const ReplyBubble = ({ role, content }: { role: string; content: string }) => {
-  const isLearner = role === "user";
-  return (
-    <div className={`flex w-full ${isLearner ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] rounded-[20px] px-4 py-2.5 ${isLearner ? "bg-primary-50" : ""}`}>
-        <div className="flex items-start gap-3">
-          {!isLearner && <AskAiIcon className="mt-0.5 h-8 w-8 shrink-0" />}
-          <div className="flex flex-col gap-1">
-            {content.split("\n").map((line, index) => (
-              <span key={index} className="break-words font-primary text-base">
-                {line}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface DebriefTabProps {
   sessionId: string;
@@ -68,8 +44,16 @@ interface DebriefTabProps {
    * else's. An admin must not be able to type into the learner's own
    * conversation with Ally, and the thread is keyed by session id, so there is
    * no per-reader thread to put them in.
+   *
+   * The thread is not merely disabled: it is not rendered and not fetched, so
+   * an org admin opening a learner's session never pulls the learner's
+   * coaching conversation into their store.
    */
   readOnly?: boolean;
+  /** Who the learner is, for labelling their own lines in a citation. */
+  counsellorName?: string;
+  /** The simulated client's name, for labelling its lines in a citation. */
+  agentName?: string;
 }
 
 /**
@@ -89,6 +73,8 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   checkAgain,
   isCheckingAgain = false,
   readOnly = false,
+  counsellorName,
+  agentName,
 }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -119,11 +105,11 @@ export const DebriefTab: FC<DebriefTabProps> = ({
   useEffect(() => {
     // Only chase the bottom once there is a conversation to follow. Scrolling
     // on first paint would skip past the note, which is the thing they came to
-    // read.
-    if (messages.length || streamingMessage) {
+    // read — and in note-only mode the note is all there is.
+    if (!readOnly && (messages.length || streamingMessage)) {
       threadEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, streamingMessage]);
+  }, [messages, streamingMessage, readOnly]);
 
   const summary = summaryData?.details?.summary;
   const note = summary?.feedback?.supervisorNote;
@@ -209,10 +195,21 @@ export const DebriefTab: FC<DebriefTabProps> = ({
                   key={`${message.role}-${index}`}
                   role={message.role}
                   content={message.content}
+                  citations={message.citations}
+                  onOpenMoment={onOpenMoment}
+                  counsellorName={counsellorName}
+                  agentName={agentName}
                 />
               ))}
               {streamingMessage && (
-                <ReplyBubble role={streamingMessage.role} content={streamingMessage.content} />
+                <ReplyBubble
+                  role={streamingMessage.role}
+                  content={streamingMessage.content}
+                  citations={streamingMessage.citations}
+                  onOpenMoment={onOpenMoment}
+                  counsellorName={counsellorName}
+                  agentName={agentName}
+                />
               )}
               {error && (
                 <div className="flex w-full justify-start">

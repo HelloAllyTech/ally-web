@@ -21,7 +21,6 @@ import {
   NextChallengeCard,
   SessionRatingTrigger,
   ShareForReview,
-  SkillsTab,
   ToggleSwitch,
 } from "@components";
 import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
@@ -34,14 +33,13 @@ import {
 import { useContinueTrack, useNextChallenge } from "@hooks";
 import {
   ActiveTrackContext,
-  pageType,
   SessionType,
   ShareForReviewsInput,
   TranscriptFocusRequest,
 } from "@types";
 import { readTrackContext, resolveFeedbackTabs } from "@utils";
 
-import { StreakMoment, UpNextTab } from "./components";
+import { StreakMoment } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { containerVariants } from "../learn/constants";
 
@@ -52,9 +50,7 @@ import { containerVariants } from "../learn/constants";
  */
 const TAB_IDS = {
   DEBRIEF: 6,
-  SKILLS: 5,
   TRANSCRIPT: 2,
-  UP_NEXT: 3,
 } as const;
 
 export const PostSimulationSummary: FC = () => {
@@ -120,8 +116,16 @@ export const PostSimulationSummary: FC = () => {
     return matchedLanguage?.value?.split("-")[0] ?? "en";
   }, [summary?.metadata?.languageId, availableLanguages]);
 
+  // Which post-session tabs this roleplay shows. The backend sends this
+  // already resolved; the fallback in resolveFeedbackTabs only covers a
+  // response cached from before these toggles existed.
   const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
 
+  // Exactly two tabs, one per surviving toggle. Skills Demonstrated and the
+  // legacy "Up next" tab were both dropped on 2026-08-31: Skills had been off
+  // platform-wide since 2026-08-24, and Up next only ever appeared for legacy
+  // pathway/case sessions (Track 2.0 gets the breadcrumb + continue CTA
+  // below instead, via useContinueTrack).
   const tabList = [
     ...(feedbackTabs.debrief
       ? [
@@ -135,20 +139,13 @@ export const PostSimulationSummary: FC = () => {
                 retryMaxReached={retryMaxReached}
                 checkAgain={checkAgain}
                 isCheckingAgain={isCheckingAgain}
-                // Anchors only become chips when there is a transcript tab to
-                // open; otherwise they render as plain prose.
+                // Anchors and cited timestamps only become chips when there is
+                // a transcript tab to open; otherwise they render as plain
+                // prose.
                 onOpenMoment={feedbackTabs.transcript ? handleOpenMoment : undefined}
+                agentName={summary?.scenario?.metadata?.name}
               />
             ),
-          },
-        ]
-      : []),
-    ...(feedbackTabs.skills
-      ? [
-          {
-            id: TAB_IDS.SKILLS,
-            label: t("postSim.tabs.skillsDemonstrated"),
-            content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
           },
         ]
       : []),
@@ -164,21 +161,6 @@ export const PostSimulationSummary: FC = () => {
                 agentName={summary?.scenario?.metadata?.name}
                 originalLanguageCode={originalLanguageCode}
                 focusMessage={momentRequest}
-              />
-            ),
-          },
-        ]
-      : []),
-    ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
-      ? [
-          {
-            id: TAB_IDS.UP_NEXT,
-            label: t("postSim.tabs.upNext"),
-            content: (
-              <UpNextTab
-                sessionId={sessionId}
-                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
-                metaData={summary?.metadata}
               />
             ),
           },
@@ -208,14 +190,11 @@ export const PostSimulationSummary: FC = () => {
   const feedbackDialogEvaluatedRef = useRef<boolean>(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
 
-  // When the trainer has disabled post-session feedback for this scenario, we
-  // skip the evaluation surface entirely. Default to enabled when the flag is
-  // missing (legacy scenarios). Switching every sub-toggle off is the same
-  // thing said a longer way, so it lands in the same branch — there is nothing
-  // left to show but the star rating.
-  const feedbackEnabled =
-    summary?.scenario?.metadata?.enableFeedback !== false &&
-    (feedbackTabs.debrief || feedbackTabs.skills || feedbackTabs.transcript);
+  // Both tabs off means the author wants no post-session evaluation surface at
+  // all — the wholesale opt-out that the retired `enableFeedback` master
+  // switch used to express, now said by the two toggles themselves. There is
+  // nothing left to show but the star rating.
+  const feedbackEnabled = feedbackTabs.debrief || feedbackTabs.transcript;
 
   useEffect(() => {
     if (summaryData && !isLoading && !feedbackDialogEvaluatedRef.current) {

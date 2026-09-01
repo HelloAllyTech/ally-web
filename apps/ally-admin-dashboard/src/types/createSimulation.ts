@@ -62,10 +62,12 @@ export type FormData = {
   timerMode?: boolean;
   maxTimeValue?: string;
   showScoreMeter?: boolean;
-  enableFeedback?: boolean;
-  /** Post-session tab visibility, gated under `enableFeedback`. See SimulationInput.feedbackTabs. */
+  /**
+   * Post-session tab visibility — one form toggle per tab the learner gets.
+   * See SimulationInput.feedbackTabs. The `enableFeedback` master switch and
+   * the Skills sub-toggle were retired on 2026-08-31.
+   */
   feedbackTabDebrief?: boolean;
-  feedbackTabSkills?: boolean;
   feedbackTabTranscript?: boolean;
   pauseEnabled?: boolean;
   /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
