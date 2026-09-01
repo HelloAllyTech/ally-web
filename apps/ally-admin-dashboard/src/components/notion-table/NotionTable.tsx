@@ -69,6 +69,12 @@ const SelectionRowCell = ({ row }) => {
 
 const isSelectionColumn = (columnId: string) => columnId === SELECTION_COLUMN_ID;
 
+// Skips row-click when the click lands on something with its own interactive
+// behavior (the selection checkbox, an enabled control) so "row" trigger mode
+// can't hijack a click meant for that control.
+const ROW_CLICK_SKIP_SELECTOR =
+  'input, textarea, select, button, [role="button"], a[href], [contenteditable="true"]';
+
 const renderHeaderCell = (column: any, headerIndex: number, hasResizer: boolean) => {
   if (isSelectionColumn(column.id)) {
     return (
@@ -117,6 +123,7 @@ export const NotionTable = ({
   hasResizer = true,
   hideSelectionColumn = false,
   fillWidth = false,
+  rowClickTrigger = "hover",
 }: NotionTableProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { columns = [], data = [] } = tableData || {};
@@ -234,16 +241,26 @@ export const NotionTable = ({
       const rowIndex = row.index;
       const isEditable = row.original?.isEditable?.value ?? true;
       const visibleCells = row.cells;
+      const isRowClickable = Boolean(onRowClick) && isEditable && rowClickTrigger === "row";
 
       return (
         <div
           key={key}
           {...restRowProps}
+          onClick={
+            isRowClickable
+              ? event => {
+                  if ((event.target as HTMLElement).closest(ROW_CLICK_SKIP_SELECTOR)) return;
+                  onRowClick(rowIndex);
+                }
+              : undefined
+          }
           className={clsx(
             "relative flex w-full border-border-light border-l",
             isEditable
               ? "hover:bg-background-secondary"
               : "opacity-80 cursor-not-allowed bg-gray-50",
+            isRowClickable && "cursor-pointer",
           )}
           style={fillWidth ? { width: "100%" } : restRowProps.style}
         >
@@ -255,7 +272,7 @@ export const NotionTable = ({
               <div
                 key={cellKey}
                 {...restCellProps}
-                className="relative flex items-center border-b w-full px-3 py-[7px] border-r border-border-light group"
+                className="relative flex items-start border-b w-full px-3 py-[7px] border-r border-border-light group"
                 style={{
                   backgroundColor: cell.column.id === "score" && cell.value.color,
                   ...(isLastCell
@@ -273,7 +290,7 @@ export const NotionTable = ({
                       }),
                 }}
               >
-                {onRowClick && cellIndex === editIndex && isEditable && (
+                {onRowClick && rowClickTrigger === "hover" && cellIndex === editIndex && isEditable && (
                   <button
                     className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => onRowClick(rowIndex)}

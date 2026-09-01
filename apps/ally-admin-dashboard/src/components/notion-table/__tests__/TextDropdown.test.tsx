@@ -548,14 +548,14 @@ describe("TextDropdown", () => {
       expect(screen.getByText("A".repeat(100))).toBeInTheDocument();
     });
 
-    it("truncates long display values", () => {
+    it("wraps long display values instead of truncating them", () => {
       const longOptions = [{ label: "Very Long Option Label", value: "long" }];
 
       render(<TextDropdown {...defaultProps} options={longOptions} value="long" />);
 
       const button = screen.getByRole("button");
-      const truncatedText = button.querySelector(".truncate");
-      expect(truncatedText).toBeInTheDocument();
+      expect(button.querySelector(".break-words")).toBeInTheDocument();
+      expect(button.querySelector(".truncate")).not.toBeInTheDocument();
     });
 
     it("handles special characters in labels", () => {

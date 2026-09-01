@@ -312,12 +312,12 @@ describe("Cell", () => {
       });
     });
 
-    it("respects disabled state for dropdown", () => {
+    it("renders the resolved label as plain text instead of a dropdown when disabled", () => {
       const disabledValue = { value: "opt1", disabled: true };
       render(<Cell {...defaultProps} value={disabledValue} column={dropdownColumn} />);
 
-      const select = screen.getByTestId("dropdown-select");
-      expect(select).toBeDisabled();
+      expect(screen.queryByTestId("text-dropdown")).not.toBeInTheDocument();
+      expect(screen.getByText("Option 1")).toBeInTheDocument();
     });
   });
 
@@ -613,7 +613,7 @@ describe("Cell", () => {
 
       const span = screen.getByText("Short text");
       expect(span).toBeInTheDocument();
-      expect(span).toHaveClass("line-clamp-2");
+      expect(span).toHaveClass("line-clamp-4");
     });
 
     it("handles undefined value", () => {
