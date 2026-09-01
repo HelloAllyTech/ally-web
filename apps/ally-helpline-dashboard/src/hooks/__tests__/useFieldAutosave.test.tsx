@@ -113,6 +113,37 @@ describe("useFieldAutosave", () => {
     expect(result.current.getPending()).toEqual({ summary: { keyConcerns: "typed" } });
   });
 
+  it("retries a failed write on its own, without waiting for a new edit", async () => {
+    // Mirrors Create Note's dictation flow: fields are filled once from the
+    // transcript and flushed, then nothing else edits the form. If that one
+    // write fails, "Couldn't save — we'll keep trying" is a lie unless a retry
+    // actually fires without another edit ever arriving.
+    const onPersist = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce(undefined);
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "typed");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(result.current.saveState).toBe("error");
+    expect(onPersist).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+
+    expect(onPersist).toHaveBeenCalledTimes(2);
+    expect(result.current.saveState).toBe("saved");
+    expect(result.current.isDirty).toBe(false);
+  });
+
   it("does not drop a keystroke that lands while a write is in flight", async () => {
     const gate = deferred();
     const onPersist = vi.fn().mockReturnValueOnce(gate.promise).mockResolvedValue(undefined);
