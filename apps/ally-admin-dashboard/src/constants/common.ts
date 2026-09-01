@@ -293,6 +293,12 @@ export const ApiEndpoints = {
     OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
     OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
+    /**
+     * Presigns one reference-image upload. NOT under `/opportunities/:id`: the drawer uploads
+     * before the opportunity exists, and the image is attached by the create or update call
+     * that follows.
+     */
+    REFERENCE_IMAGE_UPLOAD_URL: "/v1/product-roadmap/reference-images/upload-url",
     OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
     COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
     BOARD: "/v1/product-roadmap/board",
