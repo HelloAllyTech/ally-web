@@ -1,19 +1,12 @@
 import { FC } from "react";
 
-import {
-  IosAppStoreReviewSubmissionEntry,
-  IosTestflightHistoryEntry,
-  IosTestflightStatusResponse,
-  MobileReleaseRun,
-} from "@types";
+import { IosTestflightHistoryEntry, MobileReleaseRun } from "@types";
 
-import { IosReleasePipeline } from "../components/IosReleasePipeline";
 import { RunsTable } from "../components/RunsTable";
 import { TestflightHistoryTable } from "../components/TestflightHistoryTable";
 
 interface IosTestflightTabProps {
-  testflightStatus?: IosTestflightStatusResponse;
-  matchingSubmission?: IosAppStoreReviewSubmissionEntry;
+  currentBuildId?: string | null;
   testflightHistory: IosTestflightHistoryEntry[];
   isTestflightHistoryLoading: boolean;
   isTestflightHistoryError: boolean;
@@ -23,9 +16,15 @@ interface IosTestflightTabProps {
   isRunsError: boolean;
 }
 
+/**
+ * The current build's own pipeline (Auto Build → Submit for Distribution →
+ * Update Minimum Version) already lives in the always-visible Release
+ * Overview above the tabs — repeating it here would just be the same
+ * component twice on one page. This tab is for what's genuinely specific to
+ * it: the full TestFlight submission history and the raw iOS build runs.
+ */
 export const IosTestflightTab: FC<IosTestflightTabProps> = ({
-  testflightStatus,
-  matchingSubmission,
+  currentBuildId,
   testflightHistory,
   isTestflightHistoryLoading,
   isTestflightHistoryError,
@@ -39,14 +38,6 @@ export const IosTestflightTab: FC<IosTestflightTabProps> = ({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h3 className="text-sm font-medium text-typography-900 mb-2">Current build's pipeline</h3>
-        <IosReleasePipeline
-          testflightStatus={testflightStatus}
-          matchingSubmission={matchingSubmission}
-        />
-      </div>
-
-      <div>
         <h3 className="text-sm font-medium text-typography-900 mb-2">
           TestFlight submission history
         </h3>
@@ -54,7 +45,7 @@ export const IosTestflightTab: FC<IosTestflightTabProps> = ({
           history={testflightHistory}
           isLoading={isTestflightHistoryLoading}
           isError={isTestflightHistoryError}
-          currentBuildId={testflightStatus?.buildId}
+          currentBuildId={currentBuildId}
         />
       </div>
 

@@ -92,6 +92,9 @@ export const MobileReleases: FC = () => {
     ? appStoreReviewHistory.find(entry => entry.versionString === testflightStatus.buildVersion)
     : undefined;
   const recommendedAction = deriveRecommendedAction(testflightStatus, appStoreReviewHistory);
+  const currentBuildUploadedDate =
+    testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
+    null;
 
   const androidLastReleaseDate = findLastSuccessfulRun(runs, "Android Build")?.updatedAt ?? null;
   const iosLastReleaseDate =
@@ -215,7 +218,8 @@ export const MobileReleases: FC = () => {
   // deploy, so the confirmation copy below carries the same safety framing
   // as the force-update-version-bump runbook: the target must already be
   // live on the store, which nothing here can verify automatically.
-  const { data: currentMinIosVersion } = useGetMinimumIosVersionQuery();
+  const { data: currentMinIosVersion, isLoading: isMinIosVersionLoading } =
+    useGetMinimumIosVersionQuery();
   const { data: currentMinAndroidVersion } = useGetMinimumAndroidVersionQuery();
   const [updateMinimumAppVersion, { isLoading: isUpdatingMinVersion }] =
     useUpdateMinimumAppVersionMutation();
@@ -337,6 +341,10 @@ export const MobileReleases: FC = () => {
               <IosReleasePipeline
                 testflightStatus={testflightStatus}
                 matchingSubmission={matchingSubmission}
+                buildUploadedDate={currentBuildUploadedDate}
+                currentMinIosVersion={currentMinIosVersion?.minimumSupportedVersion}
+                isMinIosVersionLoading={isMinIosVersionLoading}
+                onUpdateMinVersion={handleOpenMinVersionDialog}
               />
             </div>
           )}
@@ -436,8 +444,7 @@ export const MobileReleases: FC = () => {
             <TabPanel>
               {tabIndex === 1 && (
                 <IosTestflightTab
-                  testflightStatus={testflightStatus}
-                  matchingSubmission={matchingSubmission}
+                  currentBuildId={testflightStatus?.buildId}
                   testflightHistory={testflightHistory}
                   isTestflightHistoryLoading={isTestflightHistoryLoading}
                   isTestflightHistoryError={isTestflightHistoryError}
