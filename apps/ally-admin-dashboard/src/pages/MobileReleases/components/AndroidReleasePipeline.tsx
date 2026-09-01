@@ -1,10 +1,11 @@
 import { FC, ReactNode } from "react";
 
 import { Button, Tag } from "@ally-ui-mono/ui-shared";
-import { MobileReleaseRun } from "@types";
+import { AndroidProductionStatusResponse, MobileReleaseRun } from "@types";
 import { formatDateTime } from "@utils";
 
 import {
+  getAndroidProductionStatusDisplay,
   getMobileReleaseRunStatusDisplay,
   isRunAfter,
   MobileReleaseStatusDisplay,
@@ -17,6 +18,10 @@ interface AndroidReleasePipelineProps {
   lastBuildRun?: MobileReleaseRun | null;
   /** Most recent "Promote Android" run, any outcome — a still-running or failed attempt matters too. */
   lastPromoteRun?: MobileReleaseRun | null;
+  /** Live Play Developer API production-track state — see AndroidProductionStatusResponse's own doc comment for what "completed" does and doesn't guarantee. */
+  productionStatus?: AndroidProductionStatusResponse;
+  isProductionStatusLoading: boolean;
+  isProductionStatusError: boolean;
   currentMinAndroidVersion?: string | null;
   isMinAndroidVersionLoading: boolean;
   onUpdateMinVersion: () => void;
@@ -31,20 +36,21 @@ interface Stage {
 }
 
 /**
- * Android's release lifecycle as a timeline, same idea as IosReleasePipeline — but honest about
- * a real gap: unlike iOS, nothing here reads Google's actual Play Console state. There's no
- * Play Developer API call in this codebase yet that checks whether Google's own review has
- * cleared, or (this app has Managed Publishing on) whether someone has actually clicked Publish
- * afterward. What's shown for "Promote to Production" is only whether *our own* dispatch to
- * Google succeeded, inferred by comparing run timestamps — not Google's review outcome, and
- * "Publish" is plainly marked as untracked rather than guessed at. Building real status reads is
- * a distinct, larger piece of work, deliberately deferred.
+ * Android's release lifecycle as a timeline, same idea as IosReleasePipeline. "Publish" now
+ * reads the real Play Developer API production-track state (see getAndroidProductionStatusDisplay)
+ * instead of the static placeholder this used to show — but stays honest about what that signal
+ * actually proves: `status: 'completed'` only means genuinely live to every user once Managed
+ * Publishing is off for this app; with it on, this can still read "completed" while Google is
+ * still holding the change for review or a manual publish click.
  */
 export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
   androidVersionName,
   androidVersionCode,
   lastBuildRun,
   lastPromoteRun,
+  productionStatus,
+  isProductionStatusLoading,
+  isProductionStatusError,
   currentMinAndroidVersion,
   isMinAndroidVersionLoading,
   onUpdateMinVersion,
@@ -61,6 +67,14 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
   // own upload finished — otherwise it's a promotion of some earlier version, not this one.
   const isPromoteForCurrentBuild = isRunAfter(lastPromoteRun, lastBuildRun);
 
+  // The production track's release only counts as being "for" the current build if its
+  // versionCodes actually include this build's versionCode — unlike the promote-run check above,
+  // this is an exact match against real Play Developer API data, not a timestamp guess.
+  const isProductionStatusForCurrentBuild =
+    !!androidVersionCode && !!productionStatus?.versionCodes.includes(androidVersionCode);
+  const isFullyRolledOut =
+    isProductionStatusForCurrentBuild && productionStatus?.status === "completed";
+
   const isMinVersionCurrent = currentMinAndroidVersion === androidVersionName;
 
   const promoteStage: Stage =
@@ -71,7 +85,7 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
           date: lastPromoteRun.runStartedAt,
           description:
             lastPromoteRun.conclusion === "success"
-              ? "Submitted to Google for review. Google's own review state isn't tracked here yet — check Play Console."
+              ? "Submitted to Google for review. See the Publish stage below for the real production-track state."
               : lastPromoteRun.status === "completed"
                 ? "The last promotion attempt didn't succeed — see Release History for details."
                 : "Promotion is running now.",
@@ -84,6 +98,41 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
             : "This build hasn't been promoted to the production track yet.",
         };
 
+  const publishStage: Stage = isProductionStatusLoading
+    ? {
+        title: "Publish",
+        tag: { type: "cool-gray", label: "Loading…" },
+        description: "Checking the Play Developer API production track…",
+      }
+    : isProductionStatusError
+      ? {
+          title: "Publish",
+          tag: { type: "cool-gray", label: "Unknown" },
+          description: "Couldn't read the production track status — check Play Console directly.",
+        }
+      : !isProductionStatusForCurrentBuild || !productionStatus
+        ? {
+            title: "Publish",
+            tag: { type: "cool-gray", label: "Not yet" },
+            description:
+              "This build isn't reflected on the production track yet — either it hasn't been promoted, or Google hasn't picked up the change.",
+          }
+        : {
+            title: "Publish",
+            tag: getAndroidProductionStatusDisplay(
+              productionStatus.status,
+              productionStatus.userFraction,
+            ),
+            description:
+              productionStatus.status === "completed"
+                ? "The production track shows this build at 100% rollout. If Managed Publishing is off in Play Console, that means it's genuinely live — if it's still on, confirm in Play Console, since a committed release can still be held pending review or a manual Publish click."
+                : productionStatus.status === "inProgress"
+                  ? "Only reaching a portion of users right now — not everyone can download it yet."
+                  : productionStatus.status === "halted"
+                    ? "The staged rollout was paused — check Play Console for why."
+                    : "Not yet rolled out to any users.",
+          };
+
   const stages: Stage[] = [
     {
       title: "Auto Build",
@@ -94,22 +143,27 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
       } finished uploading to the Play Store internal track.`,
     },
     promoteStage,
-    {
-      title: "Publish",
-      tag: { type: "cool-gray", label: "Not tracked" },
-      description:
-        "This app has Managed Publishing on in Play Console — Google's review passing does not auto-publish. Someone still needs to click Publish there. Not automated or tracked here yet.",
-    },
+    publishStage,
     {
       title: "Update Minimum Version",
       tag: isMinVersionCurrent
         ? { type: "green", label: "Up to date" }
-        : { type: "cool-gray", label: "Not yet" },
-      description: isMinAndroidVersionLoading
-        ? "Loading current threshold…"
-        : isMinVersionCurrent
-          ? `The force-update minimum is already ${currentMinAndroidVersion}.`
-          : `Current minimum is ${currentMinAndroidVersion ?? "unknown"} — raise it to ${androidVersionName} only once you've confirmed that version is actually published and live on the Play Store.`,
+        : isFullyRolledOut
+          ? { type: "blue", label: "Ready" }
+          : { type: "cool-gray", label: "Not yet" },
+      description: isMinAndroidVersionLoading ? (
+        "Loading current threshold…"
+      ) : isMinVersionCurrent ? (
+        `The force-update minimum is already ${currentMinAndroidVersion}.`
+      ) : isFullyRolledOut ? (
+        <>
+          The production track shows {androidVersionName} fully rolled out. Once you've confirmed
+          that in Play Console — especially if Managed Publishing is still on — you can raise the
+          minimum version to match.
+        </>
+      ) : (
+        `Current minimum is ${currentMinAndroidVersion ?? "unknown"} — raise it to ${androidVersionName} only once you've confirmed that version is actually published and live on the Play Store.`
+      ),
       action: !isMinVersionCurrent ? (
         <Button kind="tertiary" size="sm" onClick={onUpdateMinVersion}>
           Update Minimum Version

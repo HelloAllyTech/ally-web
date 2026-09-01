@@ -110,6 +110,29 @@ export interface SubmitIosAppStoreReviewRequest {
 }
 
 /**
+ * GET /v1/mobile-releases/android-production-status — the current live Play
+ * Developer API state of the Android production track, read straight from
+ * Google, so the admin can see it without opening Play Console themselves.
+ * Distinct from androidStatus fields elsewhere on this page, which only ever
+ * reflect our own automation's dispatch outcome, not Google's real state.
+ */
+export interface AndroidProductionStatusResponse {
+  /**
+   * Google's own raw release status, passed through rather than remapped:
+   * "draft" | "inProgress" | "halted" | "completed". Null if there's no
+   * release on the production track yet. "completed" only means genuinely
+   * live to every user once Managed Publishing is off for this app — with
+   * it on, this can still read "completed" while Google is still holding
+   * the change for review or a manual publish click.
+   */
+  status: "draft" | "inProgress" | "halted" | "completed" | null;
+  /** versionCodes in the current highest-versionCode production release. Empty if there is none. */
+  versionCodes: number[];
+  /** Fraction (0-1) of users on a staged rollout — only meaningful when status is "inProgress" or "halted". Null otherwise. */
+  userFraction: number | null;
+}
+
+/**
  * GET /v1/mobile-releases/ios-testflight-status — the current iOS build's
  * live TestFlight state, read straight from App Store Connect, so the admin
  * can see it without opening App Store Connect themselves.
