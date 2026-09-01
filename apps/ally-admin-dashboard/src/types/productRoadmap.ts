@@ -72,6 +72,24 @@ export interface RoadmapUserRef {
   name: string;
 }
 
+/**
+ * One image attached to an opportunity: a screenshot, a mock, a photo of a whiteboard.
+ *
+ * `url` is always one of our own S3 objects — the backend refuses anything else on write, so a
+ * URL that arrives here can be rendered without wondering whose host it points at.
+ */
+export interface RoadmapReferenceImage {
+  url: string;
+  /** What a reader is looking at. Absent on most images; a screenshot usually speaks for itself. */
+  caption?: string | null;
+}
+
+/** The two URLs a presign returns. `presignedUrl` is PUT to and never stored; `imageUrl` is. */
+export interface RoadmapReferenceImageUpload {
+  presignedUrl: string;
+  imageUrl: string;
+}
+
 export interface RoadmapOpportunity {
   id: string;
   description: string;
@@ -96,6 +114,11 @@ export interface RoadmapOpportunity {
    */
   queueRank: number | null;
   claudePrompt: string | null;
+  /**
+   * Attached images, in the order somebody arranged them. Always an array — the backend sends
+   * `[]` rather than null, so no caller has to handle both.
+   */
+  referenceImages: RoadmapReferenceImage[];
   /**
    * The Builder session started from this opportunity, or null.
    *
