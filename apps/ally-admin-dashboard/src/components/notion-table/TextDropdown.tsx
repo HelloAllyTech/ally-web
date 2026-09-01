@@ -245,7 +245,7 @@ export const TextDropdown = ({
             },
           )}
         >
-          <div className={clsx("truncate mr-1", { "text-typography-500": !value })}>
+          <div className={clsx("break-words mr-1", { "text-typography-500": !value })}>
             {finalDisplayValue}
           </div>
           {!disabled && <ArrowDownFilled width={8} height={8} />}
