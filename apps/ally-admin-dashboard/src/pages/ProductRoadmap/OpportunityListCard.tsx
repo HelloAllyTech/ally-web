@@ -105,7 +105,7 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
       {isQueueCard && rank !== null && (
         <div
           className="text-typography-primary flex shrink-0 flex-col items-center"
-          title={`#${rank} in the queue by total votes`}
+          title={`#${rank} in the queue by composite score — votes, admin support, effort and goal coverage below`}
         >
           <span className="text-2xl font-semibold leading-none tabular-nums">#{rank}</span>
           {/*
