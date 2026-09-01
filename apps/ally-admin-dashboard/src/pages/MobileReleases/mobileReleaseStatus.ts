@@ -133,6 +133,40 @@ export const getAppStoreReviewSubmissionStatusDisplay = (
   }
 };
 
+/**
+ * Deliberately never says "Live" — "completed" only means genuinely live to every user once
+ * Managed Publishing is off for this app; with it on, this can still read "completed" while
+ * Google is still holding the change for review or a manual publish click. "Fully rolled out"
+ * describes what the API actually told us without asserting more certainty than that.
+ */
+export const getAndroidProductionStatusDisplay = (
+  status: "draft" | "inProgress" | "halted" | "completed" | null,
+  userFraction: number | null,
+): MobileReleaseStatusDisplay => {
+  switch (status) {
+    case null:
+      return { type: "cool-gray", label: "No release yet" };
+    case "draft":
+      return { type: "cool-gray", label: "Draft" };
+    case "inProgress":
+      return {
+        type: "blue",
+        label:
+          userFraction != null
+            ? `Staged rollout (${Math.round(userFraction * 100)}%)`
+            : "Staged rollout",
+      };
+    case "halted":
+      return { type: "red", label: "Rollout halted" };
+    case "completed":
+      return { type: "green", label: "Fully rolled out" };
+    default:
+      // Unrecognised value from Google — surface it raw rather than silently
+      // mislabeling it as one of the known states.
+      return { type: "cool-gray", label: status };
+  }
+};
+
 /** True while any run from any of the three release workflows is still queued or executing. */
 export const isReleaseInProgress = (runs: MobileReleaseRun[]): boolean =>
   runs.some(run => run.status === "queued" || run.status === "in_progress");
