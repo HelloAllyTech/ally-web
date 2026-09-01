@@ -48,6 +48,11 @@ export const CharacterLibrary: React.FC = () => {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // A row a tenant admin already built, opened read-only — the ADMIN group
+  // has no edit grant on scenario-character, so this is view-only, but
+  // without it there was no way at all to see a character again once its
+  // create form closed.
+  const [viewingCharacter, setViewingCharacter] = useState<CharacterData | null>(null);
 
   const { data, isLoading, isFetching, isError, refetch } = useGetCharactersQuery(
     { limit: PAGE_LIMIT, offset, search },
@@ -210,6 +215,7 @@ export const CharacterLibrary: React.FC = () => {
         handleLoadMore={characters.length > 0 && hasMore ? handleLoadMore : undefined}
         loadMoreLabel={strings.loadMore}
         fallbackUI={renderFallbackUI()}
+        onRowClick={(character: CharacterData) => setViewingCharacter(character)}
       />
 
       <CharacterFormPanel
@@ -218,6 +224,14 @@ export const CharacterLibrary: React.FC = () => {
         onSave={character => {
           setCharacters(prev => [character, ...prev]);
         }}
+      />
+
+      <CharacterFormPanel
+        isOpen={!!viewingCharacter}
+        onClose={() => setViewingCharacter(null)}
+        onSave={() => setViewingCharacter(null)}
+        initialCharacter={viewingCharacter}
+        readOnly
       />
     </div>
   );

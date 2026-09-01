@@ -134,4 +134,49 @@ describe("CharacterLibrary", () => {
       expect((lastCall?.[0] as any).search).toBe("abc");
     });
   });
+
+  it("opens a character a tenant admin already built as a read-only view on row click", () => {
+    const createCharacterMock = vi.mocked(api.useCreateCharacterMutation).mock.results[0]?.value[0];
+    vi.mocked(api.useGetCharactersQuery).mockReturnValue({
+      data: {
+        characters: [
+          {
+            id: "char-1",
+            name: "Asha",
+            age: "34",
+            gender: "Female",
+            profession: "Teacher",
+            currentLocation: "Pune",
+          },
+        ],
+        count: 1,
+      },
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as any);
+
+    renderPage();
+
+    // No affordance to open a character existed before this — the row is
+    // the only entry point, so this is what regressed.
+    fireEvent.click(screen.getByText("Asha"));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/view character/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Asha")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Asha")).toHaveAttribute("readonly");
+
+    // A view has nothing to save — only a way out. (Two "Close" controls
+    // exist — the header's icon button and the footer's — so grab the
+    // footer one specifically to close via.)
+    expect(screen.queryByRole("button", { name: /^save$/i })).not.toBeInTheDocument();
+    const closeButtons = screen.getAllByRole("button", { name: /^close$/i });
+    expect(closeButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(closeButtons[closeButtons.length - 1]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(createCharacterMock).not.toHaveBeenCalled();
+  });
 });
