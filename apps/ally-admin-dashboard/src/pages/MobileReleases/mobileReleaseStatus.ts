@@ -1,7 +1,10 @@
 import {
+  IosAppStoreReviewSubmissionEntry,
   IosTestflightStatusResponse,
+  MobileReleaseRun,
   MobileReleaseRunConclusion,
   MobileReleaseRunStatus,
+  MobileReleaseWorkflowName,
 } from "@types";
 
 /**
@@ -95,4 +98,170 @@ export const getTestflightStatusDisplay = (
       // mislabeling it as one of the known states.
       return { type: "cool-gray", label: status.betaReviewState };
   }
+};
+
+/**
+ * Status-tag colour + label for one of Apple's own full App Store review
+ * submissions (the reviewSubmissions `state` enum) — distinct from
+ * getTestflightStatusDisplay above, which covers TestFlight's separate
+ * betaAppReviewSubmissions state. Same passthrough-rather-than-remap
+ * approach as the rest of this file.
+ */
+export const getAppStoreReviewSubmissionStatusDisplay = (
+  state: IosAppStoreReviewSubmissionEntry["state"],
+): MobileReleaseStatusDisplay => {
+  switch (state) {
+    case "READY_FOR_REVIEW":
+      return { type: "cool-gray", label: "Ready for Review" };
+    case "WAITING_FOR_REVIEW":
+      return { type: "blue", label: "Waiting for Review" };
+    case "IN_REVIEW":
+      return { type: "blue", label: "In Review" };
+    case "UNRESOLVED_ISSUES":
+      return { type: "red", label: "Unresolved Issues" };
+    case "CANCELING":
+      return { type: "cool-gray", label: "Canceling" };
+    case "COMPLETING":
+      return { type: "teal", label: "Completing" };
+    case "COMPLETE":
+      // What App Store Connect's own UI calls this state ("Review Completed").
+      return { type: "green", label: "Review Completed" };
+    default:
+      // Unrecognised value from Apple — surface it raw rather than silently
+      // mislabeling it as one of the known states.
+      return { type: "cool-gray", label: state };
+  }
+};
+
+/** True while any run from any of the three release workflows is still queued or executing. */
+export const isReleaseInProgress = (runs: MobileReleaseRun[]): boolean =>
+  runs.some(run => run.status === "queued" || run.status === "in_progress");
+
+/**
+ * Most recent *successful* run of a given workflow, or null if none exists
+ * yet — used to derive a platform's "last release" date without a dedicated
+ * backend field, since the run history already carries it.
+ */
+export const findLastSuccessfulRun = (
+  runs: MobileReleaseRun[],
+  workflowName: MobileReleaseWorkflowName,
+): MobileReleaseRun | null =>
+  runs.find(run => run.workflowName === workflowName && run.conclusion === "success") ?? null;
+
+/** Most recent run of a workflow regardless of outcome — unlike findLastSuccessfulRun above, this surfaces a still-running or failed attempt too. */
+export const findLastRun = (
+  runs: MobileReleaseRun[],
+  workflowName: MobileReleaseWorkflowName,
+): MobileReleaseRun | null => runs.find(run => run.workflowName === workflowName) ?? null;
+
+/**
+ * True if `laterRun`'s createdAt is strictly after `earlierRun`'s — used to approximate "this
+ * run is for the build that just happened," since Android runs carry no version string to match
+ * on directly the way iOS's App Store Connect resources do.
+ */
+export const isRunAfter = (
+  laterRun: MobileReleaseRun | null | undefined,
+  earlierRun: MobileReleaseRun | null | undefined,
+): boolean => {
+  if (!laterRun || !earlierRun) return false;
+  return new Date(laterRun.createdAt).getTime() > new Date(earlierRun.createdAt).getTime();
+};
+
+/**
+ * The single most useful thing to tell an admin about what to do next,
+ * derived only from signals this page can actually verify — never a guess
+ * dressed up as certainty. Deliberately silent on Android: there is no
+ * available signal for "has this internal-track build been promoted to
+ * production yet" (Play Console doesn't expose that through anything this
+ * page calls), so rather than fabricate an Android action, this only ever
+ * speaks to iOS, where the App Store review history gives a real answer.
+ */
+export type RecommendedActionSeverity = "action" | "attention" | "clear";
+
+export interface RecommendedAction {
+  severity: RecommendedActionSeverity;
+  title: string;
+  description: string;
+  /** Present only when severity is "action" — the one button this banner should offer. */
+  actionKind?: "submit-ios-review";
+}
+
+const NO_ACTION: RecommendedAction = {
+  severity: "clear",
+  title: "Nothing needs your attention",
+  description: "No pending review submissions or unresolved issues right now.",
+};
+
+export const deriveRecommendedAction = (
+  testflightStatus: IosTestflightStatusResponse | undefined,
+  appStoreReviewHistory: IosAppStoreReviewSubmissionEntry[],
+): RecommendedAction => {
+  if (!testflightStatus?.buildVersion) return NO_ACTION;
+
+  const matchingSubmission = appStoreReviewHistory.find(
+    entry => entry.versionString === testflightStatus.buildVersion,
+  );
+
+  if (!matchingSubmission) {
+    return {
+      severity: "action",
+      title: `iOS ${testflightStatus.buildVersion} hasn't been submitted for App Store review yet`,
+      description:
+        "The current build has finished processing in App Store Connect. Submit it for full review when the listing (screenshots, description, What's New) is ready.",
+      actionKind: "submit-ios-review",
+    };
+  }
+
+  if (matchingSubmission.state === "UNRESOLVED_ISSUES") {
+    return {
+      severity: "attention",
+      title: `iOS ${testflightStatus.buildVersion} has unresolved issues from Apple`,
+      description: "Check App Store Connect for what Apple flagged before it can move forward.",
+    };
+  }
+
+  if (matchingSubmission.state === "COMPLETE") {
+    return {
+      severity: "attention",
+      title: `iOS ${testflightStatus.buildVersion} has completed review`,
+      description:
+        "Apple has finished reviewing this version. Release it manually in App Store Connect when you're ready for real users to get it.",
+    };
+  }
+
+  // WAITING_FOR_REVIEW / IN_REVIEW / READY_FOR_REVIEW / CANCELING / COMPLETING
+  // — already submitted and moving through Apple's own process; nothing for
+  // the admin to do but wait.
+  return NO_ACTION;
+};
+
+/**
+ * X.Y.Z is the only format ally-mobile's build.gradle/pbxproj ever produce —
+ * same format ally-be's app-version DTOs now require at the API boundary.
+ * Validating it here too means a typo is caught before the confirmation
+ * dialog's primary button even goes live, not after a failed request.
+ */
+const VERSION_FORMAT_REGEX = /^\d+\.\d+\.\d+$/;
+
+export const isValidVersionFormat = (version: string): boolean =>
+  VERSION_FORMAT_REGEX.test(version.trim());
+
+/**
+ * True only when both `candidate` and `reference` are well-formed X.Y.Z and
+ * `candidate` is numerically greater — never true for a malformed value, so
+ * this can't be used to wave through something format validation should
+ * have already rejected. Used to stop a force-update minimum from being set
+ * above the version this page even knows was built yet, let alone
+ * published — the cheapest version of the runbook's safety gate this page
+ * can check on its own, though it still can't confirm a version is actually
+ * *live*, only that it's at least been built.
+ */
+export const isVersionGreaterThan = (candidate: string, reference: string): boolean => {
+  if (!isValidVersionFormat(candidate) || !isValidVersionFormat(reference)) return false;
+  const a = candidate.trim().split(".").map(Number);
+  const b = reference.trim().split(".").map(Number);
+  for (let i = 0; i < 3; i += 1) {
+    if (a[i] !== b[i]) return a[i] > b[i];
+  }
+  return false;
 };

@@ -20,6 +20,7 @@ export * from "./tooltip";
 export * from "./roleplaySessionLogs";
 export * from "./awsLogs";
 export * from "./mobileReleases";
+export * from "./appVersion";
 export * from "./tracks";
 export * from "./organizationAccess";
 export * from "./superDuperAdmins";

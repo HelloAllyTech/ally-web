@@ -212,6 +212,7 @@ export const baseAPI = createApi({
     TAG_TYPES.USER_FEATURE_TOGGLES,
     TAG_TYPES.PLATFORM_ADMINS,
     TAG_TYPES.MOBILE_RELEASE_RUNS,
+    TAG_TYPES.MIN_APP_VERSION,
   ],
   endpoints: () => ({}),
 });

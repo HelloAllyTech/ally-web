@@ -13,7 +13,8 @@ export type MobileReleaseWorkflowName =
   | "Scheduled Check"
   | "iOS Build"
   | "Android Build"
-  | "Promote Android";
+  | "Promote Android"
+  | "App Store Review Submission";
 
 /** GitHub Actions' own run-status values — not our own enum, so this stays a passthrough of their API. */
 export type MobileReleaseRunStatus = "queued" | "in_progress" | "completed";
@@ -74,13 +75,17 @@ export interface TriggerMobileReleaseResponse {
  * POST /v1/mobile-releases/promote-android request body — promotes the
  * current internal-track Android build straight to the Play Store
  * **production** track at a staged rollout. `rolloutPercentage` is an
- * integer 1–100.
+ * integer 1–100. `whatsNew` is optional — Google Play doesn't carry a
+ * release's notes across tracks automatically, so omitting it (rather than
+ * sending an empty string) promotes with no release notes at all, same as
+ * before this field existed.
  *
  * Response shape is identical to TriggerMobileReleaseResponse
  * ({ dispatched: boolean }) — reused rather than duplicated.
  */
 export interface TriggerAndroidPromotionRequest {
   rolloutPercentage: number;
+  whatsNew?: string;
 }
 
 /**
@@ -142,6 +147,31 @@ export interface IosTestflightHistoryEntry {
 /** GET /v1/mobile-releases/ios-testflight-history — sorted newest-uploaded first, up to 15 entries. */
 export interface IosTestflightHistoryResponse {
   history: IosTestflightHistoryEntry[];
+}
+
+/**
+ * One row of GET /v1/mobile-releases/ios-app-store-review-history — one of
+ * Apple's own full App Store review submissions (real public distribution),
+ * distinct from IosTestflightHistoryEntry above which only ever covers
+ * TestFlight builds.
+ */
+export interface IosAppStoreReviewSubmissionEntry {
+  versionString: string;
+  submittedDate: string;
+  /** Apple's raw reviewSubmissions state enum value, passed through verbatim. */
+  state:
+    | "READY_FOR_REVIEW"
+    | "WAITING_FOR_REVIEW"
+    | "IN_REVIEW"
+    | "UNRESOLVED_ISSUES"
+    | "CANCELING"
+    | "COMPLETING"
+    | "COMPLETE";
+}
+
+/** GET /v1/mobile-releases/ios-app-store-review-history — sorted newest-submitted first, up to 15 entries. */
+export interface IosAppStoreReviewSubmissionsResponse {
+  submissions: IosAppStoreReviewSubmissionEntry[];
 }
 
 /**

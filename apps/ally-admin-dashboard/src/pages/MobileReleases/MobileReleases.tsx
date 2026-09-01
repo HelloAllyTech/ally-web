@@ -1,48 +1,62 @@
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
 import {
   Button,
+  CarbonTabs as Tabs,
   InlineLoading,
   NumberInput,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Tag,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
   TextArea,
+  TextInput,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
+  useGetMinimumAndroidVersionQuery,
+  useGetMinimumIosVersionQuery,
   useLazyGetIosWhatsNewSuggestionQuery,
   useSubmitIosAppStoreReviewMutation,
   useTriggerAndroidPromotionMutation,
   useTriggerMobileReleaseMutation,
+  useUpdateMinimumAppVersionMutation,
 } from "@api";
-import { TooltipIcon } from "@assets";
-import { ActionConfirmationPopup, EmptyState } from "@components";
-import { formatRunDuration } from "@components/builder/runFormat";
+import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
-import { Link as LinkIcon, Mobile as MobileIcon } from "@icons";
-import { MobileReleaseRun } from "@types";
-import { formatDateTime, openLinkInNewTab } from "@utils";
+import { formatDateTime } from "@utils";
 
+import { AndroidReleasePipeline } from "./components/AndroidReleasePipeline";
+import { IosReleasePipeline } from "./components/IosReleasePipeline";
+import { NextCheckPanel } from "./components/NextCheckPanel";
+import { PlatformStatusCard } from "./components/PlatformStatusCard";
+import { RecommendedActionBanner } from "./components/RecommendedActionBanner";
 import {
-  getMobileReleaseRunStatusDisplay,
+  deriveRecommendedAction,
+  findLastRun,
+  findLastSuccessfulRun,
+  getAppStoreReviewSubmissionStatusDisplay,
   getTestflightStatusDisplay,
+  isReleaseInProgress,
+  isRunAfter,
+  isValidVersionFormat,
+  isVersionGreaterThan,
 } from "./mobileReleaseStatus";
+import { AndroidReleasesTab } from "./tabs/AndroidReleasesTab";
+import { AppStoreSubmissionsTab } from "./tabs/AppStoreSubmissionsTab";
+import { IosTestflightTab } from "./tabs/IosTestflightTab";
+import { ReleaseHistoryTab } from "./tabs/ReleaseHistoryTab";
 import { useMobileReleases } from "./useMobileReleases";
-
-/** First 7 chars of a commit SHA — the length GitHub's own UI uses for a short SHA. */
-const shortSha = (sha: string) => sha.slice(0, 7);
 
 /** Rollout percentage the Android promotion dialog opens on — a conservative staged start. */
 const DEFAULT_ANDROID_ROLLOUT_PERCENTAGE = 20;
 const MIN_ROLLOUT_PERCENTAGE = 1;
 const MAX_ROLLOUT_PERCENTAGE = 100;
+
+/** Matches the backend DTOs' @MaxLength(4000) on both platforms' What's New fields. */
+const WHATS_NEW_MAX_LENGTH = 4000;
 
 /** Default helper text under the "What's New" field, regardless of suggestion state. */
 const WHATS_NEW_HELPER_TEXT =
@@ -52,11 +66,12 @@ const WHATS_NEW_NO_NEW_COMMITS_NOTE =
 const WHATS_NEW_SUGGESTION_FAILED_NOTE =
   "Couldn't generate a suggestion — write your own, or leave blank.";
 
-const runDisplayDuration = (run: MobileReleaseRun): string => {
-  if (run.status !== "completed") return "In progress";
-  if (!run.runStartedAt) return "—";
-  return formatRunDuration(run.runStartedAt, run.updatedAt) ?? "—";
-};
+const HISTORY_TABS = [
+  { id: "android", label: "Android Releases" },
+  { id: "ios", label: "iOS / TestFlight" },
+  { id: "app-store", label: "App Store Submissions" },
+  { id: "history", label: "Release History" },
+] as const;
 
 export const MobileReleases: FC = () => {
   const {
@@ -73,11 +88,45 @@ export const MobileReleases: FC = () => {
     testflightHistory,
     isTestflightHistoryLoading,
     isTestflightHistoryError,
+    appStoreReviewHistory,
+    isAppStoreReviewHistoryLoading,
+    isAppStoreReviewHistoryError,
   } = useMobileReleases();
 
   const testflightStatusDisplay = testflightStatus
     ? getTestflightStatusDisplay(testflightStatus)
     : null;
+
+  const releaseInProgress = isReleaseInProgress(runs);
+  const matchingSubmission = testflightStatus?.buildVersion
+    ? appStoreReviewHistory.find(entry => entry.versionString === testflightStatus.buildVersion)
+    : undefined;
+  // Validation signal for the App Store review dialog: warn, don't block — re-submitting after
+  // Apple rejected it (DEVELOPER_REJECTED, METADATA_REJECTED equivalents surface as no matching
+  // submission once a new one starts, but a same-day resubmission attempt is still worth flagging)
+  // is a real, legitimate thing to do, just one the operator should do knowingly.
+  const iosAlreadySubmittedWarning = matchingSubmission
+    ? `Build ${testflightStatus?.buildVersion} was already submitted on ${formatDateTime(matchingSubmission.submittedDate)} — status: ${getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state).label}. Submitting again may error or create a duplicate submission.`
+    : null;
+  const recommendedAction = deriveRecommendedAction(testflightStatus, appStoreReviewHistory);
+  const currentBuildUploadedDate =
+    testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
+    null;
+
+  const lastAndroidBuildRun = findLastSuccessfulRun(runs, "Android Build");
+  const lastAndroidPromoteRun = findLastRun(runs, "Promote Android");
+  // Validation signal for the promotion dialog: warn, don't block, since re-promoting the same
+  // build (e.g. to raise the rollout percentage) is a legitimate, common thing to do.
+  const isAndroidAlreadyPromoted =
+    isRunAfter(lastAndroidPromoteRun, lastAndroidBuildRun) &&
+    lastAndroidPromoteRun?.conclusion === "success";
+  const androidLastReleaseDate = lastAndroidBuildRun?.updatedAt ?? null;
+  const iosLastReleaseDate =
+    testflightHistory[0]?.uploadedDate ??
+    findLastSuccessfulRun(runs, "iOS Build")?.updatedAt ??
+    null;
+
+  const [tabIndex, setTabIndex] = useState(0);
 
   const [isConfirmingTrigger, setIsConfirmingTrigger] = useState(false);
   const [triggerRelease, { isLoading: isTriggering }] = useTriggerMobileReleaseMutation();
@@ -85,7 +134,7 @@ export const MobileReleases: FC = () => {
   const handleTrigger = async () => {
     try {
       await triggerRelease().unwrap();
-      toast.success("Release triggered — new run should appear in the history below shortly.");
+      toast.success("Release triggered — new run should appear in Release History shortly.");
       setIsConfirmingTrigger(false);
     } catch (error) {
       // Leave the dialog open on failure so the operator sees why (e.g. the
@@ -103,6 +152,7 @@ export const MobileReleases: FC = () => {
   const [androidRolloutPercentage, setAndroidRolloutPercentage] = useState(
     DEFAULT_ANDROID_ROLLOUT_PERCENTAGE,
   );
+  const [androidWhatsNewText, setAndroidWhatsNewText] = useState("");
   const [triggerAndroidPromotion, { isLoading: isPromotingAndroid }] =
     useTriggerAndroidPromotionMutation();
   const isAndroidRolloutPercentageValid =
@@ -113,9 +163,12 @@ export const MobileReleases: FC = () => {
   const handlePromoteAndroid = async () => {
     if (!isAndroidRolloutPercentageValid) return;
     try {
-      await triggerAndroidPromotion({ rolloutPercentage: androidRolloutPercentage }).unwrap();
+      await triggerAndroidPromotion({
+        rolloutPercentage: androidRolloutPercentage,
+        whatsNew: androidWhatsNewText.trim() || undefined,
+      }).unwrap();
       toast.success(
-        "Android promotion dispatched — new run should appear in the history below shortly.",
+        "Android promotion dispatched — new run should appear in Release History shortly.",
       );
       setIsConfirmingAndroidPromotion(false);
     } catch (error) {
@@ -172,7 +225,7 @@ export const MobileReleases: FC = () => {
     try {
       await submitAppStoreReview({ whatsNew: whatsNewText.trim() || undefined }).unwrap();
       toast.success(
-        "App Store review submitted — Apple's review clock has started. New run should appear in the history below shortly.",
+        "App Store review submitted — Apple's review clock has started. New run should appear in Release History shortly.",
       );
       setIsConfirmingAppStoreReview(false);
     } catch (error) {
@@ -186,300 +239,331 @@ export const MobileReleases: FC = () => {
     }
   };
 
+  // Force-update minimum supported version — a separate ally-be module
+  // (app-version, backed by a global_settings row) from everything else on
+  // this page, but the natural place for an admin to change it is right next
+  // to the versions it's compared against. Takes effect immediately, no
+  // deploy, so the confirmation copy below carries the same safety framing
+  // as the force-update-version-bump runbook: the target must already be
+  // live on the store, which nothing here can verify automatically.
+  const { data: currentMinIosVersion, isLoading: isMinIosVersionLoading } =
+    useGetMinimumIosVersionQuery();
+  const { data: currentMinAndroidVersion, isLoading: isMinAndroidVersionLoading } =
+    useGetMinimumAndroidVersionQuery();
+  const [updateMinimumAppVersion, { isLoading: isUpdatingMinVersion }] =
+    useUpdateMinimumAppVersionMutation();
+
+  const [minIosVersionInput, setMinIosVersionInput] = useState("");
+  const [minAndroidVersionInput, setMinAndroidVersionInput] = useState("");
+  const [isConfirmingMinVersionUpdate, setIsConfirmingMinVersionUpdate] = useState(false);
+
+  // Seed the fields once the current thresholds arrive — same pattern as
+  // Settings.tsx's TurnEndpointingSettings.
+  useEffect(() => {
+    if (!currentMinIosVersion) return;
+    setMinIosVersionInput(currentMinIosVersion.minimumSupportedVersion);
+  }, [currentMinIosVersion]);
+
+  useEffect(() => {
+    if (!currentMinAndroidVersion) return;
+    setMinAndroidVersionInput(currentMinAndroidVersion.minimumSupportedVersion);
+  }, [currentMinAndroidVersion]);
+
+  const trimmedMinIosVersion = minIosVersionInput.trim();
+  const trimmedMinAndroidVersion = minAndroidVersionInput.trim();
+
+  // Format + safety-ceiling validation: never allow a target above the version this page
+  // even knows was built yet (a stricter check than the runbook's own "must be live" gate,
+  // which nothing here can verify — but a version that hasn't even been built definitely
+  // isn't live, so this much is always safe to enforce automatically).
+  const minIosVersionError =
+    trimmedMinIosVersion === ""
+      ? null
+      : !isValidVersionFormat(trimmedMinIosVersion)
+        ? "Enter a version in X.Y.Z format (e.g. 1.23.16)."
+        : versions?.ios.marketingVersion &&
+            isVersionGreaterThan(trimmedMinIosVersion, versions.ios.marketingVersion)
+          ? `Cannot exceed the current build (${versions.ios.marketingVersion}) — that version may not even be published yet.`
+          : null;
+  const minAndroidVersionError =
+    trimmedMinAndroidVersion === ""
+      ? null
+      : !isValidVersionFormat(trimmedMinAndroidVersion)
+        ? "Enter a version in X.Y.Z format (e.g. 1.23.16)."
+        : versions?.android.versionName &&
+            isVersionGreaterThan(trimmedMinAndroidVersion, versions.android.versionName)
+          ? `Cannot exceed the current build (${versions.android.versionName}) — that version may not even be published yet.`
+          : null;
+
+  const isIosMinVersionChanged =
+    trimmedMinIosVersion !== "" &&
+    trimmedMinIosVersion !== currentMinIosVersion?.minimumSupportedVersion &&
+    !minIosVersionError;
+  const isAndroidMinVersionChanged =
+    trimmedMinAndroidVersion !== "" &&
+    trimmedMinAndroidVersion !== currentMinAndroidVersion?.minimumSupportedVersion &&
+    !minAndroidVersionError;
+  const hasMinVersionChange = isIosMinVersionChanged || isAndroidMinVersionChanged;
+
+  const handleOpenMinVersionDialog = () => {
+    // Re-seed from the latest known thresholds every time the dialog opens,
+    // in case an edit was left half-typed and abandoned on a previous open.
+    if (currentMinIosVersion) setMinIosVersionInput(currentMinIosVersion.minimumSupportedVersion);
+    if (currentMinAndroidVersion) {
+      setMinAndroidVersionInput(currentMinAndroidVersion.minimumSupportedVersion);
+    }
+    setIsConfirmingMinVersionUpdate(true);
+  };
+
+  const handleUpdateMinimumVersion = async () => {
+    if (!hasMinVersionChange) return;
+    try {
+      await updateMinimumAppVersion({
+        ios: isIosMinVersionChanged ? trimmedMinIosVersion : undefined,
+        android: isAndroidMinVersionChanged ? trimmedMinAndroidVersion : undefined,
+      }).unwrap();
+      toast.success(
+        "Minimum supported app version updated — affected users will see the force-update screen on next launch.",
+      );
+      setIsConfirmingMinVersionUpdate(false);
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Failed to update the minimum supported app version. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
-    <div className="h-full font-primary flex flex-col">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl text-typography-900 font-secondary">Mobile Releases</h1>
-          <p className="text-sm text-typography-700 mt-1">
-            Current live app versions and recent runs of the automated mobile release pipeline.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {isTriggering && <InlineLoading description="Triggering…" />}
-          {isPromotingAndroid && <InlineLoading description="Promoting…" />}
-          {isSubmittingAppStoreReview && <InlineLoading description="Submitting…" />}
-          <Button
-            kind="primary"
-            size="md"
-            disabled={isTriggering}
-            onClick={() => setIsConfirmingTrigger(true)}
-          >
-            Trigger release now
-          </Button>
-          <Button
-            kind="danger"
-            size="md"
-            disabled={isPromotingAndroid}
-            onClick={() => {
-              setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
-              setIsConfirmingAndroidPromotion(true);
-            }}
-          >
-            Promote Android to Production
-          </Button>
-          <Button
-            kind="danger"
-            size="md"
-            disabled={isSubmittingAppStoreReview}
-            onClick={handleOpenAppStoreReviewDialog}
-          >
-            Submit for Full App Store Review
-          </Button>
-        </div>
+    <div className="h-full font-primary flex flex-col overflow-y-auto custom-scrollbar">
+      <div>
+        <h1 className="text-2xl text-typography-900 font-secondary">Mobile Releases</h1>
+        <p className="text-sm text-typography-700 mt-1">
+          What's live, what's in progress, and what needs your attention — for both platforms.
+        </p>
       </div>
 
-      {/* Current live version, per platform, plus the next automated check. */}
-      <div className="flex flex-wrap gap-4 mt-6 shrink-0">
-        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
-          <MobileIcon size={24} className="text-typography-600 shrink-0" />
-          <div>
-            <p className="text-xs uppercase tracking-wide text-typography-600">
-              Android — live version
-            </p>
-            {isVersionsLoading ? (
-              <p className="text-typography-700 mt-1">Loading…</p>
-            ) : isVersionsError || !versions ? (
-              <p className="text-destructive-500 mt-1">Failed to load current version.</p>
-            ) : (
-              <p className="text-xl text-typography-900 font-secondary mt-1">
-                {versions.android.versionName}{" "}
-                <span className="text-sm text-typography-600">
-                  ({versions.android.versionCode})
-                </span>
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
-          <MobileIcon size={24} className="text-typography-600 shrink-0" />
-          <div>
-            <p className="text-xs uppercase tracking-wide text-typography-600">
-              iOS — live version
-            </p>
-            {isVersionsLoading ? (
-              <p className="text-typography-700 mt-1">Loading…</p>
-            ) : isVersionsError || !versions ? (
-              <p className="text-destructive-500 mt-1">Failed to load current version.</p>
-            ) : (
-              <p className="text-xl text-typography-900 font-secondary mt-1">
-                {versions.ios.marketingVersion}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
-          <MobileIcon size={24} className="text-typography-600 shrink-0" />
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs uppercase tracking-wide text-typography-600">
-                iOS — TestFlight status
-              </p>
-              <Tooltip
-                label="Live status of the current iOS build in App Store Connect, from Apple's own Beta App Review — no need to open App Store Connect to check."
-                align="top"
-              >
-                <button type="button" className="cursor-pointer inline-flex items-center">
-                  <TooltipIcon />
-                </button>
-              </Tooltip>
-            </div>
-            {isTestflightStatusLoading ? (
-              <p className="text-typography-700 mt-1">Loading…</p>
-            ) : isTestflightStatusError || !testflightStatus || !testflightStatusDisplay ? (
-              <p className="text-destructive-500 mt-1">Failed to load TestFlight status.</p>
-            ) : (
-              <div className="mt-1 flex items-center gap-2">
-                <Tag type={testflightStatusDisplay.type} size="sm">
-                  {testflightStatusDisplay.label}
-                </Tag>
-                {testflightStatus.buildVersion && (
-                  <span className="text-sm text-typography-600">
-                    Build {testflightStatus.buildVersion}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-[240px] flex items-center gap-3 rounded border border-border-light bg-white px-5 py-4">
-          <MobileIcon size={24} className="text-typography-600 shrink-0" />
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs uppercase tracking-wide text-typography-600">
-                Next automated check
-              </p>
-              <Tooltip
-                label="This is only an estimate of when the automated pipeline could next run — it still depends on there being new commits by then, which can't be known in advance."
-                align="top"
-              >
-                <button type="button" className="cursor-pointer inline-flex items-center">
-                  <TooltipIcon />
-                </button>
-              </Tooltip>
-            </div>
-            {isVersionsLoading ? (
-              <p className="text-typography-700 mt-1">Loading…</p>
-            ) : isVersionsError || !versions ? (
-              <p className="text-destructive-500 mt-1">Failed to load current version.</p>
-            ) : (
-              <p className="text-xl text-typography-900 font-secondary mt-1">
-                {versions.nextEligibleCheckAt
-                  ? formatDateTime(versions.nextEligibleCheckAt)
-                  : "Unknown"}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Run history. */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar mt-6">
-        {isRunsLoading ? (
-          <p className="text-typography-700">Loading…</p>
-        ) : isRunsError && runs.length === 0 ? (
-          <p className="text-destructive-500">Failed to load run history.</p>
-        ) : runs.length === 0 ? (
-          <EmptyState
-            title="No runs yet"
-            subtitle="The release pipeline hasn't run yet — check back after its next scheduled pass."
-            hideActionButton
+      {/* Release Overview — always visible above the tabs below, so the five
+          questions this page exists to answer (what's live on each platform,
+          is a release running, is anything waiting on me, what's next) never
+          require scrolling or picking a tab. */}
+      <div className="flex flex-col gap-4 mt-5 shrink-0">
+        <div className="flex flex-wrap gap-4">
+          <PlatformStatusCard
+            platform="Android"
+            isLoading={isVersionsLoading}
+            isError={isVersionsError}
+            liveVersion={versions?.android.versionName ?? null}
+            liveVersionSuffix={
+              versions?.android.versionCode ? `(${versions.android.versionCode})` : null
+            }
+            lastReleaseDate={androidLastReleaseDate}
+            footnote="Reflects the version committed on master — confirm it's actually published in Play Console before treating it as live."
           />
-        ) : (
-          <Table className="w-full text-left border-collapse">
-            <TableHead>
-              <TableRow className="border-b border-border-light text-sm text-typography-700">
-                <TableHeader className="py-3 pr-4 font-medium">Workflow</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Status</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Triggered by</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Commit</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Started</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Duration</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {runs.map(run => {
-                const statusDisplay = getMobileReleaseRunStatusDisplay(run.status, run.conclusion);
-                return (
-                  <TableRow
-                    key={run.id}
-                    className="border-b border-border-light text-sm text-typography-900 align-top"
-                  >
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">
-                      {run.workflowName}
-                    </TableCell>
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">
-                      <Tag type={statusDisplay.type} size="sm">
-                        {statusDisplay.label}
-                      </Tag>
-                    </TableCell>
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">{run.actor}</TableCell>
-                    <TableCell className="py-3 pr-4 max-w-[320px]">
-                      <span
-                        title={run.headCommitMessage ?? undefined}
-                        className="font-mono text-xs truncate block"
-                      >
-                        {shortSha(run.headSha)} — {run.headCommitMessage}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">
-                      {run.runStartedAt ? formatDateTime(run.runStartedAt) : "Queued"}
-                    </TableCell>
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">
-                      {runDisplayDuration(run)}
-                    </TableCell>
-                    <TableCell className="py-3 pr-4 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => openLinkInNewTab(run.htmlUrl)}
-                        title="View on GitHub"
-                        aria-label="View run on GitHub"
-                        className="text-typography-600 hover:text-typography-900"
-                      >
-                        <LinkIcon size={16} />
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <PlatformStatusCard
+            platform="iOS"
+            isLoading={isVersionsLoading}
+            isError={isVersionsError}
+            liveVersion={versions?.ios.marketingVersion ?? null}
+            lastReleaseDate={iosLastReleaseDate}
+            statusTag={testflightStatusDisplay}
+            statusLabel="TestFlight"
+            statusContext={
+              testflightStatus?.buildVersion ? `Build ${testflightStatus.buildVersion}` : null
+            }
+            footnote="Reflects the version committed on master — confirm it's actually published in App Store Connect before treating it as live."
+          />
+          <NextCheckPanel
+            isVersionsLoading={isVersionsLoading}
+            isVersionsError={isVersionsError}
+            nextEligibleCheckAt={versions?.nextEligibleCheckAt}
+            isReleaseInProgress={releaseInProgress}
+          />
+        </div>
+
+        <RecommendedActionBanner
+          action={recommendedAction}
+          onSubmitReview={handleOpenAppStoreReviewDialog}
+        />
+
+        {!isVersionsLoading && !isVersionsError && versions?.android.versionName && (
+          <div>
+            <h3 className="text-sm font-medium text-typography-900 mb-2">
+              Current Android build's pipeline
+            </h3>
+            <AndroidReleasePipeline
+              androidVersionName={versions.android.versionName}
+              androidVersionCode={versions.android.versionCode}
+              lastBuildRun={lastAndroidBuildRun}
+              lastPromoteRun={lastAndroidPromoteRun}
+              currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
+              isMinAndroidVersionLoading={isMinAndroidVersionLoading}
+              onUpdateMinVersion={handleOpenMinVersionDialog}
+            />
+          </div>
         )}
+
+        {!isTestflightStatusLoading &&
+          !isTestflightStatusError &&
+          testflightStatus?.buildVersion && (
+            <div>
+              <h3 className="text-sm font-medium text-typography-900 mb-2">
+                Current iOS build's pipeline
+              </h3>
+              <IosReleasePipeline
+                testflightStatus={testflightStatus}
+                matchingSubmission={matchingSubmission}
+                buildUploadedDate={currentBuildUploadedDate}
+                currentMinIosVersion={currentMinIosVersion?.minimumSupportedVersion}
+                isMinIosVersionLoading={isMinIosVersionLoading}
+                onUpdateMinVersion={handleOpenMinVersionDialog}
+              />
+            </div>
+          )}
+
+        {/* Action area — grouped by risk, not all equally weighted. Release
+            actions use a lighter "tertiary" treatment for the routine
+            internal-track trigger and a "danger--tertiary" outline (colour
+            without a solid block) for the two real-production actions.
+            Force-update lives in its own group since it's a safety knob, not
+            a release step. */}
+        <div className="flex flex-col gap-3 pt-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {(isTriggering || isPromotingAndroid || isSubmittingAppStoreReview) && (
+              <InlineLoading
+                description={
+                  isTriggering ? "Triggering…" : isPromotingAndroid ? "Promoting…" : "Submitting…"
+                }
+              />
+            )}
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-typography-600 mb-1.5">
+              Release actions
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Tooltip label="Skips the 2-day cadence and immediately builds and uploads both platforms to their internal tracks (Play Store internal track, TestFlight). Tests still gate the build.">
+                <Button
+                  kind="tertiary"
+                  size="md"
+                  disabled={isTriggering}
+                  onClick={() => setIsConfirmingTrigger(true)}
+                >
+                  Trigger release now
+                </Button>
+              </Tooltip>
+              <Tooltip label="Promotes the current internal-track Android build to the Play Store production track at a staged rollout percentage you choose. Real users start receiving it.">
+                <Button
+                  kind="danger--tertiary"
+                  size="md"
+                  disabled={
+                    isPromotingAndroid ||
+                    isVersionsLoading ||
+                    isVersionsError ||
+                    !versions?.android.versionName
+                  }
+                  onClick={() => {
+                    setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
+                    setAndroidWhatsNewText("");
+                    setIsConfirmingAndroidPromotion(true);
+                  }}
+                >
+                  Promote Android to Production
+                </Button>
+              </Tooltip>
+              <Tooltip label="Submits the current iOS build for Apple's full App Store review — real public distribution, not TestFlight. Assumes the App Store Connect listing is already ready.">
+                <Button
+                  kind="danger--tertiary"
+                  size="md"
+                  disabled={
+                    isSubmittingAppStoreReview ||
+                    isTestflightStatusLoading ||
+                    isTestflightStatusError ||
+                    !testflightStatus?.buildVersion
+                  }
+                  onClick={handleOpenAppStoreReviewDialog}
+                >
+                  Submit for Full App Store Review
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-typography-600 mb-1.5">
+              Force-update settings
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Tooltip label="Raises the minimum app version users are allowed to run — anyone below it sees a non-dismissable force-update screen on next launch, effective immediately.">
+                <Button kind="tertiary" size="md" onClick={handleOpenMinVersionDialog}>
+                  Update Minimum Version
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {runs.length > 0 && (
-        <div className="flex items-center justify-end shrink-0 border-t border-border-light pt-3 mt-2">
-          <span
-            className={isRunsError ? "text-sm text-destructive-500" : "text-sm text-typography-700"}
-          >
-            {isRunsFetching
-              ? "Updating…"
-              : isRunsError
-                ? "Couldn't refresh just now — showing the last known runs."
-                : ""}
-          </span>
-        </div>
-      )}
-
-      {/* iOS TestFlight submission history — separate from the run history
-          table above: these rows are past TestFlight builds' Beta App Review
-          state (from App Store Connect), not GitHub Actions runs, so they
-          don't share a shape with MobileReleaseRun. */}
-      <div className="shrink-0">
-        <h2 className="text-lg text-typography-900 font-secondary mt-6">
-          iOS TestFlight submissions
-        </h2>
-        <div className="mt-3">
-          {isTestflightHistoryLoading ? (
-            <p className="text-typography-700">Loading…</p>
-          ) : isTestflightHistoryError ? (
-            <p className="text-destructive-500">Failed to load TestFlight submission history.</p>
-          ) : testflightHistory.length === 0 ? (
-            <EmptyState
-              title="No submissions yet"
-              subtitle="No iOS build has been uploaded to TestFlight yet — check back after the next automated build."
-              hideActionButton
-            />
-          ) : (
-            <Table className="w-full text-left border-collapse">
-              <TableHead>
-                <TableRow className="border-b border-border-light text-sm text-typography-700">
-                  <TableHeader className="py-3 pr-4 font-medium">Version</TableHeader>
-                  <TableHeader className="py-3 pr-4 font-medium">Uploaded</TableHeader>
-                  <TableHeader className="py-3 pr-4 font-medium">Beta review status</TableHeader>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {testflightHistory.map(entry => {
-                  const statusDisplay = getTestflightStatusDisplay(entry);
-                  return (
-                    <TableRow
-                      key={entry.buildId}
-                      className="border-b border-border-light text-sm text-typography-900 align-top"
-                    >
-                      <TableCell className="py-3 pr-4 whitespace-nowrap">
-                        {entry.buildVersion}
-                      </TableCell>
-                      <TableCell className="py-3 pr-4 whitespace-nowrap">
-                        {formatDateTime(entry.uploadedDate)}
-                      </TableCell>
-                      <TableCell className="py-3 pr-4 whitespace-nowrap">
-                        <Tag type={statusDisplay.type} size="sm">
-                          {statusDisplay.label}
-                        </Tag>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+      {/* Detailed history, one platform/concern per tab — kept below the
+          fold on purpose, since none of it is needed to answer "what's live"
+          or "what should I do next" above. */}
+      <div className="mt-6 flex-1 min-h-0">
+        <Tabs selectedIndex={tabIndex} onChange={({ selectedIndex }) => setTabIndex(selectedIndex)}>
+          <TabList aria-label="Mobile release history sections">
+            {HISTORY_TABS.map(t => (
+              <Tab key={t.id}>{t.label}</Tab>
+            ))}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              {tabIndex === 0 && (
+                <AndroidReleasesTab
+                  runs={runs}
+                  isRunsLoading={isRunsLoading}
+                  isRunsFetching={isRunsFetching}
+                  isRunsError={isRunsError}
+                />
+              )}
+            </TabPanel>
+            <TabPanel>
+              {tabIndex === 1 && (
+                <IosTestflightTab
+                  currentBuildId={testflightStatus?.buildId}
+                  testflightHistory={testflightHistory}
+                  isTestflightHistoryLoading={isTestflightHistoryLoading}
+                  isTestflightHistoryError={isTestflightHistoryError}
+                  runs={runs}
+                  isRunsLoading={isRunsLoading}
+                  isRunsFetching={isRunsFetching}
+                  isRunsError={isRunsError}
+                />
+              )}
+            </TabPanel>
+            <TabPanel>
+              {tabIndex === 2 && (
+                <AppStoreSubmissionsTab
+                  submissions={appStoreReviewHistory}
+                  isLoading={isAppStoreReviewHistoryLoading}
+                  isError={isAppStoreReviewHistoryError}
+                  currentVersionString={testflightStatus?.buildVersion}
+                  runs={runs}
+                  isRunsLoading={isRunsLoading}
+                  isRunsFetching={isRunsFetching}
+                  isRunsError={isRunsError}
+                />
+              )}
+            </TabPanel>
+            <TabPanel>
+              {tabIndex === 3 && (
+                <ReleaseHistoryTab
+                  runs={runs}
+                  isRunsLoading={isRunsLoading}
+                  isRunsFetching={isRunsFetching}
+                  isRunsError={isRunsError}
+                />
+              )}
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </div>
 
       {isConfirmingTrigger && (
@@ -498,7 +582,14 @@ export const MobileReleases: FC = () => {
             onClick: () => setIsConfirmingTrigger(false),
             disabled: isTriggering,
           }}
-        />
+        >
+          {releaseInProgress && (
+            <p className="w-full mt-2 text-sm text-warning-text">
+              A release is already running — this will queue behind it rather than run concurrently,
+              but confirm that's what you want before proceeding.
+            </p>
+          )}
+        </ActionConfirmationPopup>
       )}
 
       {isConfirmingAndroidPromotion && (
@@ -510,7 +601,10 @@ export const MobileReleases: FC = () => {
           primaryButton={{
             label: isPromotingAndroid ? "Promoting…" : "Promote to production",
             onClick: () => void handlePromoteAndroid(),
-            disabled: isPromotingAndroid || !isAndroidRolloutPercentageValid,
+            disabled:
+              isPromotingAndroid ||
+              !isAndroidRolloutPercentageValid ||
+              androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH,
           }}
           secondaryButton={{
             label: en.common.cancel,
@@ -518,7 +612,18 @@ export const MobileReleases: FC = () => {
             disabled: isPromotingAndroid,
           }}
         >
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 flex flex-col gap-4">
+            {isAndroidAlreadyPromoted && (
+              <p className="text-sm text-warning-text">
+                This build ({versions?.android.versionName}) may already be promoted to production —
+                last promotion:{" "}
+                {lastAndroidPromoteRun?.runStartedAt
+                  ? formatDateTime(lastAndroidPromoteRun.runStartedAt)
+                  : "unknown time"}
+                . Promoting again will re-submit it, which is fine if you're only raising the
+                rollout percentage.
+              </p>
+            )}
             <NumberInput
               id="android-promotion-rollout-percentage"
               label="Rollout percentage"
@@ -533,6 +638,21 @@ export const MobileReleases: FC = () => {
                 setAndroidRolloutPercentage(state?.value === undefined ? NaN : Number(state.value))
               }
             />
+            <TextArea
+              id="android-promotion-whats-new"
+              labelText="What's New (optional)"
+              helperText={
+                androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH
+                  ? `${androidWhatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before promoting.`
+                  : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+              }
+              invalid={androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH}
+              placeholder="e.g. Bug fixes and performance improvements"
+              value={androidWhatsNewText}
+              onChange={e => setAndroidWhatsNewText(e.target.value)}
+              disabled={isPromotingAndroid}
+              rows={4}
+            />
           </div>
         </ActionConfirmationPopup>
       )}
@@ -546,7 +666,7 @@ export const MobileReleases: FC = () => {
           primaryButton={{
             label: isSubmittingAppStoreReview ? "Submitting…" : "Submit for review",
             onClick: () => void handleSubmitAppStoreReview(),
-            disabled: isSubmittingAppStoreReview,
+            disabled: isSubmittingAppStoreReview || whatsNewText.length > WHATS_NEW_MAX_LENGTH,
           }}
           secondaryButton={{
             label: en.common.cancel,
@@ -554,15 +674,21 @@ export const MobileReleases: FC = () => {
             disabled: isSubmittingAppStoreReview,
           }}
         >
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 flex flex-col gap-3">
+            {iosAlreadySubmittedWarning && (
+              <p className="text-sm text-warning-text">{iosAlreadySubmittedWarning}</p>
+            )}
             <TextArea
               id="ios-app-store-review-whats-new"
               labelText="What's New in This Version (optional)"
               helperText={
-                whatsNewSuggestionNote
-                  ? `${whatsNewSuggestionNote} ${WHATS_NEW_HELPER_TEXT}`
-                  : WHATS_NEW_HELPER_TEXT
+                whatsNewText.length > WHATS_NEW_MAX_LENGTH
+                  ? `${whatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before submitting.`
+                  : whatsNewSuggestionNote
+                    ? `${whatsNewSuggestionNote} ${WHATS_NEW_HELPER_TEXT}`
+                    : WHATS_NEW_HELPER_TEXT
               }
+              invalid={whatsNewText.length > WHATS_NEW_MAX_LENGTH}
               placeholder={
                 isFetchingWhatsNewSuggestion
                   ? "Generating a suggestion from recent commits…"
@@ -572,6 +698,60 @@ export const MobileReleases: FC = () => {
               onChange={e => setWhatsNewText(e.target.value)}
               disabled={isSubmittingAppStoreReview || isFetchingWhatsNewSuggestion}
               rows={4}
+            />
+          </div>
+        </ActionConfirmationPopup>
+      )}
+
+      {isConfirmingMinVersionUpdate && (
+        <ActionConfirmationPopup
+          isOpen={isConfirmingMinVersionUpdate}
+          onClose={() => setIsConfirmingMinVersionUpdate(false)}
+          title="Update minimum supported app version?"
+          description="This takes effect **immediately, with no deploy** — any user below this version sees a non-dismissable force-update screen on next launch. Setting a version **above** what's actually published on the App Store / Play Store locks out **every** user on that platform onto a version they can't yet download. Confirm the target version is genuinely live on the store before proceeding."
+          primaryButton={{
+            label: isUpdatingMinVersion ? "Updating…" : "Update minimum version",
+            onClick: () => void handleUpdateMinimumVersion(),
+            disabled: isUpdatingMinVersion || !hasMinVersionChange,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setIsConfirmingMinVersionUpdate(false),
+            disabled: isUpdatingMinVersion,
+          }}
+        >
+          <div className="w-full mt-2 flex flex-col gap-4">
+            <TextInput
+              id="min-ios-version"
+              labelText="Minimum iOS version"
+              helperText={
+                minIosVersionError
+                  ? minIosVersionError
+                  : currentMinIosVersion
+                    ? `Current: ${currentMinIosVersion.minimumSupportedVersion}`
+                    : "Loading current threshold…"
+              }
+              invalid={!!minIosVersionError}
+              invalidText={minIosVersionError ?? ""}
+              value={minIosVersionInput}
+              onChange={e => setMinIosVersionInput(e.target.value)}
+              disabled={isUpdatingMinVersion}
+            />
+            <TextInput
+              id="min-android-version"
+              labelText="Minimum Android version"
+              helperText={
+                minAndroidVersionError
+                  ? minAndroidVersionError
+                  : currentMinAndroidVersion
+                    ? `Current: ${currentMinAndroidVersion.minimumSupportedVersion}`
+                    : "Loading current threshold…"
+              }
+              invalid={!!minAndroidVersionError}
+              invalidText={minAndroidVersionError ?? ""}
+              value={minAndroidVersionInput}
+              onChange={e => setMinAndroidVersionInput(e.target.value)}
+              disabled={isUpdatingMinVersion}
             />
           </div>
         </ActionConfirmationPopup>
