@@ -13,7 +13,8 @@ export type MobileReleaseWorkflowName =
   | "Scheduled Check"
   | "iOS Build"
   | "Android Build"
-  | "Promote Android";
+  | "Promote Android"
+  | "App Store Review Submission";
 
 /** GitHub Actions' own run-status values — not our own enum, so this stays a passthrough of their API. */
 export type MobileReleaseRunStatus = "queued" | "in_progress" | "completed";
