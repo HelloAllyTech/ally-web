@@ -621,6 +621,17 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
     [data],
   );
 
+  // Same stable-identity rule as `bucketItems` above, which the model and
+  // prompt-version pickers were breaking by building their arrays inline in
+  // JSX: a fresh array every render walks Downshift's `selectProps` identity
+  // and makes it re-derive menu state underneath an open menu.
+  const modelItems = useMemo(() => ["", ...(data?.filterOptions.models ?? [])], [data]);
+
+  const promptVersionItems = useMemo(
+    () => ["", ...(data?.filterOptions.promptVersions ?? [])],
+    [data],
+  );
+
   // Everything a reader might need to audit a number, in one string behind an
   // icon: which thresholds produced it, and which judge version each family was
   // read through. Kept because "the version is pinned" matters when a chart
@@ -668,7 +679,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             titleText="Model"
             hideLabel
             label="All models"
-            items={["", ...(data?.filterOptions.models ?? [])]}
+            items={modelItems}
             selectedItem={llmModel}
             itemToString={(i: string) => i || "All models"}
             onChange={({ selectedItem }: { selectedItem: string }) =>
@@ -703,7 +714,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             titleText="Prompt version"
             hideLabel
             label="All prompt versions"
-            items={["", ...(data?.filterOptions.promptVersions ?? [])]}
+            items={promptVersionItems}
             selectedItem={promptVersion}
             itemToString={(i: string) => (i ? `Prompt v${i}` : "All prompt versions")}
             onChange={({ selectedItem }: { selectedItem: string }) =>

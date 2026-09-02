@@ -236,6 +236,7 @@ export const TrackPlayer: FC = () => {
         currentItemId={itemId}
         overallPct={nav.overallPct}
         onExit={nav.exitToOverview}
+        onSegmentClick={nav.goToItem}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">

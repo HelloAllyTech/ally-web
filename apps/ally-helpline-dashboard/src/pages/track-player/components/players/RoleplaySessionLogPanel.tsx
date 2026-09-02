@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
@@ -81,6 +81,17 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
   ];
 
   const [selectedTab, setSelectedTab] = useState(tabList[0]?.id);
+
+  // Debrief is the default landing tab while the real scenario metadata is
+  // still loading, but a roleplay can switch it off — in which case fall
+  // through to whichever tab is actually first once tabList resolves.
+  useEffect(() => {
+    if (!tabList.length) return;
+    if (!tabList.some(tab => tab.id === selectedTab)) {
+      setSelectedTab(tabList[0].id);
+    }
+  }, [tabList, selectedTab]);
+
   const activeContent = tabList.find(tab => tab.id === selectedTab)?.content;
 
   // A roleplay with every post-session tab switched off has nothing to expand
