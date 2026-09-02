@@ -75,14 +75,20 @@ export function useMobileReleases() {
     isError: isAppStoreReviewHistoryError,
   } = useGetIosAppStoreReviewHistoryQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
 
-  // Same "be gentle with an external API" reasoning as TESTFLIGHT_POLL_MS above — this fans out
-  // to insert/get/delete calls against the Play Developer API each time, sharing that quota with
-  // the actual release pipeline (builds, promotions).
+  // Deliberately NOT polled, unlike every other query on this page — confirmed live (a real
+  // build upload failed with "This edit has expired") that this isn't just a quota-sharing
+  // concern like TESTFLIGHT_POLL_MS's: ally-be authenticates as the SAME Play Developer API
+  // service account the release pipeline's uploads/promotions use, and Google's API invalidates
+  // a service account's other open edits the moment a new one is created (confirmed against
+  // Google's own concurrency-considerations docs). A poll firing mid-upload can kill that
+  // upload's edit out from under it. Fetches once per page load instead — real fix (a separate,
+  // read-only service account so ally-be's edits stop sharing an identity with the release
+  // pipeline's) is tracked separately; until then, this stays fetch-once, not polled.
   const {
     data: androidProductionStatus,
     isLoading: isAndroidProductionStatusLoading,
     isError: isAndroidProductionStatusError,
-  } = useGetAndroidProductionStatusQuery(undefined, { pollingInterval: TESTFLIGHT_POLL_MS });
+  } = useGetAndroidProductionStatusQuery();
 
   return {
     runs: runs ?? [],
