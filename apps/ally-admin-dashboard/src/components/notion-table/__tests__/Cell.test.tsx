@@ -437,19 +437,19 @@ describe("Cell", () => {
       });
     });
 
-    it("respects disabled state for number input", () => {
-      const disabledValue = { value: 42, disabled: true };
-      render(<Cell {...defaultProps} value={disabledValue} column={numberColumn} />);
-
-      const input = screen.getByTestId("number-input-field");
-      expect(input).toBeDisabled();
-    });
-
     it("handles zero value", () => {
       render(<Cell {...defaultProps} value={0} column={numberColumn} />);
 
       const input = screen.getByTestId("number-input-field");
       expect(input).toHaveValue(0);
+    });
+
+    it("renders the value as plain text instead of a disabled input when disabled", () => {
+      const disabledValue = { value: 42, disabled: true };
+      render(<Cell {...defaultProps} value={disabledValue} column={numberColumn} />);
+
+      expect(screen.queryByTestId("number-input")).not.toBeInTheDocument();
+      expect(screen.getByText("42")).toBeInTheDocument();
     });
   });
 
