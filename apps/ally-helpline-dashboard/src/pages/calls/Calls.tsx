@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -33,7 +33,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
   const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
-  const [sessionUserGroup, setSessionUserGroup] = useState(SessionUserGroup.MY_LOGS);
+  const [selectedUserGroup, setSelectedUserGroup] = useState<SessionUserGroup | null>(null);
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
   const [isCreateNoteOpen, setIsCreateNoteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -51,11 +51,21 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
     [permissions, sessionType],
   );
 
-  useEffect(() => {
-    if (supportedLogList?.length > 0) {
-      setSessionUserGroup(supportedLogList[0].sessionUserGroup as SessionUserGroup);
+  // Which table renders decides which endpoint gets called, so the permitted
+  // list has to win on the FIRST render: correcting a hardcoded "My Logs"
+  // default from an effect still lets UserLogsTable mount once and fire
+  // getCallLogs/getCallTags, which the API rejects with 401/403 for a user who
+  // only holds VIEW_CONSOLIDATED_LOGS. An explicit tab choice is honoured only
+  // while it is still permitted (it isn't, after switching session type).
+  const sessionUserGroup = useMemo(() => {
+    if (
+      selectedUserGroup &&
+      supportedLogList.some(option => option.sessionUserGroup === selectedUserGroup)
+    ) {
+      return selectedUserGroup;
     }
-  }, [supportedLogList]);
+    return (supportedLogList[0]?.sessionUserGroup as SessionUserGroup) ?? SessionUserGroup.MY_LOGS;
+  }, [selectedUserGroup, supportedLogList]);
 
   const handleStartSession = () => {
     setIsStartSessionDialogOpen(true);
@@ -178,7 +188,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
             <Tabs
               items={userGroupList.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={sessionUserGroup}
-              onChange={newId => setSessionUserGroup(newId as SessionUserGroup)}
+              onChange={newId => setSelectedUserGroup(newId as SessionUserGroup)}
               className="border-none w-full normal-case text-base font-primary"
               showCount={false}
             />

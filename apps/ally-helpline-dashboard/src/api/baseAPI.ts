@@ -84,6 +84,39 @@ export const baseQuery = fetchBaseQuery({
 });
 
 /**
+ * Holds the in-flight token refresh so concurrent 401s share one call instead
+ * of each racing the backend with the same refresh token. The backend rotates
+ * refresh tokens on use, so without this, the surfaces that mount together
+ * (e.g. the practice-streak bar and the nav pill on /learn) each fire their
+ * own refresh the moment an access token expires: the first one to land
+ * rotates the token and succeeds, but every other concurrent refresh call is
+ * still holding the now-stale token and gets rejected — logging out a session
+ * that had just been renewed.
+ */
+let refreshPromise: Promise<RefreshResponse | null> | null = null;
+
+const refreshTokens = async (
+  store: Parameters<BaseQueryFn>[1],
+  extraOptions: Parameters<BaseQueryFn>[2],
+): Promise<RefreshResponse | null> => {
+  const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+  if (!refreshToken) return null;
+
+  const refreshResult = await baseQuery(
+    { url: ApiEndpoints.AUTH.REFRESH, method: HttpMethod.POST, body: { refreshToken } },
+    store,
+    extraOptions,
+  );
+
+  if (!refreshResult.data) return null;
+
+  const tokens = refreshResult.data as RefreshResponse;
+  localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+  localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+  return tokens;
+};
+
+/**
  * This function wraps the base query to handle authentication token refresh.
  * When a 401 error is received, it attempts to refresh the access token using
  * the refresh token. If successful, it retries the original request.
@@ -94,11 +127,11 @@ export const baseQuery = fetchBaseQuery({
  * @param {any} extraOptions - Additional options for the query
  * @returns {Promise<any>} The query result
  */
-const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
-  args,
-  store,
-  extraOptions,
-) => {
+export const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, store, extraOptions) => {
   try {
     let result;
     try {
@@ -120,23 +153,19 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       }
 
       try {
-        // Try to refresh the token
-        const refreshResult = await baseQuery(
-          { url: ApiEndpoints.AUTH.REFRESH, method: HttpMethod.POST, body: { refreshToken } },
-          store,
-          extraOptions,
-        );
+        // Join the in-flight refresh if one is already running instead of
+        // starting a second one with the same (about-to-be-rotated) token.
+        if (!refreshPromise) {
+          refreshPromise = refreshTokens(store, extraOptions).finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const tokens = await refreshPromise;
 
-        if (!refreshResult.data) {
+        if (!tokens) {
           handleLogout();
           throw new Error("No refresh data received");
         }
-
-        const tokens = refreshResult.data as RefreshResponse;
-
-        // Store the new tokens
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
 
         // Retry the original query with new token
         try {

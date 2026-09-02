@@ -173,6 +173,7 @@
       "greetingLine1": "Hey,",
       "greetingLine2": "Welcome to {{app}}",
       "subtitle": "Enter your email address to continue",
+      "back": "Back",
       "email": {
         "label": "Email",
         "placeholder": "Enter your email address",
@@ -1465,7 +1466,8 @@
       "loadFailed": "Could not load this item. Please try again.",
       "trackLoadFailed": "Could not load this course",
       "trackLoadFailedDescription": "Something went wrong while loading this course. Please try again.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "reviewItem": "Review {{title}}"
     },
     "celebration": {
       "sectionCompleteTitle": "Section complete!",
