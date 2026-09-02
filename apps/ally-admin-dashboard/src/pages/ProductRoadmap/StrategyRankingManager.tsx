@@ -179,7 +179,7 @@ export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ 
    */
   const commitWeight = async (key: keyof RoadmapRankWeights, raw: string) => {
     const value = Number(raw);
-    if (!Number.isInteger(value) || value < 0 || value > 10) {
+    if (raw.trim() === "" || !Number.isInteger(value) || value < 0 || value > 10) {
       setInvalidWeightKeys(prev => ({ ...prev, [key]: true }));
       return;
     }
