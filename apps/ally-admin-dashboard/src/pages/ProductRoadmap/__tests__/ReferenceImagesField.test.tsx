@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -202,5 +204,51 @@ describe("ReferenceImagesField", () => {
     renderField([{ url: OURS, caption: "Filter row wrapping" }], false);
 
     expect(screen.getByAltText("Filter row wrapping")).toBeInTheDocument();
+  });
+
+  it("keeps a removal made while a different upload is still in flight, instead of reviving the removed image once the upload resolves", async () => {
+    // The presign call is held open on purpose, so there's a real window in which the list can
+    // change under the pending upload's feet.
+    let resolvePresign: (value: { presignedUrl: string; imageUrl: string }) => void = () => {};
+    presign.mockReturnValue({
+      unwrap: () =>
+        new Promise(resolve => {
+          resolvePresign = resolve;
+        }),
+    });
+    put.mockResolvedValue({ status: 200 });
+
+    // A real controlled wrapper, not a plain mock: `onChange` has to actually feed back into
+    // `images` for a stale closure to be observable across the re-render it causes.
+    const Controlled = () => {
+      const [images, setImages] = useState([
+        { url: "https://a/roadmap/reference-images/keep.png" },
+      ]);
+      return <ReferenceImagesField images={images} onChange={setImages} canEdit />;
+    };
+    render(<Controlled />);
+
+    // Start uploading a second image; its presign promise won't settle until we resolve it below.
+    act(() => {
+      fireEvent.change(screen.getByLabelText("Add reference images"), {
+        target: { files: [file("a.png")] },
+      });
+    });
+
+    // While that upload is still pending, remove the already-attached image.
+    fireEvent.click(screen.getByRole("button", { name: /remove reference image 1/i }));
+    expect(screen.queryAllByRole("img")).toHaveLength(0);
+
+    // Now let the in-flight upload finish.
+    await act(async () => {
+      resolvePresign({ presignedUrl: "https://signed", imageUrl: OURS });
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // The uploaded image lands, but the earlier removal must not be undone by it.
+    await waitFor(() => expect(screen.getAllByRole("img")).toHaveLength(1));
+    expect(screen.getByRole("img")).toHaveAttribute("src", OURS);
   });
 });
