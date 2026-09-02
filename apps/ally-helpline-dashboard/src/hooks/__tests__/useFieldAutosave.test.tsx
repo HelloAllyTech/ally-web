@@ -173,6 +173,55 @@ describe("useFieldAutosave", () => {
     expect(result.current.isDirty).toBe(false);
   });
 
+  it("does not leave the rerun write's rejection unhandled", async () => {
+    // Mirrors: an edit lands while a write is in flight (queues a rerun), the
+    // in-flight write settles, and the rerun write it triggers also fails. Every
+    // other internal write() call is wrapped in .catch(() => {}); the rerun
+    // continuation in write()'s own finally block is not, so a failure there
+    // used to surface as an unhandled-promise-rejection console error.
+    const unhandled: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => unhandled.push(reason);
+    process.on("unhandledRejection", onUnhandledRejection);
+
+    try {
+      const gate = deferred();
+      const onPersist = vi
+        .fn()
+        .mockReturnValueOnce(gate.promise)
+        .mockRejectedValueOnce(new Error("rerun failed"))
+        .mockResolvedValue(undefined);
+      const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+      act(() => {
+        result.current.edit("summary", "keyConcerns", "first");
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(onPersist).toHaveBeenCalledTimes(1);
+
+      // Lands while the first write is still in flight — queues a rerun.
+      act(() => {
+        result.current.edit("summary", "keyConcerns", "second");
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(100);
+        await settle();
+      });
+      expect(onPersist).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        gate.resolve();
+        await settle(20);
+      });
+
+      expect(onPersist).toHaveBeenCalledTimes(2);
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+  });
+
   it("never runs two writes concurrently", async () => {
     const gate = deferred();
     let concurrent = 0;
@@ -241,6 +290,49 @@ describe("useFieldAutosave", () => {
     expect(onPersist).toHaveBeenCalledWith({
       summary: { keyConcerns: "typed just before closing" },
     });
+  });
+
+  it("does not fire a concurrent duplicate write on unmount when a save is already in flight", async () => {
+    // Mirrors "never runs two writes concurrently", but for the unmount path:
+    // closing the form the instant an earlier keystroke's autosave is still in
+    // flight must queue behind it, not fire a second overlapping request that
+    // could land out of order and clobber the newer edit.
+    const gate = deferred();
+    let concurrent = 0;
+    let maxConcurrent = 0;
+    const onPersist = vi.fn().mockImplementation(async () => {
+      concurrent += 1;
+      maxConcurrent = Math.max(maxConcurrent, concurrent);
+      await gate.promise;
+      concurrent -= 1;
+    });
+    const { result, unmount } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "first");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(onPersist).toHaveBeenCalledTimes(1);
+
+    // Typed while the first request is still in flight.
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "second");
+    });
+
+    unmount();
+
+    expect(maxConcurrent).toBe(1);
+
+    await act(async () => {
+      gate.resolve();
+      await settle();
+    });
+
+    // The newer edit still gets written, just after the first settles.
+    expect(onPersist).toHaveBeenCalledTimes(2);
+    expect(onPersist).toHaveBeenLastCalledWith({ summary: { keyConcerns: "second" } });
   });
 
   it("does not write on unmount when nothing is pending", () => {

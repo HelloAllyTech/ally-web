@@ -173,6 +173,7 @@
       "greetingLine1": "Hey,",
       "greetingLine2": "Welcome to {{app}}",
       "subtitle": "Enter your email address to continue",
+      "back": "Back",
       "email": {
         "label": "Email",
         "placeholder": "Enter your email address",

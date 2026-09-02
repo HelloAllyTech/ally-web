@@ -355,7 +355,19 @@ export const Login: FunctionComponent = () => {
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="flex flex-col justify-start gap-6"
       >
-        <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
+        <BackCircle
+          className="self-start cursor-pointer ml-[-10px]"
+          onClick={handleBack}
+          role="button"
+          tabIndex={0}
+          aria-label={t("auth.login.back")}
+          onKeyDown={e => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleBack();
+            }
+          }}
+        />
         <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>

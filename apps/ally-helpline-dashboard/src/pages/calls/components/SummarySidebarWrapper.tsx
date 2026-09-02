@@ -24,11 +24,15 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   // its author configured. `tabList?.[0].id` threw on that empty list.
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0]?.id ?? -1);
 
+  // Debrief is the default landing tab while the real scenario metadata is
+  // still loading, but a roleplay can switch it off — in which case fall
+  // through to whichever tab is actually first once tabList resolves.
   useEffect(() => {
-    if (tabList?.length) {
+    if (!tabList?.length) return;
+    if (!tabList.some(tab => tab.id === selectedTab)) {
       setSelectedTab(tabList[0].id);
     }
-  }, []);
+  }, [tabList, selectedTab]);
 
   useEffect(() => {
     onTabChange?.(selectedTab);
