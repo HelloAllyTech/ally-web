@@ -17,6 +17,7 @@ const mockCreate = vi.fn();
 const stableTriggers = {
   duplicates: vi.fn(),
   readiness: vi.fn(),
+  referenceImageUpload: vi.fn(),
 };
 
 /**
@@ -54,6 +55,7 @@ vi.mock("@api", () => ({
   useRoadmapAiDuplicatesMutation: () => [stableTriggers.duplicates, idle],
   useCheckRoadmapReadinessMutation: () => [stableTriggers.readiness, idle],
   useGetRoadmapReadinessCriteriaQuery: () => criteriaResult.current,
+  useGetRoadmapReferenceImageUploadUrlMutation: () => [stableTriggers.referenceImageUpload, idle],
   useGetRoadmapEligibleOwnersQuery: () => ({
     data: [
       { id: 7, name: "Ada Admin", email: "ada@helloally.ai" },
@@ -79,6 +81,7 @@ vi.mock("@icons", () => ({
   Minus: () => null,
   Tick: () => null,
   TooltipIcon: () => null,
+  UploadImage: () => null,
 }));
 
 vi.mock("@components/types", () => ({
@@ -267,6 +270,8 @@ describe("AddOpportunityDrawer", () => {
       productGoal: "Reliability & Trust",
       // The size the check proposed, carried through to the filed row.
       effort: "m",
+      // Always sent, empty or not — see the note on the create call.
+      referenceImages: [],
     });
   });
 

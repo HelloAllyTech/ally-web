@@ -72,6 +72,24 @@ export interface RoadmapUserRef {
   name: string;
 }
 
+/**
+ * One image attached to an opportunity: a screenshot, a mock, a photo of a whiteboard.
+ *
+ * `url` is always one of our own S3 objects — the backend refuses anything else on write, so a
+ * URL that arrives here can be rendered without wondering whose host it points at.
+ */
+export interface RoadmapReferenceImage {
+  url: string;
+  /** What a reader is looking at. Absent on most images; a screenshot usually speaks for itself. */
+  caption?: string | null;
+}
+
+/** The two URLs a presign returns. `presignedUrl` is PUT to and never stored; `imageUrl` is. */
+export interface RoadmapReferenceImageUpload {
+  presignedUrl: string;
+  imageUrl: string;
+}
+
 export interface RoadmapOpportunity {
   id: string;
   description: string;
@@ -96,6 +114,11 @@ export interface RoadmapOpportunity {
    */
   queueRank: number | null;
   claudePrompt: string | null;
+  /**
+   * Attached images, in the order somebody arranged them. Always an array — the backend sends
+   * `[]` rather than null, so no caller has to handle both.
+   */
+  referenceImages: RoadmapReferenceImage[];
   /**
    * The Builder session started from this opportunity, or null.
    *
@@ -123,6 +146,28 @@ export interface RoadmapOpportunity {
   monthPinned: boolean;
   /** SUM of every user's votes across every period. Computed in SQL, never stored. */
   priorityScore: number;
+  /**
+   * The weighted four-factor rank, 0-100, and the board's DEFAULT ordering. Computed in SQL per
+   * read from the live weights — never stored, so retuning the weights re-ranks immediately.
+   */
+  compositeScore: number;
+  /**
+   * DISTINCT admins backing this, across all periods. BREADTH, where priorityScore is
+   * INTENSITY — one admin spending 40 votes and forty spending one each are the same total and
+   * very different signals. Everyone who can vote is already a platform admin, so a distinct
+   * voter is a distinct admin.
+   */
+  voterCount: number;
+  /** Strategy goals the assessment judged this positively moves. */
+  goalsHelped: number;
+  /**
+   * Strategy goals this has any verdict for. Below `goalsTotal` means the assessment predates a
+   * goal being added — coverage divides by the live total either way, so such a row reads as
+   * lower-impact than it may be. Show it rather than hide it.
+   */
+  goalsAssessed: number;
+  /** Live strategy-goal count — the coverage denominator. Zero means no strategy is defined. */
+  goalsTotal: number;
   /** The CALLER's votes on this opportunity in the CURRENT period only. */
   myVotes: number;
   commentCount: number;
@@ -159,7 +204,15 @@ export interface RoadmapOpportunitiesQuery {
   releasedTo?: string;
   priorityMin?: number;
   priorityMax?: number;
-  sortBy?: "priority" | "createdAt" | "releasedAt" | "myVotes" | "description" | "plannedMonth";
+  sortBy?:
+    | "composite"
+    | "priority"
+    | "voters"
+    | "createdAt"
+    | "releasedAt"
+    | "myVotes"
+    | "description"
+    | "plannedMonth";
   order?: "ASC" | "DESC";
   limit?: number;
   offset?: number;
@@ -270,6 +323,51 @@ export interface RoadmapTaxonomyItem {
   position: number;
 }
 
+/**
+ * A product STRATEGY goal — an outcome the board is ranked against. Not to be confused with
+ * RoadmapTaxonomyItem used for product goals, which is the one-per-opportunity filing category.
+ */
+export interface RoadmapStrategyGoal {
+  id: string;
+  name: string;
+  position: number;
+  /**
+   * Rankable opportunities with no verdict against this goal yet. Non-zero means the board is
+   * ranking an incomplete numerator over a full denominator — scoring low for a reason that has
+   * nothing to do with the opportunities themselves.
+   */
+  unassessed: number;
+}
+
+export interface RoadmapStrategyGoalsResponse {
+  goals: RoadmapStrategyGoal[];
+  /** Rankable opportunities missing at least one verdict, across all goals. */
+  needingAssessment: number;
+}
+
+/** The four composite-rank factor weights. Normalised to sum 1 server-side. */
+export interface RoadmapRankWeights {
+  votesWeight: number;
+  votersWeight: number;
+  effortWeight: number;
+  goalImpactWeight: number;
+}
+
+/** One stored verdict, for the drawer breakdown. Machine-derived and read-only by design. */
+export interface RoadmapGoalImpactVerdict {
+  goalName: string;
+  helped: boolean;
+  reason: string | null;
+  assessedAt: string;
+}
+
+export interface RoadmapBulkAssessResult {
+  assessed: number;
+  failed: number;
+  /** Still missing at least one verdict. Non-zero means run it again. */
+  remaining: number;
+}
+
 export interface RoadmapComment {
   id: string;
   opportunityId: string;
@@ -350,7 +448,7 @@ export interface RoadmapListEnvelope<T> {
   count: number;
 }
 
-/** An Ally super-admin who may be assigned as an opportunity owner. */
+/** One of the named Ally accounts who may be assigned as an opportunity owner. */
 export interface RoadmapEligibleOwner {
   id: number;
   name: string;

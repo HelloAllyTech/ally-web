@@ -328,6 +328,7 @@ export const CharacterLibrary: React.FC = () => {
             tableData={tableData}
             onRowChange={canEdit ? handleUpdateCharacterTable : undefined}
             onRowClick={handleCharacterSelect}
+            rowClickTrigger="row"
             tableFooter={tableFooter}
             onSelectionChange={canDelete ? handleSelectionChange : undefined}
             hideSelectionColumn={!canDelete}

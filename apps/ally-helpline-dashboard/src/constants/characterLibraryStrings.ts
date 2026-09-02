@@ -10,6 +10,7 @@
 export const characterLibraryStrings = {
   characters: "Characters",
   createNewCharacter: "Create new character",
+  viewCharacter: "View character",
   createManually: "Create manually",
   createWithInterviewAgent: "Create with interview agent",
   characterCreatedSuccessfully: "Character created successfully",

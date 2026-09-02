@@ -293,6 +293,12 @@ export const ApiEndpoints = {
     OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
     OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
+    /**
+     * Presigns one reference-image upload. NOT under `/opportunities/:id`: the drawer uploads
+     * before the opportunity exists, and the image is attached by the create or update call
+     * that follows.
+     */
+    REFERENCE_IMAGE_UPLOAD_URL: "/v1/product-roadmap/reference-images/upload-url",
     OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
     COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
     BOARD: "/v1/product-roadmap/board",
@@ -304,6 +310,14 @@ export const ApiEndpoints = {
     PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
     PRODUCT_GOALS_ORDER: "/v1/product-roadmap/product-goals/order",
     PRODUCT_GOALS_USAGE: "/v1/product-roadmap/product-goals/usage",
+    // Product STRATEGY goals — the outcomes the composite rank scores against. A different
+    // concept from PRODUCT_GOALS above, which is the one-per-opportunity filing category.
+    STRATEGY_GOALS: "/v1/product-roadmap/strategy-goals",
+    STRATEGY_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/strategy-goals/${id}`,
+    STRATEGY_GOALS_ORDER: "/v1/product-roadmap/strategy-goals/order",
+    STRATEGY_GOALS_ASSESS_MISSING: "/v1/product-roadmap/strategy-goals/assess-missing",
+    RANK_WEIGHTS: "/v1/product-roadmap/rank-weights",
+    OPPORTUNITY_GOAL_IMPACT: (id: string) => `/v1/product-roadmap/opportunities/${id}/goal-impact`,
     OWNERS: "/v1/product-roadmap/opportunity-owners",
     OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
     OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
@@ -549,7 +563,18 @@ export const ApiEndpoints = {
     CURRENT_VERSION: "/v1/mobile-releases/current-version",
     TRIGGER: "/v1/mobile-releases/trigger",
     PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
-    PROMOTE_IOS_TESTFLIGHT: "/v1/mobile-releases/promote-ios-testflight",
+    ANDROID_PRODUCTION_STATUS: "/v1/mobile-releases/android-production-status",
+    IOS_TESTFLIGHT_STATUS: "/v1/mobile-releases/ios-testflight-status",
+    IOS_TESTFLIGHT_HISTORY: "/v1/mobile-releases/ios-testflight-history",
+    IOS_APP_STORE_REVIEW_HISTORY: "/v1/mobile-releases/ios-app-store-review-history",
+    SUBMIT_APP_STORE_REVIEW: "/v1/mobile-releases/submit-ios-app-store-review",
+    IOS_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/ios-whats-new-suggestion",
+    ANDROID_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/android-whats-new-suggestion",
+  },
+  APP_VERSION: {
+    IOS: "/v1/app-version/ios",
+    ANDROID: "/v1/app-version/android",
+    UPDATE: "/v1/app-version/app-version",
   },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
@@ -748,6 +773,9 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_VOTE_BUDGET: "productRoadmapVoteBudget",
   PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
   PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
+  PRODUCT_ROADMAP_STRATEGY_GOALS: "productRoadmapStrategyGoals",
+  PRODUCT_ROADMAP_RANK_WEIGHTS: "productRoadmapRankWeights",
+  PRODUCT_ROADMAP_GOAL_IMPACT: "productRoadmapGoalImpact",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
@@ -784,6 +812,10 @@ export const TAG_TYPES = {
   // Mobile Releases. Also registered in baseApi.ts's `tagTypes` — an
   // unregistered tag is silently ignored and its invalidation never fires.
   MOBILE_RELEASE_RUNS: "mobileReleaseRuns",
+  // Force-update minimum app version (ally-be's app-version module, not
+  // mobile-releases — shared with the same admin page though). Also
+  // registered in baseApi.ts's `tagTypes`, same caveat as above.
+  MIN_APP_VERSION: "minAppVersion",
 };
 
 /**
@@ -827,15 +859,15 @@ export enum TooltipLocation {
   // superadmins author the text and enable each under Manage Tooltips.
   SESSION_TIMER = "session_timer",
   SCORE = "score",
-  // Post-session feedback master switch (was "AI Feedback Summary" — the
-  // label changed but the slug stays put so any already-authored Manage
-  // Tooltips row keeps applying) plus its three per-tab sub-toggles, nested
-  // under it via dependsOn/visibleWhen in SimulationCreator.ts. Seeded blank
-  // + inactive; superadmins author the text and enable each under Manage
-  // Tooltips.
-  AI_FEEDBACK_SUMMARY = "ai_feedback_summary",
+  // The two post-session tab toggles. The `ai_feedback_summary` (master
+  // switch) and `feedback_tab_skills` slugs were dropped on 2026-08-31 when
+  // those controls were retired — any Manage Tooltips row a superadmin
+  // already authored against them is left in the DB rather than deleted: the
+  // Tooltips page lists rows from the DB, not from this enum, so the text
+  // stays visible and editable there, it simply no longer attaches to a
+  // control. Seeded blank + inactive; superadmins author the text and enable
+  // each under Manage Tooltips.
   FEEDBACK_TAB_DEBRIEF = "feedback_tab_debrief",
-  FEEDBACK_TAB_SKILLS = "feedback_tab_skills",
   FEEDBACK_TAB_TRANSCRIPT = "feedback_tab_transcript",
   ALLOW_PAUSE_RESUME = "allow_pause_resume",
   // Live supervisor notes: an AI supervisor watching the session sends the

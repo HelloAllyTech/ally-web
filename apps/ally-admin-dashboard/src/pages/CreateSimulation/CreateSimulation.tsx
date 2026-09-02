@@ -731,14 +731,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
             content: item.content,
           }))
         : [],
-      // Which post-session tabs this roleplay shows, nested under the
-      // enableFeedback master switch. Always send all three keys — a
-      // partial object could be misread by the backend resolver's per-key
-      // defaults (debrief/transcript on, skills off) for whichever key is
-      // missing. Sent regardless of enableFeedback's own value: turning the master
-      // switch off only hides these controls in the form, it doesn't clear
-      // their stored preference (see the field configs in
-      // SimulationCreator.ts), so re-enabling it later restores them as-is.
+      // Which post-session tabs this roleplay shows. Always send both keys —
+      // a partial object leans on the backend resolver's "absent means on"
+      // default for whichever key is missing, which is right for a legacy
+      // roleplay but wrong for a deliberate save. There is no master switch
+      // above these two any more (retired 2026-08-31); both off IS the
+      // wholesale opt-out.
       feedbackTabs: buildFeedbackTabsPayload(restForm),
       // Carry the draft's event mappings on the version config (only when
       // editing a version and the event table has provided them). The live
@@ -748,13 +746,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         : {}),
     };
 
-    // The three sub-toggles above are folded into feedbackTabs; drop their
-    // flat copies (added by extractValidData, which normalizes every
+    // The two toggles above are folded into feedbackTabs; drop their flat
+    // copies (added by extractValidData, which normalizes every
     // SIMULATION_CREATOR_FIELD_GROUPS field including these) so the payload
     // matches the backend contract exactly instead of also carrying loose
     // top-level booleans.
     delete (simulationData as any).feedbackTabDebrief;
-    delete (simulationData as any).feedbackTabSkills;
     delete (simulationData as any).feedbackTabTranscript;
 
     if (Array.isArray((simulationData as any).stateNames)) {

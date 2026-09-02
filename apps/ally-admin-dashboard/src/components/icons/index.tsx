@@ -389,6 +389,13 @@ export const BackArrowIcon = materialSymbol("arrow_back");
  * symbol again does not mean touching every call site.
  */
 export const BuilderAgentIcon = materialSymbol("auto_awesome");
+/**
+ * Product strategy and the composite ranking weights — "balance", for the trade-off the four
+ * factors are weighed against each other on. Deliberately NOT the flag GoalIcon uses: strategy
+ * goals and the filing categories are different concepts, and giving them the same glyph is how
+ * they get conflated.
+ */
+export const StrategyRankIcon = materialSymbol("balance");
 
 export const TooltipIcon = ({ className }: IconProps) => (
   <span

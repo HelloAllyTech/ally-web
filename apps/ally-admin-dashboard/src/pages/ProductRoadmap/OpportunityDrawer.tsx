@@ -14,6 +14,8 @@ import {
   useDeleteRoadmapOpportunityMutation,
   useUpdateRoadmapOpportunityMutation,
   useOpenRoadmapBuilderSessionMutation,
+  useGetRoadmapGoalImpactQuery,
+  useReassessRoadmapGoalImpactMutation,
 } from "@api";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -24,11 +26,15 @@ import {
   RoadmapOpportunityEffort,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
+  RoadmapReferenceImage,
   RoadmapTaxonomyItem,
 } from "@types";
 import { hasFeature } from "@utils";
 
+import { RankBreakdownPanel } from "./RankBreakdown";
+import { ReferenceImagesField } from "./ReferenceImagesField";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
+import { sameReferenceImages } from "./utils/referenceImages";
 import { EFFORT_LABEL, STAGE_LABEL } from "./utils/stages";
 
 const PRD_MAX = 20000;
@@ -120,6 +126,13 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     plannedMonth: "",
     /** A shirt size, or "" for unsized — the same ""-means-null shape plannedMonth uses. */
     effort: "",
+    /**
+     * Attached images. Part of the DRAFT rather than written straight through, so they ride the
+     * same debounce, the same dirty check and the same "Unsaved changes" line as every other
+     * field — an attachment that saved by its own path would be the one edit the status line
+     * lied about.
+     */
+    referenceImages: [] as RoadmapReferenceImage[],
   });
   const [commentBody, setCommentBody] = useState("");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -164,6 +177,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       claudePrompt: opportunity.claudePrompt ?? "",
       plannedMonth: opportunity.plannedMonth ?? "",
       effort: opportunity.effort ?? "",
+      // `?? []` for a row read from a cache written before the field existed.
+      referenceImages: opportunity.referenceImages ?? [],
     });
   }, [opportunity]);
 
@@ -196,6 +211,33 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
    * hosts the same drawer under the same `?bug=` param.
    */
   const isBug = opportunity?.type === RoadmapOpportunityType.BUG;
+
+  /**
+   * The per-goal verdicts behind the rank breakdown. Skipped for a bug — bugs are not on the
+   * board, so they have no rank to explain — and until the opportunity itself has loaded.
+   */
+  const { data: goalImpact, isLoading: isGoalImpactLoading } = useGetRoadmapGoalImpactQuery(
+    opportunityId,
+    { skip: !opportunity || isBug },
+  );
+  const [reassessGoalImpact, { isLoading: isReassessing }] = useReassessRoadmapGoalImpactMutation();
+
+  /**
+   * Re-run the assessment against the CURRENT description. This is the only correction path for
+   * a verdict somebody disagrees with — the verdicts are deliberately not editable, so the way
+   * to change one is to change the case the model is reading.
+   */
+  const handleReassess = useCallback(async () => {
+    try {
+      await reassessGoalImpact(opportunityId).unwrap();
+      toast.success("Reassessed against the current strategy.");
+    } catch (error) {
+      toast.error(
+        (error as { data?: { message?: string } })?.data?.message ??
+          "Could not reassess this opportunity.",
+      );
+    }
+  }, [opportunityId, reassessGoalImpact]);
   const { data: bugRef, isFetching: isResolvingBug } = useGetBugFindingByReportedBugQuery(
     opportunityId,
     { skip: !isBug },
@@ -234,7 +276,11 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       draft.prd !== (opportunity.prd ?? "") ||
       draft.claudePrompt !== (opportunity.claudePrompt ?? "") ||
       draft.plannedMonth !== (opportunity.plannedMonth ?? "") ||
-      draft.effort !== (opportunity.effort ?? ""));
+      draft.effort !== (opportunity.effort ?? "") ||
+      // By VALUE, not identity. Every keystroke in a caption rebuilds the array, so an identity
+      // check would leave this drawer permanently dirty and re-arm the autosave every 800ms for
+      // as long as it stayed open — see sameReferenceImages.
+      !sameReferenceImages(draft.referenceImages, opportunity.referenceImages ?? []));
 
   /**
    * Soft-delete. The backend also returns every contributor's votes to them, soft-deletes the
@@ -288,7 +334,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           stage: draft.stage,
           productGoal: draft.productGoal,
           // null un-assigns. The legacy free-text `owner` is no longer writable — an owner must be
-          // a super-admin user, and the backend answers 422 for anyone else.
+          // one of the named accounts the picker lists, and the backend answers 422 for anyone
+          // else it has not already got on the row.
           ownerUserId: draft.ownerUserId ? Number(draft.ownerUserId) : null,
           prd: draft.prd || null,
           claudePrompt: draft.claudePrompt || null,
@@ -298,6 +345,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           // "" is the Not-sized option and must send null, the same way plannedMonth's
           // Unscheduled does — the column is nullable and "" would fail the enum check.
           effort: (draft.effort || null) as RoadmapOpportunityEffort | null,
+          // The full resulting list, which is what the API takes — `[]` clears them.
+          referenceImages: draft.referenceImages,
         },
       }).unwrap();
       setHasSavedOnce(true);
@@ -372,16 +421,27 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     ],
     [],
   );
-  const ownerItems = useMemo(
-    () => [
+  const ownerItems = useMemo(() => {
+    const items = [
       { value: "", label: "Unassigned" },
       ...(eligibleOwners ?? []).map(owner => ({
         value: String(owner.id),
         label: owner.name || owner.email,
       })),
-    ],
-    [eligibleOwners],
-  );
+    ];
+    // The picker lists a short, named set of owners, so a row assigned before someone left that
+    // set has an owner with no matching option — and a Dropdown with no match renders its
+    // "Unassigned" placeholder, which reads as data loss over a name the board still shows.
+    // Keep the current owner visible and re-selectable; the backend only re-validates a CHANGE.
+    const currentOwnerId = opportunity?.ownerUserId;
+    if (currentOwnerId && !items.some(item => item.value === String(currentOwnerId))) {
+      items.push({
+        value: String(currentOwnerId),
+        label: `${opportunity?.owner ?? "Unknown user"} (current owner)`,
+      });
+    }
+    return items;
+  }, [eligibleOwners, opportunity?.ownerUserId, opportunity?.owner]);
 
   /**
    * The Builder trigger's one string: what it does, what it will do, or why it cannot.
@@ -757,10 +817,48 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               {!opportunity.ownerUserId && opportunity.owner && (
                 <p className="text-typography-secondary text-xs">
                   Currently <strong>{opportunity.owner}</strong>, migrated from the old roadmap and
-                  not yet linked to an Ally account. Pick a super-admin above to link it.
+                  not yet linked to an Ally account. Pick an owner above to link it.
                 </p>
               )}
             </div>
+
+            {/*
+              Why the rank breakdown sits HERE, under the fields it is computed from, rather than
+              beside the vote total in the header: two of its four factors (effort, and the
+              description the goal assessment reads) are edited on this screen, so the score and
+              the things that move it belong in one place. The header line stays the raw vote
+              count — the fact people came for — and this is the explanation.
+
+              Bugs are excluded, like every other ranking surface: they are not on the board.
+            */}
+            {!isBug && (
+              <div className="border-border-light flex flex-col gap-2 border-t pt-4">
+                <h3 className="text-typography-primary text-sm">Why it ranks here</h3>
+                <RankBreakdownPanel
+                  opportunity={opportunity}
+                  verdicts={goalImpact}
+                  isLoadingVerdicts={isGoalImpactLoading}
+                  canManage={canManage}
+                  isReassessing={isReassessing}
+                  onReassess={handleReassess}
+                />
+              </div>
+            )}
+
+            {/* Reference images.
+
+                Between the ranking panel and Notes: they are part of what the opportunity SAYS,
+                so they sit with the description's neighbours rather than under the comments where
+                a reader would find them only after deciding.
+
+                `canEdit={canManage}` matches every other field here — editing is manage-gated,
+                and a viewer gets the same thumbnails with no controls rather than an empty
+                section. Removing one from this list never deletes the uploaded file. */}
+            <ReferenceImagesField
+              images={draft.referenceImages}
+              onChange={referenceImages => setDraft(prev => ({ ...prev, referenceImages }))}
+              canEdit={canManage}
+            />
 
             {/* Labelled "Notes", but the column, the constant and the agent payload are all still
                 `prd` — this renames what a reader sees, not the field. The old label leaked an

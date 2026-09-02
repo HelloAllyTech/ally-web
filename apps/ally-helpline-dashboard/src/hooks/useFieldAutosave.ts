@@ -97,6 +97,8 @@ export function useFieldAutosave({
   onPersistRef.current = onPersist;
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
+  const delayMsRef = useRef(delayMs);
+  delayMsRef.current = delayMs;
 
   const hasPendingEdits = useCallback(() => !isEmpty(pendingRef.current), []);
   const getPending = useCallback(() => clone(pendingRef.current), []);
@@ -139,8 +141,19 @@ export function useFieldAutosave({
         setSaveState(isEmpty(pendingRef.current) ? "saved" : "saving");
       } catch {
         // Keep the edits pending so the next flush retries them, and let the
-        // caller surface the failure rather than pretending it saved.
+        // caller surface the failure rather than pretending it saved. The
+        // status label promises "we'll keep trying", so that has to be true
+        // even when nothing edits the form again afterwards — dictated fields
+        // are filled and flushed once, with no further keystrokes to trigger
+        // a retry naturally.
         setSaveState("error");
+        if (enabledRef.current) {
+          clearTimer();
+          timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            void write().catch(() => {});
+          }, delayMsRef.current);
+        }
         throw new Error("autosave failed");
       }
     })();

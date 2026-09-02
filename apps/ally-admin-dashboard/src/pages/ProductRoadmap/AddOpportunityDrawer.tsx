@@ -18,9 +18,11 @@ import {
   RoadmapOpportunityEffort,
   RoadmapOpportunityType,
   RoadmapReadinessResult,
+  RoadmapReferenceImage,
   RoadmapTaxonomyItem,
 } from "@types";
 
+import { ReferenceImagesField } from "./ReferenceImagesField";
 import { EFFORT_LABEL } from "./utils/stages";
 
 const DESCRIPTION_MAX = 1000;
@@ -164,6 +166,16 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
   /** "" is Unassigned, which is where every filing starts and a perfectly good end state. */
   const [ownerUserId, setOwnerUserId] = useState<string>("");
   /**
+   * Images uploaded for a row that does not exist yet.
+   *
+   * They are already in S3 by the time they land here — only the attachment waits for Save — so
+   * closing the drawer without filing leaves objects nothing points at rather than losing
+   * anything. Deliberately NOT part of the readiness gate: a picture is not one of the five
+   * things the check grades, and requiring one would make the gate refuse perfectly clear
+   * opportunities about things that are not visual.
+   */
+  const [referenceImages, setReferenceImages] = useState<RoadmapReferenceImage[]>([]);
+  /**
    * The rewrite the last check proposed, or null when it had nothing to fix. Rendered only
    * while `hasChecked`, so an edit hides it without any clearing of its own: it describes the
    * text that was graded, exactly like the verdicts do.
@@ -300,6 +312,9 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
         // theirs to send at all, and an explicit null from them would be a 403 waiting to
         // happen the day the backend stops treating null as "nothing to assign".
         ...(canManage ? { ownerUserId: ownerUserId ? Number(ownerUserId) : null } : {}),
+        // Sent even when empty. `[]` and omitted mean the same thing on create, and sending the
+        // field unconditionally keeps this call's shape independent of what the user did.
+        referenceImages,
       }).unwrap();
       toast.success("Opportunity filed.");
       onClose();
@@ -491,6 +506,14 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
               </p>
             )}
           </div>
+
+          {/* Reference images.
+
+              Above the checklist with the other inputs, not below it with the verdicts: this is
+              something you fill IN, and the section under it is the reading of what you filled in.
+              Optional and ungated — see the state declaration for why the readiness check has
+              nothing to say about a picture. */}
+          <ReferenceImagesField images={referenceImages} onChange={setReferenceImages} canEdit />
 
           {/* Owner, for a filer who can also manage the board.
 

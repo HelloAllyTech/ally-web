@@ -142,9 +142,16 @@ describe("normaliseSortField", () => {
     }
   });
 
-  it("defaults to priority when the field is missing", () => {
-    expect(normaliseSortField(undefined)).toBe("priority");
-    expect(normaliseSortField("")).toBe("priority");
+  it("defaults to the composite rank when the field is missing", () => {
+    expect(normaliseSortField(undefined)).toBe("composite");
+    expect(normaliseSortField("")).toBe("composite");
+  });
+
+  it("leaves an explicitly-saved vote sort alone", () => {
+    // A saved view records what its author chose to look at. Silently upgrading it to the new
+    // default would change what an existing view shows without anyone touching it.
+    expect(normaliseSortField("priority")).toBe("priority");
+    expect(normaliseSortField("score")).toBe("priority");
   });
 });
 

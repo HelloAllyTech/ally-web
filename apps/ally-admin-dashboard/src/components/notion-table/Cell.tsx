@@ -53,6 +53,33 @@ const VERBATIM_TEXT_COLUMN_IDS = new Set([
   "runtimeSupport",
 ]);
 
+/** Read-only rendering of a dropdown cell's resolved label, wrapped instead of truncated. */
+const DropdownDisplayText = ({
+  value,
+  options,
+}: {
+  value: string;
+  options?: Array<{ label: string; value: string }>;
+}) => {
+  const matchedOption = options?.find(option => option.value === value);
+  const label = matchedOption?.label ?? value;
+
+  return (
+    <span className={`break-words ${label ? "" : "text-typography-500"}`}>{label || "--"}</span>
+  );
+};
+
+/** Read-only rendering of a number cell's value, plain text instead of a disabled input. */
+const NumberDisplayText = ({ value }: { value: number | string | null | undefined }) => {
+  const hasValue = value !== undefined && value !== null && value !== "";
+
+  return (
+    <span className={`break-words ${hasValue ? "" : "text-typography-500"}`}>
+      {hasValue ? value : "--"}
+    </span>
+  );
+};
+
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
@@ -178,27 +205,21 @@ export const Cell = ({
     case cellTypes.normalText:
       if (id === "location" && row?.locationSlug) {
         element = (
-          <div className="flex flex-col overflow-hidden">
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{value.value}</span>
-            <span className="text-xs text-typography-500 overflow-hidden text-ellipsis whitespace-nowrap">
-              {row.locationSlug}
-            </span>
+          <div className="flex flex-col">
+            <span className="break-words">{value.value}</span>
+            <span className="text-xs text-typography-500 break-words">{row.locationSlug}</span>
           </div>
         );
       } else {
         element = (
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="break-words">
             {VERBATIM_TEXT_COLUMN_IDS.has(id) ? value.value : formatCapitalizedEnum(value.value)}
           </span>
         );
       }
       break;
     case cellTypes.wrapText:
-      element = (
-        <span className="block overflow-hidden text-ellipsis line-clamp-2 break-words">
-          {value.value ?? ""}
-        </span>
-      );
+      element = <span className="block break-words line-clamp-4">{value.value ?? ""}</span>;
       break;
     case cellTypes.image:
       element = (
@@ -225,7 +246,13 @@ export const Cell = ({
       );
       break;
     case cellTypes.dropdownSearchable:
-      element = (
+      // A disabled dropdown can never open, so its native <button> is dead
+      // weight — worse, a disabled button swallows clicks instead of letting
+      // them bubble, which breaks a row-click affordance on a read-only table.
+      // Render the resolved label as plain text instead.
+      element = isDisabled ? (
+        <DropdownDisplayText value={value.value} options={options} />
+      ) : (
         <TextDropdown
           value={value.value}
           options={options}
@@ -233,12 +260,14 @@ export const Cell = ({
           placeholder={"Select an option"}
           searchPlaceholder="Search options..."
           isSearchable={true}
-          disabled={isDisabled || value.value?.length > 0}
+          disabled={value.value?.length > 0}
         />
       );
       break;
     case cellTypes.dropdown:
-      element = (
+      element = isDisabled ? (
+        <DropdownDisplayText value={value.value} options={initialValue?.options ?? options} />
+      ) : (
         <TextDropdown
           value={value.value}
           // Cell-level options win over the column's, so a table can vary the
@@ -247,12 +276,17 @@ export const Cell = ({
           options={initialValue?.options ?? options}
           onChange={updateCellValue}
           placeholder={"Select an option"}
-          disabled={isDisabled}
         />
       );
       break;
     case cellTypes.number:
-      element = (
+      // A disabled number input can never be edited, and browsers never
+      // dispatch clicks to disabled form controls, so it swallows the
+      // row-click affordance on a read-only table. Render plain text instead,
+      // matching the dropdown branches above.
+      element = isDisabled ? (
+        <NumberDisplayText value={value.value} />
+      ) : (
         <NumberInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
       );
       break;
