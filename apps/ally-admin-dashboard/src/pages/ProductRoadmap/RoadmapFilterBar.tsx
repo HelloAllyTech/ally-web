@@ -21,6 +21,7 @@ import {
   countActiveRangeFilters,
 } from "./utils/filters";
 import {
+  FacetPresentationOpts,
   RoadmapFacetSelection,
   RoadmapFacetState,
   buildFacetSections,
@@ -61,12 +62,22 @@ export interface RoadmapFilterBarProps {
    */
   leading?: React.ReactNode;
   /**
-   * Whether the filter controls are offered at all. False for the Queue view, whose whole
-   * definition IS its filters (New + Prioritised + In development, as a list) — offering Filter,
-   * Dates & score and Clear all there would let someone edit a tab into something that is no
-   * longer a queue. Search stays: narrowing a fixed list is still a reasonable thing to do.
+   * Whether the filter controls are offered at all. Nowadays only ever true — the Queue used to
+   * pass false on the argument that its whole definition IS its filters, but that conflated the
+   * one filter that defines it (stage) with the cuts people want while working through it
+   * (goal, owner, source, dates…). The Queue now shows the full controls with `stageLocked`
+   * carrying the part of that argument that was right. Kept as a prop because the reasoning is
+   * a policy of the CALLER's view, not of this bar.
    */
   showFilters?: boolean;
+  /**
+   * Treat stage as the view's definition rather than as a filter: the popover does not offer it,
+   * no chip describes it, the badge does not count it and "Clear all" leaves it alone. True on
+   * the Queue, whose stage set (New + Prioritised + In development) is what MAKES it the Queue —
+   * an offered-then-cleared stage facet there would edit the tab into something that is no
+   * longer a queue, which is the exact failure hiding the whole bar used to guard against.
+   */
+  stageLocked?: boolean;
 }
 
 /** Whether any filter at all is applied, including the ones inside the collapsed panel. */
@@ -75,9 +86,12 @@ export const hasActiveFilters = (
     RoadmapFilterBarProps,
     "typeFilter" | "stageFilter" | "sourceFilter" | "goalFilter" | "ownerFilter" | "advanced"
   >,
+  opts?: FacetPresentationOpts,
 ): boolean =>
   props.typeFilter.length +
-    props.stageFilter.length +
+    // A locked stage is the view's definition, not a filter — counting it would make the Queue
+    // report "filters applied" forever, turning its true empty state into "no matches".
+    (opts?.omitStage ? 0 : props.stageFilter.length) +
     props.sourceFilter.length +
     props.goalFilter.length +
     props.ownerFilter.length +
@@ -134,7 +148,10 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     trailing,
     leading,
     showFilters = true,
+    stageLocked = false,
   } = props;
+
+  const facetOpts: FacetPresentationOpts = { omitStage: stageLocked };
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const rangeCount = countActiveRangeFilters(advanced);
@@ -156,8 +173,8 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     createdBy: advanced.createdBy,
   };
 
-  const chips = describeActiveFacets(facetState, facets);
-  const facetCount = countActiveFacets(facetState);
+  const chips = describeActiveFacets(facetState, facets, facetOpts);
+  const facetCount = countActiveFacets(facetState, facetOpts);
 
   /** Outlined when the control is open or carrying something, muted when it is neither. */
   const chipClass = (isActive: boolean) =>
@@ -248,12 +265,14 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
             </span>
           ))}
 
-          {hasActiveFilters(props) && (
+          {hasActiveFilters(props, facetOpts) && (
             <Button
               variant={ButtonVariant.TEXT}
               onClick={() => {
                 onTypeFilterChange([]);
-                onStageFilterChange([]);
+                // A locked stage is not one of the filters being cleared — emptying it on the
+                // Queue would turn the tab into an all-stages list. See the stageLocked docblock.
+                if (!stageLocked) onStageFilterChange([]);
                 onSourceFilterChange([]);
                 onGoalFilterChange([]);
                 onOwnerFilterChange([]);
@@ -294,7 +313,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
       <FilterDropdown<RoadmapFacetSelection>
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        sections={buildFacetSections(goals, facets)}
+        sections={buildFacetSections(goals, facets, facetOpts)}
         currentFilters={toFacetSelection(facetState)}
         onApplyFilters={selection =>
           applyFacetState(

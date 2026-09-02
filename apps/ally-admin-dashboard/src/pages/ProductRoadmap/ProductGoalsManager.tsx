@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { toast } from "sonner";
 
-import { ComposedModal, ModalBody, SkeletonText, TextInput } from "@ally-ui-mono/ui-shared";
+import { SkeletonText, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useCreateRoadmapProductGoalMutation,
   useDeleteRoadmapProductGoalMutation,
@@ -16,7 +16,6 @@ import { RoadmapTaxonomyItem } from "@types";
 interface ProductGoalsManagerProps {
   goals: RoadmapTaxonomyItem[];
   isLoading?: boolean;
-  onClose: () => void;
 }
 
 /**
@@ -32,12 +31,13 @@ interface ProductGoalsManagerProps {
  * propagates to every opportunity automatically — and saved views, which store goal NAMES, keep
  * working. A delete un-assigns instead, so the usage count is shown before confirming and the
  * confirmation says what will happen to those rows.
+ *
+ * A PANEL, NOT A MODAL. This owned a ComposedModal and a "Done" button until the three admin jobs
+ * moved behind one gear; RoadmapSettingsDrawer supplies the heading, the width and the single
+ * Close, so there is nothing here to dismiss. The "Product goals" tab label is the heading now,
+ * which is why the h2 that used to sit above this copy is gone rather than repeated.
  */
-export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({
-  goals,
-  isLoading,
-  onClose,
-}) => {
+export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({ goals, isLoading }) => {
   const { data: usage, isLoading: isUsageLoading } = useGetRoadmapProductGoalUsageQuery();
   const [createGoal, { isLoading: isCreating }] = useCreateRoadmapProductGoalMutation();
   const [renameGoal] = useRenameRoadmapProductGoalMutation();
@@ -88,140 +88,121 @@ export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({
   };
 
   return (
-    <ComposedModal open onClose={onClose} size="md">
-      <ModalBody>
-        <div className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-typography-primary text-xl">Product goals</h2>
-            <p className="text-typography-secondary mt-1 text-sm">
-              Renaming a goal updates every opportunity using it, and keeps saved views working.
-              Deleting one leaves those opportunities with no goal.
-            </p>
-          </div>
+    <div className="flex flex-col gap-4">
+      <p className="text-typography-secondary text-sm">
+        Renaming a goal updates every opportunity using it, and keeps saved views working. Deleting
+        one leaves those opportunities with no goal.
+      </p>
 
-          <div className="flex items-end gap-2">
-            <div className="grow">
-              <TextInput
-                id="new-product-goal"
-                labelText="Add a goal"
-                placeholder="e.g. Scribe accuracy"
-                value={newName}
-                onChange={event => setNewName(event.target.value)}
-                onKeyDown={event => {
-                  if (event.key === "Enter") add();
-                }}
-              />
-            </div>
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={add}
-              disabled={!newName.trim() || isCreating}
-            >
-              Add
+      <div className="flex items-end gap-2">
+        <div className="grow">
+          <TextInput
+            id="new-product-goal"
+            labelText="Add a goal"
+            placeholder="e.g. Scribe accuracy"
+            value={newName}
+            onChange={event => setNewName(event.target.value)}
+            onKeyDown={event => {
+              if (event.key === "Enter") add();
+            }}
+          />
+        </div>
+        <Button
+          variant={ButtonVariant.PRIMARY}
+          onClick={add}
+          disabled={!newName.trim() || isCreating}
+        >
+          Add
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <SkeletonText paragraph lineCount={4} />
+      ) : goals.length === 0 ? (
+        <p className="text-typography-secondary text-sm">
+          No goals yet. Add one above before filing opportunities against it.
+        </p>
+      ) : (
+        <ul className="flex flex-col">
+          {goals.map(goal => {
+            const inUse = usage?.[goal.name] ?? 0;
+            const isEditing = editingId === goal.id;
+
+            return (
+              <li
+                key={goal.id}
+                className="border-border-light flex items-center gap-2 border-b py-2"
+              >
+                {isEditing ? (
+                  <>
+                    <div className="grow">
+                      <TextInput
+                        id={`goal-${goal.id}`}
+                        labelText="Goal name"
+                        hideLabel
+                        value={editingName}
+                        autoFocus
+                        onChange={event => setEditingName(event.target.value)}
+                        onKeyDown={event => {
+                          if (event.key === "Enter") commitRename(goal);
+                          if (event.key === "Escape") setEditingId(null);
+                        }}
+                      />
+                    </div>
+                    <Button variant={ButtonVariant.PRIMARY} onClick={() => commitRename(goal)}>
+                      Save
+                    </Button>
+                    <Button variant={ButtonVariant.SECONDARY} onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-typography-primary grow">{goal.name}</span>
+                    <span className="text-typography-secondary shrink-0 text-xs">
+                      {isUsageLoading ? "…" : `${inUse} opportunit${inUse === 1 ? "y" : "ies"}`}
+                    </span>
+                    <Button
+                      variant={ButtonVariant.TEXT}
+                      onClick={() => {
+                        setEditingId(goal.id);
+                        setEditingName(goal.name);
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button variant={ButtonVariant.TEXT} onClick={() => setConfirmingDelete(goal)}>
+                      Delete
+                    </Button>
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* Confirmation states the consequence with the real number rather than asking "are you
+          sure?" — deleting a goal that 276 opportunities use is a very different action from
+          deleting an unused one. */}
+      {confirmingDelete && (
+        <div className="border-destructive-500 flex flex-col gap-2 border p-3">
+          <p className="text-typography-primary text-sm">
+            Delete <strong>{confirmingDelete.name}</strong>?{" "}
+            {(usage?.[confirmingDelete.name] ?? 0) > 0
+              ? `${usage?.[confirmingDelete.name]} opportunities will be left with no product goal.`
+              : "No opportunities are using it."}
+          </p>
+          <div className="flex gap-2">
+            <Button variant={ButtonVariant.PRIMARY} onClick={() => remove(confirmingDelete)}>
+              Delete it
             </Button>
-          </div>
-
-          {isLoading ? (
-            <SkeletonText paragraph lineCount={4} />
-          ) : goals.length === 0 ? (
-            <p className="text-typography-secondary text-sm">
-              No goals yet. Add one above before filing opportunities against it.
-            </p>
-          ) : (
-            <ul className="flex flex-col">
-              {goals.map(goal => {
-                const inUse = usage?.[goal.name] ?? 0;
-                const isEditing = editingId === goal.id;
-
-                return (
-                  <li
-                    key={goal.id}
-                    className="border-border-light flex items-center gap-2 border-b py-2"
-                  >
-                    {isEditing ? (
-                      <>
-                        <div className="grow">
-                          <TextInput
-                            id={`goal-${goal.id}`}
-                            labelText="Goal name"
-                            hideLabel
-                            value={editingName}
-                            autoFocus
-                            onChange={event => setEditingName(event.target.value)}
-                            onKeyDown={event => {
-                              if (event.key === "Enter") commitRename(goal);
-                              if (event.key === "Escape") setEditingId(null);
-                            }}
-                          />
-                        </div>
-                        <Button variant={ButtonVariant.PRIMARY} onClick={() => commitRename(goal)}>
-                          Save
-                        </Button>
-                        <Button
-                          variant={ButtonVariant.SECONDARY}
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-typography-primary grow">{goal.name}</span>
-                        <span className="text-typography-secondary shrink-0 text-xs">
-                          {isUsageLoading ? "…" : `${inUse} opportunit${inUse === 1 ? "y" : "ies"}`}
-                        </span>
-                        <Button
-                          variant={ButtonVariant.TEXT}
-                          onClick={() => {
-                            setEditingId(goal.id);
-                            setEditingName(goal.name);
-                          }}
-                        >
-                          Rename
-                        </Button>
-                        <Button
-                          variant={ButtonVariant.TEXT}
-                          onClick={() => setConfirmingDelete(goal)}
-                        >
-                          Delete
-                        </Button>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {/* Confirmation states the consequence with the real number rather than asking "are you
-              sure?" — deleting a goal that 276 opportunities use is a very different action from
-              deleting an unused one. */}
-          {confirmingDelete && (
-            <div className="border-destructive-500 flex flex-col gap-2 border p-3">
-              <p className="text-typography-primary text-sm">
-                Delete <strong>{confirmingDelete.name}</strong>?{" "}
-                {(usage?.[confirmingDelete.name] ?? 0) > 0
-                  ? `${usage?.[confirmingDelete.name]} opportunities will be left with no product goal.`
-                  : "No opportunities are using it."}
-              </p>
-              <div className="flex gap-2">
-                <Button variant={ButtonVariant.PRIMARY} onClick={() => remove(confirmingDelete)}>
-                  Delete it
-                </Button>
-                <Button variant={ButtonVariant.SECONDARY} onClick={() => setConfirmingDelete(null)}>
-                  Keep it
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end">
-            <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
-              Done
+            <Button variant={ButtonVariant.SECONDARY} onClick={() => setConfirmingDelete(null)}>
+              Keep it
             </Button>
           </div>
         </div>
-      </ModalBody>
-    </ComposedModal>
+      )}
+    </div>
   );
 };

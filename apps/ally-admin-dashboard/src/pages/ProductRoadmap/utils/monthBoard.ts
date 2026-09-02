@@ -9,7 +9,7 @@
  * a window is a string comparison.
  */
 
-import { RoadmapBoardGroupBy } from "@types";
+import { RoadmapBoardGroupBy, RoadmapUserRef } from "@types";
 
 import { stageLabel } from "./stages";
 
@@ -197,10 +197,24 @@ export const isDraggable = (opportunity: { monthPinned?: boolean }): boolean =>
  * missing — "Unscheduled" and "No owner" are different facts and a shared "None" would say
  * neither.
  */
-export const laneLabel = (key: string | null, groupBy: RoadmapBoardGroupBy): string => {
+export const laneLabel = (
+  key: string | null,
+  groupBy: RoadmapBoardGroupBy,
+  /** Resolves a filed-by lane's user-id key to a name. Only that grouping reads it. */
+  creators?: RoadmapUserRef[],
+): string => {
   if (groupBy === RoadmapBoardGroupBy.MONTH) return monthLabel(key);
   if (key === null) {
     return groupBy === RoadmapBoardGroupBy.OWNER ? "No owner" : "No goal";
+  }
+  if (groupBy === RoadmapBoardGroupBy.CREATED_BY) {
+    const creator = creators?.find(c => String(c.id) === key);
+    // name || email, NOT name ?? email: seeded and SSO-provisioned accounts carry an EMPTY
+    // name, and `??` would keep the blank and leave the lane unlabelled. Email is how a user
+    // with no display name is shown across the rest of the admin. The raw id is the last
+    // resort — while facets are still loading a lane must stay tellable from its neighbours,
+    // not collapse to blank.
+    return creator ? creator.name || creator.email : key;
   }
   return groupBy === RoadmapBoardGroupBy.STAGE ? stageLabel(key) : key;
 };
@@ -214,3 +228,13 @@ export const laneLabel = (key: string | null, groupBy: RoadmapBoardGroupBy): str
  */
 export const laneSupportsReordering = (groupBy: RoadmapBoardGroupBy): boolean =>
   groupBy === RoadmapBoardGroupBy.MONTH;
+
+/**
+ * Whether cards can be dragged BETWEEN lanes at all.
+ *
+ * Every grouping's lane is a writable column except filed-by: who filed an opportunity is a
+ * historical fact, and ally-be refuses the move with a 422. Gating the drag here means the board
+ * never offers a gesture the server is guaranteed to bounce.
+ */
+export const laneSupportsMoving = (groupBy: RoadmapBoardGroupBy): boolean =>
+  groupBy !== RoadmapBoardGroupBy.CREATED_BY;

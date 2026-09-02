@@ -111,6 +111,20 @@ export const mergeFacetSelection = (
 };
 
 /**
+ * Presentation switches shared by the section builder, the chip describer and the group count.
+ *
+ * `omitStage` exists for the Queue, whose stage set (New + Prioritised + In development) is the
+ * view's DEFINITION rather than a filter someone applied: offering the stage facet there would
+ * let a reader edit the Queue into something that is no longer a queue, and describing it as a
+ * chip would render a permanent "Stage: …" with a clear button that does exactly that. One flag
+ * feeds all three helpers so the popover, the chips and the badge cannot disagree about whether
+ * stage is a filter.
+ */
+export interface FacetPresentationOpts {
+  omitStage?: boolean;
+}
+
+/**
  * The popover's sections, in the order they are read.
  *
  * Type/Stage/Source come from enums so they are always offered. Goal, Owner and Filed-by are
@@ -124,6 +138,7 @@ export const mergeFacetSelection = (
 export const buildFacetSections = (
   goals: RoadmapTaxonomyItem[],
   facets?: RoadmapFacets,
+  opts?: FacetPresentationOpts,
 ): RoadmapFacetSection[] => {
   const sections: RoadmapFacetSection[] = [
     // No "Type" facet. It offered Idea and Bug, and bugs are no longer listed on
@@ -134,14 +149,18 @@ export const buildFacetSections = (
     // `typeFilter` itself survives in RoadmapViewState because saved views
     // migrated from the standalone app carry it; normaliseTypeFilter in views.ts
     // strips 'bug' on read so such a view shows the board rather than nothing.
-    {
-      id: "stage",
-      label: "Stage",
-      options: Object.values(RoadmapOpportunityStage).map(value => ({
-        label: STAGE_LABEL[value] ?? value,
-        value,
-      })),
-    },
+    ...(opts?.omitStage
+      ? []
+      : [
+          {
+            id: "stage" as const,
+            label: "Stage",
+            options: Object.values(RoadmapOpportunityStage).map(value => ({
+              label: STAGE_LABEL[value] ?? value,
+              value,
+            })),
+          },
+        ]),
     {
       id: "source",
       label: "Source",
@@ -207,6 +226,7 @@ export interface RoadmapFilterChip {
 export const describeActiveFacets = (
   state: RoadmapFacetState,
   facets?: RoadmapFacets,
+  opts?: FacetPresentationOpts,
 ): RoadmapFilterChip[] => {
   const creatorName = (id: number): string => {
     const match = facets?.creators?.find(creator => creator.id === id);
@@ -230,7 +250,7 @@ export const describeActiveFacets = (
     { id: "createdBy", label: "Filed by", values: state.createdBy.map(creatorName) },
   ];
 
-  return chips.filter(chip => chip.values.length > 0);
+  return chips.filter(chip => chip.values.length > 0 && !(opts?.omitStage && chip.id === "stage"));
 };
 
 /**
@@ -239,5 +259,5 @@ export const describeActiveFacets = (
  * Groups, not values: someone who ticked three owners has applied one filter ("owner is one of
  * these three"), and reporting "3" would suggest three independent narrowings.
  */
-export const countActiveFacets = (state: RoadmapFacetState): number =>
-  describeActiveFacets(state).length;
+export const countActiveFacets = (state: RoadmapFacetState, opts?: FacetPresentationOpts): number =>
+  describeActiveFacets(state, undefined, opts).length;

@@ -19,7 +19,6 @@ import {
   RoadmapFacets,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
-  RoadmapOpportunity,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
@@ -32,8 +31,6 @@ import { RoadmapAdvancedFilterValues } from "./utils/filters";
 import { pageRange } from "./utils/paging";
 import {
   isConsumerSourced,
-  isReshapeableStage,
-  reshapeBlockedReason,
   SOURCE_BADGE_STYLE,
   SOURCE_LABEL,
   STAGE_LABEL,
@@ -75,8 +72,6 @@ interface OpportunitiesBoardProps {
   onAddClick: () => void;
   /** False on the Queue view, whose filters are its definition. Threaded to RoadmapFilterBar. */
   showFilters?: boolean;
-  /** Merge selection, manager-only. Lifted so the bar can live outside the table. */
-  onSplit: (opportunity: RoadmapOpportunity) => void;
   /** Offset pagination. `offset` is the same value carried in `listArgs`. */
   offset: number;
   pageSize: number;
@@ -130,7 +125,6 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onOpenOpportunity,
   onAddClick,
   showFilters,
-  onSplit,
   offset,
   pageSize,
   onOffsetChange,
@@ -241,7 +235,6 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                 <SortHeader field="createdAt" className="w-28">
                   Filed
                 </SortHeader>
-                {canManage && <TableHeader className="w-16" aria-label="Actions" />}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -331,31 +324,6 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   <TableCell className="text-typography-secondary font-mono text-xs">
                     {new Date(opportunity.createdAt).toISOString().slice(0, 10)}
                   </TableCell>
-
-                  {canManage && (
-                    <TableCell onClick={event => event.stopPropagation()}>
-                      {/*
-                        Disabled rather than hidden: a manager who splits things every week and
-                        finds the button simply gone on one row has to guess whether it is the
-                        row, their permissions, or a bug. The reason is on the control.
-                      */}
-                      <span
-                        title={
-                          isReshapeableStage(opportunity.stage)
-                            ? undefined
-                            : reshapeBlockedReason(opportunity.stage)
-                        }
-                      >
-                        <Button
-                          variant={ButtonVariant.TEXT}
-                          disabled={!isReshapeableStage(opportunity.stage)}
-                          onClick={() => onSplit(opportunity)}
-                        >
-                          Split
-                        </Button>
-                      </span>
-                    </TableCell>
-                  )}
                 </TableRow>
               ))}
             </TableBody>

@@ -15,7 +15,9 @@ const configPath = path.join(repoRoot, "eslint.config.mjs");
 const filesToCheck = [
   "apps/ally-admin-dashboard/src/pages/ProductRoadmap/RoadmapFilterBar.tsx",
   "apps/ally-admin-dashboard/src/pages/ProductRoadmap/ProductRoadmap.tsx",
-  "apps/ally-admin-dashboard/src/pages/ProductRoadmap/MergeDrawer.tsx",
+  "apps/ally-admin-dashboard/src/pages/ProductRoadmap/MergeOpportunitiesPanel.tsx",
+  "apps/ally-admin-dashboard/src/pages/ProductRoadmap/RoadmapSettingsDrawer.tsx",
+  "apps/ally-admin-dashboard/src/pages/ProductRoadmap/RoadmapSortControl.tsx",
   "apps/ally-admin-dashboard/src/pages/ProductRoadmap/SortableViewTab.tsx",
   "apps/ally-admin-dashboard/src/pages/ProductRoadmap/SavedViewTabs.tsx",
   "apps/ally-admin-dashboard/src/pages/ProductRoadmap/OpportunitiesListView.tsx",
