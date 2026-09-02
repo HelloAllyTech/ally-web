@@ -290,14 +290,17 @@ export const NotionTable = ({
                       }),
                 }}
               >
-                {onRowClick && rowClickTrigger === "hover" && cellIndex === editIndex && isEditable && (
-                  <button
-                    className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => onRowClick(rowIndex)}
-                  >
-                    <DockToRight />
-                  </button>
-                )}
+                {onRowClick &&
+                  rowClickTrigger === "hover" &&
+                  cellIndex === editIndex &&
+                  isEditable && (
+                    <button
+                      className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => onRowClick(rowIndex)}
+                    >
+                      <DockToRight />
+                    </button>
+                  )}
                 {renderTableCell(cell, rowIndex, row?.original, onRowChange)}
               </div>
             );
