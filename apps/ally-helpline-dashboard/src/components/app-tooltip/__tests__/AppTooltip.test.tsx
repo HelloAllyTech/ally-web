@@ -80,4 +80,19 @@ describe("AppTooltip", () => {
 
     expect(await screen.findByText("Click on the login button to see more")).toBeInTheDocument();
   });
+
+  it("does not force a refetch on every mount, so a failing endpoint isn't re-hit on every page navigation", () => {
+    render(
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
+        <button>Click me</button>
+      </AppTooltip>,
+    );
+
+    const options = mockUseGetActiveTooltipsQuery.mock.calls[0]?.[1];
+    // `true` forces a brand-new network request on every single mount, even
+    // one that just failed moments ago — since AppTooltip wraps controls on
+    // nearly every routed page, ordinary navigation between pages retries a
+    // failing endpoint repeatedly with no backoff and no error surfaced.
+    expect(options?.refetchOnMountOrArgChange).not.toBe(true);
+  });
 });
