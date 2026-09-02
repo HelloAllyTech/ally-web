@@ -141,26 +141,44 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
           {showLabel && (
             <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
           )}
-          <TextField
-            value={isEnhancing ? "" : value || ""}
-            onChange={e => onChange(field.key, e.target.value)}
-            multiline
-            rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
-            className="w-full"
-            inputStyles={{
-              color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-              fontSize: "16px",
-              fontFamily: "IBM_Plex_Serif",
-              cursor: isEnhancing ? "not-allowed" : "auto",
-            }}
-            placeholder={isEnhancing ? "" : field.placeholder}
-            showBorder={false}
-            InputProps={{
-              readOnly: disabled,
-              startAdornment: enhanceStartAdornment,
-              endAdornment: enhanceEndAdornment,
-            }}
-          />
+          {disabled ? (
+            // Read-only display: a bordered, focusable textarea invites the
+            // reader to click into it expecting to edit or select text, then
+            // nothing happens — the dead-click source on /scribe-logs for
+            // read-only narrative sections like "Objective Observations" and
+            // "Plans for Next Call". Match the Text/Number case below and
+            // render plain wrapping text instead.
+            <span
+              className="font-primary whitespace-pre-wrap break-words"
+              style={{
+                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                fontSize: "16px",
+                fontFamily: "IBM_Plex_Serif",
+              }}
+            >
+              {value || "--"}
+            </span>
+          ) : (
+            <TextField
+              value={isEnhancing ? "" : value || ""}
+              onChange={e => onChange(field.key, e.target.value)}
+              multiline
+              rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
+              className="w-full"
+              inputStyles={{
+                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                fontSize: "16px",
+                fontFamily: "IBM_Plex_Serif",
+                cursor: isEnhancing ? "not-allowed" : "auto",
+              }}
+              placeholder={isEnhancing ? "" : field.placeholder}
+              showBorder={false}
+              InputProps={{
+                startAdornment: enhanceStartAdornment,
+                endAdornment: enhanceEndAdornment,
+              }}
+            />
+          )}
         </div>
       );
     case FieldType.Number:
