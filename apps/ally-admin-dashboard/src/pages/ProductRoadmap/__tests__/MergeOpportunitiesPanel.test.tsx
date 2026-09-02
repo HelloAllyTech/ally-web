@@ -8,7 +8,7 @@ import {
   RoadmapOpportunityType,
 } from "@types";
 
-import { MergeDrawer } from "../MergeDrawer";
+import { MergeOpportunitiesPanel } from "../MergeOpportunitiesPanel";
 
 const mockMerge = vi.fn();
 
@@ -83,7 +83,7 @@ const opportunity = (
     creator: null,
   }) as RoadmapOpportunity;
 
-describe("MergeDrawer", () => {
+describe("MergeOpportunitiesPanel", () => {
   /**
    * The bug: the docblock and add()'s own comment both claim the primary "defaults to the
    * highest-scoring pick," but add() only ever sets primaryId on the very first pick. Finding
@@ -95,7 +95,7 @@ describe("MergeDrawer", () => {
     const popular = opportunity("popular", "OPP-0002", 250, "The popular original");
 
     searchResults = [lowVote];
-    render(<MergeDrawer onClose={vi.fn()} onMerged={vi.fn()} />);
+    render(<MergeOpportunitiesPanel onMerged={vi.fn()} />);
 
     fireEvent.change(screen.getByLabelText(/search opportunities to merge/i), {
       target: { value: "low" },

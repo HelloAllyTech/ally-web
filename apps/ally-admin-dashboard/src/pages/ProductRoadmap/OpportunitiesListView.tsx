@@ -47,7 +47,7 @@ interface OpportunitiesListViewProps {
   canManage: boolean;
   onOpenOpportunity: (id: string) => void;
   onAddClick: () => void;
-  /** False on the Queue view, whose filters are its definition. Threaded to RoadmapFilterBar. */
+  /** Threaded to RoadmapFilterBar. The Queue passes true too, nowadays — see stageLocked. */
   showFilters?: boolean;
   /** Draw the Queue presentation: reduced fields, rank at the top left. */
   isQueue?: boolean;
@@ -113,19 +113,19 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
   const maxScore = data?.maxScore ?? 0;
   const { canLoadMore, atCeiling } = loadMoreState(rows.length, total);
 
-  const activeFilters = hasActiveFilters({
-    typeFilter,
-    stageFilter,
-    sourceFilter,
-    goalFilter,
-    ownerFilter,
-    advanced,
-  });
+  const activeFilters = hasActiveFilters(
+    { typeFilter, stageFilter, sourceFilter, goalFilter, ownerFilter, advanced },
+    // The Queue's pinned stages are its definition, not a filter: counting them would make its
+    // true empty state read "no matches for these filters" forever and suppress the
+    // "New opportunity" call that belongs on an empty queue.
+    { omitStage: isQueue },
+  );
 
   return (
     <div className="flex flex-col gap-3">
       <RoadmapFilterBar
         showFilters={showFilters}
+        stageLocked={isQueue}
         search={search}
         onSearchChange={onSearchChange}
         typeFilter={typeFilter}

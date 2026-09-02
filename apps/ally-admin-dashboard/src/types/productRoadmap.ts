@@ -239,6 +239,8 @@ export enum RoadmapBoardGroupBy {
   STAGE = "stage",
   PRODUCT_GOAL = "productGoal",
   OWNER = "owner",
+  /** Who FILED it. Lane keys are user ids as strings; the lanes are read-only — see ally-be. */
+  CREATED_BY = "createdBy",
 }
 
 export interface RoadmapBoardLane {

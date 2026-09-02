@@ -390,12 +390,19 @@ export const BackArrowIcon = materialSymbol("arrow_back");
  */
 export const BuilderAgentIcon = materialSymbol("auto_awesome");
 /**
- * Product strategy and the composite ranking weights — "balance", for the trade-off the four
- * factors are weighed against each other on. Deliberately NOT the flag GoalIcon uses: strategy
- * goals and the filing categories are different concepts, and giving them the same glyph is how
- * they get conflated.
+ * The roadmap's admin drawer — product goals, strategy & ranking, merge and split.
+ *
+ * A Material Symbol, not the Carbon `Settings` exported above, because this sits in the roadmap
+ * header beside LightbulbIcon and BugReportIcon: Carbon draws filled paths with no weight to turn
+ * down, so a Carbon gear lands visibly heavier than the `wght 100` symbols either side of it.
+ *
+ * REPLACES StrategyRankIcon (`materialSymbol("balance")`), which was removed rather than left
+ * unused — "balance" was never added to index.html's `icon_names` subset, so for as long as it
+ * shipped it rendered as the literal word BALANCE next to the Product Roadmap title. "settings"
+ * IS in that list; adding it there is the other half of this change, and the reason this file's
+ * warning about the subset is not decoration.
  */
-export const StrategyRankIcon = materialSymbol("balance");
+export const RoadmapSettingsIcon = materialSymbol("settings");
 
 export const TooltipIcon = ({ className }: IconProps) => (
   <span

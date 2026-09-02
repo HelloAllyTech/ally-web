@@ -50,7 +50,7 @@ describe("StrategyRankingManager", () => {
    * saw nothing telling them the change never saved, while the share % kept the old weighting.
    */
   it("marks the weight box invalid and never calls the API when the typed value is out of range", () => {
-    render(<StrategyRankingManager onClose={vi.fn()} />);
+    render(<StrategyRankingManager />);
 
     const votesInput = screen.getByLabelText("Vote count") as HTMLInputElement;
     fireEvent.change(votesInput, { target: { value: "15" } });
@@ -66,7 +66,7 @@ describe("StrategyRankingManager", () => {
    * check and silently committed a weight of 0 — indistinguishable from deliberately typing 0.
    */
   it("marks the weight box invalid and never calls the API when the field is cleared", () => {
-    render(<StrategyRankingManager onClose={vi.fn()} />);
+    render(<StrategyRankingManager />);
 
     const votesInput = screen.getByLabelText("Vote count") as HTMLInputElement;
     fireEvent.change(votesInput, { target: { value: "" } });

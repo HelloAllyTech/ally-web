@@ -36,6 +36,7 @@ import {
   monthLabel,
   resolveDrop,
   shiftMonthKey,
+  laneSupportsMoving,
 } from "./utils/monthBoard";
 
 /** How far the prev/next arrows move the window. Mirrors ROADMAP_BOARD_DEFAULTS in ally-be. */
@@ -46,6 +47,8 @@ interface MonthBoardProps {
   groupBy: RoadmapBoardGroupBy;
   /** MUST be the same memoised object passed to useGetRoadmapBoardQuery — see useSetVotes. */
   boardArgs: RoadmapBoardQuery;
+  /** Threaded to RoadmapFilterBar. True on the Queue's board, where stage IS the view. */
+  stageLocked?: boolean;
   data?: RoadmapBoardResponse;
   isLoading: boolean;
   isFetching: boolean;
@@ -97,6 +100,7 @@ interface MonthBoardProps {
 export const MonthBoard: React.FC<MonthBoardProps> = props => {
   const {
     boardArgs,
+    stageLocked,
     data,
     isLoading,
     isFetching,
@@ -148,6 +152,9 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || !data) return;
+    // Filed-by lanes are read-only — MonthLane already refuses the drag, and this catches any
+    // path that still produces a drop, so the server's guaranteed 422 is never requested.
+    if (!laneSupportsMoving(groupBy)) return;
 
     const snapshots: LaneSnapshot[] = lanes.map(lane => ({
       key: lane.key,
@@ -197,6 +204,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     <div className="flex flex-col gap-3">
       <RoadmapFilterBar
         showFilters={showFilters}
+        stageLocked={stageLocked}
         search={search}
         onSearchChange={onSearchChange}
         typeFilter={typeFilter}
@@ -293,6 +301,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
                 }
                 maxScore={Math.max(1, data?.maxScore ?? 1)}
                 budget={budget}
+                creators={facets?.creators}
                 canVote={canVote}
                 canManage={canManage}
                 onSetVotes={allocate}

@@ -8,6 +8,7 @@ import {
   isLaneDomId,
   laneDomId,
   laneLabel,
+  laneSupportsMoving,
   laneSupportsReordering,
   monthFromLaneDomId,
   monthKeyOf,
@@ -217,6 +218,28 @@ describe("laneLabel", () => {
     expect(laneLabel("Scribe", RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe("Scribe");
     expect(laneLabel("Ajey Gore", RoadmapBoardGroupBy.OWNER)).toBe("Ajey Gore");
   });
+
+  describe("filed-by lanes resolve a user id to a person", () => {
+    const creators = [
+      { id: 269, email: "gopi.s@helloally.ai", name: "Gopi S" },
+      { id: 1, email: "admin@example.com", name: "" },
+    ];
+
+    it("prefers the name", () => {
+      expect(laneLabel("269", RoadmapBoardGroupBy.CREATED_BY, creators)).toBe("Gopi S");
+    });
+
+    it("falls back to email when the name is BLANK, not just missing", () => {
+      // The bug this guards: seeded and SSO accounts carry name:"", and `name ?? email` keeps
+      // the empty string, leaving the lane unlabelled. `name || email` is the fix.
+      expect(laneLabel("1", RoadmapBoardGroupBy.CREATED_BY, creators)).toBe("admin@example.com");
+    });
+
+    it("falls back to the raw id when creators have not loaded yet", () => {
+      expect(laneLabel("999", RoadmapBoardGroupBy.CREATED_BY, creators)).toBe("999");
+      expect(laneLabel("269", RoadmapBoardGroupBy.CREATED_BY)).toBe("269");
+    });
+  });
 });
 
 describe("laneSupportsReordering", () => {
@@ -227,5 +250,17 @@ describe("laneSupportsReordering", () => {
     expect(laneSupportsReordering(RoadmapBoardGroupBy.STAGE)).toBe(false);
     expect(laneSupportsReordering(RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe(false);
     expect(laneSupportsReordering(RoadmapBoardGroupBy.OWNER)).toBe(false);
+  });
+});
+
+describe("laneSupportsMoving", () => {
+  it("is every grouping EXCEPT filed-by", () => {
+    // Who filed an opportunity is history, not an assignment; the other lanes are writable
+    // columns. ally-be refuses a filed-by move with a 422, so the board must not offer the drag.
+    expect(laneSupportsMoving(RoadmapBoardGroupBy.MONTH)).toBe(true);
+    expect(laneSupportsMoving(RoadmapBoardGroupBy.STAGE)).toBe(true);
+    expect(laneSupportsMoving(RoadmapBoardGroupBy.PRODUCT_GOAL)).toBe(true);
+    expect(laneSupportsMoving(RoadmapBoardGroupBy.OWNER)).toBe(true);
+    expect(laneSupportsMoving(RoadmapBoardGroupBy.CREATED_BY)).toBe(false);
   });
 });

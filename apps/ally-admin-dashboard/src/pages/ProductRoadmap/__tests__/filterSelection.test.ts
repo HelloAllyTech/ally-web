@@ -50,9 +50,9 @@ describe("toFacetSelection / fromFacetSelection", () => {
     // The popover speaks string[] for every section, so ids leave as "7" and must come back as 7 —
     // the API's @IsInt rejects the string.
     expect(toFacetSelection(state({ createdBy: [7, 9] })).createdBy).toEqual(["7", "9"]);
-    expect(fromFacetSelection({ ...toFacetSelection(state({ createdBy: [7] })) }).createdBy).toEqual(
-      [7],
-    );
+    expect(
+      fromFacetSelection({ ...toFacetSelection(state({ createdBy: [7] })) }).createdBy,
+    ).toEqual([7]);
   });
 
   it("drops a non-numeric creator id rather than sending NaN", () => {
@@ -102,6 +102,13 @@ describe("buildFacetSections", () => {
   it("always offers the two enum-backed facets", () => {
     const ids = buildFacetSections([], undefined).map(section => section.id);
     expect(ids).toEqual(["stage", "source"]);
+  });
+
+  it("omits the stage section for a view whose stage set is its definition", () => {
+    // The Queue: offering stage there would let a reader edit the tab into
+    // something that is no longer a queue.
+    const ids = buildFacetSections([], undefined, { omitStage: true }).map(s => s.id);
+    expect(ids).toEqual(["source"]);
   });
 
   it("adds the data-driven facets once their options exist", () => {
@@ -160,6 +167,20 @@ describe("describeActiveFacets", () => {
     expect(chips).toEqual([
       { id: "createdBy", label: "Filed by", values: ["Sandeep Malhotra", "404"] },
     ]);
+  });
+
+  it("suppresses the stage chip and its count under omitStage, leaving the rest", () => {
+    // The Queue pins three stages; without the lock the bar would render a permanent
+    // "Stage: New, Prioritised, In development" chip whose clear button breaks the view.
+    const applied = state({
+      stageFilter: [RoadmapOpportunityStage.NEW, RoadmapOpportunityStage.PRIORITISED],
+      ownerFilter: ["Ajey Gore"],
+    });
+    expect(describeActiveFacets(applied, facets, { omitStage: true }).map(c => c.id)).toEqual([
+      "owner",
+    ]);
+    expect(countActiveFacets(applied, { omitStage: true })).toBe(1);
+    expect(countActiveFacets(applied)).toBe(2);
   });
 
   it("counts groups rather than values", () => {

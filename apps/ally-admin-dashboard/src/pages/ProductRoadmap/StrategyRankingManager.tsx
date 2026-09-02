@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { toast } from "sonner";
 
-import { ComposedModal, ModalBody, SkeletonText, TextInput } from "@ally-ui-mono/ui-shared";
+import { SkeletonText, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useAssessMissingRoadmapGoalImpactMutation,
   useCreateRoadmapStrategyGoalMutation,
@@ -15,10 +15,6 @@ import {
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { RoadmapRankWeights, RoadmapStrategyGoal } from "@types";
-
-interface StrategyRankingManagerProps {
-  onClose: () => void;
-}
 
 /**
  * The four factors, in the order they appear in the weights editor.
@@ -70,11 +66,15 @@ const FACTORS: {
  *     silently lowers every score until the assessment catches up. So goals carry an explicit
  *     "not yet assessed" count and a bulk action, rather than pretending the change was free.
  *
- * NOT confusable with Product goals (the other settings modal): that one is the one-per-
- * opportunity filing CATEGORY. These are the outcomes the board is RANKED against, and an
- * opportunity may advance several or none.
+ * NOT confusable with Product goals (the sibling tab in RoadmapSettingsDrawer): that one is the
+ * one-per-opportunity filing CATEGORY. These are the outcomes the board is RANKED against, and an
+ * opportunity may advance several or none. The two share a way in, deliberately not a form — see
+ * the drawer's docblock on why they are tabs.
+ *
+ * A PANEL, NOT A MODAL: the drawer owns the heading, the width and the single Close, so the h2
+ * and the "Done" button that used to bracket this content are gone.
  */
-export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ onClose }) => {
+export const StrategyRankingManager: React.FC = () => {
   const { data, isLoading } = useGetRoadmapStrategyGoalsQuery();
   const { data: weights, isLoading: isWeightsLoading } = useGetRoadmapRankWeightsQuery();
 
@@ -202,232 +202,210 @@ export const StrategyRankingManager: React.FC<StrategyRankingManagerProps> = ({ 
     : 0;
 
   return (
-    <ComposedModal open onClose={onClose} size="md">
-      <ModalBody>
-        <div className="flex flex-col gap-6">
-          <div>
-            <h2 className="text-typography-primary text-xl">Strategy &amp; ranking</h2>
-            <p className="text-typography-secondary mt-1 text-sm">
-              The outcomes the board is ranked against, and how much each factor counts. These are
-              not the same as product goals, which are the category an opportunity is filed under.
-            </p>
+    <div className="flex flex-col gap-6">
+      <p className="text-typography-secondary text-sm">
+        The outcomes the board is ranked against, and how much each factor counts. These are not the
+        same as product goals, which are the category an opportunity is filed under.
+      </p>
+
+      {/* ── strategy goals ─────────────────────────────────────────────── */}
+      <section className="flex flex-col gap-3">
+        <div>
+          <h3 className="text-typography-primary text-base">Product strategy goals</h3>
+          <p className="text-typography-secondary mt-1 text-sm">
+            AI judges each opportunity against every goal. Its coverage — the share of goals it
+            advances — is one of the four ranking factors.
+          </p>
+        </div>
+
+        <div className="flex items-end gap-2">
+          <div className="grow">
+            <TextInput
+              id="new-strategy-goal"
+              labelText="Add a goal"
+              placeholder="e.g. Cut time-to-first-value"
+              value={newName}
+              onChange={event => setNewName(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === "Enter") add();
+              }}
+            />
           </div>
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={add}
+            disabled={!newName.trim() || isCreating}
+          >
+            Add
+          </Button>
+        </div>
 
-          {/* ── strategy goals ─────────────────────────────────────────────── */}
-          <section className="flex flex-col gap-3">
-            <div>
-              <h3 className="text-typography-primary text-base">Product strategy goals</h3>
-              <p className="text-typography-secondary mt-1 text-sm">
-                AI judges each opportunity against every goal. Its coverage — the share of goals it
-                advances — is one of the four ranking factors.
-              </p>
-            </div>
+        {isLoading ? (
+          <SkeletonText paragraph lineCount={3} />
+        ) : goals.length === 0 ? (
+          // The empty state has to say what it COSTS to stay empty, or the coverage column on
+          // every card reads as a bug rather than as an unanswered question.
+          <p className="text-typography-secondary text-sm">
+            No strategy goals yet. Until you add some, ranking uses votes, admins backing, and
+            effort only.
+          </p>
+        ) : (
+          <ul className="flex flex-col">
+            {goals.map(goal => {
+              const isEditing = editingId === goal.id;
 
-            <div className="flex items-end gap-2">
-              <div className="grow">
-                <TextInput
-                  id="new-strategy-goal"
-                  labelText="Add a goal"
-                  placeholder="e.g. Cut time-to-first-value"
-                  value={newName}
-                  onChange={event => setNewName(event.target.value)}
-                  onKeyDown={event => {
-                    if (event.key === "Enter") add();
-                  }}
-                />
-              </div>
-              <Button
-                variant={ButtonVariant.PRIMARY}
-                onClick={add}
-                disabled={!newName.trim() || isCreating}
-              >
-                Add
-              </Button>
-            </div>
-
-            {isLoading ? (
-              <SkeletonText paragraph lineCount={3} />
-            ) : goals.length === 0 ? (
-              // The empty state has to say what it COSTS to stay empty, or the coverage column on
-              // every card reads as a bug rather than as an unanswered question.
-              <p className="text-typography-secondary text-sm">
-                No strategy goals yet. Until you add some, ranking uses votes, admins backing, and
-                effort only.
-              </p>
-            ) : (
-              <ul className="flex flex-col">
-                {goals.map(goal => {
-                  const isEditing = editingId === goal.id;
-
-                  return (
-                    <li
-                      key={goal.id}
-                      className="border-border-light flex items-center gap-2 border-b py-2"
-                    >
-                      {isEditing ? (
-                        <>
-                          <div className="grow">
-                            <TextInput
-                              id={`strategy-goal-${goal.id}`}
-                              labelText="Goal name"
-                              hideLabel
-                              value={editingName}
-                              autoFocus
-                              onChange={event => setEditingName(event.target.value)}
-                              onKeyDown={event => {
-                                if (event.key === "Enter") commitRename(goal);
-                                if (event.key === "Escape") setEditingId(null);
-                              }}
-                            />
-                          </div>
-                          <Button
-                            variant={ButtonVariant.PRIMARY}
-                            onClick={() => commitRename(goal)}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            variant={ButtonVariant.SECONDARY}
-                            onClick={() => setEditingId(null)}
-                          >
-                            Cancel
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-typography-primary grow">{goal.name}</span>
-                          {/* Only shown when non-zero: "0 unassessed" is noise on a healthy row,
-                              and the point of this number is to be noticed when it is not zero. */}
-                          {goal.unassessed > 0 && (
-                            <span className="text-typography-secondary shrink-0 text-xs">
-                              {goal.unassessed} unassessed
-                            </span>
-                          )}
-                          <Button
-                            variant={ButtonVariant.TEXT}
-                            onClick={() => {
-                              setEditingId(goal.id);
-                              setEditingName(goal.name);
-                            }}
-                          >
-                            Rename
-                          </Button>
-                          <Button
-                            variant={ButtonVariant.TEXT}
-                            onClick={() => setConfirmingDelete(goal)}
-                          >
-                            Delete
-                          </Button>
-                        </>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-
-            {/* The catch-up action, shown only when there is something to catch up on. */}
-            {needingAssessment > 0 && (
-              <div className="border-border-light flex items-center gap-3 border p-3">
-                <p className="text-typography-secondary grow text-sm">
-                  {needingAssessment} opportunit{needingAssessment === 1 ? "y is" : "ies are"} not
-                  assessed against every goal, so{" "}
-                  {needingAssessment === 1 ? "it ranks" : "they rank"} lower than they may deserve.
-                </p>
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={runAssessment}
-                  disabled={isAssessing}
+              return (
+                <li
+                  key={goal.id}
+                  className="border-border-light flex items-center gap-2 border-b py-2"
                 >
-                  {isAssessing ? "Assessing…" : "Assess now"}
-                </Button>
-              </div>
-            )}
-
-            {/* States the consequence with the real number instead of asking "are you sure?" —
-                the assessments cost money to produce and cannot be recovered. */}
-            {confirmingDelete && (
-              <div className="border-destructive-500 flex flex-col gap-2 border p-3">
-                <p className="text-typography-primary text-sm">
-                  Delete &quot;{confirmingDelete.name}&quot;? Every opportunity&apos;s coverage will
-                  be recalculated without it, and its stored assessments are discarded.
-                </p>
-                <div className="flex gap-2">
-                  <Button variant={ButtonVariant.PRIMARY} onClick={() => remove(confirmingDelete)}>
-                    Delete
-                  </Button>
-                  <Button
-                    variant={ButtonVariant.SECONDARY}
-                    onClick={() => setConfirmingDelete(null)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* ── weights ────────────────────────────────────────────────────── */}
-          <section className="flex flex-col gap-3">
-            <div>
-              <h3 className="text-typography-primary text-base">Ranking weights</h3>
-              <p className="text-typography-secondary mt-1 text-sm">
-                Relative, not percentages — 3/3/1/3 means votes, admins backing and strategy each
-                count three times as much as effort. Changing these re-sorts the board immediately
-                and never re-runs the AI.
-              </p>
-            </div>
-
-            {isWeightsLoading || !weights ? (
-              <SkeletonText paragraph lineCount={4} />
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {FACTORS.map(factor => {
-                  const value = weights[factor.key];
-                  // The share each factor actually contributes, which is the number an admin is
-                  // really setting — "3" means nothing without the other three.
-                  const share = weightTotal > 0 ? Math.round((value / weightTotal) * 100) : 0;
-
-                  return (
-                    <li key={factor.key} className="flex items-start gap-3">
+                  {isEditing ? (
+                    <>
                       <div className="grow">
-                        <p className="text-typography-primary text-sm">{factor.label}</p>
-                        <p className="text-typography-secondary mt-0.5 text-xs">{factor.hint}</p>
-                      </div>
-                      <div className="w-20 shrink-0">
                         <TextInput
-                          id={`weight-${factor.key}`}
-                          labelText={factor.label}
+                          id={`strategy-goal-${goal.id}`}
+                          labelText="Goal name"
                           hideLabel
-                          type="number"
-                          min={0}
-                          max={10}
-                          value={weightDrafts[factor.key] ?? String(value)}
-                          invalid={!!invalidWeightKeys[factor.key]}
-                          invalidText="Enter a whole number between 0 and 10."
-                          onChange={event =>
-                            setWeightDrafts(prev => ({ ...prev, [factor.key]: event.target.value }))
-                          }
-                          onBlur={event => commitWeight(factor.key, event.target.value)}
+                          value={editingName}
+                          autoFocus
+                          onChange={event => setEditingName(event.target.value)}
+                          onKeyDown={event => {
+                            if (event.key === "Enter") commitRename(goal);
+                            if (event.key === "Escape") setEditingId(null);
+                          }}
                         />
                       </div>
-                      <span className="text-typography-secondary w-10 shrink-0 pt-2 text-right text-xs">
-                        {share}%
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+                      <Button variant={ButtonVariant.PRIMARY} onClick={() => commitRename(goal)}>
+                        Save
+                      </Button>
+                      <Button variant={ButtonVariant.SECONDARY} onClick={() => setEditingId(null)}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-typography-primary grow">{goal.name}</span>
+                      {/* Only shown when non-zero: "0 unassessed" is noise on a healthy row,
+                              and the point of this number is to be noticed when it is not zero. */}
+                      {goal.unassessed > 0 && (
+                        <span className="text-typography-secondary shrink-0 text-xs">
+                          {goal.unassessed} unassessed
+                        </span>
+                      )}
+                      <Button
+                        variant={ButtonVariant.TEXT}
+                        onClick={() => {
+                          setEditingId(goal.id);
+                          setEditingName(goal.name);
+                        }}
+                      >
+                        Rename
+                      </Button>
+                      <Button
+                        variant={ButtonVariant.TEXT}
+                        onClick={() => setConfirmingDelete(goal)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
-          <div className="flex justify-end">
-            <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
-              Done
+        {/* The catch-up action, shown only when there is something to catch up on. */}
+        {needingAssessment > 0 && (
+          <div className="border-border-light flex items-center gap-3 border p-3">
+            <p className="text-typography-secondary grow text-sm">
+              {needingAssessment} opportunit{needingAssessment === 1 ? "y is" : "ies are"} not
+              assessed against every goal, so {needingAssessment === 1 ? "it ranks" : "they rank"}{" "}
+              lower than they may deserve.
+            </p>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={runAssessment}
+              disabled={isAssessing}
+            >
+              {isAssessing ? "Assessing…" : "Assess now"}
             </Button>
           </div>
+        )}
+
+        {/* States the consequence with the real number instead of asking "are you sure?" —
+                the assessments cost money to produce and cannot be recovered. */}
+        {confirmingDelete && (
+          <div className="border-destructive-500 flex flex-col gap-2 border p-3">
+            <p className="text-typography-primary text-sm">
+              Delete &quot;{confirmingDelete.name}&quot;? Every opportunity&apos;s coverage will be
+              recalculated without it, and its stored assessments are discarded.
+            </p>
+            <div className="flex gap-2">
+              <Button variant={ButtonVariant.PRIMARY} onClick={() => remove(confirmingDelete)}>
+                Delete
+              </Button>
+              <Button variant={ButtonVariant.SECONDARY} onClick={() => setConfirmingDelete(null)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── weights ────────────────────────────────────────────────────── */}
+      <section className="flex flex-col gap-3">
+        <div>
+          <h3 className="text-typography-primary text-base">Ranking weights</h3>
+          <p className="text-typography-secondary mt-1 text-sm">
+            Relative, not percentages — 3/3/1/3 means votes, admins backing and strategy each count
+            three times as much as effort. Changing these re-sorts the board immediately and never
+            re-runs the AI.
+          </p>
         </div>
-      </ModalBody>
-    </ComposedModal>
+
+        {isWeightsLoading || !weights ? (
+          <SkeletonText paragraph lineCount={4} />
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {FACTORS.map(factor => {
+              const value = weights[factor.key];
+              // The share each factor actually contributes, which is the number an admin is
+              // really setting — "3" means nothing without the other three.
+              const share = weightTotal > 0 ? Math.round((value / weightTotal) * 100) : 0;
+
+              return (
+                <li key={factor.key} className="flex items-start gap-3">
+                  <div className="grow">
+                    <p className="text-typography-primary text-sm">{factor.label}</p>
+                    <p className="text-typography-secondary mt-0.5 text-xs">{factor.hint}</p>
+                  </div>
+                  <div className="w-20 shrink-0">
+                    <TextInput
+                      id={`weight-${factor.key}`}
+                      labelText={factor.label}
+                      hideLabel
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={weightDrafts[factor.key] ?? String(value)}
+                      invalid={!!invalidWeightKeys[factor.key]}
+                      invalidText="Enter a whole number between 0 and 10."
+                      onChange={event =>
+                        setWeightDrafts(prev => ({ ...prev, [factor.key]: event.target.value }))
+                      }
+                      onBlur={event => commitWeight(factor.key, event.target.value)}
+                    />
+                  </div>
+                  <span className="text-typography-secondary w-10 shrink-0 pt-2 text-right text-xs">
+                    {share}%
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    </div>
   );
 };

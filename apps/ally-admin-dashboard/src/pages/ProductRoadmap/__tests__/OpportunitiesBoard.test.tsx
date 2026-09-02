@@ -70,7 +70,10 @@ import { EMPTY_ADVANCED_FILTERS } from "../utils/filters";
 
 const PAGE_SIZE = 50;
 
-const row = (n: number, source: RoadmapOpportunitySource = RoadmapOpportunitySource.STAFF): RoadmapOpportunity => ({
+const row = (
+  n: number,
+  source: RoadmapOpportunitySource = RoadmapOpportunitySource.STAFF,
+): RoadmapOpportunity => ({
   id: `opp-${n}`,
   description: `Opportunity ${n}`,
   type: RoadmapOpportunityType.IDEA,
@@ -133,7 +136,6 @@ const renderBoard = (overrides: Partial<React.ComponentProps<typeof Opportunitie
       onAddClick={vi.fn()}
       selectedIds={new Set()}
       onToggleSelected={vi.fn()}
-      onSplit={vi.fn()}
       offset={0}
       pageSize={PAGE_SIZE}
       onOffsetChange={onOffsetChange}
@@ -215,9 +217,7 @@ describe("OpportunitiesBoard row content", () => {
     renderBoard({ data: response(1, 1) });
 
     const table = screen.getByRole("table");
-    expect(
-      within(table).getByRole("columnheader", { name: "Opportunity" }),
-    ).toBeInTheDocument();
+    expect(within(table).getByRole("columnheader", { name: "Opportunity" })).toBeInTheDocument();
     expect(within(table).queryByRole("columnheader", { name: "Goal" })).not.toBeInTheDocument();
     expect(within(table).getByText(/Engagement & Usability/)).toBeInTheDocument();
   });

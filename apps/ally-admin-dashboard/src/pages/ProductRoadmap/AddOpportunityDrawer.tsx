@@ -87,7 +87,8 @@ interface AddOpportunityDrawerProps {
  * buttons rather than one form with a Type dropdown. Nothing in here mentions bugs: the field
  * asks for an opportunity, and the header button you pressed already picked the branch.
  *
- * A right-hand drawer rather than a centred modal, matching MergeDrawer and OpportunityDrawer:
+ * A right-hand drawer rather than a centred modal, matching RoadmapSettingsDrawer and
+ * OpportunityDrawer:
  * the board stays visible down the left while you write, which is the thing you are checking
  * yourself against — and the duplicate panel that appears mid-form can grow downwards without
  * a dialog resizing around its own centre. Dismissal is the header's Close (or the scrim),

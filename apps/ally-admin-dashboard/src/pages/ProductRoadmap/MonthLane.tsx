@@ -3,15 +3,17 @@ import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
-import { RoadmapBoardGroupBy, RoadmapBoardLane, RoadmapVoteBudget } from "@types";
+import { RoadmapBoardGroupBy, RoadmapBoardLane, RoadmapVoteBudget, RoadmapUserRef } from "@types";
 
 import { MonthOpportunityCard } from "./MonthOpportunityCard";
-import { isDraggable, laneDomId, laneLabel } from "./utils/monthBoard";
+import { isDraggable, laneDomId, laneLabel, laneSupportsMoving } from "./utils/monthBoard";
 
 interface MonthLaneProps {
   lane: RoadmapBoardLane;
   /** Decides how the lane is labelled and whether it can be hand-ordered. */
   groupBy: RoadmapBoardGroupBy;
+  /** Names for the filed-by board's user-id lane keys — facets.creators, when loaded. */
+  creators?: RoadmapUserRef[];
   /** Highlights the lane for the month we are currently in. */
   isCurrentMonth: boolean;
   maxScore: number;
@@ -43,6 +45,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
   onSetVotes,
   onOpenOpportunity,
   groupBy,
+  creators,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: laneDomId(lane.key) });
   const hidden = lane.total - lane.items.length;
@@ -57,7 +60,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
         <h3
           className={`text-sm ${isCurrentMonth ? "text-primary-600" : "text-typography-primary"}`}
         >
-          {laneLabel(lane.key, groupBy)}
+          {laneLabel(lane.key, groupBy, creators)}
           {isCurrentMonth && (
             <span className="text-typography-secondary ml-1 text-xs">· this month</span>
           )}
@@ -83,7 +86,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
               canVote={canVote}
               // Manage rights AND an unpinned month. A shipped card is locked to the month it
               // shipped in and says so in a tooltip, rather than being dragged into a 422.
-              canDrag={canManage && isDraggable(opportunity)}
+              canDrag={canManage && laneSupportsMoving(groupBy) && isDraggable(opportunity)}
               onSetVotes={onSetVotes}
               onOpen={() => onOpenOpportunity(opportunity.id)}
             />
