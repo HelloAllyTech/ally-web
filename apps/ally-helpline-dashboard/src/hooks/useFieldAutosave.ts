@@ -167,7 +167,7 @@ export function useFieldAutosave({
     } finally {
       if (rerunRef.current) {
         rerunRef.current = false;
-        if (!isEmpty(pendingRef.current)) void write();
+        if (!isEmpty(pendingRef.current)) void write().catch(() => {});
       }
     }
   }, []);
