@@ -20,6 +20,8 @@ import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { toast } from "sonner";
 import { describe, expect, it, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 
+import { useGenerateOTPMutation } from "@api";
+
 import { Login } from "../Login";
 
 // Mock @react-oauth/google
@@ -39,7 +41,7 @@ vi.mock("@react-oauth/google", () => ({
 
 // Mock all external dependencies
 vi.mock("@api", () => ({
-  useGenerateOTPMutation: () => [
+  useGenerateOTPMutation: vi.fn(() => [
     vi.fn(),
     {
       isLoading: false,
@@ -47,7 +49,7 @@ vi.mock("@api", () => ({
       data: null,
       error: null,
     },
-  ],
+  ]),
   useVerifyOTPMutation: () => [
     vi.fn(),
     {
@@ -90,8 +92,8 @@ vi.mock("@assets", () => ({
       Ally
     </div>
   ),
-  BackCircle: ({ className }: { className: string }) => (
-    <div data-testid="back-circle" className={className}>
+  BackCircle: (props: any) => (
+    <div data-testid="back-circle" {...props}>
       BackCircle
     </div>
   ),
@@ -531,6 +533,58 @@ describe("Login Component", () => {
     it("does not toast a session-expiry message on a plain visit", () => {
       renderAtLoginUrl("");
       expect(toast.info).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * TEST GROUP: Back control accessibility on the OTP step
+   *
+   * UX Signals flagged rage/dead clicks on /login on a control with no text
+   * label: the OTP step's back icon was a bare SVG with only an onClick
+   * handler — no button role, no accessible name, no keyboard support — so
+   * assistive-tech and keyboard users had no way to discover or activate it.
+   */
+  describe("Back control accessibility (OTP step)", () => {
+    const mockedUseGenerateOTPMutation = useGenerateOTPMutation as unknown as ReturnType<
+      typeof vi.fn
+    >;
+
+    afterEach(() => {
+      mockedUseGenerateOTPMutation.mockReturnValue([
+        vi.fn(),
+        { isLoading: false, isSuccess: false, data: null, error: null },
+      ]);
+    });
+
+    const renderAtOtpStep = () => {
+      mockedUseGenerateOTPMutation.mockReturnValue([
+        vi.fn(),
+        {
+          isLoading: false,
+          isSuccess: true,
+          data: { accessToken: "token", refreshToken: "refresh", expiresIn: 600 },
+          error: null,
+        },
+      ]);
+
+      return render(
+        <TestWrapper store={mockStore}>
+          <Login />
+        </TestWrapper>,
+      );
+    };
+
+    it("exposes the back control as a labeled, keyboard-operable button", () => {
+      renderAtOtpStep();
+
+      expect(screen.queryByTestId("textfield-input")).toBeNull();
+
+      const backButton = screen.getByRole("button", { name: /back/i });
+      fireEvent.keyDown(backButton, { key: "Enter" });
+
+      // Keyboard activation should trigger the same navigation as a mouse
+      // click — back to the email step, where the email field reappears.
+      expect(screen.getByTestId("textfield-input")).not.toBeNull();
     });
   });
 });
