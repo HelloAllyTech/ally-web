@@ -107,6 +107,31 @@ describe("SummarySidebarWrapper", () => {
     expect(screen.queryByRole("button", { name: /Tab One/i })).not.toBeInTheDocument();
   });
 
+  it("resyncs the selected tab when tabList shrinks after data loads, instead of showing a blank panel", () => {
+    // Mirrors real usage: before useGetSimulationSummaryQuery resolves, both
+    // tabs default on and selectedTab initializes to tabList[0] (Debrief).
+    // Once real scenario metadata loads and reveals Debrief is off, the
+    // parent re-renders this component with a shrunk tabList.
+    const { rerender } = render(
+      <SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} onSidebarClose={vi.fn()} />,
+    );
+
+    expect(screen.getByText("Content One")).toBeInTheDocument();
+
+    rerender(
+      <SummarySidebarWrapper
+        title="Test Sidebar"
+        tabList={[mockTabList[1]]}
+        onSidebarClose={vi.fn()}
+      />,
+    );
+
+    // selectedTab must resync to the surviving tab rather than staying
+    // pinned to the now-removed id, which would render nothing.
+    expect(screen.getByText("Content Two")).toBeInTheDocument();
+    expect(screen.queryByText("Content One")).not.toBeInTheDocument();
+  });
+
   it("renders children content", () => {
     render(
       <SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList}>
