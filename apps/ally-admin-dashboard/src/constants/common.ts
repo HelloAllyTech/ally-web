@@ -569,6 +569,7 @@ export const ApiEndpoints = {
     IOS_APP_STORE_REVIEW_HISTORY: "/v1/mobile-releases/ios-app-store-review-history",
     SUBMIT_APP_STORE_REVIEW: "/v1/mobile-releases/submit-ios-app-store-review",
     IOS_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/ios-whats-new-suggestion",
+    ANDROID_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/android-whats-new-suggestion",
   },
   APP_VERSION: {
     IOS: "/v1/app-version/ios",
