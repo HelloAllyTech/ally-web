@@ -15,21 +15,18 @@ export enum UxSignalScanStatus {
   FAILED = "failed",
 }
 
-/** What one scan did. Returned by the scan endpoint and shown in the toast. */
-export interface UxScanOutcome {
+/**
+ * All the scan endpoint returns: the run exists and is going.
+ *
+ * There are no counts here because at this moment there are none — the scan takes
+ * minutes and the response comes back in milliseconds. A shape carrying zeroes
+ * would be indistinguishable from a finished, quiet scan, which is the confusion
+ * this endpoint used to create. The result arrives via the scan log.
+ */
+export interface UxScanStarted {
   scanId: string;
-  /** Observations that crossed a detector threshold, before triage clustered them. */
-  signalsDetected: number;
-  findingsCreated: number;
-  suggestionsCreated: number;
-  /**
-   * Items already open as a finding or pending as a suggestion. A healthy steady
-   * state, not an error — worth showing so a scan that filed nothing does not
-   * read as a scan that found nothing.
-   */
-  skippedDuplicates: number;
-  /** Detectors whose query failed, by name. Never a silent absence. */
-  failedDetectors: string[];
+  status: UxSignalScanStatus;
+  startedAt: string;
 }
 
 export interface UxSignalScan {
@@ -42,6 +39,11 @@ export interface UxSignalScan {
   findingsCreated: number;
   suggestionsCreated: number;
   skippedDuplicates: number;
+  /**
+   * Detectors whose query failed, by name. Never a silent absence: a scan that
+   * found little has to be tellable from one that could not look.
+   */
+  failedDetectors: string[];
   error: string | null;
   /** Null for scheduled runs. */
   startedBy: number | null;

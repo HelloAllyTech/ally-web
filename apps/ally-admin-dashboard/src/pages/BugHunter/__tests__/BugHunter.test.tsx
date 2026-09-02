@@ -9,6 +9,9 @@ vi.mock("@api", () => ({
   // mock has to supply them.
   useScanUxSignalsMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useGetUxSignalScansQuery: vi.fn(() => ({ data: { scans: [] } })),
+  // The panel invalidates the findings and suggestions queues itself, once it
+  // sees a scan finish — so it reaches for the store's util alongside the hooks.
+  baseAPI: { util: { invalidateTags: vi.fn() } },
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
@@ -42,6 +45,7 @@ vi.mock("@utils", () => ({
 // surface.
 vi.mock("react-redux", () => ({
   useSelector: (selector: any) => selector({ user: { user: {}, features: ["bug_hunter"] } }),
+  useDispatch: () => vi.fn(),
 }));
 
 vi.mock("@assets", () => ({
