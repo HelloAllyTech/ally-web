@@ -101,6 +101,11 @@ export const MobileReleases: FC = () => {
     : null;
 
   const releaseInProgress = isReleaseInProgress(runs);
+  // While this hasn't finished loading (or failed to), appStoreReviewHistory defaults to []
+  // — indistinguishable from "genuinely never submitted" — so matchingSubmission must not be
+  // trusted as a real answer yet; treat it as unknown rather than "not submitted".
+  const isAppStoreSubmissionStatusUnknown =
+    isAppStoreReviewHistoryLoading || isAppStoreReviewHistoryError;
   const matchingSubmission = testflightStatus?.buildVersion
     ? appStoreReviewHistory.find(entry => entry.versionString === testflightStatus.buildVersion)
     : undefined;
@@ -110,8 +115,15 @@ export const MobileReleases: FC = () => {
   // is a real, legitimate thing to do, just one the operator should do knowingly.
   const iosAlreadySubmittedWarning = matchingSubmission
     ? `Build ${testflightStatus?.buildVersion} was already submitted on ${formatDateTime(matchingSubmission.submittedDate)} — status: ${getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state).label}. Submitting again may error or create a duplicate submission.`
-    : null;
-  const recommendedAction = deriveRecommendedAction(testflightStatus, appStoreReviewHistory);
+    : isAppStoreSubmissionStatusUnknown && testflightStatus?.buildVersion
+      ? `Couldn't confirm whether build ${testflightStatus.buildVersion} was already submitted for review — App Store review history hasn't finished loading. Check App Store Connect before submitting, to avoid a duplicate.`
+      : null;
+  const recommendedAction = deriveRecommendedAction(
+    testflightStatus,
+    appStoreReviewHistory,
+    isAppStoreReviewHistoryLoading,
+    isAppStoreReviewHistoryError,
+  );
   const currentBuildUploadedDate =
     testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
     null;
@@ -419,6 +431,7 @@ export const MobileReleases: FC = () => {
               <IosReleasePipeline
                 testflightStatus={testflightStatus}
                 matchingSubmission={matchingSubmission}
+                isMatchingSubmissionUnknown={isAppStoreSubmissionStatusUnknown}
                 buildUploadedDate={currentBuildUploadedDate}
                 currentMinIosVersion={currentMinIosVersion?.minimumSupportedVersion}
                 isMinIosVersionLoading={isMinIosVersionLoading}
