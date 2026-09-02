@@ -13,9 +13,12 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
   // Refresh the active-tooltip list so a superadmin toggling a tooltip off (or on)
   // reaches users without a hard reload — otherwise the list is fetched once and
   // cached for the whole session (this is a separate RTK cache from the admin app,
-  // so the admin's own invalidation never reaches here).
+  // so the admin's own invalidation never reaches here). Bounded rather than `true`:
+  // this component wraps controls on nearly every routed page, so an unconditional
+  // force-refetch on mount re-hit a failing endpoint on every page navigation with
+  // no backoff (see PracticeStreakHeatmap for the same pattern).
   const { data: tooltips = [], isLoading } = useGetActiveTooltipsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
+    refetchOnMountOrArgChange: 30,
     refetchOnFocus: true,
     refetchOnReconnect: true,
   });
