@@ -979,6 +979,40 @@ export const en = {
     tooltipUpdated: "Tooltip updated successfully",
     locationAlreadyExists: "A tooltip for this location already exists",
   },
+  settings: {
+    title: "Settings",
+    // Every tab here is platform-wide, not per-tenant — the page-level line says
+    // so once, so no individual tab has to repeat the warning.
+    subtitle: "Platform-wide configuration. Changes apply to every organisation.",
+    tabs: {
+      legal: "Legal",
+      comfortAudio: "Comfort Audio",
+      turnDetection: "Turn Detection",
+    },
+    legalDescription:
+      "Edit the content shown on the public Terms of Service and Privacy Policy pages.",
+    termsTitle: "Terms of Service",
+    privacyTitle: "Privacy Policy",
+    legalPlaceholder: (title: string) => `Write the ${title} content...`,
+    termsSaved: "Terms of Service updated",
+    termsSaveFailed: "Failed to update Terms of Service",
+    privacySaved: "Privacy Policy updated",
+    privacySaveFailed: "Failed to update Privacy Policy",
+    turnDetectionTitle: "Turn Detection Timing",
+    turnDetectionDescription:
+      "How long a Studio v1 roleplay agent waits before replying. Applies to every roleplay session platform-wide — there is no per-simulation override.",
+    turnDetectionMinLabel: "Minimum reply delay (seconds)",
+    turnDetectionMinHelp:
+      "How fast the agent may reply once it’s confident the learner has finished. Lower = snappier, more risk of cutting the learner off.",
+    turnDetectionMaxLabel: "Maximum reply delay (seconds)",
+    turnDetectionMaxHelp:
+      "How long the agent waits for a learner who seems mid-thought before replying anyway. Higher = fewer interruptions, more perceived dead air.",
+    turnDetectionPairError: "Maximum delay must be greater than the minimum delay.",
+    turnDetectionSaved: "Turn detection timing updated",
+    turnDetectionSaveFailed: "Failed to update turn detection timing",
+    save: "Save",
+    saving: "Saving...",
+  },
   comfortAudio: {
     title: "Comfort Audio",
     description:
