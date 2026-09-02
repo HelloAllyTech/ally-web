@@ -173,6 +173,55 @@ describe("useFieldAutosave", () => {
     expect(result.current.isDirty).toBe(false);
   });
 
+  it("does not leave the rerun write's rejection unhandled", async () => {
+    // Mirrors: an edit lands while a write is in flight (queues a rerun), the
+    // in-flight write settles, and the rerun write it triggers also fails. Every
+    // other internal write() call is wrapped in .catch(() => {}); the rerun
+    // continuation in write()'s own finally block is not, so a failure there
+    // used to surface as an unhandled-promise-rejection console error.
+    const unhandled: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => unhandled.push(reason);
+    process.on("unhandledRejection", onUnhandledRejection);
+
+    try {
+      const gate = deferred();
+      const onPersist = vi
+        .fn()
+        .mockReturnValueOnce(gate.promise)
+        .mockRejectedValueOnce(new Error("rerun failed"))
+        .mockResolvedValue(undefined);
+      const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+      act(() => {
+        result.current.edit("summary", "keyConcerns", "first");
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(onPersist).toHaveBeenCalledTimes(1);
+
+      // Lands while the first write is still in flight — queues a rerun.
+      act(() => {
+        result.current.edit("summary", "keyConcerns", "second");
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(100);
+        await settle();
+      });
+      expect(onPersist).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        gate.resolve();
+        await settle(20);
+      });
+
+      expect(onPersist).toHaveBeenCalledTimes(2);
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+  });
+
   it("never runs two writes concurrently", async () => {
     const gate = deferred();
     let concurrent = 0;
