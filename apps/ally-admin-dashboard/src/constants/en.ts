@@ -2031,20 +2031,35 @@ export const en = {
       "Reads the last seven days of product telemetry, then files what looks broken as a bug below and what looks like a missed opportunity into Analytics \u2192 Suggestions. Nothing is fixed or filed to the roadmap without your decision.",
     scanNow: "Scan now",
     scanning: "Scanning telemetry\u2026",
-    scanTooltip: "Takes about two minutes: seven detector queries, then one triage pass.",
+    scanTooltip:
+      "Takes about two minutes: seven detector queries, then one triage pass. It runs in the background, so you can leave this page.",
     neverScanned: "No scan has run yet. Scans run automatically once a day.",
-    scanRunning: "A scan is running now.",
+    // The scan outlives the request that started it, so the running line has to
+    // say the page is watching \u2014 otherwise the only honest reading of a
+    // two-minute wait with no feedback is that something is stuck.
+    scanRunning: "A scan is running now. This page updates when it finishes.",
+    // A RUNNING row past the backend\u2019s staleness cutoff: the scan died with
+    // whatever process was running it. Saying so beats a spinner that never ends.
+    scanStalled:
+      "The scan that started {when} never reported back \u2014 it was interrupted. Anything it had already filed is in the table below. You can start another.",
     lastScanSummary: "Last scan {when}: {findings} bugs, {suggestions} suggestions filed.",
-    lastScanFailed: "Last scan {when} failed. Open the scan log for the reason.",
+    lastScanFailed: "Last scan {when} failed: {reason}",
     // Zero is a real answer, so the copy has to read correctly at zero: "0 bugs
     // and 0 suggestions filed" is a successful quiet week, not a failure.
     scanDone: "Scan complete: {findings} bugs and {suggestions} suggestions filed.",
     scanDetail: "{signals} signals crossed a threshold; {skipped} were already known.",
     detectorsFailed: "These detectors could not run: {detectors}.",
     scanConflict: "A scan is already running. Wait for it to finish before starting another.",
-    scanUnavailable:
-      "Product telemetry is unreachable, so there was nothing to scan. Nothing was filed.",
-    scanFailed: "The scan could not be completed. Nothing was filed.",
+    scanUnavailable: "Product telemetry access isn\u2019t configured, so there is nothing to scan.",
+    // The catch-all, and the one place the app genuinely does not know what
+    // happened: the request to start a scan got no usable answer, which does not
+    // tell us whether the scan was claimed. Its predecessor asserted "Nothing was
+    // filed" here and was wrong in production \u2014 a scan that filed seven
+    // findings reported itself as a failure. Say what is known, then the next step.
+    scanFailed:
+      "Couldn\u2019t confirm the scan started. Reload to see whether one is running before trying again.",
+    scanFailedReason: "The scan failed: {reason}",
+    scanUnknownReason: "no reason was recorded",
   },
   bugHunter: {
     tabLabel: "Bug Hunter",
