@@ -229,8 +229,24 @@ const NO_ACTION: RecommendedAction = {
 export const deriveRecommendedAction = (
   testflightStatus: IosTestflightStatusResponse | undefined,
   appStoreReviewHistory: IosAppStoreReviewSubmissionEntry[],
+  isAppStoreReviewHistoryLoading: boolean,
+  isAppStoreReviewHistoryError: boolean,
 ): RecommendedAction => {
   if (!testflightStatus?.buildVersion) return NO_ACTION;
+
+  // The empty array appStoreReviewHistory defaults to while loading (or after a failed
+  // fetch) looks identical to "genuinely never submitted" — telling the admin to submit
+  // in either of those cases is a real path to a duplicate Apple submission, so this must
+  // say "unknown" rather than guess "not submitted" from data that hasn't actually arrived.
+  if (isAppStoreReviewHistoryLoading || isAppStoreReviewHistoryError) {
+    return {
+      severity: "attention",
+      title: `Checking whether iOS ${testflightStatus.buildVersion} was already submitted…`,
+      description: isAppStoreReviewHistoryError
+        ? "Couldn't load App Store review history, so this can't confirm whether the build was already submitted — check App Store Connect before submitting, to avoid a duplicate."
+        : "App Store review history hasn't finished loading yet, so this can't confirm whether the build was already submitted — wait for it to load before submitting.",
+    };
+  }
 
   const matchingSubmission = appStoreReviewHistory.find(
     entry => entry.versionString === testflightStatus.buildVersion,

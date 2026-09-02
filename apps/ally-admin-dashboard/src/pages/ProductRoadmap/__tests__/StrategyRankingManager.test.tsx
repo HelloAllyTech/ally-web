@@ -60,4 +60,19 @@ describe("StrategyRankingManager", () => {
     expect(screen.getByText(/enter a whole number between 0 and 10/i)).toBeInTheDocument();
     expect(votesInput).toHaveValue(15);
   });
+
+  /**
+   * The bug: Number("") is 0, not NaN, so clearing the box entirely passed every validation
+   * check and silently committed a weight of 0 — indistinguishable from deliberately typing 0.
+   */
+  it("marks the weight box invalid and never calls the API when the field is cleared", () => {
+    render(<StrategyRankingManager onClose={vi.fn()} />);
+
+    const votesInput = screen.getByLabelText("Vote count") as HTMLInputElement;
+    fireEvent.change(votesInput, { target: { value: "" } });
+    fireEvent.blur(votesInput);
+
+    expect(mockUpdateWeights).not.toHaveBeenCalled();
+    expect(screen.getByText(/enter a whole number between 0 and 10/i)).toBeInTheDocument();
+  });
 });
