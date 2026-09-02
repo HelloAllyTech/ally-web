@@ -1,4 +1,4 @@
-import { render as rtlRender, screen } from "@testing-library/react";
+import { render as rtlRender, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -392,7 +392,11 @@ describe("WeakPerformingMetricsTab", () => {
       await user.click(screen.getByRole("combobox", { name: /granularity/i }));
       await user.click(screen.getByRole("option", { name: "By month" }));
 
-      expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" }));
+      // See the model picker test: the pick reaches the query args through an
+      // effect, one flush after the click resolves.
+      await waitFor(() =>
+        expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" })),
+      );
     });
   });
 
@@ -791,12 +795,27 @@ describe("WeakPerformingMetricsTab", () => {
   });
 
   it("refetches with the chosen model so a metric can be segmented", async () => {
+    const user = userEvent.setup();
     render(<WeakPerformingMetricsTab {...filters} />);
-    const dropdown = screen.getByText("All models");
-    await userEvent.click(dropdown);
-    await userEvent.click(await screen.findByText("gpt-4.1-mini"));
-    expect(queryMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({ llmModel: "gpt-4.1-mini" }),
+
+    // The picker is addressed by role and label, not by its "All models" text.
+    // That string is on the trigger AND on the "" item, so a text query becomes
+    // ambiguous the moment the menu opens — and `findByText` for an option
+    // returns the inner text <div>, while Carbon puts Downshift's click handler
+    // on the <li role="option"> around it.
+    await user.click(screen.getByRole("combobox", { name: /model/i }));
+    await user.click(await screen.findByRole("option", { name: "gpt-4.1-mini" }));
+
+    // waitFor, not a bare assertion: Carbon does not call `onChange` from the
+    // click handler. Downshift raises it from the effect in its enhanced
+    // reducer, so `setLlmModel` — and the refetch on the new args — lands an
+    // effect flush after the click promise resolves. Asserting synchronously
+    // reads whichever call happened to be last, which on a loaded machine is
+    // the unfiltered first render.
+    await waitFor(() =>
+      expect(queryMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ llmModel: "gpt-4.1-mini" }),
+      ),
     );
   });
 
@@ -894,11 +913,16 @@ describe("WeakPerformingMetricsTab", () => {
       expect.objectContaining({ promptVersion: undefined }),
     );
 
-    await userEvent.click(screen.getByRole("combobox", { name: /prompt version/i }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox", { name: /prompt version/i }));
     expect(screen.getByRole("option", { name: "Prompt v16" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("option", { name: "Prompt v17" }));
+    await user.click(screen.getByRole("option", { name: "Prompt v17" }));
 
-    expect(queryMock).toHaveBeenLastCalledWith(expect.objectContaining({ promptVersion: "17" }));
+    // See the model picker test: the pick reaches the query args through an
+    // effect, one flush after the click resolves.
+    await waitFor(() =>
+      expect(queryMock).toHaveBeenLastCalledWith(expect.objectContaining({ promptVersion: "17" })),
+    );
   });
 
   /**

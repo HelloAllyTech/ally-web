@@ -52,3 +52,18 @@ export const countActiveRangeFilters = (v: RoadmapAdvancedFilterValues): number 
   (v.dateFrom || v.dateTo ? 1 : 0) +
   (v.releasedFrom || v.releasedTo ? 1 : 0) +
   (v.priorityMin !== "" || v.priorityMax !== "" ? 1 : 0);
+
+/**
+ * Carbon hands back a Date at LOCAL midnight; the API and saved-view state both want YYYY-MM-DD.
+ *
+ * Built from the local calendar fields, NOT from `toISOString().slice(0, 10)`. That shortcut
+ * converts to UTC first, so at any timezone east of Greenwich local midnight is still the previous
+ * day in UTC and every pick was written back one day earlier — in IST, clicking Sep 1–Sep 2 stored
+ * Aug 31–Sep 1, the controlled `value` fed that back into the calendar, and the range simply could
+ * not be set. West of Greenwich the same bug rounds the other way.
+ */
+export const toIsoDate = (date?: Date): string => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
