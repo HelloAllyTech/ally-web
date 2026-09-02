@@ -73,6 +73,13 @@ export const ReferenceImagesField: React.FC<ReferenceImagesFieldProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [getUploadUrl] = useGetRoadmapReferenceImageUploadUrlMutation();
 
+  // Read by handleFiles when its upload resolves, so a removal or caption edit made while that
+  // upload was in flight isn't clobbered by the batch appending to the images the upload started
+  // with. Kept current on every render rather than in an effect, so it can't lag a synchronous
+  // onChange from removeAt/setCaption that fires between renders.
+  const imagesRef = useRef(images);
+  imagesRef.current = images;
+
   const remaining = REFERENCE_IMAGES_MAX - images.length;
 
   const uploadOne = useCallback(
@@ -123,14 +130,16 @@ export const ReferenceImagesField: React.FC<ReferenceImagesFieldProps> = ({
         const uploaded = (await Promise.all(accepted.map(uploadOne))).filter(
           (image): image is RoadmapReferenceImage => image !== null,
         );
-        // One onChange for the batch, from the CURRENT props: appending inside the loop would
-        // make each call overwrite the last on a stale `images`.
-        if (uploaded.length) onChange([...images, ...uploaded]);
+        // One onChange for the batch, from the CURRENT props (via the ref, not the `images` this
+        // callback closed over): appending inside the loop would make each call overwrite the
+        // last on a stale `images`, and reading the closed-over prop directly would silently
+        // discard a removal or caption edit made while this upload was in flight.
+        if (uploaded.length) onChange([...imagesRef.current, ...uploaded]);
       } finally {
         setIsUploading(false);
       }
     },
-    [images, onChange, remaining, uploadOne],
+    [onChange, remaining, uploadOne],
   );
 
   const setCaption = (index: number, caption: string) =>
