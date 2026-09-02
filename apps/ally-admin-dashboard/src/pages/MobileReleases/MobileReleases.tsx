@@ -389,25 +389,29 @@ export const MobileReleases: FC = () => {
           onSubmitReview={handleOpenAppStoreReviewDialog}
         />
 
-        {!isVersionsLoading && !isVersionsError && versions?.android.versionName && (
-          <div>
-            <h3 className="text-sm font-medium text-typography-900 mb-2">
-              Current Android build's pipeline
-            </h3>
-            <AndroidReleasePipeline
-              androidVersionName={versions.android.versionName}
-              androidVersionCode={versions.android.versionCode}
-              lastBuildRun={lastAndroidBuildRun}
-              lastPromoteRun={lastAndroidPromoteRun}
-              productionStatus={androidProductionStatus}
-              isProductionStatusLoading={isAndroidProductionStatusLoading}
-              isProductionStatusError={isAndroidProductionStatusError}
-              currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
-              isMinAndroidVersionLoading={isMinAndroidVersionLoading}
-              onUpdateMinVersion={handleOpenMinVersionDialog}
-            />
-          </div>
-        )}
+        {!isVersionsLoading &&
+          !isVersionsError &&
+          !isRunsLoading &&
+          !isRunsError &&
+          versions?.android.versionName && (
+            <div>
+              <h3 className="text-sm font-medium text-typography-900 mb-2">
+                Current Android build's pipeline
+              </h3>
+              <AndroidReleasePipeline
+                androidVersionName={versions.android.versionName}
+                androidVersionCode={versions.android.versionCode}
+                lastBuildRun={lastAndroidBuildRun}
+                lastPromoteRun={lastAndroidPromoteRun}
+                productionStatus={androidProductionStatus}
+                isProductionStatusLoading={isAndroidProductionStatusLoading}
+                isProductionStatusError={isAndroidProductionStatusError}
+                currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
+                isMinAndroidVersionLoading={isMinAndroidVersionLoading}
+                onUpdateMinVersion={handleOpenMinVersionDialog}
+              />
+            </div>
+          )}
 
         {!isTestflightStatusLoading &&
           !isTestflightStatusError &&
