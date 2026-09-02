@@ -13,6 +13,12 @@ import {
 interface IosReleasePipelineProps {
   testflightStatus?: IosTestflightStatusResponse;
   matchingSubmission?: IosAppStoreReviewSubmissionEntry;
+  /**
+   * True while the App Store review history behind `matchingSubmission` is still loading or
+   * failed to load — `matchingSubmission` reads as absent in both cases, which is
+   * indistinguishable from a genuine "never submitted" without this flag.
+   */
+  isMatchingSubmissionUnknown?: boolean;
   /** From the TestFlight history entry matching the current build, if found. */
   buildUploadedDate?: string | null;
   currentMinIosVersion?: string | null;
@@ -45,6 +51,7 @@ interface Stage {
 export const IosReleasePipeline: FC<IosReleasePipelineProps> = ({
   testflightStatus,
   matchingSubmission,
+  isMatchingSubmissionUnknown,
   buildUploadedDate,
   currentMinIosVersion,
   isMinIosVersionLoading,
@@ -79,13 +86,17 @@ export const IosReleasePipeline: FC<IosReleasePipelineProps> = ({
     },
     {
       title: "Submit for Distribution",
-      tag: matchingSubmission
-        ? getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state)
-        : { type: "cool-gray", label: "Not submitted yet" },
+      tag: isMatchingSubmissionUnknown
+        ? { type: "cool-gray", label: "Unknown" }
+        : matchingSubmission
+          ? getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state)
+          : { type: "cool-gray", label: "Not submitted yet" },
       date: matchingSubmission?.submittedDate,
-      description: matchingSubmission
-        ? "Apple's full App Store review — real public distribution, not TestFlight."
-        : "Not yet submitted for Apple's full App Store review.",
+      description: isMatchingSubmissionUnknown
+        ? "Couldn't confirm whether this build has already been submitted — App Store review history hasn't finished loading."
+        : matchingSubmission
+          ? "Apple's full App Store review — real public distribution, not TestFlight."
+          : "Not yet submitted for Apple's full App Store review.",
     },
     {
       title: "Update Minimum Version",

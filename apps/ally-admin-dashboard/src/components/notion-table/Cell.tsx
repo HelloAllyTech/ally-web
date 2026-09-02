@@ -69,6 +69,17 @@ const DropdownDisplayText = ({
   );
 };
 
+/** Read-only rendering of a number cell's value, plain text instead of a disabled input. */
+const NumberDisplayText = ({ value }: { value: number | string | null | undefined }) => {
+  const hasValue = value !== undefined && value !== null && value !== "";
+
+  return (
+    <span className={`break-words ${hasValue ? "" : "text-typography-500"}`}>
+      {hasValue ? value : "--"}
+    </span>
+  );
+};
+
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
@@ -269,7 +280,13 @@ export const Cell = ({
       );
       break;
     case cellTypes.number:
-      element = (
+      // A disabled number input can never be edited, and browsers never
+      // dispatch clicks to disabled form controls, so it swallows the
+      // row-click affordance on a read-only table. Render plain text instead,
+      // matching the dropdown branches above.
+      element = isDisabled ? (
+        <NumberDisplayText value={value.value} />
+      ) : (
         <NumberInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
       );
       break;
