@@ -6,11 +6,11 @@ import {
   IosAppStoreReviewSubmissionEntry,
   IosTestflightHistoryEntry,
   IosTestflightStatusResponse,
-  IosWhatsNewSuggestionResponse,
   MobileReleaseRun,
   SubmitIosAppStoreReviewRequest,
   TriggerAndroidPromotionRequest,
   TriggerMobileReleaseResponse,
+  WhatsNewSuggestionResponse,
 } from "@types";
 
 const mobileReleasesAPI = baseAPI.injectEndpoints({
@@ -138,9 +138,19 @@ const mobileReleasesAPI = baseAPI.injectEndpoints({
     // not a regular one: it calls an LLM and costs real tokens, so it must
     // only be triggered on-demand (right as the submit dialog opens), never
     // fetched automatically or kept in sync via polling/tags.
-    getIosWhatsNewSuggestion: builder.query<IosWhatsNewSuggestionResponse, void>({
+    getIosWhatsNewSuggestion: builder.query<WhatsNewSuggestionResponse, void>({
       query: () => ({
         url: ApiEndpoints.MOBILE_RELEASES.IOS_WHATS_NEW_SUGGESTION,
+      }),
+    }),
+
+    // Same draft as getIosWhatsNewSuggestion above (identical generation,
+    // platform-agnostic) — a separate endpoint only so it carries the
+    // Android promotion permission instead. Same lazy-query, on-demand-only
+    // reasoning: real LLM tokens, fetched right as the promote dialog opens.
+    getAndroidWhatsNewSuggestion: builder.query<WhatsNewSuggestionResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.MOBILE_RELEASES.ANDROID_WHATS_NEW_SUGGESTION,
       }),
     }),
   }),
@@ -157,4 +167,5 @@ export const {
   useTriggerAndroidPromotionMutation,
   useSubmitIosAppStoreReviewMutation,
   useLazyGetIosWhatsNewSuggestionQuery,
+  useLazyGetAndroidWhatsNewSuggestionQuery,
 } = mobileReleasesAPI;

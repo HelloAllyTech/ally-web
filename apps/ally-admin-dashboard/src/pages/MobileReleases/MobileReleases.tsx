@@ -18,6 +18,7 @@ import {
 import {
   useGetMinimumAndroidVersionQuery,
   useGetMinimumIosVersionQuery,
+  useLazyGetAndroidWhatsNewSuggestionQuery,
   useLazyGetIosWhatsNewSuggestionQuery,
   useSubmitIosAppStoreReviewMutation,
   useTriggerAndroidPromotionMutation,
@@ -168,12 +169,44 @@ export const MobileReleases: FC = () => {
     DEFAULT_ANDROID_ROLLOUT_PERCENTAGE,
   );
   const [androidWhatsNewText, setAndroidWhatsNewText] = useState("");
+  const [androidWhatsNewSuggestionNote, setAndroidWhatsNewSuggestionNote] = useState<string | null>(
+    null,
+  );
   const [triggerAndroidPromotion, { isLoading: isPromotingAndroid }] =
     useTriggerAndroidPromotionMutation();
+  const [fetchAndroidWhatsNewSuggestion, { isFetching: isFetchingAndroidWhatsNewSuggestion }] =
+    useLazyGetAndroidWhatsNewSuggestionQuery();
+  // Same stale-response guard as whatsNewSuggestionRequestIdRef below, for the Android dialog.
+  const androidWhatsNewSuggestionRequestIdRef = useRef(0);
   const isAndroidRolloutPercentageValid =
     Number.isInteger(androidRolloutPercentage) &&
     androidRolloutPercentage >= MIN_ROLLOUT_PERCENTAGE &&
     androidRolloutPercentage <= MAX_ROLLOUT_PERCENTAGE;
+
+  const handleOpenAndroidPromotionDialog = () => {
+    const requestId = ++androidWhatsNewSuggestionRequestIdRef.current;
+    setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
+    setAndroidWhatsNewText("");
+    setAndroidWhatsNewSuggestionNote(null);
+    setIsConfirmingAndroidPromotion(true);
+
+    // Fires only now, on open — not automatically/on a poll — since this
+    // calls an LLM server-side and costs real tokens.
+    fetchAndroidWhatsNewSuggestion()
+      .unwrap()
+      .then(response => {
+        if (androidWhatsNewSuggestionRequestIdRef.current !== requestId) return;
+        if (response.suggestion) {
+          setAndroidWhatsNewText(response.suggestion);
+        } else {
+          setAndroidWhatsNewSuggestionNote(WHATS_NEW_NO_NEW_COMMITS_NOTE);
+        }
+      })
+      .catch(() => {
+        if (androidWhatsNewSuggestionRequestIdRef.current !== requestId) return;
+        setAndroidWhatsNewSuggestionNote(WHATS_NEW_SUGGESTION_FAILED_NOTE);
+      });
+  };
 
   const handlePromoteAndroid = async () => {
     if (!isAndroidRolloutPercentageValid) return;
@@ -485,11 +518,7 @@ export const MobileReleases: FC = () => {
                     isVersionsError ||
                     !versions?.android.versionName
                   }
-                  onClick={() => {
-                    setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
-                    setAndroidWhatsNewText("");
-                    setIsConfirmingAndroidPromotion(true);
-                  }}
+                  onClick={handleOpenAndroidPromotionDialog}
                 >
                   Promote Android to Production
                 </Button>
@@ -667,13 +696,19 @@ export const MobileReleases: FC = () => {
               helperText={
                 androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH
                   ? `${androidWhatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before promoting.`
-                  : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+                  : androidWhatsNewSuggestionNote
+                    ? `${androidWhatsNewSuggestionNote} Shown on the Play Store production listing.`
+                    : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
               }
               invalid={androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH}
-              placeholder="e.g. Bug fixes and performance improvements"
+              placeholder={
+                isFetchingAndroidWhatsNewSuggestion
+                  ? "Generating a suggestion from recent commits…"
+                  : "e.g. Bug fixes and performance improvements"
+              }
               value={androidWhatsNewText}
               onChange={e => setAndroidWhatsNewText(e.target.value)}
-              disabled={isPromotingAndroid}
+              disabled={isPromotingAndroid || isFetchingAndroidWhatsNewSuggestion}
               rows={4}
             />
           </div>
