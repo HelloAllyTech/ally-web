@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   EMPTY_ADVANCED_FILTERS,
   RoadmapAdvancedFilterValues,
   countActiveAdvancedFilters,
+  toIsoDate,
 } from "../utils/filters";
 
 const withValues = (patch: Partial<RoadmapAdvancedFilterValues>): RoadmapAdvancedFilterValues => ({
@@ -64,5 +65,48 @@ describe("countActiveAdvancedFilters", () => {
         }),
       ),
     ).toBe(4);
+  });
+});
+
+/**
+ * The date the calendar shows and the date that gets stored have to be the same day. They were
+ * not: `toISOString()` converts to UTC first, and in IST (UTC+5:30) the local midnight Carbon
+ * hands back is still the previous day there — picking Sep 1 to Sep 2 stored Aug 31 to Sep 1, and
+ * because the stored value is fed straight back in as the controlled `value`, the range the user
+ * clicked was simply not settable.
+ */
+describe("toIsoDate", () => {
+  const originalTz = process.env.TZ;
+
+  // Pinned to IST rather than left on the runner's TZ: under TZ=UTC the old
+  // `toISOString().slice(0, 10)` is indistinguishable from the fix, so a test that did not force
+  // an offset would go green against the bug it exists to catch.
+  beforeAll(() => {
+    process.env.TZ = "Asia/Kolkata";
+  });
+  afterAll(() => {
+    process.env.TZ = originalTz;
+  });
+
+  it("keeps the local calendar day the user clicked", () => {
+    // Local midnight in IST is 18:30 the PREVIOUS day in UTC — the exact case that stored
+    // Aug 31–Sep 1 for a Sep 1–Sep 2 pick.
+    expect(new Date(2026, 8, 1).toISOString().slice(0, 10)).toBe("2026-08-31"); // the old result
+    expect(toIsoDate(new Date(2026, 8, 1))).toBe("2026-09-01");
+    expect(toIsoDate(new Date(2026, 8, 2))).toBe("2026-09-02");
+  });
+
+  it("keeps the local calendar day across a month and year boundary", () => {
+    expect(toIsoDate(new Date(2026, 0, 1))).toBe("2026-01-01");
+    expect(toIsoDate(new Date(2025, 11, 31))).toBe("2025-12-31");
+  });
+
+  it("pads single-digit months and days", () => {
+    expect(toIsoDate(new Date(2026, 2, 7))).toBe("2026-03-07");
+  });
+
+  it('reads a cleared or invalid bound as "" rather than a bogus date', () => {
+    expect(toIsoDate(undefined)).toBe("");
+    expect(toIsoDate(new Date(Number.NaN))).toBe("");
   });
 });
