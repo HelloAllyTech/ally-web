@@ -41,6 +41,10 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({
   }, [isRenaming]);
 
   const debouncedUpdateSummaryName = useDebounce((summaryName: string) => {
+    // Clearing the field is a step in renaming, not a rename to nothing: the
+    // API requires a non-empty summaryName and answers 400 otherwise, so the
+    // autosave waits for the replacement instead of saving the blank pause.
+    if (!summaryName.trim()) return;
     updateCallInfo({
       chatId,
       callInfo: { summaryName },
