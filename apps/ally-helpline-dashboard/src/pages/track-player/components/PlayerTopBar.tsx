@@ -13,6 +13,7 @@ interface PlayerTopBarProps {
   currentItemId: string;
   overallPct: number;
   onExit: () => void;
+  onSegmentClick: (itemId: string) => void;
 }
 
 /**
@@ -25,6 +26,7 @@ export const PlayerTopBar: FC<PlayerTopBarProps> = ({
   currentItemId,
   overallPct,
   onExit,
+  onSegmentClick,
 }) => {
   const { t } = useTranslation();
 
@@ -45,7 +47,11 @@ export const PlayerTopBar: FC<PlayerTopBarProps> = ({
           {t("tracks2.player.overallProgress", { pct: overallPct })}
         </span>
       </div>
-      <SegmentedProgressRail sectionItems={sectionItems} currentItemId={currentItemId} />
+      <SegmentedProgressRail
+        sectionItems={sectionItems}
+        currentItemId={currentItemId}
+        onSegmentClick={onSegmentClick}
+      />
     </header>
   );
 };
