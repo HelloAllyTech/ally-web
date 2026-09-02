@@ -686,6 +686,32 @@ describe("AdminLogsTable", () => {
   });
 
   // -------------------------------------------------------------------------
+  describe("Call tags query permission gating", () => {
+    // Roleplay/simulation-only admins hold VIEW_ADMIN_SCENARIO_SESSION but not
+    // VIEW_CONSOLIDATED_LOGS, and the tags endpoint is call-log-gated — fetching
+    // it unconditionally on the Organization Logs simulation tab 403s.
+    it("skips the call tags query when viewing simulation logs", async () => {
+      renderComponent(SessionType.SIMULATION);
+      await waitFor(() => {
+        expect(vi.mocked(useGetCallTagsQuery)).toHaveBeenCalledWith(
+          { offset: 0 },
+          expect.objectContaining({ skip: true }),
+        );
+      });
+    });
+
+    it("does not skip the call tags query when viewing call logs", async () => {
+      renderComponent(SessionType.CALL);
+      await waitFor(() => {
+        expect(vi.mocked(useGetCallTagsQuery)).toHaveBeenCalledWith(
+          { offset: 0 },
+          expect.objectContaining({ skip: false }),
+        );
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   describe("Delete functionality", () => {
     beforeEach(() => {
       mockUseGetAdminCallLogsQuery.mockReturnValue({
