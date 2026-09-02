@@ -17,6 +17,7 @@ vi.mock("@api", () => ({
   useTriggerAndroidPromotionMutation: () => [vi.fn(), { isLoading: false }],
   useSubmitIosAppStoreReviewMutation: () => [vi.fn(), { isLoading: false }],
   useLazyGetIosWhatsNewSuggestionQuery: () => [vi.fn(), { isFetching: false }],
+  useLazyGetAndroidWhatsNewSuggestionQuery: () => [vi.fn(), { isFetching: false }],
 }));
 
 vi.mock("@components", () => ({
