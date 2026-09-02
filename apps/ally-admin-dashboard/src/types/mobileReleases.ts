@@ -198,14 +198,18 @@ export interface IosAppStoreReviewSubmissionsResponse {
 }
 
 /**
- * GET /v1/mobile-releases/ios-whats-new-suggestion — an LLM-generated draft of
- * the "What's New" App Store text, summarized server-side from the commits
- * since the last release. Gated by the same permission as the submit button
- * itself (SUBMIT_APP_STORE_REVIEW), but calls an LLM and costs real tokens,
- * so the frontend must only fetch this on-demand (when the operator is about
- * to open the submit dialog) — never automatically or on a poll.
+ * GET /v1/mobile-releases/ios-whats-new-suggestion and its
+ * android-whats-new-suggestion counterpart — an LLM-generated draft of the
+ * "What's New" text, summarized server-side from the commits since the last
+ * release. Platform-agnostic in practice (same commits, same prompt, so the
+ * two endpoints return identical text at any given moment) — split in two
+ * only so each carries its own permission gate (SUBMIT_APP_STORE_REVIEW /
+ * PROMOTE_MOBILE_RELEASES) matched to the action it prefills. Both call an
+ * LLM and cost real tokens, so the frontend must only fetch on-demand (when
+ * the operator is about to open the relevant dialog) — never automatically
+ * or on a poll.
  */
-export interface IosWhatsNewSuggestionResponse {
+export interface WhatsNewSuggestionResponse {
   /** Null when there are no new commits since the last release to summarize. */
   suggestion: string | null;
 }
