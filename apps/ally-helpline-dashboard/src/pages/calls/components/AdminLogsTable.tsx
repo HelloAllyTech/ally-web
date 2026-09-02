@@ -124,7 +124,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const { data: callLogs = [] } = callLogsData || {};
   const { data: simulationLogs = [] } = simulationLogsData || {};
   const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
-  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
+  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 }, { skip: !isCall });
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
   const isError = isCall ? isCallLogsError : isSimulationLogsError;
