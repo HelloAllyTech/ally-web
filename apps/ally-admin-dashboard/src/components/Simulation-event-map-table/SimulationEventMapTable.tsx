@@ -130,6 +130,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   // resolves gets silently reverted (and never re-sent).
   const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
   const isSavingRef = useRef(false);
+  const reloadTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
@@ -353,7 +354,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   const onReloadMappedEvents = () => {
     refetchSessionEvents?.();
     refetchMappedEvents?.();
-    setTimeout(() => {
+    if (reloadTimeoutRef.current) {
+      clearTimeout(reloadTimeoutRef.current);
+    }
+    reloadTimeoutRef.current = setTimeout(() => {
       updateEventOrderMapping(mappedEvents);
       // Target the NotionTable's scrollable container (has overflow-auto class)
       const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
@@ -425,6 +429,22 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
       }, DEBOUNCE_DELAY);
     },
     [saveEventsToApi],
+  );
+
+  // Both timers above outlive the component if they are not cancelled: the
+  // reload one calls setState from its callback, which after an unmount threw
+  // from inside React and surfaced in CI as an unhandled error attributed to
+  // whichever test happened to be running.
+  useEffect(
+    () => () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+      }
+      if (debouncedSaveTimeoutRef.current) {
+        clearTimeout(debouncedSaveTimeoutRef.current);
+      }
+    },
+    [],
   );
 
   // Helper function to update an event by ID
