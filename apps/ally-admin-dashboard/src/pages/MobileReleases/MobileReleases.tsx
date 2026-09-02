@@ -18,6 +18,7 @@ import {
 import {
   useGetMinimumAndroidVersionQuery,
   useGetMinimumIosVersionQuery,
+  useLazyGetAndroidWhatsNewSuggestionQuery,
   useLazyGetIosWhatsNewSuggestionQuery,
   useSubmitIosAppStoreReviewMutation,
   useTriggerAndroidPromotionMutation,
@@ -101,6 +102,11 @@ export const MobileReleases: FC = () => {
     : null;
 
   const releaseInProgress = isReleaseInProgress(runs);
+  // While this hasn't finished loading (or failed to), appStoreReviewHistory defaults to []
+  // — indistinguishable from "genuinely never submitted" — so matchingSubmission must not be
+  // trusted as a real answer yet; treat it as unknown rather than "not submitted".
+  const isAppStoreSubmissionStatusUnknown =
+    isAppStoreReviewHistoryLoading || isAppStoreReviewHistoryError;
   const matchingSubmission = testflightStatus?.buildVersion
     ? appStoreReviewHistory.find(entry => entry.versionString === testflightStatus.buildVersion)
     : undefined;
@@ -110,8 +116,15 @@ export const MobileReleases: FC = () => {
   // is a real, legitimate thing to do, just one the operator should do knowingly.
   const iosAlreadySubmittedWarning = matchingSubmission
     ? `Build ${testflightStatus?.buildVersion} was already submitted on ${formatDateTime(matchingSubmission.submittedDate)} — status: ${getAppStoreReviewSubmissionStatusDisplay(matchingSubmission.state).label}. Submitting again may error or create a duplicate submission.`
-    : null;
-  const recommendedAction = deriveRecommendedAction(testflightStatus, appStoreReviewHistory);
+    : isAppStoreSubmissionStatusUnknown && testflightStatus?.buildVersion
+      ? `Couldn't confirm whether build ${testflightStatus.buildVersion} was already submitted for review — App Store review history hasn't finished loading. Check App Store Connect before submitting, to avoid a duplicate.`
+      : null;
+  const recommendedAction = deriveRecommendedAction(
+    testflightStatus,
+    appStoreReviewHistory,
+    isAppStoreReviewHistoryLoading,
+    isAppStoreReviewHistoryError,
+  );
   const currentBuildUploadedDate =
     testflightHistory.find(entry => entry.buildId === testflightStatus?.buildId)?.uploadedDate ??
     null;
@@ -156,12 +169,44 @@ export const MobileReleases: FC = () => {
     DEFAULT_ANDROID_ROLLOUT_PERCENTAGE,
   );
   const [androidWhatsNewText, setAndroidWhatsNewText] = useState("");
+  const [androidWhatsNewSuggestionNote, setAndroidWhatsNewSuggestionNote] = useState<string | null>(
+    null,
+  );
   const [triggerAndroidPromotion, { isLoading: isPromotingAndroid }] =
     useTriggerAndroidPromotionMutation();
+  const [fetchAndroidWhatsNewSuggestion, { isFetching: isFetchingAndroidWhatsNewSuggestion }] =
+    useLazyGetAndroidWhatsNewSuggestionQuery();
+  // Same stale-response guard as whatsNewSuggestionRequestIdRef below, for the Android dialog.
+  const androidWhatsNewSuggestionRequestIdRef = useRef(0);
   const isAndroidRolloutPercentageValid =
     Number.isInteger(androidRolloutPercentage) &&
     androidRolloutPercentage >= MIN_ROLLOUT_PERCENTAGE &&
     androidRolloutPercentage <= MAX_ROLLOUT_PERCENTAGE;
+
+  const handleOpenAndroidPromotionDialog = () => {
+    const requestId = ++androidWhatsNewSuggestionRequestIdRef.current;
+    setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
+    setAndroidWhatsNewText("");
+    setAndroidWhatsNewSuggestionNote(null);
+    setIsConfirmingAndroidPromotion(true);
+
+    // Fires only now, on open — not automatically/on a poll — since this
+    // calls an LLM server-side and costs real tokens.
+    fetchAndroidWhatsNewSuggestion()
+      .unwrap()
+      .then(response => {
+        if (androidWhatsNewSuggestionRequestIdRef.current !== requestId) return;
+        if (response.suggestion) {
+          setAndroidWhatsNewText(response.suggestion);
+        } else {
+          setAndroidWhatsNewSuggestionNote(WHATS_NEW_NO_NEW_COMMITS_NOTE);
+        }
+      })
+      .catch(() => {
+        if (androidWhatsNewSuggestionRequestIdRef.current !== requestId) return;
+        setAndroidWhatsNewSuggestionNote(WHATS_NEW_SUGGESTION_FAILED_NOTE);
+      });
+  };
 
   const handlePromoteAndroid = async () => {
     if (!isAndroidRolloutPercentageValid) return;
@@ -389,25 +434,29 @@ export const MobileReleases: FC = () => {
           onSubmitReview={handleOpenAppStoreReviewDialog}
         />
 
-        {!isVersionsLoading && !isVersionsError && versions?.android.versionName && (
-          <div>
-            <h3 className="text-sm font-medium text-typography-900 mb-2">
-              Current Android build's pipeline
-            </h3>
-            <AndroidReleasePipeline
-              androidVersionName={versions.android.versionName}
-              androidVersionCode={versions.android.versionCode}
-              lastBuildRun={lastAndroidBuildRun}
-              lastPromoteRun={lastAndroidPromoteRun}
-              productionStatus={androidProductionStatus}
-              isProductionStatusLoading={isAndroidProductionStatusLoading}
-              isProductionStatusError={isAndroidProductionStatusError}
-              currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
-              isMinAndroidVersionLoading={isMinAndroidVersionLoading}
-              onUpdateMinVersion={handleOpenMinVersionDialog}
-            />
-          </div>
-        )}
+        {!isVersionsLoading &&
+          !isVersionsError &&
+          !isRunsLoading &&
+          !isRunsError &&
+          versions?.android.versionName && (
+            <div>
+              <h3 className="text-sm font-medium text-typography-900 mb-2">
+                Current Android build's pipeline
+              </h3>
+              <AndroidReleasePipeline
+                androidVersionName={versions.android.versionName}
+                androidVersionCode={versions.android.versionCode}
+                lastBuildRun={lastAndroidBuildRun}
+                lastPromoteRun={lastAndroidPromoteRun}
+                productionStatus={androidProductionStatus}
+                isProductionStatusLoading={isAndroidProductionStatusLoading}
+                isProductionStatusError={isAndroidProductionStatusError}
+                currentMinAndroidVersion={currentMinAndroidVersion?.minimumSupportedVersion}
+                isMinAndroidVersionLoading={isMinAndroidVersionLoading}
+                onUpdateMinVersion={handleOpenMinVersionDialog}
+              />
+            </div>
+          )}
 
         {!isTestflightStatusLoading &&
           !isTestflightStatusError &&
@@ -419,6 +468,7 @@ export const MobileReleases: FC = () => {
               <IosReleasePipeline
                 testflightStatus={testflightStatus}
                 matchingSubmission={matchingSubmission}
+                isMatchingSubmissionUnknown={isAppStoreSubmissionStatusUnknown}
                 buildUploadedDate={currentBuildUploadedDate}
                 currentMinIosVersion={currentMinIosVersion?.minimumSupportedVersion}
                 isMinIosVersionLoading={isMinIosVersionLoading}
@@ -468,11 +518,7 @@ export const MobileReleases: FC = () => {
                     isVersionsError ||
                     !versions?.android.versionName
                   }
-                  onClick={() => {
-                    setAndroidRolloutPercentage(DEFAULT_ANDROID_ROLLOUT_PERCENTAGE);
-                    setAndroidWhatsNewText("");
-                    setIsConfirmingAndroidPromotion(true);
-                  }}
+                  onClick={handleOpenAndroidPromotionDialog}
                 >
                   Promote Android to Production
                 </Button>
@@ -650,13 +696,19 @@ export const MobileReleases: FC = () => {
               helperText={
                 androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH
                   ? `${androidWhatsNewText.length}/${WHATS_NEW_MAX_LENGTH} characters — trim it before promoting.`
-                  : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
+                  : androidWhatsNewSuggestionNote
+                    ? `${androidWhatsNewSuggestionNote} Shown on the Play Store production listing.`
+                    : "Shown on the Play Store production listing. Google Play doesn't carry release notes over from the internal track automatically, so leaving this blank promotes with none at all."
               }
               invalid={androidWhatsNewText.length > WHATS_NEW_MAX_LENGTH}
-              placeholder="e.g. Bug fixes and performance improvements"
+              placeholder={
+                isFetchingAndroidWhatsNewSuggestion
+                  ? "Generating a suggestion from recent commits…"
+                  : "e.g. Bug fixes and performance improvements"
+              }
               value={androidWhatsNewText}
               onChange={e => setAndroidWhatsNewText(e.target.value)}
-              disabled={isPromotingAndroid}
+              disabled={isPromotingAndroid || isFetchingAndroidWhatsNewSuggestion}
               rows={4}
             />
           </div>
