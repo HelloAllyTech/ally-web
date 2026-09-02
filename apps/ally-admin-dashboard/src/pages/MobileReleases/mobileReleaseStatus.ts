@@ -256,10 +256,10 @@ export const deriveRecommendedAction = (
 
   if (matchingSubmission.state === "COMPLETE") {
     return {
-      severity: "attention",
-      title: `iOS ${testflightStatus.buildVersion} has completed review`,
+      severity: "clear",
+      title: `iOS ${testflightStatus.buildVersion} approved — releasing automatically`,
       description:
-        "Apple has finished reviewing this version. Release it manually in App Store Connect when you're ready for real users to get it.",
+        "Release is set to automatic, so this goes live to every user on its own; no click needed. Check the pipeline below for when it reaches READY_FOR_DISTRIBUTION.",
     };
   }
 

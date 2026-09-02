@@ -668,7 +668,7 @@ export const MobileReleases: FC = () => {
           isOpen={isConfirmingAppStoreReview}
           onClose={() => setIsConfirmingAppStoreReview(false)}
           title="Submit for full App Store review?"
-          description="This submits the app for Apple's **full App Store review** — real public distribution, not TestFlight. It assumes the App Store Connect listing (screenshots, description, export compliance, etc.) is already fully prepared for the current version; if it isn't, Apple will reject the submission. Once Apple approves it, someone still has to manually release it in App Store Connect before real users see it — release is **not** automatic — but the review submission itself is real and Apple's review clock starts immediately. This is the most consequential action on this page."
+          description="This submits the app for Apple's **full App Store review** — real public distribution, not TestFlight. It assumes the App Store Connect listing (screenshots, description, export compliance, etc.) is already fully prepared for the current version; if it isn't, Apple will reject the submission. Release is set to **automatic**: the moment Apple approves it, it goes live to every real App Store user — there is no second click to stop it once Apple says yes. This is the most consequential action on this page."
           primaryButton={{
             label: isSubmittingAppStoreReview ? "Submitting…" : "Submit for review",
             onClick: () => void handleSubmitAppStoreReview(),

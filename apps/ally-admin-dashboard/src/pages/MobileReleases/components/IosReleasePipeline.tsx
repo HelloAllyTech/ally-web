@@ -100,8 +100,9 @@ export const IosReleasePipeline: FC<IosReleasePipelineProps> = ({
         `The force-update minimum is already ${currentMinIosVersion}.`
       ) : isReviewComplete ? (
         <>
-          Apple approved {buildVersion}. Once you've confirmed it's actually released in App Store
-          Connect, you can raise the minimum version to match.
+          Apple approved {buildVersion} — release is automatic, so it's going live on its own, no
+          click needed for that part. The minimum version raises itself once that's confirmed
+          (usually within 30 minutes); use this button only if you want it sooner.
         </>
       ) : (
         `Current minimum is ${currentMinIosVersion ?? "unknown"} — raising it to ${buildVersion} only makes sense once that version is live.`
