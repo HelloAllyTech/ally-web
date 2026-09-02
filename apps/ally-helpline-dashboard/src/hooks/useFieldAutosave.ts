@@ -213,9 +213,19 @@ export function useFieldAutosave({
   useEffect(
     () => () => {
       clearTimer();
-      if (!isEmpty(pendingRef.current) && enabledRef.current) {
-        void onPersistRef.current(clone(pendingRef.current)).catch(() => {});
+      if (isEmpty(pendingRef.current) || !enabledRef.current) return;
+
+      if (inFlightRef.current) {
+        // A save from an earlier keystroke is already in flight. Firing a
+        // second one here would overlap it, and the two could land out of
+        // order and clobber this newer edit. Mark it for rerun instead —
+        // write()'s own completion handler resends whatever's still pending
+        // once the in-flight request settles.
+        rerunRef.current = true;
+        return;
       }
+
+      void onPersistRef.current(clone(pendingRef.current)).catch(() => {});
     },
     [],
   );

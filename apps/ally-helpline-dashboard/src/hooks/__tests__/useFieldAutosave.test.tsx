@@ -292,6 +292,49 @@ describe("useFieldAutosave", () => {
     });
   });
 
+  it("does not fire a concurrent duplicate write on unmount when a save is already in flight", async () => {
+    // Mirrors "never runs two writes concurrently", but for the unmount path:
+    // closing the form the instant an earlier keystroke's autosave is still in
+    // flight must queue behind it, not fire a second overlapping request that
+    // could land out of order and clobber the newer edit.
+    const gate = deferred();
+    let concurrent = 0;
+    let maxConcurrent = 0;
+    const onPersist = vi.fn().mockImplementation(async () => {
+      concurrent += 1;
+      maxConcurrent = Math.max(maxConcurrent, concurrent);
+      await gate.promise;
+      concurrent -= 1;
+    });
+    const { result, unmount } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "first");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(onPersist).toHaveBeenCalledTimes(1);
+
+    // Typed while the first request is still in flight.
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "second");
+    });
+
+    unmount();
+
+    expect(maxConcurrent).toBe(1);
+
+    await act(async () => {
+      gate.resolve();
+      await settle();
+    });
+
+    // The newer edit still gets written, just after the first settles.
+    expect(onPersist).toHaveBeenCalledTimes(2);
+    expect(onPersist).toHaveBeenLastCalledWith({ summary: { keyConcerns: "second" } });
+  });
+
   it("does not write on unmount when nothing is pending", () => {
     const onPersist = vi.fn().mockResolvedValue(undefined);
     const { unmount } = renderHook(() => useFieldAutosave({ onPersist }));
