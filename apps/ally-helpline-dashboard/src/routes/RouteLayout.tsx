@@ -17,6 +17,7 @@ import {
   Blog,
   BlogPost,
   Changelog,
+  Sjt1,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -43,6 +44,8 @@ const RouteLayout = () => {
           <Route path={ROUTES.BLOG} element={<Blog />} />
           <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
           <Route path={ROUTES.CHANGELOG} element={<Changelog />} />
+          {/* Standalone situational-judgement self-check — no nav, no sign-in */}
+          <Route path={ROUTES.SJT1} element={<Sjt1 />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}
