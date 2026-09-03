@@ -23,7 +23,8 @@ export const SJT1_DESCRIPTION =
  * Public, unauthenticated situational judgement self-check, served at /SJT1.
  *
  * Deliberately standalone: no nav bar, no sign-in, no API calls, and its own
- * editorial styling in sjt.css rather than the app's Carbon tokens — the page
+ * styling in sjt.css — Claude's design system, serif-only — rather than the
+ * app's Carbon tokens, so the page
  * is meant to be handed to a teacher as a link and work on the first tap.
  *
  * The one thing it does persist is the run itself, in this browser only, so a
