@@ -3356,6 +3356,11 @@ export const en = {
         fixRunsHeading: "Median fix runs, weekly",
         timeToMergeHeading: "Median time to merge, weekly",
       },
+      failureTags: {
+        heading: "Where the losses come from",
+        subheading:
+          "Every failure tag across the window, biggest cause first. A tag counts once per build it was recorded against.",
+      },
       table: {
         heading: "Every build in this window",
         columnTitle: "Build",

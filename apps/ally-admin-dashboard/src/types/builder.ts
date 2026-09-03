@@ -431,7 +431,12 @@ export interface BuilderScoreboardBuild {
   repos: string[];
   createdAt: string;
   outcome: BuilderScoreboardOutcome;
+  /** First dispatch to last completion — includes any wait for a person. */
   durationHours: number | null;
+  /** The sum of the runs' own wall clocks: machine time only. */
+  machineMinutes: number | null;
+  /** The remainder — time parked on a question. Null when unmeasurable. */
+  humanWaitMinutes: number | null;
   costUsd: number;
   runCount: number;
   fixRunCount: number;
@@ -462,6 +467,12 @@ export interface BuilderScoreboard {
   builds: BuilderScoreboardBuild[];
   trends: BuilderScoreboardTrendWeek[];
   totals: BuilderScoreboardTotals;
+  /**
+   * Where the losses come from, across the window. The backend has always
+   * returned this; nothing rendered it, so the one view that could point effort
+   * at a cause showed only per-build tags you had to tally by eye.
+   */
+  failureTags: { tag: string; count: number }[];
 }
 
 /* ── Pipeline health: where a run's time and money go ───────────────────────
