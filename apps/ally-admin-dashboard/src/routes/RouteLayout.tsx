@@ -36,6 +36,7 @@ import {
   BugHunter,
   Builder,
   BuilderKnowledge,
+  BuilderPipeline,
   BuilderScoreboard,
   BuilderSession,
   BuilderSettings,
@@ -436,6 +437,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
               <BuilderSettings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_PIPELINE}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderPipeline />
             </PrivateLayout>
           }
         />

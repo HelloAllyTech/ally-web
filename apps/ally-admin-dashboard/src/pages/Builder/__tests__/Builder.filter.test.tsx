@@ -8,6 +8,7 @@ vi.mock("@icons", () => ({
   Settings: () => <svg />,
   BarChart3: () => <svg />,
   Book: () => <svg />,
+  Timer: () => <svg />,
 }));
 
 vi.mock("@components/builder", () => ({

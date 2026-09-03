@@ -511,6 +511,9 @@ export const ApiEndpoints = {
     NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
     // Scoreboard + knowledge (lessons/exemplars) — the visibility surfaces.
     SCOREBOARD: "/v1/builder/scoreboard",
+    // Where a run's time and money go. The scoreboard answers "is Builder
+    // getting better"; this answers "and what would make it faster".
+    PIPELINE_HEALTH: "/v1/builder/pipeline-health",
     LESSONS: "/v1/builder/lessons",
     LESSON_BY_ID: (id: string) => `/v1/builder/lessons/${id}`,
     LESSONS_CONSOLIDATE: "/v1/builder/lessons/consolidate",
@@ -638,6 +641,7 @@ export const ROUTES = {
   BUILDER_SESSION: (id: string) => `/builder/${id}`,
   BUILDER_SETTINGS: "/builder/settings",
   BUILDER_SCOREBOARD: "/builder/scoreboard",
+  BUILDER_PIPELINE: "/builder/pipeline",
   BUILDER_KNOWLEDGE: "/builder/knowledge",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
