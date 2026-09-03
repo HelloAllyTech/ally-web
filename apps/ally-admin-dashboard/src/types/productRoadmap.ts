@@ -515,4 +515,18 @@ export interface RoadmapReadinessReport {
    * something; the model is instructed to ask rather than invent a user group or a benefit.
    */
   redraft: string | null;
+  /**
+   * This verdict, signed by the server, to be handed back as `readinessToken` when filing.
+   *
+   * OPAQUE — never parse it or read anything out of it. The verdicts are already in `results`
+   * in a shape built for rendering; this exists so the gate can be enforced on the WRITE
+   * rather than only in this bundle's `canSave`. It binds the description and the goal it was
+   * graded against and expires, so a stale one is refused server-side with the same rule the
+   * drawer applies locally.
+   *
+   * Optional so a bundle deployed against an older ally-be still type-checks and still files
+   * — the field simply will not be there, and the server is lenient about an absent token for
+   * one release. Never synthesise a value for it.
+   */
+  token?: string;
 }

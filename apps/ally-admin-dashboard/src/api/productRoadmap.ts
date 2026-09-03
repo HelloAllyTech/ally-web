@@ -232,6 +232,20 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
          * URLs this API presigned are accepted; the backend answers 422 for anything else.
          */
         referenceImages?: RoadmapReferenceImage[];
+        /**
+         * The `token` from this draft's readiness check, verbatim.
+         *
+         * This is what makes the checklist a real gate: the server verifies that the draft being
+         * filed is the draft that was graded, and refuses a tampered, expired or stale one with a
+         * 400. Absent means ungated for one release — see the drawer for why it can be missing.
+         */
+        readinessToken?: string;
+        /**
+         * File despite failing readiness items. The backend answers 403 unless the caller holds
+         * edit:admin:product-roadmap AND the product_roadmap_manage toggle, so this is the
+         * server-side half of the drawer's override toggle rather than a hint to it.
+         */
+        readinessOverride?: boolean;
       }
     >({
       query: body => ({

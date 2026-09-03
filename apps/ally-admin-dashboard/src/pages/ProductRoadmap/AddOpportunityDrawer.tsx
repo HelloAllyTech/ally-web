@@ -11,7 +11,7 @@ import {
   useGetRoadmapReadinessCriteriaQuery,
   useRoadmapAiDuplicatesMutation,
 } from "@api";
-import { Button } from "@components";
+import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   RoadmapDuplicateMatch,
@@ -72,8 +72,9 @@ interface AddOpportunityDrawerProps {
   goals: RoadmapTaxonomyItem[];
   /**
    * EDIT_PRODUCT_ROADMAP plus the manage toggle — the same value the board and the edit drawer
-   * gate on. Here it gates ONE control, the owner picker; everything else in this drawer is
-   * open to any filer, because filing itself sits on the vote tier.
+   * gate on. Here it gates TWO controls: the owner picker, and the readiness override (see the
+   * docblock below). Everything else in this drawer is open to any filer, because filing itself
+   * sits on the vote tier.
    */
   canManage: boolean;
   onClose: () => void;
@@ -145,6 +146,45 @@ interface AddOpportunityDrawerProps {
  * opportunity is worse than a visible gap — and since accepting re-opens the gate, a bracket
  * left unfilled fails the next check rather than reaching the board.
  *
+ * ## The override, for platform admins who manage the board
+ *
+ * A manage-tier admin (`canManage`) gets one extra control: a toggle that opens the gate with
+ * red rows standing. It exists because the grader is a model and the board has curators — a
+ * verdict that is simply wrong should cost the person who owns the board a toggle, not a
+ * rewrite of a draft that was already clear.
+ *
+ * THE OVERRIDE IS NOT A WAY PAST THE CHECK, ONLY PAST ITS VERDICT. It renders only while
+ * `hasChecked` — so the check has to have been run, and the reasons have to be on screen
+ * above it — and only while something is actually red, so there is nothing to grant when the
+ * gate is already open. Both halves matter: an override offered before the check would let an
+ * admin file without ever reading what the model thought, which is the one thing the gate is
+ * for.
+ *
+ * It clears on every run of the check, in `runCheck`, and it is bound to the verdicts the same
+ * way they are bound to the text: an edit makes `hasChecked` false, which hides the toggle and
+ * closes the gate, and the next check starts from not-overridden. A stale override silently
+ * re-applying to a different draft would be worse than no gate at all, because the row would
+ * look graded.
+ *
+ * It is a decision, not a preference, so nothing persists it in the BROWSER — no localStorage,
+ * no default-on per user. The button relabels to "File anyway" while it is on, so the last
+ * thing an admin reads before filing says what they are doing.
+ *
+ * ## None of the above is the enforcement
+ *
+ * Everything in this file is a control in a bundle, and a bundle can be bypassed with curl. The
+ * gate is enforced by `POST /opportunities`: the readiness check returns its verdict SIGNED,
+ * this drawer hands that token back as `readinessToken`, and the server verifies the draft
+ * being filed is the draft that was graded — so the staleness rule above is its rule too, not
+ * just ours. `readinessOverride` goes with it, and the server answers 403 unless the caller
+ * holds the permission AND the product_roadmap_manage toggle, which is what makes `canManage`
+ * here a mirror of a real rule rather than the rule itself. An override is recorded on the
+ * filed row (who, when, and which items were red).
+ *
+ * So the three conditions above are about not MISLEADING anyone — don't show a control that
+ * would 403, don't offer an escape hatch before the reasons are on screen. They are not what
+ * stops an unready row reaching the board.
+ *
  * The two buttons that used to sit under the goal picker are both deprecated. "Review"
  * critiqued the draft into an issue/tip list; "Improve wording" rewrote it in place. Each put
  * a round trip between writing and filing, on a form whose whole job is to capture a thought
@@ -187,6 +227,26 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
     description: string;
     productGoal: string;
   } | null>(null);
+  /**
+   * The server's signed copy of `verdicts`, handed back on save so the gate is enforced on the
+   * WRITE and not only by `canSave` below.
+   *
+   * Kept in step with `checkedAgainst` — set and cleared in exactly the same places — because a
+   * token that outlived the verdicts it describes would be refused server-side anyway (it binds
+   * the text it graded), and sending one for a draft this drawer considers stale would turn a
+   * closed gate into a confusing 400 instead of a disabled button.
+   *
+   * Undefined against an older ally-be, which does not issue one. Sent as undefined in that
+   * case rather than as a placeholder: the server is lenient about an ABSENT token for one
+   * release and strict about a bad one, so inventing a value is the one thing that would break.
+   */
+  const [readinessToken, setReadinessToken] = useState<string | undefined>(undefined);
+  /**
+   * A manage-tier admin's decision to file against red rows — see the docblock. Cleared by
+   * every `runCheck`, and inert whenever the toggle is not rendered, so it can only ever apply
+   * to the verdicts that were on screen when it was flipped.
+   */
+  const [overrideReadiness, setOverrideReadiness] = useState(false);
 
   /** Same shape OpportunityDrawer builds for its own goal picker. */
   const goalItems = useMemo(
@@ -269,6 +329,9 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
 
   const runCheck = async () => {
     const trimmed = description.trim();
+    // Before the call, not after: a check that is running has no verdicts to override yet, and
+    // an override left standing across a re-run would apply to a reading nobody has seen.
+    setOverrideReadiness(false);
     try {
       const result = await checkReadiness({
         description: trimmed,
@@ -280,6 +343,7 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       setEffort(result.effort ?? "");
       setEffortReason(result.effort ? (result.effortReason ?? "") : "");
       setRedraft(result.redraft?.trim() || null);
+      setReadinessToken(result.token);
       setCheckedAgainst({ description: trimmed, productGoal });
       if ((result.results ?? []).every(r => r.passed)) {
         toast.success("Ready to file.");
@@ -292,38 +356,9 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
       setEffort("");
       setEffortReason("");
       setRedraft(null);
+      setReadinessToken(undefined);
       setCheckedAgainst(null);
       toast.error("Could not run the readiness check right now.");
-    }
-  };
-
-  const save = async () => {
-    try {
-      await createOpportunity({
-        description: description.trim(),
-        // Not a state value any more: this drawer files ideas, full stop. Still sent
-        // explicitly rather than left to a server default, so the row's type is decided
-        // here where the decision is visible rather than in a DTO fallback.
-        type: RoadmapOpportunityType.IDEA,
-        productGoal,
-        // Whatever is in the field at the moment of filing: the check's proposal, or the
-        // human's correction of it. "" means Not sized, which the API takes as null.
-        effort: (effort || null) as RoadmapOpportunityEffort | null,
-        // Omitted rather than sent as null by a filer who cannot manage: the field is not
-        // theirs to send at all, and an explicit null from them would be a 403 waiting to
-        // happen the day the backend stops treating null as "nothing to assign".
-        ...(canManage ? { ownerUserId: ownerUserId ? Number(ownerUserId) : null } : {}),
-        // Sent even when empty. `[]` and omitted mean the same thing on create, and sending the
-        // field unconditionally keeps this call's shape independent of what the user did.
-        referenceImages,
-      }).unwrap();
-      toast.success("Opportunity filed.");
-      onClose();
-    } catch (error) {
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ??
-        "Could not file this opportunity.";
-      toast.error(message);
     }
   };
 
@@ -358,14 +393,76 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
         ? "Not sized. Nobody can weigh an opportunity against the others without one — narrow it until it is sizeable, or set the size yourself."
         : `${effortReason ? `${effortReason} ` : ""}This is a set of opportunities rather than one. Narrow it to the smallest slice that still delivers something, or correct the size if it is wrong.`;
 
+  /** Everything the checklist grades, in one value: the criteria rows and the size row. */
+  const gatePasses = allGreen && sizeFileable;
+
+  /**
+   * Whether the override toggle is on screen at all — see the docblock. Three conditions, and
+   * each removes a different way the override could stop meaning what it says:
+   *
+   * - `canManage`: a manage-tier admin, the tier that owns what reaches the board. A plain
+   *   filer waving their own draft through is the gate not existing.
+   * - `hasChecked`: the check has run against the CURRENT text, so the reasons are on screen
+   *   directly above the toggle. This is the "see the reviews first" half.
+   * - `!gatePasses`: something is red. An override next to five green rows is a control with
+   *   nothing to do, and one people learn to reach for by habit.
+   *
+   * When it goes false the flag stops applying, so an edit closes the gate whether or not the
+   * override was on. `runCheck` clears the flag as well, so it never survives into a re-read.
+   */
+  const canOverride = canManage && hasChecked && !gatePasses;
+  const isOverridden = canOverride && overrideReadiness;
+
+  const save = async () => {
+    try {
+      await createOpportunity({
+        description: description.trim(),
+        // Not a state value any more: this drawer files ideas, full stop. Still sent
+        // explicitly rather than left to a server default, so the row's type is decided
+        // here where the decision is visible rather than in a DTO fallback.
+        type: RoadmapOpportunityType.IDEA,
+        productGoal,
+        // Whatever is in the field at the moment of filing: the check's proposal, or the
+        // human's correction of it. "" means Not sized, which the API takes as null.
+        effort: (effort || null) as RoadmapOpportunityEffort | null,
+        // Omitted rather than sent as null by a filer who cannot manage: the field is not
+        // theirs to send at all, and an explicit null from them would be a 403 waiting to
+        // happen the day the backend stops treating null as "nothing to assign".
+        ...(canManage ? { ownerUserId: ownerUserId ? Number(ownerUserId) : null } : {}),
+        // Sent even when empty. `[]` and omitted mean the same thing on create, and sending the
+        // field unconditionally keeps this call's shape independent of what the user did.
+        referenceImages,
+        // The gate's server-side half. `canSave` has already decided this filing is allowed;
+        // these two let the SERVER decide it as well, which is the point — everything above is
+        // a control in a bundle anyone can bypass with curl.
+        readinessToken,
+        // Only when an override is actually being spent. Sent as undefined otherwise rather
+        // than `false`, so a passing filing carries no claim about an override at all.
+        readinessOverride: isOverridden || undefined,
+      }).unwrap();
+      toast.success("Opportunity filed.");
+      onClose();
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Could not file this opportunity.";
+      toast.error(message);
+    }
+  };
+
   const canSave =
     description.trim().length > 0 &&
     description.length <= DESCRIPTION_MAX &&
     !!productGoal &&
     hasChecked &&
-    allGreen &&
-    sizeFileable &&
+    (gatePasses || isOverridden) &&
     !isSaving;
+
+  /** The red rows the override is standing in for, named so the warning is specific. */
+  const failedLabels = [
+    ...criteria.filter(c => !verdicts[c.id]?.passed).map(c => c.label),
+    ...(sizeFileable ? [] : ["Small enough to ship in one go"]),
+  ];
 
   return (
     <div
@@ -647,6 +744,44 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
                 </div>
               </div>
             )}
+
+            {/* The override. LAST in the section, deliberately below the rewrite: the fix is
+                the thing to read first, and an escape hatch offered above it is the one people
+                take without reading either. Warning tone rather than the destructive red the
+                failed rows use — this is a sanctioned decision by the person who owns the
+                board, not an error.
+
+                It names the rows it is standing in for, so the toggle cannot be flipped
+                without the specific verdicts being overridden in view. */}
+            {canOverride && (
+              <div className="border-warning-200 bg-warning-50 flex flex-col gap-2 border p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-typography-primary text-sm">
+                      Override the readiness check
+                    </span>
+                    <Tooltip
+                      label="Files this opportunity with the red items standing. For platform admins who manage the board, for when the check has judged a clear draft wrongly — the reasons above are the model's, not a rule. It resets every time you run the check again, and editing the text closes the gate as usual."
+                      align="top"
+                    >
+                      <button type="button" className="inline-flex cursor-pointer items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  <ToggleSwitch
+                    enabled={overrideReadiness}
+                    onChange={setOverrideReadiness}
+                    label="Override the readiness check"
+                  />
+                </div>
+                <p className="text-typography-secondary text-xs">
+                  {overrideReadiness
+                    ? `Filing anyway, against: ${failedLabels.join("; ")}.`
+                    : "Only if the check is wrong. Narrowing or rewording the draft is the better answer whenever it is not."}
+                </p>
+              </div>
+            )}
           </section>
 
           {duplicates.length > 0 && (
@@ -681,8 +816,12 @@ export const AddOpportunityDrawer: React.FC<AddOpportunityDrawerProps> = ({
           >
             {isChecking ? "Checking…" : "Check readiness"}
           </Button>
+          {/* Relabelled while the override is on, so the last thing read before the click says
+              what the click does. Not a different variant or a colour change: it is still the
+              primary action of the drawer, and dressing it as destructive would overstate a
+              filed opportunity that anyone can edit afterwards. */}
           <Button variant={ButtonVariant.PRIMARY} onClick={save} disabled={!canSave}>
-            {isSaving ? "Filing…" : "File opportunity"}
+            {isSaving ? "Filing…" : isOverridden ? "File anyway" : "File opportunity"}
           </Button>
         </footer>
       </aside>
