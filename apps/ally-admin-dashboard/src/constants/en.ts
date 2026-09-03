@@ -3033,6 +3033,16 @@ export const en = {
     noReposYet: "Not decided yet",
     retryBuild: "Retry build",
     sessionGone: "This session is gone — start a new one.",
+    showArchivedLabel: "Show archived",
+    archiveAction: "Archive",
+    unarchiveAction: "Unarchive",
+    archiveSuccess: "Build archived.",
+    archiveFailed: "Couldn't archive that build.",
+    unarchiveSuccess: "Build restored.",
+    unarchiveFailed: "Couldn't restore that build.",
+    archivedEmptyTitle: "No archived builds yet",
+    archivedEmptyBody:
+      "Builds you archive from the default view show up here, and can be restored any time.",
 
     // Start-build dialog — also used for a retry from FAILED, since the
     // backend accepts start-build from either state with the same payload.

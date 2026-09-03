@@ -43,8 +43,16 @@ export interface BuilderSession {
   totalCostUsd: string;
   runnerMinutes: number;
   error: string | null;
+  /** Set once the creator archives the session out of their default feed. */
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** The archived-only feed view: paginated, unlike the default list above. */
+export interface BuilderArchivedSessionsPage {
+  sessions: BuilderSession[];
+  totalCount: number;
 }
 
 /* ── PRD document ───────────────────────────────────────────────────────── */

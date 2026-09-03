@@ -16,6 +16,7 @@ vi.mock("@components/builder", () => ({
 
 vi.mock("@components", () => ({
   cellTypes: {},
+  ListPagination: () => <div>ListPaginationStub</div>,
   ListToolbar: ({ searchValue, onSearchChange, filterChips, addFilterCta }: any) => (
     <div>
       <input
@@ -69,12 +70,27 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       {children}
     </button>
   ),
+  Checkbox: ({ id, labelText, checked, onChange }: any) => (
+    <label htmlFor={id}>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={event => onChange(event, { checked: event.target.checked })}
+      />
+      {labelText}
+    </label>
+  ),
   InlineNotification: ({ title }: any) => <div>{title}</div>,
   SkeletonText: () => <div>Loading…</div>,
   Tag: ({ children }: any) => <span>{children}</span>,
   Tile: ({ children, onClick }: any) => <div onClick={onClick}>{children}</div>,
   AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
-    <textarea placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} />
+    <textarea
+      placeholder={placeholder}
+      value={value}
+      onChange={event => onChange(event.target.value)}
+    />
   ),
 }));
 
@@ -86,7 +102,15 @@ vi.mock("@api", () => ({
     getSessionsSpy(...args);
     return { data: sessions, isLoading: false, isError: false };
   },
+  useGetArchivedBuilderSessionsQuery: () => ({
+    data: { sessions: [], totalCount: 0 },
+    isLoading: false,
+    isFetching: false,
+    isError: false,
+  }),
   useCreateBuilderSessionMutation: () => [vi.fn(), { isLoading: false }],
+  useArchiveBuilderSessionMutation: () => [vi.fn(() => ({ unwrap: () => Promise.resolve() }))],
+  useUnarchiveBuilderSessionMutation: () => [vi.fn(() => ({ unwrap: () => Promise.resolve() }))],
 }));
 
 // eslint-disable-next-line import/first
@@ -106,6 +130,7 @@ const session = (overrides: Partial<BuilderSession> = {}): BuilderSession => ({
   totalCostUsd: "0",
   runnerMinutes: 0,
   error: null,
+  archivedAt: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
