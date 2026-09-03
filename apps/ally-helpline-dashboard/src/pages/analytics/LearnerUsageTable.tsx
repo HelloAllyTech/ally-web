@@ -9,6 +9,7 @@ import { Download, NoResults } from "@assets";
 import { Button, Chip, ChipConfig, FallbackUI } from "@components";
 import {
   GetLearnerUsageTableRequest,
+  LEARNER_USAGE_STATUSES,
   LearnerUsageRow,
   LearnerUsageSortField,
   LearnerUsageStatus,
@@ -19,6 +20,26 @@ const PAGE_SIZE = 25;
 
 const formatDate = (value: string | null): string =>
   value ? new Date(value).toLocaleDateString("en-US", { dateStyle: "medium" }) : "—";
+
+/**
+ * "12d ago" beats a date here: the admin's question is how stale this learner
+ * is, and a date makes them do the arithmetic. `daysSinceLastActivity` is
+ * computed server-side (same value the status chip is derived from) so the two
+ * can never disagree on screen.
+ */
+const formatDaysAgo = (days: number | null, t: (key: string, opts?: any) => string): string => {
+  if (days == null) return "—";
+  if (days <= 0) return t("organizationMetrics.learnerUsage.today");
+  return t("organizationMetrics.learnerUsage.daysAgo", { count: days });
+};
+
+/** Status values are snake_case; the locale keys under `status.` are camelCase. */
+const STATUS_LABEL_KEY: Record<LearnerUsageStatus, string> = {
+  active: "active",
+  at_risk: "atRisk",
+  dormant: "dormant",
+  never_started: "neverStarted",
+};
 
 const getLearnerStatusChipConfig = (
   status: LearnerUsageStatus,
@@ -88,12 +109,13 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
   const [rows, setRows] = useState<LearnerUsageRow[]>([]);
   const [offset, setOffset] = useState(0);
   const [search, setSearch] = useState<string | undefined>(undefined);
-  const [sortBy, setSortBy] = useState<LearnerUsageSortField>("lastPracticeSessionAt");
+  const [statuses, setStatuses] = useState<LearnerUsageStatus[] | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<LearnerUsageSortField>("lastActivityAt");
   const [order, setOrder] = useState<"ASC" | "DESC">("ASC");
 
   const params: GetLearnerUsageTableRequest = useMemo(
-    () => ({ range, search, sortBy, order, limit: PAGE_SIZE, offset }),
-    [range, search, sortBy, order, offset],
+    () => ({ range, search, status: statuses, sortBy, order, limit: PAGE_SIZE, offset }),
+    [range, search, statuses, sortBy, order, offset],
   );
 
   // refetchOnMountOrArgChange: this table's parent (PermissionGuardedRoute)
@@ -107,11 +129,11 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
     refetchOnMountOrArgChange: true,
   });
 
-  // range/search/sort are the parent-controlled or user-driven filters;
+  // range/search/status/sort are the parent-controlled or user-driven filters;
   // whichever changes, restart pagination from the first page.
   useEffect(() => {
     setOffset(0);
-  }, [range, search, sortBy, order]);
+  }, [range, search, statuses, sortBy, order]);
 
   // A page at offset 0 replaces the list (fresh filter); any later page
   // (load more, same filter) appends. `data` always reflects the exact
@@ -135,29 +157,57 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
       setSortBy(sort.key as LearnerUsageSortField);
       setOrder(sort.value);
     } else {
-      setSortBy("lastPracticeSessionAt");
+      setSortBy("lastActivityAt");
       setOrder("ASC");
     }
     const nameFilter = filter.find(f => f.key === "name");
     const searchValue = typeof nameFilter?.value === "string" ? nameFilter.value.trim() : "";
     setSearch(searchValue || undefined);
+
+    // Status is filtered server-side: filtering the accumulated pages here
+    // would filter only what has been loaded and leave `count` (and so "Load
+    // more") describing the unfiltered set.
+    const statusFilter = filter.find(f => f.key === "status");
+    const picked = Array.isArray(statusFilter?.value)
+      ? statusFilter.value
+      : statusFilter?.value
+        ? [statusFilter.value]
+        : [];
+    setStatuses(picked.length ? (picked as LearnerUsageStatus[]) : undefined);
   };
 
   const handleLoadMore = () => setOffset(prev => prev + PAGE_SIZE);
 
   const onExport = () => {
+    // Deliberately WIDER than the rendered table: the on-screen columns are
+    // merged pairs ("8 / 11") for width, but a spreadsheet wants each number in
+    // its own cell, and the fields the table drops (signup date, the raw
+    // roleplay split, course counts) still belong in a report.
     const header = [
       t("organizationMetrics.learnerUsage.columns.name"),
       t("organizationMetrics.learnerUsage.columns.email"),
       t("organizationMetrics.learnerUsage.columns.status"),
+      t("organizationMetrics.learnerUsage.columns.lastActive"),
+      "Days since last activity",
       t("organizationMetrics.learnerUsage.columns.lastPracticeSession"),
       t("organizationMetrics.learnerUsage.columns.signupDate"),
+      t("organizationMetrics.learnerUsage.columns.level"),
+      t("organizationMetrics.learnerUsage.columns.totalXp"),
       t("organizationMetrics.learnerUsage.columns.roleplaySessionsStarted"),
       t("organizationMetrics.learnerUsage.columns.roleplaySessionsCompleted"),
       "Roleplay completion rate %",
+      t("organizationMetrics.learnerUsage.columns.avgScore"),
       t("organizationMetrics.learnerUsage.columns.totalPracticeMinutes"),
+      t("organizationMetrics.learnerUsage.columns.pointsPerMinute"),
+      "Course items total",
+      "Course items completed",
+      "Course items completed %",
+      "Quizzes passed",
+      "Quizzes attempted",
+      "Avg quiz score %",
+      t("organizationMetrics.learnerUsage.columns.readWatch"),
+      t("organizationMetrics.learnerUsage.columns.reflection"),
       t("organizationMetrics.learnerUsage.columns.coursesAssigned"),
-      t("organizationMetrics.learnerUsage.columns.coursesStarted"),
       t("organizationMetrics.learnerUsage.columns.coursesCompleted"),
       "Course completion rate %",
     ];
@@ -165,14 +215,27 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
       csvCell(r.name),
       csvCell(r.email),
       csvCell(r.status),
+      csvCell(formatDate(r.lastActivityAt)),
+      csvCell(r.daysSinceLastActivity),
       csvCell(formatDate(r.lastPracticeSessionAt)),
       csvCell(formatDate(r.signupDate)),
+      csvCell(r.level),
+      csvCell(r.totalXp),
       csvCell(r.roleplaySessionsStarted),
       csvCell(r.roleplaySessionsCompleted),
       csvCell(r.roleplayCompletionRatePct),
+      csvCell(r.avgScore),
       csvCell(r.totalPracticeMinutes),
+      csvCell(r.roleplayPointsPerMinute),
+      csvCell(r.itemsTotal),
+      csvCell(r.itemsCompleted),
+      csvCell(r.itemsCompletedPct),
+      csvCell(r.quizzesPassed),
+      csvCell(r.quizzesAttempted),
+      csvCell(r.avgQuizScorePct),
+      csvCell(r.readWatchCompleted),
+      csvCell(r.reflectionCompleted),
       csvCell(r.coursesAssigned),
-      csvCell(r.coursesStarted),
       csvCell(r.coursesCompleted),
       csvCell(r.courseCompletionRatePct),
     ]);
@@ -201,54 +264,116 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
       sortable: true,
     },
     {
+      // Sorts by severity, not alphabetically — see `statusRank` in the
+      // backend's sort-column map. ASC therefore puts never-started first,
+      // which is the order an admin wants to work down.
       key: "status",
       header: t("organizationMetrics.learnerUsage.columns.status"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.status"),
+      sortable: true,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: LEARNER_USAGE_STATUSES.map(status => ({
+        label: t(`organizationMetrics.learnerUsage.status.${STATUS_LABEL_KEY[status]}`),
+        value: status,
+      })),
       render: (_value, row) => <Chip config={getLearnerStatusChipConfig(row.status, t)} />,
     },
     {
-      key: "lastPracticeSessionAt",
-      header: t("organizationMetrics.learnerUsage.columns.lastPracticeSession"),
+      key: "lastActivityAt",
+      header: t("organizationMetrics.learnerUsage.columns.lastActive"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.lastActive"),
       sortable: true,
-      render: (value: string | null) => formatDate(value),
+      render: (_value, row) => formatDaysAgo(row.daysSinceLastActivity, t),
+    },
+    {
+      key: "level",
+      header: t("organizationMetrics.learnerUsage.columns.level"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.level"),
+      sortable: true,
+      render: (value: number) => t("organizationMetrics.learnerUsage.levelShort", { level: value }),
+    },
+    {
+      key: "totalXp",
+      header: t("organizationMetrics.learnerUsage.columns.totalXp"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.totalXp"),
+      sortable: true,
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      // Merged pair: the two counts were separate columns, but "done of
+      // started" is the number that means something and it costs one column.
+      key: "roleplaySessionsCompleted",
+      header: t("organizationMetrics.learnerUsage.columns.roleplaySessions"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.roleplaySessions"),
+      sortable: true,
+      render: (value: number, row) => `${value} / ${row.roleplaySessionsStarted}`,
+    },
+    {
+      key: "totalPracticeMinutes",
+      header: t("organizationMetrics.learnerUsage.columns.totalPracticeMinutes"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.totalPracticeMinutes"),
+      sortable: true,
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      // Score per minute, not per session: it separates the learner who earns
+      // steadily from the one who racks up minutes. Null (no measurable
+      // practice) reads as "—", never 0, and the value can be negative.
+      key: "roleplayPointsPerMinute",
+      header: t("organizationMetrics.learnerUsage.columns.pointsPerMinute"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.pointsPerMinute"),
+      sortable: true,
+      render: (value: number | null) => (value == null ? "—" : value.toLocaleString()),
+    },
+    {
+      // Items, not courses: a course-level percentage only moves on
+      // completion, so a learner three quarters of the way through a long
+      // course is indistinguishable from one who has not started it.
+      key: "itemsCompletedPct",
+      header: t("organizationMetrics.learnerUsage.columns.itemsCompletedPct"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.itemsCompletedPct"),
+      sortable: true,
+      render: (value: number | null, row) =>
+        row.itemsTotal === 0 ? "—" : `${row.itemsCompleted} / ${row.itemsTotal} (${value}%)`,
+    },
+    {
+      key: "quizzesPassed",
+      header: t("organizationMetrics.learnerUsage.columns.quizzes"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.quizzes"),
+      sortable: true,
+      render: (value: number, row) =>
+        row.quizzesAttempted === 0
+          ? "—"
+          : `${value} / ${row.quizzesAttempted}${
+              row.avgQuizScorePct != null ? ` (${row.avgQuizScorePct}%)` : ""
+            }`,
+    },
+    {
+      key: "readWatchCompleted",
+      header: t("organizationMetrics.learnerUsage.columns.readWatch"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.readWatch"),
+      sortable: true,
+    },
+    {
+      key: "reflectionCompleted",
+      header: t("organizationMetrics.learnerUsage.columns.reflection"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.reflection"),
+      sortable: true,
+    },
+    {
+      key: "coursesCompleted",
+      header: t("organizationMetrics.learnerUsage.columns.coursesCompleted"),
+      tooltip: t("organizationMetrics.learnerUsage.tooltips.coursesCompleted"),
+      sortable: true,
+      render: (value: number, row) =>
+        row.courseCompletionRatePct != null ? `${value} (${row.courseCompletionRatePct}%)` : value,
     },
     {
       key: "signupDate",
       header: t("organizationMetrics.learnerUsage.columns.signupDate"),
       sortable: true,
       render: (value: string) => formatDate(value),
-    },
-    {
-      key: "roleplaySessionsStarted",
-      header: t("organizationMetrics.learnerUsage.columns.roleplaySessionsStarted"),
-      sortable: true,
-    },
-    {
-      key: "roleplaySessionsCompleted",
-      header: t("organizationMetrics.learnerUsage.columns.roleplaySessionsCompleted"),
-      sortable: true,
-      render: (value: number, row) =>
-        row.roleplayCompletionRatePct != null
-          ? `${value} (${row.roleplayCompletionRatePct}%)`
-          : value,
-    },
-    {
-      key: "totalPracticeMinutes",
-      header: t("organizationMetrics.learnerUsage.columns.totalPracticeMinutes"),
-      sortable: true,
-      render: (value: number) => value.toLocaleString(),
-    },
-    {
-      key: "coursesStarted",
-      header: t("organizationMetrics.learnerUsage.columns.coursesStartedAssigned"),
-      sortable: true,
-      render: (value: number, row) => `${value} / ${row.coursesAssigned}`,
-    },
-    {
-      key: "coursesCompleted",
-      header: t("organizationMetrics.learnerUsage.columns.coursesCompleted"),
-      sortable: true,
-      render: (value: number, row) =>
-        row.courseCompletionRatePct != null ? `${value} (${row.courseCompletionRatePct}%)` : value,
     },
   ];
 

@@ -6,6 +6,7 @@ import { ArrowUp, ArrowDown, Filter, SortAscending } from "@carbon/icons-react";
 import { Popover, PopoverContent } from "@carbon/react";
 
 import FilterPopover from "./FilterPopover";
+import HeaderTooltip from "./HeaderTooltip";
 import { Column, SortDirection, TableFilter } from "./types";
 
 /**
@@ -246,6 +247,7 @@ const TableHeader = <T extends Record<string, any>>({
                   <div className="flex flex-row items-center">
                     {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
                     <div className="font-[500] text-[#6B7280]">{col.header}</div>
+                    {col.tooltip && <HeaderTooltip text={col.tooltip} />}
                   </div>
                 </div>
               )}

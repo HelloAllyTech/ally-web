@@ -161,14 +161,13 @@
       "momentum": "Momentum",
       "contribution": "Contribution",
       "resonance": "Resonance",
-        "ascent": "Ascent",
-        "ascent": "Ascent",
+      "ascent": "Ascent",
       "tooltip": {
         "journey": "Earned by completing simulation minutes. Only completed simulation time is counted.",
         "momentum": "Complete at least one role play per day to build a streak. Missing a day resets your streak.",
         "contribution": "Number of comments and reactions you add to sessions by others. Activity on your own sessions is not included.",
         "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded.",
-          "ascent": "Earned by reaching a new level on your progress ladder. Levels come from practice minutes, completed sessions and course items."
+        "ascent": "Earned by reaching a new level on your progress ladder. Levels come from practice minutes, completed sessions and course items."
       }
     }
   },
@@ -522,7 +521,7 @@
     },
     "learnerUsage": {
       "title": "Learner usage",
-      "caption": "One row per learner — see who is (and isn't) using Ally",
+      "caption": "One row per learner — who is (and isn't) using Ally, and how much of the effort is practice versus coursework",
       "exportCsv": "Export CSV",
       "errorTitle": "Couldn't load the learner usage table",
       "errorSubtitle": "There was a problem fetching the data.",
@@ -546,7 +545,34 @@
         "coursesStartedAssigned": "Courses started / assigned",
         "coursesAssigned": "Courses assigned",
         "coursesStarted": "Courses started",
-        "coursesCompleted": "Courses completed"
+        "coursesCompleted": "Courses completed",
+        "lastActive": "Last active",
+        "level": "Level",
+        "totalXp": "XP",
+        "roleplaySessions": "Roleplays done / started",
+        "avgScore": "Avg roleplay score",
+        "itemsCompletedPct": "Course items done",
+        "quizzes": "Quizzes passed / tried",
+        "readWatch": "Articles / videos",
+        "reflection": "Journals / games",
+        "pointsPerMinute": "Points / min"
+      },
+      "daysAgo": "{{count}}d ago",
+      "today": "Today",
+      "levelShort": "L{{level}}",
+      "tooltips": {
+        "status": "Based on when the learner was last active anywhere: Active within 14 days, At risk 15–30 days, Dormant over 30 days, Never started if they have never done anything. All-time, not affected by the period above.",
+        "lastActive": "The later of their last roleplay and their last course activity — so a learner doing only quizzes still counts as active. All-time.",
+        "level": "Position on the 1–10 level ladder, earned from practice minutes, completed sessions and course items. All-time. This is the same level the learner sees in the app.",
+        "totalXp": "Lifetime XP: 1 per practice minute, 10 per completed session, 25 per course item, 50 for a personal best, with a daily cap so no single activity can be farmed. All-time.",
+        "roleplaySessions": "Roleplays completed of roleplays started, in the selected period.",
+        "totalPracticeMinutes": "Minutes spent in completed roleplays, in the selected period.",
+        "pointsPerMinute": "Roleplay score earned per minute of practice, in the selected period — it separates a learner who scores steadily from one who only accumulates minutes. Can be negative, because roleplay scores can go below zero. Blank when there is no measurable practice time to divide by.",
+        "itemsCompletedPct": "Course items completed out of every item in the courses this learner is enrolled in, including items they have not unlocked yet. All-time. Counted per item, not per course, so progress through a long course still shows.",
+        "quizzes": "Quiz items passed, out of those they have attempted, and in brackets the average of their most recent graded attempt on each — so repeated failures show rather than being hidden by a later pass. All-time.",
+        "readWatch": "Article and video items completed. All-time.",
+        "reflection": "Journal, annotation and game items completed. All-time.",
+        "coursesCompleted": "Courses finished end to end, and in brackets that as a share of the courses they are enrolled in. All-time."
       }
     },
     "courseUsage": {
@@ -675,11 +701,41 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
-            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
-            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
-            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
-            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+            "1": [
+              "Poor",
+              "Not helpful",
+              "Very bad",
+              "Disappointing",
+              "Unhelpful"
+            ],
+            "2": [
+              "Below average",
+              "Lacking",
+              "Unsatisfying",
+              "Weak",
+              "Needs improvement"
+            ],
+            "3": [
+              "Neutral",
+              "Okay",
+              "Average",
+              "Moderate",
+              "Acceptable"
+            ],
+            "4": [
+              "Good",
+              "Helpful",
+              "Satisfying",
+              "Effective",
+              "Worthwhile"
+            ],
+            "5": [
+              "Excellent",
+              "Amazing",
+              "Highly useful",
+              "Outstanding",
+              "Very effective"
+            ]
           }
         }
       }
