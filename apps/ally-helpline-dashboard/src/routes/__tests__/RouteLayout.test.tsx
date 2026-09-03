@@ -21,6 +21,7 @@ vi.mock("@pages", () => ({
   Blog: () => <div data-testid="blog-page">Blog Page</div>,
   BlogPost: () => <div data-testid="blog-post-page">Blog Post Page</div>,
   Changelog: () => <div data-testid="changelog-page">Changelog Page</div>,
+  Sjt1: () => <div data-testid="sjt1-page">SJT1 Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -70,6 +71,7 @@ vi.mock("@constants", () => ({
     BLOG: "/blog",
     BLOG_POST: "/blog/:slug",
     CHANGELOG: "/blog/changelog",
+    SJT1: "/SJT1",
   },
 }));
 
@@ -80,6 +82,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe("RouteLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.pushState({}, "", "/");
   });
 
   it("renders without crashing", () => {
@@ -107,5 +110,23 @@ describe("RouteLayout", () => {
 
     // BrowserRouter should be the root element
     expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it("serves the standalone self-check publicly at /SJT1", () => {
+    window.history.pushState({}, "", "/SJT1");
+    renderWithRouter(<RouteLayout />);
+
+    expect(screen.getByTestId("public-layout")).toBeInTheDocument();
+    // Not behind the catch-all: it must not need a signed-in user.
+    expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
+  });
+
+  it("matches /SJT1 whatever case the shared link arrives in", () => {
+    // The URL is shared capitalised, but people retype it lowercase.
+    window.history.pushState({}, "", "/sjt1");
+    renderWithRouter(<RouteLayout />);
+
+    expect(screen.getByTestId("public-layout")).toBeInTheDocument();
+    expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
   });
 });
