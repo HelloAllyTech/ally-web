@@ -32,6 +32,12 @@ export interface Column<T> {
   icon?: React.ReactNode;
   /** Header label for the column */
   header: string;
+  /**
+   * Optional explanation rendered as an info icon beside the header label.
+   * Use for a metric whose definition, time scope or units aren't obvious
+   * from the label. Purely additive — a column without it renders as before.
+   */
+  tooltip?: string;
   /** Replaces the entire header cell content with custom JSX (e.g. a + button) */
   headerNode?: React.ReactNode;
   /** Whether the column is sortable */
