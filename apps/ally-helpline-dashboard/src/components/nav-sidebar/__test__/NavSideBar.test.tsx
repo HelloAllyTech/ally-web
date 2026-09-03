@@ -33,6 +33,8 @@ const { mockUser, mockPermissions, mockLogout, mockUseUser } = vi.hoisted(() => 
 });
 
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: mockUseUser,
   // Exhaustive mock: NavSideBar reads the streak pill from this hook.
   usePracticeStreakSummary: () => ({ summary: undefined }),
@@ -62,6 +64,7 @@ vi.mock("@api", () => ({
 }));
 
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   Ally: ({ className, ...props }: any) => (
     <svg className={className} {...props} data-testid="ally-logo" />
   ),

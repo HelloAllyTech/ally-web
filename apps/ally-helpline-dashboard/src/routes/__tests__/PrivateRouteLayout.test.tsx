@@ -9,6 +9,8 @@ import PrivateRouteLayout from "../PrivateRouteLayout";
 // Mock the useUser hook
 const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: () => mockUseUser(),
   useAutoActiveCallRedirect: vi.fn(),
   useAchievementBadgeModal: () => ({
@@ -28,6 +30,7 @@ vi.mock("@api", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
@@ -44,6 +47,7 @@ vi.mock("@assets", () => ({
 
 // Mock the pages
 vi.mock("@pages", () => ({
+  Progress: () => <div data-testid="progress-page">Progress Page</div>,
   Calls: () => <div data-testid="calls-page">Calls Page</div>,
   Archives: () => <div data-testid="archives-page">Archives Page</div>,
   Analytics: () => <div data-testid="analytics-page">Analytics Page</div>,

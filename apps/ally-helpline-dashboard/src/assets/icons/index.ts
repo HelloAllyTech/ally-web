@@ -131,6 +131,7 @@ import Spinner from "./spinner.svg?react";
 import StarYellowIcon from "./star-yellow-icon.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
+import ProgressLadderIcon from "./progress-ladder.svg?react";
 import StatsIcon from "./stats.svg?react";
 import StopIcon from "./stop-icon.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
@@ -261,6 +262,7 @@ export {
   StarIcon,
   StarYellowIcon,
   StartSession,
+  ProgressLadderIcon,
   StatsIcon,
   StopIcon,
   SubjectiveObservations,

@@ -26,6 +26,7 @@ import {
   Leaderboard,
   Review,
   AchievementsViewAll,
+  Progress,
   OrganizationSettings,
   CharacterLibrary,
   CharacterInterview,
@@ -259,6 +260,18 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS]}
               element={<Review />}
+            />
+          }
+        />
+        {/* Gated on VIEW_USER_RANK, which every learner holds; the real gate is the
+            tenant's PROGRESS_DASHBOARD_ENABLED org toggle, enforced by the API and
+            checked again in the page so a direct URL cannot bypass the nav. */}
+        <Route
+          path={ROUTES.PROGRESS}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_USER_RANK]}
+              element={<Progress />}
             />
           }
         />

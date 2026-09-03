@@ -22,6 +22,7 @@ export * from "./useNextChallenge";
 export * from "./useContinueTrack";
 export * from "./usePostSessionStreak";
 export * from "./usePracticeStreakSummary";
+export * from "./useProgressSummary";
 export * from "./useVideoWatchProgress";
 export * from "./useFieldAutosave";
 export * from "./useCharacterInterviewStream";

@@ -82,6 +82,7 @@ afterAll(() => {
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Carousel1: "carousel-1.jpg",
@@ -113,6 +114,8 @@ const mockUseSimulationCredits = vi.fn();
 const mockUseUser = vi.fn();
 const mockUseAchievementBadgeModal = vi.fn();
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,

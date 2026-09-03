@@ -127,6 +127,7 @@ export const TAG_TYPES = {
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   SCENARIO_CASE_DETAILS: "ScenarioCaseDetails",
   PRACTICE_STREAK: "PracticeStreak",
+  PROGRESS: "Progress",
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
   REVIEW: "Review",
