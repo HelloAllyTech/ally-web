@@ -176,6 +176,42 @@ describe("UxSignalsPanel", () => {
     expect(screen.getByRole("button")).not.toBeDisabled();
   });
 
+  it("re-enables the button when the scan it was watching goes stale mid-wait", async () => {
+    // Unlike the mount-time case above, this scan starts out fresh and running —
+    // the button is disabled from the click itself — and only crosses the
+    // staleness cutoff while the panel is still watching it. Without clearing
+    // watchedScanId on that transition, the button stays disabled forever even
+    // though the panel now says a new scan can be started.
+    startScan.mockReturnValue({ unwrap: async () => ({ scanId: "scan-1" }) });
+    const { rerender } = render(<UxSignalsPanel />);
+
+    withScans(
+      scan({
+        status: UxSignalScanStatus.RUNNING,
+        finishedAt: null,
+        startedAt: new Date().toISOString(),
+      }),
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(startScan).toHaveBeenCalled());
+
+    rerender(<UxSignalsPanel />);
+    expect(screen.getByRole("button")).toBeDisabled();
+
+    // The same scan, now past the staleness cutoff.
+    withScans(
+      scan({
+        status: UxSignalScanStatus.RUNNING,
+        finishedAt: null,
+        startedAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+      }),
+    );
+    rerender(<UxSignalsPanel />);
+
+    expect(screen.getByText(/never reported back/)).toBeInTheDocument();
+    expect(screen.getByRole("button")).not.toBeDisabled();
+  });
+
   it("does not claim nothing was filed when it could not confirm the start", async () => {
     // The catch-all branch — a gateway error page, a dropped connection. The app
     // does not know whether the scan was claimed, so it must not say.
