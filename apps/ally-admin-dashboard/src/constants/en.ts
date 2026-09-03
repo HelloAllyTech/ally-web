@@ -2434,6 +2434,63 @@ export const en = {
       'I\'ll pick it up in the fix stage of my next sweep for this repo. If you want it done now, use "Put me on it" instead.',
     drawerRejectConfirmTitle: "Reject this bug?",
     drawerRejectConfirmBody: "I'll never pick it up. This can't be undone.",
+    // ── declining a bug: the reason, and what it is for ────────────────────
+    // Written in Bug Hunter's own first-person voice, like the rest of this
+    // block (see agentPersona.ts): the reader is answering a colleague who
+    // wants to know whether it got this one wrong, not filling in a database
+    // field.
+    declineReasonLabel: "Why are you turning it down?",
+    declineReasonHelp:
+      "I read these back before my next sweep, so I stop re-filing the ones I got wrong. It's also how the scorecard works out how often I'm right.",
+    declineNotABug: "It isn't a bug",
+    declineNotABugHint: "I misread the code. Tell me and I won't file it again.",
+    declineWontFix: "Real, but not worth fixing",
+    declineWontFixHint:
+      "I got this right — it just isn't worth the change. I may raise it again if it starts mattering.",
+    declineDuplicate: "Already tracked elsewhere",
+    declineDuplicateHint: "Same bug as something you already have.",
+    declineWrongRepo: "Real, but in a different codebase",
+    declineWrongRepoHint: "I pointed at the wrong repo. File it where it belongs.",
+    declineTooRisky: "Too risky to fix this way",
+    declineTooRiskyHint: "The fix would cost more than the bug. Somebody should do this by hand.",
+    declineOther: "Something else",
+    declineOtherHint: "Add a note so this is worth reading later.",
+    declineNoteLabel: "Anything to add? (optional)",
+    declineNotePlaceholder: "What did you check, and what settled it?",
+    declineNoteTooLong: "That's longer than I can store — {max} characters at most.",
+    declineReasonRequired: "Pick a reason first.",
+    bulkDeclineOneReason: "The same reason goes on all {count}.",
+    drawerDeclinedAs: "Turned down: {reason}",
+    drawerRediscovered:
+      "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
+
+    // ── confidence and regressions ─────────────────────────────────────────
+    drawerConfidenceLabel: "How sure my checkers were",
+    drawerConfidenceTooltip:
+      "Two verifiers read the code separately, without seeing my reasoning. This is the LOWER of their two scores — if one of them was unsure, the finding is unsure.",
+    drawerConfidenceUnscored: "Not scored",
+    drawerConfidenceUnscoredTooltip:
+      "Either this was proven outright (a failing test or a real production error, so there was nothing to argue about), or I found it before I started scoring.",
+    findingLowConfidenceChip: "Low confidence",
+    findingLowConfidenceTooltip:
+      "Both checkers accepted it but at least one wasn't sure. I hold these for you rather than fixing them myself.",
+    findingRegressedChip: "Came back",
+    findingRegressedTooltip:
+      "I fixed and shipped this, and it is happening again. Worth checking whether the root cause was the one I found.",
+    findingRegressionOfChip: "Fix didn't hold",
+    drawerRegressionOfLink: "See the fix that didn't hold",
+    drawerRegressedByLink: "See where it came back",
+
+    // ── merging a green PR from here ───────────────────────────────────────
+    drawerMerge: "Merge it",
+    drawerMergeTooltip:
+      "I can't merge in this repo — master needs a review and I only have push access — so my PR is sitting green and waiting. This merges it as you, without leaving the tab. I check the PR's own CI first and refuse if anything is red.",
+    drawerMergeConfirmTitle: "Merge this fix to master?",
+    drawerMergeConfirmBody:
+      "I'll merge the PR as you. This does NOT deploy it — releasing to production is still a separate press.",
+    drawerMergeConfirm: "Merge",
+    drawerMergeFailed: "Couldn't merge that PR.",
+    queueAwaitingMerge: "Green and waiting for your merge",
     drawerDecisionFailed: "Couldn't record that decision. Try again.",
     drawerEscalationQuestionTitle: "I need your answer",
     drawerAnswerLabel: "Your answer",
@@ -2661,6 +2718,61 @@ export const en = {
     scorecardEmptySubtitle:
       "Once I've worked a shift, what it cost and what it turned up shows up here.",
     scorecardLoadFailed: "Couldn't load the scorecard.",
+
+    // ── the accuracy panel (GET /metrics) ─────────────────────────────────
+    // The governor's other half: the run scorecard above says what Bug Hunter
+    // cost, this says whether it was right. Every figure names its own
+    // denominator, because the ones here are easy to read as flattering when
+    // they are simply thin.
+    accuracyTitle: "How often I'm right",
+    accuracySubtitle:
+      "Of the bugs you've ruled on, how many I read correctly — plus how long the pipeline takes and what a landed fix costs.",
+    accuracyWindow30: "30 days",
+    accuracyWindow90: "90 days",
+    accuracyRateLabel: "I read it right",
+    accuracyRateTooltip:
+      "Of the findings you actually ruled on, the share where I wasn't wrong about the code. Turning a bug down as 'not worth fixing' doesn't count against me — that's your call on priority, not a mistake of mine. Only 'isn't a bug', 'wrong codebase' and 'already tracked' do.",
+    accuracyRateDetail: "{errors} of {judged} I got wrong",
+    accuracyNotEnough: "Not enough decisions yet",
+    accuracyNotEnoughDetail: "Rule on a few and this fills in.",
+    accuracyReasonNotRecorded:
+      "{count} older decision(s) have no reason stored, so they're left out of this rather than guessed at.",
+    accuracyFiledLabel: "Bugs I filed",
+    accuracyFiledTooltip:
+      "Everything I opened in this window, counted by the day I found it — so this number and every rate over it share one denominator.",
+    accuracyLandedLabel: "Fixes that landed",
+    accuracyLandedTooltip: "Reached master. A released fix is counted here too.",
+    accuracyOpenDetail: "{count} still open",
+    accuracyCostPerFixLabel: "Cost per landed fix",
+    accuracyCostPerFixTooltip:
+      "What my fix sessions cost in this window, divided by the fixes that actually reached master. Sessions that failed before landing are in the top half and not the bottom, so this rises when I'm struggling — which is the point of it.",
+    accuracyRegressionLabel: "Fixes that came back",
+    accuracyRegressionTooltip:
+      "Fixes I shipped in this window that have since broken again. This is the number worth watching before you let me merge my own work more freely.",
+    accuracyRegressionDetail: "{count} of {merged} shipped",
+    accuracyLatencyTitle: "How long each step takes",
+    accuracyLatencyDecided: "Filed → you decide",
+    accuracyLatencyMerged: "Filed → merged",
+    accuracyLatencyReleased: "Merged → live",
+    accuracyLatencyValue: "{median} median · {p90} at worst",
+    accuracyLatencySample: "from {count}",
+    accuracyLatencyNone: "nothing yet",
+    accuracyBySourceTitle: "By where I found it",
+    accuracyByRepoTitle: "By repo",
+    accuracyColSource: "Source",
+    accuracyColRepo: "Repo",
+    accuracyColFiled: "Filed",
+    accuracyColJudged: "Ruled on",
+    accuracyColAccuracy: "I read it right",
+    accuracyColLanded: "Landed",
+    accuracyRepoUnassigned: "Not yet assigned",
+    accuracyDeclinesTitle: "Why you turned bugs down",
+    accuracyDeclineNotRecorded: "No reason stored",
+    accuracyEmptyTitle: "Nothing to measure yet",
+    accuracyEmptySubtitle: "Once I've filed some bugs and you've ruled on them, this fills in.",
+    accuracyLoadFailed: "Couldn't load the accuracy figures.",
+    accuracyHours: "{count}h",
+    accuracyDays: "{count}d",
     // ── Age / staleness column ─────────────────────────────────────
     findingColumnAge: "Age",
     findingColumnAgeTooltip:
@@ -2798,6 +2910,7 @@ export const en = {
     filterButton: "Filter",
     filterStatusLabel: "Status",
     settingsLink: "Settings",
+    pipelineLink: "Pipeline",
     scoreboardLink: "Scoreboard",
     knowledgeLink: "Knowledge",
     noMatchingSessions: "Nothing matches this filter.",
@@ -3033,6 +3146,16 @@ export const en = {
     noReposYet: "Not decided yet",
     retryBuild: "Retry build",
     sessionGone: "This session is gone — start a new one.",
+    showArchivedLabel: "Show archived",
+    archiveAction: "Archive",
+    unarchiveAction: "Unarchive",
+    archiveSuccess: "Build archived.",
+    archiveFailed: "Couldn't archive that build.",
+    unarchiveSuccess: "Build restored.",
+    unarchiveFailed: "Couldn't restore that build.",
+    archivedEmptyTitle: "No archived builds yet",
+    archivedEmptyBody:
+      "Builds you archive from the default view show up here, and can be restored any time.",
 
     // Start-build dialog — also used for a retry from FAILED, since the
     // backend accepts start-build from either state with the same payload.
@@ -3161,6 +3284,56 @@ export const en = {
     },
 
     // Scoreboard — how builds are actually going, not just what one build did.
+    pipeline: {
+      title: "Builder pipeline",
+      subtitle: "Where a run spends its time and money, phase by phase.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the pipeline view.",
+      retry: "Retry",
+      empty: "No finished runs in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      unmeasuredNote:
+        "A dash means not measured — runs from before the runner reported timings carry cost but no clock.",
+      time: {
+        heading: "Where the time goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnMedianWall: "Median",
+        columnP95Wall: "p95",
+        columnTurns: "Median turns",
+        columnSplit: "Model vs tools",
+        splitLabel: (apiPercent: number, toolPercent: number) =>
+          `${apiPercent}% waiting on the model, ${toolPercent}% running its tools`,
+      },
+      money: {
+        heading: "Where the money goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnTotal: "Total",
+        columnMedian: "Median per run",
+      },
+      gate: {
+        heading: "Test gate",
+        subheading:
+          "Lint and typecheck failing means work that was never run; tests failing means a wider blast radius than the plan saw.",
+        columnRepo: "Repo",
+        columnKind: "Check",
+        columnResults: "Results",
+        columnPassed: "Passed",
+        columnPassRate: "Pass rate",
+      },
+      outcomes: {
+        heading: "How runs end",
+        columnStatus: "Status",
+        columnMode: "Mode",
+        columnRuns: "Runs",
+        columnMedianMinutes: "Median runner minutes",
+      },
+    },
+
     scoreboard: {
       title: "Builder scoreboard",
       subtitle: "Cost, review friction, and how often a build actually ships — over time.",
@@ -3182,6 +3355,11 @@ export const en = {
         costHeading: "Median cost per build, weekly",
         fixRunsHeading: "Median fix runs, weekly",
         timeToMergeHeading: "Median time to merge, weekly",
+      },
+      failureTags: {
+        heading: "Where the losses come from",
+        subheading:
+          "Every failure tag across the window, biggest cause first. A tag counts once per build it was recorded against.",
       },
       table: {
         heading: "Every build in this window",

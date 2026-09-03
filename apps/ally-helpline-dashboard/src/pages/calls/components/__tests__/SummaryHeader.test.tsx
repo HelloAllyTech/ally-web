@@ -21,11 +21,14 @@ vi.mock("@api", () => ({
 
 // Mock hooks
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useDebounce: (fn: any) => fn,
 }));
 
 // Mock assets/components
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Edit: (props: any) => <div {...props}>EditIcon</div>,

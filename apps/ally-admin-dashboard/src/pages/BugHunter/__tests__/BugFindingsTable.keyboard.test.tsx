@@ -40,10 +40,17 @@ vi.mock("@components/error-boundary", () => ({
 }));
 
 vi.mock("@components/action-confirmation-popup", () => ({
-  ActionConfirmationPopup: ({ title, primaryButton }: any) => (
+  // Renders `children` and honours `disabled`, both of which the real popup
+  // does — a decline now puts a required reason picker inside this dialog and
+  // disables the confirm until one is chosen, so a mock that dropped either
+  // would let these tests pass while the real flow was broken.
+  ActionConfirmationPopup: ({ title, primaryButton, children }: any) => (
     <div role="dialog" aria-label={title}>
       <p>{title}</p>
-      <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
+      {children}
+      <button onClick={primaryButton.onClick} disabled={primaryButton.disabled}>
+        {primaryButton.label}
+      </button>
     </div>
   ),
 }));
@@ -80,6 +87,14 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   TableBody: ({ children }: any) => <tbody>{children}</tbody>,
   TableRow: ({ children, ...rest }: any) => <tr {...rest}>{children}</tr>,
   TableCell: ({ children, ...rest }: any) => <td {...rest}>{children}</td>,
+  // The picker's optional note. Bare textarea: nothing here asserts Carbon's
+  // label/invalid markup, only that a note typed into it reaches the request.
+  TextArea: ({ id, labelText, value, onChange, placeholder }: any) => (
+    <label htmlFor={id}>
+      {labelText}
+      <textarea id={id} value={value} placeholder={placeholder} onChange={onChange} />
+    </label>
+  ),
 }));
 
 vi.mock("framer-motion", () => ({
@@ -240,10 +255,22 @@ describe("BugFindingsTable — keyboard triage", () => {
       press("r");
 
       expect(screen.getByText("Reject this bug?")).toBeInTheDocument();
+      // The reason is required, so the confirm is dead until one is picked —
+      // asserted here rather than only in the picker's own tests, because the
+      // keyboard path is the one where somebody could otherwise decline a bug
+      // with two keystrokes and no answer.
+      fireEvent.click(screen.getByText("Reject it"));
+      expect(rejectFinding).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByLabelText("It isn't a bug"));
       // Scoped to the dialog: the row's own button says "Reject" too, which is
       // exactly why the confirmation says something else.
       fireEvent.click(screen.getByText("Reject it"));
-      expect(rejectFinding).toHaveBeenCalledWith("a");
+      expect(rejectFinding).toHaveBeenCalledWith({
+        id: "a",
+        reason: "not_a_bug",
+        note: "",
+      });
     });
 
     /**

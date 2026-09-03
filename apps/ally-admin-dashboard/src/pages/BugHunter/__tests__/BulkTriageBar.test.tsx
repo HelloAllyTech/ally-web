@@ -28,10 +28,17 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("@components/action-confirmation-popup", () => ({
-  ActionConfirmationPopup: ({ title, primaryButton }: any) => (
+  // Renders `children` and honours `disabled`, both of which the real popup
+  // does — a decline now puts a required reason picker inside this dialog and
+  // disables the confirm until one is chosen, so a mock that dropped either
+  // would let these tests pass while the real flow was broken.
+  ActionConfirmationPopup: ({ title, primaryButton, children }: any) => (
     <div role="dialog" aria-label={title}>
       <p>{title}</p>
-      <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
+      {children}
+      <button onClick={primaryButton.onClick} disabled={primaryButton.disabled}>
+        {primaryButton.label}
+      </button>
     </div>
   ),
 }));
@@ -49,11 +56,34 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       {children}
     </span>
   ),
+  // The picker's optional note. Bare textarea: nothing here asserts Carbon's
+  // label/invalid markup, only that a note typed into it reaches the request.
+  TextArea: ({ id, labelText, value, onChange, placeholder }: any) => (
+    <label htmlFor={id}>
+      {labelText}
+      <textarea id={id} value={value} placeholder={placeholder} onChange={onChange} />
+    </label>
+  ),
 }));
 
 import { BugFinding, BugFindingStatus } from "@types";
 
 import { BulkTriageBar } from "../BulkTriageBar";
+
+/**
+ * Opens the reject dialog, answers the required reason, and confirms.
+ *
+ * Every decline now carries a reason — the confirm button is disabled without
+ * one — so a test that only clicked "Reject them" would be asserting against a
+ * dialog that never submitted. Bundled into a helper because the reason itself
+ * is not what any of these cases are about; they are about how a batch's
+ * successes and failures get reported.
+ */
+const declineBatch = (label: string) => {
+  fireEvent.click(screen.getByText(label));
+  fireEvent.click(screen.getByLabelText("It isn't a bug"));
+  fireEvent.click(screen.getByText("Reject them"));
+};
 
 const finding = (id: string, status: BugFindingStatus, title = `Bug ${id}`): BugFinding =>
   ({ id, status, title, repo: "ally-be" }) as unknown as BugFinding;
@@ -130,15 +160,16 @@ describe("BulkTriageBar", () => {
    * landed.
    */
   it("reports both halves when some of the batch fails, and names the failures", async () => {
-    rejectFinding.mockImplementation((id: string) => (id === "b" ? boom() : ok()));
+    // The reject mutation now takes `{id, reason, note}`, so a per-id stub has
+    // to read the id off the object rather than the argument itself.
+    rejectFinding.mockImplementation(({ id }: { id: string }) => (id === "b" ? boom() : ok()));
     mount([
       finding("a", BugFindingStatus.NEW, "Terms link"),
       finding("b", BugFindingStatus.NEW, "Stale cache"),
       finding("c", BugFindingStatus.NEW, "Broken avatar"),
     ]);
 
-    fireEvent.click(screen.getByText("Reject 3"));
-    fireEvent.click(screen.getByText("Reject them"));
+    declineBatch("Reject 3");
 
     await waitFor(() =>
       expect(toastSuccess).toHaveBeenCalledWith("2 done. 1 didn't go through: Stale cache."),
@@ -146,7 +177,7 @@ describe("BulkTriageBar", () => {
   });
 
   it("counts rather than names once the failure list gets long", async () => {
-    rejectFinding.mockImplementation((id: string) => (id === "keep" ? ok() : boom()));
+    rejectFinding.mockImplementation(({ id }: { id: string }) => (id === "keep" ? ok() : boom()));
     mount([
       finding("keep", BugFindingStatus.NEW, "Survivor"),
       finding("f1", BugFindingStatus.NEW, "One"),
@@ -156,8 +187,7 @@ describe("BulkTriageBar", () => {
       finding("f5", BugFindingStatus.NEW, "Five"),
     ]);
 
-    fireEvent.click(screen.getByText("Reject 6"));
-    fireEvent.click(screen.getByText("Reject them"));
+    declineBatch("Reject 6");
 
     await waitFor(() =>
       expect(toastSuccess).toHaveBeenCalledWith(
@@ -171,8 +201,7 @@ describe("BulkTriageBar", () => {
     rejectFinding.mockImplementation(boom);
     mount([finding("a", BugFindingStatus.NEW), finding("b", BugFindingStatus.NEW)]);
 
-    fireEvent.click(screen.getByText("Reject 2"));
-    fireEvent.click(screen.getByText("Reject them"));
+    declineBatch("Reject 2");
 
     await waitFor(() =>
       expect(toastError).toHaveBeenCalledWith("None of those went through, so nothing changed."),

@@ -16,6 +16,7 @@ const getBadgeTypeLabels = (t: TFunction): Record<BadgeCategory, string> => ({
   [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.momentum"),
   [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.contribution"),
   [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.resonance"),
+  [BadgeCategory.XP_LEVEL]: t("achievements.badgeTypes.ascent"),
 });
 
 const getFilterOptions = (t: TFunction) => [
@@ -28,6 +29,7 @@ const getBadgeTypeTooltipLabels = (t: TFunction): Record<BadgeCategory, string> 
   [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.tooltip.momentum"),
   [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.tooltip.contribution"),
   [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.tooltip.resonance"),
+  [BadgeCategory.XP_LEVEL]: t("achievements.badgeTypes.tooltip.ascent"),
 });
 
 const BadgeCardSkeleton: FC = () => {

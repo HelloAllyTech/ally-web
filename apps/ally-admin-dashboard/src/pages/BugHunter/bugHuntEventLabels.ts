@@ -22,4 +22,7 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.CANCELLED]: "Fix session cancelled",
   [BugHuntEventStage.DESCRIPTION_EDITED]: "Description rewritten",
   [BugHuntEventStage.STAGE_CHANGED]: "Stage set by hand",
+  [BugHuntEventStage.DECISION_RECORDED]: "Declined",
+  [BugHuntEventStage.REGRESSED]: "Came back",
+  [BugHuntEventStage.RECURRENCE_SUPPRESSED]: "Found again",
 };

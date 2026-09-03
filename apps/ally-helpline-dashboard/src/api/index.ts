@@ -11,6 +11,7 @@ export * from "./termsAndAgreement";
 export * from "./user";
 export * from "./leaderBoard";
 export * from "./practiceStreak";
+export * from "./progress";
 export * from "./reviews";
 export * from "./customFields";
 export * from "./tooltips";

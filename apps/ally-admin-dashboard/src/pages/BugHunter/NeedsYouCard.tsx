@@ -10,10 +10,11 @@ import {
 } from "@api";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { en } from "@constants";
-import { BugFinding, BugFindingStatus } from "@types";
+import { BugFinding, BugFindingDecisionReason, BugFindingStatus } from "@types";
 
 import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
+import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 
 export interface NeedsYouCardProps {
   finding: BugFinding;
@@ -53,6 +54,8 @@ export const NeedsYouCard: FC<NeedsYouCardProps> = ({ finding, onOpen }) => {
   const [answer, { isLoading: isAnswering }] = useAnswerBugFindingMutation();
 
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+  const [declineReason, setDeclineReason] = useState<BugFindingDecisionReason | null>(null);
+  const [declineNote, setDeclineNote] = useState("");
   const [answerOpen, setAnswerOpen] = useState(false);
   const [answerText, setAnswerText] = useState("");
 
@@ -64,9 +67,21 @@ export const NeedsYouCard: FC<NeedsYouCardProps> = ({ finding, onOpen }) => {
 
   const handleDecision = async () => {
     if (!confirmAction) return;
+    if (confirmAction === "reject" && !canSubmitDecline(declineReason, declineNote)) {
+      toast.error(en.bugHunter.declineReasonRequired);
+      return;
+    }
     try {
       if (confirmAction === "approve") await approve(finding.id).unwrap();
-      else await reject(finding.id).unwrap();
+      else {
+        await reject({
+          id: finding.id,
+          reason: declineReason as BugFindingDecisionReason,
+          note: declineNote,
+        }).unwrap();
+      }
+      setDeclineReason(null);
+      setDeclineNote("");
     } catch {
       toast.error(en.bugHunter.drawerDecisionFailed);
     } finally {
@@ -214,12 +229,26 @@ export const NeedsYouCard: FC<NeedsYouCardProps> = ({ finding, onOpen }) => {
               ? en.bugHunter.drawerApproveConfirmBody
               : en.bugHunter.drawerRejectConfirmBody
           }
-          primaryButton={{ label: en.bugHunter.modeConfirm, onClick: handleDecision }}
+          primaryButton={{
+            label: en.bugHunter.modeConfirm,
+            onClick: handleDecision,
+            disabled: confirmAction === "reject" && !canSubmitDecline(declineReason, declineNote),
+          }}
           secondaryButton={{
             label: en.bugHunter.cancel,
             onClick: () => setConfirmAction(null),
           }}
-        />
+        >
+          {confirmAction === "reject" && (
+            <DeclineReasonPicker
+              idPrefix={`queue-${finding.id}`}
+              reason={declineReason}
+              onReasonChange={setDeclineReason}
+              note={declineNote}
+              onNoteChange={setDeclineNote}
+            />
+          )}
+        </ActionConfirmationPopup>
       )}
     </li>
   );

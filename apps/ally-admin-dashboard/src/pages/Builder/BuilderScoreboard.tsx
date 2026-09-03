@@ -116,6 +116,12 @@ export const BuilderScoreboard: React.FC = () => {
     nUnit: "builds",
   });
 
+  // Biggest cause first: this exists to point effort at something.
+  const failureTags = useMemo(
+    () => [...(data?.failureTags ?? [])].sort((a, b) => b.count - a.count),
+    [data],
+  );
+
   const empty = !isLoading && builds.length === 0;
 
   return (
@@ -242,6 +248,26 @@ export const BuilderScoreboard: React.FC = () => {
               </ScrollableChart>
             </ChartCard>
           </div>
+
+          {failureTags.length > 0 && (
+            <section>
+              <h2 className="mb-2 text-sm font-medium text-typography-900">
+                {strings.failureTags.heading}
+              </h2>
+              <p className="mb-2 text-xs text-typography-600">{strings.failureTags.subheading}</p>
+              <div className="flex flex-wrap gap-2">
+                {failureTags.map(({ tag, count }) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 px-2.5 py-1 text-xs text-typography-700"
+                  >
+                    <span>{tag}</span>
+                    <span className="font-medium tabular-nums text-typography-900">{count}</span>
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="mb-2 text-sm font-medium text-typography-900">

@@ -43,8 +43,16 @@ export interface BuilderSession {
   totalCostUsd: string;
   runnerMinutes: number;
   error: string | null;
+  /** Set once the creator archives the session out of their default feed. */
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** The archived-only feed view: paginated, unlike the default list above. */
+export interface BuilderArchivedSessionsPage {
+  sessions: BuilderSession[];
+  totalCount: number;
 }
 
 /* ── PRD document ───────────────────────────────────────────────────────── */
@@ -423,7 +431,12 @@ export interface BuilderScoreboardBuild {
   repos: string[];
   createdAt: string;
   outcome: BuilderScoreboardOutcome;
+  /** First dispatch to last completion — includes any wait for a person. */
   durationHours: number | null;
+  /** The sum of the runs' own wall clocks: machine time only. */
+  machineMinutes: number | null;
+  /** The remainder — time parked on a question. Null when unmeasurable. */
+  humanWaitMinutes: number | null;
   costUsd: number;
   runCount: number;
   fixRunCount: number;
@@ -454,6 +467,58 @@ export interface BuilderScoreboard {
   builds: BuilderScoreboardBuild[];
   trends: BuilderScoreboardTrendWeek[];
   totals: BuilderScoreboardTotals;
+  /**
+   * Where the losses come from, across the window. The backend has always
+   * returned this; nothing rendered it, so the one view that could point effort
+   * at a cause showed only per-build tags you had to tally by eye.
+   */
+  failureTags: { tag: string; count: number }[];
+}
+
+/* ── Pipeline health: where a run's time and money go ───────────────────────
+ *
+ * Every measurement here is nullable and that is load-bearing, not defensive.
+ * Runs dispatched before the runner reported timings have a cost record with no
+ * clock, so `null` means "not measured" and must never render as 0 — a phase
+ * shown as taking no time reads as instant rather than unknown. */
+
+export interface BuilderPipelinePhase {
+  /** plan, code-1, verify-2, finalise, fix … */
+  phase: string;
+  model: string | null;
+  invocations: number;
+  totalCostUsd: number | null;
+  medianCostUsd: number | null;
+  /** Wall clock of the invocation. */
+  medianWallMs: number | null;
+  p95WallMs: number | null;
+  /** Of the wall clock, the part spent waiting on the model. */
+  medianApiMs: number | null;
+  medianTurns: number | null;
+}
+
+export interface BuilderPipelineGate {
+  repo: string;
+  /** test | lint | typecheck */
+  kind: string;
+  results: number;
+  passed: number;
+  /** null when there is no evidence either way, which is not the same as 0%. */
+  passRate: number | null;
+}
+
+export interface BuilderPipelineOutcome {
+  status: BuilderRunStatus;
+  mode: string;
+  runs: number;
+  medianRunnerMinutes: number | null;
+}
+
+export interface BuilderPipelineHealth {
+  windowDays: number;
+  phases: BuilderPipelinePhase[];
+  gates: BuilderPipelineGate[];
+  outcomes: BuilderPipelineOutcome[];
 }
 
 /* ── Knowledge: lessons + exemplars ────────────────────────────────────── */

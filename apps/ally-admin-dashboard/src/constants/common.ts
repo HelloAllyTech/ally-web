@@ -476,7 +476,9 @@ export const ApiEndpoints = {
       `/v1/bug-hunter/findings/by-reported-bug/${opportunityId}`,
     FINDING_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/fix-session`,
     FINDING_CANCEL_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/cancel-fix-session`,
+    FINDING_MERGE: (id: string) => `/v1/bug-hunter/findings/${id}/merge`,
     FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,
+    METRICS: "/v1/bug-hunter/metrics",
     NOTIFICATIONS: "/v1/bug-hunter/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/bug-hunter/notifications/read-all",
@@ -485,6 +487,8 @@ export const ApiEndpoints = {
     SESSIONS: "/v1/builder/sessions",
     SESSION_BY_ID: (id: string) => `/v1/builder/sessions/${id}`,
     SESSION_CANCEL: (id: string) => `/v1/builder/sessions/${id}/cancel`,
+    SESSION_ARCHIVE: (id: string) => `/v1/builder/sessions/${id}/archive`,
+    SESSION_UNARCHIVE: (id: string) => `/v1/builder/sessions/${id}/unarchive`,
     SESSION_PRD: (id: string) => `/v1/builder/sessions/${id}/prd`,
     SESSION_PRD_VERSIONS: (id: string) => `/v1/builder/sessions/${id}/prd/versions`,
     // SSE — driven by useBuilderStream (fetch + getReader), not RTK Query.
@@ -510,6 +514,9 @@ export const ApiEndpoints = {
     NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
     // Scoreboard + knowledge (lessons/exemplars) — the visibility surfaces.
     SCOREBOARD: "/v1/builder/scoreboard",
+    // Where a run's time and money go. The scoreboard answers "is Builder
+    // getting better"; this answers "and what would make it faster".
+    PIPELINE_HEALTH: "/v1/builder/pipeline-health",
     LESSONS: "/v1/builder/lessons",
     LESSON_BY_ID: (id: string) => `/v1/builder/lessons/${id}`,
     LESSONS_CONSOLIDATE: "/v1/builder/lessons/consolidate",
@@ -637,6 +644,7 @@ export const ROUTES = {
   BUILDER_SESSION: (id: string) => `/builder/${id}`,
   BUILDER_SETTINGS: "/builder/settings",
   BUILDER_SCOREBOARD: "/builder/scoreboard",
+  BUILDER_PIPELINE: "/builder/pipeline",
   BUILDER_KNOWLEDGE: "/builder/knowledge",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",

@@ -92,7 +92,8 @@
       "organizationSettings": "Org. Settings",
       "organizationSettingsTag": "Testing",
       "allyAdmin": "Ally Admin",
-      "characterLibrary": "Character Library"
+      "characterLibrary": "Character Library",
+      "progress": "Progress"
     },
     "logout": {
       "title": {
@@ -160,11 +161,14 @@
       "momentum": "Momentum",
       "contribution": "Contribution",
       "resonance": "Resonance",
+        "ascent": "Ascent",
+        "ascent": "Ascent",
       "tooltip": {
         "journey": "Earned by completing simulation minutes. Only completed simulation time is counted.",
         "momentum": "Complete at least one role play per day to build a streak. Missing a day resets your streak.",
         "contribution": "Number of comments and reactions you add to sessions by others. Activity on your own sessions is not included.",
-        "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded."
+        "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded.",
+          "ascent": "Earned by reaching a new level on your progress ladder. Levels come from practice minutes, completed sessions and course items."
       }
     }
   },
@@ -328,6 +332,38 @@
       }
     },
     "evaluationChecklist": "Evaluation Checklist"
+  },
+  "progress": {
+    "title": "Your progress",
+    "hero": {
+      "level": "Level {{level}}",
+      "toNextLevel_one": "{{count}} XP to level {{level}}",
+      "toNextLevel_other": "{{count}} XP to level {{level}}",
+      "maxLevel": "You've reached the top level",
+      "xpTotal_one": "{{count}} XP earned in total",
+      "xpTotal_other": "{{count}} XP earned in total"
+    },
+    "stats": {
+      "lifetimeMinutes": "Practice minutes",
+      "sessions": "Sessions completed",
+      "trackItems": "Course items done",
+      "currentStreak": "Day streak"
+    },
+    "rank": {
+      "line": "You're #{{rank}} in your organisation this week"
+    },
+    "badges": {
+      "link": "See all your badges"
+    },
+    "errors": {
+      "title": "Couldn't load your progress",
+      "description": "Something went wrong fetching your progress. Try again."
+    },
+    "a11y": {
+      "level": "Level {{level}}, {{xp}} XP earned in total",
+      "levelBar": "Progress through level {{level}}",
+      "navLevel": "Your progress, level {{level}}"
+    }
   },
   "practiceStreak": {
     "title": "Practice streak",

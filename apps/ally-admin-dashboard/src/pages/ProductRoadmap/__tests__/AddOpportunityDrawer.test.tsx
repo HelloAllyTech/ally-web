@@ -47,6 +47,9 @@ const allPass = (effort: string | null = "m") => ({
       effort,
       effortReason: "About a sprint.",
       redraft: null,
+      // The server's signed copy of this verdict. Opaque to the drawer, which only has to hand
+      // it back — the gate is enforced on the write, not by `canSave` alone.
+      token: "signed.pass",
     }),
 });
 
@@ -73,6 +76,27 @@ vi.mock("@api", () => ({
 vi.mock("@components", () => ({
   Button: ({ children, ...props }: React.ComponentProps<"button">) => (
     <button {...props}>{children}</button>
+  ),
+  /**
+   * The real one is a plain styled <button> with an aria-label and no `role="switch"`, so the
+   * stub keeps exactly that shape: these assertions find the override by its label, which is
+   * what a screen reader has to work with too.
+   */
+  ToggleSwitch: ({
+    enabled,
+    onChange,
+    label,
+  }: {
+    enabled: boolean;
+    onChange: (next: boolean) => void;
+    label?: string;
+  }) => (
+    <button
+      type="button"
+      aria-label={label ?? "Toggle"}
+      aria-pressed={enabled}
+      onClick={() => onChange(!enabled)}
+    />
   ),
 }));
 vi.mock("@icons", () => ({
@@ -272,6 +296,10 @@ describe("AddOpportunityDrawer", () => {
       effort: "m",
       // Always sent, empty or not — see the note on the create call.
       referenceImages: [],
+      // The server's signed verdict, handed straight back so the gate is enforced on the
+      // write. `readinessOverride` is absent, not false: nothing was overridden here, and
+      // toHaveBeenCalledWith ignores undefined properties.
+      readinessToken: "signed.pass",
     });
   });
 
@@ -542,5 +570,232 @@ describe("AddOpportunityDrawer", () => {
     fireEvent.click(screen.getByRole("combobox", { name: /owner/i }));
 
     expect(screen.getByRole("option", { name: "pat@helloally.ai" })).toBeInTheDocument();
+  });
+  /**
+   * The readiness override, for platform admins who manage the board. Each test below removes
+   * one condition and asserts the toggle is gone: the three together are the whole rule, and a
+   * regression in any one of them turns the gate into a formality.
+   */
+  describe("readiness override", () => {
+    /** One red row, plus a size the server would file — so ONLY a criterion is failing. */
+    const oneRed = () => ({
+      unwrap: () =>
+        Promise.resolve({
+          results: [
+            { id: "pain_or_gain", passed: true, reason: "Met." },
+            { id: "specific", passed: false, reason: "Too broad — name the moment it happens." },
+          ],
+          effort: "m",
+          effortReason: "About a sprint.",
+          redraft: null,
+          token: "signed.fail",
+        }),
+    });
+
+    const OVERRIDE = /override the readiness check/i;
+
+    /** Type, check, and wait for the red reason to land. */
+    const failedDraft = async (text = "The admin experience is bad") => {
+      fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+        target: { value: text },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+      await screen.findByText(/name the moment it happens/i);
+    };
+
+    it("is not offered to a filer who cannot manage the roadmap", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      renderDrawer();
+
+      await failedDraft();
+
+      expect(screen.queryByLabelText(OVERRIDE)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
+    });
+
+    /**
+     * The "see the reviews first" half. An override available before the check would let an
+     * admin file without ever reading what the model thought, which is what the gate is for.
+     */
+    it("is not offered before the check has run", () => {
+      renderDrawer(vi.fn(), true);
+
+      fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+        target: { value: "The admin experience is bad" },
+      });
+
+      expect(screen.queryByLabelText(OVERRIDE)).not.toBeInTheDocument();
+    });
+
+    it("is not offered when the check comes back green", async () => {
+      stableTriggers.readiness.mockReturnValue(allPass());
+      renderDrawer(vi.fn(), true);
+
+      await fileableDraft("Let coaches bulk-assign a track to a cohort");
+
+      expect(screen.queryByLabelText(OVERRIDE)).not.toBeInTheDocument();
+    });
+
+    it("opens the gate for a manager once flipped, and files", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+      const onClose = vi.fn();
+      renderDrawer(onClose, true);
+
+      await failedDraft();
+
+      // Present but inert until flipped: appearing is not the same as overriding.
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
+
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+
+      // Relabelled, so the click says what it does — and it names the row it stands in for.
+      const file = await screen.findByRole("button", { name: /file anyway/i });
+      expect(file).toBeEnabled();
+      // The warning line, not the checklist row that carries the same label.
+      expect(
+        screen.getByText(/filing anyway, against: narrow enough to act on/i),
+      ).toBeInTheDocument();
+
+      fireEvent.click(file);
+
+      await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    });
+
+    /** Flipping it and flipping it back leaves the gate exactly as the check left it. */
+    it("re-closes the gate when the override is turned back off", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      renderDrawer(vi.fn(), true);
+
+      await failedDraft();
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+      await screen.findByRole("button", { name: /file anyway/i });
+
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+
+      expect(await screen.findByRole("button", { name: /file opportunity/i })).toBeDisabled();
+    });
+
+    /**
+     * The load-bearing half, same as the staleness rule for verdicts: an override that
+     * survived an edit would leave a different draft looking graded and filable.
+     */
+    it("stops applying when the text changes after an override", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      renderDrawer(vi.fn(), true);
+
+      await failedDraft();
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+      await screen.findByRole("button", { name: /file anyway/i });
+
+      fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+        target: { value: "something else entirely" },
+      });
+
+      expect(screen.getByRole("button", { name: /file opportunity/i })).toBeDisabled();
+      expect(screen.queryByLabelText(OVERRIDE)).not.toBeInTheDocument();
+    });
+
+    /** And it does not come back on by itself when the next check fails the same way. */
+    it("starts from off on every re-run of the check", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      renderDrawer(vi.fn(), true);
+
+      await failedDraft();
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+      await screen.findByRole("button", { name: /file anyway/i });
+
+      fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+      expect(await screen.findByRole("button", { name: /file opportunity/i })).toBeDisabled();
+      expect(screen.getByLabelText(OVERRIDE)).toHaveAttribute("aria-pressed", "false");
+    });
+
+    /**
+     * The size row is part of the gate, so it is part of what the override covers — otherwise
+     * an admin could wave through five judgements but not the one derived here.
+     */
+    it("covers the size row too", async () => {
+      stableTriggers.readiness.mockReturnValue(allPass("xl"));
+      renderDrawer(vi.fn(), true);
+
+      fireEvent.change(screen.getByLabelText(/what is the opportunity/i), {
+        target: { value: "Rebuild the whole admin console" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /check readiness/i }));
+
+      fireEvent.click(await screen.findByLabelText(OVERRIDE));
+
+      expect(await screen.findByRole("button", { name: /file anyway/i })).toBeEnabled();
+      expect(
+        screen.getByText(/filing anyway, against: small enough to ship in one go/i),
+      ).toBeInTheDocument();
+    });
+    /**
+     * The half that makes the override mean anything. `canOverride` is a boolean in this
+     * bundle; the server is what actually enforces "only a roadmap manager", and it can only
+     * do that if the flag reaches it.
+     */
+    it("sends the override flag and the signed verdict to the server", async () => {
+      stableTriggers.readiness.mockReturnValue(oneRed());
+      mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+      renderDrawer(vi.fn(), true);
+
+      await failedDraft();
+      fireEvent.click(screen.getByLabelText(OVERRIDE));
+      fireEvent.click(await screen.findByRole("button", { name: /file anyway/i }));
+
+      await waitFor(() =>
+        expect(mockCreate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            readinessOverride: true,
+            readinessToken: "signed.fail",
+          }),
+        ),
+      );
+    });
+
+    /**
+     * A passing filing must claim no override at all — `undefined`, not `false`. A row filed
+     * cleanly should carry no assertion about an override having been considered.
+     */
+    it("claims no override on a filing that passed", async () => {
+      stableTriggers.readiness.mockReturnValue(allPass());
+      mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+      renderDrawer(vi.fn(), true);
+
+      await fileableDraft("Let coaches bulk-assign a track to a cohort");
+      fireEvent.click(screen.getByRole("button", { name: /file opportunity/i }));
+
+      await waitFor(() => expect(mockCreate).toHaveBeenCalled());
+      const body = mockCreate.mock.calls[0][0];
+      expect(body.readinessToken).toBe("signed.pass");
+      expect(body.readinessOverride).toBeUndefined();
+    });
+
+    /**
+     * An older ally-be issues no token. Filing must still work and must NOT invent one — the
+     * server is lenient about an absent token for one release and strict about a bad one, so a
+     * placeholder is the only thing that would actually break.
+     */
+    it("files without a token when the server issued none", async () => {
+      stableTriggers.readiness.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            results: CRITERIA.map(c => ({ id: c.id, passed: true, reason: "Met." })),
+            effort: "m",
+            effortReason: "About a sprint.",
+            redraft: null,
+          }),
+      });
+      mockCreate.mockReturnValue({ unwrap: () => Promise.resolve({ id: "o1" }) });
+      renderDrawer();
+
+      await fileableDraft("Let coaches bulk-assign a track to a cohort");
+      fireEvent.click(screen.getByRole("button", { name: /file opportunity/i }));
+
+      await waitFor(() => expect(mockCreate).toHaveBeenCalled());
+      expect(mockCreate.mock.calls[0][0].readinessToken).toBeUndefined();
+    });
   });
 });
