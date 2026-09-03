@@ -15,6 +15,7 @@ import {
   LanguageEvalReference,
   LanguageMixResponse,
   LanguageQualityResponse,
+  FillerQualityResponse,
   WeakMetricsResponse,
   LearnerKpisResponse,
   OrgHealthResponse,
@@ -463,6 +464,21 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
+    // Thinking-filler quality. Deliberately NOT folded into the latency query
+    // it renders beside: latency is per-turn pipeline telemetry available for
+    // every session, this is LLM-judge output that exists only for sessions
+    // that both played a filler and have been judged. One request returning
+    // both would make the judged subset look like the whole window.
+    getFillerQuality: builder.query<
+      FillerQualityResponse,
+      AnalyticsWindowQuery & { language?: string }
+    >({
+      query: ({ language, ...q } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FILLER_QUALITY,
+        method: HttpMethod.GET,
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
+      }),
+    }),
     // The five weak-performing metrics on one filter tuple. Deliberately a
     // single request: reading them apart invites the composition mistake this
     // tab exists to prevent.
@@ -659,6 +675,7 @@ export const {
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
   useGetLanguageQualityQuery,
+  useGetFillerQualityQuery,
   useGetWeakPerformingMetricsQuery,
   useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,

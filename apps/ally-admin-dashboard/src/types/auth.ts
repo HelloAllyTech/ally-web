@@ -1610,6 +1610,55 @@ export interface WeakMetricsResponse {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Thinking-filler quality — FillerQualityPointDto[] from
+// GET /v1/analytics/filler-quality.
+//
+// Read the denominator before reading anything else: every `Per100` field is
+// per 100 PLAYED FILLERS, not per session and not per turn. A session that
+// played forty fillers and one that played two are not comparable units, and
+// a turn can play two fillers when a continuation fires.
+//
+// Rates only, no scalar quality score — the judge emits labelled findings and
+// these rates are computed in SQL at read time, so a weighting change never
+// means re-judging the corpus.
+// ---------------------------------------------------------------------------
+
+export interface FillerQualityPoint {
+  /** Bucket start date, ISO yyyy-mm-dd. */
+  bucket: string;
+  /** Played fillers judged in this bucket — the denominator for every rate. */
+  fillersJudged: number;
+  /**
+   * "Did it sound like this character." Excludes findings conditioned out
+   * because the scenario configured no character voice; those are
+   * `unconfiguredStylePer100`.
+   */
+  characterFitPer100: number | null;
+  /** "Did it fit what the learner just said." */
+  contextFitPer100: number | null;
+  /**
+   * The filler committed to something the real reply — generated separately
+   * and afterwards — could then contradict.
+   */
+  safetyPer100: number | null;
+  /**
+   * Findings set aside because the character had no configured style. A
+   * CONFIGURATION gap, not a model failure: counting these in the rates above
+   * would make a push to configure more scenarios read as a regression.
+   */
+  unconfiguredStylePer100: number | null;
+  /** Share of played fillers that repeated a recent phrase. */
+  repeatedPct: number | null;
+  /**
+   * Distinct phrases over total played. A session can mask every gap perfectly
+   * and still sound like a soundboard; only this shows it.
+   */
+  distinctPhraseRatio: number | null;
+}
+
+export type FillerQualityResponse = FillerQualityPoint[];
+
 export interface LanguageQualityResponse {
   judgeModel: string | null;
   judgePromptVersion: string | null;
