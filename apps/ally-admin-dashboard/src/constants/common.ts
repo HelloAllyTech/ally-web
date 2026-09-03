@@ -405,6 +405,9 @@ export const ApiEndpoints = {
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
     LANGUAGE_QUALITY: "/v1/analytics/language-quality",
     LANGUAGE_QUALITY_REFERENCE: "/v1/analytics/language-quality/reference",
+    // Thinking-filler quality. Separate from LANGUAGE_QUALITY because the
+    // denominator is different in kind: played fillers, not judged turns.
+    FILLER_QUALITY: "/v1/analytics/filler-quality",
     // The five simulator-quality metrics under active repair. One endpoint
     // rather than five: they share a filter tuple, and reading them apart is
     // how a composition artefact gets mistaken for a regression.

@@ -5,6 +5,7 @@ import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import {
   useGetAgentJoinReliabilityQuery,
+  useGetFillerQualityQuery,
   useGetStartLatencyQuery,
   useGetVoiceLatencyQuery,
 } from "@api";
@@ -23,6 +24,16 @@ import {
   stackedBarOpts,
 } from "../chartKit";
 import { CONTEXT, PALETTE, languageScale } from "../chartScales";
+import {
+  FILLER_CONFIG_SCALE,
+  FILLER_DIVERSITY_SCALE,
+  FILLER_FINDING_SCALE,
+  buildFillerDiversitySeries,
+  buildFillerFindingSeries,
+  buildFillerUnconfiguredSeries,
+  countJudgedFillers,
+  unconfiguredPer100,
+} from "../fillerQualityChart";
 import {
   JOIN_LATENCY_SCALE,
   RELIABILITY_SCALE,
@@ -152,6 +163,17 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     refetch: refetchStart,
   } = useGetStartLatencyQuery({ ...scopedQuery, language: languageParam });
 
+  // Judge output, not pipeline telemetry — hence its own request. It exists
+  // only for sessions that both played a filler and have been judged, so
+  // folding it into the latency response would make that subset look like the
+  // whole window.
+  const {
+    data: fillerData,
+    isLoading: fillerLoading,
+    isError: fillerError,
+    refetch: refetchFiller,
+  } = useGetFillerQualityQuery({ ...scopedQuery, language: languageParam });
+
   const {
     data: reliabilityData,
     isLoading: reliabilityLoading,
@@ -182,6 +204,17 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const maskedTurns = useMemo(() => countMaskedTurns(points), [points]);
   const maskedSharePct =
     firstAudioTurns > 0 ? Math.round((100 * maskedTurns) / firstAudioTurns) : null;
+  // The quality half of the filler story. The mix chart above says how much of
+  // the window was masked; these say whether the masking was any good.
+  const fillerFindingSeries = useMemo(() => buildFillerFindingSeries(fillerData), [fillerData]);
+  const fillerDiversitySeries = useMemo(() => buildFillerDiversitySeries(fillerData), [fillerData]);
+  const fillerUnconfiguredSeries = useMemo(
+    () => buildFillerUnconfiguredSeries(fillerData),
+    [fillerData],
+  );
+  const judgedFillers = useMemo(() => countJudgedFillers(fillerData), [fillerData]);
+  const unconfiguredRate = useMemo(() => unconfiguredPer100(fillerData), [fillerData]);
+
   const byLanguageBars = useMemo(
     () => buildVoiceLatencyByLanguageBars(data?.byLanguage ?? []),
     [data],
@@ -288,6 +321,41 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         }),
       }),
     [axisTitle, targetSec],
+  );
+
+  // Rates, not durations. No threshold line on any of these: there is no
+  // agreed service objective for "findings per 100 fillers", and an unlabelled
+  // reference would invite the reader to assume one was measured.
+  const fillerFindingOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Findings per 100 played fillers",
+        bottomTitle: axisTitle,
+        colorScale: FILLER_FINDING_SCALE,
+      }),
+    [axisTitle],
+  );
+
+  const fillerDiversityOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Percent of played fillers",
+        bottomTitle: axisTitle,
+        colorScale: FILLER_DIVERSITY_SCALE,
+        domain: [0, 100],
+      }),
+    [axisTitle],
+  );
+
+  const fillerUnconfiguredOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Findings per 100 played fillers",
+        bottomTitle: axisTitle,
+        colorScale: FILLER_CONFIG_SCALE,
+        legend: false,
+      }),
+    [axisTitle],
   );
 
   // Historical is context, so its own chart is drawn in greys rather than
@@ -459,6 +527,17 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     asOf: asOf(data?.window),
   });
 
+  // n is PLAYED FILLERS, not turns and not sessions — the same denominator the
+  // rates use. Quoting the session count here would flatter a window where a
+  // few sessions played a great many fillers.
+  const fillerSource = buildSource({
+    derivation: "Thinking-filler judge findings over played fillers",
+    window: `${voiceWindow}${languageNote}`,
+    n: judgedFillers,
+    nUnit: "played fillers",
+    asOf: asOf(data?.window),
+  });
+
   const bucketPicker = (
     <div className="flex justify-end">
       <div className="w-44">
@@ -541,6 +620,85 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
       >
         <ScrollableChart data={firstAudioMixSeries}>
           <StackedBarChart data={firstAudioMixSeries} options={firstAudioMixOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      {/* The mix chart above says how much of the window was masked. These
+          three say whether the masking was any good — which the latency charts
+          structurally cannot, because the filler IS the character's first
+          words: a filler that lands instantly and sounds nothing like the
+          character improves every chart on this tab while making the roleplay
+          worse. Judge output, so a separate n from everything above. */}
+      <ChartCard
+        title="Was the filler any good?"
+        caption={
+          "Findings per 100 played fillers, from the thinking-filler judge. " +
+          "The denominator is played fillers, not turns or sessions — one turn " +
+          "plays two whenever a continuation fires." +
+          (unconfiguredRate !== null && unconfiguredRate > 0
+            ? ` A further ${unconfiguredRate} findings per 100 were set aside ` +
+              "because the scenario configured no character voice, and are not " +
+              "counted above — see the chart below."
+            : "")
+        }
+        source={fillerSource}
+        loading={fillerLoading && !fillerData}
+        error={fillerError}
+        onRetry={refetchFiller}
+        onExpand={() => setExpanded("fillerFindings")}
+        errorTitle="Couldn't load filler quality"
+        errorSubtitle="There was a problem fetching thinking-filler judge results."
+        empty={!fillerLoading && fillerFindingSeries.length === 0}
+        emptyText="No judged fillers in this range — run the filler judge backfill to populate it"
+      >
+        <ScrollableChart data={fillerFindingSeries}>
+          <LineChart data={fillerFindingSeries} options={fillerFindingOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      <ChartCard
+        title="Did it sound like a soundboard?"
+        caption={
+          "Counted, not judged: no LLM in this path. A session can mask every " +
+          "gap perfectly and still draw on four phrases all day, which is what " +
+          "the distinct-phrase share catches and the repeat rate alone does not."
+        }
+        source={fillerSource}
+        loading={fillerLoading && !fillerData}
+        error={fillerError}
+        onRetry={refetchFiller}
+        onExpand={() => setExpanded("fillerDiversity")}
+        errorTitle="Couldn't load filler diversity"
+        errorSubtitle="There was a problem fetching thinking-filler judge results."
+        empty={!fillerLoading && fillerDiversitySeries.length === 0}
+        emptyText="No judged fillers in this range"
+      >
+        <ScrollableChart data={fillerDiversitySeries}>
+          <LineChart data={fillerDiversitySeries} options={fillerDiversityOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      <ChartCard
+        title="Fillers the judge couldn't assess for character"
+        caption={
+          "Set aside, not counted as failures: the judge cannot call a filler " +
+          "generic for a character it was told nothing about. This is a " +
+          "scenario-configuration gap, so it is kept out of the rates above — " +
+          "otherwise configuring more scenarios would read there as a quality " +
+          "regression."
+        }
+        source={fillerSource}
+        loading={fillerLoading && !fillerData}
+        error={fillerError}
+        onRetry={refetchFiller}
+        onExpand={() => setExpanded("fillerUnconfigured")}
+        errorTitle="Couldn't load unconfigured-style findings"
+        errorSubtitle="There was a problem fetching thinking-filler judge results."
+        empty={!fillerLoading && fillerUnconfiguredSeries.length === 0}
+        emptyText="No judged fillers in this range"
+      >
+        <ScrollableChart data={fillerUnconfiguredSeries}>
+          <LineChart data={fillerUnconfiguredSeries} options={fillerUnconfiguredOptions} />
         </ScrollableChart>
       </ChartCard>
 
@@ -838,6 +996,63 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
               <StackedBarChart
                 data={firstAudioMixSeries}
                 options={{ ...firstAudioMixOptions, height }}
+              />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "fillerFindings" && (
+        <ChartDetailModal
+          open={expanded === "fillerFindings"}
+          onClose={() => setExpanded(null)}
+          title="Was the filler any good?"
+          caption="Findings per 100 played fillers, from the thinking-filler judge. The denominator is played fillers, not turns or sessions."
+          source={fillerSource}
+          table={seriesTable(fillerFindingSeries, axisTitle)}
+          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
+          render={({ height }) => (
+            <ScrollableChart data={fillerFindingSeries}>
+              <LineChart data={fillerFindingSeries} options={{ ...fillerFindingOptions, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "fillerDiversity" && (
+        <ChartDetailModal
+          open={expanded === "fillerDiversity"}
+          onClose={() => setExpanded(null)}
+          title="Did it sound like a soundboard?"
+          caption="Counted, not judged. Share of played fillers that repeated a recent phrase, against the share of played fillers that were distinct."
+          source={fillerSource}
+          table={seriesTable(fillerDiversitySeries, axisTitle)}
+          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
+          render={({ height }) => (
+            <ScrollableChart data={fillerDiversitySeries}>
+              <LineChart
+                data={fillerDiversitySeries}
+                options={{ ...fillerDiversityOptions, height }}
+              />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "fillerUnconfigured" && (
+        <ChartDetailModal
+          open={expanded === "fillerUnconfigured"}
+          onClose={() => setExpanded(null)}
+          title="Fillers the judge couldn't assess for character"
+          caption="Findings set aside because the scenario configured no character voice. A configuration gap, not a model failure — kept out of the rates above."
+          source={fillerSource}
+          table={seriesTable(fillerUnconfiguredSeries, axisTitle)}
+          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
+          render={({ height }) => (
+            <ScrollableChart data={fillerUnconfiguredSeries}>
+              <LineChart
+                data={fillerUnconfiguredSeries}
+                options={{ ...fillerUnconfiguredOptions, height }}
               />
             </ScrollableChart>
           )}
