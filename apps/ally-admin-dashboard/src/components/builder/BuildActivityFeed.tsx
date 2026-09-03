@@ -44,6 +44,21 @@ interface BuildActivityFeedProps {
   isLive: boolean;
 }
 
+/**
+ * Markdown, parsed once per distinct body.
+ *
+ * Every `text`, `plan` and `report` row is a full remark parse, and none of the
+ * rows were memoised — so one new event at the bottom of the feed re-parsed
+ * every block above it. A long build produces thousands of events, and the feed
+ * re-renders on each one.
+ */
+const Markdown = React.memo<{ children: string }>(({ children }) => (
+  <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
+    {children}
+  </ReactMarkdown>
+));
+Markdown.displayName = "Markdown";
+
 /** A relative timestamp with the exact moment one hover away, per house convention. */
 const EventTimestamp: React.FC<{ createdAt: string }> = ({ createdAt }) => (
   <span
@@ -232,7 +247,9 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
     setPinnedToBottom(true);
   };
 
-  const visible = events.filter(event => !HIDDEN_TYPES.has(event.type));
+  // Memoised like `toolResultsByCall` below it. This ran on every render of a
+  // feed that re-renders on every socket push.
+  const visible = useMemo(() => events.filter(event => !HIDDEN_TYPES.has(event.type)), [events]);
 
   // Built over the FULL event list, not `visible` — a tool_result row is
   // filtered out of the feed but still has to be read to answer "what came
@@ -253,9 +270,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
       case "text":
         return (
           <div key={event.id} style={style} className="prose prose-sm max-w-none text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
-              {String(payload.text ?? "")}
-            </ReactMarkdown>
+            <Markdown>{String(payload.text ?? "")}</Markdown>
           </div>
         );
 
@@ -301,9 +316,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
               {strings.planHeading}
             </p>
             <div className="prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
-                {String(payload.text ?? "")}
-              </ReactMarkdown>
+              <Markdown>{String(payload.text ?? "")}</Markdown>
             </div>
           </Tile>
         );
@@ -459,9 +472,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
 
             {asAgentText(payload.notes) ? (
               <div className="prose prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
-                  {asAgentText(payload.notes)}
-                </ReactMarkdown>
+                <Markdown>{asAgentText(payload.notes)}</Markdown>
               </div>
             ) : null}
           </Tile>
@@ -508,9 +519,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
               {strings.reportHeading}
             </p>
             <div className="prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
-                {String(payload.text ?? payload.contentMd ?? "")}
-              </ReactMarkdown>
+              <Markdown>{String(payload.text ?? payload.contentMd ?? "")}</Markdown>
             </div>
           </Tile>
         );

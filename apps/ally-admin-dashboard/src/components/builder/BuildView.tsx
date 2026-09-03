@@ -69,6 +69,12 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
   const isLive = LIVE_STATUSES.includes(status);
   const isWaiting = status === "WAITING_FOR_INPUT";
 
+  // NOTE: this is the one live query that does not back off when the socket is
+  // connected, and it stays that way deliberately. `connected` comes from
+  // `useBuilderSocket` further down, which itself depends on values derived
+  // from `runs` — reading it here is a temporal dead zone, and untangling the
+  // hook order in this component is a bigger change than five requests a
+  // minute justifies.
   const { data: runs } = useGetBuilderRunsQuery(sessionId, {
     pollingInterval: isLive || isWaiting ? POLL_WITHOUT_SOCKET_MS : 0,
     skipPollingIfUnfocused: true,
@@ -145,7 +151,17 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
         const fresh = events.filter(event => !seen.has(event.seq));
         if (!fresh.length) continue;
         changed = true;
-        const merged = [...existing, ...fresh].sort((a, b) => a.seq - b.seq);
+        // Events arrive in order and the list only grows, so the common case
+        // is a plain append. Re-sorting the whole array on every socket push
+        // and every poll tick made this O(n log n) per batch — O(n²) across a
+        // run that can produce thousands of events.
+        const lastSeq = existing.length ? existing[existing.length - 1].seq : -1;
+        const inOrder = fresh.every(
+          (event, i) => event.seq > (i === 0 ? lastSeq : fresh[i - 1].seq),
+        );
+        const merged = inOrder
+          ? [...existing, ...fresh]
+          : [...existing, ...fresh].sort((a, b) => a.seq - b.seq);
         next[runId] = merged;
         lastSeqByRunRef.current[runId] = Math.max(
           lastSeqByRunRef.current[runId] ?? 0,
