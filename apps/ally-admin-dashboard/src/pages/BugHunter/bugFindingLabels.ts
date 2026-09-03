@@ -1,5 +1,11 @@
 import { en } from "@constants";
-import { BugFindingSeverity, BugFindingSource, BugFindingStage, BugFindingStatus } from "@types";
+import {
+  BugFindingDecisionReason,
+  BugFindingSeverity,
+  BugFindingSource,
+  BugFindingStage,
+  BugFindingStatus,
+} from "@types";
 
 /** Short, scannable label per source — used by the findings table and drawer. */
 export const BUG_FINDING_SOURCE_LABELS: Record<BugFindingSource, string> = {
@@ -10,6 +16,50 @@ export const BUG_FINDING_SOURCE_LABELS: Record<BugFindingSource, string> = {
   [BugFindingSource.REPORTED_BUG]: en.bugHunter.findingSourceReportedBug,
   [BugFindingSource.ANALYTICS_SUGGESTION]: en.bugHunter.findingSourceAnalyticsSuggestion,
   [BugFindingSource.UX_SIGNAL]: en.bugHunter.findingSourceUxSignal,
+};
+
+/**
+ * The decline reasons, as the words a reviewer picks from.
+ *
+ * Deliberately phrased from the REVIEWER's point of view rather than the
+ * database's — "Not actually a bug" is what someone means when they press it,
+ * where "not_a_bug" is what gets stored. The order here is the order they are
+ * offered in, commonest first: the whole point of the pick-list is that the
+ * usual answer is the first key you reach for.
+ */
+export const BUG_FINDING_DECISION_REASON_LABELS: Record<BugFindingDecisionReason, string> = {
+  [BugFindingDecisionReason.NOT_A_BUG]: en.bugHunter.declineNotABug,
+  [BugFindingDecisionReason.WONT_FIX]: en.bugHunter.declineWontFix,
+  [BugFindingDecisionReason.DUPLICATE]: en.bugHunter.declineDuplicate,
+  [BugFindingDecisionReason.WRONG_REPO]: en.bugHunter.declineWrongRepo,
+  [BugFindingDecisionReason.TOO_RISKY]: en.bugHunter.declineTooRisky,
+  [BugFindingDecisionReason.OTHER]: en.bugHunter.declineOther,
+};
+
+/**
+ * The order the reasons are offered in.
+ *
+ * `Object.keys` on the map above would work today and would silently reorder
+ * the list the moment anyone added a key in the middle — and this order is a
+ * product decision, not an implementation detail.
+ */
+export const BUG_FINDING_DECISION_REASON_ORDER: BugFindingDecisionReason[] = [
+  BugFindingDecisionReason.NOT_A_BUG,
+  BugFindingDecisionReason.WONT_FIX,
+  BugFindingDecisionReason.DUPLICATE,
+  BugFindingDecisionReason.WRONG_REPO,
+  BugFindingDecisionReason.TOO_RISKY,
+  BugFindingDecisionReason.OTHER,
+];
+
+/** One line per reason, explaining what picking it actually does. Shown as help text under the picker. */
+export const BUG_FINDING_DECISION_REASON_HINTS: Record<BugFindingDecisionReason, string> = {
+  [BugFindingDecisionReason.NOT_A_BUG]: en.bugHunter.declineNotABugHint,
+  [BugFindingDecisionReason.WONT_FIX]: en.bugHunter.declineWontFixHint,
+  [BugFindingDecisionReason.DUPLICATE]: en.bugHunter.declineDuplicateHint,
+  [BugFindingDecisionReason.WRONG_REPO]: en.bugHunter.declineWrongRepoHint,
+  [BugFindingDecisionReason.TOO_RISKY]: en.bugHunter.declineTooRiskyHint,
+  [BugFindingDecisionReason.OTHER]: en.bugHunter.declineOtherHint,
 };
 
 export const BUG_FINDING_SEVERITY_LABELS: Record<BugFindingSeverity, string> = {

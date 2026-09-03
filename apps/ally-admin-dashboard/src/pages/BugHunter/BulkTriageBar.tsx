@@ -6,8 +6,9 @@ import { Button, Tooltip } from "@ally-ui-mono/ui-shared";
 import { useApproveBugFindingMutation, useRejectBugFindingMutation } from "@api";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { en } from "@constants";
-import { BugFinding } from "@types";
+import { BugFinding, BugFindingDecisionReason } from "@types";
 
+import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 import { BulkOutcome, eligibleFor, MAX_NAMED_FAILURES, TriageAction } from "./triage";
 
 /**
@@ -90,6 +91,8 @@ export const BulkTriageBar: FC<BulkTriageBarProps> = ({ selected, onClear, onSet
   const [reject] = useRejectBugFindingMutation();
 
   const [confirming, setConfirming] = useState<TriageAction | null>(null);
+  const [declineReason, setDeclineReason] = useState<BugFindingDecisionReason | null>(null);
+  const [declineNote, setDeclineNote] = useState("");
   /** `null` when idle; otherwise the batch in progress, for the "{done} of {total}" line. */
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
@@ -98,6 +101,10 @@ export const BulkTriageBar: FC<BulkTriageBarProps> = ({ selected, onClear, onSet
 
   const run = async (action: TriageAction) => {
     const targets = action === "approve" ? approvable : rejectable;
+    if (action === "reject" && !canSubmitDecline(declineReason, declineNote)) {
+      toast.error(en.bugHunter.declineReasonRequired);
+      return;
+    }
     setConfirming(null);
     setProgress({ done: 0, total: targets.length });
 
@@ -110,7 +117,17 @@ export const BulkTriageBar: FC<BulkTriageBarProps> = ({ selected, onClear, onSet
     for (const finding of targets) {
       try {
         if (action === "approve") await approve(finding.id).unwrap();
-        else await reject(finding.id).unwrap();
+        else {
+          // One reason for the whole batch. This is what keeps the mandatory
+          // reason affordable on the action that actually collapses the
+          // cost: twenty rejections behind one dialog, and one answer to the
+          // question rather than twenty.
+          await reject({
+            id: finding.id,
+            reason: declineReason as BugFindingDecisionReason,
+            note: declineNote,
+          }).unwrap();
+        }
         outcome.succeeded += 1;
       } catch {
         outcome.failed += 1;
@@ -233,12 +250,22 @@ export const BulkTriageBar: FC<BulkTriageBarProps> = ({ selected, onClear, onSet
           primaryButton={{
             label: en.bugHunter.bulkRejectConfirm,
             onClick: () => void run("reject"),
+            disabled: !canSubmitDecline(declineReason, declineNote),
           }}
           secondaryButton={{
             label: en.bugHunter.cancel,
             onClick: () => setConfirming(null),
           }}
-        />
+        >
+          <DeclineReasonPicker
+            idPrefix="bulk"
+            reason={declineReason}
+            onReasonChange={setDeclineReason}
+            note={declineNote}
+            onNoteChange={setDeclineNote}
+            count={rejectable.length}
+          />
+        </ActionConfirmationPopup>
       )}
     </>
   );

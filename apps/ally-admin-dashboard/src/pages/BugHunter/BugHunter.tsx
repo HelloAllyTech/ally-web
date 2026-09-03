@@ -11,6 +11,7 @@ import { BugFinding, BugHunterMode } from "@types";
 import { hasFeature } from "@utils";
 
 import { AboutAgent } from "./AboutAgent";
+import { AccuracyPanel } from "./AccuracyPanel";
 import { AgentProfileCard } from "./AgentProfileCard";
 import { AgentScorecard } from "./AgentScorecard";
 import { BugFindingsTable } from "./BugFindingsTable";
@@ -68,9 +69,17 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
  * - `BugFindingsTable` — every bug it knows about: filterable, sortable,
  *   searchable, selectable, and workable from the keyboard.
  *
- * **Performance** — the governor's surface: `AgentScorecard` (what it has cost
- * and what that bought) directly on top of `RunHistoryTable` (the per-run
- * ledger it aggregates), which is the pairing the old order already had.
+ * **Performance** — the governor's surface, in the order the question is
+ * actually asked: `AgentScorecard` (what it has cost), then `AccuracyPanel`
+ * (whether it was right, how fast, and what a landed fix costs), then
+ * `RunHistoryTable` (the per-run ledger both of them aggregate). The cost half
+ * and the accuracy half stay separate components on purpose: the scorecard
+ * derives everything from `GET /runs` and deliberately refuses to compute a
+ * finding-level funnel from it, because run totals and finding statuses have
+ * different denominators there — see `scorecard.ts`. The funnel needs its own
+ * server-side query, and giving it its own component is what keeps that
+ * refusal intact rather than quietly growing a second data source inside the
+ * scorecard.
  *
  * **About** — reference material, and the default tab on the one occasion
  * nothing else has any content: before anyone has put it on duty. That replaces
@@ -228,6 +237,11 @@ export const BugHunter: FC = () => {
         <>
           <div className="mt-6 shrink-0">
             <AgentScorecard />
+            {/* Above the shift log and below the scorecard. The scorecard says
+                what Bug Hunter cost; this says whether it was right — the two
+                halves of the same question, so they read together, with the
+                raw per-run ledger they both summarise underneath. */}
+            <AccuracyPanel />
           </div>
 
           {/* Directly under the scorecard it aggregates, which is the pairing

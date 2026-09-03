@@ -28,7 +28,12 @@ import { EmptyState } from "@components";
 import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { ErrorBoundary } from "@components/error-boundary";
 import { en } from "@constants";
-import { BugFinding, BugFindingSeverity } from "@types";
+import {
+  BUG_FINDING_LOW_CONFIDENCE_THRESHOLD,
+  BugFinding,
+  BugFindingDecisionReason,
+  BugFindingSeverity,
+} from "@types";
 import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
@@ -38,6 +43,7 @@ import { BugFindingStageChip } from "./BugFindingStageChip";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { PAGE_SIZES, PageSize, useBugHunterUrlState } from "./bugHunterUrlState";
 import { BulkTriageBar } from "./BulkTriageBar";
+import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 import { FindingsFilterBar } from "./FindingsFilterBar";
 import { BUG_FINDINGS_TABLE_ANCHOR_ID } from "./findingsTableAnchor";
 import {
@@ -356,6 +362,9 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
    */
   const [cursorId, setCursorId] = useState<string | null>(null);
   /** A single-row decision awaiting its confirmation. */
+  /** The decline reason for a single-row reject, cleared once it settles. */
+  const [declineReason, setDeclineReason] = useState<BugFindingDecisionReason | null>(null);
+  const [declineNote, setDeclineNote] = useState("");
   const [pending, setPending] = useState<{ action: TriageAction; finding: BugFinding } | null>(
     null,
   );
@@ -590,10 +599,22 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
   const runPending = async () => {
     if (!pending) return;
     const { action, finding } = pending;
+    if (action === "reject" && !canSubmitDecline(declineReason, declineNote)) {
+      toast.error(en.bugHunter.declineReasonRequired);
+      return;
+    }
     setPending(null);
     try {
       if (action === "approve") await approve(finding.id).unwrap();
-      else if (action === "reject") await reject(finding.id).unwrap();
+      else if (action === "reject") {
+        await reject({
+          id: finding.id,
+          reason: declineReason as BugFindingDecisionReason,
+          note: declineNote,
+        }).unwrap();
+        setDeclineReason(null);
+        setDeclineNote("");
+      }
       // No `repo` argument. ally-be resolves the repo itself for a bug that has
       // none — the confirm dialog says so in as many words — and this call used
       // to carry a `...(finding.repo ? {} : {})` spread whose two branches were
@@ -1147,6 +1168,31 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                             </span>
                           </Tooltip>
                         )}
+                        {/* A shipped fix that came back. Amber rather than
+                            neutral because it is the one row state where the
+                            reasonable next move is NOT to fix it again — see
+                            the notification's own reasoning. */}
+                        {(finding.regressed || finding.regressionOf) && (
+                          <Tooltip label={en.bugHunter.findingRegressedTooltip} align="top">
+                            <span className="shrink-0 inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 text-[10px] font-semibold text-amber-800 cursor-help">
+                              {finding.regressionOf
+                                ? en.bugHunter.findingRegressionOfChip
+                                : en.bugHunter.findingRegressedChip}
+                            </span>
+                          </Tooltip>
+                        )}
+                        {/* Both verifiers accepted it, one of them hesitantly.
+                            Shown on the row rather than only in the drawer:
+                            it is a reason to open THIS bug before the others,
+                            which is a scanning decision. */}
+                        {finding.confidence != null &&
+                          finding.confidence < BUG_FINDING_LOW_CONFIDENCE_THRESHOLD && (
+                            <Tooltip label={en.bugHunter.findingLowConfidenceTooltip} align="top">
+                              <span className="shrink-0 inline-flex items-center rounded border border-border-light bg-neutral-100 px-1.5 text-[10px] font-semibold text-typography-600 cursor-help">
+                                {en.bugHunter.findingLowConfidenceChip}
+                              </span>
+                            </Tooltip>
+                          )}
                       </div>
                       {/* Source moved out of its own column and under the title.
                           It reads as provenance rather than as a field, it freed
@@ -1463,9 +1509,20 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                   ? en.bugHunter.quickRejectConfirm
                   : en.bugHunter.drawerFixSessionStart,
             onClick: () => void runPending(),
+            disabled: pending.action === "reject" && !canSubmitDecline(declineReason, declineNote),
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setPending(null) }}
-        />
+        >
+          {pending.action === "reject" && (
+            <DeclineReasonPicker
+              idPrefix={`row-${pending.finding.id}`}
+              reason={declineReason}
+              onReasonChange={setDeclineReason}
+              note={declineNote}
+              onNoteChange={setDeclineNote}
+            />
+          )}
+        </ActionConfirmationPopup>
       )}
 
       {/* Scoped barrier, keyed to the open bug. The page-level one in
