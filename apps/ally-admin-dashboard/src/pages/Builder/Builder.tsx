@@ -4,10 +4,23 @@ import { BarChart3, Book, Settings } from "@icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Button, InlineNotification, SkeletonText, Tag, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  Checkbox,
+  InlineNotification,
+  SkeletonText,
+  Tag,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useCreateBuilderSessionMutation, useGetBuilderSessionsQuery } from "@api";
-import { FilterDropdown, ListToolbar } from "@components";
+import {
+  useArchiveBuilderSessionMutation,
+  useCreateBuilderSessionMutation,
+  useGetArchivedBuilderSessionsQuery,
+  useGetBuilderSessionsQuery,
+  useUnarchiveBuilderSessionMutation,
+} from "@api";
+import { FilterDropdown, ListPagination, ListToolbar } from "@components";
 import { BuilderNotificationInbox } from "@components/builder";
 import { FilterChipProps } from "@components/types";
 import { en, ROUTES } from "@constants";
@@ -23,6 +36,10 @@ import {
 /** Sessions the agent cannot move forward without a person. */
 const NEEDS_YOU: BuilderSessionStatus[] = ["WAITING_FOR_INPUT", "PRD_READY", "FAILED"];
 const ACTIVE: BuilderSessionStatus[] = ["BUILDING", "INTERVIEWING"];
+/** The only statuses an admin can archive from — still spending budget or
+ * waiting on an answer is not "done" yet, whatever the feed groups it under. */
+const ARCHIVABLE: BuilderSessionStatus[] = ["COMPLETED", "FAILED", "CANCELLED"];
+const ARCHIVED_PAGE_SIZE = 12;
 
 const ALL_STATUSES: BuilderSessionStatus[] = [
   "INTERVIEWING",
@@ -48,7 +65,10 @@ const SessionCard: React.FC<{
   session: BuilderSession;
   index: number;
   onOpen: (id: string) => void;
-}> = ({ session, index, onOpen }) => {
+  isArchived?: boolean;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
+}> = ({ session, index, onOpen, isArchived = false, onArchive, onUnarchive }) => {
   const strings = en.builder;
   const cost = formatCost(session.totalCostUsd);
 
@@ -93,6 +113,35 @@ const SessionCard: React.FC<{
       {session.currentStage && session.status === "BUILDING" && (
         <p className="mt-2 text-xs text-typography-600">{session.currentStage}</p>
       )}
+      {isArchived ? (
+        <div className="mt-2 flex justify-end">
+          <Button
+            kind="ghost"
+            size="sm"
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
+              onUnarchive?.(session.id);
+            }}
+          >
+            {strings.unarchiveAction}
+          </Button>
+        </div>
+      ) : (
+        ARCHIVABLE.includes(session.status) && (
+          <div className="mt-2 flex justify-end">
+            <Button
+              kind="ghost"
+              size="sm"
+              onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
+                onArchive?.(session.id);
+              }}
+            >
+              {strings.archiveAction}
+            </Button>
+          </div>
+        )
+      )}
     </Tile>
   );
 };
@@ -112,6 +161,8 @@ export const Builder: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<BuilderSessionStatus[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivedOffset, setArchivedOffset] = useState(0);
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
   const {
@@ -122,21 +173,63 @@ export const Builder: React.FC = () => {
     { status: statusFilter.length ? statusFilter : undefined },
     {
       // Interviews and builds move on their own; a stale list is how a waiting
-      // question goes unnoticed.
+      // question goes unnoticed. Skipped while the archived view is showing —
+      // nobody is looking at this list, so polling it is wasted.
       pollingInterval: 15000,
       skipPollingIfUnfocused: true,
+      skip: showArchived,
     },
   );
+  const {
+    data: archivedPage,
+    isLoading: isArchivedLoading,
+    isFetching: isArchivedFetching,
+    isError: isArchivedError,
+  } = useGetArchivedBuilderSessionsQuery(
+    {
+      status: statusFilter.length ? statusFilter : undefined,
+      limit: ARCHIVED_PAGE_SIZE,
+      offset: archivedOffset,
+    },
+    { skip: !showArchived },
+  );
   const [createSession, { isLoading: isCreating }] = useCreateBuilderSessionMutation();
+  const [archiveSession] = useArchiveBuilderSessionMutation();
+  const [unarchiveSession] = useUnarchiveBuilderSessionMutation();
+
+  // Memoised on the page object: `?? []` would hand back a new array identity
+  // on every render, which would in turn re-run every useMemo below that reads it.
+  const archivedSessions = useMemo(() => archivedPage?.sessions ?? [], [archivedPage]);
+  const archivedTotal = archivedPage?.totalCount ?? 0;
+
+  const handleArchive = async (id: string) => {
+    try {
+      await archiveSession(id).unwrap();
+      toast.success(strings.archiveSuccess);
+    } catch {
+      toast.error(strings.archiveFailed);
+    }
+  };
+
+  const handleUnarchive = async (id: string) => {
+    try {
+      await unarchiveSession(id).unwrap();
+      toast.success(strings.unarchiveSuccess);
+    } catch {
+      toast.error(strings.unarchiveFailed);
+    }
+  };
 
   // The status facet is server-side (it's a real query param), but a title
   // search over an already-loaded list has no reason to round-trip — so it
   // narrows client-side, on top of whatever the server already filtered to.
+  // In the archived view this only narrows the page currently loaded, since
+  // the archived list is server-paged and there is no title-search param.
   const visibleSessions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    const all = sessions ?? [];
+    const all = showArchived ? archivedSessions : (sessions ?? []);
     return query ? all.filter(session => session.title.toLowerCase().includes(query)) : all;
-  }, [sessions, searchQuery]);
+  }, [sessions, archivedSessions, showArchived, searchQuery]);
 
   const { needsYou, active, recent } = useMemo(() => {
     return {
@@ -166,6 +259,8 @@ export const Builder: React.FC = () => {
   }, [statusFilter, strings.filterStatusLabel, strings.status]);
 
   const isFiltering = statusFilter.length > 0 || searchQuery.trim().length > 0;
+  const isCurrentLoading = showArchived ? isArchivedLoading : isLoading;
+  const hasLoaded = showArchived ? archivedPage !== undefined : sessions !== undefined;
 
   const open = (id: string) => navigate(ROUTES.BUILDER_SESSION(id));
 
@@ -200,6 +295,7 @@ export const Builder: React.FC = () => {
               session={session}
               index={startIndex + index}
               onOpen={open}
+              onArchive={id => void handleArchive(id)}
             />
           ))}
         </div>
@@ -271,7 +367,7 @@ export const Builder: React.FC = () => {
         <BuilderNotificationInbox />
       </div>
 
-      {isError && (
+      {(isError || (showArchived && isArchivedError)) && (
         <InlineNotification
           kind="error"
           lowContrast
@@ -281,7 +377,19 @@ export const Builder: React.FC = () => {
         />
       )}
 
-      {!isLoading && sessions !== undefined && (
+      <div className="mb-4">
+        <Checkbox
+          id="builder-show-archived"
+          labelText={strings.showArchivedLabel}
+          checked={showArchived}
+          onChange={(_event: unknown, { checked }: { checked: boolean }) => {
+            setShowArchived(checked);
+            setArchivedOffset(0);
+          }}
+        />
+      </div>
+
+      {!isCurrentLoading && hasLoaded && (
         <div className="mb-4">
           <ListToolbar
             searchValue={searchQuery}
@@ -302,8 +410,46 @@ export const Builder: React.FC = () => {
         </div>
       )}
 
-      {isLoading ? (
+      {isCurrentLoading ? (
         <SkeletonText paragraph lineCount={4} />
+      ) : showArchived ? (
+        visibleSessions.length ? (
+          <>
+            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+              {visibleSessions.map((session, index) => (
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  index={index}
+                  onOpen={open}
+                  isArchived
+                  onUnarchive={id => void handleUnarchive(id)}
+                />
+              ))}
+            </div>
+            {archivedTotal > ARCHIVED_PAGE_SIZE && (
+              <ListPagination
+                offset={archivedOffset}
+                pageSize={ARCHIVED_PAGE_SIZE}
+                total={archivedTotal}
+                onChange={setArchivedOffset}
+                isFetching={isArchivedFetching}
+              />
+            )}
+          </>
+        ) : isFiltering ? (
+          // A filter or search that matches nothing is not an empty archive —
+          // saying "no archived builds yet" to someone with forty of them would
+          // be flatly untrue.
+          <div className="mt-8 text-center">
+            <p className="text-sm text-typography-600">{strings.noMatchingSessions}</p>
+          </div>
+        ) : (
+          <div className="mt-8 text-center">
+            <p className="text-sm font-medium text-typography-800">{strings.archivedEmptyTitle}</p>
+            <p className="mt-1 text-sm text-typography-600">{strings.archivedEmptyBody}</p>
+          </div>
+        )
       ) : visibleSessions.length ? (
         <>
           {renderGroup(strings.needsYouHeading, needsYou, 0)}

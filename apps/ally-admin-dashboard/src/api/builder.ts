@@ -1,5 +1,6 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  BuilderArchivedSessionsPage,
   BuilderBudgetState,
   BuilderBuildEvent,
   BuilderBuildRun,
@@ -50,6 +51,25 @@ export const builderAPI = baseAPI.injectEndpoints({
       },
     ),
 
+    /**
+     * The archived-only view: a distinct query, not a param on
+     * `getBuilderSessions` above — its response is paginated and shaped
+     * differently ({ sessions, totalCount } vs a plain array), and a response
+     * shape that depends on a param breaks at the type level for every future
+     * caller of the plain list.
+     */
+    getArchivedBuilderSessions: builder.query<
+      BuilderArchivedSessionsPage,
+      { status?: BuilderSessionStatus[]; limit: number; offset: number }
+    >({
+      query: ({ status, limit, offset }) => ({
+        url: ApiEndpoints.BUILDER.SESSIONS,
+        method: HttpMethod.GET,
+        params: { archived: true, limit, offset, ...(status?.length ? { status } : {}) },
+      }),
+      providesTags: [TAG_TYPES.BUILDER_SESSIONS],
+    }),
+
     getBuilderSession: builder.query<BuilderSessionDetail, string>({
       query: id => ({
         url: ApiEndpoints.BUILDER.SESSION_BY_ID(id),
@@ -82,6 +102,28 @@ export const builderAPI = baseAPI.injectEndpoints({
     cancelBuilderSession: builder.mutation<BuilderSession, string>({
       query: id => ({
         url: ApiEndpoints.BUILDER.SESSION_CANCEL(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: TAG_TYPES.BUILDER_SESSION, id },
+        TAG_TYPES.BUILDER_SESSIONS,
+      ],
+    }),
+
+    archiveBuilderSession: builder.mutation<BuilderSession, string>({
+      query: id => ({
+        url: ApiEndpoints.BUILDER.SESSION_ARCHIVE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: TAG_TYPES.BUILDER_SESSION, id },
+        TAG_TYPES.BUILDER_SESSIONS,
+      ],
+    }),
+
+    unarchiveBuilderSession: builder.mutation<BuilderSession, string>({
+      query: id => ({
+        url: ApiEndpoints.BUILDER.SESSION_UNARCHIVE(id),
         method: HttpMethod.POST,
       }),
       invalidatesTags: (result, error, id) => [
@@ -362,10 +404,13 @@ export const builderAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetBuilderSessionsQuery,
+  useGetArchivedBuilderSessionsQuery,
   useGetBuilderSessionQuery,
   useCreateBuilderSessionMutation,
   useUpdateBuilderSessionMutation,
   useCancelBuilderSessionMutation,
+  useArchiveBuilderSessionMutation,
+  useUnarchiveBuilderSessionMutation,
   usePatchBuilderPrdMutation,
   useGetBuilderPrdVersionsQuery,
   useGetBuilderRepoCommandsQuery,

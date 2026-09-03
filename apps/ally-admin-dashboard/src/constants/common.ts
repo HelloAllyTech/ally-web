@@ -482,6 +482,8 @@ export const ApiEndpoints = {
     SESSIONS: "/v1/builder/sessions",
     SESSION_BY_ID: (id: string) => `/v1/builder/sessions/${id}`,
     SESSION_CANCEL: (id: string) => `/v1/builder/sessions/${id}/cancel`,
+    SESSION_ARCHIVE: (id: string) => `/v1/builder/sessions/${id}/archive`,
+    SESSION_UNARCHIVE: (id: string) => `/v1/builder/sessions/${id}/unarchive`,
     SESSION_PRD: (id: string) => `/v1/builder/sessions/${id}/prd`,
     SESSION_PRD_VERSIONS: (id: string) => `/v1/builder/sessions/${id}/prd/versions`,
     // SSE — driven by useBuilderStream (fetch + getReader), not RTK Query.
