@@ -101,6 +101,7 @@ export const UxSignalsPanel: FC = () => {
       setPollMs(POLL_INTERVAL_MS);
     } else {
       setPollMs(0);
+      if (hasStalled) setWatchedScanId(null);
     }
   }, [isRunning, hasStalled, lastScan?.id]);
 
