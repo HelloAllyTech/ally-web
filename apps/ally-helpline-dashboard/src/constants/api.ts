@@ -135,6 +135,14 @@ export const ApiEndpoints = {
     GET_LEADERBOARD: "/v1/community/leaderboard",
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
   },
+  PROGRESS: {
+    // Full dashboard payload: level state, lifetime totals and the ladder.
+    GET_PROGRESS: "/v1/progress/me",
+    // Level state only — for the persistent nav indicator, which mounts on every route.
+    GET_PROGRESS_SUMMARY: "/v1/progress/me/summary",
+    // One boolean about the caller's own org; readable by any authenticated user.
+    GET_PROGRESS_ENABLED: "/v1/progress/me/enabled",
+  },
   PRACTICE_STREAK: {
     GET_PRACTICE_STREAK: "/v1/community/practice-streak",
     // Streak state without the heatmap cells — for callers that mount often

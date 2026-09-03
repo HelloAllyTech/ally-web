@@ -14,6 +14,7 @@ import {
   ProfileSettings,
   ReportProblemModal,
   StreakPill,
+  LevelIndicator,
   UserInfo,
 } from "@components";
 import {
@@ -25,7 +26,12 @@ import {
   hasAllyAdminAccess,
   adminAppUrl,
 } from "@constants";
-import { useCanViewCharacterLibrary, usePracticeStreakSummary, useUser } from "@hooks";
+import {
+  useCanViewCharacterLibrary,
+  usePracticeStreakSummary,
+  useProgressSummary,
+  useUser,
+} from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
@@ -132,6 +138,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   // Shared with the /learn bar via a single void-arg cache entry, so the pill
   // and the bar are always the same number.
   const { summary: streakSummary } = usePracticeStreakSummary();
+  const { summary: progressSummary, canViewProgress } = useProgressSummary();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },
@@ -152,6 +159,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     // tenant's CHARACTER_LIBRARY_ENABLED org toggle — see useCanViewCharacterLibrary.
     if (tab.id === TabId.CHARACTER_LIBRARY) {
       return canViewCharacterLibrary;
+    }
+
+    // Progress needs VIEW_USER_RANK AND the tenant's PROGRESS_DASHBOARD_ENABLED org
+    // toggle — see useProgressSummary. Every learner holds the permission, so a
+    // permission-only check would show the tab to orgs that never opted in.
+    if (tab.id === TabId.PROGRESS) {
+      return canViewProgress;
     }
 
     // Check if user has permission for this tab
@@ -270,6 +284,34 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
       );
     };
 
+    /**
+     * Persistent level ring on the Progress tab.
+     *
+     * Shares the void-argument summary query with the Progress page, so the rail and the
+     * page it links to resolve to one RTK Query cache entry and cannot disagree.
+     *
+     * Level 1 with no XP still renders: unlike a streak, which is genuinely absent until
+     * earned, every learner has a level, and hiding it until level 2 would make the tab
+     * look broken on day one.
+     */
+    const renderLevelIndicator = () => {
+      if (!progressSummary) return null;
+
+      return (
+        <LevelIndicator
+          level={progressSummary.level}
+          progress={progressSummary.progress}
+          isMaxLevel={progressSummary.isMaxLevel}
+          // Collapsed, the trailing slot is a small corner overlay on an 18px icon, so
+          // the ring is swapped for the pill the streak marker already uses there.
+          variant={isExpanded ? "ring" : "pill"}
+          ariaLabel={t("progress.a11y.navLevel", {
+            level: progressSummary.level,
+          })}
+        />
+      );
+    };
+
     return (
       <div
         className="flex-1 flex-col gap-1 m-2 border-t border-t-border-light pt-3"
@@ -287,7 +329,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               isExpanded={isExpanded}
               onClick={() => onTabClick(path)}
               badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
-              trailing={id === TabId.LEARN ? renderStreakPill() : undefined}
+              trailing={
+                id === TabId.LEARN
+                  ? renderStreakPill()
+                  : id === TabId.PROGRESS
+                    ? renderLevelIndicator()
+                    : undefined
+              }
             />
           );
 

@@ -20,6 +20,7 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   DataPolicy: () => <svg data-testid="data-policy-icon" />,

@@ -76,6 +76,8 @@ vi.mock("react-router-dom", async () => {
 
 // Mock hooks
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: () => mockUseUser(),
   useAchievementBadgeModal: () => ({
     currentBadge: null,
@@ -88,6 +90,7 @@ vi.mock("@hooks", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   ArrowLeft: ({ className }: { className?: string }) => (

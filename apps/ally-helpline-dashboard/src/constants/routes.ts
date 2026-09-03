@@ -4,6 +4,7 @@ import {
   ScenarioIcon,
   LearnIcon,
   Leaderboard,
+  ProgressLadderIcon,
   ReviewNavIcon,
   Badge,
   ManageAccount,
@@ -53,6 +54,7 @@ export const ROUTES = {
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   COMMUNITY_LEADERBOARD: "/community",
+  PROGRESS: "/progress",
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements",
   SIMULATION_REVIEW_DETAILS: "/simulation-review/:reviewId",
@@ -103,6 +105,19 @@ export const navBarOptions = [
     path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
     activePages: [],
     permissions: [Permissions.VIEW_BADGES],
+  },
+  {
+    id: TabId.PROGRESS,
+    title: "Progress",
+    key: "nav.tabs.progress",
+    Icon: ProgressLadderIcon,
+    path: ROUTES.PROGRESS,
+    activePages: [],
+    // Empty on purpose. Visibility needs more than "holds a permission" — every learner
+    // holds VIEW_USER_RANK, so the org toggle is the real gate. NavSideBar special-cases
+    // this tab id against useProgressSummary, the same escape hatch the Character
+    // Library tab uses.
+    permissions: [] as Permissions[],
   },
   {
     id: TabId.LEADERBOARD,

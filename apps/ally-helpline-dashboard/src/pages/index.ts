@@ -24,6 +24,7 @@ export * from "./suspended-user/SuspendedUser";
 export * from "./post-simulation-summary";
 export * from "./stress-buster/StressBuster";
 export * from "./leaderboard/Leaderboard";
+export * from "./progress/Progress";
 export * from "./review/Review";
 export * from "./achievements-view-all/AchievementsViewAll";
 export * from "./impersonate/impersonate";
