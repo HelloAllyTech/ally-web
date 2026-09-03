@@ -7,6 +7,7 @@ import { BugFindingDrawer } from "../BugFindingDrawer";
 
 const startFixSession = vi.fn();
 const cancelFixSession = vi.fn();
+const mergeFinding = vi.fn();
 const releaseFinding = vi.fn();
 const editDescription = vi.fn();
 const setStage = vi.fn();
@@ -19,6 +20,7 @@ vi.mock("@api", () => ({
   useAnswerBugFindingMutation: () => [vi.fn(), { isLoading: false }],
   useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
   useCancelBugFixSessionMutation: () => [cancelFixSession, { isLoading: false }],
+  useMergeBugFindingMutation: () => [mergeFinding, { isLoading: false }],
   useReleaseBugFindingMutation: () => [releaseFinding, { isLoading: false }],
   useEditBugFindingDescriptionMutation: () => [editDescription, { isLoading: false }],
   useSetBugFindingStageMutation: () => [setStage, { isLoading: false }],
@@ -122,6 +124,12 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   releasedAt: null,
   cancelledBy: null,
   cancelledAt: null,
+  decisionReason: null,
+  decisionNote: null,
+  confidence: null,
+  regressionOf: null,
+  regressed: false,
+  rediscoveredCount: 0,
   stage: "new",
   stageIsAuto: true,
   stageOverriddenBy: null,
@@ -759,5 +767,166 @@ describe("BugFindingDrawer — read-only for a SUPER_ADMIN (canTriage=false)", (
   it("hides the description rewrite control", () => {
     renderDrawer(finding({ status: BugFindingStatus.NEW }), false);
     expect(screen.queryByText("Rewrite this for me")).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * The merge Bug Hunter cannot perform itself.
+ *
+ * On ally-be, ally-web and ally-ai its token has push access against a master
+ * that requires a review, so every fix on those repos ends at a green PR — and
+ * 89 of the 122 bot PRs merged so far were clicked through by hand on GitHub,
+ * nearly all within the hour. These cases are about that button being offered
+ * exactly where it can do something, and refusing verbatim where it cannot.
+ */
+describe("BugFindingDrawer — merging a green PR", () => {
+  beforeEach(() => {
+    mergeFinding.mockReset();
+    mergeFinding.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+  });
+
+  it("offers the merge once a PR is open", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.PR_OPENED,
+        prUrl: "https://github.com/HelloAllyTech/ally-be/pull/443",
+      }),
+    );
+
+    expect(screen.getByText("Merge it")).toBeInTheDocument();
+  });
+
+  it("never offers it before there is a PR to merge", () => {
+    renderDrawer(finding({ status: BugFindingStatus.FIXING }));
+
+    expect(screen.queryByText("Merge it")).not.toBeInTheDocument();
+  });
+
+  it("never offers it once the fix is already on master", () => {
+    renderDrawer(finding({ status: BugFindingStatus.MERGED, prUrl: "https://x/pull/1" }));
+
+    expect(screen.queryByText("Merge it")).not.toBeInTheDocument();
+  });
+
+  it("does not offer it on a PR_OPENED row with no recorded PR url", () => {
+    // The button would 400 — the backend has nothing to merge either.
+    renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: null }));
+
+    expect(screen.queryByText("Merge it")).not.toBeInTheDocument();
+  });
+
+  it("asks for confirmation, and says it does not deploy", () => {
+    renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }));
+
+    fireEvent.click(screen.getByText("Merge it"));
+
+    expect(screen.getByText("Merge this fix to master?")).toBeInTheDocument();
+    // The release gate is the point of the two-button split, so the merge
+    // dialog has to say it is not the release.
+    expect(screen.getByText(/does NOT deploy it/)).toBeInTheDocument();
+    expect(mergeFinding).not.toHaveBeenCalled();
+  });
+
+  it("merges only once the confirmation is accepted", async () => {
+    renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }));
+
+    fireEvent.click(screen.getByText("Merge it"));
+    fireEvent.click(screen.getByText("Merge"));
+
+    await waitFor(() => expect(mergeFinding).toHaveBeenCalledWith("finding-1"));
+  });
+
+  it("surfaces GitHub's own refusal rather than a generic failure", async () => {
+    // "At least 1 approving review is required" and "Base branch was
+    // modified" each name the admin's next move; a generic line hides it.
+    const { toast } = await import("sonner");
+    mergeFinding.mockReturnValue({
+      unwrap: () =>
+        Promise.reject({ data: { message: "Base branch was modified. Review and try the merge again." } }),
+    });
+    renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }));
+
+    fireEvent.click(screen.getByText("Merge it"));
+    fireEvent.click(screen.getByText("Merge"));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "Base branch was modified. Review and try the merge again.",
+      ),
+    );
+  });
+
+  it("hides it from a reader who cannot act", () => {
+    renderDrawer(
+      finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }),
+      false,
+    );
+
+    expect(screen.queryByText("Merge it")).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * How sure the verifiers were, and what happened to this bug before.
+ *
+ * Both are new facts on the row and both have a "no data" case that must not
+ * render as a bad one: no score is not zero confidence, and a bug that has
+ * never regressed says nothing rather than saying it is fine.
+ */
+describe("BugFindingDrawer — confidence and regressions", () => {
+  it("shows the verifiers' score as a percentage", () => {
+    renderDrawer(finding({ confidence: 0.85 }));
+
+    expect(screen.getByText("85%")).toBeInTheDocument();
+  });
+
+  it("says an unproven finding was not scored rather than showing 0%", () => {
+    renderDrawer(finding({ confidence: null, proven: false }));
+
+    expect(screen.getByText("Not scored")).toBeInTheDocument();
+    expect(screen.queryByText("0%")).not.toBeInTheDocument();
+  });
+
+  it("stays quiet about scoring on a proven finding, which had nothing to verify", () => {
+    renderDrawer(finding({ confidence: null, proven: true }));
+
+    expect(screen.queryByText("Not scored")).not.toBeInTheDocument();
+  });
+
+  it("names the reason a declined bug was turned down", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.REJECTED,
+        decisionReason: "wont_fix",
+        decisionNote: "Cosmetic, and the screen is being replaced.",
+      }),
+    );
+
+    expect(screen.getByText("Turned down: Real, but not worth fixing")).toBeInTheDocument();
+    expect(
+      screen.getByText("Cosmetic, and the screen is being replaced."),
+    ).toBeInTheDocument();
+  });
+
+  it("says how often a declined bug has been re-found, so a circular argument is visible", () => {
+    renderDrawer(
+      finding({ status: BugFindingStatus.REJECTED, decisionReason: "not_a_bug", rediscoveredCount: 4 }),
+    );
+
+    expect(screen.getByText(/I have found this again 4 time\(s\) since/)).toBeInTheDocument();
+  });
+
+  it("links a regression back to the fix that did not hold", () => {
+    renderDrawer(finding({ regressionOf: "older-finding" }));
+
+    expect(screen.getByText("See the fix that didn't hold")).toBeInTheDocument();
+  });
+
+  it("says nothing at all when there is no history to report", () => {
+    renderDrawer(finding({ proven: true }));
+
+    expect(screen.queryByText("Not scored")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Turned down/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/found this again/)).not.toBeInTheDocument();
   });
 });

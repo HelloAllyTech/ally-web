@@ -25,6 +25,11 @@ vi.mock("@api", () => ({
   useStartBugFixSessionMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useReleaseBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useCancelBugFixSessionMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useMergeBugFindingMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  // The accuracy panel's own query. Empty rather than absent: the panel is
+  // mounted by the Performance section and every case here is about which
+  // sections render, not about the figures.
+  useGetBugHunterMetricsQuery: vi.fn(() => ({ data: undefined, isLoading: false, isError: false })),
   useGetBugHunterNotificationsQuery: vi.fn(() => ({
     data: { items: [], unreadCount: 0 },
     isLoading: false,
