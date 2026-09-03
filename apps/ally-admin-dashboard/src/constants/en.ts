@@ -2910,6 +2910,7 @@ export const en = {
     filterButton: "Filter",
     filterStatusLabel: "Status",
     settingsLink: "Settings",
+    pipelineLink: "Pipeline",
     scoreboardLink: "Scoreboard",
     knowledgeLink: "Knowledge",
     noMatchingSessions: "Nothing matches this filter.",
@@ -3283,6 +3284,56 @@ export const en = {
     },
 
     // Scoreboard — how builds are actually going, not just what one build did.
+    pipeline: {
+      title: "Builder pipeline",
+      subtitle: "Where a run spends its time and money, phase by phase.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the pipeline view.",
+      retry: "Retry",
+      empty: "No finished runs in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      unmeasuredNote:
+        "A dash means not measured — runs from before the runner reported timings carry cost but no clock.",
+      time: {
+        heading: "Where the time goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnMedianWall: "Median",
+        columnP95Wall: "p95",
+        columnTurns: "Median turns",
+        columnSplit: "Model vs tools",
+        splitLabel: (apiPercent: number, toolPercent: number) =>
+          `${apiPercent}% waiting on the model, ${toolPercent}% running its tools`,
+      },
+      money: {
+        heading: "Where the money goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnTotal: "Total",
+        columnMedian: "Median per run",
+      },
+      gate: {
+        heading: "Test gate",
+        subheading:
+          "Lint and typecheck failing means work that was never run; tests failing means a wider blast radius than the plan saw.",
+        columnRepo: "Repo",
+        columnKind: "Check",
+        columnResults: "Results",
+        columnPassed: "Passed",
+        columnPassRate: "Pass rate",
+      },
+      outcomes: {
+        heading: "How runs end",
+        columnStatus: "Status",
+        columnMode: "Mode",
+        columnRuns: "Runs",
+        columnMedianMinutes: "Median runner minutes",
+      },
+    },
+
     scoreboard: {
       title: "Builder scoreboard",
       subtitle: "Cost, review friction, and how often a build actually ships — over time.",

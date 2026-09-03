@@ -464,6 +464,52 @@ export interface BuilderScoreboard {
   totals: BuilderScoreboardTotals;
 }
 
+/* ── Pipeline health: where a run's time and money go ───────────────────────
+ *
+ * Every measurement here is nullable and that is load-bearing, not defensive.
+ * Runs dispatched before the runner reported timings have a cost record with no
+ * clock, so `null` means "not measured" and must never render as 0 — a phase
+ * shown as taking no time reads as instant rather than unknown. */
+
+export interface BuilderPipelinePhase {
+  /** plan, code-1, verify-2, finalise, fix … */
+  phase: string;
+  model: string | null;
+  invocations: number;
+  totalCostUsd: number | null;
+  medianCostUsd: number | null;
+  /** Wall clock of the invocation. */
+  medianWallMs: number | null;
+  p95WallMs: number | null;
+  /** Of the wall clock, the part spent waiting on the model. */
+  medianApiMs: number | null;
+  medianTurns: number | null;
+}
+
+export interface BuilderPipelineGate {
+  repo: string;
+  /** test | lint | typecheck */
+  kind: string;
+  results: number;
+  passed: number;
+  /** null when there is no evidence either way, which is not the same as 0%. */
+  passRate: number | null;
+}
+
+export interface BuilderPipelineOutcome {
+  status: BuilderRunStatus;
+  mode: string;
+  runs: number;
+  medianRunnerMinutes: number | null;
+}
+
+export interface BuilderPipelineHealth {
+  windowDays: number;
+  phases: BuilderPipelinePhase[];
+  gates: BuilderPipelineGate[];
+  outcomes: BuilderPipelineOutcome[];
+}
+
 /* ── Knowledge: lessons + exemplars ────────────────────────────────────── */
 
 export type BuilderLessonStatus = "candidate" | "active" | "merged" | "retired";

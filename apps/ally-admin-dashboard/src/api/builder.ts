@@ -15,6 +15,7 @@ import {
   BuilderRepoCommand,
   BuilderRepoMapSummary,
   BuilderRunStatus,
+  BuilderPipelineHealth,
   BuilderScoreboard,
   BuilderSession,
   BuilderSessionDetail,
@@ -352,6 +353,16 @@ export const builderAPI = baseAPI.injectEndpoints({
       }),
     }),
 
+    /* Where the time goes. Unpolled like the scoreboard: this aggregates
+     * finished runs, so it only moves when one ends. */
+    getBuilderPipelineHealth: builder.query<BuilderPipelineHealth, { windowDays?: number } | void>({
+      query: params => ({
+        url: ApiEndpoints.BUILDER.PIPELINE_HEALTH,
+        method: HttpMethod.GET,
+        params: params && params.windowDays ? { windowDays: params.windowDays } : undefined,
+      }),
+    }),
+
     /* ── Knowledge: lessons + exemplars ──────────────────────────────────
      * No polling here — a curated list only changes on an admin's own edit
      * or a "Consolidate now" run, both of which already invalidate the tag,
@@ -428,6 +439,7 @@ export const {
   useUpdateBuilderSettingsMutation,
   useGetBuilderNotificationsQuery,
   useMarkBuilderNotificationsReadMutation,
+  useGetBuilderPipelineHealthQuery,
   useGetBuilderScoreboardQuery,
   useGetBuilderLessonsQuery,
   usePatchBuilderLessonMutation,

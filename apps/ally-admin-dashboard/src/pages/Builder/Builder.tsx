@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 
-import { BarChart3, Book, Settings } from "@icons";
+import { BarChart3, Book, Settings, Timer } from "@icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -311,6 +311,14 @@ export const Builder: React.FC = () => {
             <p className="mt-1 text-sm text-typography-600">{strings.heroSubtitle}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            <Button
+              kind="ghost"
+              size="sm"
+              hasIconOnly
+              iconDescription={strings.pipelineLink}
+              renderIcon={Timer}
+              onClick={() => navigate(ROUTES.BUILDER_PIPELINE)}
+            />
             <Button
               kind="ghost"
               size="sm"
