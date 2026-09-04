@@ -165,6 +165,13 @@ describe("LearnerUsageTable", () => {
     expect(cell(COL.pointsPerMin)).toBe("—");
   });
 
+  it("em-dashes points-per-minute below the 10-minute measurement floor even when the backend returns a value", () => {
+    respondWith([row({ totalPracticeMinutes: 9.9, roleplayPointsPerMinute: 4 })]);
+    render(<LearnerUsageTable range="30d" />);
+
+    expect(cell(COL.pointsPerMin)).toBe("—");
+  });
+
   it("renders a negative points-per-minute rather than hiding it", () => {
     // Roleplay composite scores go below zero, so the rate can too.
     respondWith([row({ roleplayPointsPerMinute: -2.4 })]);

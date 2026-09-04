@@ -319,12 +319,15 @@ export const LearnerUsageTable: FunctionComponent<LearnerUsageTableProps> = ({ r
     {
       // Score per minute, not per session: it separates the learner who earns
       // steadily from the one who racks up minutes. Null (no measurable
-      // practice) reads as "—", never 0, and the value can be negative.
+      // practice) reads as "—", never 0, and the value can be negative. Below
+      // 10 practice minutes the ratio is too noisy to be meaningful, so it's
+      // suppressed the same way regardless of what the backend returned.
       key: "roleplayPointsPerMinute",
       header: t("organizationMetrics.learnerUsage.columns.pointsPerMinute"),
       tooltip: t("organizationMetrics.learnerUsage.tooltips.pointsPerMinute"),
       sortable: true,
-      render: (value: number | null) => (value == null ? "—" : value.toLocaleString()),
+      render: (value: number | null, row) =>
+        value == null || row.totalPracticeMinutes < 10 ? "—" : value.toLocaleString(),
     },
     {
       // Items, not courses: a course-level percentage only moves on
