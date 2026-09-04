@@ -103,6 +103,8 @@ const STATE_KEYS: (keyof RoadmapViewState)[] = [
   // Same reasoning: absent on every view saved before the source filter existed, and skipped
   // when undefined, so it doesn't mark a pre-existing view dirty either.
   "sourceFilter",
+  // Same reasoning again: absent on every view saved before the effort filter existed.
+  "effortFilter",
 ];
 
 /**

@@ -22,6 +22,7 @@ import {
 } from "./utils/filters";
 import {
   FacetPresentationOpts,
+  RoadmapEffortFilterValue,
   RoadmapFacetSelection,
   RoadmapFacetState,
   buildFacetSections,
@@ -42,6 +43,8 @@ export interface RoadmapFilterBarProps {
   /** Who filed it — staff (admin) or consumer (in-app "Report a problem"). */
   sourceFilter: RoadmapOpportunitySource[];
   onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
+  effortFilter: RoadmapEffortFilterValue[];
+  onEffortFilterChange: (value: RoadmapEffortFilterValue[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
@@ -84,7 +87,13 @@ export interface RoadmapFilterBarProps {
 export const hasActiveFilters = (
   props: Pick<
     RoadmapFilterBarProps,
-    "typeFilter" | "stageFilter" | "sourceFilter" | "goalFilter" | "ownerFilter" | "advanced"
+    | "typeFilter"
+    | "stageFilter"
+    | "sourceFilter"
+    | "effortFilter"
+    | "goalFilter"
+    | "ownerFilter"
+    | "advanced"
   >,
   opts?: FacetPresentationOpts,
 ): boolean =>
@@ -93,6 +102,7 @@ export const hasActiveFilters = (
     // report "filters applied" forever, turning its true empty state into "no matches".
     (opts?.omitStage ? 0 : props.stageFilter.length) +
     props.sourceFilter.length +
+    props.effortFilter.length +
     props.goalFilter.length +
     props.ownerFilter.length +
     countActiveAdvancedFilters(props.advanced) >
@@ -137,6 +147,8 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     onStageFilterChange,
     sourceFilter,
     onSourceFilterChange,
+    effortFilter,
+    onEffortFilterChange,
     goalFilter,
     onGoalFilterChange,
     ownerFilter,
@@ -168,6 +180,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     typeFilter,
     stageFilter,
     sourceFilter,
+    effortFilter,
     goalFilter,
     ownerFilter,
     createdBy: advanced.createdBy,
@@ -189,6 +202,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
     onTypeFilterChange(next.typeFilter);
     onStageFilterChange(next.stageFilter);
     onSourceFilterChange(next.sourceFilter);
+    onEffortFilterChange(next.effortFilter);
     onGoalFilterChange(next.goalFilter);
     onOwnerFilterChange(next.ownerFilter);
     onAdvancedChange({ ...advanced, createdBy: next.createdBy });
@@ -274,6 +288,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
                 // Queue would turn the tab into an all-stages list. See the stageLocked docblock.
                 if (!stageLocked) onStageFilterChange([]);
                 onSourceFilterChange([]);
+                onEffortFilterChange([]);
                 onGoalFilterChange([]);
                 onOwnerFilterChange([]);
                 // Must include the collapsed panel: "Clear all" that leaves a hidden date range

@@ -28,6 +28,7 @@ import {
 import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
 import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
+import { RoadmapEffortFilterValue } from "./utils/filterSelection";
 import { pageRange } from "./utils/paging";
 import {
   isConsumerSourced,
@@ -55,6 +56,8 @@ interface OpportunitiesBoardProps {
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
   sourceFilter: RoadmapOpportunitySource[];
   onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
+  effortFilter: RoadmapEffortFilterValue[];
+  onEffortFilterChange: (value: RoadmapEffortFilterValue[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
@@ -111,6 +114,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onStageFilterChange,
   sourceFilter,
   onSourceFilterChange,
+  effortFilter,
+  onEffortFilterChange,
   goalFilter,
   onGoalFilterChange,
   ownerFilter,
@@ -159,6 +164,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
     typeFilter,
     stageFilter,
     sourceFilter,
+    effortFilter,
     goalFilter,
     ownerFilter,
     advanced,
@@ -176,6 +182,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         onStageFilterChange={onStageFilterChange}
         sourceFilter={sourceFilter}
         onSourceFilterChange={onSourceFilterChange}
+        effortFilter={effortFilter}
+        onEffortFilterChange={onEffortFilterChange}
         goalFilter={goalFilter}
         onGoalFilterChange={onGoalFilterChange}
         ownerFilter={ownerFilter}

@@ -18,6 +18,7 @@ import { OpportunityListCard } from "./OpportunityListCard";
 import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
 import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
+import { RoadmapEffortFilterValue } from "./utils/filterSelection";
 import { loadMoreState } from "./utils/paging";
 
 interface OpportunitiesListViewProps {
@@ -36,6 +37,8 @@ interface OpportunitiesListViewProps {
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
   sourceFilter: RoadmapOpportunitySource[];
   onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
+  effortFilter: RoadmapEffortFilterValue[];
+  onEffortFilterChange: (value: RoadmapEffortFilterValue[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
@@ -90,6 +93,8 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
   onStageFilterChange,
   sourceFilter,
   onSourceFilterChange,
+  effortFilter,
+  onEffortFilterChange,
   goalFilter,
   onGoalFilterChange,
   ownerFilter,
@@ -114,7 +119,7 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
   const { canLoadMore, atCeiling } = loadMoreState(rows.length, total);
 
   const activeFilters = hasActiveFilters(
-    { typeFilter, stageFilter, sourceFilter, goalFilter, ownerFilter, advanced },
+    { typeFilter, stageFilter, sourceFilter, effortFilter, goalFilter, ownerFilter, advanced },
     // The Queue's pinned stages are its definition, not a filter: counting them would make its
     // true empty state read "no matches for these filters" forever and suppress the
     // "New opportunity" call that belongs on an empty queue.
@@ -134,6 +139,8 @@ export const OpportunitiesListView: React.FC<OpportunitiesListViewProps> = ({
         onStageFilterChange={onStageFilterChange}
         sourceFilter={sourceFilter}
         onSourceFilterChange={onSourceFilterChange}
+        effortFilter={effortFilter}
+        onEffortFilterChange={onEffortFilterChange}
         goalFilter={goalFilter}
         onGoalFilterChange={onGoalFilterChange}
         ownerFilter={ownerFilter}

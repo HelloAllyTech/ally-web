@@ -6,6 +6,9 @@ import {
   RoadmapBugReportBody,
   RoadmapBugReportResponse,
   RoadmapVoteBudget,
+  RoadmapVoter,
+  RoadmapInterviewMessage,
+  RoadmapInterviewTurn,
   RoadmapComment,
   RoadmapDuplicateMatch,
   RoadmapFacets,
@@ -355,8 +358,12 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         body,
       }),
       // The LIST tag is shared by the table, the list feed and the board (see getRoadmapBoard),
-      // so all three pick up the new ranks and ordering from one invalidation.
-      invalidatesTags: [{ type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" }],
+      // so all three pick up the new ranks and ordering from one invalidation. The per-opportunity
+      // VOTERS tag is separate: only this one opportunity's breakdown just changed.
+      invalidatesTags: (_r, _e, { opportunityId }) => [
+        { type: TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES, id: "LIST" },
+        { type: TAG_TYPES.PRODUCT_ROADMAP_VOTERS, id: opportunityId },
+      ],
     }),
 
     splitRoadmapOpportunity: builder.mutation<
@@ -398,6 +405,18 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       }),
       providesTags: (_r, _e, opportunityId) => [
         { type: TAG_TYPES.PRODUCT_ROADMAP_COMMENTS, id: opportunityId },
+      ],
+    }),
+
+    // The votes behind priorityScore, by admin — fetched on demand (the drawer's hover), not
+    // as part of every opportunity row.
+    getRoadmapVoters: builder.query<RoadmapVoter[], string>({
+      query: opportunityId => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.OPPORTUNITY_VOTERS(opportunityId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_r, _e, opportunityId) => [
+        { type: TAG_TYPES.PRODUCT_ROADMAP_VOTERS, id: opportunityId },
       ],
     }),
 
@@ -818,6 +837,27 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * One turn of the guided interview.
+     *
+     * A MUTATION rather than a query even though it reads nothing: every call is a new turn, so
+     * caching it by argument — which is what a query would do — would replay a stale answer the
+     * moment two turns happened to carry the same transcript prefix.
+     *
+     * Invalidates nothing: the interview writes no server state. The opportunity it eventually
+     * produces is filed through createRoadmapOpportunity, which owns that invalidation.
+     */
+    roadmapOpportunityInterviewTurn: builder.mutation<
+      RoadmapInterviewTurn,
+      { messages: RoadmapInterviewMessage[] }
+    >({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.AI_OPPORTUNITY_INTERVIEW,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
      * Open (or resume) the Builder session for an opportunity.
      *
      * REPLACES roadmapAiGenerateClaudePrompt, which produced a block of text a human then
@@ -858,6 +898,7 @@ export const {
   useSplitRoadmapOpportunityMutation,
   useMergeRoadmapOpportunitiesMutation,
   useGetRoadmapCommentsQuery,
+  useGetRoadmapVotersQuery,
   useCreateRoadmapCommentMutation,
   useUpdateRoadmapCommentMutation,
   useDeleteRoadmapCommentMutation,
@@ -896,5 +937,6 @@ export const {
   useRoadmapAiDuplicatesMutation,
   useRoadmapAiClassifyMutation,
   useRoadmapAiSummariseMutation,
+  useRoadmapOpportunityInterviewTurnMutation,
   useOpenRoadmapBuilderSessionMutation,
 } = productRoadmapAPI;
