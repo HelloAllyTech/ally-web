@@ -399,6 +399,7 @@ export const ApiEndpoints = {
     QUALITY_SENTIMENT: "/v1/analytics/quality-sentiment",
     CHART_PREFERENCES: "/v1/analytics/chart-preferences",
     ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",
+    SHIP_VOLUME: "/v1/analytics/ship-volume",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
     VOICE_LATENCY_SESSIONS_SUMMARY: "/v1/analytics/voice-latency/sessions/summary",
