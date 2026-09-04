@@ -492,6 +492,254 @@
   color: var(--ink-soft);
 }
 
+/* ── /SJT1/edit ───────────────────────────────────────────────────────
+ * The editor's own furniture, deliberately not styled like the page it
+ * edits: the ink bar and its panels read as the tool, everything below
+ * reads as the page a teacher sees. Same two serif families, though — a
+ * sans face here would be the only one on either route, and the editor
+ * shows the real page, so it has to sit in the same key.
+ */
+.sjt-ed-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--ink);
+  color: #f5f4ee;
+  padding: 11px 18px 13px;
+}
+.sjt-ed-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sjt-ed-brand {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-right: 4px;
+}
+.sjt-ed-brand strong {
+  font-weight: 600;
+  opacity: 1;
+}
+.sjt-ed-spacer {
+  flex: 1 1 auto;
+}
+.sjt-ed-label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.sjt-ed-chip {
+  display: inline-block;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.2;
+  color: #f5f4ee;
+  background: rgba(245, 244, 238, 0.1);
+  border: 1px solid rgba(245, 244, 238, 0.22);
+  border-radius: 999px;
+  padding: 6px 12px;
+  text-decoration: none;
+}
+.sjt-ed-chip:hover {
+  background: rgba(245, 244, 238, 0.18);
+}
+.sjt-ed-chip.on {
+  background: var(--mark);
+  border-color: var(--mark);
+  color: #fffdfb;
+}
+.sjt-ed-chip.count {
+  border-style: dashed;
+}
+.sjt-ed-chip.warn {
+  background: rgba(204, 120, 92, 0.2);
+  border-color: var(--mark);
+  cursor: default;
+}
+.sjt-ed-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.sjt-ed-select {
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  padding: 6px 10px;
+  max-width: 100%;
+}
+.sjt-ed-status {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 14.5px;
+  opacity: 0.85;
+}
+.sjt-ed-panel {
+  background: #332f27;
+  color: #f5f4ee;
+  padding: 14px 18px 18px;
+}
+.sjt-ed-panel-empty {
+  font-family: var(--body);
+  font-size: 15px;
+  max-width: 720px;
+  opacity: 0.82;
+}
+.sjt-ed-group {
+  margin-top: 12px;
+}
+.sjt-ed-group-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.sjt-ed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(245, 244, 238, 0.12);
+}
+.sjt-ed-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.sjt-ed-row-name {
+  display: block;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.sjt-ed-row-text {
+  display: block;
+  font-family: var(--body);
+  font-size: 14.5px;
+  opacity: 0.8;
+}
+.sjt-ed-area {
+  width: 100%;
+  margin-top: 10px;
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 10px 12px;
+}
+.sjt-ed-brief {
+  padding-bottom: 0;
+}
+.sjt-ed-brief code {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  background: var(--mark-wash);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.sjt-ed-also {
+  padding-top: 0;
+}
+.sjt-ed-field {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.sjt-ed-field-name {
+  flex: 0 0 38%;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.sjt-ed-field-value {
+  flex: 1;
+}
+.sjt-ed-field-eg {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink-faint);
+}
+
+/* An editable line. Underlined rather than boxed: a box per sentence would
+ * turn the page into a form, which is the thing this route exists not to be.
+ * A text underline rather than a border or shadow, because these spans are
+ * inline and wrap — a box draws edges mid-sentence and around display type.
+ * Clay once a line has been changed, alarm if an edit dropped a placeholder
+ * the line needs. */
+.sjt-ed-t {
+  cursor: text;
+  border-radius: 3px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(41, 38, 31, 0.3);
+  text-underline-offset: 4px;
+}
+.sjt-ed-t:hover {
+  background: rgba(204, 120, 92, 0.1);
+  text-decoration-color: var(--mark);
+}
+.sjt-ed-t:focus {
+  background: var(--card-raised);
+}
+.sjt-ed-t.changed {
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--mark);
+}
+.sjt-ed-t.drift {
+  background: rgba(160, 62, 51, 0.12);
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--alarm);
+}
+/* The rail and the filled buttons sit on ink or clay, so a label being edited
+ * there needs the light treatment to read at all. */
+.sjt-rail .sjt-ed-t,
+.sjt-btn .sjt-ed-t {
+  text-decoration-color: rgba(245, 244, 238, 0.55);
+}
+.sjt-rail .sjt-ed-t:hover,
+.sjt-btn .sjt-ed-t:hover {
+  background: rgba(245, 244, 238, 0.18);
+  text-decoration-color: #f5f4ee;
+}
+/* Two sticky bars would fight: the editor's own toolbar is the one that has to
+ * stay reachable, so the page's progress rail scrolls away under it here. */
+.sjt-editing .sjt-rail {
+  position: static;
+}
+/* A control whose label is being edited keeps its looks and loses its click. */
+.sjt-ed-static {
+  cursor: default;
+}
+.sjt-btn.sjt-ed-static,
+.sjt-btn-ghost.sjt-ed-static {
+  display: inline-block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sjt * {
     transition: none !important;

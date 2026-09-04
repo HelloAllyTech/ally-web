@@ -31,6 +31,10 @@ export const ROUTES = {
   // link is shared as; React Router matches it case-insensitively, so
   // /sjt1 lands on the same page.
   SJT1: "/SJT1",
+  // The same page with every line of its text editable in place. Public like
+  // the page it edits, and harmless for that: edits live in the editor's own
+  // browser and reach /SJT1 only by being exported and committed.
+  SJT1_EDIT: "/SJT1/edit",
 
   // Private Routes
   HOME: "/",

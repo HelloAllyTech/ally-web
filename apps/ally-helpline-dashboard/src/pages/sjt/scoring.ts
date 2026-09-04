@@ -30,9 +30,28 @@ export function scoreItem(order: OptionId[], key: OptionId[]) {
   return { raw, pct };
 }
 
-export function band(pct: number): Band {
-  if (pct >= 85) return { name: "Closely aligned", tone: "good" };
-  if (pct >= 65) return { name: "Broadly aligned", tone: "good" };
-  if (pct >= 45) return { name: "Mixed", tone: "mid" };
-  return { name: "Worth revisiting", tone: "low" };
+/**
+ * The four band names, as copy rather than constants: /SJT1/edit can reword
+ * them, so `band` takes them as an argument. The defaults live here, next to
+ * the thresholds they name, and are what the page renders unedited.
+ */
+export interface BandNames {
+  closely: string;
+  broadly: string;
+  mixed: string;
+  revisit: string;
+}
+
+export const DEFAULT_BAND_NAMES: BandNames = {
+  closely: "Closely aligned",
+  broadly: "Broadly aligned",
+  mixed: "Mixed",
+  revisit: "Worth revisiting",
+};
+
+export function band(pct: number, names: BandNames = DEFAULT_BAND_NAMES): Band {
+  if (pct >= 85) return { name: names.closely, tone: "good" };
+  if (pct >= 65) return { name: names.broadly, tone: "good" };
+  if (pct >= 45) return { name: names.mixed, tone: "mid" };
+  return { name: names.revisit, tone: "low" };
 }

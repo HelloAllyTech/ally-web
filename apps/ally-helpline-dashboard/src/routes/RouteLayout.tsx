@@ -18,6 +18,7 @@ import {
   BlogPost,
   Changelog,
   Sjt1,
+  SjtEdit,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -46,6 +47,8 @@ const RouteLayout = () => {
           <Route path={ROUTES.CHANGELOG} element={<Changelog />} />
           {/* Standalone situational-judgement self-check — no nav, no sign-in */}
           <Route path={ROUTES.SJT1} element={<Sjt1 />} />
+          {/* Same page, every line editable in place — see SjtEdit */}
+          <Route path={ROUTES.SJT1_EDIT} element={<SjtEdit />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}

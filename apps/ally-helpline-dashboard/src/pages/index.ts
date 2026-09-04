@@ -34,3 +34,4 @@ export * from "./blog/Blog";
 export * from "./blog/BlogPost";
 export * from "./blog/Changelog";
 export * from "./sjt/Sjt1";
+export * from "./sjt/SjtEdit";
