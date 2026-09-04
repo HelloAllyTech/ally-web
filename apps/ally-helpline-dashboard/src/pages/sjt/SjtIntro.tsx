@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { SjtButton, T } from "./SjtCopyContext";
 import { DOMAINS } from "./sjtData";
 
 interface SjtIntroProps {
@@ -8,60 +9,63 @@ interface SjtIntroProps {
 
 export const SjtIntro: FC<SjtIntroProps> = ({ onStart }) => (
   <div className="sjt-wrap">
-    <p className="sjt-eyebrow">Self-check · 10 scenarios · about 12 minutes</p>
+    <p className="sjt-eyebrow">
+      <T path="intro.eyebrow" />
+    </p>
     <h1 className="sjt-h1">
-      Everyday
+      <T path="intro.headingTop" />
       <br />
-      conversations<em>.</em>
+      <T path="intro.headingBottom" />
+      <em>
+        <T path="intro.headingAccent" />
+      </em>
     </h1>
     <p className="sjt-lede">
-      Most of what a school does for children&apos;s mental health happens in thirty-second
-      exchanges — at the door, in a corridor, while books are being handed out. This checks the
-      judgement you use in those moments.
+      <T path="intro.lede" />
     </p>
 
     <div className="sjt-card">
-      <p className="sjt-eyebrow">How it works</p>
+      <p className="sjt-eyebrow">
+        <T path="intro.howLabel" />
+      </p>
       <p style={{ marginTop: 10 }}>
-        Each scenario has four things a teacher could say. Tap them in order, starting with the one
-        you think is best and ending with the one you think is worst. There&apos;s no time limit,
-        and nothing you choose is sent anywhere — your answers stay in this browser, so if you stop
-        halfway they&apos;ll be waiting when you come back.
+        <T path="intro.howBody" />
       </p>
       <p style={{ marginTop: 12 }}>
-        Afterwards you&apos;ll get a score against four areas of practice, plus the reasoning behind
-        every option — including the ones you ranked low. That reasoning is the point; the number is
-        just a way in.
+        <T path="intro.howBodyTwo" />
       </p>
     </div>
 
     <div className="sjt-card">
-      <p className="sjt-eyebrow">The four areas</p>
+      <p className="sjt-eyebrow">
+        <T path="intro.areasLabel" />
+      </p>
       {Object.values(DOMAINS).map(domain => (
         <div className="sjt-dom" key={domain.code}>
           <div className="sjt-dom-head">
-            <span className="sjt-dom-name">{domain.label}</span>
+            <span className="sjt-dom-name">
+              <T path={`domains.${domain.code}.label`} />
+            </span>
+            {/* The two-letter code is the area's identity rather than its copy —
+                it keys the scoring and each item's domain — so it isn't text
+                the editor offers. */}
             <span className="sjt-dom-pct">{domain.code}</span>
           </div>
           <p className="sjt-dom-blurb" style={{ marginTop: 6 }}>
-            {domain.blurb}
+            <T path={`domains.${domain.code}.blurb`} />
           </p>
         </div>
       ))}
     </div>
 
     <div className="sjt-actions">
-      <button type="button" className="sjt-btn mark" onClick={onStart}>
-        Start the first scenario
-      </button>
+      <SjtButton className="sjt-btn mark" onClick={onStart}>
+        <T path="intro.startLabel" />
+      </SjtButton>
     </div>
 
     <p className="sjt-note">
-      Prototype. The “consensus” rankings here were written to be defensible, not validated — before
-      any real use they need review by a panel (safeguarding lead, school counsellor, EP) and
-      piloting for item difficulty and discrimination. Nothing here replaces your school&apos;s
-      safeguarding policy: anything that worries you goes to your DSL today, not after a
-      self-assessment.
+      <T path="intro.note" />
     </p>
   </div>
 );

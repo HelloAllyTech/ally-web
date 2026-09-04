@@ -1,23 +1,22 @@
 import { FC, useCallback } from "react";
 
-// Generic despite living under pages/blog — it owns document.title, the og:*
-// tags and the canonical link for any public, unauthenticated page.
 import { isComplete } from "./scoring";
+import { DEFAULT_COPY } from "./sjtCopy";
+import { SjtCopyProvider, T } from "./SjtCopyContext";
 import { ITEMS, OptionId } from "./sjtData";
 import { SjtIntro } from "./SjtIntro";
 import { SjtQuestion } from "./SjtQuestion";
 import { SjtResults } from "./SjtResults";
+import { useSjtCopy } from "./useSjtCopy";
 import { useSjtFonts } from "./useSjtFonts";
 import { EMPTY_PROGRESS, useSjtProgress } from "./useSjtProgress";
 import { usePageMeta } from "../blog/usePageMeta";
 
 import "./sjt.css";
 
-export const SJT1_TITLE = "Everyday conversations | Ally";
+export const SJT1_TITLE = DEFAULT_COPY.meta.title;
 
-export const SJT1_DESCRIPTION =
-  "A situational judgement self-check for teachers: ten everyday conversations about " +
-  "children's mental health, and the reasoning behind every response.";
+export const SJT1_DESCRIPTION = DEFAULT_COPY.meta.description;
 
 /**
  * Public, unauthenticated situational judgement self-check, served at /SJT1.
@@ -27,11 +26,16 @@ export const SJT1_DESCRIPTION =
  * app's Carbon tokens, so the page
  * is meant to be handed to a teacher as a link and work on the first tap.
  *
- * The one thing it does persist is the run itself, in this browser only, so a
- * twelve-minute self-check survives an interruption. See useSjtProgress.
+ * Two things are persisted, both in this browser only and nowhere else: the
+ * run itself, so a twelve-minute self-check survives an interruption (see
+ * useSjtProgress), and any rewording done at /SJT1/edit (see useSjtCopy).
+ * Every word rendered here comes from the copy model, which is what makes
+ * that editor possible.
  */
 export const Sjt1: FC = () => {
-  usePageMeta({ title: SJT1_TITLE, description: SJT1_DESCRIPTION, url: "/SJT1" });
+  const { copy } = useSjtCopy();
+
+  usePageMeta({ title: copy.meta.title, description: copy.meta.description, url: "/SJT1" });
   useSjtFonts();
 
   const [progress, setProgress] = useSjtProgress();
@@ -82,46 +86,50 @@ export const Sjt1: FC = () => {
   const restart = useCallback(() => setProgress(EMPTY_PROGRESS), [setProgress]);
 
   return (
-    <div className="sjt">
-      {stage === "quiz" && (
-        <div className="sjt-rail">
-          <div className="sjt-rail-top">
-            <span>Everyday conversations</span>
-            <span>
-              {index + 1} / {ITEMS.length}
-            </span>
+    <SjtCopyProvider copy={copy}>
+      <div className="sjt">
+        {stage === "quiz" && (
+          <div className="sjt-rail">
+            <div className="sjt-rail-top">
+              <span>
+                <T path="rail.label" />
+              </span>
+              <span>
+                {index + 1} / {ITEMS.length}
+              </span>
+            </div>
+            <div className="sjt-ticks">
+              {ITEMS.map((tickItem, tickIndex) => (
+                <span
+                  key={tickItem.id}
+                  className={`sjt-tick${
+                    tickIndex === index ? " here" : isComplete(answers[tickItem.id]) ? " done" : ""
+                  }`}
+                />
+              ))}
+            </div>
           </div>
-          <div className="sjt-ticks">
-            {ITEMS.map((tickItem, tickIndex) => (
-              <span
-                key={tickItem.id}
-                className={`sjt-tick${
-                  tickIndex === index ? " here" : isComplete(answers[tickItem.id]) ? " done" : ""
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
-      {stage === "intro" && (
-        <SjtIntro onStart={() => setProgress(current => ({ ...current, stage: "quiz" }))} />
-      )}
+        {stage === "intro" && (
+          <SjtIntro onStart={() => setProgress(current => ({ ...current, stage: "quiz" }))} />
+        )}
 
-      {stage === "quiz" && (
-        <SjtQuestion
-          item={item}
-          index={index}
-          total={ITEMS.length}
-          order={order}
-          onToggle={toggle}
-          onClear={clear}
-          onNext={next}
-          onBack={back}
-        />
-      )}
+        {stage === "quiz" && (
+          <SjtQuestion
+            item={item}
+            index={index}
+            total={ITEMS.length}
+            order={order}
+            onToggle={toggle}
+            onClear={clear}
+            onNext={next}
+            onBack={back}
+          />
+        )}
 
-      {stage === "results" && <SjtResults answers={answers} onRestart={restart} />}
-    </div>
+        {stage === "results" && <SjtResults answers={answers} onRestart={restart} />}
+      </div>
+    </SjtCopyProvider>
   );
 };

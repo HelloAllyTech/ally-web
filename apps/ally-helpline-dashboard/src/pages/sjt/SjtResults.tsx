@@ -1,6 +1,7 @@
 import { FC, useMemo } from "react";
 
 import { band, scoreItem } from "./scoring";
+import { SjtButton, T, useCopy } from "./SjtCopyContext";
 import { DOMAINS, ITEMS, OptionId } from "./sjtData";
 import { SjtReview } from "./SjtReview";
 
@@ -10,22 +11,32 @@ interface SjtResultsProps {
 }
 
 export const SjtResults: FC<SjtResultsProps> = ({ answers, onRestart }) => {
+  const copy = useCopy();
+
   const scored = useMemo(
     () => ITEMS.map(item => ({ item, ...scoreItem(answers[item.id] ?? [], item.key) })),
     [answers],
   );
 
   const overall = Math.round(scored.reduce((sum, row) => sum + row.pct, 0) / scored.length);
-  const overallBand = band(overall);
+  const overallBand = band(overall, copy.bands);
 
   const byDomain = useMemo(
     () =>
       Object.values(DOMAINS).map(domain => {
         const rows = scored.filter(row => row.item.domain === domain.code);
         const pct = Math.round(rows.reduce((sum, row) => sum + row.pct, 0) / rows.length);
-        return { ...domain, pct, count: rows.length, tone: band(pct).tone };
+        // The label comes from the copy, not from DOMAINS, so a reworded area
+        // name follows through into the strongest/weakest sentence below.
+        return {
+          code: domain.code,
+          label: copy.domains[domain.code].label,
+          pct,
+          count: rows.length,
+          tone: band(pct, copy.bands).tone,
+        };
       }),
-    [scored],
+    [scored, copy],
   );
 
   const weakest = [...byDomain].sort((a, b) => a.pct - b.pct)[0];
@@ -33,7 +44,9 @@ export const SjtResults: FC<SjtResultsProps> = ({ answers, onRestart }) => {
 
   return (
     <div className="sjt-wrap">
-      <p className="sjt-eyebrow">Your results · 10 scenarios</p>
+      <p className="sjt-eyebrow">
+        <T path="results.eyebrow" />
+      </p>
       <div className="sjt-score">
         <span className="sjt-score-num">
           {overall}
@@ -42,18 +55,29 @@ export const SjtResults: FC<SjtResultsProps> = ({ answers, onRestart }) => {
         <span className={`sjt-badge ${overallBand.tone}`}>{overallBand.name}</span>
       </div>
       <p className="sjt-lede" style={{ fontSize: 17 }}>
-        This is how closely your ordering matched the panel&apos;s, averaged across all four areas.
-        Partial credit is given for near-misses, so the interesting detail is below, not here.
+        <T path="results.lede" />
       </p>
 
       <div className="sjt-card">
-        <p className="sjt-eyebrow">By area of practice</p>
+        <p className="sjt-eyebrow">
+          <T path="results.byAreaLabel" />
+        </p>
         {byDomain.map(domain => (
           <div className="sjt-dom" key={domain.code}>
             <div className="sjt-dom-head">
-              <span className="sjt-dom-name">{domain.label}</span>
+              <span className="sjt-dom-name">
+                <T path={`domains.${domain.code}.label`} />
+              </span>
               <span className="sjt-dom-pct">
-                {domain.pct}% · {domain.count} {domain.count === 1 ? "item" : "items"}
+                <T
+                  readOnly
+                  path="results.areaMeta"
+                  vars={{
+                    pct: domain.pct,
+                    count: domain.count,
+                    items: domain.count === 1 ? copy.results.itemWord : copy.results.itemsWord,
+                  }}
+                />
               </span>
             </div>
             <div className="sjt-bar">
@@ -62,46 +86,54 @@ export const SjtResults: FC<SjtResultsProps> = ({ answers, onRestart }) => {
                 style={{ width: `${Math.max(domain.pct, 2)}%` }}
               />
             </div>
-            <p className="sjt-dom-blurb">{domain.blurb}</p>
+            <p className="sjt-dom-blurb">
+              <T path={`domains.${domain.code}.blurb`} />
+            </p>
           </div>
         ))}
       </div>
 
       <div className="sjt-card">
-        <p className="sjt-eyebrow">Where to put your attention</p>
+        <p className="sjt-eyebrow">
+          <T path="results.attentionLabel" />
+        </p>
         <p style={{ marginTop: 10 }}>
-          Your strongest area was <strong>{strongest.label.toLowerCase()}</strong> ({strongest.pct}
-          %). The one with most room is <strong>{weakest.label.toLowerCase()}</strong> (
-          {weakest.pct}%).
+          <T
+            path="results.attentionBody"
+            vars={{
+              strongest: <strong>{strongest.label.toLowerCase()}</strong>,
+              strongestPct: strongest.pct,
+              weakest: <strong>{weakest.label.toLowerCase()}</strong>,
+              weakestPct: weakest.pct,
+            }}
+          />
         </p>
         <p style={{ marginTop: 12 }}>
-          Pick one scenario below where your order differed most, and decide now what you&apos;d
-          actually say next time — a sentence you&apos;d be willing to use on Monday. Judgement in
-          these moments improves by rehearsing wording, not by knowing the theory.
+          <T path="results.attentionRehearse" />
         </p>
         <p className="sjt-hint" style={{ marginTop: 12 }}>
-          With {byDomain.filter(domain => domain.count === 2).length} areas covered by only two
-          scenarios each, treat the area scores as prompts for reflection rather than measurements.
+          <T
+            path="results.attentionHint"
+            vars={{ areas: byDomain.filter(domain => domain.count === 2).length }}
+          />
         </p>
       </div>
 
       <p className="sjt-eyebrow" style={{ marginTop: 32 }}>
-        Scenario by scenario
+        <T path="results.scenariosLabel" />
       </p>
       {scored.map(row => (
         <SjtReview key={row.item.id} item={row.item} order={answers[row.item.id] ?? []} />
       ))}
 
       <div className="sjt-actions">
-        <button type="button" className="sjt-btn" onClick={onRestart}>
-          Start again
-        </button>
+        <SjtButton className="sjt-btn" onClick={onRestart}>
+          <T path="results.restartLabel" />
+        </SjtButton>
       </div>
 
       <p className="sjt-note">
-        Prototype only — not a validated measure of competence, and not a record anyone else can
-        see. If a real conversation has left you worried about a child, that goes to your designated
-        safeguarding lead today.
+        <T path="results.note" />
       </p>
     </div>
   );

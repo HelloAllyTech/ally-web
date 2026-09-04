@@ -25,6 +25,9 @@ export interface PageMeta {
   type?: "website" | "article";
   /** ISO timestamp, emitted as article:published_time for `type: "article"`. */
   publishedTime?: string | null;
+  /** `robots` directive, e.g. "noindex, nofollow" for a working surface that
+   * has no business in search results. Omitted means the site default. */
+  robots?: string;
 }
 
 type Revert = () => void;
@@ -82,6 +85,7 @@ export const usePageMeta = ({
   url,
   type = "website",
   publishedTime,
+  robots,
 }: PageMeta) => {
   useEffect(() => {
     const previousTitle = document.title;
@@ -120,6 +124,8 @@ export const usePageMeta = ({
       reverts.push(upsertMeta("property", "og:url", absolute), upsertCanonical(absolute));
     }
 
+    if (robots) reverts.push(upsertMeta("name", "robots", robots));
+
     if (type === "article" && publishedTime) {
       reverts.push(upsertMeta("property", "article:published_time", publishedTime));
     }
@@ -130,5 +136,5 @@ export const usePageMeta = ({
       // value it held before this effect ran.
       reverts.reverse().forEach(revert => revert());
     };
-  }, [title, description, image, url, type, publishedTime]);
+  }, [title, description, image, url, type, publishedTime, robots]);
 };

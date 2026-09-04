@@ -22,6 +22,7 @@ vi.mock("@pages", () => ({
   BlogPost: () => <div data-testid="blog-post-page">Blog Post Page</div>,
   Changelog: () => <div data-testid="changelog-page">Changelog Page</div>,
   Sjt1: () => <div data-testid="sjt1-page">SJT1 Page</div>,
+  SjtEdit: () => <div data-testid="sjt1-edit-page">SJT1 Edit Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -72,6 +73,7 @@ vi.mock("@constants", () => ({
     BLOG_POST: "/blog/:slug",
     CHANGELOG: "/blog/changelog",
     SJT1: "/SJT1",
+    SJT1_EDIT: "/SJT1/edit",
   },
 }));
 
@@ -118,6 +120,14 @@ describe("RouteLayout", () => {
 
     expect(screen.getByTestId("public-layout")).toBeInTheDocument();
     // Not behind the catch-all: it must not need a signed-in user.
+    expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
+  });
+
+  it("serves the copy editor publicly at /SJT1/edit, not under the catch-all", () => {
+    window.history.pushState({}, "", "/SJT1/edit");
+    renderWithRouter(<RouteLayout />);
+
+    expect(screen.getByTestId("public-layout")).toBeInTheDocument();
     expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
   });
 
