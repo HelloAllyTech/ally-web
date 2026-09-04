@@ -357,6 +357,13 @@ export const VerticalAlignTopIcon = materialSymbol("vertical_align_top");
  * explicit glyph list, so a symbol missing from it renders as its own name in words.
  */
 export const LightbulbIcon = materialSymbol("lightbulb");
+/**
+ * The GUIDED way to file an opportunity — a bulb with a spark on it, sitting next to the plain
+ * bulb that opens the blank form. Deliberately the same family as `lightbulb` so the pair reads
+ * as two doors into one thing rather than two unrelated actions; the spark is what says this one
+ * is the assisted door. Material's own name for the glyph is "tips_and_updates".
+ */
+export const LightbulbGuidedIcon = materialSymbol("tips_and_updates");
 export const BugReportIcon = materialSymbol("bug_report");
 /*
  * An OUTLINED triangle. The Material Symbols name for it is "change_history", which has nothing

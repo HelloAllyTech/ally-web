@@ -30,6 +30,7 @@ import { MonthLane } from "./MonthLane";
 import { RoadmapFilterBar, hasActiveFilters } from "./RoadmapFilterBar";
 import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
+import { RoadmapEffortFilterValue } from "./utils/filterSelection";
 import {
   LaneSnapshot,
   laneSupportsReordering,
@@ -63,6 +64,8 @@ interface MonthBoardProps {
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
   sourceFilter: RoadmapOpportunitySource[];
   onSourceFilterChange: (value: RoadmapOpportunitySource[]) => void;
+  effortFilter: RoadmapEffortFilterValue[];
+  onEffortFilterChange: (value: RoadmapEffortFilterValue[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
   ownerFilter: string[];
@@ -115,6 +118,8 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     onStageFilterChange,
     sourceFilter,
     onSourceFilterChange,
+    effortFilter,
+    onEffortFilterChange,
     goalFilter,
     onGoalFilterChange,
     ownerFilter,
@@ -144,6 +149,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
     typeFilter,
     stageFilter,
     sourceFilter,
+    effortFilter,
     goalFilter,
     ownerFilter,
     advanced,
@@ -213,6 +219,8 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
         onStageFilterChange={onStageFilterChange}
         sourceFilter={sourceFilter}
         onSourceFilterChange={onSourceFilterChange}
+        effortFilter={effortFilter}
+        onEffortFilterChange={onEffortFilterChange}
         goalFilter={goalFilter}
         onGoalFilterChange={onGoalFilterChange}
         ownerFilter={ownerFilter}

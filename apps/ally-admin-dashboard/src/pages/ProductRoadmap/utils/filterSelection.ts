@@ -14,13 +14,27 @@
  */
 import {
   RoadmapFacets,
+  RoadmapOpportunityEffort,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
 } from "@types";
 
-import { SOURCE_LABEL, STAGE_LABEL, typeLabel } from "./stages";
+import {
+  EFFORT_LABEL,
+  EFFORT_UNSIZED_LABEL,
+  ROADMAP_EFFORT_UNSIZED,
+  SOURCE_LABEL,
+  STAGE_LABEL,
+  typeLabel,
+} from "./stages";
+
+/**
+ * A selected effort facet value: a real size, or the "Not sized" sentinel meaning
+ * `effort IS NULL` — see ROADMAP_EFFORT_UNSIZED.
+ */
+export type RoadmapEffortFilterValue = RoadmapOpportunityEffort | typeof ROADMAP_EFFORT_UNSIZED;
 
 /**
  * The popover's shape. Keys are the section ids FilterDropdown round-trips, and are deliberately
@@ -31,6 +45,7 @@ export interface RoadmapFacetSelection {
   type: string[];
   stage: string[];
   source: string[];
+  effort: string[];
   productGoal: string[];
   owner: string[];
   createdBy: string[];
@@ -41,6 +56,7 @@ export interface RoadmapFacetState {
   typeFilter: RoadmapOpportunityType[];
   stageFilter: RoadmapOpportunityStage[];
   sourceFilter: RoadmapOpportunitySource[];
+  effortFilter: RoadmapEffortFilterValue[];
   goalFilter: string[];
   ownerFilter: string[];
   createdBy: number[];
@@ -50,6 +66,7 @@ export const EMPTY_FACET_STATE: RoadmapFacetState = {
   typeFilter: [],
   stageFilter: [],
   sourceFilter: [],
+  effortFilter: [],
   goalFilter: [],
   ownerFilter: [],
   createdBy: [],
@@ -72,6 +89,7 @@ export const toFacetSelection = (state: RoadmapFacetState): RoadmapFacetSelectio
   type: [...state.typeFilter],
   stage: [...state.stageFilter],
   source: [...state.sourceFilter],
+  effort: [...state.effortFilter],
   productGoal: [...state.goalFilter],
   owner: [...state.ownerFilter],
   createdBy: state.createdBy.map(String),
@@ -81,6 +99,7 @@ export const fromFacetSelection = (selection: RoadmapFacetSelection): RoadmapFac
   typeFilter: selection.type as RoadmapOpportunityType[],
   stageFilter: selection.stage as RoadmapOpportunityStage[],
   sourceFilter: selection.source as RoadmapOpportunitySource[],
+  effortFilter: selection.effort as RoadmapEffortFilterValue[],
   goalFilter: [...selection.productGoal],
   ownerFilter: [...selection.owner],
   // A non-numeric id can only arrive from a corrupted saved view; dropping it beats sending NaN,
@@ -169,6 +188,18 @@ export const buildFacetSections = (
         value,
       })),
     },
+    {
+      id: "effort",
+      label: "Effort",
+      // "Not sized" last: it is the absence of a size rather than one more size on the scale.
+      options: [
+        ...Object.values(RoadmapOpportunityEffort).map(value => ({
+          label: EFFORT_LABEL[value] ?? value,
+          value,
+        })),
+        { label: EFFORT_UNSIZED_LABEL, value: ROADMAP_EFFORT_UNSIZED },
+      ],
+    },
   ];
 
   if (goals.length) {
@@ -210,6 +241,10 @@ export interface RoadmapFilterChip {
   values: string[];
 }
 
+/** An effort facet value's display label, including the "Not sized" sentinel. */
+export const effortFilterLabel = (value: RoadmapEffortFilterValue): string =>
+  value === ROADMAP_EFFORT_UNSIZED ? EFFORT_UNSIZED_LABEL : (EFFORT_LABEL[value] ?? value);
+
 /**
  * What is currently narrowing the list, as one chip per active facet.
  *
@@ -244,6 +279,11 @@ export const describeActiveFacets = (
       id: "source",
       label: "Source",
       values: state.sourceFilter.map(source => SOURCE_LABEL[source] ?? source),
+    },
+    {
+      id: "effort",
+      label: "Effort",
+      values: state.effortFilter.map(effortFilterLabel),
     },
     { id: "productGoal", label: "Goal", values: [...state.goalFilter] },
     { id: "owner", label: "Owner", values: [...state.ownerFilter] },

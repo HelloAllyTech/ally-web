@@ -195,6 +195,7 @@ export interface RoadmapOpportunitiesQuery {
   type?: string[];
   stage?: string[];
   source?: string[];
+  effort?: string[];
   productGoal?: string[];
   owner?: string[];
   createdBy?: number[];
@@ -380,6 +381,48 @@ export interface RoadmapComment {
   updatedAt: string;
 }
 
+/**
+ * The guided-interview surface (the spark-bulb icon).
+ *
+ * `role` is admin/agent rather than user/assistant: these rows are rendered, not replayed into a
+ * model, and the wire contract is the backend's own DTO.
+ */
+export interface RoadmapInterviewMessage {
+  role: "admin" | "agent";
+  content: string;
+}
+
+/** One readiness criterion's live verdict during the interview. */
+export interface RoadmapInterviewGate {
+  /** A readiness-criterion id — the same ids the filing checklist grades. */
+  id: string;
+  met: boolean;
+  note: string;
+}
+
+export interface RoadmapInterviewDraft {
+  description: string;
+  productGoal: string | null;
+  effort: RoadmapOpportunityEffort | null;
+}
+
+export interface RoadmapInterviewTurn {
+  reply: string;
+  gates: RoadmapInterviewGate[];
+  /** Null until every gate is met. */
+  draft: RoadmapInterviewDraft | null;
+  /** Hand back as `readinessToken` when filing the draft. Null unless `draft` is set. */
+  readinessToken: string | null;
+}
+
+/** One admin's vote total on one opportunity, across every period. Highest votes first. */
+export interface RoadmapVoter {
+  userId: number;
+  name: string;
+  email: string;
+  votes: number;
+}
+
 export interface RoadmapInterviewNote {
   id: string;
   title: string;
@@ -408,6 +451,8 @@ export interface RoadmapViewState {
   stageFilter?: string[];
   /** New filter, absent on every view saved before it existed — treat undefined as "no filter". */
   sourceFilter?: string[];
+  /** New filter, absent on every view saved before it existed — treat undefined as "no filter". */
+  effortFilter?: string[];
   goalFilter?: string[];
   ownerFilter?: string[];
   creatorFilter?: string[];

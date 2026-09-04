@@ -56,6 +56,14 @@ export const EFFORT_LABEL: Record<RoadmapOpportunityEffort, string> = {
   [RoadmapOpportunityEffort.XXL]: "XXL",
 };
 
+/**
+ * Filter-only sentinel for "nobody has sized this yet" (`effort IS NULL`). Not a real
+ * RoadmapOpportunityEffort — see ROADMAP_EFFORT_UNSIZED in ally-be's product-roadmap constants,
+ * which this string must keep matching.
+ */
+export const ROADMAP_EFFORT_UNSIZED = "unsized";
+export const EFFORT_UNSIZED_LABEL = "Not sized";
+
 export const SOURCE_LABEL: Record<string, string> = {
   staff: "Staff",
   consumer: "Consumer",

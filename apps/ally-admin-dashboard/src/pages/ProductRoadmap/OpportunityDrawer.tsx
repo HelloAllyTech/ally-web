@@ -8,6 +8,7 @@ import { CarbonDropdown, TextArea, SkeletonText, Tooltip } from "@ally-ui-mono/u
 import {
   useCreateRoadmapCommentMutation,
   useGetRoadmapCommentsQuery,
+  useGetRoadmapVotersQuery,
   useGetRoadmapOpportunityQuery,
   useGetRoadmapEligibleOwnersQuery,
   useGetBugFindingByReportedBugQuery,
@@ -110,6 +111,10 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   const { data: opportunity, isLoading, isError } = useGetRoadmapOpportunityQuery(opportunityId);
   const { data: eligibleOwners } = useGetRoadmapEligibleOwnersQuery();
   const { data: comments } = useGetRoadmapCommentsQuery(opportunityId);
+  // Bugs don't show the votes line at all (see isBug below), so there is nothing to hover.
+  const { data: voters } = useGetRoadmapVotersQuery(opportunityId, {
+    skip: opportunity?.type === RoadmapOpportunityType.BUG,
+  });
   const [updateOpportunity, { isLoading: isSaving }] = useUpdateRoadmapOpportunityMutation();
   const [createComment, { isLoading: isCommenting }] = useCreateRoadmapCommentMutation();
   const [deleteOpportunity, { isLoading: isDeleting }] = useDeleteRoadmapOpportunityMutation();
@@ -532,11 +537,33 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               / Your votes for anyone matching the two screens up.
             */}
             {!!opportunity && !isBug && (
-              <p className="text-typography-700 truncate text-xs">
-                <span className="tabular-nums">{opportunity.priorityScore}</span> total votes ·{" "}
-                <span className="tabular-nums">{opportunity.myVotes}</span> yours · Filed by{" "}
+              <div className="text-typography-700 truncate text-xs">
+                <Tooltip
+                  label={
+                    !voters ? (
+                      "Loading…"
+                    ) : voters.length === 0 ? (
+                      "No votes yet"
+                    ) : (
+                      <ul className="flex flex-col gap-0.5">
+                        {voters.map(voter => (
+                          <li key={voter.userId} className="flex justify-between gap-3">
+                            <span>{voter.name || voter.email || "Unknown user"}</span>
+                            <span className="tabular-nums">{voter.votes}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  }
+                  align="bottom"
+                >
+                  <span className="tabular-nums underline decoration-dotted underline-offset-2 cursor-help">
+                    {opportunity.priorityScore} total votes
+                  </span>
+                </Tooltip>{" "}
+                · <span className="tabular-nums">{opportunity.myVotes}</span> yours · Filed by{" "}
                 {opportunity.creator?.name || opportunity.creator?.email || "Unknown user"}
-              </p>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -701,33 +728,46 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   which the backend enforces with a 422 — disabling the control is how that rule
                   becomes visible instead of arriving as a failed save. */}
               <div>
-                <div className="flex items-center gap-1">
-                  <div className="min-w-0 flex-1">
-                    <CarbonDropdown
-                      id="drawer-planned-month"
-                      titleText="Planned month"
-                      label="Unscheduled"
-                      items={monthItems}
-                      itemToString={item => item?.label ?? ""}
-                      selectedItem={
-                        monthItems.find(item => item.value === draft.plannedMonth) ?? null
-                      }
-                      disabled={!canManage || opportunity.monthPinned}
-                      onChange={({ selectedItem }) => {
-                        if (!selectedItem) return;
-                        setDraft(prev => ({ ...prev, plannedMonth: selectedItem.value }));
-                      }}
-                    />
-                  </div>
-                  <Tooltip
-                    label="Which month you intend to ship this in. Once the stage is Released the card moves to the month it actually shipped, and this stops being editable — so a slipped plan stays visible instead of being overwritten."
-                    align="bottom"
-                  >
-                    <button type="button" className="inline-flex cursor-pointer items-center">
-                      <TooltipIcon />
-                    </button>
-                  </Tooltip>
-                </div>
+                {/* The tooltip icon sits INSIDE titleText, right next to the label text, rather
+                    than floating at the far edge of the dropdown. Carbon's `titleText` accepts a
+                    node (not just a string) for exactly this — the label stays the real Carbon
+                    <label> with its normal box model, so it lines up with every plain-string
+                    label beside it (Stage, Product goal, …) instead of drifting by the few
+                    pixels a hand-built replacement label picks up from the inline-block
+                    baseline quirk Carbon's own label relies on. */}
+                <CarbonDropdown
+                  id="drawer-planned-month"
+                  titleText={
+                    // h-4 on both the row and the button pins this label to the 16px line height
+                    // every other field's plain-string label has. The icon glyph is 18px and
+                    // simply overflows that box by a pixel either side, which costs nothing
+                    // visually — whereas letting it set the height pushes this dropdown ~3px
+                    // below the Stage one beside it.
+                    <span className="inline-flex h-4 items-center gap-1">
+                      Planned month
+                      <Tooltip
+                        label="Which month you intend to ship this in. Once the stage is Released the card moves to the month it actually shipped, and this stops being editable — so a slipped plan stays visible instead of being overwritten."
+                        align="bottom"
+                      >
+                        <button
+                          type="button"
+                          className="inline-flex h-4 cursor-pointer items-center"
+                        >
+                          <TooltipIcon />
+                        </button>
+                      </Tooltip>
+                    </span>
+                  }
+                  label="Unscheduled"
+                  items={monthItems}
+                  itemToString={item => item?.label ?? ""}
+                  selectedItem={monthItems.find(item => item.value === draft.plannedMonth) ?? null}
+                  disabled={!canManage || opportunity.monthPinned}
+                  onChange={({ selectedItem }) => {
+                    if (!selectedItem) return;
+                    setDraft(prev => ({ ...prev, plannedMonth: selectedItem.value }));
+                  }}
+                />
                 {/*
                   RELEASED MONTH, as its own labelled value directly under the planned one — the
                   two are a pair, and the interesting case is when they differ.

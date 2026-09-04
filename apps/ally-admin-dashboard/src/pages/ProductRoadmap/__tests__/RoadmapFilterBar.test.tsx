@@ -57,6 +57,7 @@ const renderBar = (overrides: Partial<React.ComponentProps<typeof RoadmapFilterB
     onTypeFilterChange: vi.fn(),
     onStageFilterChange: vi.fn(),
     onSourceFilterChange: vi.fn(),
+    onEffortFilterChange: vi.fn(),
     onGoalFilterChange: vi.fn(),
     onOwnerFilterChange: vi.fn(),
     onAdvancedChange: vi.fn(),
@@ -69,6 +70,7 @@ const renderBar = (overrides: Partial<React.ComponentProps<typeof RoadmapFilterB
       typeFilter={[]}
       stageFilter={[]}
       sourceFilter={[]}
+      effortFilter={[]}
       goalFilter={[]}
       ownerFilter={[]}
       advanced={{ ...EMPTY_ADVANCED_FILTERS }}
@@ -107,6 +109,7 @@ describe("RoadmapFilterBar", () => {
     expect(captured.dropdown.sections.map((s: any) => s.label)).toEqual([
       "Stage",
       "Source",
+      "Effort",
       "Goal",
       "Owner",
       "Filed by",

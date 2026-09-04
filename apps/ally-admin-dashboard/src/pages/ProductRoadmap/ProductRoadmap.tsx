@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from "react";
 
-import { BugReportIcon, LightbulbIcon, RoadmapSettingsIcon, TriangleIcon } from "@icons";
+import {
+  BugReportIcon,
+  LightbulbGuidedIcon,
+  LightbulbIcon,
+  RoadmapSettingsIcon,
+  TriangleIcon,
+} from "@icons";
 import { useSearchParams } from "react-router-dom";
 
 import { CarbonDropdown, Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -34,6 +40,7 @@ import { MonthBoard } from "./MonthBoard";
 import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunitiesListView } from "./OpportunitiesListView";
 import { OpportunityDrawer } from "./OpportunityDrawer";
+import { OpportunityInterviewDrawer } from "./OpportunityInterviewDrawer";
 import { ReportBugModal } from "./ReportBugModal";
 import { RoadmapSettingsDrawer } from "./RoadmapSettingsDrawer";
 import { RoadmapSortControl } from "./RoadmapSortControl";
@@ -43,6 +50,7 @@ import { useSavedViews } from "./useSavedViews";
 import { canManageRoadmap } from "./utils/access";
 import { seedForHandle } from "./utils/builder";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
+import { RoadmapEffortFilterValue } from "./utils/filterSelection";
 import { monthKeyOf, shiftMonthKey } from "./utils/monthBoard";
 import {
   QUEUE_VIEW_ID,
@@ -175,6 +183,7 @@ export const ProductRoadmap: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<RoadmapOpportunityType[]>([]);
   const [stageFilter, setStageFilter] = useState<RoadmapOpportunityStage[]>([]);
   const [sourceFilter, setSourceFilter] = useState<RoadmapOpportunitySource[]>([]);
+  const [effortFilter, setEffortFilter] = useState<RoadmapEffortFilterValue[]>([]);
   const [goalFilter, setGoalFilter] = useState<string[]>([]);
   const [ownerFilter, setOwnerFilter] = useState<string[]>([]);
   /** Creator + the three range filters, grouped so one setter drives the whole panel. */
@@ -190,6 +199,8 @@ export const ProductRoadmap: React.FC = () => {
     useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("composite");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  /** The guided interview (the spark-bulb icon). Manage-gated; see the header button. */
+  const [isInterviewOpen, setIsInterviewOpen] = useState(false);
   const [isReportBugOpen, setIsReportBugOpen] = useState(false);
   /**
    * The one admin surface: product goals, strategy & ranking and merge, as tabs in a drawer.
@@ -267,6 +278,7 @@ export const ProductRoadmap: React.FC = () => {
       type: typeFilter.length ? typeFilter : undefined,
       stage: stageFilter.length ? stageFilter : undefined,
       source: sourceFilter.length ? sourceFilter : undefined,
+      effort: effortFilter.length ? effortFilter : undefined,
       productGoal: goalFilter.length ? goalFilter : undefined,
       owner: ownerFilter.length ? ownerFilter : undefined,
       createdBy: advanced.createdBy.length ? advanced.createdBy : undefined,
@@ -290,6 +302,7 @@ export const ProductRoadmap: React.FC = () => {
       typeFilter,
       stageFilter,
       sourceFilter,
+      effortFilter,
       goalFilter,
       ownerFilter,
       advanced,
@@ -415,6 +428,7 @@ export const ProductRoadmap: React.FC = () => {
       typeFilter,
       stageFilter,
       sourceFilter,
+      effortFilter,
       goalFilter,
       ownerFilter,
       // Same key names the standalone app used, so a view saved here and a view migrated from
@@ -437,6 +451,7 @@ export const ProductRoadmap: React.FC = () => {
       typeFilter,
       stageFilter,
       sourceFilter,
+      effortFilter,
       goalFilter,
       ownerFilter,
       advanced,
@@ -457,6 +472,7 @@ export const ProductRoadmap: React.FC = () => {
     // not "leave whatever was previously selected", or applying an old view would leave a stale
     // source filter from whatever the user had picked before switching views.
     setSourceFilter((state.sourceFilter ?? []) as RoadmapOpportunitySource[]);
+    setEffortFilter((state.effortFilter ?? []) as RoadmapEffortFilterValue[]);
     setGoalFilter(state.goalFilter ?? []);
     setOwnerFilter(state.ownerFilter ?? []);
     // These four keys were previously DROPPED on apply: the board had no controls for them, so a
@@ -848,6 +864,25 @@ export const ProductRoadmap: React.FC = () => {
             </Tooltip>
           )}
 
+          {/*
+            The GUIDED door, immediately right of the blank one so the pair reads as two ways
+            into the same act rather than two features. Manage-gated while the interview is
+            experimental — see the route's docblock in roadmap-admin.controller.ts — so most
+            people who can file still see exactly one way to do it.
+          */}
+          {canManage && (
+            <Tooltip label="New opportunity, guided" align="bottom">
+              <button
+                type="button"
+                aria-label="New opportunity, guided by an interview"
+                onClick={() => setIsInterviewOpen(true)}
+                className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
+              >
+                <LightbulbGuidedIcon size={20} />
+              </button>
+            </Tooltip>
+          )}
+
           <Tooltip label="Report a bug" align="bottom">
             <button
               type="button"
@@ -1010,6 +1045,8 @@ export const ProductRoadmap: React.FC = () => {
           onStageFilterChange={withPagingReset(setStageFilter)}
           sourceFilter={sourceFilter}
           onSourceFilterChange={withPagingReset(setSourceFilter)}
+          effortFilter={effortFilter}
+          onEffortFilterChange={withPagingReset(setEffortFilter)}
           goalFilter={goalFilter}
           onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}
@@ -1049,6 +1086,8 @@ export const ProductRoadmap: React.FC = () => {
           onStageFilterChange={withPagingReset(setStageFilter)}
           sourceFilter={sourceFilter}
           onSourceFilterChange={withPagingReset(setSourceFilter)}
+          effortFilter={effortFilter}
+          onEffortFilterChange={withPagingReset(setEffortFilter)}
           goalFilter={goalFilter}
           onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}
@@ -1094,6 +1133,8 @@ export const ProductRoadmap: React.FC = () => {
           onStageFilterChange={withPagingReset(setStageFilter)}
           sourceFilter={sourceFilter}
           onSourceFilterChange={withPagingReset(setSourceFilter)}
+          effortFilter={effortFilter}
+          onEffortFilterChange={withPagingReset(setEffortFilter)}
           goalFilter={goalFilter}
           onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}
@@ -1140,6 +1181,22 @@ export const ProductRoadmap: React.FC = () => {
           onClose={() => setIsAddOpen(false)}
           onOpenExisting={id => {
             setIsAddOpen(false);
+            openOpportunity(id);
+          }}
+        />
+      )}
+
+      {/*
+        The interview hands over by FILING, then closing itself and opening the normal drawer on
+        what it filed — which is where review and editing happen, because that drawer already
+        autosaves. There is deliberately no third "review" UI in between: a second editor over
+        the same row would be a second set of save semantics to keep honest.
+      */}
+      {isInterviewOpen && (
+        <OpportunityInterviewDrawer
+          onClose={() => setIsInterviewOpen(false)}
+          onCreated={id => {
+            setIsInterviewOpen(false);
             openOpportunity(id);
           }}
         />

@@ -301,6 +301,7 @@ export const ApiEndpoints = {
      */
     REFERENCE_IMAGE_UPLOAD_URL: "/v1/product-roadmap/reference-images/upload-url",
     OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
+    OPPORTUNITY_VOTERS: (id: string) => `/v1/product-roadmap/opportunities/${id}/voters`,
     COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
     BOARD: "/v1/product-roadmap/board",
     BOARD_LANE: "/v1/product-roadmap/board/lane",
@@ -335,6 +336,8 @@ export const ApiEndpoints = {
     AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
     AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
+    /** One turn of the guided interview. Stateless — the whole conversation goes with each call. */
+    AI_OPPORTUNITY_INTERVIEW: "/v1/product-roadmap/ai/opportunity-interview",
     /**
      * Open or resume the Builder session for an opportunity. Replaced
      * AI_GENERATE_CLAUDE_PROMPT, whose output a human pasted into a terminal by hand.
@@ -791,6 +794,7 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_GOAL_IMPACT: "productRoadmapGoalImpact",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
+  PRODUCT_ROADMAP_VOTERS: "productRoadmapVoters",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
   PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",

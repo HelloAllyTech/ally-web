@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   RoadmapFacets,
+  RoadmapOpportunityEffort,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
@@ -99,16 +100,16 @@ describe("buildFacetSections", () => {
   // No "type" facet: bugs left the board for Bug Hunter, so every listed row is
   // an idea and a Bug/Idea filter would offer one no-op option and one that
   // always empties the table.
-  it("always offers the two enum-backed facets", () => {
+  it("always offers the three enum-backed facets", () => {
     const ids = buildFacetSections([], undefined).map(section => section.id);
-    expect(ids).toEqual(["stage", "source"]);
+    expect(ids).toEqual(["stage", "source", "effort"]);
   });
 
   it("omits the stage section for a view whose stage set is its definition", () => {
     // The Queue: offering stage there would let a reader edit the tab into
     // something that is no longer a queue.
     const ids = buildFacetSections([], undefined, { omitStage: true }).map(s => s.id);
-    expect(ids).toEqual(["source"]);
+    expect(ids).toEqual(["source", "effort"]);
   });
 
   it("adds the data-driven facets once their options exist", () => {
@@ -120,6 +121,7 @@ describe("buildFacetSections", () => {
     expect(sections.map(s => s.id)).toEqual([
       "stage",
       "source",
+      "effort",
       "productGoal",
       "owner",
       "createdBy",
@@ -132,6 +134,20 @@ describe("buildFacetSections", () => {
       label: "In development",
       value: RoadmapOpportunityStage.UNDER_DEVELOPMENT,
     });
+  });
+
+  it("offers a trailing 'Not sized' option alongside the real effort sizes", () => {
+    // The absence of a size, not one more size on the scale — see ROADMAP_EFFORT_UNSIZED.
+    const effort = buildFacetSections([], undefined).find(s => s.id === "effort");
+    expect(effort?.options.map(o => o.value)).toEqual([
+      RoadmapOpportunityEffort.S,
+      RoadmapOpportunityEffort.M,
+      RoadmapOpportunityEffort.L,
+      RoadmapOpportunityEffort.XL,
+      RoadmapOpportunityEffort.XXL,
+      "unsized",
+    ]);
+    expect(effort?.options.at(-1)).toEqual({ label: "Not sized", value: "unsized" });
   });
 
   it("falls back to a creator's email when they have no name", () => {
@@ -151,6 +167,13 @@ describe("describeActiveFacets", () => {
   it("says nothing when nothing is applied", () => {
     expect(describeActiveFacets(state())).toEqual([]);
     expect(countActiveFacets(state())).toBe(0);
+  });
+
+  it("names the 'Not sized' sentinel rather than its wire value", () => {
+    const chips = describeActiveFacets(
+      state({ effortFilter: [RoadmapOpportunityEffort.S, "unsized"] }),
+    );
+    expect(chips).toEqual([{ id: "effort", label: "Effort", values: ["S", "Not sized"] }]);
   });
 
   it("names a stage by its label rather than its wire value", () => {
