@@ -817,6 +817,9 @@ export const en = {
     characterLibraryEnabled: "Enable Character Library",
     characterLibraryEnabledHint:
       "Lets this organisation's admins build their own characters, including with the interview agent. They see only characters their own organisation creates, and cannot edit or delete one once saved.",
+    progressDashboardEnabled: "Enable Learner Progress",
+    progressDashboardEnabledHint:
+      "Shows learners in this organisation their XP, level, and badges on a personal Progress screen, plus a level widget elsewhere in the app. Off by default for every new organisation.",
     scribeNoteCreationEnabled: "Enable manual note creation",
     voiceNoteEnabled: "Enable voice note (mic dictation)",
     customFieldTypes: "Custom field types",
