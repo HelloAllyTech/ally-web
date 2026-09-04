@@ -1,8 +1,7 @@
 import { FunctionComponent, useRef, useState } from "react";
 
-import { createPortal } from "react-dom";
-
 import { Information } from "@carbon/icons-react";
+import { createPortal } from "react-dom";
 
 const BUBBLE_MAX_WIDTH = 280;
 /** Gap between the icon and the bubble, and the minimum inset from the viewport edge. */
