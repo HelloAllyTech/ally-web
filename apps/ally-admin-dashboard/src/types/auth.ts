@@ -833,6 +833,72 @@ export interface ChartPreferencesResponse {
   preferences: ChartPreference[];
 }
 
+// Weekly changed-line volume across the Ally repos — mirrors
+// ShipVolumeResponseDto from GET /api/v1/analytics/ship-volume. An OUTPUT
+// measure: churn says how much code moved, never whether the right thing moved.
+// Weeks are SUNDAY-anchored, because that is how GitHub buckets the underlying
+// statistics. No tenant — this measures our own engineering, not customer data.
+export interface ShipVolumeTotals {
+  added: number;
+  /** Positive count (GitHub reports deletions negative; the API flips them). */
+  deleted: number;
+  /** added + deleted — the plotted quantity. Churn, not net. */
+  churn: number;
+}
+
+export interface ShipVolumeRepo extends ShipVolumeTotals {
+  /** Repository name without the org, e.g. `ally-be`. */
+  repo: string;
+}
+
+export interface ShipVolumeWeek extends ShipVolumeTotals {
+  /** The Sunday the week starts (yyyy-mm-dd, UTC). */
+  weekStart: string;
+  /** Repos that changed this week, in the response's repo order. */
+  repos: ShipVolumeRepo[];
+  /** True for the week in progress: its bar can only grow. */
+  partial: boolean;
+}
+
+export interface ShipVolumeUnavailableRepo {
+  repo: string;
+  /**
+   * `computing` — GitHub is rebuilding this repo's statistics after a push and
+   * answered 202. `unreachable` — the request failed. `not_configured` — no
+   * GitHub token in this environment.
+   */
+  reason: "computing" | "unreachable" | "not_configured";
+  /**
+   * True when this repo's numbers on the axis came from the last cached
+   * response, so the chart is complete but that slice may be behind. False
+   * means the repo is missing from every bar.
+   */
+  servedFromCache: boolean;
+}
+
+export interface ShipVolumeResponse {
+  /** Oldest first, gap-free: a week nobody pushed in is a zero, not a gap. */
+  weeks: ShipVolumeWeek[];
+  /** Every repo band, ranked by churn across the whole window. */
+  repos: string[];
+  /** The Sunday of the current, incomplete week. */
+  currentWeekStart: string;
+  weeksRequested: number;
+  plotted: ShipVolumeTotals;
+  /**
+   * Repos whose statistics could not be read. MUST be surfaced: churn is a sum
+   * across repos, so a missing one silently shortens every bar.
+   */
+  unavailableRepos: ShipVolumeUnavailableRepo[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+export interface ShipVolumeQuery {
+  /** 12 | 26 | 52. Defaults to 12 server-side. */
+  weeks?: number;
+}
+
 // Vote-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
 // from GET /api/v1/analytics/roadmap-delivery. All-time and month-grained; takes
 // no window and no tenant (the roadmap tables carry no tenant — it is Ally's own
