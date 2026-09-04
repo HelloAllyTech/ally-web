@@ -337,6 +337,32 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CHARACTER_LIBRARY_ENABLED],
     }),
 
+    /**
+     * Org-level Learner Progress (XP/levels) switch. `tenantId` is optional:
+     * a platform admin passes one to read another org's setting, everyone
+     * else omits it and gets their own org (the backend pins them to their
+     * JWT tenant).
+     */
+    getProgressDashboardEnabled: builder.query<boolean, string | void>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.PROGRESS_DASHBOARD_ENABLED,
+        params: tenantId ? { tenantId } : undefined,
+      }),
+      providesTags: [TAG_TYPES.PROGRESS_DASHBOARD_ENABLED],
+    }),
+
+    updateProgressDashboardEnabled: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabled: boolean }
+    >({
+      query: ({ tenantId, enabled }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.PROGRESS_DASHBOARD_ENABLED,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.PROGRESS_DASHBOARD_ENABLED],
+    }),
+
     getScribeNoteCreationEnabled: builder.query<boolean, string>({
       query: tenantId => ({
         url: ApiEndpoints.USER_MANAGEMENT.SCRIBE_NOTE_CREATION_ENABLED,
@@ -488,6 +514,8 @@ export const {
   useUpdateCustomFieldsEnabledMutation,
   useGetCharacterLibraryEnabledQuery,
   useUpdateCharacterLibraryEnabledMutation,
+  useGetProgressDashboardEnabledQuery,
+  useUpdateProgressDashboardEnabledMutation,
   useGetScribeNoteCreationEnabledQuery,
   useUpdateScribeNoteCreationEnabledMutation,
   useGetScribeVoiceNoteEnabledQuery,
