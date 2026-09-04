@@ -567,7 +567,7 @@
         "totalXp": "Lifetime XP: 1 per practice minute, 10 per completed session, 25 per course item, 50 for a personal best, with a daily cap so no single activity can be farmed. All-time.",
         "roleplaySessions": "Roleplays completed of roleplays started, in the selected period.",
         "totalPracticeMinutes": "Minutes spent in completed roleplays, in the selected period.",
-        "pointsPerMinute": "Roleplay score earned per minute of practice, in the selected period — it separates a learner who scores steadily from one who only accumulates minutes. Can be negative, because roleplay scores can go below zero. Blank when there is no measurable practice time to divide by.",
+        "pointsPerMinute": "Roleplay score earned per minute of practice, in the selected period — it separates a learner who scores steadily from one who only accumulates minutes. Can be negative, because roleplay scores can go below zero. Blank until the learner has at least 10 practice minutes, since below that the ratio is too noisy to be meaningful.",
         "itemsCompletedPct": "Course items completed out of every item in the courses this learner is enrolled in, including items they have not unlocked yet. All-time. Counted per item, not per course, so progress through a long course still shows.",
         "quizzes": "Quiz items passed, out of those they have attempted, and in brackets the average of their most recent graded attempt on each — so repeated failures show rather than being hidden by a later pass. All-time.",
         "readWatch": "Article and video items completed. All-time.",
