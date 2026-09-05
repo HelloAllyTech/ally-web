@@ -161,7 +161,12 @@ export const navBarOptions = [
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     activePages: [],
-    permissions: [Permissions.VIEW_ANALYTICS_DASHBOARD],
+    // Empty on purpose. VIEW_ANALYTICS_DASHBOARD says the user is allowed to see
+    // analytics, not that their tenant has any — a permission-only gate showed a
+    // Statistics tab to tenants whose only content was "no dashboards available".
+    // NavSideBar special-cases this tab id against useCanViewAnalytics, the same
+    // escape hatch Progress and Character Library use.
+    permissions: [] as Permissions[],
   },
   {
     id: TabId.ORGANIZATION_SETTINGS,

@@ -13,6 +13,9 @@ vi.mock("@hooks", () => ({
   useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: () => mockUseUser(),
   useAutoActiveCallRedirect: vi.fn(),
+  // Exhaustive mock: the analytics landing fallback is gated on this hook, not
+  // on the permission alone — a tenant with no dashboards has nothing to land on.
+  useCanViewAnalytics: () => ({ canView: true, isGateLoading: false }),
   useAchievementBadgeModal: () => ({
     currentBadge: null,
     closeModal: vi.fn(),
@@ -171,7 +174,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 // Mock utils
 vi.mock("@utils", () => ({
-  hasAnalyticsPermission: vi.fn((permissions: any[]) => true),
   hasCallPermission: vi.fn((permissions: any[]) => true),
   hasScribeLogsPermission: vi.fn((permissions: any[]) => true),
   hasRoleplayLogsPermission: vi.fn((permissions: any[]) => false),
