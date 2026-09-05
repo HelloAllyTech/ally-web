@@ -27,6 +27,7 @@ import {
   adminAppUrl,
 } from "@constants";
 import {
+  useCanViewAnalytics,
   useCanViewCharacterLibrary,
   usePracticeStreakSummary,
   useProgressSummary,
@@ -148,6 +149,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const [openReportProblem, setOpenReportProblem] = useState<boolean>(false);
   const { canView: canViewCharacterLibrary } = useCanViewCharacterLibrary();
+  const { canView: canViewAnalytics } = useCanViewAnalytics();
   const permittedTabs = navBarOptions.filter(tab => {
     // Organization Settings is gated by ADMIN role + a temporary email
     // allowlist, not by a permission (see canViewOrganizationSettings).
@@ -166,6 +168,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     // permission-only check would show the tab to orgs that never opted in.
     if (tab.id === TabId.PROGRESS) {
       return canViewProgress;
+    }
+
+    // Statistics needs VIEW_ANALYTICS_DASHBOARD AND something for the page to
+    // render — a registered dashboard, or the native Organization Metrics view.
+    // See useCanViewAnalytics: the permission alone put an empty tab in front of
+    // every tenant that has no dashboards configured.
+    if (tab.id === TabId.ANALYTICS) {
+      return canViewAnalytics;
     }
 
     // Check if user has permission for this tab

@@ -12,9 +12,6 @@ export const hasCallPermission = (permissions: Permissions[]) =>
 export const hasLearnPermission = (permissions: Permissions[]) =>
   permissions?.find(permission => permission === Permissions.EDIT_SCENARIO_SESSION);
 
-export const hasAnalyticsPermission = (permissions: Permissions[]) =>
-  permissions?.find(permission => permission === Permissions.VIEW_ANALYTICS_DASHBOARD);
-
 export const hasSessionLogsPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => SESSION_LOGS_PERMISSIONS.includes(permission));
 

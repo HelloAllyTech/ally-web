@@ -108,6 +108,7 @@ const analyticsAPI = baseAPI.injectEndpoints({
 
 export const {
   useLazyGetDashboardUrlQuery,
+  useGetDashboardsQuery,
   useLazyGetDashboardsQuery,
   useLazyGetCounsellorStatsQuery,
   useGetOrganizationMetricsQuery,
