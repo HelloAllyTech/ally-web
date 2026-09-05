@@ -13,6 +13,7 @@ export * from "./CreateTrack/CreateTrack";
 export * from "./CreateCase/CreateCase";
 export * from "./ScenarioVoices/ScenarioVoices";
 export * from "./SttConfigs/SttConfigs";
+export * from "./AiTasks/AiTasks";
 export * from "./LlmModelCatalog/LlmModelCatalog";
 export * from "./LanguageManagement/LanguageManagement";
 export * from "./PromptManagement/PromptManagement";

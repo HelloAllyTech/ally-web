@@ -54,6 +54,9 @@ export const ApiEndpoints = {
     LLM_CONFIGS: "/v1/learn/llm-configs",
     PREVIEW_LLM_CONFIG: (id: string) => `/v1/llm-preview/generate/${id}`,
     LLM_MODEL_CATALOG: "/v1/llm/catalog",
+    // The AI task registry: every platform action that calls a model, and which
+    // model serves it. Read-only — ally-be derives it from code.
+    AI_TASKS: "/v1/llm/tasks",
     LLM_MODEL_CATALOG_BY_ID: (id: string) => `/v1/llm/catalog/${id}`,
     PREVIEW_LLM_MODEL: (id: string) => `/v1/llm-preview/model/${id}`,
     UPDATE_LLM_CONFIG: (id: string) => `/v1/learn/llm-configs/${id}`,
@@ -610,6 +613,7 @@ export const ROUTES = {
   MANAGE_STT_CONFIGS: "/manage-stt-configs",
   MANAGE_LLM_CONFIGS: "/manage-llm-configs",
   MANAGE_LLM_MODEL_CATALOG: "/manage-llm-model-catalog",
+  AI_TASKS: "/ai-tasks",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
   MANAGE_LANGUAGE_GLOSSARY: (id: string | number) => `/manage-scenario-languages/${id}/glossary`,
   MANAGE_PROMPTS: "/manage-prompts",

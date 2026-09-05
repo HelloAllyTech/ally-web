@@ -394,6 +394,94 @@ export const LLM_MODEL_CATALOG_COLUMNS = [
   },
 ];
 
+/**
+ * Columns for the AI Tasks registry.
+ *
+ * Deliberately narrower than the underlying row. `kind`, `provider` and
+ * `hotPath` are folded into the cells they qualify rather than given columns of
+ * their own: a nine-column table of mostly one-word values is harder to scan
+ * than a five-column one that carries the same facts, and the three of them are
+ * only ever read as qualifiers on the model or the trigger.
+ */
+export const AI_TASK_COLUMNS = [
+  {
+    id: "trigger",
+    label: "What triggers it",
+    accessor: "trigger",
+    dataType: cellTypes.normalText,
+    minWidth: 300,
+  },
+  {
+    id: "runtimeLabel",
+    label: "Runs in",
+    accessor: "runtimeLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+  },
+  {
+    id: "modelLabel",
+    label: "Model",
+    accessor: "modelLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    // id must match the accessor: Cell.tsx's VERBATIM_TEXT_COLUMN_IDS is keyed
+    // on the column id, and `agent_turn` is the literal stored in
+    // `llm_usage.task` — sentence-casing it to "Agent turn" makes it unusable
+    // for the query someone came here to write.
+    id: "taskLabel",
+    label: "Usage label",
+    accessor: "taskLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "configuredByLabel",
+    label: "Configured by",
+    accessor: "configuredByLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 280,
+  },
+];
+
+/** Service ids from ally-be's LlmRuntime, spelled the way an admin reads them. */
+export const AI_TASK_RUNTIME_LABELS: Record<string, string> = {
+  "ai-learn": "Voice agent",
+  "ally-ai": "AI service",
+  "ally-be": "Backend",
+};
+
+/**
+ * Provider ids to display names. `resolved` and `multiple` are not vendors —
+ * they mark a call whose provider is not known until request time, which an
+ * admin needs to see rather than have guessed at.
+ */
+export const AI_TASK_PROVIDER_LABELS: Record<string, string> = {
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  gemini: "Gemini",
+  deepgram: "Deepgram",
+  multiple: "Several",
+  resolved: "Set per session",
+};
+
+/** Call shapes. Only COMPLETION is an LLM prompt; the rest bill differently. */
+export const AI_TASK_KIND_LABELS: Record<string, string> = {
+  completion: "Chat",
+  embedding: "Embedding",
+  transcription: "Speech to text",
+  speech: "Text to speech",
+  image: "Image",
+};
+
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
 export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
 export const COMFORT_AUDIO_VOLUME_MIN = 0;

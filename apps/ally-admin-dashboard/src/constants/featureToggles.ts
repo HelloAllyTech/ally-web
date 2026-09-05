@@ -24,6 +24,7 @@ export const FeatureToggleKey = {
   CHARACTER_LIBRARY: "character_library",
   MANAGE_STT_CONFIGS: "manage_stt_configs",
   MANAGE_LLM_MODEL_CATALOG: "manage_llm_model_catalog",
+  AI_TASKS: "ai_tasks",
   MANAGE_GUARDRAILS: "manage_guardrails",
   MANAGE_TOOLTIPS: "manage_tooltips",
   SETTINGS: "settings",
@@ -87,6 +88,7 @@ export const buildSidebarItemFeatureKeyMap = (
     [sidebarItems.CHARACTER_LIBRARY, FeatureToggleKey.CHARACTER_LIBRARY],
     [sidebarItems.STT_CONFIGS, FeatureToggleKey.MANAGE_STT_CONFIGS],
     [sidebarItems.LLM_MODEL_CATALOG, FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG],
+    [sidebarItems.AI_TASKS, FeatureToggleKey.AI_TASKS],
     [sidebarItems.MANAGE_GUARDRAILS, FeatureToggleKey.MANAGE_GUARDRAILS],
     [sidebarItems.TOOLTIPS, FeatureToggleKey.MANAGE_TOOLTIPS],
     [sidebarItems.USER_BADGES, FeatureToggleKey.USER_BADGES],
@@ -133,6 +135,7 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
   [FeatureToggleKey.MANAGE_STT_CONFIGS]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG]:
     FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
+  [FeatureToggleKey.AI_TASKS]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.MANAGE_GUARDRAILS]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.MANAGE_TOOLTIPS]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.COMPETENCIES]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
