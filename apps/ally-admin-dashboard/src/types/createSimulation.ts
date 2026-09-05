@@ -722,3 +722,40 @@ export interface GetPromptsQuery {
   /** When false, excludes prompts with kind="block" */
   includeBlocks?: boolean;
 }
+
+/**
+ * One row of the AI task registry — an action on the platform that reaches a
+ * model over an API, and the model serving it.
+ *
+ * Read-only and served whole from `GET /v1/llm/tasks`. ally-be owns the list
+ * (`src/llm/constants/ai-task-registry.constants.ts`) and a jest guard fails CI
+ * when a new task label arrives without a row, so this type describes a
+ * contract that is enforced rather than merely agreed.
+ *
+ * `effectiveModel` and `defaultModel` differ only when this deployment's env
+ * overrides the committed default, and `modelSource` says which happened —
+ * "documented" means ally-be could not read that service's env and is repeating
+ * what the registry records.
+ */
+export interface AiTaskRow {
+  id: string;
+  task: string | null;
+  runtime: string;
+  trigger: string;
+  detail: string | null;
+  hotPath: boolean;
+  kind: string;
+  provider: string;
+  defaultModel: string;
+  effectiveModel: string;
+  modelSource: "deployment" | "documented";
+  configuredBy: string;
+  /**
+   * Prompt row whose own provider/model beats `configuredBy`, or null.
+   *
+   * Non-null means `provider` and `defaultModel` on this row are the FALLBACK,
+   * not a fixed fact — an admin who set a model on that prompt row is running
+   * it whatever the registry says.
+   */
+  promptOverride: string | null;
+}

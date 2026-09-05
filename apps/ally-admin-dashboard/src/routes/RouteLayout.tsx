@@ -19,6 +19,7 @@ import {
   CreateCase,
   ScenarioVoices,
   SttConfigs,
+  AiTasks,
   LlmModelCatalog,
   ScenarioLanguages,
   LanguageGlossary,
@@ -245,6 +246,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG}>
               <LlmModelCatalog />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.AI_TASKS}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.AI_TASKS}>
+              <AiTasks />
             </PrivateLayout>
           }
         />

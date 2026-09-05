@@ -50,6 +50,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.MANAGE_LLM_MODEL_CATALOG,
   },
   {
+    id: SIDEBAR_ITEMS.AI_TASKS,
+    label: "AI Tasks",
+    path: ROUTES.AI_TASKS,
+  },
+  {
     id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
     label: en.simulation.languages,
     path: ROUTES.MANAGE_SCENARIO_LANGUAGES,

@@ -81,6 +81,7 @@ import {
   LlmConfig,
   LlmConfigPayload,
   LlmPreviewResult,
+  AiTaskRow,
   LlmCatalogModel,
   LlmCatalogModelPayload,
   ElevenLabsVoiceSyncResult,
@@ -421,6 +422,21 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         ...(args && args.runtime ? { params: { runtime: args.runtime } } : {}),
       }),
       providesTags: [TAG_TYPES.LLM_MODEL_CATALOG],
+    }),
+
+    /**
+     * The AI task registry: every platform action that calls a model, and which
+     * model serves it.
+     *
+     * No tag and no invalidation — the list is derived from ally-be's code and
+     * cannot change while the app is open, so there is nothing for a mutation
+     * here to invalidate.
+     */
+    getAiTasks: builder.query<AiTaskRow[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.AI_TASKS,
+        method: HttpMethod.GET,
+      }),
     }),
 
     /**
@@ -1523,6 +1539,7 @@ export const {
   useUpdateLlmConfigMutation,
   useDeleteLlmConfigMutation,
   usePreviewLlmConfigMutation,
+  useGetAiTasksQuery,
   useGetLlmModelCatalogQuery,
   usePreviewLlmModelMutation,
   useSyncElevenLabsVoiceMutation,

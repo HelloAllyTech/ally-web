@@ -51,6 +51,17 @@ const VERBATIM_TEXT_COLUMN_IDS = new Set([
   // nouns ("Voice, AI, Backend"). Sentence-casing either mangles it.
   "label",
   "runtimeSupport",
+  // AI Tasks: every column is either prose or a literal an operator copies.
+  // `trigger` is a written sentence (sentence-casing strips its hyphens and
+  // lower-cases "The platform's highest-volume call"), `configuredBy` is an env
+  // var name (OPENAI_AUTOFILL_MODEL would render as "Openai autofill model"),
+  // `taskLabel` is the exact string stored in `llm_usage.task` and grepped for,
+  // and `modelLabel`/`runtimeLabel` carry vendor and product casing.
+  "trigger",
+  "runtimeLabel",
+  "modelLabel",
+  "taskLabel",
+  "configuredByLabel",
 ]);
 
 /** Read-only rendering of a dropdown cell's resolved label, wrapped instead of truncated. */

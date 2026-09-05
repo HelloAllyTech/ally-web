@@ -284,6 +284,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_STT_CONFIGS);
       case ROUTES.MANAGE_LLM_MODEL_CATALOG:
         return location.pathname.includes(ROUTES.MANAGE_LLM_MODEL_CATALOG);
+      case ROUTES.AI_TASKS:
+        return location.pathname.includes(ROUTES.AI_TASKS);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
       case ROUTES.MANAGE_GUARDRAILS:
