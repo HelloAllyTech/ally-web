@@ -11,6 +11,7 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
+  Catalog,
   Chat,
   Chemistry,
   MachineLearningModel,
@@ -191,6 +192,8 @@ export const Sidebar: React.FC = () => {
         return <Mic />;
       case SIDEBAR_ITEMS.LLM_MODEL_CATALOG:
         return <MachineLearningModel size={20} />;
+      case SIDEBAR_ITEMS.AI_TASKS:
+        return <Catalog size={20} />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
