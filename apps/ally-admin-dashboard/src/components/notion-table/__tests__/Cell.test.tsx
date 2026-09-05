@@ -451,6 +451,26 @@ describe("Cell", () => {
       expect(screen.queryByTestId("number-input")).not.toBeInTheDocument();
       expect(screen.getByText("42")).toBeInTheDocument();
     });
+
+    // An unset cell is still the {value, disabled, rowId} wrapper. Reading it as
+    // a bare value put the wrapper itself into the plain-text branch, and React
+    // threw "Objects are not valid as a React child" — one event with no
+    // occurrence interval took the whole Events page down.
+    it("renders a placeholder, not the cell wrapper, when a disabled value is unset", () => {
+      const unsetValue = { value: undefined, disabled: true, rowId: "row-1" };
+      render(<Cell {...defaultProps} value={unsetValue} column={numberColumn} />);
+
+      expect(screen.getByText("--")).toBeInTheDocument();
+    });
+
+    it("keeps an unset editable cell empty rather than showing the cell wrapper", () => {
+      const unsetValue = { value: undefined, disabled: false, rowId: "row-1" };
+      render(<Cell {...defaultProps} value={unsetValue} column={numberColumn} />);
+
+      // The mocked input falls back to 0 for an empty value; what matters is
+      // that the wrapper object never reaches it.
+      expect(screen.getByTestId("number-input-field")).toHaveValue(0);
+    });
   });
 
   describe("Select Component Cell", () => {

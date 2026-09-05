@@ -64,6 +64,21 @@ const VERBATIM_TEXT_COLUMN_IDS = new Set([
   "configuredByLabel",
 ]);
 
+/**
+ * A cell is given either the `{value, disabled, rowId}` wrapper the tables build
+ * or a bare value, so the wrapper has to be detected by shape rather than by
+ * whether `value` happens to be set. An unset field (`occurrenceInterval` on an
+ * event that isn't a binary classifier, an empty score) is still a wrapper: read
+ * it as a bare value and the wrapper object itself leaks into the render paths
+ * that print their value, and React throws "Objects are not valid as a React
+ * child (found: object with keys {value, disabled, rowId})", taking the whole
+ * page down with it.
+ */
+const unwrapCellValue = (cellData: any) =>
+  cellData !== null && typeof cellData === "object" && "value" in cellData
+    ? cellData.value
+    : cellData;
+
 /** Read-only rendering of a dropdown cell's resolved label, wrapped instead of truncated. */
 const DropdownDisplayText = ({
   value,
@@ -99,7 +114,7 @@ export const Cell = ({
   row,
 }) => {
   // Extract value and disabled from the cell data structure
-  const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
+  const cellValue = unwrapCellValue(initialValue);
   const isDisabled = initialValue?.disabled !== undefined ? initialValue.disabled : false;
   const cellPlaceholder =
     initialValue?.placeholder !== undefined ? initialValue.placeholder : placeholder;
@@ -107,7 +122,7 @@ export const Cell = ({
   const [value, setValue] = useState({ value: cellValue, update: false });
 
   useEffect(() => {
-    const newCellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
+    const newCellValue = unwrapCellValue(initialValue);
     setValue({ value: newCellValue, update: false });
   }, [initialValue]);
 
