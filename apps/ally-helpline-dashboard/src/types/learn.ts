@@ -77,6 +77,12 @@ export interface Scenario {
   /** Live in-session coaching hints in the Supervisor sidebar tab. Opt-in per
    * roleplay, so only an explicit true shows the tab. */
   supervisorNotesEnabled?: boolean;
+  /** EXPERIMENTAL. Whether this roleplay's character publishes a lip-synced
+   * video track alongside its voice. Opt-in, so only an explicit true lets the
+   * call card make room for video — and even then the agent has its own global
+   * kill-switch, so a true here is permission to render, not a promise a track
+   * will arrive. */
+  videoActorEnabled?: boolean;
   /** Whether the learner-facing Live events tab is shown for this
    * roleplay. Opt-out, so only an explicit false hides the tab. */
   liveTabEnabled?: boolean;

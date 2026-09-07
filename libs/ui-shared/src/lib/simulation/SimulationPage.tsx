@@ -439,6 +439,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           // Opt-in per roleplay: only an explicit true shows the tab (the
           // pauseEnabled precedent below is the same shape, inverted default).
           supervisorNotesEnabled={roomData?.supervisorNotesEnabled === true}
+          // Opt-in per roleplay, same shape again. Permission to render a
+          // video surface, not a guarantee one exists — SimulationInterface
+          // keeps the static call card until a track is actually published.
+          videoActorEnabled={roomData?.videoActorEnabled === true}
           // Opt-out per roleplay, unlike supervisorNotesEnabled/pauseEnabled above:
           // only an explicit false hides the tab, so missing/undefined keeps it shown.
           liveTabEnabled={roomData?.liveTabEnabled !== false}

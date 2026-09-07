@@ -132,6 +132,8 @@ export interface SimulationInput {
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
+  videoActorEnabled?: boolean;
+  videoActorAvatarId?: string;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -251,6 +253,8 @@ export interface GetSimulationByIdResponse {
     comfortAudioEnabled?: boolean;
     comfortAudioUrl?: string;
     comfortAudioVolume?: number;
+    videoActorEnabled?: boolean;
+    videoActorAvatarId?: string;
     historyTrimEnabled?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
@@ -333,6 +337,7 @@ export interface StartSimulationResponse {
       showScoreMeter?: boolean;
       pauseEnabled?: boolean;
       supervisorNotesEnabled?: boolean;
+      videoActorEnabled?: boolean;
       liveTabEnabled?: boolean;
       currentState?: boolean;
       stateNames?: stateInstruction[];

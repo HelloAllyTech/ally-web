@@ -30,6 +30,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
   const userPermissions = useSelector((state: any) => state?.user?.permissions) as
     | string[]
     | undefined;
+  const userFeatures = useSelector((state: any) => state?.user?.features) as string[] | undefined;
   const featureFlags = useSelector((state: any) => state?.user?.user?.featureFlags) as
     | Record<string, boolean>
     | undefined;
@@ -85,6 +86,14 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
     // Server-side enforcement mirrors this (non-SDA edits preserve stored
     // values), so hiding here is UX honesty, not the security boundary.
     if (field.requiredPermission && !userPermissions?.includes(field.requiredPermission)) {
+      return false;
+    }
+    // Feature-toggle gate: per-admin keys granted one user at a time from
+    // Admin User Management, for experimental authoring surfaces that should
+    // open to a couple of people rather than a whole tier. Fails closed — an
+    // empty/absent features list hides the field, which is the right way round
+    // for something nobody is entitled to by default.
+    if (field.requiredFeature && !userFeatures?.includes(field.requiredFeature)) {
       return false;
     }
     // Variant-driven hiding: skip the whole render (wrapper + dashed

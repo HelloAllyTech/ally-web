@@ -35,6 +35,8 @@ export type FormData = {
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
+  videoActorEnabled?: boolean;
+  videoActorAvatarId?: string;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -364,6 +366,14 @@ export interface FormFieldConfig {
    * keeps the field out of other editors' forms.
    */
   requiredPermission?: string;
+  /**
+   * Per-admin feature-toggle key (see `FeatureToggleKey`) that must be granted
+   * for this field to render. Distinct from `requiredPermission`: a permission
+   * comes with the role, whereas a toggle is handed to one admin at a time from
+   * Admin User Management — which is what an experimental authoring surface
+   * wants, so it can be opened to a couple of people rather than a whole tier.
+   */
+  requiredFeature?: string;
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**
