@@ -23,6 +23,9 @@ vi.mock("../SessionSidebar", () => ({
     <div data-testid="session-sidebar" data-reminders={JSON.stringify(props.reminders)} />
   ),
 }));
+vi.mock("../ActorVideo", () => ({
+  ActorVideo: () => <div data-testid="simulation-actor-video" />,
+}));
 vi.mock("../UserCallCard", () => ({
   UserCallCard: (props: any) => (
     <div
@@ -141,5 +144,35 @@ describe("SimulationInterface", () => {
     expect(screen.queryByTestId("simulation-sidebar-column")).not.toBeInTheDocument();
     expect(screen.getByTestId("simulation-middle-column")).toBeInTheDocument();
     expect(screen.getByTestId("simulation-pip-self-view")).toBeInTheDocument();
+  });
+
+  describe("AI video actor (experimental, opt-in)", () => {
+    it("does not mount the video layer by default", () => {
+      // The contract for every roleplay that exists today: the component is
+      // not rendered at all, so its track subscription never runs.
+      render(<SimulationInterface {...baseProps} />);
+      skipCountdown();
+
+      expect(screen.queryByTestId("simulation-actor-video")).not.toBeInTheDocument();
+      expect(screen.getByTestId("user-call-card-remote")).toBeInTheDocument();
+    });
+
+    it("does not mount it for a falsy-but-present flag", () => {
+      render(<SimulationInterface {...baseProps} videoActorEnabled={false} />);
+      skipCountdown();
+
+      expect(screen.queryByTestId("simulation-actor-video")).not.toBeInTheDocument();
+    });
+
+    it("mounts it alongside — not instead of — the call card when opted in", () => {
+      // Both present on purpose: the video overlays the card, so an audio-only
+      // fallback (ActorVideo rendering null) leaves a working screen behind.
+      render(<SimulationInterface {...baseProps} videoActorEnabled />);
+      skipCountdown();
+
+      expect(screen.getByTestId("simulation-actor-video")).toBeInTheDocument();
+      expect(screen.getByTestId("user-call-card-remote")).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-pip-self-view")).toBeInTheDocument();
+    });
   });
 });

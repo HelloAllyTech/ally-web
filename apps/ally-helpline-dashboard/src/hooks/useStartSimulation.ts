@@ -136,6 +136,11 @@ export const useStartSimulation = (
             // sidebar. The agent gates note generation independently, so this
             // only controls whether the learner has somewhere to read them.
             supervisorNotesEnabled: scenario?.supervisorNotesEnabled === true,
+            // Opt-in per roleplay, same shape. The agent decides separately
+            // whether to publish video (its own global kill-switch), and the
+            // interface only swaps in a video surface once a track actually
+            // arrives — so this being true never degrades the audio-only view.
+            videoActorEnabled: scenario?.videoActorEnabled === true,
             // Opt-out per roleplay, unlike supervisorNotesEnabled above: only an
             // explicit false hides the learner-facing Live tab.
             liveTabEnabled: scenario?.liveTabEnabled !== false,

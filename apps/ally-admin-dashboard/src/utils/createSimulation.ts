@@ -208,6 +208,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
+    // Opt-in, same shape as supervisorNotesEnabled below: only an explicit
+    // true hydrates on, so a roleplay saved before this experiment existed
+    // shows the toggle off — which is also what it actually does.
+    videoActorEnabled: (data?.metadata as any)?.videoActorEnabled === true,
+    videoActorAvatarId: (data?.metadata as any)?.videoActorAvatarId ?? "",
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,

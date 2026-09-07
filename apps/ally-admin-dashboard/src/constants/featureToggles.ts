@@ -39,6 +39,7 @@ export const FeatureToggleKey = {
   BUG_HUNTER: "bug_hunter",
   BUILDER: "builder",
   OPERATIONAL_ADMIN_ACTIONS: "operational_admin_actions",
+  VIDEO_ACTOR: "video_actor",
 } as const;
 
 export type FeatureToggleKeyType = (typeof FeatureToggleKey)[keyof typeof FeatureToggleKey];
@@ -161,6 +162,10 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
 
   [FeatureToggleKey.AGENT_TEST_CASES]: FEATURE_TOGGLE_SECTIONS.TESTING,
   [FeatureToggleKey.ROLEPLAY_SESSION_LOGS]: FEATURE_TOGGLE_SECTIONS.TESTING,
+  // Testing rather than Content & Simulation Config: this reveals an
+  // experimental authoring switch for trialling, not a content capability an
+  // authoring admin should expect to have.
+  [FeatureToggleKey.VIDEO_ACTOR]: FEATURE_TOGGLE_SECTIONS.TESTING,
 };
 
 /** Order sections should render in the toggle editor. */

@@ -297,6 +297,10 @@ describe("createSimulation utils", () => {
         comfortAudioEnabled: false,
         comfortAudioUrl: "",
         comfortAudioVolume: 0.3,
+        // Experimental, opt-in: metadata with no videoActorEnabled key at all
+        // — i.e. every roleplay that exists — hydrates the toggle off.
+        videoActorEnabled: false,
+        videoActorAvatarId: "",
         historyTrimEnabled: true,
         continuousBackchanneling: false,
         currentState: false,
@@ -995,6 +999,7 @@ describe("createSimulation utils", () => {
       expect(defaults.summaryChecklistEnabled).toBe(false);
       expect(defaults.pauseEnabled).toBe(false);
       expect(defaults.comfortAudioEnabled).toBe(false);
+      expect(defaults.videoActorEnabled).toBe(false);
       expect(defaults.continuousBackchanneling).toBe(false);
       // No `defaultValue` in the config at all — absent reads as OFF.
       expect(defaults.isGlobal).toBe(false);

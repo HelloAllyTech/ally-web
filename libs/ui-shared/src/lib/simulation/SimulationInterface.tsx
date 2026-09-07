@@ -9,6 +9,7 @@ import {
 } from "@livekit/components-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { ActorVideo } from "./ActorVideo";
 import { SessionSidebar } from "./SessionSidebar";
 import { TurnState } from "./TurnIndicator";
 import {
@@ -54,6 +55,14 @@ export interface SimulationInterfaceProps {
   detectedEventIds?: string[];
   supervisorNotes?: SupervisorNoteType[];
   supervisorNotesEnabled?: boolean;
+  /**
+   * EXPERIMENTAL. This roleplay is allowed to show the AI actor's video over
+   * its call card. Permission, not a promise: the agent has its own global
+   * kill-switch and falls back to an audio-only session on any avatar failure,
+   * so ActorVideo renders nothing until a track genuinely arrives. Default
+   * false, which is every roleplay that has not opted in.
+   */
+  videoActorEnabled?: boolean;
   liveTabEnabled?: boolean;
   sidebarExtraTabs?: SessionSidebarExtraTab[];
   isFocusMode: boolean;
@@ -94,6 +103,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   detectedEventIds,
   supervisorNotes = [],
   supervisorNotesEnabled = false,
+  videoActorEnabled = false,
   liveTabEnabled = true,
   sidebarExtraTabs,
   isFocusMode,
@@ -287,6 +297,13 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
             turnIndicatorTranslations={translations?.turnIndicator}
           />
+          {/* Mounted only for a roleplay that opted in, so the track
+              subscription inside it never runs for anyone else. Absolutely
+              positioned over the card above (z-10) and under the self-view
+              below (z-20), and it renders null until a track actually
+              publishes — so an audio-only fallback simply leaves the card
+              showing, with nothing for the learner to notice. */}
+          {videoActorEnabled && <ActorVideo />}
           {/* Learner's own self-view: a small inlaid picture-in-picture bubble
               over the AI card, like a WhatsApp/Zoom video call, rather than an
               equal-size card of its own. */}

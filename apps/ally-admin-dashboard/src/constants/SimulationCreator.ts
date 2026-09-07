@@ -1,4 +1,5 @@
 import { cellTypes } from "@components";
+import { FeatureToggleKey } from "./featureToggles";
 import { en, ExperienceMode, TooltipLocation } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -224,6 +225,8 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
+  VIDEO_ACTOR_ENABLED: "videoActorEnabled",
+  VIDEO_ACTOR_AVATAR_ID: "videoActorAvatarId",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
@@ -480,6 +483,7 @@ export const AI_TASK_KIND_LABELS: Record<string, string> = {
   transcription: "Speech to text",
   speech: "Text to speech",
   image: "Image",
+  video: "Video avatar",
 };
 
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
@@ -993,6 +997,34 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         dependsOn: "comfortAudioEnabled",
         visibleWhen: (formValues: any) => formValues.comfortAudioEnabled === true,
         note: "How loud the comfort audio plays under the conversation (0 = silent, 1 = full).",
+      },
+      {
+        // EXPERIMENTAL. Gated on the per-admin `video_actor` feature toggle
+        // rather than a permission, so it can be opened to two people trialling
+        // it instead of a whole tier — this has a real cost and latency profile
+        // and is not something an author should switch on for a live cohort on
+        // a whim. Granted to nobody by default, from Admin User Management.
+        //
+        // Seeing this switch is still only one of three gates: the roleplay is
+        // off until someone turns it on here, and ally-ai-learn's own
+        // VIDEO_ACTOR_ENABLED can stop all of it in one restart.
+        id: "videoActorEnabled",
+        label: "AI video actor (experimental)",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
+        note: "Give this roleplay's character a face: a lip-synced video track alongside its voice. Experimental — it adds start-up latency and bandwidth, lip-sync quality is materially worse outside English, and it needs the platform-level video actor switch on as well. Sessions fall back to audio-only if the video can't start. Turn it on only where reading the character's face is part of what's being practised.",
+      },
+      {
+        id: "videoActorAvatarId",
+        label: "Video Actor Face",
+        type: FORM_FIELD_TYPES.TEXT,
+        fullWidth: true,
+        dependsOn: "videoActorEnabled",
+        visibleWhen: (formValues: any) => formValues.videoActorEnabled === true,
+        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
+        note: "Provider-specific id of the face to render. Leave blank to use the platform default.",
       },
       {
         id: "historyTrimEnabled",
