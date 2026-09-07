@@ -1014,7 +1014,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
-        note: "Give this roleplay's character a face: a lip-synced video track alongside its voice. Experimental — it adds start-up latency and bandwidth, lip-sync quality is materially worse outside English, and it needs the platform-level video actor switch on as well. Sessions fall back to audio-only if the video can't start. Turn it on only where reading the character's face is part of what's being practised.",
+        note: "Give this roleplay's character a face: a lip-synced video track alongside its voice. Turn it on only where reading the character's face is part of what's being practised — it costs roughly $4-5 per session, far more than everything else in a roleplay combined, and it adds start-up latency and bandwidth. Lip-sync quality is materially worse outside English. Needs the platform-level video actor switch on as well; sessions fall back to audio-only if the video can't start.",
       },
       {
         id: "videoActorAvatarId",
@@ -1024,7 +1024,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         dependsOn: "videoActorEnabled",
         visibleWhen: (formValues: any) => formValues.videoActorEnabled === true,
         requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
-        note: "Provider-specific id of the face to render. Leave blank to use the platform default.",
+        note: "Which face to render — on Tavus this is the replica id (e.g. r_1a2b3c). Pick one whose apparent age, gender and ethnicity match the character, since the learner reads the person, not just the mouth. Leave blank to use the platform default face.",
       },
       {
         id: "historyTrimEnabled",
