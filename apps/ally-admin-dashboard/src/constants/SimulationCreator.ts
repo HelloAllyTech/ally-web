@@ -171,6 +171,7 @@ export const FORM_FIELD_TYPES = {
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
     COMFORT_AUDIO_TRACK: "comfort_audio_track",
+    VIDEO_ACTOR_PICKER: "video_actor_picker",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -227,6 +228,7 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   VIDEO_ACTOR_ENABLED: "videoActorEnabled",
   VIDEO_ACTOR_AVATAR_ID: "videoActorAvatarId",
+  VIDEO_ACTOR_PROVIDER: "videoActorProvider",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
@@ -683,6 +685,11 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         // rather than two full-width tiles stacked vertically.
         fullWidth: false,
         aiGenerate: true,
+        // Stays visible even when an avatar is chosen. Choosing an avatar
+        // REPOINTS this field at that face's own picture rather than hiding it:
+        // the author can then see what the learner will see, and re-upload over
+        // it if they want something else. Hiding it instead left them stranded
+        // whenever the avatar toggle went back off.
       },
       {
         id: "coverVideoUrl",
@@ -691,6 +698,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         // Pairs with Cover Image above on the same row (see note there).
         fullWidth: false,
+        // Repointed, not hidden, when an avatar is chosen (see note there).
+      },
+      // Sits with Cover Image / Cover Video deliberately: picking a Tavus face
+      // fills the cover from that face's own thumbnail, so the three fields are
+      // one decision about what the learner sees before and during the call.
+      {
+        // Owns BOTH videoActorProvider and videoActorAvatarId, because a face id
+        // is only meaningful against the vendor it came from — see VideoActorPicker.
+        id: "videoActorAvatarId",
+        label: "Avatar",
+        type: FORM_FIELD_TYPES.CUSTOM.VIDEO_ACTOR_PICKER,
+        fullWidth: true,
+        dependsOn: "videoActorEnabled",
+        visibleWhen: (formValues: any) => formValues.videoActorEnabled === true,
+        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
+        note: "Pick the face this character wears. Choose one whose apparent age, gender and ethnicity match the character — the learner reads the person, not just the mouth. Choosing a face also sets this roleplay's cover image and video from that face; you can still upload your own cover over it afterwards.",
       },
       {
         // Self-hides when the selected main-agent prompt does not declare hasStates=true.
@@ -1015,16 +1038,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: false,
         requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
         note: "Give this roleplay's character a face: a lip-synced video track alongside its voice. Turn it on only where reading the character's face is part of what's being practised — it costs roughly $4-5 per session, far more than everything else in a roleplay combined, and it adds start-up latency and bandwidth. Lip-sync quality is materially worse outside English. Needs the platform-level video actor switch on as well; sessions fall back to audio-only if the video can't start.",
-      },
-      {
-        id: "videoActorAvatarId",
-        label: "Video Actor Face",
-        type: FORM_FIELD_TYPES.TEXT,
-        fullWidth: true,
-        dependsOn: "videoActorEnabled",
-        visibleWhen: (formValues: any) => formValues.videoActorEnabled === true,
-        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
-        note: "Which face to render — on Tavus this is the replica id (e.g. r_1a2b3c). Pick one whose apparent age, gender and ethnicity match the character, since the learner reads the person, not just the mouth. Leave blank to use the platform default face.",
       },
       {
         id: "historyTrimEnabled",

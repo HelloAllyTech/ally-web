@@ -213,6 +213,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     // shows the toggle off — which is also what it actually does.
     videoActorEnabled: (data?.metadata as any)?.videoActorEnabled === true,
     videoActorAvatarId: (data?.metadata as any)?.videoActorAvatarId ?? "",
+    videoActorProvider: (data?.metadata as any)?.videoActorProvider ?? undefined,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,

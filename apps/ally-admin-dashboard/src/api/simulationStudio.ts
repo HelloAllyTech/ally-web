@@ -88,6 +88,9 @@ import {
   ElevenLabsVoiceLookupResult,
   ElevenLabsBulkSyncSummary,
   TtsCatalogEntry,
+  VideoActorCoverMedia,
+  VideoActorFaceEntry,
+  VideoActorProviderEntry,
   TtsCatalogParams,
 } from "@types";
 
@@ -486,6 +489,55 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.TTS_CATALOG,
         method: HttpMethod.GET,
         params,
+      }),
+    }),
+
+    /**
+     * Video-actor vendors a roleplay can be pointed at.
+     *
+     * Served by ally-be rather than hardcoded here so adding a vendor never
+     * touches this app.
+     */
+    getVideoActorProviders: builder.query<VideoActorProviderEntry[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_PROVIDERS,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * Selectable faces for one vendor, already normalised by ally-be.
+     *
+     * `thumbnailImageUrl`/`thumbnailVideoUrl` are present only where the vendor
+     * publishes preview media, so render on their presence — never on the
+     * provider. Listing is unmetered at both vendors, and the default cache is
+     * enough since one provider's roster is stable within a session.
+     */
+    getVideoActorFaces: builder.query<VideoActorFaceEntry[], string>({
+      query: provider => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_FACES,
+        method: HttpMethod.GET,
+        params: { provider },
+      }),
+    }),
+
+    /**
+     * Copy a face's preview media into our storage and get back OUR urls.
+     *
+     * Not the vendor's: a cover image is long-lived learner-facing content and
+     * vendor CDN paths are account-scoped, so a roleplay card must not depend
+     * on one. Either key comes back absent when the vendor publishes no such
+     * asset — Beyond Presence publishes none, so bey yields nothing and the
+     * caller leaves the cover alone.
+     */
+    importVideoActorFaceCover: builder.mutation<
+      VideoActorCoverMedia,
+      { provider: string; faceId: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_FACE_COVER,
+        method: HttpMethod.POST,
+        body,
       }),
     }),
 
@@ -1546,6 +1598,9 @@ export const {
   useLazyLookupElevenLabsVoiceQuery,
   useBulkSyncElevenLabsVoicesMutation,
   useGetTtsCatalogQuery,
+  useGetVideoActorProvidersQuery,
+  useGetVideoActorFacesQuery,
+  useImportVideoActorFaceCoverMutation,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

@@ -134,6 +134,7 @@ export interface SimulationInput {
   comfortAudioVolume?: number;
   videoActorEnabled?: boolean;
   videoActorAvatarId?: string;
+  videoActorProvider?: string;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -255,6 +256,7 @@ export interface GetSimulationByIdResponse {
     comfortAudioVolume?: number;
     videoActorEnabled?: boolean;
     videoActorAvatarId?: string;
+    videoActorProvider?: string;
     historyTrimEnabled?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;

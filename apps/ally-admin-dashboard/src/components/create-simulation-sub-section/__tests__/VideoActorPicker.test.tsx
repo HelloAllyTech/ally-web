@@ -1,0 +1,174 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+
+import { VideoActorPicker } from "../VideoActorPicker";
+
+const facesMock = vi.fn();
+const importCoverMock = vi.fn();
+
+vi.mock("@api", () => ({
+  useGetVideoActorFacesQuery: () => facesMock(),
+  useImportVideoActorFaceCoverMutation: () => [
+    (args: any) => ({ unwrap: () => importCoverMock(args) }),
+    { isLoading: false },
+  ],
+}));
+
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Tooltip: ({ children }: any) => <>{children}</>,
+}));
+vi.mock("@assets", () => ({ TooltipIcon: () => <span /> }));
+
+const makeFormMethods = (initial: Record<string, any> = {}) => {
+  const values: Record<string, any> = { ...initial };
+  return {
+    values,
+    watch: (name: string) => values[name],
+    getValues: () => values,
+    setValue: vi.fn((name: string, value: any) => {
+      values[name] = value;
+    }),
+  } as any;
+};
+
+// One merged roster: each face carries its own vendor, so the author never
+// picks a vendor. Tavus publishes previews; Beyond Presence publishes none.
+const FACES = [
+  {
+    value: "ra066ab28864",
+    label: "Raj",
+    provider: "tavus",
+    thumbnailImageUrl: "https://cdn.example/raj.jpg",
+    thumbnailVideoUrl: "https://cdn.example/raj.mp4",
+  },
+  { value: "694c83e2", label: "Nelly - Office", provider: "bey" },
+];
+
+describe("VideoActorPicker", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    facesMock.mockReturnValue({ data: FACES, isFetching: false, isError: false });
+    importCoverMock.mockResolvedValue({ coverImageUrl: "https://our-bucket/cover.jpg" });
+  });
+
+  it("never asks the author to choose a vendor", () => {
+    render(<VideoActorPicker label="Video Actor" formMethods={makeFormMethods()} />);
+    expect(screen.queryByTestId("video-actor-provider")).toBeNull();
+  });
+
+  it("lists faces from every vendor in one roster", () => {
+    render(<VideoActorPicker label="Video Actor" formMethods={makeFormMethods()} />);
+    expect(screen.getByTestId("video-actor-face-ra066ab28864")).toBeTruthy();
+    expect(screen.getByTestId("video-actor-face-694c83e2")).toBeTruthy();
+  });
+
+  it("shows a thumbnail where the vendor publishes one, a name where it doesn't", () => {
+    render(<VideoActorPicker label="Video Actor" formMethods={makeFormMethods()} />);
+    expect((screen.getByAltText("Raj") as HTMLImageElement).src).toBe(
+      "https://cdn.example/raj.jpg",
+    );
+    expect(screen.queryByAltText("Nelly - Office")).toBeNull();
+    expect(screen.getByText("Nelly - Office")).toBeTruthy();
+  });
+
+  it("derives the vendor from the chosen face", async () => {
+    const formMethods = makeFormMethods();
+    render(<VideoActorPicker label="Video Actor" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-694c83e2"));
+
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorAvatarId", "694c83e2", {
+      shouldDirty: true,
+    });
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorProvider", "bey", {
+      shouldDirty: true,
+    });
+  });
+
+  it("fills an empty cover from the chosen face, using our urls not the vendor's", async () => {
+    const formMethods = makeFormMethods();
+    render(<VideoActorPicker label="Video Actor" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    expect(importCoverMock).toHaveBeenCalledWith({
+      provider: "tavus",
+      faceId: "ra066ab28864",
+    });
+    expect(formMethods.setValue).toHaveBeenCalledWith(
+      "coverImageUrl",
+      "https://our-bucket/cover.jpg",
+      { shouldDirty: true },
+    );
+  });
+
+  it("repoints an existing cover at the newly chosen face", async () => {
+    // Unconditional by design: the cover fields stay on screen, so the author
+    // sees the change land and can upload over it. That is what makes an
+    // overwrite acceptable here where a silent swap behind a hidden field
+    // would not be.
+    const formMethods = makeFormMethods({ coverImageUrl: "https://our-bucket/curated.jpg" });
+    render(<VideoActorPicker label="Video Actor" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    expect(importCoverMock).toHaveBeenCalledWith({
+      provider: "tavus",
+      faceId: "ra066ab28864",
+    });
+  });
+
+  it("never touches the cover video", async () => {
+    // The vendors' clips run to 54 MB against a 15 MB limit, so this path
+    // imports the still only. Any cover video present is the author's own
+    // upload and must survive picking a face.
+    importCoverMock.mockResolvedValue({ coverImageUrl: "https://our-bucket/cover.jpg" });
+    const formMethods = makeFormMethods({ coverVideoUrl: "https://our-bucket/authors-own.mp4" });
+    render(<VideoActorPicker label="Avatar" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    const touchedVideo = formMethods.setValue.mock.calls.some(
+      ([field]: [string]) => field === "coverVideoUrl",
+    );
+    expect(touchedVideo).toBe(false);
+    expect(formMethods.values.coverVideoUrl).toBe("https://our-bucket/authors-own.mp4");
+  });
+
+  it("keeps the face selected when the cover copy fails", async () => {
+    importCoverMock.mockRejectedValue(new Error("vendor down"));
+    const formMethods = makeFormMethods();
+    render(<VideoActorPicker label="Video Actor" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorAvatarId", "ra066ab28864", {
+      shouldDirty: true,
+    });
+    expect(screen.getByTestId("video-actor-cover-notice").textContent).toMatch(/still selected/i);
+  });
+
+  it("clearing the face also clears the derived vendor", async () => {
+    const formMethods = makeFormMethods({
+      videoActorAvatarId: "ra066ab28864",
+      videoActorProvider: "tavus",
+    });
+    render(<VideoActorPicker label="Video Actor" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-clear-face"));
+
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorAvatarId", undefined, {
+      shouldDirty: true,
+    });
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorProvider", undefined, {
+      shouldDirty: true,
+    });
+  });
+
+  it("still lets an id be typed when nothing can be listed", () => {
+    facesMock.mockReturnValue({ data: [], isFetching: false, isError: true });
+    render(<VideoActorPicker label="Video Actor" formMethods={makeFormMethods()} />);
+    expect(screen.getByTestId("video-actor-face-manual")).toBeTruthy();
+  });
+});

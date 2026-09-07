@@ -37,6 +37,7 @@ export type FormData = {
   comfortAudioVolume?: number;
   videoActorEnabled?: boolean;
   videoActorAvatarId?: string;
+  videoActorProvider?: string;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -231,6 +232,54 @@ export interface ElevenLabsBulkSyncSummary {
  * different (auth, base URL, response shape); this is the one shape they
  * all get mapped to so the picker doesn't care which provider it's showing.
  */
+/**
+ * A face's preview media after we've copied it into our own storage.
+ *
+ * Both keys are optional: a vendor that publishes no preview media yields
+ * neither, and the caller must then leave the roleplay's cover untouched
+ * rather than clearing it.
+ */
+export interface VideoActorCoverMedia {
+  /** Absent when the vendor publishes no still (Beyond Presence publishes none). */
+  coverImageUrl?: string;
+}
+
+/** One video-actor vendor a roleplay can be pointed at. */
+export interface VideoActorProviderEntry {
+  /** Stored on the roleplay as `videoActorProvider`. */
+  value: string;
+  /** What the picker shows, e.g. "Beyond Presence". */
+  label: string;
+}
+
+/**
+ * One selectable face, already normalised by ally-be.
+ *
+ * Deliberately carries no vendor field: Tavus publishes preview media and
+ * Beyond Presence does not, so a picker branches on whether `thumbnailImageUrl`
+ * is present, never on which vendor it is looking at. That keeps vendor
+ * knowledge in the backend, where adding a third one is a single-file change.
+ */
+export interface VideoActorFaceEntry {
+  /** Stored on the roleplay as `videoActorAvatarId`. */
+  value: string;
+  label: string;
+  /**
+   * Which vendor this face belongs to, stored alongside the id as
+   * `videoActorProvider`.
+   *
+   * An opaque token here: the picker writes it back verbatim and never branches
+   * on it, so the author chooses a face and the vendor follows.
+   */
+  provider: string;
+  /** A still, where the vendor publishes one. Absent for Beyond Presence. */
+  thumbnailImageUrl?: string;
+  /** A short talking clip, where the vendor publishes one. Tavus only. */
+  thumbnailVideoUrl?: string;
+  /** Pre-formatted vendor note for the secondary line (e.g. "phoenix-3"). */
+  detail?: string;
+}
+
 export interface TtsCatalogEntry {
   /** What gets written into the voice's config field (e.g. `model`, `voice_name`). */
   value: string;

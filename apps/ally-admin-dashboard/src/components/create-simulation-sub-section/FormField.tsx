@@ -9,6 +9,7 @@ import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { ChallengeDescriptionPanel } from "../challenge-description";
 import { CharacterProfileSelector } from "../character-profile-selector";
+import { VideoActorPicker } from "./VideoActorPicker";
 import { ComfortAudioDropdown } from "../comfort-audio-dropdown";
 import { Competency } from "../competency";
 import { CustomFieldGroup } from "../custom-field-group";
@@ -241,6 +242,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             label={label}
             formMethods={formMethods}
             isMandatory={isMandatory}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.VIDEO_ACTOR_PICKER:
+        return (
+          <VideoActorPicker
+            label={label}
+            note={note}
+            formMethods={formMethods}
+            readOnly={readOnly}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.COMFORT_AUDIO_TRACK:
