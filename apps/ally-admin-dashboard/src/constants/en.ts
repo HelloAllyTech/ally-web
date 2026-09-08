@@ -991,6 +991,25 @@ export const en = {
       legal: "Legal",
       comfortAudio: "Comfort Audio",
       turnDetection: "Turn Detection",
+      aiModels: "AI Models",
+    },
+    aiModelsDescription:
+      "Which models Bug Hunter and Builder run on. Each section reads and writes its own feature's backend — this tab only brings the two together.",
+    aiModels: {
+      bugHunterHeading: "Bug Hunter",
+      bugHunterLoadFailed: "Couldn't load Bug Hunter's model settings.",
+      bugHunterSaveFailed: "Couldn't save Bug Hunter's model settings.",
+      defaultModelLabel: "Default model",
+      defaultModelHelp:
+        "Runs the sweep and fix session end to end. Takes effect on the next run, not this one.",
+      escalationModelLabel: "Escalation model",
+      escalationModelHelp:
+        "Handed to the escalation subagent for one finding that resists a straightforward fix — a root cause spanning several files, a guarded-path change, or a retry after a non-obvious failure. Not used anywhere else.",
+      builderHeading: "Builder",
+      builderLoadFailed: "Couldn't load Builder's model settings.",
+      builderSaveFailed: "Couldn't save Builder's model settings.",
+      saved: "Saved.",
+      save: "Save",
     },
     legalDescription:
       "Edit the content shown on the public Terms of Service and Privacy Policy pages.",
@@ -2199,6 +2218,9 @@ export const en = {
     cancel: "Cancel",
     updateFailed: "Couldn't update the setting. Try again.",
     lastChangedBy: "Working style last set by user #{userId}",
+    // Links to the shared Model Settings hub (see `en.modelSettings`) rather
+    // than a Bug-Hunter-only page — Builder's model tiers live there too.
+    settingsLink: "Model settings",
     // ── About me (was the FAQ) ───────────────────────────────────────────────
     // Questions in the second person, answers in the first: this reads as
     // asking a colleague how they work, not as product documentation. Both
@@ -2883,6 +2905,7 @@ export const en = {
     drawerCopyLinkDone: "Link copied.",
     drawerCopyLinkFailed: "Couldn't copy the link.",
   },
+
   builder: {
     tabLabel: "Builder",
     // ── Voice ────────────────────────────────────────────────────────────
@@ -2913,6 +2936,11 @@ export const en = {
     filterButton: "Filter",
     filterStatusLabel: "Status",
     settingsLink: "Settings",
+    // Links to the shared Model Settings hub (see `en.modelSettings`) —
+    // distinct from `settingsLink` above, which is Builder's own full
+    // settings page (kill switch, budget, repo maps) and still has its own
+    // model-tier fields too.
+    modelSettingsLink: "Model settings",
     pipelineLink: "Pipeline",
     scoreboardLink: "Scoreboard",
     knowledgeLink: "Knowledge",

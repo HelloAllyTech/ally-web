@@ -472,6 +472,7 @@ export const ApiEndpoints = {
   },
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
+    MODEL_SETTINGS: "/v1/bug-hunter/settings/models",
     RUNS: "/v1/bug-hunter/runs",
     RUNS_TRIGGER: "/v1/bug-hunter/runs/trigger",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
@@ -810,6 +811,9 @@ export const TAG_TYPES = {
   ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
   ANALYTICS_CHART_PREFERENCES: "analyticsChartPreferences",
   BUG_HUNTER_SETTINGS: "bugHunterSettings",
+  // Also registered in baseApi.ts's `tagTypes` — an unregistered tag is
+  // silently ignored and its invalidation never fires.
+  BUG_HUNTER_MODEL_SETTINGS: "bugHunterModelSettings",
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",

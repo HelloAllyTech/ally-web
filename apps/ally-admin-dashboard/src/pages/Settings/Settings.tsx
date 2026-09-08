@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 
+import { AiModelsTab } from "./AiModelsTab";
 import { ComfortAudioTab } from "./ComfortAudioTab";
 import { LegalTab } from "./LegalTab";
 import { TurnDetectionTab } from "./TurnDetectionTab";
@@ -28,6 +29,7 @@ enum SettingsTab {
   LEGAL = "legal",
   COMFORT_AUDIO = "comfort-audio",
   TURN_DETECTION = "turn-detection",
+  AI_MODELS = "ai-models",
 }
 
 /**
@@ -50,6 +52,11 @@ const TAB_ITEMS: { id: SettingsTab; label: string; description: string }[] = [
     id: SettingsTab.TURN_DETECTION,
     label: en.settings.tabs.turnDetection,
     description: en.settings.turnDetectionDescription,
+  },
+  {
+    id: SettingsTab.AI_MODELS,
+    label: en.settings.tabs.aiModels,
+    description: en.settings.aiModelsDescription,
   },
 ];
 
@@ -76,6 +83,8 @@ export const Settings: React.FC = () => {
         return <ComfortAudioTab />;
       case SettingsTab.TURN_DETECTION:
         return <TurnDetectionTab />;
+      case SettingsTab.AI_MODELS:
+        return <AiModelsTab />;
       case SettingsTab.LEGAL:
       default:
         return <LegalTab />;

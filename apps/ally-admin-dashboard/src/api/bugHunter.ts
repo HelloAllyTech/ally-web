@@ -7,6 +7,7 @@ import {
   BugFindingStage,
   BugHunterMetrics,
   BugHunterMode,
+  BugHunterModelSettings,
   BugHunterNotification,
   ListBugHunterNotificationsResponse,
   BugHunterSettings,
@@ -40,6 +41,26 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.BUG_HUNTER_SETTINGS],
+    }),
+
+    getBugHunterModelSettings: builder.query<BugHunterModelSettings, void>({
+      query: () => ({
+        url: ApiEndpoints.BUG_HUNTER.MODEL_SETTINGS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.BUG_HUNTER_MODEL_SETTINGS],
+    }),
+
+    updateBugHunterModelSettings: builder.mutation<
+      BugHunterModelSettings,
+      { defaultModel?: string; escalationModel?: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.BUG_HUNTER.MODEL_SETTINGS,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.BUG_HUNTER_MODEL_SETTINGS],
     }),
 
     /**
@@ -339,6 +360,8 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
 export const {
   useGetBugHunterSettingsQuery,
   useUpdateBugHunterSettingsMutation,
+  useGetBugHunterModelSettingsQuery,
+  useUpdateBugHunterModelSettingsMutation,
   useGetBugHuntRunsQuery,
   useTriggerBugHuntSweepMutation,
   useGetBugHuntRunQuery,

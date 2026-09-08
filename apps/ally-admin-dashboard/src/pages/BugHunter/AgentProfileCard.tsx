@@ -1,5 +1,7 @@
 import { FC, useState } from "react";
 
+import { MachineLearningModel } from "@icons";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button, ContentSwitcher, Switch, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -15,7 +17,7 @@ import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 // mock that barrel wholesale, and reaching past it keeps the avatar real in
 // them — the same treatment ErrorBoundary gets in BugFindingsTable.
 import { AgentAvatar } from "@components/agent-avatar";
-import { en } from "@constants";
+import { en, ROUTES } from "@constants";
 import { BugFinding, BugHunterMode, BugHuntRun, BugHuntRunStatus } from "@types";
 
 import { AgentStatusKind, deriveAgentStatus } from "./agentPersona";
@@ -87,6 +89,7 @@ const STATUS_PILL_STYLES: Record<AgentStatusKind, string> = {
  * landing on the wrong one shouldn't be a single misclick.
  */
 export const AgentProfileCard: FC = () => {
+  const navigate = useNavigate();
   const { data: settings, isLoading, isError, fulfilledTimeStamp } = useGetBugHunterSettingsQuery();
   const [updateSettings, { isLoading: isUpdating }] = useUpdateBugHunterSettingsMutation();
 
@@ -184,7 +187,7 @@ export const AgentProfileCard: FC = () => {
         </div>
 
         {!isLoading && !isError && (
-          <div className="shrink-0">
+          <div className="shrink-0 flex items-center gap-1">
             <Button
               size="sm"
               kind="ghost"
@@ -194,6 +197,14 @@ export const AgentProfileCard: FC = () => {
             >
               {sweepOpen ? en.bugHunter.sweepPanelHide : en.bugHunter.sweepPanelShow}
             </Button>
+            <Button
+              size="sm"
+              kind="ghost"
+              hasIconOnly
+              iconDescription={en.bugHunter.settingsLink}
+              renderIcon={MachineLearningModel}
+              onClick={() => navigate(`${ROUTES.SETTINGS}?tab=ai-models`)}
+            />
           </div>
         )}
       </div>

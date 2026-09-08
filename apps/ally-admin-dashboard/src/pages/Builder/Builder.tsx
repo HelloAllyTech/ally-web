@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 
-import { BarChart3, Book, Settings, Timer } from "@icons";
+import { BarChart3, Book, MachineLearningModel, Settings, Timer } from "@icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -342,6 +342,14 @@ export const Builder: React.FC = () => {
               iconDescription={strings.settingsLink}
               renderIcon={Settings}
               onClick={() => navigate(ROUTES.BUILDER_SETTINGS)}
+            />
+            <Button
+              kind="ghost"
+              size="sm"
+              hasIconOnly
+              iconDescription={strings.modelSettingsLink}
+              renderIcon={MachineLearningModel}
+              onClick={() => navigate(`${ROUTES.SETTINGS}?tab=ai-models`)}
             />
           </div>
         </div>

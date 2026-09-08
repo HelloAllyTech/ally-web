@@ -233,6 +233,12 @@ export interface BugHunterSettings {
   updatedAt: string;
 }
 
+/** Which models the sweep/fix session and its escalation subagent run on. */
+export interface BugHunterModelSettings {
+  defaultModel: string;
+  escalationModel: string;
+}
+
 export interface BugHuntEvent {
   id: string;
   runId: string | null;

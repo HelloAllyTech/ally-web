@@ -6,6 +6,7 @@ import type { BuilderSession } from "@types";
 
 vi.mock("@icons", () => ({
   Settings: () => <svg />,
+  MachineLearningModel: () => <svg />,
   BarChart3: () => <svg />,
   Book: () => <svg />,
   Timer: () => <svg />,
