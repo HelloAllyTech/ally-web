@@ -8,6 +8,7 @@ import {
   useGetAnalyticsOverviewQuery,
   useGetCompletionRateQuery,
   useGetLearnerKpisQuery,
+  useGetXpGrowthQuery,
 } from "@api";
 import { AnalyticsBucket } from "@types";
 
@@ -21,6 +22,7 @@ import {
 } from "../analyticsFilters";
 import {
   DEFAULT_GROUPING,
+  GROUPING_LABEL,
   bucketTitle,
   groupingNote,
   inProgressCaption,
@@ -51,6 +53,7 @@ import {
   CSAT_SCALE,
   COST_PER_SIM_SCALE,
   CUMULATIVE_USERS_SCALE,
+  CUMULATIVE_XP_SCALE,
   NEW_USERS_SCALE,
   PLAY_TIME_SCALE,
   PRACTICE_SCALE,
@@ -62,6 +65,7 @@ import {
   buildCostPerSimSeries,
   buildCsatTrendSeries,
   buildCumulativeUsersSeries,
+  buildCumulativeXpSeries,
   buildNewUsersSeries,
   buildPlayTimeSeries,
   buildPracticeMinutesSeries,
@@ -122,7 +126,8 @@ type ChartId =
   | "costPerSim"
   | "totalCost"
   | "wpl"
-  | "completion";
+  | "completion"
+  | "xp";
 
 /**
  * Which endpoint feeds each chart.
@@ -134,7 +139,7 @@ type ChartId =
 const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
 const HIGHLIGHTS_CHARTS = ["practice", "playTime", "csat", "costPerSim", "totalCost"] as const;
 
-const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion"];
+const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion", "xp"];
 
 /** A weekly-or-coarser metric: a daily north star is noise, a yearly one hides it. */
 const WPL_GRAINS: AnalyticsBucket[] = ["week", "month"];
@@ -261,6 +266,12 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   const activation = activationQ[groupingFor("wpl")];
   const completion = completionQ[groupingFor("completion")];
 
+  // Cumulative platform XP. Its own endpoint (the append-only xp_events ledger)
+  // and read at ONE grain — the chart's — because nothing else on this tab reads
+  // from it, so pinning a base grain would only fetch a response nothing shows.
+  const xpQ = useGrainQueries(useGetXpGrowthQuery, query, new Set([groupingFor("xp")]));
+  const xpGrowthQ = xpQ[groupingFor("xp")];
+
   // LEARNER-role-scoped counterparts of the overview KPIs above, which count
   // every account regardless of role. All-time: a lifetime headcount has no
   // window to narrow.
@@ -340,6 +351,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     totalCost: groupingFor("totalCost"),
     wpl: groupingFor("wpl"),
     completion: groupingFor("completion"),
+    xp: groupingFor("xp"),
   };
 
   /* ----------------------------- plotted series ---------------------------- */
@@ -412,6 +424,20 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     [costPoints, costInProgress],
   );
   const unpriced = useMemo(() => totalUnpricedCalls(costPoints), [costPoints]);
+
+  const xpPoints = xpGrowthQ.data?.points ?? [];
+  const xpInProgress = xpGrowthQ.data?.window.inProgressBucket;
+  const cumulativeXp = useMemo(
+    () => buildCumulativeXpSeries(withoutInProgress(xpPoints, p => p.bucket, xpInProgress)),
+    [xpPoints, xpInProgress],
+  );
+  // The change behind the curve, for the card's takeaway. Read from the last
+  // COMPLETE period — the accruing one can only rise, so quoting it would
+  // understate the figure by however much of the period is left to run.
+  const latestCompleteXp = useMemo(() => {
+    const complete = withoutInProgress(xpPoints, p => p.bucket, xpInProgress);
+    return complete.length > 0 ? complete[complete.length - 1] : undefined;
+  }, [xpPoints, xpInProgress]);
 
   const totalCostPoints = totalCostQ.data?.costPerSim ?? [];
   const totalCostInProgress = totalCostQ.data?.window.inProgressBucket;
@@ -624,6 +650,16 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         legend: false,
       }),
     [grain.cumulative],
+  );
+  const xpOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "XP",
+        bottomTitle: bucketTitle(grain.xp),
+        colorScale: CUMULATIVE_XP_SCALE,
+        legend: false,
+      }),
+    [grain.xp],
   );
   const retentionOpts = useMemo(
     () =>
@@ -1160,6 +1196,58 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             <SimpleBarChart data={sims} options={simsOpts} />
           </ScrollableChart>
         </ChartCard>
+
+        {/* Sits in Engagement rather than in Growth & reach on purpose: this is
+            a measure of what learners DID, not of how many of them there are.
+            Its own endpoint (the xp_events ledger), so it survives an overview
+            failure and re-graining it costs one request. */}
+        <ChartCard
+          title="Cumulative XP awarded"
+          caption={`Running total of every XP award across the platform, excluding test organisations. A lifetime total can only rise, so the shape — where it steepens and where it flattens — is the whole signal; the level is not one. Awards are dated to the day they were EARNED, so history seeded at the Progress launch sits where it happened rather than on the launch date.${inProgressCaption(
+            grain.xp,
+            xpInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Running total of xp_events.xp, by awardedOn",
+            window: windowLabel(xpGrowthQ.data?.window),
+            n: xpGrowthQ.data?.summary.earners,
+            nUnit: "learners earning",
+            extra: groupingNote(grain.xp),
+            asOf: asOf(xpGrowthQ.data?.window),
+          })}
+          takeaway={
+            latestCompleteXp
+              ? `${formatCount(xpGrowthQ.data?.summary.cumulativeXp)} XP all time · ` +
+                `${formatCount(latestCompleteXp.xpEarned)} earned by ` +
+                `${formatCount(latestCompleteXp.earners)} learners in the latest full ` +
+                `${GROUPING_LABEL[grain.xp].toLowerCase()}`
+              : undefined
+          }
+          loading={busy(xpGrowthQ)}
+          error={xpGrowthQ.isError}
+          onRetry={xpGrowthQ.refetch}
+          empty={!busy(xpGrowthQ) && cumulativeXp.length === 0}
+          emptyText={
+            // Two different reasons the plot can be empty, and only one of them
+            // is "no XP". At a coarse grain on a young platform EVERY bucket on
+            // the axis can be the accruing one — read yearly over ten months of
+            // history, there is exactly one bucket and it is not finished — so
+            // the series is empty while the ledger is not. Saying "no XP has
+            // been awarded" there would be flatly false, and false in the
+            // direction that makes the product look worse than it is.
+            xpPoints.length > 0
+              ? `Every period on this axis is still accruing, so there is no completed ${GROUPING_LABEL[
+                  grain.xp
+                ].toLowerCase()} to plot yet. Group by a finer period, or expand for the provisional figures.`
+              : "No XP has been awarded in any period on this axis"
+          }
+          controls={picker("xp")}
+          onExpand={() => setExpanded("xp")}
+        >
+          <ScrollableChart data={cumulativeXp}>
+            <LineChart data={cumulativeXp} options={xpOpts} />
+          </ScrollableChart>
+        </ChartCard>
       </div>
 
       {/* Sits directly under the practice-minutes total on purpose: that line
@@ -1424,6 +1512,44 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           render={({ height }) => (
             <ScrollableChart data={cumulativeUsers}>
               <LineChart data={cumulativeUsers} options={{ ...cumulativeOpts, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "xp" && (
+        <ChartDetailModal
+          open
+          onClose={() => setExpanded(null)}
+          title="Cumulative XP awarded"
+          caption="The table carries the per-period XP and the learners who earned it — the change behind a line that can only rise, and the way to tell whether it steepened because more learners practised or because the same ones earned more."
+          source={buildSource({
+            derivation: "Running total of xp_events.xp, by awardedOn",
+            window: windowLabel(xpGrowthQ.data?.window),
+            n: xpGrowthQ.data?.summary.earners,
+            nUnit: "learners earning",
+            extra: groupingNote(grain.xp),
+          })}
+          table={{
+            columns: [bucketTitle(grain.xp), "XP earned", "Learners earning", "Cumulative XP"],
+            rows: xpPoints.map(p => [
+              rowKey(p.bucket, xpInProgress),
+              p.xpEarned,
+              p.earners,
+              p.cumulativeXp,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(xpGrowthQ.data?.window),
+            grain.xp,
+            xpInProgress,
+            `Opening balance before the window: ${formatCount(
+              xpGrowthQ.data?.summary.baselineXp,
+            )} XP`,
+          )}
+          render={({ height }) => (
+            <ScrollableChart data={cumulativeXp}>
+              <LineChart data={cumulativeXp} options={{ ...xpOpts, height }} />
             </ScrollableChart>
           )}
         />

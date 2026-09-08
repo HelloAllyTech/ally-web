@@ -280,6 +280,42 @@ export interface AnalyticsOverviewResponse {
   usersByRole: UsersByRolePoint[];
 }
 
+/* -------------------------------------------------------------------------- */
+/* XP growth — GET /v1/analytics/xp-growth                                    */
+/* -------------------------------------------------------------------------- */
+
+/** One bucket of the platform XP series. */
+export interface XpGrowthPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  /** XP awarded in this bucket — the change, which is the part that can fall. */
+  xpEarned: number;
+  /**
+   * Lifetime platform XP as at the end of this bucket. Monotonic, and a true
+   * lifetime figure on a narrowed window too: the server opens the curve at
+   * `summary.baselineXp` rather than restarting it at zero.
+   */
+  cumulativeXp: number;
+  /** Distinct learners who earned any XP in this bucket. */
+  earners: number;
+}
+
+export interface XpGrowthResponse {
+  window: AnalyticsWindow;
+  points: XpGrowthPoint[];
+  summary: {
+    /** XP earned before the window — the cumulative curve's opening value. */
+    baselineXp: number;
+    xpEarnedInWindow: number;
+    /** `baselineXp + xpEarnedInWindow`; includes the still-accruing bucket. */
+    cumulativeXp: number;
+    /** Distinct learners over the WHOLE window — never the sum of the buckets. */
+    earners: number;
+  };
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Leadership highlights — mirrors the backend AnalyticsHighlightsResponseDto
 // from GET /api/v1/analytics/highlights. Only the metrics NOT already served by
 // /overview or /scribe/overview live here; the tab composes all three.
