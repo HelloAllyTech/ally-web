@@ -162,6 +162,27 @@ describe("VideoActorPicker", () => {
     expect(touchedVideo).toBe(false);
   });
 
+  it("leaves both covers alone for a face that publishes no picture", async () => {
+    // Beyond Presence publishes no thumbnails, so such a face supplies nothing.
+    // Clearing the author's video while providing no image would leave them
+    // strictly worse off than before they picked a face — both covers stay
+    // theirs to upload.
+    const formMethods = makeFormMethods({
+      coverImageUrl: "https://our-bucket/authors-own.jpg",
+      coverVideoUrl: "https://our-bucket/authors-own.mp4",
+    });
+    render(<VideoActorPicker label="Avatar" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-694c83e2"));
+
+    const touchedCovers = formMethods.setValue.mock.calls.some(([field]: [string]) =>
+      ["coverImageUrl", "coverVideoUrl"].includes(field),
+    );
+    expect(touchedCovers).toBe(false);
+    expect(importCoverMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId("video-actor-cover-notice").textContent).toMatch(/yours to upload/i);
+  });
+
   it("keeps the face selected when the cover copy fails", async () => {
     importCoverMock.mockRejectedValue(new Error("vendor down"));
     const formMethods = makeFormMethods();

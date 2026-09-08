@@ -47,13 +47,17 @@ const COVER_VIDEO_FIELD = "coverVideoUrl";
  * Cover IMAGE becomes that face's still, copied into our own storage under a
  * write-once key. Cover VIDEO is CLEARED.
  *
- * The clearing is the non-obvious half. We cannot import the face's own clip —
- * the vendors' run to 54 MB against the 15 MB the uploader allows, so a third
- * of the roster would need transcoding on a request path. But leaving a
- * previously uploaded video in place is worse than having none: the roleplay
- * then shows this face's photograph beside a different person's video, which is
- * exactly the mismatch an author reported. Empty is the honest state, and the
+ * The clearing is the non-obvious half, and it is CONDITIONAL. We cannot import
+ * the face's own clip — the vendors' run to 54 MB against the 15 MB the uploader
+ * allows — so when a face does supply the image, a previously uploaded video of
+ * somebody else becomes a visible mismatch and empty is the honest state. The
  * notice says so rather than removing it silently.
+ *
+ * A face with NO preview media supplies nothing: every Beyond Presence avatar,
+ * whose API publishes no thumbnails at all. For those, both covers stay exactly
+ * as the author left them and remain theirs to upload — clearing a video while
+ * providing no image would leave them strictly worse off than before they
+ * picked a face.
  */
 export const VideoActorPicker: FC<VideoActorPickerProps> = ({
   label,
@@ -100,8 +104,7 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
   const applyFaceCover = async (face: VideoActorFaceEntry, clearedVideo = false) => {
     if (!face.thumbnailImageUrl) {
       setCoverNotice(
-        `${face.label} has no picture to use as a cover.` +
-          (clearedVideo ? " Cover video was cleared to match." : ""),
+        `${face.label} publishes no picture, so the cover image and video are yours to upload.`,
       );
       return;
     }
@@ -136,14 +139,20 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
     // The vendor is derived, never asked for.
     formMethods.setValue(PROVIDER_FIELD, face.provider, { shouldDirty: true });
 
-    // Clear any cover video. The cover image is about to become this face, and
-    // we cannot import the face's own clip (the vendors' run to 54 MB against a
-    // 15 MB limit), so keeping the previous one leaves the roleplay showing one
-    // person's photo beside a different person's video. Empty is the honest
-    // state. Cleared here rather than inside applyFaceCover so it also happens
-    // when the face has no picture or the import fails — the mismatch is just
-    // as wrong in those cases.
-    const hadVideo = !!formMethods.getValues(COVER_VIDEO_FIELD);
+    // Clear the cover video ONLY when this face is about to supply the cover
+    // image. The reason for clearing is consistency: once the image becomes
+    // this face, a previously uploaded video of somebody else is a visible
+    // mismatch, and we cannot import the face's own clip (the vendors' run to
+    // 54 MB against a 15 MB limit).
+    //
+    // A face with no preview media — every Beyond Presence avatar, since their
+    // API publishes none — supplies NOTHING. The cover image stays the
+    // author's own, so their video is still consistent with it, and clearing it
+    // would be pure loss: they would be left with no video, no replacement, and
+    // an image the avatar never provided. Those roleplays keep both covers
+    // fully manual.
+    const suppliesCover = !!face.thumbnailImageUrl;
+    const hadVideo = suppliesCover && !!formMethods.getValues(COVER_VIDEO_FIELD);
     if (hadVideo) {
       // null, not undefined — see the note in clearFace.
       formMethods.setValue(COVER_VIDEO_FIELD, null, { shouldDirty: true });
