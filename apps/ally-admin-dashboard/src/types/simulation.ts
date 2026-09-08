@@ -294,6 +294,9 @@ export interface GetSimulationByIdResponse {
   translationReminders?: Record<string, string[]>;
   remindersPrimaryLanguageId?: number | null;
   competency?: Competency;
+  // Every competency the simulation assesses. `competency` mirrors the
+  // first entry for readers that predate multi-competency selection.
+  competencies?: Competency[];
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
     eventId: string;
@@ -640,6 +643,41 @@ export interface Competency {
   // are private to their owner and never shown in the superadmin Competencies
   // tab — only in the owner's simulation-builder dropdown.
   isCustom?: boolean;
+  // Clusters this competency belongs to. Many-to-many: an admin curating
+  // frameworks decides how they overlap. Never populated for a custom
+  // competency, which is private to its owner.
+  clusters?: CompetencyClusterRef[];
+}
+
+export interface CompetencyClusterRef {
+  id: string;
+  name: string;
+}
+
+/**
+ * A named grouping of competencies — typically a framework the customer
+ * already trains against. Selecting a cluster in the simulation builder
+ * selects every competency under it; the simulation stores the expanded competency ids, not
+ * the cluster, so re-clustering later never changes a published simulation.
+ */
+export interface CompetencyCluster extends CompetencyClusterRef {
+  competencyIds: string[];
+}
+
+export interface CompetencyClustersResponse {
+  data: CompetencyCluster[];
+  count: number;
+}
+
+export interface CreateCompetencyClusterRequest {
+  name: string;
+  competencyIds?: string[];
+}
+
+export interface UpdateCompetencyClusterRequest {
+  id: string;
+  // Omitting competencyIds leaves the cluster's membership alone.
+  data: { name?: string; competencyIds?: string[] };
 }
 
 export interface CompetenciesResponse {
@@ -657,11 +695,16 @@ export interface CreateCompetencyRequest {
   // Omitted for custom competencies — the backend generates the name.
   name?: string;
   isCustom?: boolean;
+  // Clusters by NAME: an unknown name creates the cluster, so the editor can
+  // add one by typing it. Ignored for custom competencies.
+  clusterNames?: string[];
 }
 
 export interface UpdateCompetencyRequest {
   id: string;
-  data: { name: string };
+  // clusterNames replaces the competency's clusters; omit the key to leave
+  // clustering untouched, send [] to remove it from all of them.
+  data: { name: string; clusterNames?: string[] };
 }
 
 export interface CompetencyBehavioursResponse {

@@ -47,6 +47,15 @@ export const formatVersionConfigToForm = (config: Record<string, any>) => {
       cfg.challengeDescriptionPrimaryLanguageId ?? primaryLanguageId,
     remindersPrimaryLanguageId: cfg.remindersPrimaryLanguageId ?? primaryLanguageId,
     competency: cfg.competency ?? (cfg.competencyId ? { id: cfg.competencyId } : undefined),
+    // A version snapshot stores ids, not the hydrated competencies. `base`
+    // (the live scenario) supplies the names, so prefer its objects for the
+    // ids the snapshot names and fall back to a bare {id} for any it doesn't
+    // know — the picker re-reads names from the competency list anyway.
+    competencies:
+      cfg.competencies ??
+      (Array.isArray(cfg.competencyIds)
+        ? cfg.competencyIds.map((competencyId: string) => ({ id: competencyId }))
+        : undefined),
     // config stores trigger warnings as a string[] of ids; formatSim expects
     // objects under `triggerWarnings`.
     triggerWarnings: Array.isArray(cfg.triggerWarningIds)
@@ -252,6 +261,14 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,
     agentBuilderPrompt: (data?.metadata as any)?.agentBuilderPrompt,
     competency: data?.competency,
+    // Multi-competency selection. A roleplay saved before it existed carries
+    // only the scalar, so read through to that rather than loading an empty
+    // picker over a populated rubric.
+    competencies: data?.competencies?.length
+      ? data.competencies
+      : data?.competency
+        ? [data.competency]
+        : [],
     stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
       id: source.id,

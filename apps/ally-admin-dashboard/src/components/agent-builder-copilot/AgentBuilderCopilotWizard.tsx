@@ -235,12 +235,16 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
         {step === "competency" && (
           <>
             <h3 className="text-base font-medium text-typography-900">{QUESTIONS.competency}</h3>
+            {/* The wizard asks for exactly one — its generation prompt takes a
+                single competency name — so the picker runs in single-select
+                mode rather than the builder's multi-select. */}
             <Competency
               id="competency"
               formMethods={formMethods}
               label="Select one competency"
               isMandatory
               dropUp
+              singleSelect
             />
             <div className="flex justify-end">
               <Button

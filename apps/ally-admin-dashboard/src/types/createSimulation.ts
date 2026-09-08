@@ -17,6 +17,9 @@ import { TriggerCondition } from "./triggerConditions";
 export type FormData = {
   title: string;
   competency?: Competency;
+  // Every competency the simulation assesses. `competency` mirrors the
+  // first entry for readers that predate multi-competency selection.
+  competencies?: Competency[];
   category?: string;
   partnerOrgName?: string;
   difficultyLevel: string;

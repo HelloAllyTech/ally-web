@@ -65,6 +65,10 @@ import {
   UpdateCompetencyRequest,
   CompetencyBehavioursResponse,
   SetCompetencyBehavioursRequest,
+  CompetencyClustersResponse,
+  CompetencyCluster,
+  CreateCompetencyClusterRequest,
+  UpdateCompetencyClusterRequest,
   AgentTestCase,
   AgentTestCasesResponse,
   CreateAgentTestCaseRequest,
@@ -1440,7 +1444,9 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      // Clustering is edited from the competency form, so a save here can
+      // create a cluster or change its membership.
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1452,7 +1458,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1463,7 +1469,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BY_ID(id),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1490,6 +1496,47 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         body: data,
       }),
       invalidatesTags: [TAG_TYPES.COMPETENCY_BEHAVIOURS],
+    }),
+
+    /**
+     * Competency clusters, each carrying its member competency ids so the
+     * builder can expand a cluster without a second round-trip.
+     */
+    getCompetencyClusters: builder.query<CompetencyClustersResponse, { name?: string } | void>({
+      query: (arg = {}) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTERS,
+        method: HttpMethod.GET,
+        params: arg && "name" in arg && arg.name ? { name: arg.name } : undefined,
+      }),
+      providesTags: [TAG_TYPES.COMPETENCY_CLUSTERS],
+    }),
+
+    createCompetencyCluster: builder.mutation<CompetencyCluster, CreateCompetencyClusterRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTERS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // A cluster change moves competencies between groups, so the competency
+      // list (which carries each row's clusters) is stale too.
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
+    }),
+
+    updateCompetencyCluster: builder.mutation<CompetencyCluster, UpdateCompetencyClusterRequest>({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTER_BY_ID(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
+    }),
+
+    deleteCompetencyCluster: builder.mutation<void, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTER_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
     }),
 
     /**
@@ -1677,6 +1724,10 @@ export const {
   useGetCompetencyBehavioursQuery,
   useLazyGetCompetencyBehavioursQuery,
   useSetCompetencyBehavioursMutation,
+  useGetCompetencyClustersQuery,
+  useCreateCompetencyClusterMutation,
+  useUpdateCompetencyClusterMutation,
+  useDeleteCompetencyClusterMutation,
   useGetAgentTestCasesQuery,
   useCreateAgentTestCaseMutation,
   useUpdateAgentTestCaseMutation,

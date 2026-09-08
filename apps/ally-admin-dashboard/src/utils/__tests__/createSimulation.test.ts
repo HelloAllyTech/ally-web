@@ -245,6 +245,7 @@ describe("createSimulation utils", () => {
         behaviorInstructions: [],
         characterProfileText: undefined,
         competency: undefined,
+        competencies: [],
         currentLocation: "New York",
         gender: "male",
         genderIdentity: "Male/Man",
@@ -497,6 +498,7 @@ describe("createSimulation utils", () => {
           ],
         },
         competency: undefined,
+        competencies: [],
         behaviorInstructions: [
           {
             category: "c",
@@ -535,6 +537,7 @@ describe("createSimulation utils", () => {
         difficultyLevel: "medium",
         metadata: {},
         competency: undefined,
+        competencies: [],
         behaviorInstructions: [
           {
             category: "SHOULD_DO" as any,

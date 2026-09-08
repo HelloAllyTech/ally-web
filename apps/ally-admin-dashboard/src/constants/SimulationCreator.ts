@@ -1,7 +1,8 @@
 import { cellTypes } from "@components";
-import { FeatureToggleKey } from "./featureToggles";
 import { en, ExperienceMode, TooltipLocation } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
+
+import { FeatureToggleKey } from "./featureToggles";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -185,6 +186,10 @@ export const FORM_FIELD_TYPES = {
 export const FORM_FIELD_IDS = {
   TITLE: "title",
   COMPETENCY: "competency",
+  // The authoritative multi-competency selection. `COMPETENCY` above still
+  // holds COMPETENCIES[0] as an object, because the Agent Builder Copilot and
+  // the field's own required-validation read a single competency.
+  COMPETENCIES: "competencies",
   CATEGORY: "category",
   PARTNER_ORG_NAME: "partnerOrgName",
   DIFFICULTY_LEVEL: "difficultyLevel",

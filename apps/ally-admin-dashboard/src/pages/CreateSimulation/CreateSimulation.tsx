@@ -721,6 +721,16 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       triggerWarningIds: triggerWarning,
       status,
       behaviorInstructions: behaviourInstructionsArray,
+      // The full selection. A cluster picked in the builder arrives here
+      // already expanded to its member competencies — the cluster itself is
+      // never persisted, so re-clustering can't change a published roleplay.
+      // competencyId is sent too for anything still reading the scalar; the
+      // backend derives it from competencyIds[0] regardless.
+      competencyIds: Array.isArray(restForm.competencies)
+        ? restForm.competencies.map((competency: any) => competency?.id).filter(Boolean)
+        : restForm.competency?.id
+          ? [restForm.competency.id]
+          : [],
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
       timerMode: timerMode,

@@ -49,6 +49,16 @@ vi.mock("@api", () => {
     baseAPI: apiSliceStub("baseAPI"),
     evaluatorAPI: apiSliceStub("evaluatorAPI"),
     useGetCompetenciesQuery: () => ({ data: { data: COMPETENCIES, count: 2 }, isLoading: false }),
+    // Both competencies live in one cluster, so the grouped dropdown and its
+    // "Select all" have something real to act on.
+    useGetCompetencyClustersQuery: () => ({
+      data: {
+        data: [
+          { id: "cl-core", name: "Core Communication", competencyIds: ["c-listen", "c-risk"] },
+        ],
+        count: 1,
+      },
+    }),
     useLazyGetCompetencyBehavioursQuery: () => [mockFetchBehaviours],
     useGetCompetencyBehavioursQuery: (id: string, opts?: { skip?: boolean }) => ({
       data: opts?.skip ? undefined : behavioursById[id],
@@ -100,6 +110,9 @@ const Harness = () => {
     <>
       <Competency id="competency" formMethods={formMethods} isMandatory label="Pick Competency" />
       <output data-testid="value">{JSON.stringify(formMethods.watch("competency") ?? null)}</output>
+      <output data-testid="selection">
+        {JSON.stringify(formMethods.watch("competencies") ?? [])}
+      </output>
     </>
   );
 };
@@ -110,6 +123,10 @@ const openDropdown = () => fireEvent.click(trigger());
 const option = (name: string) =>
   [...document.querySelectorAll("span")].find(s => s.textContent === name)!.parentElement!;
 const competencyValue = () => JSON.parse(screen.getByTestId("value").textContent || "null");
+const selectionIds = (): string[] =>
+  (JSON.parse(screen.getByTestId("selection").textContent || "[]") as { id: string }[]).map(
+    entry => entry.id,
+  );
 
 /** Runs pending microtasks and lets React flush the resulting renders. */
 const flush = async () => {
@@ -180,45 +197,107 @@ describe("Competency — picking a competency", () => {
 
     render(<Harness />);
     await act(async () => {
-      form.reset({ behaviorInstructions: rubricRows("c-listen") });
+      form.reset({
+        competency: COMPETENCIES[0],
+        competencies: [COMPETENCIES[0]],
+        behaviorInstructions: rubricRows("c-listen"),
+      });
     });
     await runSyncDebounce();
 
     // The author hand-edits the rubric (× on a behaviour), which legitimately
-    // materialises a custom competency to capture the divergence...
+    // forks Active Listening into a custom competency...
     await act(async () => {
       form.setValue("behaviorInstructions", [rubricRows("c-listen")[0]], { shouldDirty: true });
     });
     await runSyncDebounce();
     expect(mockCreateCompetency).toHaveBeenCalledTimes(1);
 
-    // ...and while those requests are in flight, they pick a real competency.
+    // ...and while those requests are in flight, they tick a real competency.
     openDropdown();
     fireEvent.click(option("Risk Assessment"));
-    fireEvent.click(screen.getByText("Accept"));
     await flush();
-    expect(competencyValue()?.id).toBe("c-risk");
+    expect(selectionIds()).toContain("c-risk");
 
-    // The materialisation now completes. It must not overwrite the pick.
+    // The fork now completes. It must not overwrite what they picked.
     await act(async () => {
       create.resolve({ id: "c-custom", name: "7_custom_1", isCustom: true });
     });
     await flush();
-    await runSyncDebounce();
 
-    expect(competencyValue()?.id).toBe("c-risk");
-    expect(triggerLabel()).toBe("Risk Assessment");
+    expect(selectionIds()).toContain("c-risk");
 
-    // The custom competency materialised mid-flight is now orphaned — nothing
-    // ever references "c-custom" again — so it must be cleaned up server-side
-    // instead of being left behind as clutter.
+    // The custom minted mid-flight is orphaned — nothing will ever reference
+    // "c-custom" again — so it is cleaned up rather than left behind.
     expect(mockDeleteCompetency).toHaveBeenCalledWith("c-custom");
   });
 
-  it("still materialises and selects a custom competency for a hand-edited rubric", async () => {
+  it("forks only the competency whose rows were edited, leaving the others real", async () => {
     render(<Harness />);
     await act(async () => {
-      form.reset({ competency: COMPETENCIES[0], behaviorInstructions: rubricRows("c-listen") });
+      form.reset({
+        competency: COMPETENCIES[0],
+        competencies: COMPETENCIES,
+        behaviorInstructions: [...rubricRows("c-listen"), ...rubricRows("c-risk")].map(
+          (row, index) => ({ ...row, id: `row-${index}` }),
+        ),
+      });
+    });
+    await runSyncDebounce();
+    expect(mockCreateCompetency).not.toHaveBeenCalled();
+
+    // Drop one behaviour from Active Listening's "should not do" row. Risk
+    // Assessment's rows are untouched.
+    const edited = [...rubricRows("c-listen").slice(0, 1), ...rubricRows("c-risk")].map(
+      (row, index) => ({ ...row, id: `row-${index}` }),
+    );
+    await act(async () => {
+      form.setValue("behaviorInstructions", edited, { shouldDirty: true });
+    });
+    await runSyncDebounce();
+
+    // Exactly one fork, and Risk Assessment keeps its real identity — that is
+    // what keeps the analytics competency map meaningful for this simulation.
+    expect(mockCreateCompetency).toHaveBeenCalledTimes(1);
+    expect(selectionIds()).toEqual(["c-custom", "c-risk"]);
+  });
+
+  it("drops a competency from the selection when its rows are removed entirely", async () => {
+    render(<Harness />);
+    await act(async () => {
+      form.reset({
+        competency: COMPETENCIES[0],
+        competencies: COMPETENCIES,
+        behaviorInstructions: [...rubricRows("c-listen"), ...rubricRows("c-risk")].map(
+          (row, index) => ({ ...row, id: `row-${index}` }),
+        ),
+      });
+    });
+    await runSyncDebounce();
+
+    // Removing both of Active Listening's rows means "this simulation no
+    // longer assesses it" — not "fork it into an empty custom".
+    await act(async () => {
+      form.setValue(
+        "behaviorInstructions",
+        rubricRows("c-risk").map((row, index) => ({ ...row, id: `row-${index}` })),
+        { shouldDirty: true },
+      );
+    });
+    await runSyncDebounce();
+
+    expect(mockCreateCompetency).not.toHaveBeenCalled();
+    expect(selectionIds()).toEqual(["c-risk"]);
+  });
+
+  it("still forks a single hand-edited competency into a custom", async () => {
+    render(<Harness />);
+    await act(async () => {
+      form.reset({
+        competency: COMPETENCIES[0],
+        competencies: [COMPETENCIES[0]],
+        behaviorInstructions: rubricRows("c-listen"),
+      });
     });
     await runSyncDebounce();
     expect(mockCreateCompetency).not.toHaveBeenCalled();
@@ -231,5 +310,75 @@ describe("Competency — picking a competency", () => {
     expect(mockCreateCompetency).toHaveBeenCalledTimes(1);
     expect(competencyValue()?.id).toBe("c-custom");
     expect(triggerLabel()).toBe("your_custom_1");
+  });
+});
+
+describe("Competency — clusters", () => {
+  it("selects every competency in a cluster from its “Select all”", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(screen.getByText("Select all"));
+    await flush();
+
+    expect(selectionIds().sort()).toEqual(["c-listen", "c-risk"]);
+    // Naming the cluster is the point of the grouping: it reads far better
+    // than "2 competencies" for a selection the author made in one click.
+    expect(triggerLabel()).toBe("Core Communication");
+  });
+
+  it("gives each selected competency its own “should do”/“should not do” pair", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(screen.getByText("Select all"));
+    await flush();
+
+    const rows = form.getValues("behaviorInstructions") as {
+      category: string;
+      competencyId: string;
+    }[];
+    expect(rows).toHaveLength(4);
+    expect(rows.filter(row => row.competencyId === "c-listen").map(row => row.category)).toEqual([
+      "SHOULD_DO",
+      "SHOULD_NOT_DO",
+    ]);
+    expect(rows.filter(row => row.competencyId === "c-risk").map(row => row.category)).toEqual([
+      "SHOULD_DO",
+      "SHOULD_NOT_DO",
+    ]);
+  });
+
+  it("still lets an author pick one competency on its own", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(option("Risk Assessment"));
+    await flush();
+
+    expect(selectionIds()).toEqual(["c-risk"]);
+    expect(triggerLabel()).toBe("Risk Assessment");
+  });
+
+  it("un-ticking a competency removes it and its rows without forking", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(screen.getByText("Select all"));
+    await flush();
+    fireEvent.click(option("Active Listening"));
+    await flush();
+
+    expect(selectionIds()).toEqual(["c-risk"]);
+    expect(
+      (form.getValues("behaviorInstructions") as { competencyId: string }[]).every(
+        row => row.competencyId === "c-risk",
+      ),
+    ).toBe(true);
+    expect(mockCreateCompetency).not.toHaveBeenCalled();
   });
 });

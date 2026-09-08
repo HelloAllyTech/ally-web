@@ -3,16 +3,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateCompetencyMutation,
   useDeleteCompetencyMutation,
   useGetCompetenciesQuery,
-  useGetCompetencyBehavioursQuery,
+  useGetCompetencyClustersQuery,
   useLazyGetCompetencyBehavioursQuery,
   useSetCompetencyBehavioursMutation,
   useUpdateCompetencyMutation,
 } from "@api";
-import { ArrowSolid, Edit, Trash } from "@assets";
+import { ArrowSolid, Edit, Trash, TooltipIcon } from "@assets";
 import { BEHAVIOUR_STATES, en, FORM_FIELD_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 import {
@@ -25,14 +26,14 @@ import {
 import { ActionConfirmationPopup } from "../action-confirmation-popup";
 import { FormLabel } from "../form-label";
 
-// Label shown briefly when the behaviour selections have diverged from a
-// competency's mapping but the user-owned custom competency that captures them
-// hasn't been materialised yet (the create is debounced).
+// Label shown when the behaviour selections no longer match any real
+// competency and the user-owned custom that captures them hasn't been
+// materialised yet (the create is debounced).
 const CUSTOM_LABEL = "Custom";
 
-// How long to wait after the last behaviour-table edit before materialising /
-// syncing the user's custom competency. Mirrors the autosave cadence used by
-// the Competencies management page.
+// How long to wait after the last behaviour-table edit before reconciling the
+// selection with the table. Mirrors the autosave cadence used by the
+// Competencies management page.
 const SYNC_DEBOUNCE_MS = 700;
 
 // Behaviours round-trip through the backend by NAME (the behaviour-library ids
@@ -42,21 +43,32 @@ const SYNC_DEBOUNCE_MS = 700;
 const behaviourKey = (category: string, behaviour: HelperTagItem) =>
   `${category}::${(behaviour.name ?? "").trim()}`;
 
+type BehaviourRow = {
+  id?: string;
+  category?: string;
+  behaviors?: HelperTagItem[];
+  // Which competency this row was populated from. Client-only: the save
+  // payload carries category/behaviors/instructions/stateInstructions and
+  // nothing else, so this never reaches the server — it is re-derived from the
+  // behaviour overlap when a saved simulation is re-opened.
+  competencyId?: string;
+};
+
+const isScoredCategory = (category?: string) =>
+  category === enumBehaviourInstructionCategory.HELPER_SHOULD_DO ||
+  category === enumBehaviourInstructionCategory.HELPER_SHOULD_NOT_DO;
+
+const namedBehaviours = (row?: BehaviourRow): HelperTagItem[] =>
+  (row?.behaviors ?? []).filter(behaviour => behaviour?.name?.trim());
+
 // Signature of the behaviours currently in the Behaviour Instructions /
 // Scoring Rubric table. Empty/uncategorised rows contribute nothing.
-const tableBehaviourKeys = (
-  rows?: { category?: string; behaviors?: HelperTagItem[] }[],
-): Set<string> => {
+const tableBehaviourKeys = (rows?: BehaviourRow[]): Set<string> => {
   const keys = new Set<string>();
   for (const row of rows ?? []) {
-    if (
-      row?.category !== enumBehaviourInstructionCategory.HELPER_SHOULD_DO &&
-      row?.category !== enumBehaviourInstructionCategory.HELPER_SHOULD_NOT_DO
-    ) {
-      continue;
-    }
-    for (const behaviour of (row.behaviors as HelperTagItem[] | undefined) ?? []) {
-      if (behaviour?.name?.trim()) keys.add(behaviourKey(row.category, behaviour));
+    if (!isScoredCategory(row?.category)) continue;
+    for (const behaviour of namedBehaviours(row)) {
+      keys.add(behaviourKey(row.category!, behaviour));
     }
   }
   return keys;
@@ -84,14 +96,14 @@ const keySetsEqual = (a: Set<string>, b: Set<string>) =>
 
 const signatureOf = (keys: Set<string>) => [...keys].sort().join("|");
 
-// Convert the behaviour table into the { helpful, unhelpful } name lists the
+// Convert behaviour rows into the { helpful, unhelpful } name lists the
 // setCompetencyBehaviours endpoint expects.
 const behaviourRowsToPayload = (
-  rows?: { category?: string; behaviors?: HelperTagItem[] }[],
+  rows: BehaviourRow[],
 ): { helpful: string[]; unhelpful: string[] } => {
   const helpful: string[] = [];
   const unhelpful: string[] = [];
-  for (const row of rows ?? []) {
+  for (const row of rows) {
     const target =
       row?.category === enumBehaviourInstructionCategory.HELPER_SHOULD_DO
         ? helpful
@@ -99,12 +111,64 @@ const behaviourRowsToPayload = (
           ? unhelpful
           : null;
     if (!target) continue;
-    for (const behaviour of (row.behaviors as HelperTagItem[] | undefined) ?? []) {
-      const name = behaviour?.name?.trim();
-      if (name) target.push(name);
-    }
+    for (const behaviour of namedBehaviours(row)) target.push(behaviour.name!.trim());
   }
   return { helpful, unhelpful };
+};
+
+/**
+ * Works out which competency each behaviour row belongs to.
+ *
+ * `row.competencyId` is authoritative while the author is in the editor — the
+ * auto-populate stamps it. It is absent after a reload (the server stores
+ * rows, not their provenance), so fall back to the competency whose mapping
+ * shares the most behaviours with the row for that category. Overlap rather
+ * than an exact match on purpose: an author who deletes one behaviour from a
+ * row must keep that row attributed to the competency it came from, otherwise
+ * the edit reads as a brand-new rubric instead of a divergence from that one
+ * competency.
+ *
+ * Rows sharing nothing with any selected competency are orphans — behaviours
+ * the author typed that no selected framework covers.
+ */
+const attributeRows = (
+  rows: BehaviourRow[],
+  selected: CompetencyType[],
+  mappings: Record<string, CompetencyBehavioursResponse | undefined>,
+): { byCompetency: Map<string, BehaviourRow[]>; orphans: BehaviourRow[] } => {
+  const byCompetency = new Map<string, BehaviourRow[]>();
+  const orphans: BehaviourRow[] = [];
+  const selectedIds = new Set(selected.map(competency => competency.id));
+
+  const push = (competencyId: string, row: BehaviourRow) =>
+    byCompetency.set(competencyId, [...(byCompetency.get(competencyId) ?? []), row]);
+
+  for (const row of rows) {
+    if (!isScoredCategory(row?.category)) continue;
+    const behaviours = namedBehaviours(row);
+    if (behaviours.length === 0) continue;
+
+    if (row.competencyId && selectedIds.has(row.competencyId)) {
+      push(row.competencyId, row);
+      continue;
+    }
+
+    const rowKeys = new Set(behaviours.map(behaviour => behaviourKey(row.category!, behaviour)));
+    let best: { competencyId: string; overlap: number } | null = null;
+    for (const competency of selected) {
+      const mapped = competencyBehaviourKeys(mappings[competency.id]);
+      const overlap = [...rowKeys].filter(key => mapped.has(key)).length;
+      // Strictly greater, so ties go to the earlier competency in the
+      // selection and attribution stays stable across ticks.
+      if (overlap > 0 && (!best || overlap > best.overlap)) {
+        best = { competencyId: competency.id, overlap };
+      }
+    }
+    if (best) push(best.competencyId, row);
+    else orphans.push(row);
+  }
+
+  return { byCompetency, orphans };
 };
 
 // A custom competency is stored as `{ownerId}_custom_{N}`; show the owner the
@@ -118,6 +182,12 @@ const displayNameFor = (competency: CompetencyType, userId?: number): string => 
   return competency.name;
 };
 
+const selectionKeyOf = (selected: CompetencyType[]) =>
+  selected
+    .map(competency => competency.id)
+    .sort()
+    .join(",");
+
 interface CompetencyProps {
   id: string;
   formMethods: any;
@@ -128,6 +198,9 @@ interface CompetencyProps {
   // Agent Builder Copilot V2 chat composer) and a downward list would be
   // clipped / off-screen.
   dropUp?: boolean;
+  // Restricts the picker to a single competency. The Agent Builder Copilot
+  // asks for exactly one, and its generation prompt takes one name.
+  singleSelect?: boolean;
 }
 
 export const Competency: React.FC<CompetencyProps> = ({
@@ -136,30 +209,31 @@ export const Competency: React.FC<CompetencyProps> = ({
   isMandatory = false,
   label = "Competency",
   dropUp = false,
+  singleSelect = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   // Latest Controller field, captured during render so handlers outside the
-  // Controller render (confirmation, eager-create) can apply the change.
+  // Controller render can apply the change.
   const fieldRef = useRef<any>(null);
-  // The table signature currently considered "in sync" with the selected
-  // competency, plus that competency's id. Re-established whenever the
-  // competency changes (a fresh selection or a loaded simulation); a later
-  // table change under the same competency is therefore a genuine user edit.
-  const baselineRef = useRef<{ competencyId: string | null; signature: string } | null>(null);
-  // Re-entrancy guard for the async create/update so rapid edits can't fire
-  // two creates.
+  // The table signature considered "in sync" with the current selection, plus
+  // that selection's key. Re-established whenever the selection changes (a
+  // fresh pick or a loaded simulation); a later table change under the same
+  // selection is therefore a genuine user edit.
+  const baselineRef = useRef<{ selectionKey: string; signature: string } | null>(null);
+  // Re-entrancy guard for the async fork/update so rapid edits can't fire two
+  // creates.
   const isSyncingRef = useRef(false);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // A competency the user picked that's awaiting confirmation because applying
-  // it would overwrite existing behaviour selections.
-  const [pendingCompetency, setPendingCompetency] = useState<CompetencyType | null>(null);
   // A custom competency the user asked to delete (confirmation popup).
   const [pendingDelete, setPendingDelete] = useState<CompetencyType | null>(null);
   // Inline-rename state for the user's own custom competencies.
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  // Behaviour mappings for the selected competencies, keyed by id. Needed to
+  // tell "the table still represents these competencies" from a real edit.
+  const [mappings, setMappings] = useState<Record<string, CompetencyBehavioursResponse>>({});
 
   const { user } = useUser();
   const userId = user?.id;
@@ -168,6 +242,7 @@ export const Competency: React.FC<CompetencyProps> = ({
     name: searchTerm,
     includeOwnCustom: true,
   });
+  const { data: clustersData } = useGetCompetencyClustersQuery();
   const [fetchCompetencyBehaviours] = useLazyGetCompetencyBehavioursQuery();
   const [createCompetency] = useCreateCompetencyMutation();
   const [setCompetencyBehaviours] = useSetCompetencyBehavioursMutation();
@@ -183,48 +258,109 @@ export const Competency: React.FC<CompetencyProps> = ({
     formState: { errors },
   } = formMethods;
 
-  // Reactive form values so the trigger label re-derives — and the eager-sync
-  // effect re-runs — whenever the user edits the behaviour table or changes
-  // the selected competency.
-  const selectedCompetency = useWatch({ control, name: "competency" }) as
+  // Reactive form values so the trigger label re-derives — and the sync effect
+  // re-runs — whenever the author edits the behaviour table or the selection.
+  const watchedSelection = useWatch({ control, name: FORM_FIELD_IDS.COMPETENCIES }) as
+    | CompetencyType[]
+    | undefined;
+  const primaryCompetency = useWatch({ control, name: FORM_FIELD_IDS.COMPETENCY }) as
     | CompetencyType
     | undefined;
   const behaviourRows = useWatch({ control, name: FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS }) as
-    | { category?: string; behaviors?: HelperTagItem[] }[]
+    | BehaviourRow[]
     | undefined;
 
-  // The selected competency's stored behaviour mapping, used to detect whether
-  // the table still represents it. RTK Query caches this (same tag as the
-  // auto-populate fetch), so it's not an extra round-trip.
-  const { data: selectedCompetencyBehaviours } = useGetCompetencyBehavioursQuery(
-    selectedCompetency?.id ?? "",
-    { skip: !selectedCompetency?.id },
-  );
+  // A simulation saved before multi-competency selection existed carries only
+  // the scalar, so read through to it rather than showing an empty picker.
+  const selected = useMemo<CompetencyType[]>(() => {
+    if (Array.isArray(watchedSelection) && watchedSelection.length > 0) return watchedSelection;
+    return primaryCompetency?.id ? [primaryCompetency] : [];
+  }, [watchedSelection, primaryCompetency]);
 
-  // Trigger label. A custom always shows its (your_custom_N / renamed) name.
-  // A global shows its name while the table matches, and the transient "Custom"
-  // while a divergence is pending materialisation.
+  const selectedIds = useMemo(() => new Set(selected.map(competency => competency.id)), [selected]);
+
+  // Keep `mappings` populated for everything selected. Fetches only what is
+  // missing, so this settles rather than looping.
+  useEffect(() => {
+    const missing = selected.filter(competency => !mappings[competency.id]);
+    if (missing.length === 0) return undefined;
+    let cancelled = false;
+    void (async () => {
+      const loaded = await Promise.all(
+        missing.map(async competency => {
+          try {
+            return [
+              competency.id,
+              await fetchCompetencyBehaviours(competency.id).unwrap(),
+            ] as const;
+          } catch {
+            return null;
+          }
+        }),
+      );
+      if (cancelled) return;
+      const entries = loaded.filter(
+        (entry): entry is readonly [string, CompetencyBehavioursResponse] => entry !== null,
+      );
+      if (entries.length > 0) {
+        setMappings(prev => ({ ...prev, ...Object.fromEntries(entries) }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selected, mappings, fetchCompetencyBehaviours]);
+
+  // Memoised because `?? []` mints a new array each render, which would
+  // invalidate the grouped-options and trigger-label memos below every time.
+  const competencies = useMemo(() => competenciesData?.data ?? [], [competenciesData]);
+  const clusters = useMemo(() => clustersData?.data ?? [], [clustersData]);
+
+  // Trigger label. Naming the cluster when the selection is exactly its
+  // members is the whole point of clusters — the framework's own name reads
+  // far better than "14 competencies" for a set the author picked in one go.
   const { displayLabel, isPlaceholder } = useMemo(() => {
-    if (selectedCompetency?.id) {
-      if (selectedCompetency.isCustom) {
-        return { displayLabel: displayNameFor(selectedCompetency, userId), isPlaceholder: false };
+    if (selected.length === 0) {
+      return tableBehaviourKeys(behaviourRows).size > 0
+        ? { displayLabel: CUSTOM_LABEL, isPlaceholder: false }
+        : { displayLabel: en.common.select, isPlaceholder: true };
+    }
+
+    const selectionKey = selectionKeyOf(selected);
+    const matchingCluster = clusters.find(
+      cluster =>
+        cluster.competencyIds.length > 0 &&
+        selectionKeyOf(
+          cluster.competencyIds.map(clusterId => ({ id: clusterId }) as CompetencyType),
+        ) === selectionKey,
+    );
+    if (matchingCluster) {
+      return { displayLabel: matchingCluster.name, isPlaceholder: false };
+    }
+
+    if (selected.length === 1) {
+      const only = selected[0];
+      if (only.isCustom) {
+        return { displayLabel: displayNameFor(only, userId), isPlaceholder: false };
       }
-      if (!selectedCompetencyBehaviours) {
-        return { displayLabel: selectedCompetency.name, isPlaceholder: false };
-      }
+      const mapping = mappings[only.id];
+      // Until the mapping loads there is nothing to compare against, so show
+      // the real name rather than flashing "Custom".
+      if (!mapping) return { displayLabel: only.name, isPlaceholder: false };
       const matches = keySetsEqual(
         tableBehaviourKeys(behaviourRows),
-        competencyBehaviourKeys(selectedCompetencyBehaviours),
+        competencyBehaviourKeys(mapping),
       );
       return matches
-        ? { displayLabel: selectedCompetency.name, isPlaceholder: false }
+        ? { displayLabel: only.name, isPlaceholder: false }
         : { displayLabel: CUSTOM_LABEL, isPlaceholder: false };
     }
 
-    return tableBehaviourKeys(behaviourRows).size > 0
-      ? { displayLabel: CUSTOM_LABEL, isPlaceholder: false }
-      : { displayLabel: en.common.select, isPlaceholder: true };
-  }, [selectedCompetency, selectedCompetencyBehaviours, behaviourRows, userId]);
+    return {
+      displayLabel: `${selected.length} competencies`,
+      isPlaceholder: false,
+    };
+  }, [selected, clusters, mappings, behaviourRows, userId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -232,13 +368,12 @@ export const Competency: React.FC<CompetencyProps> = ({
     }
   }, [isOpen]);
 
-  // Auto-populate the Behaviour Instructions / Scoring Rubric table from the
-  // competency's mapped behaviours: helpful → "Helper should do" rows,
-  // unhelpful → "Helper should not do" rows. Per product decision this ALWAYS
-  // replaces the existing rows on a user competency change.
+  // --- applying a selection ----------------------------------------------
+
   const buildBehaviourRow = (
     category: enumBehaviourInstructionCategory,
     behaviours: HelperTagItem[],
+    competencyId: string,
   ) => ({
     // A stable per-row id is required: the behaviour table identifies the row
     // to mutate by id (rowId), and its edit handler ignores changes whose
@@ -247,6 +382,7 @@ export const Competency: React.FC<CompetencyProps> = ({
     id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     category,
     behaviors: behaviours,
+    competencyId,
     instructions: [],
     stateInstructions: BEHAVIOUR_STATES.map(state => ({
       stateId: state.stateId,
@@ -254,121 +390,180 @@ export const Competency: React.FC<CompetencyProps> = ({
     })),
   });
 
-  const autoPopulateBehaviourInstructions = async (competencyId: string) => {
-    try {
-      const { helpful, unhelpful } = await fetchCompetencyBehaviours(competencyId).unwrap();
-      const rows: ReturnType<typeof buildBehaviourRow>[] = [];
-      if (helpful.length) {
-        rows.push(buildBehaviourRow(enumBehaviourInstructionCategory.HELPER_SHOULD_DO, helpful));
-      }
-      if (unhelpful.length) {
-        rows.push(
-          buildBehaviourRow(enumBehaviourInstructionCategory.HELPER_SHOULD_NOT_DO, unhelpful),
-        );
-      }
-      // The table now mirrors this competency's stored mapping, so record it as
-      // the in-sync baseline (set BEFORE setValue so the watch/effect that fires
-      // next sees the matching baseline and doesn't treat populate as an edit).
-      baselineRef.current = {
-        competencyId,
-        signature: signatureOf(tableBehaviourKeys(rows)),
-      };
-      formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, rows, {
-        shouldDirty: true,
-      });
-    } catch {
-      // Non-fatal: leave the table as-is if behaviours can't be fetched.
+  // Rows a competency contributes: one "should do" and one "should not do",
+  // each tagged with the competency so a later edit is attributable to it.
+  const rowsForCompetency = (competencyId: string, mapping: CompetencyBehavioursResponse) => {
+    const rows = [];
+    if (mapping.helpful.length) {
+      rows.push(
+        buildBehaviourRow(
+          enumBehaviourInstructionCategory.HELPER_SHOULD_DO,
+          mapping.helpful,
+          competencyId,
+        ),
+      );
     }
+    if (mapping.unhelpful.length) {
+      rows.push(
+        buildBehaviourRow(
+          enumBehaviourInstructionCategory.HELPER_SHOULD_NOT_DO,
+          mapping.unhelpful,
+          competencyId,
+        ),
+      );
+    }
+    return rows;
   };
 
-  // True when the table already holds behaviour selections that the
-  // auto-populate would replace.
-  const hasExistingBehaviourSelections = () => {
-    const rows = formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) as
-      | { behaviors?: unknown[] }[]
-      | undefined;
-    return (
-      Array.isArray(rows) &&
-      rows.some(row => Array.isArray(row?.behaviors) && row.behaviors.length > 0)
+  const writeSelection = (next: CompetencyType[], rows: BehaviourRow[]) => {
+    // Record the baseline BEFORE the writes, so the watch/effect that fires
+    // next sees a matching baseline and doesn't read our own population as a
+    // hand edit.
+    baselineRef.current = {
+      selectionKey: selectionKeyOf(next),
+      signature: signatureOf(tableBehaviourKeys(rows)),
+    };
+    formMethods.setValue(FORM_FIELD_IDS.COMPETENCIES, next, { shouldDirty: true });
+    // The scalar mirrors the first entry: the Copilot wizard and this field's
+    // own required-validation both read one competency.
+    fieldRef.current?.onChange(next[0]?.id ?? "");
+    formMethods.setValue(FORM_FIELD_IDS.COMPETENCY, next[0] ?? "");
+    formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, rows, { shouldDirty: true });
+  };
+
+  /**
+   * Adds competencies to the selection, appending each one's behaviour rows.
+   * Additive rather than replacing: with several competencies (or a whole
+   * cluster) in play, ticking one more must not discard the rubric already
+   * assembled from the others.
+   */
+  const addCompetencies = async (toAdd: CompetencyType[]) => {
+    const newOnes = toAdd.filter(competency => !selectedIds.has(competency.id));
+    if (newOnes.length === 0) return;
+
+    const fetched = await Promise.all(
+      newOnes.map(async competency => {
+        try {
+          return [competency.id, await fetchCompetencyBehaviours(competency.id).unwrap()] as const;
+        } catch {
+          // Non-fatal: a competency whose behaviours can't be fetched is still
+          // selected, it just contributes no rows.
+          const empty: CompetencyBehavioursResponse = { helpful: [], unhelpful: [] };
+          return [competency.id, empty] as const;
+        }
+      }),
+    );
+    setMappings(prev => ({ ...prev, ...Object.fromEntries(fetched) }));
+
+    const existingRows = (formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) ??
+      []) as BehaviourRow[];
+    // Drop the placeholder empty row the table seeds itself with, so the first
+    // pick doesn't leave a blank row above the populated ones.
+    const keptRows = existingRows.filter(
+      row => isScoredCategory(row?.category) && namedBehaviours(row).length > 0,
+    );
+    const addedRows = fetched.flatMap(([competencyId, mapping]) =>
+      rowsForCompetency(competencyId, mapping),
+    );
+
+    const base = singleSelect ? [] : selected;
+    const next = singleSelect ? newOnes.slice(0, 1) : [...base, ...newOnes];
+    writeSelection(next, singleSelect ? addedRows : [...keptRows, ...addedRows]);
+  };
+
+  /** Removes a competency and the rows attributed to it. */
+  const removeCompetency = (competency: CompetencyType) => {
+    const rows = (formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) ??
+      []) as BehaviourRow[];
+    const { byCompetency } = attributeRows(rows, selected, mappings);
+    const doomed = new Set(byCompetency.get(competency.id) ?? []);
+    writeSelection(
+      selected.filter(entry => entry.id !== competency.id),
+      rows.filter(row => !doomed.has(row)),
     );
   };
 
-  const applyCompetency = (competency: CompetencyType) => {
-    fieldRef.current?.onChange(competency?.id);
-    formMethods.setValue("competency", competency);
-    if (competency?.id) {
-      void autoPopulateBehaviourInstructions(competency.id);
-    }
-  };
-
-  const handleSelect = (field: any, competency: CompetencyType) => {
+  const toggleCompetency = (field: any, competency: CompetencyType) => {
     fieldRef.current = field;
-    setIsOpen(false);
-    setSearchTerm("");
-
-    const current = formMethods.getValues("competency") as CompetencyType | undefined;
-    // Re-selecting the same competency is a no-op.
-    if (current?.id && competency?.id && current.id === competency.id) return;
-
-    // Changing competency replaces the current rubric/behaviour selections.
-    // Warn first when there's an existing selection to lose; otherwise (e.g.
-    // the very first pick on an empty table) apply immediately.
-    if (hasExistingBehaviourSelections()) {
-      setPendingCompetency(competency);
+    if (singleSelect) setIsOpen(false);
+    if (selectedIds.has(competency.id)) {
+      if (singleSelect) return; // re-picking the same one is a no-op
+      removeCompetency(competency);
     } else {
-      applyCompetency(competency);
+      void addCompetencies([competency]);
     }
   };
 
-  const confirmCompetencyChange = () => {
-    if (pendingCompetency) applyCompetency(pendingCompetency);
-    setPendingCompetency(null);
-  };
+  const toggleCluster = (field: any, competencyIds: string[]) => {
+    fieldRef.current = field;
+    const members = competencyIds
+      .map(memberId => competencies.find(competency => competency.id === memberId))
+      .filter((competency): competency is CompetencyType => Boolean(competency));
+    const allSelected =
+      members.length > 0 && members.every(competency => selectedIds.has(competency.id));
 
-  const cancelCompetencyChange = () => setPendingCompetency(null);
+    if (allSelected) {
+      const rows = (formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) ??
+        []) as BehaviourRow[];
+      const { byCompetency } = attributeRows(rows, selected, mappings);
+      const doomedIds = new Set(members.map(competency => competency.id));
+      const doomedRows = new Set(
+        members.flatMap(competency => byCompetency.get(competency.id) ?? []),
+      );
+      writeSelection(
+        selected.filter(competency => !doomedIds.has(competency.id)),
+        rows.filter(row => !doomedRows.has(row)),
+      );
+    } else {
+      void addCompetencies(members);
+    }
+  };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  // --- Eager custom-competency materialisation ----------------------------
+  // --- reconciling hand edits back into the selection ---------------------
   // Fires (debounced) whenever the behaviour table changes AWAY from the
-  // in-sync baseline under the same competency — i.e. a genuine ×/+ edit. A
-  // bare competency change (selection or load) only re-establishes the
-  // baseline and never materialises, so opening a saved scenario is inert.
-  const syncCustomFromTable = async () => {
+  // in-sync baseline under the same selection — i.e. a genuine ×/+ edit. A
+  // bare selection change only re-establishes the baseline and never forks, so
+  // opening a saved scenario is inert.
+  const syncSelectionFromTable = async () => {
     if (isSyncingRef.current) return;
-    if (pendingCompetency) return; // awaiting the change-confirmation popup
 
     // Read the table and the selection LIVE rather than from the watched
-    // snapshot this debounced callback closed over 700ms ago: a competency
-    // change writes the new mapping into the table and re-points `baselineRef`
-    // synchronously, so a stale snapshot compares the OLD table against the
-    // NEW baseline and mistakes a competency change for a hand edit.
-    const liveRows = formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) as
-      | { category?: string; behaviors?: HelperTagItem[] }[]
+    // snapshot this debounced callback closed over 700ms ago: applying a
+    // selection writes rows and re-points `baselineRef` synchronously, so a
+    // stale snapshot compares the OLD table against the NEW baseline and
+    // mistakes a selection change for a hand edit.
+    const liveRows = (formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) ??
+      []) as BehaviourRow[];
+    const liveSelectionRaw = formMethods.getValues(FORM_FIELD_IDS.COMPETENCIES) as
+      | CompetencyType[]
       | undefined;
-    const liveCompetency = formMethods.getValues("competency") as CompetencyType | undefined;
+    const livePrimary = formMethods.getValues(FORM_FIELD_IDS.COMPETENCY) as
+      | CompetencyType
+      | undefined;
+    const liveSelection =
+      Array.isArray(liveSelectionRaw) && liveSelectionRaw.length > 0
+        ? liveSelectionRaw
+        : livePrimary?.id
+          ? [livePrimary]
+          : [];
+
     const tableKeys = tableBehaviourKeys(liveRows);
     const signature = signatureOf(tableKeys);
-    const competencyId = liveCompetency?.id ?? null;
+    const selectionKey = selectionKeyOf(liveSelection);
 
-    // (Re)establish the baseline when the selected competency changes (a fresh
-    // selection or a loaded simulation). Never materialise in that same cycle.
-    if (!baselineRef.current || baselineRef.current.competencyId !== competencyId) {
-      baselineRef.current = { competencyId, signature };
+    // (Re)establish the baseline when the selection changes (a fresh pick or a
+    // loaded simulation). Never fork in that same cycle.
+    if (!baselineRef.current || baselineRef.current.selectionKey !== selectionKey) {
+      baselineRef.current = { selectionKey, signature };
       return;
     }
 
-    // Same competency, table unchanged from baseline → nothing to do.
+    // Same selection, table unchanged from baseline → nothing to do.
     if (signature === baselineRef.current.signature) return;
-
-    // Same competency but the table changed → a genuine user edit (× / +).
-    // Emptying the table entirely is treated as "no selection", not a custom.
-    if (tableKeys.size === 0) {
-      baselineRef.current = { competencyId, signature };
-      return;
-    }
 
     // …but only if the author actually made that edit. Rows that arrived from
     // the server are not a divergence to capture: the editor loads a scenario
@@ -381,56 +576,120 @@ export const Competency: React.FC<CompetencyProps> = ({
     // competency yet silently acquires a machine-made `your_custom_N` the
     // moment it's opened.
     if (!formMethods.getFieldState(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS).isDirty) {
-      baselineRef.current = { competencyId, signature };
+      baselineRef.current = { selectionKey, signature };
       return;
     }
 
-    const payload = behaviourRowsToPayload(liveRows);
-
-    // Case 1: editing an already-custom competency → keep its mapping in sync.
-    if (liveCompetency?.isCustom && competencyId) {
-      isSyncingRef.current = true;
-      try {
-        await setCompetencyBehaviours({ id: competencyId, data: payload }).unwrap();
-        baselineRef.current = { competencyId, signature };
-      } catch {
-        // Non-fatal: a later edit retries.
-      } finally {
-        isSyncingRef.current = false;
-      }
+    // Emptying the table entirely is "no selection", not a rubric to capture.
+    if (tableKeys.size === 0) {
+      writeSelection([], liveRows);
       return;
     }
 
-    // Case 2/3: edited away from a global competency (or typed with none
-    // selected) → materialise a single user-owned custom and select it WITHOUT
-    // repopulating the table (we keep the user's edits as-is).
+    // Every selected competency still needs its mapping to judge divergence.
+    // Without it we cannot tell an edit from a match, and guessing either way
+    // is worse than waiting for the next tick.
+    if (liveSelection.some(competency => !mappings[competency.id])) return;
+
     isSyncingRef.current = true;
     try {
-      const custom = await createCompetency({ isCustom: true }).unwrap();
-      await setCompetencyBehaviours({ id: custom.id, data: payload }).unwrap();
-      // Two round-trips happened above, and picking from the dropdown is not
-      // blocked while they're in flight. If the author chose a competency by
-      // hand in the meantime, that choice wins — writing the materialised
-      // custom now would silently replace it, which reads as "the dropdown
-      // won't let me select a competency". Drop the baseline so the next tick
-      // re-establishes it against whatever they picked.
-      const selectedNow =
-        (formMethods.getValues("competency") as CompetencyType | undefined)?.id ?? null;
-      if (selectedNow !== competencyId) {
-        // The author picked something else while this was in flight, so the
-        // custom just materialised above is already orphaned — nothing will
-        // ever reference it again. Clean it up rather than leaving it behind.
-        try {
-          await deleteCompetency(custom.id).unwrap();
-        } catch {
-          // Non-fatal: worst case an unused custom lingers.
+      const { byCompetency, orphans } = attributeRows(liveRows, liveSelection, mappings);
+      let next = [...liveSelection];
+      let rows = [...liveRows];
+      const mappingUpdates: Record<string, CompetencyBehavioursResponse> = {};
+      // Customs minted below. If the author's selection moves while these
+      // round-trips are in flight, ours is discarded — and these become
+      // orphans nothing will ever reference, so they get cleaned up rather
+      // than left behind as clutter.
+      const createdIds: string[] = [];
+
+      for (const competency of liveSelection) {
+        const owned = byCompetency.get(competency.id) ?? [];
+
+        // Its whole row pair is gone → the author removed this competency from
+        // the rubric, so drop it from the selection rather than forking an
+        // empty custom.
+        if (owned.length === 0) {
+          next = next.filter(entry => entry.id !== competency.id);
+          continue;
         }
+
+        const payload = behaviourRowsToPayload(owned);
+        const stillMatches = keySetsEqual(
+          tableBehaviourKeys(owned),
+          competencyBehaviourKeys(mappings[competency.id]),
+        );
+        if (stillMatches) continue;
+
+        // Already the author's own custom → just keep its mapping in step.
+        if (competency.isCustom) {
+          await setCompetencyBehaviours({ id: competency.id, data: payload }).unwrap();
+          mappingUpdates[competency.id] = {
+            helpful: payload.helpful.map(name => ({ name })),
+            unhelpful: payload.unhelpful.map(name => ({ name })),
+          } as CompetencyBehavioursResponse;
+          continue;
+        }
+
+        // A shared competency was edited. Fork ONLY this one into a private
+        // copy holding the edit and swap it in place — the rest of the
+        // selection stays attributed to their real competencies, which is what
+        // keeps the analytics competency map meaningful for the simulation.
+        const custom = await createCompetency({ isCustom: true }).unwrap();
+        createdIds.push(custom.id);
+        await setCompetencyBehaviours({ id: custom.id, data: payload }).unwrap();
+        mappingUpdates[custom.id] = {
+          helpful: payload.helpful.map(name => ({ name })),
+          unhelpful: payload.unhelpful.map(name => ({ name })),
+        } as CompetencyBehavioursResponse;
+        next = next.map(entry => (entry.id === competency.id ? custom : entry));
+        rows = rows.map(row => (owned.includes(row) ? { ...row, competencyId: custom.id } : row));
+      }
+
+      // Behaviours no selected framework covers → their own custom, so the
+      // rubric never holds rows the selection doesn't account for.
+      if (orphans.length > 0) {
+        const payload = behaviourRowsToPayload(orphans);
+        const custom = await createCompetency({ isCustom: true }).unwrap();
+        createdIds.push(custom.id);
+        await setCompetencyBehaviours({ id: custom.id, data: payload }).unwrap();
+        mappingUpdates[custom.id] = {
+          helpful: payload.helpful.map(name => ({ name })),
+          unhelpful: payload.unhelpful.map(name => ({ name })),
+        } as CompetencyBehavioursResponse;
+        next = [...next, custom];
+        rows = rows.map(row => (orphans.includes(row) ? { ...row, competencyId: custom.id } : row));
+      }
+
+      if (Object.keys(mappingUpdates).length > 0) {
+        setMappings(prev => ({ ...prev, ...mappingUpdates }));
+      }
+
+      // The author can keep clicking while those round-trips are in flight. If
+      // the selection moved under us, ours is stale — drop the baseline and let
+      // the next tick reconcile against what they actually chose.
+      const selectionNow = selectionKeyOf(
+        (formMethods.getValues(FORM_FIELD_IDS.COMPETENCIES) as CompetencyType[] | undefined) ?? [],
+      );
+      if (selectionNow !== selectionKey) {
+        await Promise.all(
+          createdIds.map(async createdId => {
+            try {
+              await deleteCompetency(createdId).unwrap();
+            } catch {
+              // Non-fatal: worst case an unused custom lingers.
+            }
+          }),
+        );
         baselineRef.current = null;
         return;
       }
-      baselineRef.current = { competencyId: custom.id, signature };
-      fieldRef.current?.onChange(custom.id);
-      formMethods.setValue("competency", custom);
+
+      baselineRef.current = { selectionKey: selectionKeyOf(next), signature };
+      formMethods.setValue(FORM_FIELD_IDS.COMPETENCIES, next, { shouldDirty: true });
+      fieldRef.current?.onChange(next[0]?.id ?? "");
+      formMethods.setValue(FORM_FIELD_IDS.COMPETENCY, next[0] ?? "");
+      formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, rows, { shouldDirty: true });
     } catch {
       toast.error(en.errors.failedCompetencyCreation);
     } finally {
@@ -441,14 +700,14 @@ export const Competency: React.FC<CompetencyProps> = ({
   useEffect(() => {
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     syncTimerRef.current = setTimeout(() => {
-      void syncCustomFromTable();
+      void syncSelectionFromTable();
     }, SYNC_DEBOUNCE_MS);
     return () => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
-  }, [behaviourRows, selectedCompetency, pendingCompetency]);
+  }, [behaviourRows, watchedSelection, primaryCompetency, mappings]);
 
-  // --- Inline rename / delete of the user's own custom competencies --------
+  // --- inline rename / delete of the user's own custom competencies --------
   const startRename = (competency: CompetencyType) => {
     setRenamingId(competency.id);
     setRenameValue(displayNameFor(competency, userId));
@@ -460,9 +719,13 @@ export const Competency: React.FC<CompetencyProps> = ({
     if (!name || name === competency.name) return;
     try {
       await updateCompetency({ id: competency.id, data: { name } }).unwrap();
-      // Keep the trigger label in sync if this is the selected competency.
-      if (selectedCompetency?.id === competency.id) {
-        formMethods.setValue("competency", { ...selectedCompetency, name });
+      // Keep the trigger label in sync if this competency is selected.
+      if (selectedIds.has(competency.id)) {
+        const next = selected.map(entry =>
+          entry.id === competency.id ? { ...entry, name } : entry,
+        );
+        formMethods.setValue(FORM_FIELD_IDS.COMPETENCIES, next);
+        formMethods.setValue(FORM_FIELD_IDS.COMPETENCY, next[0] ?? "");
       }
     } catch {
       toast.error(en.errors.failedCompetencyUpdate);
@@ -475,24 +738,117 @@ export const Competency: React.FC<CompetencyProps> = ({
     if (!competency) return;
     try {
       await deleteCompetency(competency.id).unwrap();
-      // Deleting the selected custom clears the selection and the table.
-      if (selectedCompetency?.id === competency.id) {
-        fieldRef.current?.onChange("");
-        formMethods.setValue("competency", "");
-        formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, [], { shouldDirty: true });
-        baselineRef.current = null;
-      }
+      if (selectedIds.has(competency.id)) removeCompetency(competency);
     } catch {
       toast.error(en.errors.failedCompetencyDeletion);
     }
   };
 
-  const competencies = competenciesData?.data || [];
+  // --- dropdown -----------------------------------------------------------
+
+  // Grouped options: one section per cluster, then everything ungrouped.
+  // Membership is many-to-many, so a competency in two clusters shows under
+  // both. A cluster with no member matching the current search is dropped
+  // rather than shown as an empty heading.
+  const groups = useMemo(() => {
+    const byId = new Map(competencies.map(competency => [competency.id, competency]));
+    const clustered = new Set(clusters.flatMap(cluster => cluster.competencyIds));
+    const clusterGroups = clusters
+      .map(cluster => ({
+        cluster,
+        members: cluster.competencyIds
+          .map(memberId => byId.get(memberId))
+          .filter((competency): competency is CompetencyType => Boolean(competency))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+      .filter(group => group.members.length > 0);
+    return {
+      clusterGroups,
+      ungrouped: competencies.filter(competency => !clustered.has(competency.id)),
+    };
+  }, [competencies, clusters]);
+
+  const renderOption = (field: { value: string }, competency: CompetencyType) => {
+    const isSelected = selectedIds.has(competency.id);
+    const isRenaming = renamingId === competency.id;
+    return (
+      <div
+        key={competency.id}
+        className={`group flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors ${
+          isSelected
+            ? "bg-primary-50 text-primary font-medium"
+            : "text-typography-900 hover:bg-background-secondary"
+        } ${isRenaming ? "" : "cursor-pointer"}`}
+        onClick={() => {
+          if (!isRenaming) toggleCompetency(field, competency);
+        }}
+      >
+        {isRenaming ? (
+          <input
+            autoFocus
+            value={renameValue}
+            onClick={e => e.stopPropagation()}
+            onChange={e => setRenameValue(e.target.value)}
+            onBlur={() => void submitRename(competency)}
+            onKeyDown={e => {
+              if (e.key === "Enter") void submitRename(competency);
+              if (e.key === "Escape") setRenamingId(null);
+            }}
+            className="w-full rounded border border-border-light px-2 py-0.5 text-base text-typography-900"
+          />
+        ) : (
+          <>
+            <span className="flex items-center gap-2 min-w-0">
+              {!singleSelect && (
+                <input
+                  type="checkbox"
+                  readOnly
+                  checked={isSelected}
+                  tabIndex={-1}
+                  className="shrink-0 pointer-events-none accent-primary"
+                />
+              )}
+              <span className="text-base truncate">{displayNameFor(competency, userId)}</span>
+            </span>
+            {competency.isCustom && (
+              <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  title={en.common.edit}
+                  onClick={e => {
+                    e.stopPropagation();
+                    startRename(competency);
+                  }}
+                  className="text-typography-400 hover:text-primary p-1"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  title={en.common.delete}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setPendingDelete(competency);
+                  }}
+                  className="text-typography-400 hover:text-destructive-500 p-1"
+                >
+                  <Trash className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   const renderDropdown = (field: { value: string }) => {
     return (
       <div
-        className={`absolute left-0 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-50 custom-scrollbar ${
+        // Wider than the trigger on purpose: this field sits in the builder's
+        // narrow left column, and competency names like "Exploration &
+        // Normalization of Feelings" are unreadable truncated to it.
+        className={`absolute left-0 w-full min-w-[320px] bg-white border rounded-md shadow-lg max-h-[280px] overflow-auto z-50 custom-scrollbar ${
           dropUp ? "bottom-full mb-1" : "top-full mt-1"
         }`}
       >
@@ -512,68 +868,48 @@ export const Competency: React.FC<CompetencyProps> = ({
             {en.common.noOptionsAvailable}
           </div>
         ) : (
-          competencies.map(competency => {
-            const isSelected = selectedCompetency?.id === competency.id;
-            const isRenaming = renamingId === competency.id;
-            return (
-              <div
-                key={competency.id}
-                className={`group flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors ${
-                  isSelected
-                    ? "bg-primary-50 text-primary font-medium"
-                    : "text-typography-900 hover:bg-background-secondary"
-                } ${isRenaming ? "" : "cursor-pointer"}`}
-                onClick={() => {
-                  if (!isRenaming) handleSelect(field, competency);
-                }}
-              >
-                {isRenaming ? (
-                  <input
-                    autoFocus
-                    value={renameValue}
-                    onClick={e => e.stopPropagation()}
-                    onChange={e => setRenameValue(e.target.value)}
-                    onBlur={() => void submitRename(competency)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") void submitRename(competency);
-                      if (e.key === "Escape") setRenamingId(null);
-                    }}
-                    className="w-full rounded border border-border-light px-2 py-0.5 text-base text-typography-900"
-                  />
-                ) : (
-                  <>
-                    <span className="text-base truncate">{displayNameFor(competency, userId)}</span>
-                    {competency.isCustom && (
-                      <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          type="button"
-                          title={en.common.edit}
-                          onClick={e => {
-                            e.stopPropagation();
-                            startRename(competency);
-                          }}
-                          className="text-typography-400 hover:text-primary p-1"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          title={en.common.delete}
-                          onClick={e => {
-                            e.stopPropagation();
-                            setPendingDelete(competency);
-                          }}
-                          className="text-typography-400 hover:text-destructive-500 p-1"
-                        >
-                          <Trash className="w-3.5 h-3.5" />
-                        </button>
-                      </span>
+          <>
+            {groups.clusterGroups.map(({ cluster, members }) => {
+              const allSelected = members.every(competency => selectedIds.has(competency.id));
+              return (
+                <div key={cluster.id}>
+                  <div className="flex items-center justify-between gap-2 bg-background-secondary px-3 py-1.5">
+                    <span className="text-xs font-medium uppercase tracking-wide text-typography-700 truncate">
+                      {cluster.name}
+                    </span>
+                    {/* Selecting the cluster is the point of the grouping: it
+                        takes every competency under it in one click. */}
+                    {!singleSelect && (
+                      <button
+                        type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleCluster(field, cluster.competencyIds);
+                        }}
+                        className="shrink-0 text-xs text-primary hover:underline"
+                      >
+                        {allSelected ? "Clear all" : "Select all"}
+                      </button>
                     )}
-                  </>
+                  </div>
+                  {members.map(competency => renderOption(field, competency))}
+                </div>
+              );
+            })}
+
+            {groups.ungrouped.length > 0 && (
+              <div>
+                {groups.clusterGroups.length > 0 && (
+                  <div className="bg-background-secondary px-3 py-1.5">
+                    <span className="text-xs font-medium uppercase tracking-wide text-typography-700">
+                      Ungrouped
+                    </span>
+                  </div>
                 )}
+                {groups.ungrouped.map(competency => renderOption(field, competency))}
               </div>
-            );
-          })
+            )}
+          </>
         )}
       </div>
     );
@@ -582,7 +918,24 @@ export const Competency: React.FC<CompetencyProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+        <span className="flex items-center gap-1.5">
+          <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+          {!singleSelect && (
+            <Tooltip
+              label={
+                "Pick as many competencies as this roleplay should assess. Competencies are " +
+                "grouped into clusters, and “Select all” on a cluster takes every competency " +
+                "in it. Each one selected adds a “should do” and a “should not do” row to the " +
+                "Scoring Rubric below."
+              }
+              align="top"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          )}
+        </span>
       </div>
       <div ref={dropdownRef}>
         <div className="relative">
@@ -616,22 +969,16 @@ export const Competency: React.FC<CompetencyProps> = ({
           />
         </div>
       </div>
+      {!singleSelect && selected.length > 1 && (
+        <p className="text-xs text-typography-600">
+          The Behaviour Instructions / Scoring Rubric table holds one “should do” and one “should
+          not do” row per selected competency. Removing a competency’s rows removes it from this
+          list; editing them forks that one competency into your own copy.
+        </p>
+      )}
       {errors && errors[id] && (
         <p className="text-destructive-500 text-sm mt-1">{errors[id]?.message}</p>
       )}
-
-      <ActionConfirmationPopup
-        isOpen={Boolean(pendingCompetency)}
-        onClose={cancelCompetencyChange}
-        title="Change"
-        titleItalic="competency"
-        description={
-          "Changing the competency will replace the current Behaviour Instructions / Scoring " +
-          "Rubric selections with the behaviours mapped to the new competency. Do you want to continue?"
-        }
-        primaryButton={{ label: "Accept", onClick: confirmCompetencyChange }}
-        secondaryButton={{ label: "Cancel", onClick: cancelCompetencyChange }}
-      />
 
       <ActionConfirmationPopup
         isOpen={Boolean(pendingDelete)}
