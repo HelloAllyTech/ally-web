@@ -39,6 +39,7 @@ import {
   CertificationResponse,
   ChartPreference,
   ChartPreferencesResponse,
+  CodingAgentCostResponse,
   OrgEngagementResponse,
   QualifiedSessionsResponse,
   QualitySentimentResponse,
@@ -292,6 +293,15 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getRoleplayCost: builder.query<RoleplayCostResponse, AnalyticsWindowQuery>({
       query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.ROLEPLAY_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Bug Hunter + Builder cost specifically — the platform-wide chart above
+    // has no filter to isolate one feature and no time axis at all.
+    getCodingAgentCost: builder.query<CodingAgentCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CODING_AGENT_COST,
         method: HttpMethod.GET,
         params: windowParams(q),
       }),
@@ -728,6 +738,7 @@ export const {
   useGetQualifiedSessionsQuery,
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
+  useGetCodingAgentCostQuery,
   useGetQualitySentimentQuery,
   useGetXpGrowthQuery,
   useGetChartPreferencesQuery,

@@ -403,6 +403,7 @@ export const ApiEndpoints = {
     QUALIFIED_SESSIONS: "/v1/analytics/qualified-sessions",
     ORG_ENGAGEMENT: "/v1/analytics/org-engagement",
     ROLEPLAY_COST: "/v1/analytics/roleplay-cost",
+    CODING_AGENT_COST: "/v1/analytics/coding-agent-cost",
     QUALITY_SENTIMENT: "/v1/analytics/quality-sentiment",
     CHART_PREFERENCES: "/v1/analytics/chart-preferences",
     ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",

@@ -23,6 +23,7 @@ import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
+import { CodingAgentCost } from "./CodingAgentCost";
 import { TabControlsSlotProvider } from "./tabControlsSlot";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
@@ -140,7 +141,12 @@ const TABS: TabDef[] = [
     id: "cost",
     label: "AI cost",
     uses: { language: false, range: true },
-    render: f => <TokenConsumption {...f} />,
+    render: f => (
+      <div className="flex flex-col gap-6">
+        <TokenConsumption {...f} />
+        <CodingAgentCost {...f} />
+      </div>
+    ),
   },
   {
     id: "scribe",

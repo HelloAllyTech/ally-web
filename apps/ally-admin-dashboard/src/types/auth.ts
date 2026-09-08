@@ -774,6 +774,46 @@ export interface RoleplayCostResponse {
   computedAt: string;
 }
 
+// Bug Hunter + Builder AI cost — mirrors CodingAgentCostResponseDto from
+// GET /api/v1/analytics/coding-agent-cost. NOT `llm_usage.service` (both
+// features write `service: 'llm'`) — the discriminator is `task`. Every
+// figure is an estimate priced at read time.
+export type CodingAgent = "bug-hunter" | "builder";
+
+export interface CodingAgentCostAmount {
+  "bug-hunter": number;
+  builder: number;
+}
+
+export interface CodingAgentCostPoint {
+  bucket: string;
+  costUsd: CodingAgentCostAmount;
+  calls: CodingAgentCostAmount;
+}
+
+export interface CodingAgentModelBreakdown {
+  agent: CodingAgent;
+  model: string;
+  costUsd: number;
+  calls: number;
+  /** False when this model has no pricing entry — its calls contribute $0. */
+  priced: boolean;
+}
+
+export interface CodingAgentCostResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  agentLabels: Record<string, string>;
+  points: CodingAgentCostPoint[];
+  modelBreakdown: CodingAgentModelBreakdown[];
+  totalCostUsd: CodingAgentCostAmount;
+  unpricedCalls: number;
+  /** Must be surfaced: these are estimates, not billed amounts. */
+  estimateNote: string;
+  computedAt: string;
+}
+
 // Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
 // from GET /api/v1/analytics/quality-sentiment.
 //
