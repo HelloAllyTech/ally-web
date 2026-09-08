@@ -21,9 +21,12 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
   InlineNotification: ({ title }: any) => <div>{title}</div>,
   SkeletonText: () => <div>Loading…</div>,
-  TextInput: ({ id, labelText, value, onChange }: any) => (
-    <input aria-label={labelText || id} value={value} onChange={onChange} />
+  Select: ({ id, labelText, value, onChange, children }: any) => (
+    <select aria-label={labelText || id} value={value} onChange={onChange}>
+      {children}
+    </select>
   ),
+  SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
   Tooltip: ({ children }: any) => <>{children}</>,
 }));
 
@@ -59,6 +62,7 @@ describe("AiModelsTab", () => {
         enabled: true,
         maxConcurrentBuilds: 3,
         defaultBudgetUsd: "25",
+        defaultEngine: "claude-code",
         plannerModel: null,
         coderModel: "claude-opus-5",
         verifierModel: null,
@@ -102,12 +106,29 @@ describe("AiModelsTab", () => {
 
     await vi.waitFor(() => {
       expect(updateBuilderSettings).toHaveBeenCalledWith({
+        defaultEngine: "claude-code",
         plannerModel: "",
         coderModel: "",
         verifierModel: "",
       });
     });
     expect(updateBugHunterSettings).not.toHaveBeenCalled();
+  });
+
+  it("switching Builder's engine clears its model fields, since a model id from one engine means nothing to the other", async () => {
+    render(<AiModelsTab />);
+
+    fireEvent.change(screen.getByLabelText("Engine"), { target: { value: "gemini" } });
+    fireEvent.click(screen.getAllByText("Save")[1]);
+
+    await vi.waitFor(() => {
+      expect(updateBuilderSettings).toHaveBeenCalledWith({
+        defaultEngine: "gemini",
+        plannerModel: "",
+        coderModel: "",
+        verifierModel: "",
+      });
+    });
   });
 
   it("shows an error only for the section that failed to load", () => {

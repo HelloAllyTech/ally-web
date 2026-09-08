@@ -361,6 +361,8 @@ export interface BuilderSettings {
   plannerModel: string | null;
   coderModel: string | null;
   verifierModel: string | null;
+  /** Which coding engine a new build runs on when nothing else says. Null = claude-code. */
+  defaultEngine: string | null;
 }
 
 export interface BuilderNotification {

@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import {
   Button,
   InlineNotification,
+  Select,
+  SelectItem,
   SkeletonText,
-  TextInput,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
@@ -18,6 +19,38 @@ import {
 import { TooltipIcon } from "@assets";
 import { en } from "@constants";
 import { BugHunterModelSettings } from "@types";
+
+/**
+ * The Claude Code models Bug Hunter's pipeline runs on, and Builder's when
+ * its engine is claude-code. Not the full platform model catalog (that
+ * includes OpenAI entries neither pipeline can use — there's no autonomous
+ * coding-agent CLI for OpenAI's models wired in here). Ordered cheap to
+ * expensive so the trade-off reads directly from the list.
+ */
+const CLAUDE_CODE_MODEL_OPTIONS = [
+  { value: "claude-haiku-4-5", text: "claude-haiku-4-5 (fastest, cheapest)" },
+  { value: "claude-sonnet-5", text: "claude-sonnet-5 (balanced — current default)" },
+  { value: "claude-opus-5", text: "claude-opus-5 (strongest, most expensive)" },
+];
+
+/**
+ * Builder's second engine. Unverified end-to-end as of this build — see
+ * run-engine.sh's gemini case and forward-events.mjs's normaliseGemini() for
+ * exactly what's confirmed (real installed-package schema) versus what a
+ * first real run still needs to prove out.
+ */
+const GEMINI_MODEL_OPTIONS = [
+  { value: "gemini-2.5-flash", text: "gemini-2.5-flash (fastest, cheapest)" },
+  { value: "gemini-2.5-pro", text: "gemini-2.5-pro (strongest)" },
+];
+
+const BUILDER_ENGINE_OPTIONS = [
+  { value: "claude-code", text: "Claude Code" },
+  { value: "gemini", text: "Gemini CLI (unverified — see run-engine.sh)" },
+];
+
+const modelOptionsForEngine = (engine: string) =>
+  engine === "gemini" ? GEMINI_MODEL_OPTIONS : CLAUDE_CODE_MODEL_OPTIONS;
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
   label,
@@ -39,8 +72,9 @@ const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode 
   </div>
 );
 
-/** Builder's own three tiers, trimmed to just the fields this tab edits. */
+/** Builder's own engine + three tiers, trimmed to just the fields this tab edits. */
 type BuilderModelDraft = {
+  defaultEngine: string | null;
   plannerModel: string | null;
   coderModel: string | null;
   verifierModel: string | null;
@@ -94,22 +128,30 @@ const BugHunterModelSection: React.FC = () => {
         <>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={strings.defaultModelLabel} hint={strings.defaultModelHelp}>
-              <TextInput
+              <Select
                 id="settings-ai-models-bug-hunter-default-model"
                 labelText={strings.defaultModelLabel}
                 hideLabel
                 value={draft.defaultModel}
                 onChange={event => set("defaultModel", event.target.value)}
-              />
+              >
+                {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} text={option.text} />
+                ))}
+              </Select>
             </Field>
             <Field label={strings.escalationModelLabel} hint={strings.escalationModelHelp}>
-              <TextInput
+              <Select
                 id="settings-ai-models-bug-hunter-escalation-model"
                 labelText={strings.escalationModelLabel}
                 hideLabel
                 value={draft.escalationModel}
                 onChange={event => set("escalationModel", event.target.value)}
-              />
+              >
+                {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} text={option.text} />
+                ))}
+              </Select>
             </Field>
           </div>
           <div className="mt-4">
@@ -140,6 +182,7 @@ const BuilderModelSection: React.FC = () => {
   useEffect(() => {
     if (data) {
       setDraft({
+        defaultEngine: data.defaultEngine,
         plannerModel: data.plannerModel,
         coderModel: data.coderModel,
         verifierModel: data.verifierModel,
@@ -150,10 +193,13 @@ const BuilderModelSection: React.FC = () => {
   const set = (key: keyof BuilderModelDraft, value: string | null) =>
     setDraft(current => (current ? { ...current, [key]: value } : current));
 
+  const engine = draft?.defaultEngine ?? "claude-code";
+
   const handleSave = async () => {
     if (!draft) return;
     try {
       await updateSettings({
+        defaultEngine: draft.defaultEngine ?? "",
         // "" clears a tier back to the platform default — see api/builder.ts.
         plannerModel: draft.plannerModel ?? "",
         coderModel: draft.coderModel ?? "",
@@ -182,28 +228,70 @@ const BuilderModelSection: React.FC = () => {
         <SkeletonText paragraph lineCount={4} className="mt-3" />
       ) : (
         <>
+          <div className="mt-3">
+            <Field label={strings.builderEngineLabel} hint={strings.builderEngineHelp}>
+              <Select
+                id="settings-ai-models-builder-engine"
+                labelText={strings.builderEngineLabel}
+                hideLabel
+                value={engine}
+                onChange={event =>
+                  // Switching engine clears the per-tier models too — a
+                  // Claude model id left behind under Gemini (or the reverse)
+                  // would be silently meaningless rather than caught early.
+                  setDraft(current =>
+                    current
+                      ? {
+                          ...current,
+                          defaultEngine: event.target.value,
+                          plannerModel: null,
+                          coderModel: null,
+                          verifierModel: null,
+                        }
+                      : current,
+                  )
+                }
+              >
+                {BUILDER_ENGINE_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} text={option.text} />
+                ))}
+              </Select>
+            </Field>
+          </div>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <TextInput
+            <Select
               id="settings-ai-models-builder-planner-model"
               labelText={builderStrings.plannerModelLabel}
-              placeholder={builderStrings.modelPlaceholder}
               value={draft.plannerModel ?? ""}
               onChange={event => set("plannerModel", event.target.value || null)}
-            />
-            <TextInput
+            >
+              <SelectItem value="" text={builderStrings.modelPlaceholder} />
+              {modelOptionsForEngine(engine).map(option => (
+                <SelectItem key={option.value} value={option.value} text={option.text} />
+              ))}
+            </Select>
+            <Select
               id="settings-ai-models-builder-coder-model"
               labelText={builderStrings.coderModelLabel}
-              placeholder={builderStrings.modelPlaceholder}
               value={draft.coderModel ?? ""}
               onChange={event => set("coderModel", event.target.value || null)}
-            />
-            <TextInput
+            >
+              <SelectItem value="" text={builderStrings.modelPlaceholder} />
+              {modelOptionsForEngine(engine).map(option => (
+                <SelectItem key={option.value} value={option.value} text={option.text} />
+              ))}
+            </Select>
+            <Select
               id="settings-ai-models-builder-verifier-model"
               labelText={builderStrings.verifierModelLabel}
-              placeholder={builderStrings.modelPlaceholder}
               value={draft.verifierModel ?? ""}
               onChange={event => set("verifierModel", event.target.value || null)}
-            />
+            >
+              <SelectItem value="" text={builderStrings.modelPlaceholder} />
+              {modelOptionsForEngine(engine).map(option => (
+                <SelectItem key={option.value} value={option.value} text={option.text} />
+              ))}
+            </Select>
           </div>
           <div className="mt-4">
             <Button kind="primary" size="sm" disabled={isSaving} onClick={() => void handleSave()}>

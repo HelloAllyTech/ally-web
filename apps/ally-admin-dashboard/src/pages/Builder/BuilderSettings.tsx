@@ -8,6 +8,8 @@ import {
   CarbonToggle,
   InlineNotification,
   NumberInput,
+  Select,
+  SelectItem,
   SkeletonText,
   TextInput,
   Tooltip,
@@ -28,10 +30,22 @@ type SettingsDraft = Pick<
   | "enabled"
   | "maxConcurrentBuilds"
   | "defaultBudgetUsd"
+  | "defaultEngine"
   | "plannerModel"
   | "coderModel"
   | "verifierModel"
 >;
+
+/**
+ * Gemini CLI is wired in as a second engine but unverified end-to-end — see
+ * run-engine.sh's gemini case and forward-events.mjs's normaliseGemini() for
+ * exactly what's confirmed (real installed-package schema) versus what a
+ * first real run still needs to prove out.
+ */
+const BUILDER_ENGINE_OPTIONS = [
+  { value: "claude-code", text: "Claude Code" },
+  { value: "gemini", text: "Gemini CLI (unverified — see run-engine.sh)" },
+];
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
   label,
@@ -80,6 +94,7 @@ export const BuilderSettings: React.FC = () => {
         enabled: data.enabled,
         maxConcurrentBuilds: data.maxConcurrentBuilds,
         defaultBudgetUsd: data.defaultBudgetUsd,
+        defaultEngine: data.defaultEngine,
         plannerModel: data.plannerModel,
         coderModel: data.coderModel,
         verifierModel: data.verifierModel,
@@ -99,6 +114,7 @@ export const BuilderSettings: React.FC = () => {
         ...(draft.defaultBudgetUsd !== null
           ? { defaultBudgetUsd: Number(draft.defaultBudgetUsd) }
           : {}),
+        defaultEngine: draft.defaultEngine ?? "",
         // "" clears a tier back to the platform default — see api/builder.ts.
         plannerModel: draft.plannerModel ?? "",
         coderModel: draft.coderModel ?? "",
@@ -181,6 +197,22 @@ export const BuilderSettings: React.FC = () => {
                 />
               </Field>
             </div>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <Field label={strings.engineLabel} hint={strings.engineHelp}>
+              <Select
+                id="builder-settings-engine"
+                labelText={strings.engineLabel}
+                hideLabel
+                value={draft.defaultEngine ?? "claude-code"}
+                onChange={event => set("defaultEngine", event.target.value)}
+              >
+                {BUILDER_ENGINE_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} text={option.text} />
+                ))}
+              </Select>
+            </Field>
           </section>
 
           <section className="flex flex-col gap-3">

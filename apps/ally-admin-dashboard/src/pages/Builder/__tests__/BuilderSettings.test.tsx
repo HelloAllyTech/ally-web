@@ -43,6 +43,12 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       onChange={event => onChange(undefined, { value: event.target.value })}
     />
   ),
+  Select: ({ id, labelText, value, onChange, children }: any) => (
+    <select aria-label={labelText || id} value={value} onChange={onChange}>
+      {children}
+    </select>
+  ),
+  SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
   SkeletonText: () => <div>Loading…</div>,
   TextInput: ({ id, labelText, value, onChange }: any) => (
     <input aria-label={labelText || id} value={value} onChange={onChange} />
@@ -68,6 +74,7 @@ const baseSettings = {
   enabled: true,
   maxConcurrentBuilds: 3,
   defaultBudgetUsd: "25",
+  defaultEngine: "claude-code",
   plannerModel: null,
   coderModel: "claude-opus",
   verifierModel: null,
@@ -118,6 +125,19 @@ describe("BuilderSettings", () => {
     await vi.waitFor(() => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({ plannerModel: "", coderModel: "", verifierModel: "" }),
+      );
+    });
+  });
+
+  it("sends the chosen engine on save", async () => {
+    render(<BuilderSettings />);
+
+    fireEvent.change(screen.getByLabelText("Engine"), { target: { value: "gemini" } });
+    fireEvent.click(screen.getByText("Save"));
+
+    await vi.waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ defaultEngine: "gemini" }),
       );
     });
   });

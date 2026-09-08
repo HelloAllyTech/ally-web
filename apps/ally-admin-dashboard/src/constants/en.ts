@@ -1008,6 +1008,9 @@ export const en = {
       builderHeading: "Builder",
       builderLoadFailed: "Couldn't load Builder's model settings.",
       builderSaveFailed: "Couldn't save Builder's model settings.",
+      builderEngineLabel: "Engine",
+      builderEngineHelp:
+        "Which coding-agent CLI runs the build. Claude Code is battle-tested; Gemini CLI is wired in but unverified end-to-end — its install/run/event-parsing code is built against the installed package's own schema, not a completed real run. Switching engine clears the model fields below, since a model id from one engine means nothing to the other.",
       saved: "Saved.",
       save: "Save",
     },
@@ -3300,6 +3303,9 @@ export const en = {
         "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",
       defaultBudgetLabel: "Default budget (USD)",
       defaultBudgetHelp: "Applied to a new session's spend ceiling unless a build overrides it.",
+      engineLabel: "Engine",
+      engineHelp:
+        "Which coding-agent CLI a new build runs on when the session/dispatch doesn't say. Claude Code is battle-tested; Gemini CLI is wired in but unverified end-to-end.",
       modelsHeading: "Model tiers",
       modelsHelp:
         "Per-tier defaults for new runs. Leave a field blank to fall through to the platform default — a per-build override still wins over these.",

@@ -314,6 +314,7 @@ export const builderAPI = baseAPI.injectEndpoints({
         plannerModel?: string;
         coderModel?: string;
         verifierModel?: string;
+        defaultEngine?: string;
       }
     >({
       query: body => ({
