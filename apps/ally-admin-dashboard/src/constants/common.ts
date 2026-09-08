@@ -396,6 +396,7 @@ export const ApiEndpoints = {
     COHORT_RETENTION: "/v1/analytics/cohort-retention",
     USAGE_LEVELS: "/v1/analytics/usage-levels",
     CERTIFICATION: "/v1/analytics/certification",
+    XP_GROWTH: "/v1/analytics/xp-growth",
     ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
     USAGE_LADDER: "/v1/analytics/usage-ladder",
     PRACTICE_STICKINESS: "/v1/analytics/practice-stickiness",

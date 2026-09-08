@@ -51,6 +51,7 @@ import {
   ListVoiceLatencySessionsResponse,
   VoiceLatencySessionsSummary,
   VoiceLatencyByScenarioResponse,
+  XpGrowthResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -228,6 +229,18 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.CERTIFICATION,
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Cumulative platform XP over time, from the append-only xp_events ledger.
+    // Takes the standard window params — `bucket` is the day/week/month/year
+    // grain the chart's own control drives. On a narrowed window the server
+    // still opens the curve at the pre-window total, so "lifetime XP" keeps
+    // meaning lifetime rather than "since the window opened".
+    getXpGrowth: builder.query<XpGrowthResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.XP_GROWTH,
+        method: HttpMethod.GET,
+        params: windowParams(q),
       }),
     }),
     // Learner usage ladder L1-L5 by LIFETIME roleplay minutes. One response
@@ -716,6 +729,7 @@ export const {
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
   useGetQualitySentimentQuery,
+  useGetXpGrowthQuery,
   useGetChartPreferencesQuery,
   useSaveChartPreferencesMutation,
 } = analyticsAPI;
