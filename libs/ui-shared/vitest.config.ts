@@ -4,9 +4,13 @@ import path from "path";
 import svgr from "vite-plugin-svgr";
 import { defineConfig } from "vitest/config";
 
+import { testResourceLimits } from "../../vitest.resource-limits";
+
 export default defineConfig({
   plugins: [react(), svgr()] as any,
   test: {
+    // Bounded worker pool for local runs — see vitest.resource-limits.ts.
+    ...testResourceLimits,
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test-setup.ts"],

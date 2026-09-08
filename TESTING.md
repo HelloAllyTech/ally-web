@@ -23,6 +23,22 @@ We provide two approaches for running tests:
 
 ## Quick Start
 
+> **Run one suite at a time.** [`vitest.resource-limits.ts`](vitest.resource-limits.ts) caps
+> every project's worker pool at 4 **locally** — Vitest otherwise starts one fork per CPU
+> core, each holding its own jsdom, and the admin app alone is ~290 files / ~5000 tests.
+> CI is deliberately exempt. The cap bounds a single run; it does not make two concurrent
+> runs safe, and running this suite alongside ally-be's Jest suite has exhausted a 16 GB
+> machine.
+>
+> Override either way with `VITEST_MAX_WORKERS` (`=1` to serialise while debugging a
+> cross-file leak, higher on a machine with headroom).
+>
+> Prefer scoping to what you changed — `npm run test:admin` for one project, or
+> `npx vitest run --project ally-admin-dashboard src/components/competency` for one
+> directory. `npm test` is `nx run-many --target=test --all`, which runs three
+> projects at once by default; the pre-commit hook pins it to `--parallel=1` for
+> exactly this reason, and so does `test:coverage`.
+
 ### Run All Tests (Recommended)
 
 ```bash

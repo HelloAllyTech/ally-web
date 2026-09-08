@@ -3,6 +3,8 @@ import { defineConfig, loadEnv, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "path";
+
+import { testResourceLimits } from "../../vitest.resource-limits";
 // Get absolute paths
 const projectRoot = __dirname;
 
@@ -131,6 +133,8 @@ export default defineConfig(({ mode }) => {
       include: ["tailwindcss", "postcss", "autoprefixer"],
     },
     test: {
+      // Bounded worker pool — see vitest.resource-limits.ts.
+      ...testResourceLimits,
       globals: true,
       environment: "jsdom",
       setupFiles: ["./src/test-setup.ts"],
