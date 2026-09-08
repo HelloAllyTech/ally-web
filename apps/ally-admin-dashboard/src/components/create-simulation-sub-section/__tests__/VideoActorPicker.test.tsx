@@ -132,7 +132,9 @@ describe("VideoActorPicker", () => {
 
     await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
 
-    expect(formMethods.setValue).toHaveBeenCalledWith("coverVideoUrl", undefined, {
+    // null, not undefined: JSON.stringify drops undefined keys, so an
+    // undefined here never reaches the backend and the clear silently fails.
+    expect(formMethods.setValue).toHaveBeenCalledWith("coverVideoUrl", null, {
       shouldDirty: true,
     });
   });
@@ -182,10 +184,12 @@ describe("VideoActorPicker", () => {
 
     await userEvent.click(screen.getByTestId("video-actor-clear-face"));
 
-    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorAvatarId", undefined, {
+    // null so the clear actually persists — undefined is dropped from JSON and
+    // the backend would keep the old face.
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorAvatarId", null, {
       shouldDirty: true,
     });
-    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorProvider", undefined, {
+    expect(formMethods.setValue).toHaveBeenCalledWith("videoActorProvider", null, {
       shouldDirty: true,
     });
   });

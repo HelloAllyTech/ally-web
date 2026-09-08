@@ -113,7 +113,7 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
 
       // The image half. The video was already cleared in onFaceSelect — see
       // the note there for why it cannot simply be left alone.
-      formMethods.setValue(COVER_IMAGE_FIELD, media.coverImageUrl ?? undefined, {
+      formMethods.setValue(COVER_IMAGE_FIELD, media.coverImageUrl ?? null, {
         shouldDirty: true,
       });
       // Say that the video went, so a removal the author did not ask for is
@@ -145,7 +145,8 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
     // as wrong in those cases.
     const hadVideo = !!formMethods.getValues(COVER_VIDEO_FIELD);
     if (hadVideo) {
-      formMethods.setValue(COVER_VIDEO_FIELD, undefined, { shouldDirty: true });
+      // null, not undefined — see the note in clearFace.
+      formMethods.setValue(COVER_VIDEO_FIELD, null, { shouldDirty: true });
     }
 
     setCoverNotice(null);
@@ -153,8 +154,13 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
   };
 
   const clearFace = () => {
-    formMethods.setValue(FACE_FIELD, undefined, { shouldDirty: true });
-    formMethods.setValue(PROVIDER_FIELD, undefined, { shouldDirty: true });
+    // NULL, not undefined. JSON.stringify drops undefined keys entirely, so an
+    // autosave built from this form would omit the field and the backend would
+    // keep the old face — the change looks like it simply did not save. Same
+    // trap as the scribe custom-fields bug. `@IsOptional()` on the DTO accepts
+    // null, and ally-be stores it as a real cleared value.
+    formMethods.setValue(FACE_FIELD, null, { shouldDirty: true });
+    formMethods.setValue(PROVIDER_FIELD, null, { shouldDirty: true });
     setCoverNotice(null);
     setManualEntry(false);
     // The cover is left exactly as it is: those bytes are in our storage and
@@ -317,7 +323,7 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
           readOnly={readOnly}
           value={selectedFace ?? ""}
           onChange={event =>
-            formMethods.setValue(FACE_FIELD, event.target.value || undefined, {
+            formMethods.setValue(FACE_FIELD, event.target.value || null, {
               shouldDirty: true,
             })
           }
