@@ -16,6 +16,7 @@ export interface VideoActorPickerProps {
 const PROVIDER_FIELD = "videoActorProvider";
 const FACE_FIELD = "videoActorAvatarId";
 const COVER_IMAGE_FIELD = "coverImageUrl";
+const COVER_VIDEO_FIELD = "coverVideoUrl";
 
 /**
  * Which face this roleplay's character wears — a strip of faces under the
@@ -25,8 +26,7 @@ const COVER_IMAGE_FIELD = "coverImageUrl";
  *
  * Choosing a face sets Cover Image from that face, so the cover field sitting
  * directly above IS the preview: it shows the still at full size, and it is
- * what the learner actually sees. Every earlier
- * shape here gave the selection its own preview pane, which put the same
+ * what the learner actually sees. Every earlier shape here gave the selection its own preview pane, which put the same
  * portrait on screen twice — one fact at double visual weight, flattening the
  * hierarchy (Stacks: *Desert Oasis*, and the signal/noise argument beside
  * *Homogenous Redundancy*, whose own rule is to drop the duplicate once the
@@ -42,14 +42,18 @@ const COVER_IMAGE_FIELD = "coverImageUrl";
  * `provider`, and this component stores that value back verbatim without ever
  * interpreting it. Adding a third vendor stays a backend change.
  *
- * ## Cover image only
+ * ## What choosing a face does to the covers
  *
- * Choosing a face sets Cover IMAGE from that face's still, copied into our own
- * storage under a write-once key. Cover VIDEO is deliberately untouched: the
- * vendors' talking clips run to 54 MB against the 15 MB the uploader allows, so
- * importing them meant either failing on a third of the roster or transcoding
- * on a request path. Whatever cover video is present is the author's own
- * upload, and this path must not overwrite it.
+ * Cover IMAGE becomes that face's still, copied into our own storage under a
+ * write-once key. Cover VIDEO is CLEARED.
+ *
+ * The clearing is the non-obvious half. We cannot import the face's own clip —
+ * the vendors' run to 54 MB against the 15 MB the uploader allows, so a third
+ * of the roster would need transcoding on a request path. But leaving a
+ * previously uploaded video in place is worse than having none: the roleplay
+ * then shows this face's photograph beside a different person's video, which is
+ * exactly the mismatch an author reported. Empty is the honest state, and the
+ * notice says so rather than removing it silently.
  */
 export const VideoActorPicker: FC<VideoActorPickerProps> = ({
   label,
@@ -93,9 +97,12 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
    * Point the cover fields at the chosen face's own media, copied into our
    * storage — never at the vendor's CDN, whose paths are account-scoped.
    */
-  const applyFaceCover = async (face: VideoActorFaceEntry) => {
+  const applyFaceCover = async (face: VideoActorFaceEntry, clearedVideo = false) => {
     if (!face.thumbnailImageUrl) {
-      setCoverNotice(`${face.label} has no picture to use as a cover.`);
+      setCoverNotice(
+        `${face.label} has no picture to use as a cover.` +
+          (clearedVideo ? " Cover video was cleared to match." : ""),
+      );
       return;
     }
     try {
@@ -104,17 +111,18 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
         faceId: face.value,
       }).unwrap();
 
-      // Cover IMAGE only. Cover video is never touched by this path — the
-      // vendors' clips run to 54 MB against a 15 MB limit, and any video
-      // present is one the author chose deliberately, so overwriting or
-      // clearing it here would destroy their work.
+      // The image half. The video was already cleared in onFaceSelect — see
+      // the note there for why it cannot simply be left alone.
       formMethods.setValue(COVER_IMAGE_FIELD, media.coverImageUrl ?? undefined, {
         shouldDirty: true,
       });
+      // Say that the video went, so a removal the author did not ask for is
+      // never silent.
+      const videoNote = clearedVideo ? " Cover video was cleared to match." : "";
       setCoverNotice(
         media.coverImageUrl
-          ? `Cover image set from ${face.label}.`
-          : `No picture could be copied from ${face.label}.`,
+          ? `Cover image set from ${face.label}.${videoNote}`
+          : `No picture could be copied from ${face.label}.${videoNote}`,
       );
     } catch {
       // Never block choosing a face on a cover copy: the face is the decision,
@@ -127,8 +135,21 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
     formMethods.setValue(FACE_FIELD, face.value, { shouldDirty: true });
     // The vendor is derived, never asked for.
     formMethods.setValue(PROVIDER_FIELD, face.provider, { shouldDirty: true });
+
+    // Clear any cover video. The cover image is about to become this face, and
+    // we cannot import the face's own clip (the vendors' run to 54 MB against a
+    // 15 MB limit), so keeping the previous one leaves the roleplay showing one
+    // person's photo beside a different person's video. Empty is the honest
+    // state. Cleared here rather than inside applyFaceCover so it also happens
+    // when the face has no picture or the import fails — the mismatch is just
+    // as wrong in those cases.
+    const hadVideo = !!formMethods.getValues(COVER_VIDEO_FIELD);
+    if (hadVideo) {
+      formMethods.setValue(COVER_VIDEO_FIELD, undefined, { shouldDirty: true });
+    }
+
     setCoverNotice(null);
-    void applyFaceCover(face);
+    void applyFaceCover(face, hadVideo);
   };
 
   const clearFace = () => {

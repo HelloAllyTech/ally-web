@@ -25,7 +25,11 @@ const makeFormMethods = (initial: Record<string, any> = {}) => {
   return {
     values,
     watch: (name: string) => values[name],
-    getValues: () => values,
+    // Mirrors react-hook-form: getValues(name) reads one field, getValues()
+    // reads them all. The first version ignored the argument and returned the
+    // whole object, which is truthy — so every "did this field have a value?"
+    // check silently passed.
+    getValues: (name?: string) => (name ? values[name] : values),
     setValue: vi.fn((name: string, value: any) => {
       values[name] = value;
     }),
@@ -119,12 +123,33 @@ describe("VideoActorPicker", () => {
     });
   });
 
-  it("never touches the cover video", async () => {
-    // The vendors' clips run to 54 MB against a 15 MB limit, so this path
-    // imports the still only. Any cover video present is the author's own
-    // upload and must survive picking a face.
-    importCoverMock.mockResolvedValue({ coverImageUrl: "https://our-bucket/cover.jpg" });
-    const formMethods = makeFormMethods({ coverVideoUrl: "https://our-bucket/authors-own.mp4" });
+  it("clears a previously uploaded cover video so it cannot mismatch the face", async () => {
+    // The bug an author hit: cover image became the avatar's face while cover
+    // video stayed as a different person they had uploaded. We cannot import
+    // the face's own clip, so empty is the honest state.
+    const formMethods = makeFormMethods({ coverVideoUrl: "https://our-bucket/someone-else.mp4" });
+    render(<VideoActorPicker label="Avatar" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    expect(formMethods.setValue).toHaveBeenCalledWith("coverVideoUrl", undefined, {
+      shouldDirty: true,
+    });
+  });
+
+  it("says the video was cleared rather than removing it silently", async () => {
+    const formMethods = makeFormMethods({ coverVideoUrl: "https://our-bucket/someone-else.mp4" });
+    render(<VideoActorPicker label="Avatar" formMethods={formMethods} />);
+
+    await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
+
+    expect(screen.getByTestId("video-actor-cover-notice").textContent).toMatch(
+      /cover video was cleared/i,
+    );
+  });
+
+  it("does not dirty the video field when there was no video to clear", async () => {
+    const formMethods = makeFormMethods();
     render(<VideoActorPicker label="Avatar" formMethods={formMethods} />);
 
     await userEvent.click(screen.getByTestId("video-actor-face-ra066ab28864"));
@@ -133,7 +158,6 @@ describe("VideoActorPicker", () => {
       ([field]: [string]) => field === "coverVideoUrl",
     );
     expect(touchedVideo).toBe(false);
-    expect(formMethods.values.coverVideoUrl).toBe("https://our-bucket/authors-own.mp4");
   });
 
   it("keeps the face selected when the cover copy fails", async () => {
