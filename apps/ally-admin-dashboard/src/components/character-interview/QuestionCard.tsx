@@ -256,7 +256,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="mt-3 flex flex-col gap-2">
           <FilterableMultiSelect
             id={`interview-dropdown-${question.id}`}
-            titleText=""
+            titleText={strings.selectPlaceholder}
             placeholder={strings.selectPlaceholder}
             items={options}
             itemToString={(item: CharacterInterviewQuestionOption | null) => item?.label ?? ""}
