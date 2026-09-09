@@ -6,6 +6,7 @@ import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useCreateCharacterMutation,
   useGetAvailableLanguageVoicesQuery,
+  useGetScenarioVoicesQuery,
   useUpdateCharacterMutation,
 } from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
@@ -167,17 +168,64 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     active: true,
     voicesNeeded: true,
   }) as { data: LanguageOption[] };
-  const languageTabs = React.useMemo(
-    () =>
-      [...catalogLanguages]
-        .map(language => ({
-          id: String(language.language_id),
-          label: language.label ?? `Language ${language.language_id}`,
-          voices: (language as { voices?: VoiceCatalogEntry[] }).voices ?? [],
-        }))
-        .sort((a, b) => Number(a.id) - Number(b.id)),
-    [catalogLanguages],
+  // Read only to name and describe a retired language's stored voice (see
+  // below) — never to build the pickable options, which stay language-scoped.
+  const { data: allVoices = [] } = useGetScenarioVoicesQuery({});
+  const voiceById = React.useMemo(
+    () => new Map((allVoices ?? []).map(voice => [voice.id, voice])),
+    [allVoices],
   );
+
+  /** Every language this character already holds anything for. */
+  const storedLanguageIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    for (const map of [
+      formData.voices,
+      formData.languageCharacteristics,
+      formData.linguisticStyleSamples,
+    ]) {
+      Object.keys(map ?? {}).forEach(id => ids.add(id));
+    }
+    return ids;
+  }, [formData.voices, formData.languageCharacteristics, formData.linguisticStyleSamples]);
+
+  const languageTabs = React.useMemo(() => {
+    const fromCatalog = [...catalogLanguages].map(language => ({
+      id: String(language.language_id),
+      label: language.label ?? `Language ${language.language_id}`,
+      voices: (language as { voices?: VoiceCatalogEntry[] }).voices ?? [],
+      retired: false,
+    }));
+
+    /**
+     * A language the character holds data for but the catalog no longer
+     * offers — deactivated, or left with no active voice.
+     *
+     * It still gets a tab. Driving the tabs purely off the live catalog hid
+     * real content: a character voiced in Malayalam kept its voice, style note
+     * and sample lines in the database while Malayalam was not an enabled
+     * language, so nothing rendered them and the single dropdown that used to
+     * show them was gone. Same rule the Language–Voice table follows for a
+     * retired STT config — keep the stored value visible rather than showing
+     * a blank that reads as "nothing was ever set".
+     */
+    const known = new Set(fromCatalog.map(tab => tab.id));
+    const retired = [...storedLanguageIds]
+      .filter(id => !known.has(id))
+      .map(id => {
+        const storedVoice = voiceById.get((formData.voices ?? {})[id]);
+        return {
+          id,
+          // The voice itself carries its language's name, which is the only
+          // place left to recover it from once the language is gone.
+          label: storedVoice?.languageLabel ?? `Language ${id}`,
+          voices: [] as VoiceCatalogEntry[],
+          retired: true,
+        };
+      });
+
+    return [...fromCatalog, ...retired].sort((a, b) => Number(a.id) - Number(b.id));
+  }, [catalogLanguages, storedLanguageIds, voiceById, formData.voices]);
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
   const activeLanguageId =
     selectedLanguageId && languageTabs.some(tab => tab.id === selectedLanguageId)
@@ -520,19 +568,46 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 >
                   <div className="p-4 flex flex-col gap-4">
                     <Field label={en.simulation.voice}>
-                      <DropdownField
-                        id="character-voice"
-                        label={en.simulation.voice}
-                        isSearchable
-                        handleSearchTextChange={setVoiceSearchTerm}
-                        allowDeselect
-                        borderless
-                        options={voiceOptions}
-                        optionsRenderer={renderVoiceOption}
-                        value={activeVoiceId || ""}
-                        onChange={value => setForActiveLanguage("voices", value || undefined)}
-                        placeholder={en.simulation.selectVoice}
-                      />
+                      {activeLanguage?.retired ? (
+                        // No pickable voices exist for a language the catalog
+                        // no longer offers, so show what is stored and let it
+                        // be cleared — never a blank that reads as "unset".
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-base text-typography-900">
+                              {voiceById.get(activeVoiceId || "")?.name ??
+                                (activeVoiceId ? activeVoiceId : "—")}
+                            </span>
+                            {activeVoiceId && !readOnly && (
+                              <button
+                                type="button"
+                                className="text-sm text-destructive-500 hover:underline"
+                                onClick={() => setForActiveLanguage("voices", undefined)}
+                              >
+                                {en.simulation.removeVoiceDisableLanguage}
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-xs text-typography-600">
+                            {activeLanguage.label} is not an enabled language any more, so no voices
+                            can be chosen for it. Its saved content is kept here.
+                          </p>
+                        </div>
+                      ) : (
+                        <DropdownField
+                          id="character-voice"
+                          label={en.simulation.voice}
+                          isSearchable
+                          handleSearchTextChange={setVoiceSearchTerm}
+                          allowDeselect
+                          borderless
+                          options={voiceOptions}
+                          optionsRenderer={renderVoiceOption}
+                          value={activeVoiceId || ""}
+                          onChange={value => setForActiveLanguage("voices", value || undefined)}
+                          placeholder={en.simulation.selectVoice}
+                        />
+                      )}
                     </Field>
 
                     <Field label={en.simulation.languageStyle}>
