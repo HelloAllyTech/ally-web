@@ -48,6 +48,21 @@ export interface VideoContent {
   source: VideoSource;
   url: string;
   durationSeconds?: number;
+  /** Quiz questions that hard-pause playback at a specific timestamp. `s3` sources only. */
+  interjections?: VideoInterjection[];
+}
+
+/**
+ * A quiz question that hard-pauses playback at `timestampSeconds` until the
+ * learner answers it. Only authored/played for `source: "s3"` videos — an
+ * embed player (YouTube/Vimeo/Loom) has no reliable way to pause and overlay
+ * content. `open_ended` is excluded from `QuizQuestion` here since it is
+ * LLM-graded and doesn't fit a synchronous hard-pause.
+ */
+export interface VideoInterjection {
+  id: string;
+  timestampSeconds: number;
+  question: QuizQuestion;
 }
 
 export interface JournalPromptDef {

@@ -6,8 +6,10 @@ import { Select, SelectItem, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
 import { MatchingPair, QuizOption, TrackFormValues } from "@types";
 
+import { QuestionPath } from "../../../trackFormUtils";
+
 interface MatchingEditorProps {
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  questionPath: QuestionPath;
 }
 
 const newId = () => crypto.randomUUID();

@@ -1,13 +1,15 @@
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Vimeo from "@vimeo/player";
 import { useTranslation } from "react-i18next";
 
-import { ProgressVideoPlayer } from "@ally-ui-mono/ui-shared";
+import { ProgressVideoPlayer, ProgressVideoPlayerHandle } from "@ally-ui-mono/ui-shared";
 import { useReportVideoProgressMutation } from "@api";
 import { TickGreenBackground } from "@assets";
 import { useVideoWatchProgress } from "@hooks";
-import { StartVideoItemPayload } from "@types";
+import { StartVideoItemPayload, VideoInterjection } from "@types";
+
+import { VideoInterjectionOverlay } from "./VideoInterjectionOverlay";
 
 interface VideoItemPlayerProps {
   payload: StartVideoItemPayload;
@@ -156,6 +158,54 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
     return () => container.removeEventListener("error", onError, true);
   }, [payload.source, playbackError, handlePlaybackError]);
 
+  // --- Video interjections (s3 only): quiz questions that hard-pause
+  // playback at a specific timestamp until answered. Sorted once so a
+  // forward-moving playhead crossing several at once (e.g. after a seek)
+  // surfaces them one at a time, in order.
+  const progressPlayerRef = useRef<ProgressVideoPlayerHandle>(null);
+  const sortedInterjections = useMemo(
+    () =>
+      [...(payload.interjections ?? [])].sort((a, b) => a.timestampSeconds - b.timestampSeconds),
+    [payload.interjections],
+  );
+  const [answeredInterjectionIds, setAnsweredInterjectionIds] = useState<Set<string>>(
+    () => new Set(sortedInterjections.filter(interjection => interjection.answered).map(i => i.id)),
+  );
+  const [activeInterjection, setActiveInterjection] = useState<VideoInterjection | null>(null);
+  const lastPositionRef = useRef(0);
+
+  const checkInterjections = useCallback(
+    (position: number) => {
+      const last = lastPositionRef.current;
+      lastPositionRef.current = position;
+      if (activeInterjection) return;
+      // First unanswered interjection whose timestamp the playhead just
+      // crossed going forward — a backward seek (position < last) never
+      // matches, so re-crossing an already-answered one is a no-op via the
+      // answered-set check above, and one crossed by a fast-forward seek
+      // still fires exactly once.
+      const hit = sortedInterjections.find(
+        interjection =>
+          !answeredInterjectionIds.has(interjection.id) &&
+          position >= interjection.timestampSeconds &&
+          last < interjection.timestampSeconds,
+      );
+      if (hit) {
+        progressPlayerRef.current?.pause();
+        setActiveInterjection(hit);
+      }
+    },
+    [activeInterjection, answeredInterjectionIds, sortedInterjections],
+  );
+
+  const handleInterjectionContinue = useCallback(() => {
+    if (!activeInterjection) return;
+    const answeredId = activeInterjection.id;
+    setAnsweredInterjectionIds(prev => new Set(prev).add(answeredId));
+    setActiveInterjection(null);
+    progressPlayerRef.current?.play();
+  }, [activeInterjection]);
+
   const renderTrackedControls = () => (
     <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-border-light bg-white px-4 py-3">
       {completed ? (
@@ -197,13 +247,25 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
           ref={s3ContainerRef}
           className="flex min-h-0 flex-1 items-center justify-center bg-black"
         >
-          <div className="aspect-video w-full max-w-3xl">
+          <div className="relative aspect-video w-full max-w-3xl">
             <ProgressVideoPlayer
+              ref={progressPlayerRef}
               src={payload.url}
               durationSeconds={payload.durationSeconds}
-              onProgress={p => recordPct(p.watchedPct)}
+              onProgress={p => {
+                recordPct(p.watchedPct);
+                checkInterjections(p.position);
+              }}
               onPauseOrEnd={() => flush()}
             />
+            {activeInterjection && (
+              <VideoInterjectionOverlay
+                key={activeInterjection.id}
+                itemId={itemId}
+                interjection={activeInterjection}
+                onContinue={handleInterjectionContinue}
+              />
+            )}
           </div>
         </div>
         {renderTrackedControls()}

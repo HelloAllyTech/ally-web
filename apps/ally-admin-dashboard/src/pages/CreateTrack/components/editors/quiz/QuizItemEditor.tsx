@@ -7,7 +7,7 @@ import { Plus, TooltipIcon, Trash } from "@assets";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import { QuizQuestion, QuizQuestionType, TrackFormValues, TrackItemType } from "@types";
 
-import { createQuestionOfType } from "../../../trackFormUtils";
+import { createQuestionOfType, QuestionPath } from "../../../trackFormUtils";
 import { ItemEditorFrame } from "../ItemEditorFrame";
 import { FillBlankEditor } from "./FillBlankEditor";
 import { MatchingEditor } from "./MatchingEditor";
@@ -23,9 +23,7 @@ interface QuizItemEditorProps {
   onDelete: () => void;
 }
 
-type QuestionPath = `sections.${number}.items.${number}.quiz.questions.${number}`;
-
-const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
+export const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
   "mcq_single",
   "mcq_multi",
   "true_false",
@@ -35,7 +33,13 @@ const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
   "open_ended",
 ];
 
-const renderTypeBody = (type: QuizQuestionType, questionPath: QuestionPath) => {
+/**
+ * Dispatches a question type to its type-specific editor body. Exported so
+ * `VideoItemEditor`'s interjection authoring can reuse it unchanged — an
+ * interjection question is the same `QuizQuestion` union (minus
+ * `open_ended`, filtered out at the type-picker level, not here).
+ */
+export const renderTypeBody = (type: QuizQuestionType, questionPath: QuestionPath) => {
   switch (type) {
     case "mcq_single":
       return <McqEditor questionPath={questionPath} multi={false} />;

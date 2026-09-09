@@ -1582,7 +1582,15 @@
       "markWatched": "Mark as watched",
       "watched": "Watched",
       "loadFailed": "This video could not be loaded.",
-      "openExternally": "Open video externally"
+      "openExternally": "Open video externally",
+      "interjection": {
+        "title": "Quick check",
+        "submit": "Submit answer",
+        "continue": "Continue video",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "pending": "Grading your answer…"
+      }
     },
     "journal": {
       "submit": "Submit",

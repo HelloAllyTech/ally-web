@@ -49,6 +49,18 @@ import { unitsToSourceText } from "./annotationSegmentation";
 
 const newId = () => crypto.randomUUID();
 
+/**
+ * Absolute RHF path to a question node — either a quiz item's own question,
+ * or a video item's interjection question. Shared by `QuizItemEditor`'s
+ * question-type editors (`McqEditor` and siblings) so they can be reused
+ * unchanged for interjection authoring; each editor casts sub-paths to a
+ * fixed dummy literal for RHF's `Path<T>` typing regardless of which branch
+ * this resolves to; see `McqEditor.tsx` for the pattern.
+ */
+export type QuestionPath =
+  | `sections.${number}.items.${number}.quiz.questions.${number}`
+  | `sections.${number}.items.${number}.video.interjections.${number}.question`;
+
 /* -------------------------------------------------------------------------- */
 /* Factories                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -413,6 +425,20 @@ const validateItem = (item: TrackItemFormValue): string[] => {
       if (watchPct != null && (watchPct < 1 || watchPct > 100)) {
         errors.push("Video: watch percentage must be between 1 and 100");
       }
+      const interjections = item.video?.source === "s3" ? (item.video?.interjections ?? []) : [];
+      const duration = item.video?.durationSeconds;
+      interjections.forEach((interjection, index) => {
+        const label = `Video interjection ${index + 1}`;
+        if (interjection.timestampSeconds == null || interjection.timestampSeconds < 0) {
+          errors.push(`${label}: timestamp must be 0 or later`);
+        } else if (duration != null && interjection.timestampSeconds > duration) {
+          errors.push(`${label}: timestamp must be within the video's duration`);
+        }
+        if (interjection.question.type === "open_ended") {
+          errors.push(`${label}: open-ended questions aren't supported for interjections`);
+        }
+        errors.push(...validateQuestion(interjection.question, label));
+      });
       break;
     }
     case TrackItemType.JOURNAL: {

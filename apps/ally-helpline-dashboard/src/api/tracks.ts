@@ -17,6 +17,7 @@ import {
   QuizAnswerInput,
   QuizAttemptResult,
   StartTrackItemResponse,
+  SubmitInterjectionAnswerResponse,
   TrackDetail,
   TrackItemCompletionResult,
   TrackItemStatus,
@@ -171,6 +172,23 @@ const tracksAPI = baseAPI.injectEndpoints({
       invalidatesTags: ALL_TRACK_TAGS,
     }),
 
+    /**
+     * Answer one video interjection (hard-pause quiz question). Graded and
+     * recorded server-side immediately; unlike `submitQuizAttempt` this
+     * gates nothing about item completion, so — like the journal draft
+     * autosave below — it invalidates no caches.
+     */
+    submitInterjectionAnswer: builder.mutation<
+      SubmitInterjectionAnswerResponse,
+      { itemId: string; interjectionId: string; answer: QuizAnswerInput }
+    >({
+      query: ({ itemId, interjectionId, answer }) => ({
+        url: ApiEndpoints.TRACKS.INTERJECTION_ANSWER(itemId, interjectionId),
+        method: HttpMethod.POST,
+        body: answer,
+      }),
+    }),
+
     /** Re-run grading for a PENDING_GRADING attempt (LLM grader retry). */
     regradeQuizAttempt: builder.mutation<QuizAttemptResult, { itemId: string; attemptId: string }>({
       query: ({ itemId, attemptId }) => ({
@@ -250,6 +268,7 @@ export const {
   useMarkArticleReadMutation,
   useReportVideoProgressMutation,
   useSubmitQuizAttemptMutation,
+  useSubmitInterjectionAnswerMutation,
   useRegradeQuizAttemptMutation,
   useSaveJournalDraftMutation,
   useSubmitJournalMutation,

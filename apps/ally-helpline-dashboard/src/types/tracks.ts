@@ -198,6 +198,36 @@ export interface QuizAnswerInput {
   text?: string;
 }
 
+/**
+ * A quiz question that hard-pauses a Track video at `timestampSeconds` until
+ * answered. `source: "s3"` videos only — an embed player can't reliably
+ * pause and overlay content, so the server sends an empty list otherwise.
+ * `question` is sanitized the same way as a regular quiz question (no
+ * answer key), and never `open_ended` (LLM-graded, doesn't fit a
+ * synchronous hard-pause).
+ */
+export interface VideoInterjection {
+  id: string;
+  timestampSeconds: number;
+  question: SanitizedQuizQuestion;
+  /** Present once the learner has answered — skips re-triggering the overlay. */
+  answered?: { passed: boolean; pointsAwarded?: number };
+}
+
+export interface InterjectionGrading {
+  questionId: string;
+  correct: boolean | null;
+  pointsAwarded: number;
+  pointsPossible: number;
+  llm?: { feedback?: string };
+}
+
+/** Response to `POST .../interjections/:interjectionId/answer`. */
+export interface SubmitInterjectionAnswerResponse {
+  correct: boolean | null;
+  grading: InterjectionGrading;
+}
+
 export type QuizAttemptStatus = "GRADED" | "PENDING_GRADING";
 
 export interface QuizQuestionResult {
@@ -358,6 +388,8 @@ export interface StartVideoItemPayload extends StartTrackItemBase {
   durationSeconds: number;
   requiredWatchPct: number;
   maxWatchedPct: number;
+  /** Empty/absent unless `source === "s3"`. */
+  interjections?: VideoInterjection[];
 }
 
 export interface StartJournalItemPayload extends StartTrackItemBase {

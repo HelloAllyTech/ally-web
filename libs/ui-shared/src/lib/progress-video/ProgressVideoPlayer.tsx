@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef } from "react";
 
 /**
  * Maximum gap (seconds) between two time samples that still counts as
@@ -32,20 +32,24 @@ export interface ProgressVideoPlayerProps {
   durationSeconds?: number;
 }
 
+/** Imperative controls exposed via `ref`, for callers that need to drive
+ * playback from the outside (e.g. hard-pausing at a video interjection). */
+export interface ProgressVideoPlayerHandle {
+  pause: () => void;
+  play: () => void;
+  seek: (seconds: number) => void;
+}
+
 /**
  * HTML5 video player with native controls that tracks UNIQUE watched
  * seconds: each integer second of the timeline is only counted once, and
  * seeking ahead does not credit the skipped span. Used by the Track 2.0
  * learner video player and admin previews.
  */
-export const ProgressVideoPlayer: React.FC<ProgressVideoPlayerProps> = ({
-  src,
-  className = "",
-  poster,
-  onProgress,
-  onPauseOrEnd,
-  durationSeconds,
-}) => {
+export const ProgressVideoPlayer = React.forwardRef<
+  ProgressVideoPlayerHandle,
+  ProgressVideoPlayerProps
+>(({ src, className = "", poster, onProgress, onPauseOrEnd, durationSeconds }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const watchedSecondsRef = useRef<Set<number>>(new Set());
   const lastSampleRef = useRef<number | null>(null);
@@ -101,6 +105,26 @@ export const ProgressVideoPlayer: React.FC<ProgressVideoPlayerProps> = ({
     onPauseOrEnd?.(progress);
   };
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      pause: () => videoRef.current?.pause(),
+      play: () => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.play().catch(() => {
+          // Autoplay/interruption rejections are expected when a fast
+          // Continue click races a pending pause — nothing to surface.
+        });
+      },
+      seek: (seconds: number) => {
+        const video = videoRef.current;
+        if (video) video.currentTime = seconds;
+      },
+    }),
+    [],
+  );
+
   return (
     <video
       ref={videoRef}
@@ -118,6 +142,8 @@ export const ProgressVideoPlayer: React.FC<ProgressVideoPlayerProps> = ({
       data-testid="progress-video-player"
     />
   );
-};
+});
+
+ProgressVideoPlayer.displayName = "ProgressVideoPlayer";
 
 export default ProgressVideoPlayer;

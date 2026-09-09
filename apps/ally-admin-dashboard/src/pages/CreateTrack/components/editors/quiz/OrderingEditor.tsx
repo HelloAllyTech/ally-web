@@ -6,8 +6,10 @@ import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
 import { TrackFormValues } from "@types";
 
+import { QuestionPath } from "../../../trackFormUtils";
+
 interface OrderingEditorProps {
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  questionPath: QuestionPath;
 }
 
 const newItemId = () => crypto.randomUUID();
