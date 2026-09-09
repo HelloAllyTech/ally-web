@@ -416,10 +416,10 @@ export const ProductRoadmap: React.FC = () => {
   /**
    * Whether the vote icon should blink: votes left to use, and the readout still collapsed.
    *
-   * `remaining > 0` rather than "has a budget at all" — someone who has used their whole 100
-   * has nothing left to act on, so blinking at them would be motion that never resolves.
+   * `available > 0` rather than "has a budget at all" — someone with nothing left to spend has
+   * nothing left to act on, so blinking at them would be motion that never resolves.
    */
-  const shouldNudgeVotes = !!budget && budget.remaining > 0 && !isBudgetOpen;
+  const shouldNudgeVotes = !!budget && budget.available > 0 && !isBudgetOpen;
 
   /** The board's filter/sort state in saved-view shape. Goals are NAMES, per RoadmapViewState. */
   const currentViewState = useMemo<RoadmapViewState>(
@@ -758,8 +758,8 @@ export const ProductRoadmap: React.FC = () => {
               <Tooltip
                 label={
                   isBudgetOpen
-                    ? `Your votes for ${budget.periodKey}. Use them on what matters most — votes go to new opportunities only, and anything unspent lapses at the start of next month.`
-                    : `${budget.remaining} of ${budget.votesPerMonth} votes left this month. Click for detail.`
+                    ? `Your available votes. Use them on what matters most — votes go to new opportunities only. You get 50 at the start of each month plus 5 every day, and each of those expires 30 days after it's issued if unused.`
+                    : `${budget.available} votes available. Click for detail.`
                 }
                 align="bottom"
               >
@@ -767,7 +767,7 @@ export const ProductRoadmap: React.FC = () => {
                   type="button"
                   onClick={() => setIsBudgetOpen(open => !open)}
                   aria-expanded={isBudgetOpen}
-                  aria-label={`Vote budget: ${budget.remaining} of ${budget.votesPerMonth} left`}
+                  aria-label={`Vote budget: ${budget.available} available`}
                   // Bare, and sized by its glyph — the SAME className the two icon buttons to
                   // the right carry, so the three read as one row of icons. It used to be a
                   // 40px outlined square, which made the leftmost of three peers the only one
@@ -819,13 +819,13 @@ export const ProductRoadmap: React.FC = () => {
               </Tooltip>
 
               {isBudgetOpen && (
-                <>
-                  <span className="text-typography-primary tabular-nums text-base">
-                    {budget.remaining}
-                    <span className="text-typography-secondary"> / {budget.votesPerMonth}</span>
+                <span className="text-typography-primary tabular-nums text-base">
+                  {budget.available}
+                  <span className="text-typography-secondary whitespace-nowrap">
+                    {" "}
+                    votes available
                   </span>
-                  <span className="whitespace-nowrap">votes left · {budget.used} used</span>
-                </>
+                </span>
               )}
             </div>
           )}
