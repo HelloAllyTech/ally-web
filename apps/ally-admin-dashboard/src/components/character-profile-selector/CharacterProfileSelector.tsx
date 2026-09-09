@@ -13,7 +13,6 @@ import {
   PROMPT_VARIABLE_MANDATORY_MAP,
   en,
   CUSTOM_CHARACTER_ID,
-  DEFAULT_LANGUAGE,
   FORM_FIELD_IDS,
 } from "@constants";
 import { useClickOutside, useIsPlaceholderUsed } from "@hooks";
@@ -167,53 +166,52 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     fieldId => !mediaFieldIds.includes(fieldId),
   );
 
-  // Voice, language characteristics, linguistic style samples and knowledge
-  // sources live on the character in a flat/default-language shape, but the
-  // simulation form keys the first three by language (see LanguageVoiceMapping)
-  // and stores knowledge sources as {id, title, content} rows rather than the
-  // character's {id, title, text}. They're merged into the default-language
-  // slot only, the same way Agent Builder Copilot applies these same fields
-  // (see agentBuilderApply.ts's "linguistic_style_samples" case) — trainers
-  // add other languages by hand. They're deliberately not added to
-  // `formFieldIds`: that map also drives the manual-edit / perfect-match
-  // comparison below, which only does scalar string equality and can't
-  // meaningfully compare these language-keyed objects and arrays.
+  // Voice, language characteristics and linguistic style samples are keyed by
+  // language on BOTH sides now, so they merge across every language the
+  // character speaks rather than only English. Knowledge sources still need
+  // reshaping: the simulation stores {id, title, content} rows where the
+  // character has {id, title, text}. None of these join `formFieldIds` —
+  // that map also drives the manual-edit / perfect-match comparison below,
+  // which does scalar string equality and cannot meaningfully compare
+  // language-keyed objects and arrays.
   const applyComplexCharacterFields = useCallback(
     (characterData: CharacterData) => {
-      const lang = DEFAULT_LANGUAGE.value;
-
-      if (characterData.voiceId) {
-        const current = (getValues(FORM_FIELD_IDS.LANGUAGES_VOICES) ?? {}) as Record<
-          string,
-          string
-        >;
+      /**
+       * Merge the character's per-language maps into the simulation's, which
+       * are keyed the same way.
+       *
+       * These used to be written into the English slot whatever they
+       * actually were, because a character held one voice, one
+       * style note and one flat list of samples. That filled exactly one of
+       * the simulation's language slots and mis-filed anything that was not
+       * English — a character voiced in Marathi became the simulation's
+       * English voice, dispatching Marathi TTS to an English session with
+       * nothing to catch it. Keyed maps on both sides make that unexpressible.
+       *
+       * Merging, not replacing: a trainer may have already filled languages
+       * this character says nothing about, and picking a character should not
+       * wipe them.
+       */
+      const mergeByLanguage = <T,>(field: string, incoming?: Record<string, T>) => {
+        const entries = Object.entries(incoming ?? {}).filter(
+          ([languageId, value]) =>
+            /^\d+$/.test(languageId) && value !== undefined && value !== null && value !== "",
+        );
+        if (entries.length === 0) return;
+        const current = (getValues(field) ?? {}) as Record<string, T>;
         setValue(
-          FORM_FIELD_IDS.LANGUAGES_VOICES,
-          { ...current, [lang]: characterData.voiceId },
+          field,
+          { ...current, ...Object.fromEntries(entries) },
           { shouldDirty: true, shouldTouch: true },
         );
-      }
+      };
 
-      if (characterData.languageCharacteristics) {
-        const current = (getValues("languageCharacteristics") ?? {}) as Record<string, string>;
-        setValue(
-          "languageCharacteristics",
-          { ...current, [lang]: characterData.languageCharacteristics },
-          { shouldDirty: true, shouldTouch: true },
-        );
-      }
-
-      if (characterData.linguisticStyleSamples?.length) {
-        const current = (getValues(FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES) ?? {}) as Record<
-          string,
-          string[]
-        >;
-        setValue(
-          FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES,
-          { ...current, [lang]: characterData.linguisticStyleSamples },
-          { shouldDirty: true, shouldTouch: true },
-        );
-      }
+      mergeByLanguage(FORM_FIELD_IDS.LANGUAGES_VOICES, characterData.voices);
+      mergeByLanguage("languageCharacteristics", characterData.languageCharacteristics);
+      mergeByLanguage(
+        FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES,
+        characterData.linguisticStyleSamples,
+      );
 
       if (characterData.knowledgeSources?.length) {
         const rows = characterData.knowledgeSources.map(source => ({

@@ -14,6 +14,7 @@ import {
   CharacterInterviewAnswerPayload,
   ChatComposer,
   ChatMessage,
+  VoiceShortlistStrip,
 } from "@components/character-interview";
 import { ButtonVariant } from "@components/types";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
@@ -225,6 +226,10 @@ export const CharacterInterview: React.FC = () => {
         </div>
 
         <div className="shrink-0 pt-1">
+          {/* Keeps the agent's voice shortlists playable after their cards
+              lock, and for an admin who answers by typing and never gets a
+              card at all. */}
+          <VoiceShortlistStrip messages={messages} />
           <ChatComposer
             onSend={handleSend}
             onStop={stop}
