@@ -6,7 +6,11 @@ export interface getLeaderBoardList {
     rank: number;
     minutesPlayed: number;
     badgeCount: number;
-    /** All-time consecutive-active-days streak, not window-scoped. */
+    /** Days this ISO week that earned XP, of any kind. Week-scoped, not window-scoped. */
+    daysActiveThisWeek: number;
+    weeklyGoalDays: number;
+    weeklyGoalMet: boolean;
+    /** @deprecated Carries daysActiveThisWeek. Read that instead. */
     currentStreak: number;
   }[];
   hideRankInCommunity?: boolean;
@@ -21,7 +25,11 @@ export interface getCurrentUser {
   rank: number;
   minutesPlayed: number;
   badgeCount: number;
-  /** All-time consecutive-active-days streak, not window-scoped. */
+  /** Days this ISO week that earned XP, of any kind. Week-scoped, not window-scoped. */
+  daysActiveThisWeek: number;
+  weeklyGoalDays: number;
+  weeklyGoalMet: boolean;
+  /** @deprecated Carries daysActiveThisWeek. Read that instead. */
   currentStreak: number;
   window: string;
 }
