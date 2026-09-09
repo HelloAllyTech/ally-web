@@ -69,6 +69,10 @@ vi.mock("@api", () => ({
   useGetLogoUrlQuery: vi.fn(() => ({ data: null })),
   useUploadProfileImageMutation: vi.fn(() => [vi.fn()]),
   useGetUnreadReviewCountQuery: vi.fn(() => ({ data: { count: 0 } })),
+  // NavSideBar renders NotificationBell, which reads this. A `vi.mock` factory replaces the
+  // WHOLE module, so a hook the sidebar only reaches transitively still has to be listed here
+  // or every test in this file dies on render — which is how master went red.
+  useGetUnreadNotificationCountQuery: vi.fn(() => ({ data: { count: 0 } })),
 }));
 
 vi.mock("@assets", () => ({
