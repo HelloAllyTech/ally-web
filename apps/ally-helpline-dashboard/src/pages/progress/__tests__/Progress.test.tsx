@@ -87,7 +87,9 @@ describe("Progress page", () => {
     vi.clearAllMocks();
     mockUseUser.mockReturnValue({ permissions: ["view:community:leaderboard"] });
     mockUseProgressSummary.mockReturnValue({ canViewProgress: true, isGateLoading: false });
-    mockUsePracticeStreakSummary.mockReturnValue({ summary: { currentStreak: 6 } });
+    mockUsePracticeStreakSummary.mockReturnValue({
+      summary: { currentStreak: 6, daysActiveThisWeek: 3, weeklyGoalDays: 4 },
+    });
     mockUseGetCurrentUserQuery.mockReturnValue({ data: undefined });
     mockUseGetProgressQuery.mockReturnValue({
       data: PROGRESS,
@@ -112,6 +114,21 @@ describe("Progress page", () => {
     expect(screen.getByTestId("progress-stat-sessions")).toHaveTextContent("15");
     expect(screen.getByTestId("progress-stat-track-items")).toHaveTextContent("11");
     expect(screen.getByTestId("progress-stat-streak")).toHaveTextContent("6");
+  });
+
+  it("shows weekly consistency as progress toward the goal, not a bare count", () => {
+    render(<Progress />);
+
+    // "3/4" says both where the learner is and that one more day finishes the week.
+    expect(screen.getByTestId("progress-stat-weekly-consistency")).toHaveTextContent("3/4");
+  });
+
+  it("falls back to a whole goal rather than rendering undefined before the summary loads", () => {
+    mockUsePracticeStreakSummary.mockReturnValue({ summary: undefined });
+
+    render(<Progress />);
+
+    expect(screen.getByTestId("progress-stat-weekly-consistency")).toHaveTextContent("0/4");
   });
 
   it("replaces the next-level target with a finished message at the top of the ladder", () => {

@@ -9,6 +9,12 @@ import { FallbackUI, LevelIndicator, PracticeStreakHeatmap } from "@components";
 import { Permissions, ROUTES } from "@constants";
 import { usePracticeStreakSummary, useProgressSummary, useUser } from "@hooks";
 
+/**
+ * Shown only until the summary loads. The API is the source of truth for the goal —
+ * this exists so the tile renders "0/4" rather than "0/undefined" on first paint.
+ */
+const WEEKLY_GOAL_DAYS_FALLBACK = 4;
+
 /** Matches the leaderboard page's default so the rank peek and that page agree. */
 const RANK_WINDOW = "LAST_WEEK";
 
@@ -169,6 +175,16 @@ export const Progress = () => {
           testId="progress-stat-streak"
           value={String(streakSummary?.currentStreak ?? 0)}
           label={t("progress.stats.currentStreak")}
+        />
+        {/* The weekly goal is what the consistency bonus actually pays against, so it
+            reads as a fraction rather than a bare count — "3 of 4" tells a learner both
+            where they are and that one more day finishes it. */}
+        <StatCard
+          testId="progress-stat-weekly-consistency"
+          value={`${streakSummary?.daysActiveThisWeek ?? 0}/${
+            streakSummary?.weeklyGoalDays ?? WEEKLY_GOAL_DAYS_FALLBACK
+          }`}
+          label={t("progress.stats.weeklyConsistency")}
         />
       </section>
     );
