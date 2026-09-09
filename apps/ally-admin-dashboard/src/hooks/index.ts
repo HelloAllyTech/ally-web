@@ -1,6 +1,7 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useBuilderSocket } from "./useBuilderSocket";
 import { useBuilderStream } from "./useBuilderStream";
+import { useCanViewComponentLibrary } from "./useCanViewComponentLibrary";
 import { useClickOutside } from "./useClickOutside";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
@@ -37,4 +38,5 @@ export {
   useTranscriptDisclaimer,
   useTracks,
   useTrackTranslationsSocket,
+  useCanViewComponentLibrary,
 };

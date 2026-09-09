@@ -26,6 +26,7 @@ import {
   Search,
   Settings,
   SkillLevel,
+  Template,
   Terminal,
   Tools,
 } from "@icons";
@@ -184,6 +185,8 @@ export const Sidebar: React.FC = () => {
         return <HappyEmoji />;
       case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
         return <CharacterLibrary />;
+      case SIDEBAR_ITEMS.COMPONENT_LIBRARY:
+        return <Template size={20} />;
       // Voices is TTS — the side that talks — so a persona with a speaker. The
       // microphone belongs to Speech Recognition, the side that listens.
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
@@ -279,6 +282,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
       case ROUTES.CHARACTER_LIBRARY:
         return location.pathname.includes(ROUTES.CHARACTER_LIBRARY);
+      case ROUTES.COMPONENT_LIBRARY:
+        return location.pathname.includes(ROUTES.COMPONENT_LIBRARY);
       case ROUTES.MANAGE_SCENARIO_LANGUAGES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:

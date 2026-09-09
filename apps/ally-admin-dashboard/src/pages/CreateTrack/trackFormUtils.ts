@@ -33,6 +33,7 @@ import {
   QuizQuestionType,
   TrackDetail,
   TrackFormValues,
+  TrackItemContent,
   TrackItemFormValue,
   TrackItemType,
   TrackMetadataInput,
@@ -102,6 +103,69 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
     default:
       return base;
   }
+};
+
+/**
+ * Builds a `TrackItemFormValue` from a saved Component Library template (or
+ * from a fresh `{ type, title, content, completionCriteria }` tuple), for
+ * inserting into a course as a brand-new, fully independent item. Mirrors
+ * `deserializeTrack`'s per-item mapping below, but starting from a template's
+ * shape rather than a `TrackItemDetail`.
+ *
+ * Callers (the type-picker's "Choose from library" flow, and the Component
+ * Library page loading an existing template into its own editor) are
+ * responsible for deep-copying `content`/`completionCriteria` before calling
+ * this — this function does not clone, so a caller re-using a cached template
+ * object across multiple inserts must clone per-insert.
+ */
+export const createItemFormValueFromTemplate = (template: {
+  type: TrackItemType;
+  title: string;
+  content?: TrackItemContent | null;
+  completionCriteria?: CompletionCriteria | null;
+}): TrackItemFormValue => {
+  const base = createItemOfType(template.type);
+  const item: TrackItemFormValue = {
+    ...base,
+    title: template.title,
+    completionCriteria: {
+      ...DEFAULT_COMPLETION_CRITERIA[template.type],
+      ...(template.completionCriteria ?? {}),
+    },
+  };
+
+  switch (template.type) {
+    case TrackItemType.ARTICLE:
+      item.article = (template.content as ArticleContent) ?? base.article;
+      break;
+    case TrackItemType.VIDEO:
+      item.video = (template.content as VideoContent) ?? base.video;
+      break;
+    case TrackItemType.JOURNAL:
+      item.journal = (template.content as JournalContent) ?? base.journal;
+      break;
+    case TrackItemType.QUIZ:
+      item.quiz = (template.content as QuizContent) ?? base.quiz;
+      break;
+    case TrackItemType.ANNOTATED_ARTIFACT: {
+      const annotation = template.content as AnnotationContent | undefined;
+      const units = annotation?.units ?? [];
+      item.annotation = {
+        kind: annotation?.kind ?? "TRANSCRIPT",
+        intro: annotation?.intro ?? "",
+        units,
+        labels: annotation?.labels ?? base.annotation!.labels,
+        targets: annotation?.targets ?? [],
+        settings: annotation?.settings ?? { ...DEFAULT_ANNOTATION_SETTINGS },
+        sourceText: unitsToSourceText(units, annotation?.kind ?? "TRANSCRIPT"),
+      };
+      break;
+    }
+    default:
+      break;
+  }
+
+  return item;
 };
 
 export const createQuestionOfType = (type: QuizQuestionType): QuizQuestion => {
@@ -523,7 +587,15 @@ const serializeQuiz = (quiz: QuizContent): QuizContent => ({
   }),
 });
 
-const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureItemInput => {
+/**
+ * Exported so the Component Library page/dialogs can reuse the exact same
+ * per-type content shaping (article image extraction, quiz correctOrder/blanks
+ * derivation, annotation label/target pruning) that a normal course save uses,
+ * rather than re-implementing it. `order` is meaningless for a template — pass
+ * any value; callers building a template payload discard it along with `id`
+ * and `description`.
+ */
+export const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureItemInput => {
   const payload: TrackStructureItemInput = {
     ...(item.serverId ? { id: item.serverId } : {}),
     type: item.type,

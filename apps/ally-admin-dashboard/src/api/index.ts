@@ -24,6 +24,7 @@ export * from "./awsLogs";
 export * from "./mobileReleases";
 export * from "./appVersion";
 export * from "./tracks";
+export * from "./componentTemplates";
 export * from "./blog";
 export * from "./aiLab";
 export * from "./builder";

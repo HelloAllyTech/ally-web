@@ -40,6 +40,11 @@ export const FeatureToggleKey = {
   BUILDER: "builder",
   OPERATIONAL_ADMIN_ACTIONS: "operational_admin_actions",
   VIDEO_ACTOR: "video_actor",
+  // Component Library — global Track/Course item templates. No org-level
+  // toggle (unlike Character Library): gating is this per-user toggle plus
+  // the VIEW_ADMIN_TRACK/EDIT_ADMIN_TRACK/DELETE_ADMIN_TRACK permissions,
+  // mirroring how CONTENT_MANAGEMENT gates the Track pages.
+  COMPONENT_LIBRARY: "component_library",
 } as const;
 
 export type FeatureToggleKeyType = (typeof FeatureToggleKey)[keyof typeof FeatureToggleKey];
@@ -105,6 +110,7 @@ export const buildSidebarItemFeatureKeyMap = (
     [sidebarItems.AI_LAB, FeatureToggleKey.AI_LAB],
     [sidebarItems.ROLEPLAY_SESSION_LOGS, FeatureToggleKey.ROLEPLAY_SESSION_LOGS],
     [sidebarItems.SCENARIO_LANGUAGES, FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES],
+    [sidebarItems.COMPONENT_LIBRARY, FeatureToggleKey.COMPONENT_LIBRARY],
   ]);
 
 /**
@@ -133,6 +139,7 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
   [FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES]:
     FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.CHARACTER_LIBRARY]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
+  [FeatureToggleKey.COMPONENT_LIBRARY]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.MANAGE_STT_CONFIGS]: FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,
   [FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG]:
     FEATURE_TOGGLE_SECTIONS.CONTENT_AND_SIMULATION_CONFIG,

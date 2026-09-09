@@ -109,6 +109,7 @@ import {
   Security as CSecurity,
   Locked as CLocked,
   Mobile as CMobile,
+  Template as CTemplate,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -278,6 +279,9 @@ export const RotateCcw = createCarbonIcon(CRestart);
 export const UploadCloud = createCarbonIcon(CCloudUpload);
 export const Terminal = createCarbonIcon(CTerminal);
 export const Mobile = createCarbonIcon(CMobile);
+// Component Library — a "template" glyph reads directly as "reusable content
+// template", which is exactly what the sidebar entry links to.
+export const Template = createCarbonIcon(CTemplate);
 /** Inline-SVG trash replacement (kept distinct name for the call site). */
 export const TrashCan = createCarbonIcon(CTrashCan);
 

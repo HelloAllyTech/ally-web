@@ -251,6 +251,55 @@ export interface AnnotationFormValue extends AnnotationContent {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Component Library — global, cross-tenant templates for a single track item */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A saved, pre-configured Track/Course item, reusable as the starting point
+ * for a new item. Restricted in practice to JOURNAL | QUIZ | ARTICLE | VIDEO |
+ * ANNOTATED_ARTIFACT — Roleplay/Case reference an external entity rather than
+ * carrying inline content, and a Game has nothing worth templating. Inserting
+ * a template copies its content into a brand-new item with no live link back:
+ * editing one never touches the other.
+ */
+export interface TrackComponentTemplate {
+  id: string;
+  type: TrackItemType;
+  title: string;
+  content: TrackItemContent;
+  completionCriteria: CompletionCriteria | null;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetComponentTemplatesQueryParams {
+  type?: TrackItemType;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetComponentTemplatesResponse {
+  items: TrackComponentTemplate[];
+  total: number;
+}
+
+export interface CreateComponentTemplateInput {
+  type: TrackItemType;
+  title: string;
+  content: TrackItemContent;
+  completionCriteria?: CompletionCriteria;
+}
+
+export interface UpdateComponentTemplateInput {
+  title?: string;
+  content?: TrackItemContent;
+  completionCriteria?: CompletionCriteria;
+}
+
+/* -------------------------------------------------------------------------- */
 /* API shapes                                                                 */
 /* -------------------------------------------------------------------------- */
 
