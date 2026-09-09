@@ -334,6 +334,8 @@ export interface GoalsXpPoint {
   hasGoal: boolean;
   /** True for the period containing today — still accruing. */
   inProgress: boolean;
+  /** True for a period after today's — nothing has happened yet, so actualXp is a true zero. */
+  upcoming: boolean;
 }
 
 export interface GoalsXpResponse {
