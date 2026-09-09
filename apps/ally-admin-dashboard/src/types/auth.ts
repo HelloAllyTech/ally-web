@@ -316,6 +316,34 @@ export interface XpGrowthResponse {
   computedAt: string;
 }
 
+/* -------------------------------------------------------------------------- */
+/* XP goals — GET /v1/analytics/xp-goals                                      */
+/* -------------------------------------------------------------------------- */
+
+export type XpGoalGrain = "month" | "quarter" | "year";
+
+/** One period's actual XP earned against its goal, if one has been set. */
+export interface GoalsXpPoint {
+  /** Period start (yyyy-mm-dd). */
+  periodStart: string;
+  /** e.g. "Jan 2026", "Q1 2026", "2026". */
+  periodLabel: string;
+  actualXp: number;
+  /** Target for this period, or null when no goal row exists for it — never a fabricated 0. */
+  goalXp: number | null;
+  hasGoal: boolean;
+  /** True for the period containing today — still accruing. */
+  inProgress: boolean;
+}
+
+export interface GoalsXpResponse {
+  grain: XpGoalGrain;
+  points: GoalsXpPoint[];
+  /** Always platform-wide (tenantId null) — Goals has no tenant filter. */
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Leadership highlights — mirrors the backend AnalyticsHighlightsResponseDto
 // from GET /api/v1/analytics/highlights. Only the metrics NOT already served by
 // /overview or /scribe/overview live here; the tab composes all three.
