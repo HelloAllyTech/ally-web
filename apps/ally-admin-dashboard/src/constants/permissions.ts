@@ -57,6 +57,13 @@ export enum Permissions {
   // Organization Detail route (no view:users / edit:user), so gating this
   // console's controls on it does not widen them.
   MANAGE_CUSTOM_FIELD_DEFINITIONS = "manage:custom-field:definitions",
+  // Track 2.0 ("Courses") admin surface, incl. the Component Library — mirrors
+  // ally-be's PERMISSIONS.VIEW_ADMIN_TRACK(S)/EDIT_ADMIN_TRACK/DELETE_ADMIN_TRACK
+  // (authorization/constants/permissions.constants.ts). Not yet mirrored here
+  // before this feature; CreateTrack's own routes still gate on EDIT_EVENT.
+  VIEW_ADMIN_TRACK = "view:admin:track",
+  EDIT_ADMIN_TRACK = "edit:admin:track",
+  DELETE_ADMIN_TRACK = "delete:admin:track",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -88,6 +95,7 @@ export const SIDEBAR_ITEMS = {
   WHATSAPP_BOT: "whatsapp-bot",
   BUG_HUNTER: "bug-hunter",
   BUILDER: "builder",
+  COMPONENT_LIBRARY: "component-library",
 };
 
 /**

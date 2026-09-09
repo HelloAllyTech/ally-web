@@ -15,7 +15,13 @@ import { WarningAlt } from "@assets";
 import { ActionConfirmationPopup, Header } from "@components";
 import { ButtonVariant } from "@components/types";
 import { DEFAULT_TRACK_FORM_VALUES, TRACK_ENTITY_LABEL, en } from "@constants";
-import { SimulationStatus, TrackFormValues, TrackItemType } from "@types";
+import {
+  CompletionCriteria,
+  SimulationStatus,
+  TrackFormValues,
+  TrackItemContent,
+  TrackItemType,
+} from "@types";
 
 import { ItemEditorCanvas } from "./components/ItemEditorCanvas";
 import { TrackOutlineRail } from "./components/TrackOutlineRail";
@@ -24,6 +30,7 @@ import { TrackTranslationsEditor } from "./components/TrackTranslationsEditor";
 import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./components/types";
 import {
   createEmptySection,
+  createItemFormValueFromTemplate,
   createItemOfType,
   deserializeTrack,
   extractTrackMetadata,
@@ -116,6 +123,26 @@ export const CreateTrack: FC = () => {
   const handleAddItem = (sectionIndex: number, type: TrackItemType) => {
     const section = getValues(`sections.${sectionIndex}`);
     const items = [...(section.items ?? []), createItemOfType(type)];
+    formMethods.setValue(`sections.${sectionIndex}.items`, items, { shouldDirty: true });
+    setSelection({ sectionIndex, itemIndex: items.length - 1 });
+  };
+
+  /**
+   * "Choose from library" path: inserts a saved template's content as a
+   * brand-new, fully independent item — content/completionCriteria arrive
+   * already deep-copied by TemplatePickerModal, so nothing here can ever
+   * mutate the template itself.
+   */
+  const handleAddItemFromTemplate = (
+    sectionIndex: number,
+    type: TrackItemType,
+    content: TrackItemContent,
+    completionCriteria: CompletionCriteria | null,
+    title: string,
+  ) => {
+    const section = getValues(`sections.${sectionIndex}`);
+    const newItem = createItemFormValueFromTemplate({ type, title, content, completionCriteria });
+    const items = [...(section.items ?? []), newItem];
     formMethods.setValue(`sections.${sectionIndex}.items`, items, { shouldDirty: true });
     setSelection({ sectionIndex, itemIndex: items.length - 1 });
   };
@@ -313,6 +340,7 @@ export const CreateTrack: FC = () => {
             onSelectItem={(sectionIndex, itemIndex) => setSelection({ sectionIndex, itemIndex })}
             onAddSection={handleAddSection}
             onAddItem={handleAddItem}
+            onAddItemFromTemplate={handleAddItemFromTemplate}
             onDeleteSection={handleDeleteSection}
             onReorderSections={handleReorderSections}
             onReorderItems={handleReorderItems}

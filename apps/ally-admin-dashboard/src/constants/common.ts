@@ -197,6 +197,16 @@ export const ApiEndpoints = {
       `/v1/learn/admin/tracks/${id}/translations/${languageId}/unpublish`,
   },
 
+  // Component Library — global, cross-tenant Track/Course item templates.
+  COMPONENT_TEMPLATES: {
+    LIST: "/v1/learn/admin/component-templates",
+    GET_BY_ID: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+    CREATE: "/v1/learn/admin/component-templates",
+    UPDATE: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+    DELETE_BULK: "/v1/learn/admin/component-templates",
+    DELETE_ONE: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+  },
+
   CHARACTERS: {
     GET_CHARACTERS: "/v1/scenario-characters",
     CREATE_CHARACTER: "/v1/scenario-characters",
@@ -617,6 +627,7 @@ export const ROUTES = {
   MANAGE_EVENTS: "/manage-events",
   CHARACTER_LIBRARY: "/character-library",
   CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
+  COMPONENT_LIBRARY: "/component-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_STT_CONFIGS: "/manage-stt-configs",
   MANAGE_LLM_CONFIGS: "/manage-llm-configs",
@@ -789,6 +800,9 @@ export const TAG_TYPES = {
 
   TRACKS_V2: "tracksV2",
   TRACK_TRANSLATIONS: "trackTranslations",
+  // Component Library. Also registered in baseApi.ts's `tagTypes` — an
+  // unregistered tag is silently ignored and its invalidation never fires.
+  COMPONENT_LIBRARY: "componentLibrary",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
   // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions

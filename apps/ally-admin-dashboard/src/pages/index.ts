@@ -10,6 +10,7 @@ export * from "./CharacterLibrary/CharacterLibrary";
 export * from "./CharacterLibrary/CharacterInterview";
 export * from "./CreatePath/CreatePath";
 export * from "./CreateTrack/CreateTrack";
+export * from "./ComponentLibrary/ComponentLibrary";
 export * from "./CreateCase/CreateCase";
 export * from "./ScenarioVoices/ScenarioVoices";
 export * from "./SttConfigs/SttConfigs";

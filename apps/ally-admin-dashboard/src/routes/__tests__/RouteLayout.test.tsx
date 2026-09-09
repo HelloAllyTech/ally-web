@@ -37,6 +37,7 @@ vi.mock("@pages", () => ({
   EventManagement: () => <div>EventManagementPage</div>,
   CharacterLibrary: () => <div>CharacterLibraryPage</div>,
   CharacterInterview: () => <div>CharacterInterviewPage</div>,
+  ComponentLibrary: () => <div>ComponentLibraryPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   SttConfigs: () => <div>SttConfigsPage</div>,
   LlmConfigs: () => <div>LlmConfigsPage</div>,
@@ -132,6 +133,12 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.BUILDER_KNOWLEDGE);
     render(<RouteLayout />);
     expect(screen.getByText("BuilderKnowledgePage")).toBeInTheDocument();
+  });
+
+  it("renders Component Library route", () => {
+    window.history.pushState({}, "", ROUTES.COMPONENT_LIBRARY);
+    render(<RouteLayout />);
+    expect(screen.getByText("ComponentLibraryPage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {

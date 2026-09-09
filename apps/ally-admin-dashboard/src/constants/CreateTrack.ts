@@ -1,3 +1,11 @@
+// Deep import (bypassing the `@components` barrel, the way `@components/types`
+// is imported elsewhere): pulling `cellTypes` in through the full barrel
+// re-introduced a circular-import edge (`@constants` -> `@components` -> ... ->
+// `@store` -> `@api` -> `@constants`) that broke module init order for tests
+// mocking `@api`, even though `constants/SimulationCreator.ts` already imports
+// `cellTypes` the (working) barrel way — this file's position in `@constants`'s
+// own barrel apparently tips an already-fragile cycle over the edge.
+import { cellTypes } from "@components/notion-table/utils";
 import {
   AnnotationArtifactKind,
   AnnotationRevealKey,
@@ -47,6 +55,43 @@ export const TRACK_ITEM_TYPE_DESCRIPTIONS: Record<TrackItemType, string> = {
   [TrackItemType.ANNOTATED_ARTIFACT]: "Mark up a real transcript or note",
   [TrackItemType.GAME]: "A short arcade break between heavier components",
 };
+
+/**
+ * The 5 item types the Component Library covers. Roleplay/Case reference an
+ * external entity rather than carrying inline content, and a Game has nothing
+ * worth templating, so all three are excluded everywhere this list is used:
+ * the "Choose from library" sub-choice on the type picker, "Save as template"
+ * on the item editor frame, and the type filter on the Component Library page.
+ */
+export const COMPONENT_LIBRARY_SUPPORTED_TYPES: TrackItemType[] = [
+  TrackItemType.JOURNAL,
+  TrackItemType.QUIZ,
+  TrackItemType.ARTICLE,
+  TrackItemType.VIDEO,
+  TrackItemType.ANNOTATED_ARTIFACT,
+];
+
+export const isComponentLibrarySupportedType = (type: TrackItemType): boolean =>
+  COMPONENT_LIBRARY_SUPPORTED_TYPES.includes(type);
+
+/** Columns for the Component Library list table: title / type / last updated. */
+export const COMPONENT_LIBRARY_TABLE_COLUMNS = [
+  { id: "title", label: "Title", accessor: "title", dataType: cellTypes.normalText, minWidth: 260 },
+  { id: "type", label: "Type", accessor: "type", dataType: cellTypes.normalText, minWidth: 140 },
+  {
+    id: "updatedAt",
+    label: "Last updated",
+    accessor: "updatedAt",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+];
+
+/** Copy shared between the type picker's sub-choice and the template picker modal. */
+export const START_BLANK_LABEL = "Start blank";
+export const CHOOSE_FROM_LIBRARY_LABEL = "Choose from library";
+export const SAVE_AS_TEMPLATE_LABEL = "Save as template";
+export const NO_SAVED_TEMPLATES_MESSAGE = "No saved templates for this component yet";
 
 export const QUIZ_QUESTION_TYPE_LABELS: Record<QuizQuestionType, string> = {
   mcq_single: "Multiple choice (single)",
