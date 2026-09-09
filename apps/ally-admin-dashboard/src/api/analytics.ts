@@ -53,6 +53,8 @@ import {
   VoiceLatencySessionsSummary,
   VoiceLatencyByScenarioResponse,
   XpGrowthResponse,
+  GoalsXpResponse,
+  XpGoalGrain,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -242,6 +244,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.XP_GROWTH,
         method: HttpMethod.GET,
         params: windowParams(q),
+      }),
+    }),
+    // Actual XP earned vs. goal, by month/quarter/year — the Analytics → Goals
+    // tab. Goals are read-only here; they are seeded directly into
+    // analytics_xp_goals by migration. Platform-wide only, no tenant param —
+    // takes just the grain, which is the chart's own control.
+    getGoalsXp: builder.query<GoalsXpResponse, { grain?: XpGoalGrain }>({
+      query: ({ grain } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.XP_GOALS,
+        method: HttpMethod.GET,
+        params: grain ? { grain } : {},
       }),
     }),
     // Learner usage ladder L1-L5 by LIFETIME roleplay minutes. One response
@@ -741,6 +754,7 @@ export const {
   useGetCodingAgentCostQuery,
   useGetQualitySentimentQuery,
   useGetXpGrowthQuery,
+  useGetGoalsXpQuery,
   useGetChartPreferencesQuery,
   useSaveChartPreferencesMutation,
 } = analyticsAPI;

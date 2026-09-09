@@ -27,6 +27,7 @@ import { CodingAgentCost } from "./CodingAgentCost";
 import { TabControlsSlotProvider } from "./tabControlsSlot";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
+import { GoalsTab } from "./tabs/GoalsTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
@@ -73,12 +74,28 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  // First entry = the default landing tab. Highlights is the whole-platform
-  // picture; it absorbed the former separate "Overview" tab, which rendered four
-  // of the same charts from the same data, and later the "Testing" staging tab,
-  // whose twenty charts were distributed into the Highlights sub-tab that
-  // answers the same question as each — so a metric now lives in exactly one
-  // place rather than in a reviewed copy and a provisional one.
+  // First entry = the default landing tab. "Are we on pace against a goal" is
+  // the question leadership opens the page to answer, ahead of the broader
+  // platform-history picture in Highlights below — so it lands first rather
+  // than being one more Highlights sub-tab a reader has to know to click into.
+  //
+  // No page-level pickers: all-time and platform-wide by construction, like
+  // Product management below. Its own grain control (month/quarter/year) lives
+  // on the card, not up here, because "year" makes sense for this chart and
+  // for none of the day/week grains the page-level picker would otherwise
+  // offer.
+  {
+    id: "goals",
+    label: "Goals",
+    uses: { language: false, range: false },
+    render: () => <GoalsTab />,
+  },
+  // Highlights is the whole-platform picture; it absorbed the former separate
+  // "Overview" tab, which rendered four of the same charts from the same data,
+  // and later the "Testing" staging tab, whose twenty charts were distributed
+  // into the Highlights sub-tab that answers the same question as each — so a
+  // metric now lives in exactly one place rather than in a reviewed copy and a
+  // provisional one.
   //
   // It takes no time range: a leadership view of "how is the platform doing" is
   // a question about the whole history, and the reader who wants a narrower read
