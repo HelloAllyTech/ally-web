@@ -106,3 +106,4 @@ export * from "./entity-side-panel";
 export * from "./list-pagination";
 export * from "./markdown";
 export * from "./internal-monologue";
+export * from "./voice-option";

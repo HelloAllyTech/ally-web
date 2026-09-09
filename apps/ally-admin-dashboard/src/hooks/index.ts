@@ -17,6 +17,7 @@ import { useTracks } from "./useTracks";
 import { useTrackTranslationsSocket } from "./useTrackTranslationsSocket";
 import { useTranscriptDisclaimer } from "./useTranscriptDisclaimer";
 import { useUser } from "./useUser";
+import { useVoicePreview } from "./useVoicePreview";
 
 export {
   useAllySocket,
@@ -33,6 +34,7 @@ export {
   useScenarioReportsSocket,
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
+  useVoicePreview,
   useBuilderStream,
   useBuilderSocket,
   useTranscriptDisclaimer,

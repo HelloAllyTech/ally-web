@@ -17,6 +17,7 @@ import {
   FileUpload,
 } from "@components";
 import { ButtonVariant } from "@components/types";
+import { createVoiceOptionRenderer } from "@components/voice-option";
 import {
   en,
   GENDER_OPTIONS,
@@ -24,8 +25,12 @@ import {
   SEXUAL_ORIENTATION_OPTIONS,
   FILE_TYPE,
 } from "@constants";
+import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
+// Imported by module rather than through the `@hooks` barrel: the barrel pulls
+// in hooks that reach `@store`, which reads `baseAPI.reducerPath` at module
+// load — so any consumer's test that mocks `@api` fails to load the file.
+import { useVoicePreview } from "@hooks/useVoicePreview";
 import { CharacterData } from "@types";
-import { getSimulationVoiceOptions } from "@utils";
 
 import { CharacterKnowledgeSourcesField } from "./CharacterKnowledgeSourcesField";
 import { DialectSamplesField } from "./DialectSamplesField";
@@ -141,13 +146,48 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   }, []);
 
   const { data: scenarioVoices } = useGetScenarioVoicesQuery({});
-  const allVoiceOptions = getSimulationVoiceOptions(scenarioVoices ?? []);
   const [voiceSearchTerm, setVoiceSearchTerm] = useState("");
+  // Ordered against the character being written, not alphabetically: the age
+  // and gender are right there in this form, and the same helper drives the
+  // simulation studio's picker, so both surfaces surface the same voice first.
+  // Ordering, never filtering — a deliberate mismatch stays reachable.
+  const allVoiceOptions = buildGroupedVoiceOptions(
+    (scenarioVoices ?? []).map(voice => ({
+      id: voice.id,
+      name: voice.name,
+      provider: voice.provider,
+      // This list comes from GET scenario-voices, which returns gender/age
+      // inside `config` rather than hoisted like the language catalog does.
+      gender: voice.config?.gender as string | undefined,
+      age: voice.config?.age as string | undefined,
+    })),
+    formData.gender,
+    formData.age,
+  );
   const voiceOptions = voiceSearchTerm
     ? allVoiceOptions.filter(option =>
         option.label.toLowerCase().includes(voiceSearchTerm.toLowerCase()),
       )
     : allVoiceOptions;
+
+  const voicePreview = useVoicePreview();
+  /**
+   * What a previewed voice says. The character's own first style sample beats
+   * the backend's generic "Hi this is a preview of my voice." — hearing the
+   * voice deliver this character's line is the whole point of auditioning, and
+   * it is what makes two similar voices distinguishable. Falls back to the
+   * per-language default for a character with no samples yet.
+   */
+  const auditionText = (formData.linguisticStyleSamples ?? [])
+    .map(sample => String(sample ?? "").trim())
+    .find(Boolean);
+  const renderVoiceOption = createVoiceOptionRenderer({
+    playingVoiceId: voicePreview.playingVoiceId,
+    isLoading: voicePreview.isLoading,
+    selectedValue: formData.voiceId,
+    onPlay: voiceId => void voicePreview.play(voiceId, auditionText),
+    onPause: voicePreview.pause,
+  });
 
   const [fileErrors, setFileErrors] = useState<Record<string, any>>({});
   const formMethodsShim = React.useMemo(
@@ -406,6 +446,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 allowDeselect
                 borderless
                 options={voiceOptions}
+                optionsRenderer={renderVoiceOption}
                 value={formData.voiceId || ""}
                 onChange={value => handleFieldChange("voiceId", value || undefined)}
                 placeholder={en.simulation.selectVoice}
