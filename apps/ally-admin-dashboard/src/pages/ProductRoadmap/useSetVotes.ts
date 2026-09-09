@@ -85,8 +85,7 @@ export const useSetVotes = (target: AllocationTarget) => {
         }),
         store.dispatch(
           productRoadmapAPI.util.updateQueryData("getRoadmapVoteBudget", undefined, draft => {
-            draft.used += delta;
-            draft.remaining = Math.max(0, draft.votesPerMonth - draft.used);
+            draft.available = Math.max(0, draft.available - delta);
           }),
         ),
       ];

@@ -206,17 +206,16 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
       key="add"
       type="button"
       /*
-        TWO different quantities, named as two. `pending` is the votes on THIS row; the budget is
-        the monthly allowance spent across every row. The old string read
-        "${pending} of ${votesPerMonth} used this month", which stated the first as if it were
-        the second — a row holding 24 votes announced "24 of 100 used this month" while the
-        header correctly said 59 of 100 left, i.e. 41 used. Two numbers on one screen
-        contradicting each other, and the wrong one is the one attached to the button you are
-        about to press. `remaining` is the pending-aware figure the disabled state already gates
-        on, so the label cannot drift from the behaviour.
+        TWO different quantities, named as two. `pending` is the votes on THIS row; `remaining`
+        is what's still spendable overall (the live vote-grant balance, pending-aware). An
+        earlier version conflated them — a row holding 24 votes announced "24 of 100 used this
+        month" while the header correctly said 59 of 100 left, i.e. 41 used. Two numbers on one
+        screen contradicting each other, and the wrong one is the one attached to the button you
+        are about to press. `remaining` is the pending-aware figure the disabled state already
+        gates on, so the label cannot drift from the behaviour.
       */
-      aria-label={`Add a vote — you have ${pending} on this, ${remaining} of ${budget.votesPerMonth} left this month`}
-      title={remaining === 0 ? "No votes left this month" : "Add a vote"}
+      aria-label={`Add a vote — you have ${pending} on this, ${remaining} available`}
+      title={remaining === 0 ? "No votes available" : "Add a vote"}
       disabled={remaining === 0}
       onClick={() => step(1)}
       className={`border-border-light hover:bg-background-secondary flex items-center justify-center rounded-full border disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${buttonSize}`}
@@ -229,7 +228,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
     <button
       key="remove"
       type="button"
-      aria-label={`Remove a vote — you have ${pending} on this, ${remaining} of ${budget.votesPerMonth} left this month`}
+      aria-label={`Remove a vote — you have ${pending} on this, ${remaining} available`}
       title={pending === 0 ? "You have no votes on this to remove" : "Remove a vote"}
       disabled={pending === 0}
       onClick={() => step(-1)}
