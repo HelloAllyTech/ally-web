@@ -314,26 +314,35 @@ describe("Competency — picking a competency", () => {
 });
 
 describe("Competency — clusters", () => {
-  it("selects every competency in a cluster from its “Select all”", async () => {
+  // Scoped to inside the open dropdown: once the cluster is selected the
+  // TRIGGER also reads "Core Communication" and carries cursor-pointer, so an
+  // unscoped query finds the trigger first and merely closes the list.
+  const clusterRow = () => {
+    const list = document.querySelector(".shadow-lg")!;
+    return [...list.querySelectorAll("div")].find(d =>
+      d.textContent?.startsWith("Core Communication"),
+    )!;
+  };
+
+  it("applies every competency in a cluster as one unit", async () => {
     render(<Harness />);
     await runSyncDebounce();
 
     openDropdown();
-    fireEvent.click(screen.getByText("Select all"));
+    fireEvent.click(clusterRow());
     await flush();
 
     expect(selectionIds().sort()).toEqual(["c-listen", "c-risk"]);
-    // Naming the cluster is the point of the grouping: it reads far better
-    // than "2 competencies" for a selection the author made in one click.
+    // The trigger names what the author picked, not a count.
     expect(triggerLabel()).toBe("Core Communication");
   });
 
-  it("gives each selected competency its own “should do”/“should not do” pair", async () => {
+  it("gives each competency in the cluster its own “should do”/“should not do” pair", async () => {
     render(<Harness />);
     await runSyncDebounce();
 
     openDropdown();
-    fireEvent.click(screen.getByText("Select all"));
+    fireEvent.click(clusterRow());
     await flush();
 
     const rows = form.getValues("behaviorInstructions") as {
@@ -351,34 +360,65 @@ describe("Competency — clusters", () => {
     ]);
   });
 
-  it("still lets an author pick one competency on its own", async () => {
+  it("still offers a clustered competency on its own while its cluster is unselected", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    // c-listen belongs to Core Communication, and is selectable by itself.
+    fireEvent.click(option("Active Listening"));
+    await flush();
+
+    expect(selectionIds()).toEqual(["c-listen"]);
+    expect(triggerLabel()).toBe("Active Listening");
+  });
+
+  it("stops offering a competency once its cluster has applied it", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(clusterRow());
+    await flush();
+
+    // Clicking the now-covered member is inert — it is already applied, so
+    // selecting it again would mean nothing, and it must not toggle it OFF.
+    fireEvent.click(option("Active Listening"));
+    await flush();
+
+    expect(selectionIds().sort()).toEqual(["c-listen", "c-risk"]);
+  });
+
+  it("re-offers the competencies when the cluster is deselected", async () => {
+    render(<Harness />);
+    await runSyncDebounce();
+
+    openDropdown();
+    fireEvent.click(clusterRow());
+    await flush();
+    fireEvent.click(clusterRow());
+    await flush();
+
+    expect(selectionIds()).toEqual([]);
+    // Individually selectable again.
+    fireEvent.click(option("Active Listening"));
+    await flush();
+    expect(selectionIds()).toEqual(["c-listen"]);
+  });
+
+  it("names both parts when a cluster and a loose competency are mixed", async () => {
     render(<Harness />);
     await runSyncDebounce();
 
     openDropdown();
     fireEvent.click(option("Risk Assessment"));
     await flush();
-
-    expect(selectionIds()).toEqual(["c-risk"]);
-    expect(triggerLabel()).toBe("Risk Assessment");
-  });
-
-  it("un-ticking a competency removes it and its rows without forking", async () => {
-    render(<Harness />);
-    await runSyncDebounce();
-
-    openDropdown();
-    fireEvent.click(screen.getByText("Select all"));
-    await flush();
-    fireEvent.click(option("Active Listening"));
+    fireEvent.click(clusterRow());
     await flush();
 
-    expect(selectionIds()).toEqual(["c-risk"]);
-    expect(
-      (form.getValues("behaviorInstructions") as { competencyId: string }[]).every(
-        row => row.competencyId === "c-risk",
-      ),
-    ).toBe(true);
-    expect(mockCreateCompetency).not.toHaveBeenCalled();
+    // Risk Assessment is inside the cluster too, so the cluster completes the
+    // set rather than adding a separate part.
+    expect(selectionIds().sort()).toEqual(["c-listen", "c-risk"]);
+    expect(triggerLabel()).toBe("Core Communication");
   });
 });

@@ -182,6 +182,31 @@ const displayNameFor = (competency: CompetencyType, userId?: number): string => 
   return competency.name;
 };
 
+/**
+ * Splits a selection into the clusters it fully contains plus whatever is left
+ * over, so the trigger can name what the author actually picked. Leftovers are
+ * real: a grandfathered simulation may hold a competency that has since been
+ * clustered, and hand-editing a cluster's rubric rows forks one member out.
+ */
+const describeSelection = (
+  selected: CompetencyType[],
+  clusters: { id: string; name: string; competencyIds: string[] }[],
+): { clusterNames: string[]; looseCompetencies: CompetencyType[] } => {
+  const remaining = new Map(selected.map(competency => [competency.id, competency]));
+  const clusterNames: string[] = [];
+  // Largest first, so a big framework wins over a small cluster that overlaps
+  // it and the label reads the way the author picked.
+  for (const cluster of [...clusters].sort(
+    (a, b) => b.competencyIds.length - a.competencyIds.length,
+  )) {
+    if (cluster.competencyIds.length > 0 && cluster.competencyIds.every(id => remaining.has(id))) {
+      clusterNames.push(cluster.name);
+      cluster.competencyIds.forEach(id => remaining.delete(id));
+    }
+  }
+  return { clusterNames, looseCompetencies: [...remaining.values()] };
+};
+
 const selectionKeyOf = (selected: CompetencyType[]) =>
   selected
     .map(competency => competency.id)
@@ -238,8 +263,13 @@ export const Competency: React.FC<CompetencyProps> = ({
   const { user } = useUser();
   const userId = user?.id;
 
+  // Deliberately unfiltered: the search box filters CLIENT-side below. A
+  // server-filtered list would also shrink the pool that cluster membership is
+  // resolved against, so selecting a cluster while a search was active would
+  // silently apply only the members matching the search — the opposite of
+  // atomic. It also lets a search match a member's name and surface the
+  // cluster that owns it.
   const { data: competenciesData, isLoading } = useGetCompetenciesQuery({
-    name: searchTerm,
     includeOwnCustom: true,
   });
   const { data: clustersData } = useGetCompetencyClustersQuery();
@@ -316,9 +346,10 @@ export const Competency: React.FC<CompetencyProps> = ({
   const competencies = useMemo(() => competenciesData?.data ?? [], [competenciesData]);
   const clusters = useMemo(() => clustersData?.data ?? [], [clustersData]);
 
-  // Trigger label. Naming the cluster when the selection is exactly its
-  // members is the whole point of clusters — the framework's own name reads
-  // far better than "14 competencies" for a set the author picked in one go.
+  // Trigger label. Names the parts the author actually picked — "ENACT" for a
+  // cluster, the competency's name for a loose one, and both when they mixed
+  // ("ENACT + Collaborative Goal Setting"). Naming a count instead would hide
+  // the one thing the grouping exists to make legible.
   const { displayLabel, isPlaceholder } = useMemo(() => {
     if (selected.length === 0) {
       return tableBehaviourKeys(behaviourRows).size > 0
@@ -326,20 +357,13 @@ export const Competency: React.FC<CompetencyProps> = ({
         : { displayLabel: en.common.select, isPlaceholder: true };
     }
 
-    const selectionKey = selectionKeyOf(selected);
-    const matchingCluster = clusters.find(
-      cluster =>
-        cluster.competencyIds.length > 0 &&
-        selectionKeyOf(
-          cluster.competencyIds.map(clusterId => ({ id: clusterId }) as CompetencyType),
-        ) === selectionKey,
-    );
-    if (matchingCluster) {
-      return { displayLabel: matchingCluster.name, isPlaceholder: false };
-    }
+    const { clusterNames, looseCompetencies } = describeSelection(selected, clusters);
 
-    if (selected.length === 1) {
-      const only = selected[0];
+    // A single loose competency is the one case where the table can diverge
+    // from its mapping without a fork having happened yet (the create is
+    // debounced), so it keeps the "Custom" treatment.
+    if (clusterNames.length === 0 && looseCompetencies.length === 1) {
+      const only = looseCompetencies[0];
       if (only.isCustom) {
         return { displayLabel: displayNameFor(only, userId), isPlaceholder: false };
       }
@@ -356,8 +380,17 @@ export const Competency: React.FC<CompetencyProps> = ({
         : { displayLabel: CUSTOM_LABEL, isPlaceholder: false };
     }
 
+    const parts = [
+      ...clusterNames,
+      ...looseCompetencies.map(competency => displayNameFor(competency, userId)),
+    ];
+    // Past a handful the names stop fitting the trigger and a count is the
+    // more honest summary.
     return {
-      displayLabel: `${selected.length} competencies`,
+      displayLabel:
+        parts.length <= 3
+          ? parts.join(" + ")
+          : `${parts.slice(0, 2).join(" + ")} + ${parts.length - 2} more`,
       isPlaceholder: false,
     };
   }, [selected, clusters, mappings, behaviourRows, userId]);
@@ -746,14 +779,34 @@ export const Competency: React.FC<CompetencyProps> = ({
 
   // --- dropdown -----------------------------------------------------------
 
-  // Grouped options: one section per cluster, then everything ungrouped.
-  // Membership is many-to-many, so a competency in two clusters shows under
-  // both. A cluster with no member matching the current search is dropped
-  // rather than shown as an empty heading.
+  // Which cluster (if any) has already applied each competency. A competency
+  // stays individually selectable as normal — but once the cluster it belongs
+  // to is selected, it has already been applied, so offering it again would let
+  // the author "select" something that is already in. Those rows go inert and
+  // say which cluster covers them.
+  const coveredByCluster = useMemo(() => {
+    const covered = new Map<string, string>();
+    for (const cluster of clusters) {
+      if (cluster.competencyIds.length === 0) continue;
+      const isClusterSelected = cluster.competencyIds.every(id => selectedIds.has(id));
+      if (!isClusterSelected) continue;
+      for (const id of cluster.competencyIds) {
+        if (!covered.has(id)) covered.set(id, cluster.name);
+      }
+    }
+    return covered;
+  }, [clusters, selectedIds]);
+
+  // The dropdown offers clusters AND every competency individually. Search
+  // matches a cluster's name or any of its members' names, so looking for
+  // "Verbal Communication" surfaces both the competency and the cluster that
+  // contains it.
   const groups = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    const matches = (name: string) => !query || name.toLowerCase().includes(query);
     const byId = new Map(competencies.map(competency => [competency.id, competency]));
-    const clustered = new Set(clusters.flatMap(cluster => cluster.competencyIds));
-    const clusterGroups = clusters
+
+    const clusterUnits = clusters
       .map(cluster => ({
         cluster,
         members: cluster.competencyIds
@@ -761,26 +814,39 @@ export const Competency: React.FC<CompetencyProps> = ({
           .filter((competency): competency is CompetencyType => Boolean(competency))
           .sort((a, b) => a.name.localeCompare(b.name)),
       }))
-      .filter(group => group.members.length > 0);
+      // An empty cluster has nothing to apply, so it is not an option.
+      .filter(unit => unit.members.length > 0)
+      .filter(
+        unit => matches(unit.cluster.name) || unit.members.some(member => matches(member.name)),
+      );
+
     return {
-      clusterGroups,
-      ungrouped: competencies.filter(competency => !clustered.has(competency.id)),
+      clusterUnits,
+      individuals: competencies.filter(competency => matches(competency.name)),
     };
-  }, [competencies, clusters]);
+  }, [competencies, clusters, searchTerm]);
 
   const renderOption = (field: { value: string }, competency: CompetencyType) => {
     const isSelected = selectedIds.has(competency.id);
     const isRenaming = renamingId === competency.id;
+    // Already applied by a selected cluster: shown so the author can see it is
+    // covered, but inert, because selecting it again would mean nothing. The
+    // way to get it back as a standalone pick is to deselect the cluster.
+    const coveringCluster = coveredByCluster.get(competency.id);
+    const isInert = Boolean(coveringCluster) && !singleSelect;
     return (
       <div
         key={competency.id}
+        title={coveringCluster ? `Already applied by ${coveringCluster}` : undefined}
         className={`group flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors ${
-          isSelected
-            ? "bg-primary-50 text-primary font-medium"
-            : "text-typography-900 hover:bg-background-secondary"
-        } ${isRenaming ? "" : "cursor-pointer"}`}
+          isInert
+            ? "text-typography-400"
+            : isSelected
+              ? "bg-primary-50 text-primary font-medium"
+              : "text-typography-900 hover:bg-background-secondary"
+        } ${isRenaming || isInert ? "" : "cursor-pointer"}`}
         onClick={() => {
-          if (!isRenaming) toggleCompetency(field, competency);
+          if (!isRenaming && !isInert) toggleCompetency(field, competency);
         }}
       >
         {isRenaming ? (
@@ -804,13 +870,17 @@ export const Competency: React.FC<CompetencyProps> = ({
                   type="checkbox"
                   readOnly
                   checked={isSelected}
+                  disabled={isInert}
                   tabIndex={-1}
                   className="shrink-0 pointer-events-none accent-primary"
                 />
               )}
               <span className="text-base truncate">{displayNameFor(competency, userId)}</span>
             </span>
-            {competency.isCustom && (
+            {coveringCluster && (
+              <span className="shrink-0 text-xs text-typography-400">in {coveringCluster}</span>
+            )}
+            {!coveringCluster && competency.isCustom && (
               <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"
@@ -867,46 +937,62 @@ export const Competency: React.FC<CompetencyProps> = ({
           <div className="px-3 py-2 text-sm text-typography-800">
             {en.common.noOptionsAvailable}
           </div>
+        ) : groups.clusterUnits.length === 0 && groups.individuals.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-typography-800">
+            {en.common.noOptionsAvailable}
+          </div>
         ) : (
           <>
-            {groups.clusterGroups.map(({ cluster, members }) => {
-              const allSelected = members.every(competency => selectedIds.has(competency.id));
+            {/* Clusters first — a whole framework is the bigger-grained
+                choice, and putting it above the loose competencies stops an
+                author picking piecemeal without noticing the set exists. */}
+            {groups.clusterUnits.map(({ cluster, members }) => {
+              const isSelected = members.every(competency => selectedIds.has(competency.id));
               return (
-                <div key={cluster.id}>
-                  <div className="flex items-center justify-between gap-2 bg-background-secondary px-3 py-1.5">
-                    <span className="text-xs font-medium uppercase tracking-wide text-typography-700 truncate">
-                      {cluster.name}
-                    </span>
-                    {/* Selecting the cluster is the point of the grouping: it
-                        takes every competency under it in one click. */}
+                <div
+                  key={cluster.id}
+                  onClick={() => toggleCluster(field, cluster.competencyIds)}
+                  className={`cursor-pointer px-3 py-2 text-sm transition-colors ${
+                    isSelected
+                      ? "bg-primary-50 text-primary font-medium"
+                      : "text-typography-900 hover:bg-background-secondary"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 min-w-0">
                     {!singleSelect && (
-                      <button
-                        type="button"
-                        onClick={e => {
-                          e.stopPropagation();
-                          toggleCluster(field, cluster.competencyIds);
-                        }}
-                        className="shrink-0 text-xs text-primary hover:underline"
-                      >
-                        {allSelected ? "Clear all" : "Select all"}
-                      </button>
+                      <input
+                        type="checkbox"
+                        readOnly
+                        checked={isSelected}
+                        tabIndex={-1}
+                        className="shrink-0 pointer-events-none accent-primary"
+                      />
                     )}
-                  </div>
-                  {members.map(competency => renderOption(field, competency))}
+                    <span className="text-base truncate">{cluster.name}</span>
+                    <span className="shrink-0 text-xs text-typography-600">
+                      {members.length} {members.length === 1 ? "competency" : "competencies"}
+                    </span>
+                  </span>
+                  {/* Members are listed, not offered: they cannot be applied
+                      on their own, but an author still needs to see what
+                      selecting this cluster will bring in. */}
+                  <span className="mt-0.5 block pl-6 text-xs text-typography-600">
+                    {members.map(member => member.name).join(", ")}
+                  </span>
                 </div>
               );
             })}
 
-            {groups.ungrouped.length > 0 && (
+            {groups.individuals.length > 0 && (
               <div>
-                {groups.clusterGroups.length > 0 && (
+                {groups.clusterUnits.length > 0 && (
                   <div className="bg-background-secondary px-3 py-1.5">
                     <span className="text-xs font-medium uppercase tracking-wide text-typography-700">
-                      Ungrouped
+                      Individual competencies
                     </span>
                   </div>
                 )}
-                {groups.ungrouped.map(competency => renderOption(field, competency))}
+                {groups.individuals.map(competency => renderOption(field, competency))}
               </div>
             )}
           </>
