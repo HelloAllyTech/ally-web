@@ -38,6 +38,7 @@ import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
 import LanguageSelector from "../language-selector/LanguageSelector";
 import NotificationBadge from "../notification-badge/NotificationBadge";
+import { NotificationBell } from "../notification-feed";
 
 const EXPANDED_WIDTH = 1200;
 
@@ -480,6 +481,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
         <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
+
+          <NotificationBell isExpanded={isExpanded} />
 
           {isExpanded && FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
             <AppTooltip location={TooltipLocation.LANGUAGE_SELECTOR}>

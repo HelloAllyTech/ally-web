@@ -238,6 +238,8 @@ export const baseAPI = createApi({
     // Learner progress (XP/level). Registered here as well as used in providesTags —
     // RTK Query silently ignores tags that are not declared on the API.
     TAG_TYPES.PROGRESS,
+    TAG_TYPES.NOTIFICATIONS,
+    TAG_TYPES.UNREAD_NOTIFICATION_COUNT,
   ],
   endpoints: () => ({}),
 });

@@ -310,6 +310,12 @@ export const ApiEndpoints = {
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",
   },
+  NOTIFICATIONS: {
+    LIST: "/v1/notifications",
+    UNREAD_COUNT: "/v1/notifications/unread-count",
+    MARK_READ: (id: string) => `/v1/notifications/${id}/read`,
+    MARK_ALL_READ: "/v1/notifications/read-all",
+  },
   PRODUCT_ROADMAP: {
     // "Report a problem" — any logged-in app user, not just admin staff. Backend tags the
     // resulting opportunity source='consumer'; see ally-be src/product-roadmap.
