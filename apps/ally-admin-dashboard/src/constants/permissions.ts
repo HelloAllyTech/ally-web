@@ -62,6 +62,12 @@ export enum Permissions {
   // (authorization/constants/permissions.constants.ts). Not yet mirrored here
   // before this feature; CreateTrack's own routes still gate on EDIT_EVENT.
   VIEW_ADMIN_TRACK = "view:admin:track",
+  // Knowledge corpora (WhatsApp Q&A reference material and the character library). Granted to
+  // SDA only on the backend, not shared with SUPER_ADMIN — the same treatment as AWS logs,
+  // because unreviewed reference material reaches every answer that touches it.
+  VIEW_KNOWLEDGE_BASE = "view:knowledge-base",
+  EDIT_KNOWLEDGE_BASE = "edit:knowledge-base",
+  UPLOAD_KNOWLEDGE_BASE = "upload:knowledge-base",
   EDIT_ADMIN_TRACK = "edit:admin:track",
   DELETE_ADMIN_TRACK = "delete:admin:track",
 }

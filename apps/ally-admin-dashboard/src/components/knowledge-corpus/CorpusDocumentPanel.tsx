@@ -15,7 +15,7 @@ import {
 } from "@api";
 import { EntityField, EntitySidePanel } from "@components";
 import { DOCUMENT_MAX_PASTE_CHARS, en } from "@constants";
-import { KbDocument, KbDocumentSourceType } from "@types";
+import { KbCharacterTopic, KbCorpus, KbDocument, KbDocumentSourceType } from "@types";
 
 import { DocumentUploadField } from "./DocumentUploadField";
 
@@ -23,6 +23,14 @@ interface CorpusDocumentPanelProps {
   isOpen: boolean;
   /** Null = create. */
   document: KbDocument | null;
+  /**
+   * Which corpus a NEW document is filed under. Defaults to the WhatsApp corpus so the tab
+   * that has always used this panel keeps behaving identically. Ignored when editing — corpus
+   * is immutable, because moving a document would change what every citation over it meant.
+   */
+  corpus?: KbCorpus;
+  /** Character topics to file a new document under. Character library only. */
+  characterTopics?: KbCharacterTopic[];
   onClose: () => void;
 }
 
@@ -61,6 +69,8 @@ const isUploadSource = (source: KbDocumentSourceType) =>
 export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
   isOpen,
   document,
+  corpus = KbCorpus.WHATSAPP_QA,
+  characterTopics = [],
   onClose,
 }) => {
   const isEdit = Boolean(document);
@@ -156,6 +166,8 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
         }
       } else {
         await createDocument({
+          corpus,
+          ...(characterTopics.length ? { characterTopics } : {}),
           title: title.trim(),
           sourceType,
           ...(sourceType === KbDocumentSourceType.PASTE ? { text: text.trim() } : {}),
