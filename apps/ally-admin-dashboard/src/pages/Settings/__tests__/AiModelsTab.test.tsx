@@ -21,8 +21,8 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
   InlineNotification: ({ title }: any) => <div>{title}</div>,
   SkeletonText: () => <div>Loading…</div>,
-  Select: ({ id, labelText, value, onChange, children }: any) => (
-    <select aria-label={labelText || id} value={value} onChange={onChange}>
+  Select: ({ id, labelText, value, onChange, disabled, children }: any) => (
+    <select aria-label={labelText || id} value={value} onChange={onChange} disabled={disabled}>
       {children}
     </select>
   ),
@@ -52,7 +52,11 @@ describe("AiModelsTab", () => {
     toastSuccess.mockClear();
     toastError.mockClear();
     bugHunterResult = {
-      data: { defaultModel: "claude-sonnet-5", escalationModel: "claude-opus-5" },
+      data: {
+        engine: "claude-code",
+        defaultModel: "claude-sonnet-5",
+        escalationModel: "claude-opus-5",
+      },
       isLoading: false,
       isError: false,
     };
@@ -91,11 +95,30 @@ describe("AiModelsTab", () => {
 
     await vi.waitFor(() => {
       expect(updateBugHunterSettings).toHaveBeenCalledWith({
+        engine: "claude-code",
         defaultModel: "claude-sonnet-5",
         escalationModel: "claude-haiku-4-5",
       });
     });
     expect(updateBuilderSettings).not.toHaveBeenCalled();
+  });
+
+  it("switching Bug Hunter's engine to Gemini swaps the model options and disables escalation", async () => {
+    render(<AiModelsTab />);
+
+    fireEvent.change(screen.getAllByLabelText("Engine")[0], { target: { value: "gemini" } });
+
+    // Escalation has no Gemini equivalent — its field becomes a disabled
+    // placeholder rather than a live model picker.
+    expect(screen.getByLabelText("Escalation model")).toBeDisabled();
+
+    fireEvent.click(screen.getAllByText("Save")[0]);
+
+    await vi.waitFor(() => {
+      expect(updateBugHunterSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ engine: "gemini", defaultModel: "gemini-2.5-flash" }),
+      );
+    });
   });
 
   it("saves Builder's section without touching Bug Hunter's, clearing a blank tier to the platform default", async () => {
@@ -118,7 +141,7 @@ describe("AiModelsTab", () => {
   it("switching Builder's engine clears its model fields, since a model id from one engine means nothing to the other", async () => {
     render(<AiModelsTab />);
 
-    fireEvent.change(screen.getByLabelText("Engine"), { target: { value: "gemini" } });
+    fireEvent.change(screen.getAllByLabelText("Engine")[1], { target: { value: "gemini" } });
     fireEvent.click(screen.getAllByText("Save")[1]);
 
     await vi.waitFor(() => {

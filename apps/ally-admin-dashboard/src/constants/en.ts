@@ -999,12 +999,18 @@ export const en = {
       bugHunterHeading: "Bug Hunter",
       bugHunterLoadFailed: "Couldn't load Bug Hunter's model settings.",
       bugHunterSaveFailed: "Couldn't save Bug Hunter's model settings.",
+      bugHunterEngineLabel: "Engine",
+      bugHunterEngineHelp:
+        "Which CLI the sweep and fix session run on. Claude Code is battle-tested and supports escalation. Gemini CLI is wired in but has no equivalent to the escalation subagent, so a Gemini run skips escalation entirely — switching engine clears the default model, since a model id from one engine means nothing to the other.",
       defaultModelLabel: "Default model",
       defaultModelHelp:
         "Runs the sweep and fix session end to end. Takes effect on the next run, not this one.",
       escalationModelLabel: "Escalation model",
       escalationModelHelp:
         "Handed to the escalation subagent for one finding that resists a straightforward fix — a root cause spanning several files, a guarded-path change, or a retry after a non-obvious failure. Not used anywhere else.",
+      escalationModelDisabledHelp:
+        "Gemini CLI has no equivalent to the escalation subagent this depends on, so a Gemini-engine run skips escalation rather than pretending to honor this field.",
+      escalationModelDisabledOption: "Not available on Gemini",
       builderHeading: "Builder",
       builderLoadFailed: "Couldn't load Builder's model settings.",
       builderSaveFailed: "Couldn't save Builder's model settings.",

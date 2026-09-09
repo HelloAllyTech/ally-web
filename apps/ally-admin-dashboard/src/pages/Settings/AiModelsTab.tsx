@@ -49,6 +49,17 @@ const BUILDER_ENGINE_OPTIONS = [
   { value: "gemini", text: "Gemini CLI (unverified — see run-engine.sh)" },
 ];
 
+/**
+ * Gemini CLI has no equivalent to the Task-tool subagent dispatch
+ * `.claude/agents/bug-escalation.md` relies on, so a gemini-engine sweep/fix
+ * session skips escalation entirely rather than pretending to honor it — see
+ * bug-hunt-sweep.yml's/bug-fix-session.yml's engine-resolution step.
+ */
+const BUG_HUNTER_ENGINE_OPTIONS = [
+  { value: "claude-code", text: "Claude Code" },
+  { value: "gemini", text: "Gemini CLI (skips escalation)" },
+];
+
 const modelOptionsForEngine = (engine: string) =>
   engine === "gemini" ? GEMINI_MODEL_OPTIONS : CLAUDE_CODE_MODEL_OPTIONS;
 
@@ -99,6 +110,22 @@ const BugHunterModelSection: React.FC = () => {
   const set = <K extends keyof BugHunterModelSettings>(key: K, value: BugHunterModelSettings[K]) =>
     setDraft(current => (current ? { ...current, [key]: value } : current));
 
+  const engine = draft?.engine ?? "claude-code";
+
+  const handleEngineChange = (nextEngine: string) =>
+    setDraft(current =>
+      current
+        ? {
+            ...current,
+            engine: nextEngine,
+            // A Claude model id left behind under Gemini (or the reverse)
+            // would be silently meaningless rather than caught early — same
+            // reasoning as Builder's engine switch below.
+            defaultModel: modelOptionsForEngine(nextEngine)[0].value,
+          }
+        : current,
+    );
+
   const handleSave = async () => {
     if (!draft) return;
     try {
@@ -126,6 +153,21 @@ const BugHunterModelSection: React.FC = () => {
         <SkeletonText paragraph lineCount={4} className="mt-3" />
       ) : (
         <>
+          <div className="mt-3">
+            <Field label={strings.bugHunterEngineLabel} hint={strings.bugHunterEngineHelp}>
+              <Select
+                id="settings-ai-models-bug-hunter-engine"
+                labelText={strings.bugHunterEngineLabel}
+                hideLabel
+                value={engine}
+                onChange={event => handleEngineChange(event.target.value)}
+              >
+                {BUG_HUNTER_ENGINE_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} text={option.text} />
+                ))}
+              </Select>
+            </Field>
+          </div>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={strings.defaultModelLabel} hint={strings.defaultModelHelp}>
               <Select
@@ -135,24 +177,41 @@ const BugHunterModelSection: React.FC = () => {
                 value={draft.defaultModel}
                 onChange={event => set("defaultModel", event.target.value)}
               >
-                {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
+                {modelOptionsForEngine(engine).map(option => (
                   <SelectItem key={option.value} value={option.value} text={option.text} />
                 ))}
               </Select>
             </Field>
-            <Field label={strings.escalationModelLabel} hint={strings.escalationModelHelp}>
-              <Select
-                id="settings-ai-models-bug-hunter-escalation-model"
-                labelText={strings.escalationModelLabel}
-                hideLabel
-                value={draft.escalationModel}
-                onChange={event => set("escalationModel", event.target.value)}
+            {engine === "gemini" ? (
+              <Field
+                label={strings.escalationModelLabel}
+                hint={strings.escalationModelDisabledHelp}
               >
-                {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
-                  <SelectItem key={option.value} value={option.value} text={option.text} />
-                ))}
-              </Select>
-            </Field>
+                <Select
+                  id="settings-ai-models-bug-hunter-escalation-model"
+                  labelText={strings.escalationModelLabel}
+                  hideLabel
+                  disabled
+                  value=""
+                >
+                  <SelectItem value="" text={strings.escalationModelDisabledOption} />
+                </Select>
+              </Field>
+            ) : (
+              <Field label={strings.escalationModelLabel} hint={strings.escalationModelHelp}>
+                <Select
+                  id="settings-ai-models-bug-hunter-escalation-model"
+                  labelText={strings.escalationModelLabel}
+                  hideLabel
+                  value={draft.escalationModel}
+                  onChange={event => set("escalationModel", event.target.value)}
+                >
+                  {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value} text={option.text} />
+                  ))}
+                </Select>
+              </Field>
+            )}
           </div>
           <div className="mt-4">
             <Button kind="primary" size="sm" disabled={isSaving} onClick={() => void handleSave()}>

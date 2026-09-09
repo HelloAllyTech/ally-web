@@ -233,8 +233,9 @@ export interface BugHunterSettings {
   updatedAt: string;
 }
 
-/** Which models the sweep/fix session and its escalation subagent run on. */
+/** Which CLI the sweep/fix session runs on, and which models it and its escalation subagent use. */
 export interface BugHunterModelSettings {
+  engine: string;
   defaultModel: string;
   escalationModel: string;
 }
