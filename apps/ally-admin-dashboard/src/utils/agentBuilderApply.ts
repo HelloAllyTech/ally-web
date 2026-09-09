@@ -10,6 +10,7 @@ import {
   ALLOWED_FILLER_WORDS_FIELD,
   ALLOWED_FILLER_WORDS_MAX,
   DEFAULT_SAMPLE_COUNT,
+  OPENING_DIALOGUE_LINE_SLOTS,
   uniqueFillerNamesPreserveOrder,
 } from "@components/linguistic-style-samples/scenarioLanguageUtils";
 import { DEFAULT_LANGUAGE, FORM_FIELD_IDS, GENDER_OPTIONS } from "@constants";
@@ -22,9 +23,17 @@ import { DEFAULT_LANGUAGE, FORM_FIELD_IDS, GENDER_OPTIONS } from "@constants";
  * avoid tripping the 10s autosave + mandatory-field revalidation on every
  * field; the wizard runs one `trigger()` at the end.
  *
+ * The three language-scoped fields arrive once per language the client speaks;
+ * `options.languageId` says which language tab the value belongs in, and each
+ * write merges into whatever languages the form already holds rather than
+ * replacing them, so the parallel per-language results can land in any order.
+ *
  * Returns a human-readable label for the applied field, or null when the value
  * was empty / unusable (so the chat feed can mark that task as skipped).
  */
+
+/** Mirrors OpeningDialoguesPanel's own field name for non-primary languages. */
+const TRANSLATION_OPENING_STATEMENTS_FIELD = "translationOpeningStatements";
 
 const MAX_LENGTHS = {
   title: 100,
@@ -57,13 +66,35 @@ const nonEmptyLines = (value: string): string[] =>
     .map(l => l.trim())
     .filter(Boolean);
 
+export interface ApplyAgentBuilderFieldOptions {
+  validate?: boolean;
+  /**
+   * Language tab the value belongs to, for the language-scoped fields. A
+   * `languages.id` as a string; defaults to English when omitted.
+   */
+  languageId?: string;
+  /**
+   * The scenario's primary opening-dialogue language. Opening dialogues for it
+   * live on `openingStatements`; every other language lives under
+   * `translationOpeningStatements` — the same split the Opening Dialogues
+   * panel writes, so generated lines land in the tab that reads them.
+   */
+  primaryLanguageId?: string | null;
+}
+
 export const applyAgentBuilderField = (
   field: AgentBuilderField,
   value: unknown,
   formMethods: UseFormReturn<any>,
-  options?: { validate?: boolean },
+  options?: ApplyAgentBuilderFieldOptions,
 ): string | null => {
   const validate = options?.validate ?? false;
+  const languageId = options?.languageId ?? DEFAULT_LANGUAGE.value;
+  // No primary given (or no catalog yet) → treat the target language as the
+  // primary one, which keeps the single-language case writing openingStatements
+  // exactly as it did before the copilot became language-aware.
+  const isPrimaryLanguage =
+    options?.primaryLanguageId == null || options.primaryLanguageId === languageId;
   const GENDER_VALUES = genderValues();
   const set = (key: string, next: unknown) =>
     formMethods.setValue(key, next, { shouldDirty: true, shouldValidate: validate });
@@ -131,9 +162,18 @@ export const applyAgentBuilderField = (
 
     case "opening_statements": {
       if (!isNonEmptyString(value)) return null;
-      const lines = nonEmptyLines(value);
+      // The panel renders a fixed number of line slots per language and drops
+      // the rest on the next edit, so cap here rather than writing lines the
+      // trainer can never see.
+      const lines = nonEmptyLines(value).slice(0, OPENING_DIALOGUE_LINE_SLOTS);
       if (lines.length === 0) return null;
-      set(FORM_FIELD_IDS.OPENING_STATEMENTS, lines.join("\n"));
+      if (isPrimaryLanguage) {
+        set(FORM_FIELD_IDS.OPENING_STATEMENTS, lines.join("\n"));
+      } else {
+        const current = (formMethods.getValues(TRANSLATION_OPENING_STATEMENTS_FIELD) ??
+          {}) as Record<string, string[]>;
+        set(TRANSLATION_OPENING_STATEMENTS_FIELD, { ...current, [languageId]: lines });
+      }
       return "Opening Dialogues";
     }
 
@@ -145,9 +185,8 @@ export const applyAgentBuilderField = (
       return "Reminders";
     }
 
-    // The wizard has no language-selection step, so these two write into the
-    // default/English language ("1") only, merged alongside whatever other
-    // languages the form already holds. Trainers add other languages by hand.
+    // Keyed under the generated language, merged alongside whatever other
+    // languages the form already holds.
     case "linguistic_style_samples": {
       const items = (Array.isArray(value) ? value : []).filter(isNonEmptyString) as string[];
       if (items.length === 0) return null;
@@ -156,7 +195,7 @@ export const applyAgentBuilderField = (
         {}) as Record<string, string[]>;
       set(FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES, {
         ...current,
-        [DEFAULT_LANGUAGE.value]: samples,
+        [languageId]: samples,
       });
       return "Linguistic Style Samples";
     }
@@ -169,7 +208,7 @@ export const applyAgentBuilderField = (
         string,
         string[]
       >;
-      set(ALLOWED_FILLER_WORDS_FIELD, { ...current, [DEFAULT_LANGUAGE.value]: fillers });
+      set(ALLOWED_FILLER_WORDS_FIELD, { ...current, [languageId]: fillers });
       return "Allowed Filler Words";
     }
 
@@ -199,6 +238,11 @@ export const applyAgentBuilderField = (
       set(FORM_FIELD_IDS.STATES, rows);
       return "States";
     }
+
+    // Not a form field: the wizard consumes the language list to drive the
+    // per-language fan-out and never applies it.
+    case "spoken_languages":
+      return null;
 
     default:
       return null;

@@ -4,6 +4,7 @@ export * from "./permissions";
 export * from "./eventManagement";
 export * from "./createSimulation";
 export * from "./agentBuilderApply";
+export * from "./agentBuilderVoicePick";
 export * from "./eventMapping";
 export * from "./expressionTreeHelpers";
 export * from "./tagUtils";

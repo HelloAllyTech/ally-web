@@ -9,10 +9,10 @@ import { useResolvedPrimaryLanguageId } from "@hooks";
 import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { LanguageTabPanel } from "../language-tab-panel";
-
-import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
-
-export const OPENING_DIALOGUE_LINE_SLOTS = 5;
+import {
+  OPENING_DIALOGUE_LINE_SLOTS,
+  type LanguageOption,
+} from "../linguistic-style-samples/scenarioLanguageUtils";
 
 const TRANSLATION_OPENING_FIELD = "translationOpeningStatements" as const;
 const PRIMARY_LANGUAGE_FIELD = "openingDialoguePrimaryLanguageId" as const;
