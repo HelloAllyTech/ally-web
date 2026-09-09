@@ -10,6 +10,7 @@ import {
   goalsXpEmptyText,
   goalsXpNoGoalNote,
   goalsXpTakeaway,
+  goalsXpUpcomingNote,
   noGoalPeriods,
 } from "../goalsXpChart";
 
@@ -19,6 +20,7 @@ const point = (overrides: Partial<GoalsXpPoint> & { periodLabel: string }): Goal
   goalXp: null,
   hasGoal: false,
   inProgress: false,
+  upcoming: false,
   ...overrides,
 });
 
@@ -47,6 +49,28 @@ describe("buildGoalsXpSeries", () => {
 
     const goalKeys = series.filter(d => d.group === GOAL_GROUP).map(d => d.key);
     expect(goalKeys).toEqual(["Jul 2026"]);
+  });
+
+  it("omits the Actual datum for an upcoming period — nothing has happened yet", () => {
+    const points = [
+      point({ periodLabel: "Sep 2026", actualXp: 1_500, inProgress: true }),
+      point({
+        periodLabel: "Oct 2026",
+        actualXp: 0,
+        goalXp: 3_000,
+        hasGoal: true,
+        upcoming: true,
+      }),
+    ];
+
+    const series = buildGoalsXpSeries(points);
+
+    expect(series.filter(d => d.group === ACTUAL_GROUP)).toEqual([
+      { group: ACTUAL_GROUP, key: "Sep 2026", value: 1_500 },
+    ]);
+    expect(series.filter(d => d.group === GOAL_GROUP)).toEqual([
+      { group: GOAL_GROUP, key: "Oct 2026", value: 3_000 },
+    ]);
   });
 });
 
@@ -109,6 +133,40 @@ describe("goalsXpTakeaway", () => {
   it("returns null when nothing qualifies at all", () => {
     expect(goalsXpTakeaway([])).toBeNull();
   });
+
+  it("excludes upcoming periods — they haven't happened, so they were never missed", () => {
+    const points = [
+      point({ periodLabel: "Jun 2026", actualXp: 1_500, goalXp: 1_000, hasGoal: true }),
+      point({
+        periodLabel: "Oct 2026",
+        actualXp: 0,
+        goalXp: 3_000,
+        hasGoal: true,
+        upcoming: true,
+      }),
+    ];
+
+    expect(goalsXpTakeaway(points)).toBe("Goal met in 1 of 1 completed period with a target set");
+  });
+});
+
+describe("goalsXpUpcomingNote", () => {
+  it("returns null when nothing is upcoming", () => {
+    const points = [point({ periodLabel: "Jun 2026", goalXp: 2_000, hasGoal: true })];
+    expect(goalsXpUpcomingNote(points)).toBeNull();
+  });
+
+  it("names upcoming periods that have a goal set", () => {
+    const points = [
+      point({ periodLabel: "Sep 2026", inProgress: true }),
+      point({ periodLabel: "Oct 2026", goalXp: 3_000, hasGoal: true, upcoming: true }),
+      point({ periodLabel: "Nov 2026", upcoming: true }),
+    ];
+
+    const note = goalsXpUpcomingNote(points);
+    expect(note).toContain("Oct 2026");
+    expect(note).not.toContain("Nov 2026");
+  });
 });
 
 describe("goalsXpEmptyText", () => {
@@ -124,6 +182,21 @@ describe("goalsXpEmptyText", () => {
 
   it("flags an empty window when there are no periods at all", () => {
     expect(goalsXpEmptyText([])).toBeDefined();
+  });
+
+  it("is undefined for a window of only upcoming periods — nothing has happened, but that's not a data gap", () => {
+    const points = [
+      point({ periodLabel: "Oct 2026", goalXp: 3_000, hasGoal: true, upcoming: true }),
+    ];
+    expect(goalsXpEmptyText(points)).toBeUndefined();
+  });
+
+  it("still flags empty when past periods earned nothing, even with upcoming periods present", () => {
+    const points = [
+      point({ periodLabel: "Sep 2026", actualXp: 0, inProgress: true }),
+      point({ periodLabel: "Oct 2026", goalXp: 3_000, hasGoal: true, upcoming: true }),
+    ];
+    expect(goalsXpEmptyText(points)).toBeDefined();
   });
 });
 
@@ -143,5 +216,21 @@ describe("buildGoalsXpTable", () => {
       ["Jul 2026", 1_615, 2_000],
       ["Sep 2026 (in progress)", 0, "No goal set"],
     ]);
+  });
+
+  it("labels an upcoming period and renders its Actual XP as '—', not a fabricated zero", () => {
+    const points = [
+      point({
+        periodLabel: "Oct 2026",
+        actualXp: 0,
+        goalXp: 3_000,
+        hasGoal: true,
+        upcoming: true,
+      }),
+    ];
+
+    const table = buildGoalsXpTable(points);
+
+    expect(table.rows).toEqual([["Oct 2026 (upcoming)", "—", 3_000]]);
   });
 });

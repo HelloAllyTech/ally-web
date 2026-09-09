@@ -294,11 +294,13 @@ export interface RoadmapBoardMoveResponse {
   reordered: string[];
 }
 
+/**
+ * The caller's live, spendable vote balance — every unexpired grant (50/month + 5/day, each
+ * good for 30 days) minus what's already been drawn from it. Not scoped to a calendar month,
+ * so there's deliberately no fixed "of N" total to show alongside it anymore.
+ */
 export interface RoadmapVoteBudget {
-  periodKey: string;
-  votesPerMonth: number;
-  used: number;
-  remaining: number;
+  available: number;
 }
 
 /**

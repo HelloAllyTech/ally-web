@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useCreateCharacterMutation,
+  useGetAvailableLanguageVoicesQuery,
   useGetScenarioVoicesQuery,
   useUpdateCharacterMutation,
 } from "@api";
@@ -16,7 +17,10 @@ import {
   DropdownField,
   FileUpload,
 } from "@components";
+import { LanguageTabPanel } from "@components/language-tab-panel";
+import type { LanguageOption } from "@components/linguistic-style-samples/scenarioLanguageUtils";
 import { ButtonVariant } from "@components/types";
+import { createVoiceOptionRenderer } from "@components/voice-option";
 import {
   en,
   GENDER_OPTIONS,
@@ -24,11 +28,24 @@ import {
   SEXUAL_ORIENTATION_OPTIONS,
   FILE_TYPE,
 } from "@constants";
+import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
+// Imported by module rather than through the `@hooks` barrel: the barrel pulls
+// in hooks that reach `@store`, which reads `baseAPI.reducerPath` at module
+// load — so any consumer's test that mocks `@api` fails to load the file.
+import { useVoicePreview } from "@hooks/useVoicePreview";
 import { CharacterData } from "@types";
-import { getSimulationVoiceOptions } from "@utils";
 
 import { CharacterKnowledgeSourcesField } from "./CharacterKnowledgeSourcesField";
 import { DialectSamplesField } from "./DialectSamplesField";
+
+/** A voice as the language catalog nests it (gender/age hoisted out of config). */
+interface VoiceCatalogEntry {
+  id: string;
+  name: string;
+  provider?: string;
+  gender?: string | null;
+  age?: string | null;
+}
 
 interface CharacterSidePanelProps {
   selectedCharacter: CharacterData | null;
@@ -111,8 +128,9 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     coverImageUrl: "",
     coverVideoUrl: "",
     characterProfileText: "",
-    languageCharacteristics: "",
-    linguisticStyleSamples: [],
+    voices: {},
+    languageCharacteristics: {},
+    linguisticStyleSamples: {},
     knowledgeSources: [],
   };
 
@@ -140,14 +158,143 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     }));
   }, []);
 
-  const { data: scenarioVoices } = useGetScenarioVoicesQuery({});
-  const allVoiceOptions = getSimulationVoiceOptions(scenarioVoices ?? []);
+  /**
+   * Characters are per-language: one voice, one style note and one set of
+   * sample lines PER language they speak, mirroring the simulation they get
+   * applied to. One tab strip governs all three, because they describe the
+   * same thing — how this person sounds in that language.
+   */
+  const { data: catalogLanguages = [] } = useGetAvailableLanguageVoicesQuery({
+    active: true,
+    voicesNeeded: true,
+  }) as { data: LanguageOption[] };
+  // Read only to name and describe a retired language's stored voice (see
+  // below) — never to build the pickable options, which stay language-scoped.
+  const { data: allVoices = [] } = useGetScenarioVoicesQuery({});
+  const voiceById = React.useMemo(
+    () => new Map((allVoices ?? []).map(voice => [voice.id, voice])),
+    [allVoices],
+  );
+
+  /** Every language this character already holds anything for. */
+  const storedLanguageIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    for (const map of [
+      formData.voices,
+      formData.languageCharacteristics,
+      formData.linguisticStyleSamples,
+    ]) {
+      Object.keys(map ?? {}).forEach(id => ids.add(id));
+    }
+    return ids;
+  }, [formData.voices, formData.languageCharacteristics, formData.linguisticStyleSamples]);
+
+  const languageTabs = React.useMemo(() => {
+    const fromCatalog = [...catalogLanguages].map(language => ({
+      id: String(language.language_id),
+      label: language.label ?? `Language ${language.language_id}`,
+      voices: (language as { voices?: VoiceCatalogEntry[] }).voices ?? [],
+      retired: false,
+    }));
+
+    /**
+     * A language the character holds data for but the catalog no longer
+     * offers — deactivated, or left with no active voice.
+     *
+     * It still gets a tab. Driving the tabs purely off the live catalog hid
+     * real content: a character voiced in Malayalam kept its voice, style note
+     * and sample lines in the database while Malayalam was not an enabled
+     * language, so nothing rendered them and the single dropdown that used to
+     * show them was gone. Same rule the Language–Voice table follows for a
+     * retired STT config — keep the stored value visible rather than showing
+     * a blank that reads as "nothing was ever set".
+     */
+    const known = new Set(fromCatalog.map(tab => tab.id));
+    const retired = [...storedLanguageIds]
+      .filter(id => !known.has(id))
+      .map(id => {
+        const storedVoice = voiceById.get((formData.voices ?? {})[id]);
+        return {
+          id,
+          // The voice itself carries its language's name, which is the only
+          // place left to recover it from once the language is gone.
+          label: storedVoice?.languageLabel ?? `Language ${id}`,
+          voices: [] as VoiceCatalogEntry[],
+          retired: true,
+        };
+      });
+
+    return [...fromCatalog, ...retired].sort((a, b) => Number(a.id) - Number(b.id));
+  }, [catalogLanguages, storedLanguageIds, voiceById, formData.voices]);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
+  const activeLanguageId =
+    selectedLanguageId && languageTabs.some(tab => tab.id === selectedLanguageId)
+      ? selectedLanguageId
+      : (languageTabs[0]?.id ?? null);
+  const activeLanguage = languageTabs.find(tab => tab.id === activeLanguageId);
+
   const [voiceSearchTerm, setVoiceSearchTerm] = useState("");
+  /**
+   * Only the active language's own voices. Previously the picker offered the
+   * whole catalog regardless of language, so a character could be given a
+   * Marathi voice that the simulation then used as its ENGLISH one. The
+   * backend now rejects a voice filed under another language, so offering one
+   * here would only produce a save error.
+   *
+   * Ordered against this character's age and gender by the same helper the
+   * simulation studio's picker uses.
+   */
+  const allVoiceOptions = buildGroupedVoiceOptions(
+    (activeLanguage?.voices ?? []).map(voice => ({
+      id: voice.id,
+      name: voice.name,
+      provider: voice.provider,
+      gender: voice.gender ?? undefined,
+      age: voice.age ?? undefined,
+    })),
+    formData.gender,
+    formData.age,
+  );
   const voiceOptions = voiceSearchTerm
     ? allVoiceOptions.filter(option =>
         option.label.toLowerCase().includes(voiceSearchTerm.toLowerCase()),
       )
     : allVoiceOptions;
+
+  const voicePreview = useVoicePreview();
+  const activeVoiceId = activeLanguageId ? (formData.voices ?? {})[activeLanguageId] : undefined;
+  const activeSamples = activeLanguageId
+    ? ((formData.linguisticStyleSamples ?? {})[activeLanguageId] ?? [])
+    : [];
+  /**
+   * What a previewed voice says: this character's own first line IN THIS
+   * LANGUAGE. Hearing the voice deliver it is the point of auditioning, and
+   * it is what makes two similar voices tell apart. Falls back to the
+   * backend's per-language sample when this tab has no lines yet.
+   */
+  const auditionText = activeSamples.map(sample => String(sample ?? "").trim()).find(Boolean);
+  const renderVoiceOption = createVoiceOptionRenderer({
+    playingVoiceId: voicePreview.playingVoiceId,
+    isLoading: voicePreview.isLoading,
+    selectedValue: activeVoiceId,
+    onPlay: voiceId => void voicePreview.play(voiceId, auditionText),
+    onPause: voicePreview.pause,
+  });
+
+  /** Merge one language's value into a per-language map field. */
+  const setForActiveLanguage = <T,>(
+    field: "voices" | "languageCharacteristics" | "linguisticStyleSamples",
+    value: T | undefined,
+  ) => {
+    if (!activeLanguageId) return;
+    const current = { ...((formData[field] ?? {}) as Record<string, unknown>) };
+    if (value === undefined || value === "") {
+      delete current[activeLanguageId];
+    } else {
+      current[activeLanguageId] = value;
+    }
+    handleFieldChange(field, current as never);
+  };
 
   const [fileErrors, setFileErrors] = useState<Record<string, any>>({});
   const formMethodsShim = React.useMemo(
@@ -199,8 +346,16 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         // Drop rows the trainer added but never filled in, rather than
         // sending the backend a title-less knowledge source (400) or a
         // blank dialect sample it would just have to ignore.
-        linguisticStyleSamples: (rest.linguisticStyleSamples || []).filter(
-          sample => sample.trim() !== "",
+        // Per language: drop rows the trainer added but never filled, and drop
+        // a language left with nothing rather than sending an empty array the
+        // backend would only have to ignore.
+        linguisticStyleSamples: Object.fromEntries(
+          Object.entries(rest.linguisticStyleSamples || {})
+            .map(([languageId, samples]) => [
+              languageId,
+              (samples ?? []).filter(sample => sample.trim() !== ""),
+            ])
+            .filter(([, samples]) => (samples as string[]).length > 0),
         ),
         knowledgeSources: (rest.knowledgeSources || []).filter(
           source => source.title.trim() !== "",
@@ -262,10 +417,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       (formData.coverImageUrl || "") !== (initialData.coverImageUrl || "") ||
       (formData.coverVideoUrl || "") !== (initialData.coverVideoUrl || "") ||
       (formData.characterProfileText || "") !== (initialData.characterProfileText || "") ||
-      (formData.voiceId || "") !== (initialData.voiceId || "") ||
-      (formData.languageCharacteristics || "") !== (initialData.languageCharacteristics || "") ||
-      JSON.stringify(formData.linguisticStyleSamples || []) !==
-        JSON.stringify(initialData.linguisticStyleSamples || []) ||
+      JSON.stringify(formData.voices || {}) !== JSON.stringify(initialData.voices || {}) ||
+      JSON.stringify(formData.languageCharacteristics || {}) !==
+        JSON.stringify(initialData.languageCharacteristics || {}) ||
+      JSON.stringify(formData.linguisticStyleSamples || {}) !==
+        JSON.stringify(initialData.linguisticStyleSamples || {}) ||
       JSON.stringify(formData.knowledgeSources || []) !==
         JSON.stringify(initialData.knowledgeSources || [])
     );
@@ -397,40 +553,97 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
               />
             </Field>
 
-            <Field label={en.simulation.voice}>
-              <DropdownField
-                id="character-voice"
-                label={en.simulation.voice}
-                isSearchable
-                handleSearchTextChange={setVoiceSearchTerm}
-                allowDeselect
-                borderless
-                options={voiceOptions}
-                value={formData.voiceId || ""}
-                onChange={value => handleFieldChange("voiceId", value || undefined)}
-                placeholder={en.simulation.selectVoice}
-              />
-            </Field>
+            {/* Voice, style and samples are per language and describe the same
+                thing — how this person sounds in that language — so one tab
+                strip governs all three rather than three of them. */}
+            {languageTabs.length > 0 && activeLanguageId && (
+              <div className="flex flex-col gap-2 py-2">
+                <span className="text-typography-900 text-base">
+                  {en.simulation.voice} &amp; {en.simulation.languageStyle}
+                </span>
+                <LanguageTabPanel
+                  tabs={languageTabs.map(tab => ({ id: tab.id, label: tab.label }))}
+                  activeTabId={activeLanguageId}
+                  onTabChange={setSelectedLanguageId}
+                >
+                  <div className="p-4 flex flex-col gap-4">
+                    <Field label={en.simulation.voice}>
+                      {activeLanguage?.retired ? (
+                        // No pickable voices exist for a language the catalog
+                        // no longer offers, so show what is stored and let it
+                        // be cleared — never a blank that reads as "unset".
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-base text-typography-900">
+                              {voiceById.get(activeVoiceId || "")?.name ??
+                                (activeVoiceId ? activeVoiceId : "—")}
+                            </span>
+                            {activeVoiceId && !readOnly && (
+                              <button
+                                type="button"
+                                className="text-sm text-destructive-500 hover:underline"
+                                onClick={() => setForActiveLanguage("voices", undefined)}
+                              >
+                                {en.simulation.removeVoiceDisableLanguage}
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-xs text-typography-600">
+                            {activeLanguage.label} is not an enabled language any more, so no voices
+                            can be chosen for it. Its saved content is kept here.
+                          </p>
+                        </div>
+                      ) : (
+                        <DropdownField
+                          id="character-voice"
+                          label={en.simulation.voice}
+                          isSearchable
+                          handleSearchTextChange={setVoiceSearchTerm}
+                          allowDeselect
+                          borderless
+                          options={voiceOptions}
+                          optionsRenderer={renderVoiceOption}
+                          value={activeVoiceId || ""}
+                          onChange={value => setForActiveLanguage("voices", value || undefined)}
+                          placeholder={en.simulation.selectVoice}
+                        />
+                      )}
+                    </Field>
 
-            <Field label={en.simulation.languageStyle}>
-              <TextArea
-                id="character-language-characteristics"
-                labelText={en.simulation.languageStyle}
-                hideLabel
-                value={formData.languageCharacteristics || ""}
-                onChange={e => handleFieldChange("languageCharacteristics", e.target.value)}
-                maxLength={1000}
-                placeholder={en.simulation.enterLanguageStyle}
-                rows={2}
-              />
-            </Field>
+                    <Field label={en.simulation.languageStyle}>
+                      <TextArea
+                        id="character-language-characteristics"
+                        labelText={en.simulation.languageStyle}
+                        hideLabel
+                        value={
+                          (activeLanguageId &&
+                            (formData.languageCharacteristics ?? {})[activeLanguageId]) ||
+                          ""
+                        }
+                        onChange={e =>
+                          setForActiveLanguage("languageCharacteristics", e.target.value)
+                        }
+                        maxLength={1000}
+                        placeholder={en.simulation.enterLanguageStyle}
+                        rows={2}
+                      />
+                    </Field>
 
-            <Field label={en.simulation.dialectSamples}>
-              <DialectSamplesField
-                samples={formData.linguisticStyleSamples || []}
-                onChange={samples => handleFieldChange("linguisticStyleSamples", samples)}
-              />
-            </Field>
+                    <Field label={en.simulation.dialectSamples}>
+                      <DialectSamplesField
+                        samples={activeSamples}
+                        onChange={samples =>
+                          setForActiveLanguage(
+                            "linguisticStyleSamples",
+                            samples.length ? samples : undefined,
+                          )
+                        }
+                      />
+                    </Field>
+                  </div>
+                </LanguageTabPanel>
+              </div>
+            )}
 
             <Field label={en.simulation.knowledgeSources}>
               <CharacterKnowledgeSourcesField

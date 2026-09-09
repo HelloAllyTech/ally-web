@@ -19,7 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { ArrowDown, DragIndicator, Plus, Trash, WarningAlt } from "@assets";
-import { TrackItemType, TrackSectionFormValue } from "@types";
+import { CompletionCriteria, TrackItemContent, TrackItemType, TrackSectionFormValue } from "@types";
 
 import { ComponentTypePicker } from "./ComponentTypePicker";
 import { ItemNode } from "./ItemNode";
@@ -33,6 +33,13 @@ interface SectionNodeProps {
   errorKeys: Set<string>;
   onSelectItem: (sectionIndex: number, itemIndex: number) => void;
   onAddItem: (sectionIndex: number, type: TrackItemType) => void;
+  onAddItemFromTemplate: (
+    sectionIndex: number,
+    type: TrackItemType,
+    content: TrackItemContent,
+    completionCriteria: CompletionCriteria | null,
+    title: string,
+  ) => void;
   onDeleteSection: (sectionIndex: number) => void;
   onReorderItems: (sectionIndex: number, from: number, to: number) => void;
 }
@@ -44,6 +51,7 @@ export const SectionNode: FC<SectionNodeProps> = ({
   errorKeys,
   onSelectItem,
   onAddItem,
+  onAddItemFromTemplate,
   onDeleteSection,
   onReorderItems,
 }) => {
@@ -150,6 +158,10 @@ export const SectionNode: FC<SectionNodeProps> = ({
                 onClose={() => setShowPicker(false)}
                 onSelect={type => {
                   onAddItem(sectionIndex, type);
+                  setShowPicker(false);
+                }}
+                onSelectTemplate={(type, content, completionCriteria, title) => {
+                  onAddItemFromTemplate(sectionIndex, type, content, completionCriteria, title);
                   setShowPicker(false);
                 }}
               />

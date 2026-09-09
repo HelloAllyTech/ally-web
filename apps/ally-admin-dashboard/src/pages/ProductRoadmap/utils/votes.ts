@@ -15,15 +15,13 @@ import {
  */
 
 /**
- * The most votes the caller may put on THIS row.
- *
- * Note the `- myVotes`: the votes already on this row are not "cast elsewhere", so they must
- * be added back before comparing against the cap. That is the same self-exclusion the backend
- * applies (and the DB trigger enforces); getting it wrong is what makes raising your own vote
- * from 40 to 60 look impossible.
+ * The most votes the caller may put on THIS row: whatever's already here, plus whatever's
+ * still available to spend. There's no fixed monthly cap to net against anymore (the backend
+ * spends from an expiring vote-grant ledger) — `available` already accounts for everything
+ * cast elsewhere, so this is just "what's here now, plus what I could still add."
  */
 export const maxFor = (budget: RoadmapVoteBudget, myVotes: number): number =>
-  Math.max(0, budget.votesPerMonth - (budget.used - myVotes));
+  myVotes + budget.available;
 
 /** Clamp an arbitrary next-total (e.g. pending + 1) to a legal vote value for this row. */
 export const clampVotes = (raw: unknown, budget: RoadmapVoteBudget, myVotes: number): number => {
@@ -55,4 +53,4 @@ export const remainingWithPending = (
   budget: RoadmapVoteBudget,
   pending: number,
   serverMyVotes: number,
-): number => Math.max(0, budget.remaining - (pending - serverMyVotes));
+): number => Math.max(0, budget.available - (pending - serverMyVotes));

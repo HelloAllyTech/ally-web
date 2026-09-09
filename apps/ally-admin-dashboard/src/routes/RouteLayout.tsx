@@ -14,6 +14,7 @@ import {
   EventManagement,
   CharacterLibrary,
   CharacterInterview,
+  ComponentLibrary,
   CreatePath,
   CreateTrack,
   CreateCase,
@@ -324,6 +325,17 @@ export const RouteLayout: React.FC = () => {
               requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
             >
               <CreateTrack />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.COMPONENT_LIBRARY}
+          element={
+            <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_ADMIN_TRACK]}
+              requiredFeature={FeatureToggleKey.COMPONENT_LIBRARY}
+            >
+              <ComponentLibrary />
             </PrivateLayout>
           }
         />

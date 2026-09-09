@@ -346,7 +346,8 @@
       "lifetimeMinutes": "Practice minutes",
       "sessions": "Sessions completed",
       "trackItems": "Course items done",
-      "currentStreak": "Day streak"
+      "currentStreak": "Day streak",
+      "weeklyConsistency": "Active days this week"
     },
     "rank": {
       "line": "You're #{{rank}} in your organisation this week"

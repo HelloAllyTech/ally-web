@@ -35,6 +35,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.CHARACTER_LIBRARY,
   },
   {
+    id: SIDEBAR_ITEMS.COMPONENT_LIBRARY,
+    label: "Component Library",
+    path: ROUTES.COMPONENT_LIBRARY,
+  },
+  {
     id: SIDEBAR_ITEMS.SCENARIO_VOICES,
     label: en.simulation.voices,
     path: ROUTES.MANAGE_SCENARIO_VOICES,
@@ -181,8 +186,8 @@ export const applySavedOrder = (
  * then reordered by the user's saved sidebar order. The first element is the
  * user's "first tab" — used both to render the sidebar and to pick the default
  * landing route after login. Tabs fall into two gating tiers:
- *  - Feature-toggle-gated (Characters, Speech Recognition, Language Model,
- *    Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
+ *  - Feature-toggle-gated (Characters, Component Library, Speech Recognition,
+ *    Language Model, Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
  *    Mobile Releases, WhatsApp Bot, Bug Hunter, Analytics, Competencies,
  *    AI Lab, Roleplay Session Logs, Languages): shown once the user's feature-toggle list is
  *    loaded and holds the matching key (see `buildSidebarItemFeatureKeyMap`),

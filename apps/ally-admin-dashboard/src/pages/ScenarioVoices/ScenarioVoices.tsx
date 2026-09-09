@@ -7,7 +7,6 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useCreateScenarioVoiceMutation,
   useUpdateScenarioVoiceMutation,
-  useLazyGetPreviewVoiceQuery,
 } from "@api";
 import { NotionTable, ListToolbar, ScenarioVoiceSidePanel } from "@components";
 import { FilterDropdown } from "@components/filters/FilterDropdown";
@@ -20,6 +19,10 @@ import {
   isSupportedProvider,
   summarizeVoiceConfig,
 } from "@constants/voiceProviders";
+// Imported by module rather than through the `@hooks` barrel: the barrel pulls
+// in hooks that reach `@store`, which reads `baseAPI.reducerPath` at module
+// load — so any consumer's test that mocks `@api` fails to load the file.
+import { useVoicePreview } from "@hooks/useVoicePreview";
 import { ScenarioVoice, ScenarioLanguage, ScenarioVoiceFilters } from "@types";
 
 const getVoiceSaveErrorMessage = (error: unknown) => {
@@ -57,24 +60,15 @@ export const ScenarioVoices: React.FC = () => {
   const [selectedVoice, setSelectedVoice] = useState<ScenarioVoice | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
-  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
-  const [loadingVoiceId, setLoadingVoiceId] = useState<string | null>(null);
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const previewUrlCacheRef = useRef<Record<string, string>>({});
-  const [getPreviewVoice] = useLazyGetPreviewVoiceQuery();
-
-  const resetAudioPlayback = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.onended = null;
-    audio.onerror = null;
-    audio.pause();
-    audio.currentTime = 0;
-    audio.src = "";
-    audioRef.current = null;
-  };
+  // Playback, caching and cleanup all live in the hook now — this page and the
+  // studio's Language-Voice table had grown separate copies of it.
+  const {
+    playingVoiceId,
+    isLoading: isPreviewLoading,
+    play: playPreview,
+    pause: handlePausePreview,
+  } = useVoicePreview();
 
   const [filters, setFilters] = useState<ScenarioVoiceFilters>({
     providers: [],
@@ -100,14 +94,6 @@ export const ScenarioVoices: React.FC = () => {
   useEffect(() => {
     setIsFetching(isQueryFetching);
   }, [isQueryFetching]);
-
-  useEffect(() => {
-    return () => {
-      resetAudioPlayback();
-      Object.values(previewUrlCacheRef.current).forEach(url => URL.revokeObjectURL(url));
-      previewUrlCacheRef.current = {};
-    };
-  }, []);
 
   const { data: languageOptions = [] } = useGetAvailableLanguageVoicesQuery({
     active: true,
@@ -317,61 +303,16 @@ export const ScenarioVoices: React.FC = () => {
     setOffset(prev => prev + limit);
   };
 
-  const handlePausePreview = () => {
-    resetAudioPlayback();
-    setPlayingVoiceId(null);
-    setLoadingVoiceId(null);
-  };
-
+  /**
+   * Voices on this page are the catalog itself, so they are auditioned with the
+   * backend's per-language sample line rather than any character's words.
+   */
   const handlePlayPreview = async (voice: ScenarioVoice) => {
-    const voiceId = voice.id;
-    if (!voiceId) {
+    if (!voice.id) {
       toast.error("Voice preview is unavailable for unsaved voices");
       return;
     }
-
-    if (playingVoiceId === voiceId) {
-      handlePausePreview();
-      return;
-    }
-
-    resetAudioPlayback();
-
-    setPlayingVoiceId(voiceId);
-
-    try {
-      let previewUrl = previewUrlCacheRef.current[voiceId];
-
-      if (!previewUrl) {
-        setLoadingVoiceId(voiceId);
-        const result = await getPreviewVoice({ voiceId }).unwrap();
-        previewUrl = URL.createObjectURL(new Blob([result]));
-        previewUrlCacheRef.current[voiceId] = previewUrl;
-      } else {
-        setLoadingVoiceId(null);
-      }
-
-      const audio = new Audio(previewUrl);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        setPlayingVoiceId(current => (current === voiceId ? null : current));
-        setLoadingVoiceId(current => (current === voiceId ? null : current));
-      };
-
-      audio.onerror = () => {
-        setPlayingVoiceId(current => (current === voiceId ? null : current));
-        setLoadingVoiceId(current => (current === voiceId ? null : current));
-        toast.error("Failed to load voice preview");
-      };
-
-      await audio.play();
-      setLoadingVoiceId(null);
-    } catch {
-      setPlayingVoiceId(current => (current === voiceId ? null : current));
-      setLoadingVoiceId(current => (current === voiceId ? null : current));
-      toast.error("Failed to load voice preview");
-    }
+    await playPreview(voice.id);
   };
 
   /**
@@ -490,8 +431,8 @@ export const ScenarioVoices: React.FC = () => {
     const formatted = {
       ...voice,
       preview: {
-        isPlaying: playingVoiceId === voice.id,
-        isLoading: loadingVoiceId === voice.id,
+        isPlaying: playingVoiceId === voice.id && !isPreviewLoading,
+        isLoading: playingVoiceId === voice.id && isPreviewLoading,
         disabled: !voice.id,
         onPlay: () => handlePlayPreview(voice),
         onPause: handlePausePreview,

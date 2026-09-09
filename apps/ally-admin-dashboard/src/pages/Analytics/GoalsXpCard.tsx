@@ -16,6 +16,7 @@ import {
   goalsXpNoGoalNote,
   goalsXpScale,
   goalsXpTakeaway,
+  goalsXpUpcomingNote,
 } from "./goalsXpChart";
 
 const asOfStamp = (computedAt?: string): string | undefined => {
@@ -51,6 +52,7 @@ export const GoalsXpCard = () => {
   const table = useMemo(() => buildGoalsXpTable(data?.points ?? []), [data]);
   const takeaway = goalsXpTakeaway(points);
   const noGoalNote = goalsXpNoGoalNote(points);
+  const upcomingNote = goalsXpUpcomingNote(points);
   const emptyText = goalsXpEmptyText(points);
 
   const items = GOALS_XP_GRAINS;
@@ -71,8 +73,9 @@ export const GoalsXpCard = () => {
     "Actual XP earned per period, from the same xp_events ledger as the Highlights " +
     "cumulative-XP chart, against a goal for that period where one has been recorded. " +
     "Goals are set directly in the database, not through this console — a period with " +
-    "no target is shown with no Goal bar rather than a target of zero. Platform-wide, " +
-    "all time.";
+    "no target is shown with no Goal bar rather than a target of zero. Extends past " +
+    "today when a future period already has a goal set, shown as an upcoming target " +
+    "with no Actual bar. Platform-wide, all time.";
 
   const source = buildSource({
     derivation: "SUM(xp_events.xp) per period vs. analytics_xp_goals.targetXp",
@@ -125,6 +128,7 @@ export const GoalsXpCard = () => {
           </ScrollableChart>
 
           {noGoalNote && <p className="text-xs text-typography-500">{noGoalNote}</p>}
+          {upcomingNote && <p className="text-xs text-typography-500">{upcomingNote}</p>}
         </div>
       </ChartCard>
 
@@ -140,6 +144,7 @@ export const GoalsXpCard = () => {
             "Window: all time",
             `Grouped by ${GOALS_XP_GRAINS.find(g => g.key === grain)?.label.toLowerCase()}`,
             ...(noGoalNote ? [noGoalNote] : []),
+            ...(upcomingNote ? [upcomingNote] : []),
           ]}
           render={({ height }) => (
             <ScrollableChart data={series}>

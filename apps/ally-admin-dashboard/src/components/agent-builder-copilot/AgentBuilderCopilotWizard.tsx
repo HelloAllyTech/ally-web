@@ -26,7 +26,10 @@ import {
  *      inputs and fires ONE LLM call per Basic Settings field IN PARALLEL. Each
  *      result is parsed and painted into the mirrored Basic Settings form on the
  *      LEFT the moment it returns; the chat here streams per-task logs. The user
- *      can Stop at any time (native request abort).
+ *      can Stop at any time (native request abort). The brief also decides
+ *      which languages the client speaks, so the three per-language fields
+ *      (opening dialogues, style samples, filler words) appear in the feed once
+ *      per language and fill that language's tab.
  *
  * All field writes flow through the shared `formMethods`, so the left pane and
  * the Basic Settings tab stay in sync automatically.
@@ -169,7 +172,7 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
                 {tasks.map(task => {
                   const note = taskNote(task);
                   return (
-                    <div key={task.field} className="flex items-center gap-2 py-1 text-sm">
+                    <div key={task.key} className="flex items-center gap-2 py-1 text-sm">
                       <TaskStatusIcon status={task.status} />
                       <span
                         className={

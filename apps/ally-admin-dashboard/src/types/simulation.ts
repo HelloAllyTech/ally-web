@@ -552,9 +552,15 @@ export interface CharacterData {
   coverImageUrl?: string;
   coverVideoUrl?: string;
   characterProfileText?: string;
-  voiceId?: string;
-  languageCharacteristics?: string;
-  linguisticStyleSamples?: string[];
+  /**
+   * Voice per language, keyed by `languages.id`. A character used to hold a
+   * single `voiceId`, which a simulation (one voice PER language) could only
+   * receive into one slot — and the applying code keyed it under English by
+   * convention, so a Marathi voice became a simulation's English voice.
+   */
+  voices?: Record<string, string>;
+  languageCharacteristics?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   knowledgeSources?: CharacterKnowledgeSource[];
   createdAt?: string;
   updatedAt?: string;

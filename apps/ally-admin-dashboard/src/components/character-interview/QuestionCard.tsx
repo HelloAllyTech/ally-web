@@ -15,6 +15,8 @@ import {
   CharacterInterviewStructuredAnswer,
 } from "@types";
 
+import { useIsVoiceQuestion, VoiceQuestionOptions } from "./VoiceQuestionOptions";
+
 /** What the composer sends back for an answered card. */
 export interface CharacterInterviewAnswerPayload {
   message: string;
@@ -49,6 +51,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 }) => {
   const strings = en.characterInterview;
   const options = useMemo(() => question.options ?? [], [question.options]);
+  const isVoiceQuestion = useIsVoiceQuestion(options);
   const labelFor = (id: string) => options.find(o => o.id === id)?.label ?? id;
 
   const isSelect =
@@ -116,6 +119,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       questionId: question.id,
       answer: { none: true },
     });
+  };
+
+  /** A character holds one voiceId, so picking a voice replaces the pick. */
+  const selectOnly = (id: string) => {
+    setNoneSelected(false);
+    setSelected(prev => (prev[0] === id ? [] : [id]));
   };
 
   const toggleOption = (id: string, checked: boolean) => {
@@ -222,6 +231,52 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       );
     }
 
+    /**
+     * Voices, whichever kind the agent chose to ask with.
+     *
+     * Keyed on the options being voices rather than on `question.kind`: the
+     * interviewer prompt says to use `dropdown` for voices, but with a
+     * shortlist of four the live agent asks as `singleSelect` — so gating on
+     * the kind meant the real voice question got no play buttons at all. The
+     * agent picks the widget; what matters is that these are voices.
+     */
+    if (isVoiceQuestion) {
+      // singleSelect answers on click, matching that kind's contract
+      // everywhere else in this card; the confirm kinds collect then submit.
+      const answersOnClick = question.kind === "singleSelect";
+      return (
+        <div className="mt-3 flex flex-col gap-2">
+          <VoiceQuestionOptions
+            options={options}
+            selected={answersOnClick ? [] : selected}
+            onSelect={id => {
+              const option = options.find(o => o.id === id);
+              if (answersOnClick) {
+                if (option) submitSingle(option);
+                return;
+              }
+              selectOnly(id);
+            }}
+            disabled={disabled}
+          />
+          {answersOnClick ? (
+            question.allowNone && (
+              <div>
+                <Button kind="ghost" size="sm" disabled={disabled} onClick={submitNone}>
+                  {strings.noneOfThese}
+                </Button>
+              </div>
+            )
+          ) : (
+            <>
+              {renderNoneOption()}
+              {renderConfirmRow()}
+            </>
+          )}
+        </div>
+      );
+    }
+
     // Single select — click a chip to answer immediately.
     if (question.kind === "singleSelect") {
       return (
@@ -275,6 +330,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           {customValues.length > 0 && (
             <p className="text-xs text-typography-600">{customValues.join(", ")}</p>
           )}
+          {renderNoneOption()}
           {renderConfirmRow()}
         </div>
       );
@@ -309,26 +365,38 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             }}
           />
         ))}
-        {question.allowNone && (
-          <Checkbox
-            id={`interview-none-${question.id}`}
-            labelText={strings.noneOfThese}
-            checked={noneSelected}
-            disabled={disabled}
-            onChange={(_event: unknown, { checked }: { checked: boolean }) => {
-              setNoneSelected(checked);
-              if (checked) {
-                setSelected([]);
-                setCustomValues([]);
-              }
-            }}
-          />
-        )}
+        {renderNoneOption()}
         {question.allowCustom && renderCustomEntry(addCustomValue)}
         {renderConfirmRow()}
       </div>
     );
   };
+
+  /**
+   * "None of these" for the confirm-then-submit kinds.
+   *
+   * The multi-select branch had one and the dropdown branch did not — so on the
+   * voice question, which the interviewer sets `allowNone` on precisely so a
+   * character can be saved without a voice, that answer was unreachable.
+   */
+  function renderNoneOption() {
+    if (!question.allowNone) return null;
+    return (
+      <Checkbox
+        id={`interview-none-${question.id}`}
+        labelText={strings.noneOfThese}
+        checked={noneSelected}
+        disabled={disabled}
+        onChange={(_event: unknown, { checked }: { checked: boolean }) => {
+          setNoneSelected(checked);
+          if (checked) {
+            setSelected([]);
+            setCustomValues([]);
+          }
+        }}
+      />
+    );
+  }
 
   function renderConfirmRow() {
     return (
