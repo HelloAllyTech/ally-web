@@ -22,8 +22,17 @@ interface EntitySidePanelProps {
    * winner.
    */
   unsavedChangesWarning?: string;
+  /**
+   * Hide the footer Save.
+   *
+   * For a panel whose action is not "save this form" — an upload that reports per-row results,
+   * say, where the primary button belongs next to the thing it acts on and a second generic
+   * Save in the footer would be a second way to fire the same request.
+   */
+  hideSave?: boolean;
   onClose: () => void;
-  onSave: () => void;
+  /** Not required when `hideSave` is set — such a panel has no footer action to wire. */
+  onSave?: () => void;
   children: React.ReactNode;
 }
 
@@ -40,6 +49,7 @@ export const EntitySidePanel: React.FC<EntitySidePanelProps> = ({
   saveDisabled = false,
   saveDisabledReason,
   unsavedChangesWarning,
+  hideSave = false,
   onClose,
   onSave,
   children,
@@ -79,14 +89,16 @@ export const EntitySidePanel: React.FC<EntitySidePanelProps> = ({
           <div className="space-y-4">{children}</div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={onSave}
-              disabled={saveDisabled}
-              title={saveDisabled ? saveDisabledReason : undefined}
-            >
-              {en.common.save}
-            </Button>
+            {!hideSave && (
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={onSave}
+                disabled={saveDisabled}
+                title={saveDisabled ? saveDisabledReason : undefined}
+              >
+                {en.common.save}
+              </Button>
+            )}
             <Button variant={ButtonVariant.SECONDARY} onClick={handleClose}>
               {en.common.cancel}
             </Button>

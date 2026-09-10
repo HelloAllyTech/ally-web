@@ -12,8 +12,15 @@ import {
   KbSearchResponse,
   KbStats,
   ReplaceKbDocumentContentRequest,
+  BulkWaPhoneMappingsRequest,
+  BulkWaPhoneMappingsResponse,
+  CreateWaPhoneMappingRequest,
+  GetWaPhoneMappingsParams,
+  GetWaPhoneMappingsResponse,
   UpdateKbDocumentAudienceRequest,
   UpdateKbDocumentRequest,
+  UpdateWaPhoneMappingRequest,
+  WaPhoneMapping,
   CreateWaTemplateRequest,
   GetWaTemplatesResponse,
   TestWaTemplateRequest,
@@ -105,6 +112,63 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS, TAG_TYPES.WHATSAPP_BOT_STATS],
+    }),
+
+    // ── Phone → organisation mappings ───────────────────────────────────────
+    // The admin's answer to "the bot does not recognise this number". Resolution prefers these
+    // over a `users.phone` match, so this is the surface that actually fixes a refusal.
+
+    getWaPhoneMappings: builder.query<GetWaPhoneMappingsResponse, GetWaPhoneMappingsParams | void>({
+      query: params => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS,
+        params: params ? { ...params } : undefined,
+      }),
+      providesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    createWaPhoneMapping: builder.mutation<WaPhoneMapping, CreateWaPhoneMappingRequest>({
+      query: body => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    /**
+     * Upload many.
+     *
+     * The response is per-row, so the caller must render it rather than showing a count: a
+     * 200-line roster with three conflicts and one typo is four lines to fix, and a success
+     * toast would hide all four.
+     */
+    bulkCreateWaPhoneMappings: builder.mutation<
+      BulkWaPhoneMappingsResponse,
+      BulkWaPhoneMappingsRequest
+    >({
+      query: body => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS_BULK,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    updateWaPhoneMapping: builder.mutation<WaPhoneMapping, UpdateWaPhoneMappingRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPING_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    deleteWaPhoneMapping: builder.mutation<{ id: string; removed: boolean }, string>({
+      query: id => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPING_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
     }),
 
     /** Metadata only (title, tags, language). Never triggers a re-index. */
@@ -544,6 +608,11 @@ export const {
   useCreateKbDocumentMutation,
   useUpdateKbDocumentMutation,
   useSetKbDocumentAudienceMutation,
+  useGetWaPhoneMappingsQuery,
+  useCreateWaPhoneMappingMutation,
+  useBulkCreateWaPhoneMappingsMutation,
+  useUpdateWaPhoneMappingMutation,
+  useDeleteWaPhoneMappingMutation,
   useReplaceKbDocumentContentMutation,
   useReindexKbDocumentMutation,
   useArchiveKbDocumentMutation,

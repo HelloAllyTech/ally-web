@@ -548,3 +548,92 @@ export interface WaCorpusCoverageResponse {
    */
   omittedDocuments: number;
 }
+
+// ── Phone → organisation mappings ────────────────────────────────────────────
+// Managed under User Management, because it is about people — but owned by the bot, because a
+// mapping decides which organisation's material a number can be answered from.
+
+export interface WaPhoneMapping {
+  id: string;
+  /** Digits only, no `+`. Shown in full: this is reference data being managed, not traffic. */
+  phoneE164: string;
+  tenantId: string;
+  tenantName: string | null;
+  /** Who the number belongs to, in the admin's words. The table's only human handle. */
+  label: string | null;
+  /** Attribution only — the organisation always comes from `tenantId`. */
+  userId: number | null;
+  /**
+   * The organisation on the matching user's profile, when it disagrees with this mapping.
+   * The mapping still wins; this exists so the disagreement is visible somewhere.
+   */
+  conflictingTenantName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetWaPhoneMappingsParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  tenantId?: string;
+}
+
+export interface GetWaPhoneMappingsResponse {
+  mappings: WaPhoneMapping[];
+  count: number;
+}
+
+export interface CreateWaPhoneMappingRequest {
+  phone: string;
+  tenantId: string;
+  label?: string;
+}
+
+export interface UpdateWaPhoneMappingRequest {
+  id: string;
+  tenantId?: string;
+  label?: string;
+}
+
+export interface BulkWaPhoneMappingRow {
+  phone: string;
+  /** Per-row organisation, for a file spanning several. Falls back to `defaultTenantId`. */
+  tenantId?: string;
+  label?: string;
+}
+
+export interface BulkWaPhoneMappingsRequest {
+  rows: BulkWaPhoneMappingRow[];
+  defaultTenantId?: string;
+  /** Move numbers already mapped to a different organisation. Off by default, deliberately. */
+  overwriteConflicts?: boolean;
+}
+
+/** What happened to one uploaded row. */
+export type WaPhoneMappingOutcome =
+  | "created"
+  | "updated"
+  | "unchanged"
+  | "conflict"
+  | "invalid"
+  | "duplicate";
+
+export interface BulkWaPhoneMappingResult {
+  /** 1-based position in the submitted rows, so a reported line matches what the admin pasted. */
+  line: number;
+  phone: string;
+  outcome: WaPhoneMappingOutcome;
+  reason: string | null;
+}
+
+export interface BulkWaPhoneMappingsResponse {
+  created: number;
+  updated: number;
+  unchanged: number;
+  conflicts: number;
+  invalid: number;
+  duplicates: number;
+  /** Per row, not a total: the admin needs the lines to fix. */
+  results: BulkWaPhoneMappingResult[];
+}
