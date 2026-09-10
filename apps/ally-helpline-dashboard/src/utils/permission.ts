@@ -37,3 +37,14 @@ export const hasPermissions = (
   }
   return permissions.some(permission => permission === requiredPermissions);
 };
+
+/**
+ * Whether this account is an evaluator, and so should be asked the evaluation
+ * questions attached to the screen or event at hand.
+ *
+ * Reads the permission rather than the role for the usual reason: an evaluator
+ * always holds a second app role, and the single `user.role` the backend sends
+ * collapses those to one name by a priority list that EVALUATOR is not in.
+ */
+export const hasEvaluatorPermission = (permissions: Permissions[]) =>
+  hasPermissions(permissions, Permissions.EVALUATOR_ACCESS);
