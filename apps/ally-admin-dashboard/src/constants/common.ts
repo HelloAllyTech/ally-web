@@ -555,6 +555,7 @@ export const ApiEndpoints = {
     DOCUMENT_UPLOAD_URL: "/v1/knowledge-base/documents/upload-url",
     DOCUMENT_BY_ID: (id: string) => `/v1/knowledge-base/documents/${id}`,
     DOCUMENT_CONTENT: (id: string) => `/v1/knowledge-base/documents/${id}/content`,
+    DOCUMENT_TENANTS: (id: string) => `/v1/knowledge-base/documents/${id}/tenants`,
     DOCUMENT_CHUNKS: (id: string) => `/v1/knowledge-base/documents/${id}/chunks`,
     DOCUMENT_REINDEX: (id: string) => `/v1/knowledge-base/documents/${id}/reindex`,
     DOCUMENT_ARCHIVE: (id: string) => `/v1/knowledge-base/documents/${id}/archive`,

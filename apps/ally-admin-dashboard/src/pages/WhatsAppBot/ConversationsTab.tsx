@@ -204,6 +204,20 @@ export const ConversationsTab: React.FC = () => {
         ),
       },
       {
+        key: "organisation",
+        label: en.whatsappBot.conversations.organisation,
+        render: row =>
+          row.tenantName ? (
+            <span className="text-sm text-typography-700">{row.tenantName}</span>
+          ) : (
+            // Not a dash. An unrecognised number is WHY that thread was refused rather than
+            // answered, so the log has to say so — a blank cell reads as missing data.
+            <Tag type="gray" size="sm" title={en.whatsappBot.conversations.organisationUnknownHelp}>
+              {en.whatsappBot.conversations.organisationUnknown}
+            </Tag>
+          ),
+      },
+      {
         key: "lastMessageAt",
         label: en.whatsappBot.conversations.columnLast,
         sortKey: "lastMessageAt",

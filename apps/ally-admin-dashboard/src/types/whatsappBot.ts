@@ -45,6 +45,14 @@ export interface KbDocument {
   statusMessage: string | null;
   chunkCount: number;
   indexedChunkCount: number;
+  /** Available to every organisation. When true, `tenantIds` is always empty. */
+  isGlobal: boolean;
+  /**
+   * The organisations that can retrieve it. Empty AND `isGlobal` false means the document
+   * reaches nobody — a real state an admin can save, so the table names it rather than
+   * rendering it as if it were unrestricted.
+   */
+  tenantIds: string[];
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;
@@ -59,6 +67,8 @@ export interface GetKbDocumentsParams {
   search?: string;
   status?: KbDocumentStatus;
   sourceType?: KbDocumentSourceType;
+  /** Only what this organisation can retrieve: its own documents plus the global ones. */
+  tenantId?: string;
   includeArchived?: boolean;
 }
 
@@ -90,6 +100,20 @@ export interface CreateKbDocumentRequest {
   sizeBytes?: number;
   language?: string;
   tags?: string[];
+  isGlobal?: boolean;
+  tenantIds?: string[];
+}
+
+/**
+ * Retargeting is its own request, not a field on the metadata update.
+ *
+ * PATCH /documents/:id is metadata-only and never touches the search index; this rewrites the
+ * audience on every indexed chunk, so it can fail in ways a title edit cannot.
+ */
+export interface UpdateKbDocumentAudienceRequest {
+  id: string;
+  isGlobal: boolean;
+  tenantIds: string[];
 }
 
 export interface UpdateKbDocumentRequest {
@@ -249,6 +273,12 @@ export interface WaBotSettings {
   fallbackText: string;
   declineText: string;
   unsupportedMediaText: string;
+  /**
+   * Sent when the sender's number is not on any Ally profile, so the corpus cannot be scoped.
+   * Should carry the way out — adding the number to the profile — since a refusal with no next
+   * step reads as a broken bot.
+   */
+  unrecognisedNumberText: string;
   rateLimitText: string;
   rateLimit: { perMinute: number; perHour: number; perDay: number };
   retrieval: WaRetrievalSettings;
@@ -314,11 +344,18 @@ export interface WaPreviewResponse {
   model: string;
   promptVersion: string;
   latencyMs: number;
+  /**
+   * Which corpus answered. Echoed back because "the bot found this fine" from an unscoped
+   * preview is otherwise indistinguishable from what one customer's worker would actually get.
+   */
+  audience: { tenantId: string | null; includesGlobal: boolean };
 }
 
 export interface WaPreviewRequest {
   question: string;
   retrieval?: Partial<WaRetrievalSettings>;
+  /** Answer as a worker from this organisation would be. Omitted searches the whole corpus. */
+  tenantId?: string;
 }
 
 // ── Conversation log ─────────────────────────────────────────────────────────
@@ -332,6 +369,12 @@ export enum WaHandledBy {
   CLARIFIED = "clarified",
   RATE_LIMITED = "rate_limited",
   UNSUPPORTED_MEDIA = "unsupported_media",
+  /**
+   * The number is not linked to an Ally account, so there was no organisation to scope the
+   * corpus to and no answer was attempted. Distinct from DECLINED: that means the corpus is
+   * thin, this means a real worker cannot get in.
+   */
+  UNIDENTIFIED = "unidentified",
   ERROR = "error",
 }
 
@@ -346,6 +389,9 @@ export interface WaConversationSummary {
   phoneLast4: string;
   consentStatus: string;
   blockedAt: string | null;
+  /** Null for a number that is not on any Ally profile — which is why the thread was refused. */
+  tenantId: string | null;
+  tenantName: string | null;
 }
 
 export interface GetWaConversationsResponse {
@@ -383,6 +429,11 @@ export interface WaConversationDetail {
     locale: string | null;
     blockedAt: string | null;
     messageCount: number;
+    tenantId: string | null;
+    identifiedAt: string | null;
+    identitySource: string | null;
+    /** Named rather than an id. Null is meaningful: it is why the corpus could not be scoped. */
+    organisation: { id: string; name: string } | null;
   } | null;
   messages: WaConversationMessage[];
 }
@@ -452,6 +503,12 @@ export interface WaAnalyticsOverview {
   template: number;
   errors: number;
   rateLimited: number;
+  /**
+   * Messages from a number that is not on any Ally profile, so no organisation's documents could
+   * be searched. Counted apart from `declined`: that one means the corpus is thin, this one means
+   * a real worker is locked out and someone has to add their number.
+   */
+  unidentified: number;
   /** Null when there were too few answered-or-declined messages to form a ratio. */
   declineRate: number | null;
   latencyP50Ms: number | null;

@@ -190,6 +190,12 @@ export const BotSettingsTab: React.FC = () => {
           onChange={value => set("unsupportedMediaText", value)}
         />
         <TextArea
+          label={en.whatsappBot.settings.unrecognisedNumberLabel}
+          help={en.whatsappBot.settings.unrecognisedNumberHelp}
+          value={draft.unrecognisedNumberText}
+          onChange={value => set("unrecognisedNumberText", value)}
+        />
+        <TextArea
           label={en.whatsappBot.settings.rateLimitLabel}
           value={draft.rateLimitText}
           onChange={value => set("rateLimitText", value)}

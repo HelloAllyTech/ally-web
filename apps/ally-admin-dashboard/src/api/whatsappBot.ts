@@ -12,6 +12,7 @@ import {
   KbSearchResponse,
   KbStats,
   ReplaceKbDocumentContentRequest,
+  UpdateKbDocumentAudienceRequest,
   UpdateKbDocumentRequest,
   CreateWaTemplateRequest,
   GetWaTemplatesResponse,
@@ -111,6 +112,23 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       query: ({ id, ...body }) => ({
         url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_BY_ID(id),
         method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
+    }),
+
+    /**
+     * Target a document at one, some or all organisations.
+     *
+     * Separate from updateKbDocument because it is not metadata: it rewrites the audience on
+     * every indexed chunk, so it can fail where a title edit cannot — a 500 here means the
+     * assignment saved but retrieval may still use the old audience, and the panel has to say so
+     * rather than closing as if nothing happened.
+     */
+    setKbDocumentAudience: builder.mutation<KbDocument, UpdateKbDocumentAudienceRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_TENANTS(id),
+        method: HttpMethod.PUT,
         body,
       }),
       invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
@@ -525,6 +543,7 @@ export const {
   useCreateKbUploadUrlMutation,
   useCreateKbDocumentMutation,
   useUpdateKbDocumentMutation,
+  useSetKbDocumentAudienceMutation,
   useReplaceKbDocumentContentMutation,
   useReindexKbDocumentMutation,
   useArchiveKbDocumentMutation,

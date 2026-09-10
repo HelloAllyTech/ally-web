@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Refresh, Unarchive } from "@icons";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import {
   useArchiveKbDocumentMutation,
   useGetKbDocumentsQuery,
   useGetKbStatsQuery,
+  useGetTenantsQuery,
   useReindexKbDocumentMutation,
   useUnarchiveKbDocumentMutation,
 } from "@api";
@@ -17,18 +18,24 @@ import {
   EntityTable,
   EntityTableColumn,
   EntityTableSort,
+  FilterDropdown,
   ListPagination,
   ListToolbar,
 } from "@components";
+import { FilterChipProps } from "@components/types";
 import { TooltipHint } from "@components/app-tooltip";
 import { en, TooltipLocation } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbDocument, KbDocumentStatus } from "@types";
 import { formatDate, formatRelativeTime } from "@utils";
 
+import { audienceSummary } from "./CorpusAudienceField";
 import { CorpusDocumentPanel } from "./CorpusDocumentPanel";
 import { DocumentStatusBadge } from "./DocumentStatusBadge";
 
 const PAGE_SIZE = 25;
+
+/** One request covers every organisation — see CorpusDocumentPanel for why not paged. */
+const TENANT_PAGE_SIZE = 200;
 
 /**
  * How often to re-poll while any document is still being processed.
@@ -46,6 +53,9 @@ export const CorpusTab: React.FC = () => {
   const [offset, setOffset] = useState(0);
   const [includeArchived, setIncludeArchived] = useState(false);
   const [pollInterval, setPollInterval] = useState(0);
+  const [tenantFilter, setTenantFilter] = useState<string | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const addFilterBtnRef = useRef<HTMLButtonElement>(null);
   const [sort, setSort] = useState<EntityTableSort>({ key: "createdAt", direction: "desc" });
 
   const { data, isLoading, isFetching, isError, refetch } = useGetKbDocumentsQuery(
@@ -53,6 +63,7 @@ export const CorpusTab: React.FC = () => {
       limit: PAGE_SIZE,
       offset,
       search: search.trim() || undefined,
+      tenantId: tenantFilter ?? undefined,
       includeArchived,
       sortBy: sort.key,
       sortDir: sort.direction,
@@ -60,6 +71,15 @@ export const CorpusTab: React.FC = () => {
     { pollingInterval: pollInterval },
   );
   const { data: stats } = useGetKbStatsQuery();
+  const { data: tenantData } = useGetTenantsQuery({ limit: TENANT_PAGE_SIZE });
+
+  // id → name, so the organisations cell shows names rather than uuids. The question that cell
+  // answers is "should this customer be able to see this", which a count or an id answers for
+  // nobody.
+  const tenantNames = useMemo(
+    () => new Map((tenantData?.data ?? []).map(tenant => [tenant.id, tenant.name])),
+    [tenantData],
+  );
 
   const documents = data?.documents ?? [];
   const total = data?.count ?? 0;
@@ -168,6 +188,33 @@ export const CorpusTab: React.FC = () => {
           ),
       },
       {
+        key: "organisations",
+        label: en.whatsappBot.corpus.columnOrganisations,
+        render: doc => {
+          const summary = audienceSummary(doc.isGlobal, doc.tenantIds, tenantNames);
+          return (
+            <span
+              className={
+                summary.tone === "none"
+                  ? // Called out rather than shown as a dash. "Available to nobody" is savable and
+                    // otherwise indistinguishable from a document nobody happens to ask about.
+                    "rounded bg-support-warning/20 px-1.5 py-0.5 text-xs text-typography-900"
+                  : summary.tone === "all"
+                    ? "rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-typography-700"
+                    : "text-sm text-typography-700"
+              }
+              title={
+                summary.tone === "some"
+                  ? doc.tenantIds.map(id => tenantNames.get(id) ?? id).join(", ")
+                  : undefined
+              }
+            >
+              {summary.label}
+            </span>
+          );
+        },
+      },
+      {
         key: "updatedAt",
         label: en.whatsappBot.corpus.columnUpdated,
         sortKey: "updatedAt",
@@ -178,10 +225,27 @@ export const CorpusTab: React.FC = () => {
         ),
       },
     ],
-    [],
+    [tenantNames],
   );
 
-  const isFiltered = search.trim().length > 0;
+  const filterChips: FilterChipProps[] = useMemo(() => {
+    if (!tenantFilter) return [];
+    return [
+      {
+        label: en.whatsappBot.corpus.filterOrganisationLabel,
+        value: tenantNames.get(tenantFilter) ?? tenantFilter,
+        // One organisation at a time, so the "all values" expansion the chip offers for a
+        // multi-select filter is just the one selected name.
+        allValue: [tenantNames.get(tenantFilter) ?? tenantFilter],
+        onClear: () => {
+          setTenantFilter(null);
+          setOffset(0);
+        },
+      },
+    ];
+  }, [tenantFilter, tenantNames]);
+
+  const isFiltered = search.trim().length > 0 || Boolean(tenantFilter);
 
   return (
     <div className="pt-4">
@@ -224,6 +288,39 @@ export const CorpusTab: React.FC = () => {
           // nudge to pick up a status change.
           onClick: () => void refetch(),
         }}
+        filterChips={filterChips}
+        addFilterCta={{
+          label: en.whatsappBot.corpus.filterButton,
+          onClick: () => setIsFilterOpen(open => !open),
+        }}
+        addFilterButtonRef={addFilterBtnRef}
+      />
+
+      {/* Filtering by organisation shows what that customer can actually retrieve — its own
+          documents PLUS the global ones — rather than only what is targeted at it. That is the
+          question an admin has when a worker reports a gap, and the narrower reading would answer
+          a different one. */}
+      <FilterDropdown<{ organisation: string[] }>
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        sections={[
+          {
+            id: "organisation",
+            label: en.whatsappBot.corpus.filterOrganisationLabel,
+            options: (tenantData?.data ?? []).map(tenant => ({
+              value: tenant.id,
+              label: tenant.name,
+            })),
+          },
+        ]}
+        onApplyFilters={next => {
+          // One organisation at a time: "what can these two customers both see" is not a question
+          // the corpus can answer, since the audiences overlap through the global documents.
+          setTenantFilter(next.organisation?.[0] ?? null);
+          setOffset(0);
+        }}
+        anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+        currentFilters={{ organisation: tenantFilter ? [tenantFilter] : [] }}
       />
 
       <div className="py-3">

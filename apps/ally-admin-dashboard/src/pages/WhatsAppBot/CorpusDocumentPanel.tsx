@@ -10,14 +10,26 @@ import {
 } from "@ally-ui-mono/ui-shared";
 import {
   useCreateKbDocumentMutation,
+  useGetTenantsQuery,
   useReplaceKbDocumentContentMutation,
+  useSetKbDocumentAudienceMutation,
   useUpdateKbDocumentMutation,
 } from "@api";
 import { EntityField, EntitySidePanel } from "@components";
 import { DOCUMENT_MAX_PASTE_CHARS, en } from "@constants";
 import { KbDocument, KbDocumentSourceType } from "@types";
 
+import { CorpusAudienceField } from "./CorpusAudienceField";
 import { DocumentUploadField } from "./DocumentUploadField";
+
+/**
+ * Enough to cover every organisation on the platform in one request.
+ *
+ * A paged picker would be the "correct" answer and is the wrong trade here: the list is tens of
+ * rows, an admin retargeting a document wants to search all of them at once, and a second page
+ * that silently hides an organisation would look exactly like that organisation not existing.
+ */
+const TENANT_PAGE_SIZE = 200;
 
 interface CorpusDocumentPanelProps {
   isOpen: boolean;
@@ -71,10 +83,18 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
   const [sourceUrl, setSourceUrl] = useState("");
   const [upload, setUpload] = useState<UploadValue>(null);
   const [language, setLanguage] = useState("");
+  const [isGlobal, setIsGlobal] = useState(false);
+  const [tenantIds, setTenantIds] = useState<string[]>([]);
 
   const [createDocument, { isLoading: isCreating }] = useCreateKbDocumentMutation();
   const [updateDocument, { isLoading: isUpdating }] = useUpdateKbDocumentMutation();
   const [replaceContent, { isLoading: isReplacing }] = useReplaceKbDocumentContentMutation();
+  const [setAudience, { isLoading: isSavingAudience }] = useSetKbDocumentAudienceMutation();
+
+  // Loaded only while the panel is open: the corpus table does not need it, and an admin who never
+  // opens a document should not pay for the organisation list.
+  const { data: tenantData } = useGetTenantsQuery({ limit: TENANT_PAGE_SIZE }, { skip: !isOpen });
+  const tenants = tenantData?.data ?? [];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,9 +106,24 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
     setSourceUrl(document?.sourceUrl ?? "");
     setUpload(null);
     setLanguage(document?.language ?? "");
+    // A NEW document defaults to no audience at all, matching the API: an admin has to say who it
+    // is for. The alternative — defaulting to every organisation — makes the most permissive
+    // outcome the one you get by not reading the form.
+    setIsGlobal(document?.isGlobal ?? false);
+    setTenantIds(document?.tenantIds ?? []);
   }, [isOpen, document]);
 
   const canEditBody = !isEdit || document?.sourceType === KbDocumentSourceType.PASTE;
+
+  // Compared as a SET, so re-picking the same organisations in a different order is not a change
+  // worth sweeping every chunk of a 300-page book for.
+  const audienceChanged = useMemo(() => {
+    if (!isEdit || !document) return false;
+    if (isGlobal !== document.isGlobal) return true;
+    if (isGlobal) return false;
+    const before = new Set(document.tenantIds);
+    return tenantIds.length !== before.size || tenantIds.some(id => !before.has(id));
+  }, [isEdit, document, isGlobal, tenantIds]);
 
   const validation = useMemo(() => {
     if (!title.trim()) return en.whatsappBot.corpus.validationTitle;
@@ -121,11 +156,12 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
     return (
       title !== (document?.title ?? "") ||
       language !== (document?.language ?? "") ||
-      text.trim().length > 0
+      text.trim().length > 0 ||
+      audienceChanged
     );
-  }, [isEdit, title, text, sourceUrl, upload, language, document]);
+  }, [isEdit, title, text, sourceUrl, upload, language, document, audienceChanged]);
 
-  const isSaving = isCreating || isUpdating || isReplacing;
+  const isSaving = isCreating || isUpdating || isReplacing || isSavingAudience;
 
   const handleSave = async () => {
     if (validation) return;
@@ -154,6 +190,26 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
         } else {
           toast.success(en.whatsappBot.corpus.updated);
         }
+
+        // Its own call, and only when something changed. Sent AFTER the metadata update so a
+        // failure here cannot leave a title edit unsaved: this is the request that can fail on
+        // its own (it sweeps every indexed chunk), and its error message is specific — the
+        // assignment saved, the index did not, use Retry.
+        if (audienceChanged) {
+          try {
+            await setAudience({
+              id: document.id,
+              isGlobal,
+              tenantIds: isGlobal ? [] : tenantIds,
+            }).unwrap();
+            toast.success(en.whatsappBot.corpus.audienceSaved);
+          } catch {
+            toast.error(en.whatsappBot.corpus.audienceIndexFailed);
+            // Left OPEN, unlike every other failure here. The panel closing on a partial save
+            // reads as success, and this is the one case where the two stores can disagree.
+            return;
+          }
+        }
       } else {
         await createDocument({
           title: title.trim(),
@@ -162,6 +218,10 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
           ...(sourceType === KbDocumentSourceType.URL ? { sourceUrl: sourceUrl.trim() } : {}),
           ...(upload ?? {}),
           ...(language.trim() ? { language: language.trim() } : {}),
+          // Sent with the create rather than as a follow-up call, so the audience is already in
+          // place when the ingest worker stamps it onto the first generation of chunks.
+          isGlobal,
+          tenantIds: isGlobal ? [] : tenantIds,
         }).unwrap();
         toast.success(en.whatsappBot.corpus.created);
       }
@@ -260,6 +320,17 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
       {isEdit && !canEditBody && (
         <p className="text-xs text-typography-500">{en.whatsappBot.corpus.sourceTypeLocked}</p>
       )}
+
+      <CorpusAudienceField
+        isGlobal={isGlobal}
+        tenantIds={tenantIds}
+        tenants={tenants}
+        disabled={isSaving}
+        onChange={next => {
+          setIsGlobal(next.isGlobal);
+          setTenantIds(next.tenantIds);
+        }}
+      />
 
       <EntityField
         label={en.whatsappBot.corpus.languageLabel}
