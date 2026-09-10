@@ -248,6 +248,13 @@ export const UsageDashboard: React.FC = () => {
         <Counter label={en.whatsappBot.usage.answered} value={stats?.answered ?? 0} />
         <Counter label={en.whatsappBot.usage.declined} value={stats?.declined ?? 0} />
         <Counter label={en.whatsappBot.usage.crisis} value={stats?.crisis ?? 0} />
+        {/* Beside the outcome counters rather than inside the outcomes chart: it is not a quality
+            signal about the corpus, it is a count of people who could not be served at all, and it
+            has a different fix (add their number to their Ally profile). */}
+        <Counter
+          label={en.whatsappBot.usage.unidentified}
+          value={stats?.unidentified ?? 0}
+        />
         <Counter label={en.whatsappBot.usage.errors} value={stats?.errors ?? 0} />
       </div>
 

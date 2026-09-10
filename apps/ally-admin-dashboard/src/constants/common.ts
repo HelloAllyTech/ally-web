@@ -555,6 +555,7 @@ export const ApiEndpoints = {
     DOCUMENT_UPLOAD_URL: "/v1/knowledge-base/documents/upload-url",
     DOCUMENT_BY_ID: (id: string) => `/v1/knowledge-base/documents/${id}`,
     DOCUMENT_CONTENT: (id: string) => `/v1/knowledge-base/documents/${id}/content`,
+    DOCUMENT_TENANTS: (id: string) => `/v1/knowledge-base/documents/${id}/tenants`,
     DOCUMENT_CHUNKS: (id: string) => `/v1/knowledge-base/documents/${id}/chunks`,
     DOCUMENT_REINDEX: (id: string) => `/v1/knowledge-base/documents/${id}/reindex`,
     DOCUMENT_ARCHIVE: (id: string) => `/v1/knowledge-base/documents/${id}/archive`,
@@ -563,6 +564,11 @@ export const ApiEndpoints = {
     SEARCH: "/v1/knowledge-base/search",
     STATS: "/v1/knowledge-base/stats",
     // Bot (ally-be src/whatsapp)
+    // Phone → organisation mappings. Surfaced under User Management, but owned by the bot:
+    // a mapping decides which organisation's material a number can be answered from.
+    PHONE_MAPPINGS: "/v1/whatsapp/phone-mappings",
+    PHONE_MAPPINGS_BULK: "/v1/whatsapp/phone-mappings/bulk",
+    PHONE_MAPPING_BY_ID: (id: string) => `/v1/whatsapp/phone-mappings/${id}`,
     TEMPLATES: "/v1/whatsapp/templates",
     TEMPLATE_BY_ID: (id: string) => `/v1/whatsapp/templates/${id}`,
     TEMPLATE_ARCHIVE: (id: string) => `/v1/whatsapp/templates/${id}/archive`,
@@ -792,6 +798,7 @@ export const TAG_TYPES = {
   WHATSAPP_BOT_CONVERSATIONS: "whatsAppBotConversations",
   WHATSAPP_BOT_UNANSWERED: "whatsAppBotUnanswered",
   WHATSAPP_BOT_ANALYTICS: "whatsAppBotAnalytics",
+  WHATSAPP_BOT_PHONE_MAPPINGS: "whatsAppBotPhoneMappings",
 
   // Cohorts (per-organization user grouping). Restrictions are a separate tag so
   // a restriction edit refreshes the content tab without refetching the roster.

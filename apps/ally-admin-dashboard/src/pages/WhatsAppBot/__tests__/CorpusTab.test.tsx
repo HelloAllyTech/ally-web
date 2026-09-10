@@ -31,6 +31,7 @@ vi.mock("@constants", () => ({
         columnTitle: "Document",
         columnStatus: "Status",
         columnChunks: "Passages",
+        columnOrganisations: "Organisations",
         columnUpdated: "Updated",
         sourceType: { paste: "Text", pdf: "PDF", docx: "Word", epub: "EPUB", url: "URL" },
         status: {
@@ -63,6 +64,20 @@ vi.mock("@constants", () => ({
         previousPage: "Previous",
         nextPage: "Next",
         saveFailed: "Could not save",
+        audienceAllBadge: "All",
+        audienceNoneCell: "Nobody",
+        audienceMore: "+{count} more",
+        audienceLabel: "Available to",
+        audienceHelp: "Who can get answers.",
+        audienceAll: "All organisations",
+        audienceSpecific: "Specific organisations",
+        audiencePickLabel: "Organisations",
+        audiencePickPlaceholder: "Search organisations",
+        audienceNoneWarning: "No organisations selected.",
+        audienceSaved: "Organisations updated",
+        audienceIndexFailed: "Index not updated",
+        filterButton: "Filter",
+        filterOrganisationLabel: "Organisation",
       },
     },
   },
@@ -92,6 +107,8 @@ vi.mock("@api", () => ({
     return mockQueryResult;
   },
   useGetKbStatsQuery: () => ({ data: undefined }),
+  useGetTenantsQuery: () => ({ data: { data: mockTenants } }),
+  useSetKbDocumentAudienceMutation: () => [vi.fn(), { isLoading: false }],
   useReindexKbDocumentMutation: () => [vi.fn(), { isLoading: false }],
   useArchiveKbDocumentMutation: () => [vi.fn(), { isLoading: false }],
   useUnarchiveKbDocumentMutation: () => [vi.fn(), { isLoading: false }],
@@ -109,12 +126,25 @@ vi.mock("@components", () => ({
       <span>{subtitle}</span>
     </div>
   ),
-  EntityTable: ({ rows, actions }: { rows: { id: string }[]; actions?: unknown[] }) => (
+  EntityTable: ({
+    rows,
+    actions,
+    columns,
+  }: {
+    rows: { id: string }[];
+    actions?: unknown[];
+    columns?: { key: string; render?: (row: unknown) => React.ReactNode }[];
+  }) => (
     <table>
       <tbody>
         {rows.map(row => (
           <tr key={row.id} data-testid="row">
             <td>{row.id}</td>
+            {/* The organisations cell is rendered so its wording can be asserted — it is the one
+                column whose text changes what an admin believes about who can see a document. */}
+            <td data-testid={`organisations-${row.id}`}>
+              {columns?.find(column => column.key === "organisations")?.render?.(row)}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -126,6 +156,7 @@ vi.mock("@components", () => ({
     </table>
   ),
   ListToolbar: () => <div data-testid="toolbar" />,
+  FilterDropdown: () => null,
   ListPagination: () => <div data-testid="pagination" />,
   Button: ({ children }: { children?: React.ReactNode }) => <button>{children}</button>,
   EntityField: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
@@ -140,6 +171,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ContentSwitcher: () => null,
   Switch: () => null,
   TextInput: () => null,
+  FilterableMultiSelect: () => null,
+  RadioButton: () => null,
+  RadioButtonGroup: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock("@icons", () => ({
@@ -158,6 +192,12 @@ vi.mock("@utils", () => ({
 }));
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+
+/** Two organisations, so the cell's "names, not ids" behaviour is observable. */
+const mockTenants = [
+  { id: "tenant-a", name: "Acme Health" },
+  { id: "tenant-b", name: "Beacon Care" },
+];
 
 let mockQueryResult: {
   data?: { documents: unknown[]; count: number };
@@ -180,6 +220,8 @@ const doc = (over: Partial<Record<string, unknown>> = {}) => ({
   statusMessage: null,
   chunkCount: 10,
   indexedChunkCount: 10,
+  isGlobal: true,
+  tenantIds: [],
   isArchived: false,
   createdAt: "2026-08-01T00:00:00Z",
   updatedAt: "2026-08-01T00:00:00Z",
@@ -288,5 +330,73 @@ describe("CorpusTab", () => {
 
       expect(screen.getAllByTestId("row")).toHaveLength(2);
     });
+  });
+});
+
+describe("CorpusTab organisations column", () => {
+  /**
+   * The cell's wording is what an admin trusts when deciding whether a customer should be able to
+   * see a document, so each of the three states says something different on purpose. The
+   * dangerous one is "available to nobody": it is savable, and a dash or a blank would be
+   * indistinguishable from a document nobody happens to ask about.
+   */
+  it("says All for a global document", () => {
+    mockQueryResult = {
+      data: { documents: [doc({ isGlobal: true, tenantIds: [] })], count: 1 },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
+
+    render(<CorpusTab />);
+
+    expect(screen.getByTestId("organisations-doc-1").textContent).toBe("All");
+  });
+
+  it("names the organisations rather than counting them", () => {
+    mockQueryResult = {
+      data: {
+        documents: [doc({ isGlobal: false, tenantIds: ["tenant-a", "tenant-b"] })],
+        count: 1,
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
+
+    render(<CorpusTab />);
+
+    expect(screen.getByTestId("organisations-doc-1").textContent).toBe("Acme Health, Beacon Care");
+  });
+
+  it("calls out a document that reaches nobody", () => {
+    mockQueryResult = {
+      data: { documents: [doc({ isGlobal: false, tenantIds: [] })], count: 1 },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
+
+    render(<CorpusTab />);
+
+    expect(screen.getByTestId("organisations-doc-1").textContent).toBe("Nobody");
+  });
+
+  it("does not send an organisation filter until one is chosen", () => {
+    // A tenantId on the list request changes what it returns to "what this customer can see",
+    // which is a different question from "what is in the corpus" — the default must be the latter.
+    mockQueryResult = {
+      data: { documents: [doc()], count: 1 },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
+
+    render(<CorpusTab />);
+
+    expect(getDocumentsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: undefined }),
+      expect.anything(),
+    );
   });
 });

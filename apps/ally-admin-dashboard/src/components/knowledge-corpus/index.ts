@@ -9,4 +9,8 @@
  * renders one shared status enum, and two implementations of it would drift.
  */
 export { CorpusDocumentPanel } from "./CorpusDocumentPanel";
+// The audience editor and the table cell that summarises it. Shared for the same reason as
+// the uploader: both corpora carry `isGlobal`/`tenantIds`, and only the WhatsApp corpus
+// filters retrieval on them today — so one implementation, shown where it means something.
+export { CorpusAudienceField, audienceSummary } from "./CorpusAudienceField";
 export { DocumentStatusBadge } from "./DocumentStatusBadge";
