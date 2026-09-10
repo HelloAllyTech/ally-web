@@ -15,7 +15,6 @@ export interface OwnTenant {
   logoUrl?: string;
   enabledDashboardIds: string[];
   hideRankInCommunity: boolean;
-  engagementReminderEnabled: boolean;
   enableAudioUpload: boolean;
   enableMicrophoneMode: boolean;
   enableDictationMode: boolean;
@@ -32,7 +31,6 @@ export interface UpdateOwnTenantSettingsBody {
   enableAudioUpload?: boolean;
   enableDictationMode?: boolean;
   hideRankInCommunity?: boolean;
-  engagementReminderEnabled?: boolean;
 }
 
 /** A single field inside a summary section (GET /v1/settings/summary-sections). */
