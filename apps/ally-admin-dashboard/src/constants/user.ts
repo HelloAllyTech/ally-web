@@ -285,6 +285,14 @@ export enum UserRole {
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
   /**
+   * Consumer-app role marking an account as an evaluator: the consumer apps
+   * show it extra evaluation questions on particular screens and events. It
+   * carries only `evaluator:access` and is meant to be granted alongside the
+   * account's real app role, not instead of one — the "Change role" picker is
+   * multi-select, so tick it in addition to LEARNER/COUNSELOR.
+   */
+  EVALUATOR = "EVALUATOR",
+  /**
    * The single platform-tier role that replaced SUPER_ADMIN /
    * SUPER_DUPER_ADMIN / MULTI_TENANT_ADMIN. Access within it is per-user
    * feature toggles, not sub-tiers. Named PLATFORM_ADMIN because ADMIN already
