@@ -34,6 +34,35 @@ describe("canViewOrganizationSettings", () => {
     expect(canViewOrganizationSettings(null)).toBe(false);
     expect(canViewOrganizationSettings(undefined)).toBe(false);
   });
+
+  it("returns true for a SUPER_DUPER_ADMIN regardless of email or allowlist", () => {
+    expect(
+      canViewOrganizationSettings({
+        role: UserRole.SUPER_DUPER_ADMIN,
+        roles: [UserRole.SUPER_DUPER_ADMIN],
+      }),
+    ).toBe(true);
+    expect(
+      canViewOrganizationSettings({
+        email: "not-on-the-allowlist@example.com",
+        role: UserRole.SUPER_DUPER_ADMIN,
+        roles: [UserRole.SUPER_DUPER_ADMIN],
+      }),
+    ).toBe(true);
+  });
+
+  it("reads `roles`, not the collapsed `role`, for the SUPER_DUPER_ADMIN check", () => {
+    expect(
+      canViewOrganizationSettings({
+        role: UserRole.LEARNER,
+        roles: [UserRole.LEARNER, UserRole.SUPER_DUPER_ADMIN],
+      }),
+    ).toBe(true);
+  });
+
+  it("falls back to `role` for payloads predating the roles array", () => {
+    expect(canViewOrganizationSettings({ role: UserRole.SUPER_DUPER_ADMIN })).toBe(true);
+  });
 });
 
 describe("hasAllyAdminAccess", () => {
