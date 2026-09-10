@@ -156,7 +156,11 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   const isError = isOrgLogs ? isAdminCallLogsError : isCallLogsError;
   const refetchFn = isOrgLogs ? refetchAdminCallLogs : refetchCallLogs;
 
-  if (isError && !isLoading) {
+  // Same rule as AdminLogsTable/UserLogsTable: `isLoading` covers a cache
+  // entry's first load only, so a rejected background refetch would otherwise
+  // replace archived rows that are on screen and correct with a full-page
+  // error the counsellor can only clear by reloading.
+  if (isError && !isLoading && logs.length === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-200px)]">
         <FallbackUI
