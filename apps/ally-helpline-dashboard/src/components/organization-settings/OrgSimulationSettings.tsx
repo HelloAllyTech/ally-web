@@ -18,9 +18,13 @@ export const OrgSimulationSettings: FC = () => {
   const { data: tenant } = useGetOwnTenantQuery();
   const [updateTenantSettings] = useUpdateOwnTenantSettingsMutation();
   const [hideRank, setHideRank] = useState(false);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
 
   useEffect(() => {
-    if (tenant) setHideRank(Boolean(tenant.hideRankInCommunity));
+    if (tenant) {
+      setHideRank(Boolean(tenant.hideRankInCommunity));
+      setRemindersEnabled(Boolean(tenant.engagementReminderEnabled));
+    }
   }, [tenant]);
 
   const handleToggle = async () => {
@@ -30,6 +34,17 @@ export const OrgSimulationSettings: FC = () => {
       await updateTenantSettings({ hideRankInCommunity: next }).unwrap();
     } catch (error: any) {
       setHideRank(!next);
+      toast.error(error?.data?.message || "Failed to update setting");
+    }
+  };
+
+  const handleRemindersToggle = async () => {
+    const next = !remindersEnabled;
+    setRemindersEnabled(next);
+    try {
+      await updateTenantSettings({ engagementReminderEnabled: next }).unwrap();
+    } catch (error: any) {
+      setRemindersEnabled(!next);
       toast.error(error?.data?.message || "Failed to update setting");
     }
   };
@@ -46,6 +61,19 @@ export const OrgSimulationSettings: FC = () => {
           />
           <span className="text-sm text-typography-900 font-normal">
             {hideRank ? "Enabled" : "Disabled"}
+          </span>
+        </div>
+      </div>
+      <div className="flex h-9 flex-row justify-between items-center font-primary">
+        <div className="text-sm text-typography-700 font-normal">Engagement reminders</div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={remindersEnabled}
+            onChange={handleRemindersToggle}
+            label="Engagement reminders"
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {remindersEnabled ? "Enabled" : "Disabled"}
           </span>
         </div>
       </div>
