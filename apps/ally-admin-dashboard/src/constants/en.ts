@@ -967,11 +967,8 @@ export const en = {
     unarchive: "Restore",
     archived: "Archived",
     archiveFailed: "Couldn't archive that",
-    remove: "Delete",
-    removeFailed: "Couldn't delete that",
-    removeConfirmTitle: "Delete this material?",
-    removeConfirmBody:
-      "The document and its passages go for good. Archive instead if you only want the agent to stop using it — that keeps it here and keeps any citation resolvable.",
+    archiveHelp:
+      "Archiving deletes the passages so the agent stops using this, and keeps the document here so any citation already recorded still resolves. It is reversible.",
     previewFailed: "The search failed",
     score: "match",
     indexed: "Indexed",

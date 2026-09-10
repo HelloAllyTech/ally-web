@@ -83,7 +83,6 @@ const DOCUMENT = {
 // omission is what put ally-web master red for four hours today, in NavSideBar.
 const archiveSpy = vi.fn();
 const unarchiveSpy = vi.fn();
-const deleteSpy = vi.fn();
 
 vi.mock("@api", () => ({
   useArchiveKbDocumentMutation: () => [
@@ -97,13 +96,6 @@ vi.mock("@api", () => ({
     (id: string) => {
       unarchiveSpy(id);
       return { unwrap: () => Promise.resolve({}) };
-    },
-    { isLoading: false },
-  ],
-  useDeleteKbDocumentMutation: () => [
-    (id: string) => {
-      deleteSpy(id);
-      return { unwrap: () => Promise.resolve({ id }) };
     },
     { isLoading: false },
   ],
@@ -129,9 +121,6 @@ vi.mock("@api", () => ({
 }));
 
 vi.mock("@components", () => ({
-  // Rendered inline by DocumentActions' delete confirmation.
-  ActionConfirmationPopup: ({ isOpen, title }: { isOpen: boolean; title: string }) =>
-    isOpen ? <div data-testid="confirm-popup">{title}</div> : null,
   EmptyState: ({ title }: { title: string }) => <span>{title}</span>,
 }));
 
@@ -235,24 +224,19 @@ describe("CharacterCorpusPanel", () => {
     expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({ minSimilarity: 0.2 }));
   });
 
-  it("offers archive and delete on every document", () => {
-    // Absent from the first version: material could be added and never removed, which left two
-    // documents orphaned by a failed ingest stuck in the production corpus.
+  it("offers archive on every document, and no delete", () => {
+    // Archive is the only removal the backend allows: DELETE always answers 409, because
+    // deleting would orphan citations already recorded in the conversation log. A Delete button
+    // here could never succeed — I shipped one before checking, and it 409'd in production.
     render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
     expect(screen.getByTestId("character-corpus-archive")).toBeTruthy();
-    expect(screen.getByTestId("character-corpus-delete")).toBeTruthy();
+    expect(screen.queryByTestId("character-corpus-delete")).toBeNull();
   });
 
-  it("confirms before deleting, and archives without confirming", () => {
+  it("archives on click", () => {
     render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
-
     fireEvent.click(screen.getByTestId("character-corpus-archive"));
     expect(archiveSpy).toHaveBeenCalledWith("doc-1");
-
-    fireEvent.click(screen.getByTestId("character-corpus-delete"));
-    // Nothing is deleted on the first click — the popup is.
-    expect(deleteSpy).not.toHaveBeenCalled();
-    expect(screen.getByTestId("confirm-popup")).toBeTruthy();
   });
 
   it("sends an empty topic array when the last chip is turned off", () => {

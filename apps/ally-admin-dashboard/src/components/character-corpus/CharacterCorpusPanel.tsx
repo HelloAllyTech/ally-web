@@ -5,16 +5,14 @@ import { toast } from "sonner";
 import { InlineNotification, SkeletonText } from "@ally-ui-mono/ui-shared";
 import {
   useArchiveKbDocumentMutation,
-  useDeleteKbDocumentMutation,
   useGetKbDocumentsQuery,
   useGetKbStatsQuery,
   useSearchKbCorpusMutation,
   useUnarchiveKbDocumentMutation,
   useUpdateKbDocumentMutation,
 } from "@api";
-import { ActionConfirmationPopup, EmptyState } from "@components";
+import { EmptyState } from "@components";
 import { CorpusDocumentPanel, DocumentStatusBadge } from "@components/knowledge-corpus";
-import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbCharacterTopic, KbCorpus, KbDocument } from "@types";
 
@@ -116,27 +114,32 @@ const TopicChips: React.FC<{
 };
 
 /**
- * Archive and delete, on every document.
+ * Archive and restore, on every document.
  *
  * Absent from the first version of this panel, which meant material could be added and never
- * removed — and that is not a cosmetic gap. Two documents orphaned by a failed ingest sat in
- * the production corpus with no way to clear them from the UI at all.
+ * removed — two documents orphaned by a failed ingest sat in the production corpus with no
+ * control to clear them.
  *
- * Archive is the normal action and is offered first: it deletes the vectors so the agent stops
- * retrieving the material, while keeping the row and its chunks so any citation already
- * recorded still resolves to the passage that was actually quoted. Delete is for material that
- * should never have been here — a mistake, a test, an orphan — and is confirmed, because
- * nothing brings it back.
+ * ARCHIVE IS THE ONLY REMOVAL THERE IS, and that is a backend decision rather than a UI
+ * simplification: `DELETE /knowledge-base/documents/:id` exists but always answers 409
+ * ("Documents are archived rather than deleted, so citations already recorded in the
+ * conversation log keep resolving"). Archiving deletes the vectors, so the agent stops
+ * retrieving the material immediately, while the row and its chunks stay and any citation
+ * already recorded still resolves to the passage that was actually quoted. It is also
+ * reversible, which a delete would not be.
+ *
+ * I shipped a real Delete button here first. It could never succeed, and the WhatsApp Corpus
+ * tab had already solved this properly — it labels the action "Delete" and performs an archive.
+ * This panel names it Archive instead, because it shows the archived state and a Restore, so
+ * calling it Delete would contradict the button sitting next to it.
  */
 const DocumentActions: React.FC<{ document: KbDocument }> = ({ document }) => {
   const strings = en.characterCorpus;
-  const [confirming, setConfirming] = useState(false);
   const [archive, { isLoading: archiving }] = useArchiveKbDocumentMutation();
   const [unarchive, { isLoading: unarchiving }] = useUnarchiveKbDocumentMutation();
-  const [remove, { isLoading: removing }] = useDeleteKbDocumentMutation();
-  const busy = archiving || unarchiving || removing;
+  const busy = archiving || unarchiving;
 
-  const onArchive = useCallback(async () => {
+  const onToggle = useCallback(async () => {
     try {
       await (document.isArchived ? unarchive(document.id) : archive(document.id)).unwrap();
     } catch {
@@ -144,52 +147,21 @@ const DocumentActions: React.FC<{ document: KbDocument }> = ({ document }) => {
     }
   }, [archive, document.id, document.isArchived, strings.archiveFailed, unarchive]);
 
-  const onRemove = useCallback(async () => {
-    try {
-      await remove(document.id).unwrap();
-      setConfirming(false);
-    } catch {
-      toast.error(strings.removeFailed);
-    }
-  }, [document.id, remove, strings.removeFailed]);
-
   return (
-    <>
-      <div className="flex items-center gap-3 mt-2">
-        <button
-          type="button"
-          onClick={onArchive}
-          disabled={busy}
-          data-testid="character-corpus-archive"
-          className="text-xs text-typography-600 underline disabled:opacity-50"
-        >
-          {document.isArchived ? strings.unarchive : strings.archive}
-        </button>
-        <button
-          type="button"
-          onClick={() => setConfirming(true)}
-          disabled={busy}
-          data-testid="character-corpus-delete"
-          className="text-xs text-support-error-600 underline disabled:opacity-50"
-        >
-          {strings.remove}
-        </button>
-      </div>
-
-      <ActionConfirmationPopup
-        isOpen={confirming}
-        title={strings.removeConfirmTitle}
-        description={strings.removeConfirmBody}
-        onClose={() => setConfirming(false)}
-        primaryButton={{
-          label: strings.remove,
-          onClick: onRemove,
-          variant: ButtonVariant.DESTRUCTIVE,
-          disabled: removing,
-        }}
-        secondaryButton={{ label: en.common.cancel, onClick: () => setConfirming(false) }}
-      />
-    </>
+    <div className="flex items-center gap-3 mt-2">
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={busy}
+        data-testid="character-corpus-archive"
+        className="text-xs text-typography-600 underline disabled:opacity-50"
+      >
+        {document.isArchived ? strings.unarchive : strings.archive}
+      </button>
+      {document.isArchived && (
+        <span className="text-xs text-typography-500">{strings.archived}</span>
+      )}
+    </div>
   );
 };
 
