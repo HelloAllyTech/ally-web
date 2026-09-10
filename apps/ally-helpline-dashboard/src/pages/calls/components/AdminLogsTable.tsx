@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, FC } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
 
 import { GenericTable, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -56,6 +55,7 @@ import {
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { LogsTableProps } from "./types";
+import { useLogsFetchErrorToast } from "./useLogsFetchErrorToast";
 import {
   getSourceChipConfig,
   getStatusChipConfig,
@@ -191,29 +191,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     }
   };
 
-  useEffect(() => {
-    if (callLogsError && !isCallLogsLoading) {
-      let errorMessage = "Failed to fetch call logs. Please try again.";
-      // RTK Query error types
-      if (typeof callLogsError === "object" && callLogsError !== null) {
-        // FetchBaseQueryError: { status, data }
-        if (
-          "data" in callLogsError &&
-          callLogsError.data &&
-          typeof callLogsError.data === "object" &&
-          callLogsError.data !== null &&
-          "message" in callLogsError.data &&
-          typeof (callLogsError.data as any).message === "string"
-        ) {
-          errorMessage = (callLogsError.data as any).message;
-        } else if ("error" in callLogsError && typeof callLogsError.error === "string") {
-          // SerializedError: { error: string }
-          errorMessage = callLogsError.error;
-        }
-      }
-      toast.error(`${errorMessage}. It can be issue with applied filters. Please try again.`);
-    }
-  }, [callLogsError, isCallLogsLoading]);
+  useLogsFetchErrorToast(callLogsError, isCallLogsLoading);
 
   if (isLoading && offset === 0) {
     return (

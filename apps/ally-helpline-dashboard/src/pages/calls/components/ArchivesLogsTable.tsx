@@ -26,6 +26,7 @@ import { convertSecondsToDuration, getFormattedDate } from "@utils";
 import { CALL_LOGS_PAGINATION_LIMIT, SessionUserGroup, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
 import { ArchivesLogsTableProps } from "./types";
+import { useLogsFetchErrorToast } from "./useLogsFetchErrorToast";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
 const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
@@ -61,6 +62,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
     isLoading: isCallLogsLoading,
     isFetching: isCallLogsFetching,
     isError: isCallLogsError,
+    error: callLogsError,
     refetch: refetchCallLogs,
   } = useGetCallLogsQuery(
     {
@@ -76,6 +78,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
     isLoading: isAdminCallLogsLoading,
     isFetching: isAdminCallLogsFetching,
     isError: isAdminCallLogsError,
+    error: adminCallLogsError,
     refetch: refetchAdminCallLogs,
   } = useGetAdminCallLogsQuery(
     {
@@ -91,6 +94,11 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
 
   // Use the appropriate data source based on sessionUserGroup
   const isOrgLogs = sessionUserGroup === SessionUserGroup.ORG_LOGS;
+
+  useLogsFetchErrorToast(
+    isOrgLogs ? adminCallLogsError : callLogsError,
+    isOrgLogs ? isAdminCallLogsLoading : isCallLogsLoading,
+  );
   const activeData = isOrgLogs ? adminCallLogsData : callLogsData;
   const { data: callLogs = [], count = 0 } = activeData || {};
 
@@ -159,7 +167,8 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   // Same rule as AdminLogsTable/UserLogsTable: `isLoading` covers a cache
   // entry's first load only, so a rejected background refetch would otherwise
   // replace archived rows that are on screen and correct with a full-page
-  // error the counsellor can only clear by reloading.
+  // error the counsellor can only clear by reloading. The toast above is what
+  // tells them the refresh failed.
   if (isError && !isLoading && logs.length === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-200px)]">

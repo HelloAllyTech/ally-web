@@ -44,6 +44,7 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
+import { useLogsFetchErrorToast } from "./useLogsFetchErrorToast";
 import {
   getSourceChipConfig,
   getStatusChipConfig,
@@ -97,6 +98,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     data: callLogsData,
     isLoading: isCallLogsLoading,
     isError: isCallLogsError,
+    error: callLogsError,
     refetch: refetchCallLogs,
   } = useGetCallLogsQuery(
     {
@@ -131,6 +133,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
   const isError = isCall ? isCallLogsError : isSimulationLogsError;
+
+  useLogsFetchErrorToast(callLogsError, isCallLogsLoading);
 
   const handleScroll = () => {
     if (tableRef.current) {

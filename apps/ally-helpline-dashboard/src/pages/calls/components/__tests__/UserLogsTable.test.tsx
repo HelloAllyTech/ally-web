@@ -171,6 +171,8 @@ vi.mock("@reducer", () => ({
   updateFilters: vi.fn(filters => ({ type: "UPDATE_FILTERS", payload: filters })),
 }));
 
+vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+
 vi.mock("../constants", () => ({
   CALL_LOGS_PAGINATION_LIMIT: 25,
   tagColors: { 1: "#FF0000", 2: "#FFA500", 3: "#FFFF00", 4: "#90EE90", 5: "#008000" },
@@ -923,6 +925,7 @@ describe("UserLogsTable", () => {
         data: { data: [SCRIBE_CALL_LOG] },
         isLoading: false,
         isError: true,
+        error: { data: { message: "Fetch failed" } },
         refetch: vi.fn(),
       });
 
@@ -932,6 +935,26 @@ describe("UserLogsTable", () => {
         expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
       });
       expect(screen.queryByText("Unable to load call logs")).not.toBeInTheDocument();
+    });
+
+    // Keeping the rows makes the toast the only signal that the list the
+    // counsellor is looking at may now be stale, so it has to fire.
+    it("still tells the counsellor the refresh failed", async () => {
+      const { toast } = await import("sonner");
+
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        error: { data: { message: "Fetch failed" } },
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("Fetch failed"));
+      });
     });
 
     it("shows the error fallback when the fetch fails with nothing cached", async () => {
