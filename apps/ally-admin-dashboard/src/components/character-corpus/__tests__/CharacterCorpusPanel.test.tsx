@@ -20,6 +20,8 @@ import { KbCharacterTopic, KbCorpus, KbDocumentStatus } from "@types";
 
 vi.mock("@constants", () => ({
   en: {
+    // The delete confirmation reuses the shared cancel label.
+    common: { cancel: "Cancel" },
     characterCorpus: {
       trigger: "Reference corpus",
       title: "Reference corpus",
@@ -34,7 +36,17 @@ vi.mock("@constants", () => ({
       previewPlaceholder: "e.g. how does dementia change speech?",
       previewRun: "Search",
       previewEmpty:
-        "Nothing in the corpus matched — the agent would be told so, and would not invent a source.",
+        "Nothing matched at this floor — the agent would be told so, and would not invent a source.",
+      previewEmptyTryFloor:
+        "Nothing matched at the default floor. Try a lower floor before concluding the corpus is missing this.",
+      floor: "Match floor",
+      archive: "Archive",
+      unarchive: "Restore",
+      archiveFailed: "Couldn't archive that",
+      remove: "Delete",
+      removeFailed: "Couldn't delete that",
+      removeConfirmTitle: "Delete this material?",
+      removeConfirmBody: "The document and its passages go for good.",
       previewFailed: "The search failed",
       score: "match",
       indexed: "Indexed",
@@ -66,7 +78,35 @@ const DOCUMENT = {
   chunkCount: 7,
 };
 
+// A vi.mock factory replaces the WHOLE module, so every hook the panel reaches — including
+// ones it only uses on a card action — has to be listed or the render throws. This exact
+// omission is what put ally-web master red for four hours today, in NavSideBar.
+const archiveSpy = vi.fn();
+const unarchiveSpy = vi.fn();
+const deleteSpy = vi.fn();
+
 vi.mock("@api", () => ({
+  useArchiveKbDocumentMutation: () => [
+    (id: string) => {
+      archiveSpy(id);
+      return { unwrap: () => Promise.resolve({}) };
+    },
+    { isLoading: false },
+  ],
+  useUnarchiveKbDocumentMutation: () => [
+    (id: string) => {
+      unarchiveSpy(id);
+      return { unwrap: () => Promise.resolve({}) };
+    },
+    { isLoading: false },
+  ],
+  useDeleteKbDocumentMutation: () => [
+    (id: string) => {
+      deleteSpy(id);
+      return { unwrap: () => Promise.resolve({ id }) };
+    },
+    { isLoading: false },
+  ],
   useGetKbDocumentsQuery: (params: unknown, options: unknown) => {
     documentsSpy(params, options);
     return { data: { documents: [DOCUMENT], count: 1 }, isLoading: false };
@@ -89,6 +129,9 @@ vi.mock("@api", () => ({
 }));
 
 vi.mock("@components", () => ({
+  // Rendered inline by DocumentActions' delete confirmation.
+  ActionConfirmationPopup: ({ isOpen, title }: { isOpen: boolean; title: string }) =>
+    isOpen ? <div data-testid="confirm-popup">{title}</div> : null,
   EmptyState: ({ title }: { title: string }) => <span>{title}</span>,
 }));
 
@@ -159,10 +202,57 @@ describe("CharacterCorpusPanel", () => {
     expect(searchSpy).not.toHaveBeenCalled();
   });
 
-  it("tells the curator what the AGENT does when nothing matches", () => {
+  it("points at the floor first when nothing matched at the default", () => {
+    // The empty state has to distinguish "the corpus lacks this" from "the floor was too
+    // tight", because single-shot similarity is brittle across phrasing and a curator cannot
+    // tell the two apart. Not hypothetical: a production query returned nothing against a
+    // document containing a section that answered it directly.
     searchResult = { data: { passages: [] } };
     render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.getByText(/try a lower floor/i)).toBeTruthy();
+  });
+
+  it("says what the AGENT does once the floor has been lowered", () => {
+    searchResult = { data: { passages: [] } };
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("character-corpus-floor-0.00"));
     expect(screen.getByText(/would not invent a source/i)).toBeTruthy();
+  });
+
+  it("sends the chosen floor to the search, and the corpus default until one is picked", () => {
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    fireEvent.change(screen.getByTestId("character-corpus-preview-input"), {
+      target: { value: "how specific should a character be?" },
+    });
+    fireEvent.click(screen.getByTestId("character-corpus-preview-run"));
+    // No minSimilarity — the first run must reflect what the agent itself would get.
+    expect(searchSpy).toHaveBeenCalledWith(
+      expect.not.objectContaining({ minSimilarity: expect.anything() }),
+    );
+
+    fireEvent.click(screen.getByTestId("character-corpus-floor-0.20"));
+    fireEvent.click(screen.getByTestId("character-corpus-preview-run"));
+    expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({ minSimilarity: 0.2 }));
+  });
+
+  it("offers archive and delete on every document", () => {
+    // Absent from the first version: material could be added and never removed, which left two
+    // documents orphaned by a failed ingest stuck in the production corpus.
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.getByTestId("character-corpus-archive")).toBeTruthy();
+    expect(screen.getByTestId("character-corpus-delete")).toBeTruthy();
+  });
+
+  it("confirms before deleting, and archives without confirming", () => {
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+
+    fireEvent.click(screen.getByTestId("character-corpus-archive"));
+    expect(archiveSpy).toHaveBeenCalledWith("doc-1");
+
+    fireEvent.click(screen.getByTestId("character-corpus-delete"));
+    // Nothing is deleted on the first click — the popup is.
+    expect(deleteSpy).not.toHaveBeenCalled();
+    expect(screen.getByTestId("confirm-popup")).toBeTruthy();
   });
 
   it("sends an empty topic array when the last chip is turned off", () => {

@@ -941,10 +941,10 @@ export const en = {
     trigger: "Reference corpus",
     title: "Reference corpus",
     subtitle:
-      "Clinical and lived-experience material the interview agent draws on, so its questions are specific and its drafts are real rather than plausible.",
+      "Craft guidance on building believable people, plus lived-experience and observational material. This is what the interview agent reaches for so its questions are specific and its drafts are real rather than plausible \u2014 clinical guidelines and protocols belong in the WhatsApp bot's corpus, not here.",
     empty: "Nothing here yet",
     emptyBody:
-      "Add a handbook, a case account, a first-person piece — anything the agent should know that an admin shouldn't have to type.",
+      "Add a case account, a first-person piece, notes on how people in a particular situation actually talk, or distilled craft principles for writing characters — anything the agent should know that an admin shouldn't have to type.",
     add: "Add material",
     topics: "Grounds",
     topicsHelp:
@@ -959,7 +959,19 @@ export const en = {
     previewPlaceholder: "e.g. how does early-stage dementia change how someone speaks?",
     previewRun: "Search",
     previewEmpty:
-      "Nothing in the corpus matched — the agent would be told so, and would not invent a source.",
+      "Nothing matched at this floor — the agent would be told so, and would not invent a source.",
+    previewEmptyTryFloor:
+      "Nothing matched at the default floor. Similarity search is brittle across phrasing, so try a lower floor before concluding the corpus is missing this — the agent also retries at a different angle.",
+    floor: "Match floor",
+    archive: "Archive",
+    unarchive: "Restore",
+    archived: "Archived",
+    archiveFailed: "Couldn't archive that",
+    remove: "Delete",
+    removeFailed: "Couldn't delete that",
+    removeConfirmTitle: "Delete this material?",
+    removeConfirmBody:
+      "The document and its passages go for good. Archive instead if you only want the agent to stop using it — that keeps it here and keeps any citation resolvable.",
     previewFailed: "The search failed",
     score: "match",
     indexed: "Indexed",

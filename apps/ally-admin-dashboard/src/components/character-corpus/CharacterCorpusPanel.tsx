@@ -4,13 +4,17 @@ import { toast } from "sonner";
 
 import { InlineNotification, SkeletonText } from "@ally-ui-mono/ui-shared";
 import {
+  useArchiveKbDocumentMutation,
+  useDeleteKbDocumentMutation,
   useGetKbDocumentsQuery,
   useGetKbStatsQuery,
   useSearchKbCorpusMutation,
+  useUnarchiveKbDocumentMutation,
   useUpdateKbDocumentMutation,
 } from "@api";
-import { EmptyState } from "@components";
+import { ActionConfirmationPopup, EmptyState } from "@components";
 import { CorpusDocumentPanel, DocumentStatusBadge } from "@components/knowledge-corpus";
+import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbCharacterTopic, KbCorpus, KbDocument } from "@types";
 
@@ -111,20 +115,122 @@ const TopicChips: React.FC<{
   );
 };
 
+/**
+ * Archive and delete, on every document.
+ *
+ * Absent from the first version of this panel, which meant material could be added and never
+ * removed — and that is not a cosmetic gap. Two documents orphaned by a failed ingest sat in
+ * the production corpus with no way to clear them from the UI at all.
+ *
+ * Archive is the normal action and is offered first: it deletes the vectors so the agent stops
+ * retrieving the material, while keeping the row and its chunks so any citation already
+ * recorded still resolves to the passage that was actually quoted. Delete is for material that
+ * should never have been here — a mistake, a test, an orphan — and is confirmed, because
+ * nothing brings it back.
+ */
+const DocumentActions: React.FC<{ document: KbDocument }> = ({ document }) => {
+  const strings = en.characterCorpus;
+  const [confirming, setConfirming] = useState(false);
+  const [archive, { isLoading: archiving }] = useArchiveKbDocumentMutation();
+  const [unarchive, { isLoading: unarchiving }] = useUnarchiveKbDocumentMutation();
+  const [remove, { isLoading: removing }] = useDeleteKbDocumentMutation();
+  const busy = archiving || unarchiving || removing;
+
+  const onArchive = useCallback(async () => {
+    try {
+      await (document.isArchived ? unarchive(document.id) : archive(document.id)).unwrap();
+    } catch {
+      toast.error(strings.archiveFailed);
+    }
+  }, [archive, document.id, document.isArchived, strings.archiveFailed, unarchive]);
+
+  const onRemove = useCallback(async () => {
+    try {
+      await remove(document.id).unwrap();
+      setConfirming(false);
+    } catch {
+      toast.error(strings.removeFailed);
+    }
+  }, [document.id, remove, strings.removeFailed]);
+
+  return (
+    <>
+      <div className="flex items-center gap-3 mt-2">
+        <button
+          type="button"
+          onClick={onArchive}
+          disabled={busy}
+          data-testid="character-corpus-archive"
+          className="text-xs text-typography-600 underline disabled:opacity-50"
+        >
+          {document.isArchived ? strings.unarchive : strings.archive}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          disabled={busy}
+          data-testid="character-corpus-delete"
+          className="text-xs text-support-error-600 underline disabled:opacity-50"
+        >
+          {strings.remove}
+        </button>
+      </div>
+
+      <ActionConfirmationPopup
+        isOpen={confirming}
+        title={strings.removeConfirmTitle}
+        description={strings.removeConfirmBody}
+        onClose={() => setConfirming(false)}
+        primaryButton={{
+          label: strings.remove,
+          onClick: onRemove,
+          variant: ButtonVariant.DESTRUCTIVE,
+          disabled: removing,
+        }}
+        secondaryButton={{ label: en.common.cancel, onClick: () => setConfirming(false) }}
+      />
+    </>
+  );
+};
+
+/**
+ * The floor the preview searches at.
+ *
+ * Exposed because without it "nothing matched" is undiagnosable, and that is the one question
+ * this tool exists to answer. A curator (or an engineer) seeing an empty result cannot tell
+ * whether the corpus lacks the material or the threshold is simply too tight — and single-shot
+ * cosine similarity is brittle enough across phrasing that both happen. Dropping the floor and
+ * re-running answers it in one click.
+ *
+ * `undefined` means "use the corpus default", which is what the agent itself will use, so the
+ * first run always reflects real behaviour rather than a tuned setting.
+ */
+const FLOOR_CHOICES: { label: string; value: number | undefined }[] = [
+  { label: "Default", value: undefined },
+  { label: "0.30", value: 0.3 },
+  { label: "0.20", value: 0.2 },
+  { label: "0.00", value: 0 },
+];
+
 const RetrievalPreview: React.FC = () => {
   const strings = en.characterCorpus;
   const [query, setQuery] = useState("");
+  const [floor, setFloor] = useState<number | undefined>(undefined);
   const [runSearch, { data, isLoading, isError, reset }] = useSearchKbCorpusMutation();
 
   const submit = useCallback(async () => {
     const trimmed = query.trim();
     if (!trimmed) return;
     try {
-      await runSearch({ corpus: KbCorpus.CHARACTER_LIBRARY, query: trimmed }).unwrap();
+      await runSearch({
+        corpus: KbCorpus.CHARACTER_LIBRARY,
+        query: trimmed,
+        ...(floor === undefined ? {} : { minSimilarity: floor }),
+      }).unwrap();
     } catch {
       toast.error(strings.previewFailed);
     }
-  }, [query, runSearch, strings.previewFailed]);
+  }, [query, floor, runSearch, strings.previewFailed]);
 
   const passages = data?.passages ?? [];
   const hasRun = Boolean(data) || isError;
@@ -160,12 +266,38 @@ const RetrievalPreview: React.FC = () => {
         </button>
       </div>
 
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-xs text-typography-500">{strings.floor}</span>
+        {FLOOR_CHOICES.map(choice => (
+          <button
+            key={choice.label}
+            type="button"
+            data-testid={`character-corpus-floor-${choice.label}`}
+            onClick={() => {
+              setFloor(choice.value);
+              if (hasRun) reset();
+            }}
+            className={`rounded-full border px-2 py-0.5 text-xs ${
+              floor === choice.value
+                ? "border-primary-500 text-primary-600 bg-primary-50"
+                : "border-border-200 text-typography-600"
+            }`}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+
       {isLoading && <SkeletonText className="mt-3" />}
 
       {hasRun && !isLoading && !passages.length && (
         // Says what the AGENT would do, not just that the search was empty — the whole
         // question a curator has here is whether a gap makes the agent invent.
-        <InlineNotification kind="info" title={strings.previewEmpty} className="mt-3" />
+        <InlineNotification
+          kind="info"
+          title={floor === undefined ? strings.previewEmptyTryFloor : strings.previewEmpty}
+          className="mt-3"
+        />
       )}
 
       {!isLoading &&
@@ -304,6 +436,7 @@ export const CharacterCorpusPanel: React.FC<CharacterCorpusPanelProps> = ({ isOp
                     <div className="mt-1.5">
                       <TopicChips document={doc} />
                     </div>
+                    <DocumentActions document={doc} />
                   </li>
                 ))}
               </ul>

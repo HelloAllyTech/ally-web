@@ -250,6 +250,21 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS, TAG_TYPES.WHATSAPP_BOT_STATS],
     }),
 
+    /**
+     * Hard delete. Distinct from archive, and the distinction matters: archiving keeps the row
+     * and its chunks so a citation already recorded in a conversation log still resolves to the
+     * passage that was actually quoted, and only removes the vectors. Deleting is for material
+     * that should never have been in the corpus at all — a mistaken upload, a test document, or
+     * a row orphaned by a failed ingest — where there is no citation history worth preserving.
+     */
+    deleteKbDocument: builder.mutation<{ id: string }, string>({
+      query: id => ({
+        url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
+    }),
+
     unarchiveKbDocument: builder.mutation<KbDocument, string>({
       query: id => ({
         url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_UNARCHIVE(id),
@@ -629,6 +644,7 @@ export const {
   useReplaceKbDocumentContentMutation,
   useReindexKbDocumentMutation,
   useArchiveKbDocumentMutation,
+  useDeleteKbDocumentMutation,
   useUnarchiveKbDocumentMutation,
   useGetKbDocumentChunksQuery,
   useSearchKbCorpusMutation,
