@@ -117,6 +117,12 @@ vi.mock("@components", () => ({
   TextField: (props: any) => <input {...props} />,
   Accordion: ({ children }: any) => <div>{children}</div>,
   InfoBanner: ({ message }: any) => <div>{message}</div>,
+  FallbackUI: ({ mainMessage, description }: any) => (
+    <div data-testid="fallback-ui">
+      <div>{mainMessage}</div>
+      <div>{description}</div>
+    </div>
+  ),
   ButtonVariant: {
     PRIMARY: "primary",
     SECONDARY: "secondary",
@@ -125,6 +131,7 @@ vi.mock("@components", () => ({
 }));
 vi.mock("@assets", () => ({
   ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
+  PageNotFoundIllustration: () => <svg data-testid="page-not-found-illustration" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Warning: () => <div>Warning</div>,
@@ -320,6 +327,46 @@ describe("CallSummary Component", () => {
     expect(screen.queryByText("You can review the session now.")).not.toBeInTheDocument();
     // ...the editable form renders instead (AI disclaimer banner + notes value).
     expect(screen.getByText("Initial notes")).toBeInTheDocument();
+  });
+
+  // Every autosave invalidates the CallSummary tag, so an open summary
+  // refetches constantly. RTK Query keeps the last good `data` when one of
+  // those refetches is rejected — replacing a summary the counsellor is
+  // actively editing with "Summary Not Found" loses their place for a blip
+  // they never caused.
+  it("keeps the loaded summary when a background refetch fails", () => {
+    const loadedSummary = {
+      summaryStatus: ChatSummaryStatus.SUCCESS,
+      details: {
+        chatId: 1,
+        callDuration: 120,
+        callInfo: { notes: "Initial notes" },
+      },
+    };
+    render(
+      <CallSummary
+        chatId={1}
+        callSummary={loadedSummary}
+        isSummaryLoading={false}
+        summaryLoadingError={{ status: 401 }}
+      />,
+    );
+
+    expect(screen.queryByText("Summary Not Found")).not.toBeInTheDocument();
+    expect(screen.getByText("Initial notes")).toBeInTheDocument();
+  });
+
+  it("shows Summary Not Found when the fetch fails with nothing cached", () => {
+    render(
+      <CallSummary
+        chatId={1}
+        callSummary={undefined}
+        isSummaryLoading={false}
+        summaryLoadingError={{ status: 404 }}
+      />,
+    );
+
+    expect(screen.getByText("Summary Not Found")).toBeInTheDocument();
   });
 
   it("shows a Retry summary action on a failed summary and triggers retry", async () => {

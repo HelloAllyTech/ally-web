@@ -229,7 +229,17 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   // A fetch failure must not be indistinguishable from "no calls yet" — the
   // counsellor needs to know the difference and get a way back in, not a
   // table that silently looks empty.
-  if (isError && !isLoading) {
+  //
+  // Only when there is nothing left to show, though. `isLoading` is true for a
+  // cache entry's FIRST load only, so a failed *background* refetch — the
+  // refetchOnFocus that fires every time the counsellor tabs back in, or the
+  // invalidation after a custom-field save — leaves isLoading false with
+  // isError true while RTK Query still holds the last good page. Rendering the
+  // fallback there throws away rows that are on screen and correct, and turns
+  // one transient blip (an expired access token at the 15-minute boundary, a
+  // dropped connection) into a wall the counsellor can only clear by
+  // reloading. The toast above already tells them the refresh failed.
+  if (isError && !isLoading && logs.length === 0) {
     const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-80px)]">

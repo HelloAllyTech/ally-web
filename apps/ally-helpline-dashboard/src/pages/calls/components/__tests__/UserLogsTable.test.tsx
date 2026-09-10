@@ -915,6 +915,40 @@ describe("UserLogsTable", () => {
 
   // -------------------------------------------------------------------------
   describe("Error handling", () => {
+    // See AdminLogsTable: a rejected background refetch leaves isError true,
+    // isLoading false and the last good page still cached. The counsellor must
+    // keep the rows they can already see.
+    it("keeps already-loaded rows when a background refetch fails", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+      });
+      expect(screen.queryByText("Unable to load call logs")).not.toBeInTheDocument();
+    });
+
+    it("shows the error fallback when the fetch fails with nothing cached", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByText("Unable to load call logs")).toBeInTheDocument();
+      });
+    });
+
     it("handles call log without details gracefully (empty display row)", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [{ ...SCRIBE_CALL_LOG, id: 3, details: null }] },

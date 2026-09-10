@@ -469,7 +469,13 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   }
 
-  if (summaryLoadingError) {
+  // Only when the fetch left us with nothing to render. RTK Query keeps the
+  // last good `data` on a rejected refetch, so a summary already open on
+  // screen would otherwise be replaced by "Summary Not Found" the moment a
+  // background refetch blips — and every autosave triggers one, because
+  // updateCallSummary invalidates the CallSummary tag. The error is only
+  // genuinely "not found" when there is no summary to fall back on.
+  if (summaryLoadingError && !callSummary) {
     return (
       <div className="flex h-[90vh] items-center justify-center">
         <FallbackUI

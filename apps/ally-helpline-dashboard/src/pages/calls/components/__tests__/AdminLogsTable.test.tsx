@@ -1077,6 +1077,44 @@ describe("AdminLogsTable", () => {
       });
     });
 
+    // A background refetch (refetchOnFocus when the counsellor tabs back in, or
+    // the invalidation after a custom-field save) can be rejected while RTK
+    // Query still holds the last good page: isError true, isLoading false,
+    // data intact. Blanking the table there loses rows that are on screen and
+    // correct, and only a full reload brings them back.
+    it("keeps already-loaded rows when a background refetch fails", async () => {
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+        error: { status: 401 },
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+      });
+      expect(screen.queryByText("Unable to load call logs")).not.toBeInTheDocument();
+    });
+
+    it("shows the error fallback when the fetch fails with nothing cached", async () => {
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+        error: { status: 500 },
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByText("Unable to load call logs")).toBeInTheDocument();
+      });
+    });
+
     it("does not show toast error when there is no error", async () => {
       const { toast } = await import("sonner");
 
