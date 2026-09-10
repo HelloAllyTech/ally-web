@@ -10,6 +10,7 @@ import {
   CaseTrackDetails,
   TrackOverview,
   TrackPlayer,
+  TrackProgress,
   SuspendedUser,
   ImpersonateHandler,
   Terms,
@@ -60,6 +61,7 @@ const RouteLayout = () => {
           {/* Track 2.0 (multi-component learning tracks) */}
           <Route path={ROUTES.TRACK} element={<TrackOverview />} />
           <Route path={ROUTES.TRACK_ITEM} element={<TrackPlayer />} />
+          <Route path={ROUTES.TRACK_PROGRESS} element={<TrackProgress />} />
         </Route>
 
         {/* Private Routes */}

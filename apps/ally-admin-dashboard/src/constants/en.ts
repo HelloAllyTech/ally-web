@@ -820,6 +820,9 @@ export const en = {
     progressDashboardEnabled: "Enable Learner Progress",
     progressDashboardEnabledHint:
       "Shows learners in this organisation their XP, level, and badges on a personal Progress screen, plus a level widget elsewhere in the app. Off by default for every new organisation.",
+    engagementReminderEnabled: "Enable engagement reminders",
+    engagementReminderEnabledHint:
+      "Sends an automated in-app + push nudge to learners in this organisation who've been inactive for a threshold number of days, on a cooldown so the same learner isn't reminded repeatedly. Off by default for every new organisation.",
     scribeNoteCreationEnabled: "Enable manual note creation",
     voiceNoteEnabled: "Enable voice note (mic dictation)",
     customFieldTypes: "Custom field types",
@@ -934,6 +937,37 @@ export const en = {
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
   },
+  characterCorpus: {
+    trigger: "Reference corpus",
+    title: "Reference corpus",
+    subtitle:
+      "Clinical and lived-experience material the interview agent draws on, so its questions are specific and its drafts are real rather than plausible.",
+    empty: "Nothing here yet",
+    emptyBody:
+      "Add a handbook, a case account, a first-person piece — anything the agent should know that an admin shouldn't have to type.",
+    add: "Add material",
+    topics: "Grounds",
+    topicsHelp:
+      "Which parts of a character this helps with. A hint that ranks it higher for those, never a restriction — leave it blank if you're not sure.",
+    topicsNone: "No hint",
+    saveTopics: "Save",
+    topicsSaved: "Saved",
+    topicsFailed: "Couldn't save that",
+    preview: "Try a search",
+    previewHelp:
+      "Ask what the agent would ask, and see what comes back with its match score. Scores below the floor are never returned.",
+    previewPlaceholder: "e.g. how does early-stage dementia change how someone speaks?",
+    previewRun: "Search",
+    previewEmpty:
+      "Nothing in the corpus matched — the agent would be told so, and would not invent a source.",
+    previewFailed: "The search failed",
+    score: "match",
+    indexed: "Indexed",
+    inProgress: "In progress",
+    failed: "Failed",
+    passages: "Passages",
+  },
+
   characterInterview: {
     title: "Character interview",
     subtitle: "Answer a few questions and the agent will draft a rich, consistent character.",

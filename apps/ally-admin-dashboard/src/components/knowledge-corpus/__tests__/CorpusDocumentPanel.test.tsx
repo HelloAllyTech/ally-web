@@ -138,7 +138,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
 }));
 
-vi.mock("./../DocumentUploadField", () => ({
+vi.mock("../DocumentUploadField", () => ({
   DocumentUploadField: () => null,
 }));
 

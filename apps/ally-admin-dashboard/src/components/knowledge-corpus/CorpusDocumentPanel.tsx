@@ -17,7 +17,7 @@ import {
 } from "@api";
 import { EntityField, EntitySidePanel } from "@components";
 import { DOCUMENT_MAX_PASTE_CHARS, en } from "@constants";
-import { KbDocument, KbDocumentSourceType } from "@types";
+import { KbCharacterTopic, KbCorpus, KbDocument, KbDocumentSourceType } from "@types";
 
 import { CorpusAudienceField } from "./CorpusAudienceField";
 import { DocumentUploadField } from "./DocumentUploadField";
@@ -35,6 +35,14 @@ interface CorpusDocumentPanelProps {
   isOpen: boolean;
   /** Null = create. */
   document: KbDocument | null;
+  /**
+   * Which corpus a NEW document is filed under. Defaults to the WhatsApp corpus so the tab
+   * that has always used this panel keeps behaving identically. Ignored when editing — corpus
+   * is immutable, because moving a document would change what every citation over it meant.
+   */
+  corpus?: KbCorpus;
+  /** Character topics to file a new document under. Character library only. */
+  characterTopics?: KbCharacterTopic[];
   onClose: () => void;
 }
 
@@ -73,6 +81,8 @@ const isUploadSource = (source: KbDocumentSourceType) =>
 export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
   isOpen,
   document,
+  corpus = KbCorpus.WHATSAPP_QA,
+  characterTopics = [],
   onClose,
 }) => {
   const isEdit = Boolean(document);
@@ -212,6 +222,8 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
         }
       } else {
         await createDocument({
+          corpus,
+          ...(characterTopics.length ? { characterTopics } : {}),
           title: title.trim(),
           sourceType,
           ...(sourceType === KbDocumentSourceType.PASTE ? { text: text.trim() } : {}),
@@ -321,16 +333,22 @@ export const CorpusDocumentPanel: React.FC<CorpusDocumentPanelProps> = ({
         <p className="text-xs text-typography-500">{en.whatsappBot.corpus.sourceTypeLocked}</p>
       )}
 
-      <CorpusAudienceField
-        isGlobal={isGlobal}
-        tenantIds={tenantIds}
-        tenants={tenants}
-        disabled={isSaving}
-        onChange={next => {
-          setIsGlobal(next.isGlobal);
-          setTenantIds(next.tenantIds);
-        }}
-      />
+      {/* WhatsApp corpus only. Every corpus carries `isGlobal`/`tenantIds`, but only this
+          one's retrieval filters on them — the character library is Ally-global and its
+          retrieval names `unrestricted()`. An organisation picker on that corpus would
+          promise a targeting nothing enforces. */}
+      {(document?.corpus ?? corpus) === KbCorpus.WHATSAPP_QA && (
+        <CorpusAudienceField
+          isGlobal={isGlobal}
+          tenantIds={tenantIds}
+          tenants={tenants}
+          disabled={isSaving}
+          onChange={next => {
+            setIsGlobal(next.isGlobal);
+            setTenantIds(next.tenantIds);
+          }}
+        />
+      )}
 
       <EntityField
         label={en.whatsappBot.corpus.languageLabel}

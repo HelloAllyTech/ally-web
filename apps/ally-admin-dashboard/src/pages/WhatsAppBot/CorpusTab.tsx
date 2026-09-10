@@ -24,13 +24,14 @@ import {
 } from "@components";
 import { FilterChipProps } from "@components/types";
 import { TooltipHint } from "@components/app-tooltip";
+import {
+  CorpusDocumentPanel,
+  DocumentStatusBadge,
+  audienceSummary,
+} from "@components/knowledge-corpus";
 import { en, TooltipLocation } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbDocument, KbDocumentStatus } from "@types";
 import { formatDate, formatRelativeTime } from "@utils";
-
-import { audienceSummary } from "./CorpusAudienceField";
-import { CorpusDocumentPanel } from "./CorpusDocumentPanel";
-import { DocumentStatusBadge } from "./DocumentStatusBadge";
 
 const PAGE_SIZE = 25;
 

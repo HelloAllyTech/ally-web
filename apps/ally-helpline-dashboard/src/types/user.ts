@@ -24,6 +24,16 @@ export enum UserRole {
   LEARNER = "LEARNER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
+  /**
+   * Additive role marking the account as an evaluator — it is shown the extra
+   * evaluation questions attached to particular screens and events, on top of
+   * whatever its real app role (LEARNER, COUNSELLOR, ...) already shows it.
+   *
+   * It therefore almost never arrives alone, and it never arrives as the
+   * collapsed `role` for an account that holds anything else. Test for it on
+   * `roles`, or better, gate the surface on the `evaluator:access` permission.
+   */
+  EVALUATOR = "EVALUATOR",
   // Platform/admin-console roles. A consumer account can hold one of these
   // alongside its consumer role (roles are additive on a single user record),
   // so they arrive on `roles` here even though none of them can log *into*

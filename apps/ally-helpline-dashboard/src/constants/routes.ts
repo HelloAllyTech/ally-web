@@ -58,6 +58,7 @@ export const ROUTES = {
   // Track 2.0 (multi-component learning tracks)
   TRACK: "/track/:trackId",
   TRACK_ITEM: "/track/:trackId/item/:itemId",
+  TRACK_PROGRESS: "/track/:trackId/progress",
   SIMULATION: "/simulation/:id/:scenarioTitle",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
@@ -75,6 +76,7 @@ export const ROUTES = {
 export const buildTrackRoute = (trackId: string) => `/track/${trackId}`;
 export const buildTrackItemRoute = (trackId: string, itemId: string) =>
   `/track/${trackId}/item/${itemId}`;
+export const buildTrackProgressRoute = (trackId: string) => `/track/${trackId}/progress`;
 
 export const excludeNavBar = [
   ROUTES.AUDIO_CALL,
@@ -93,7 +95,14 @@ export const navBarOptions = [
     key: "nav.tabs.learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE, ROUTES.TRACK, ROUTES.TRACK_ITEM],
+    activePages: [
+      ROUTES.SCENARIO,
+      ROUTES.PATHWAY,
+      ROUTES.CASE,
+      ROUTES.TRACK,
+      ROUTES.TRACK_ITEM,
+      ROUTES.TRACK_PROGRESS,
+    ],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {

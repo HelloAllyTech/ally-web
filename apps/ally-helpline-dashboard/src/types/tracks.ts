@@ -141,6 +141,57 @@ export interface GetNextTrackItemResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Progress + consolidated feedback dashboard
+// ---------------------------------------------------------------------------
+
+export type SkillFeedbackClassification = "demonstrated" | "needs_practice" | "insufficient_data";
+
+export interface TrackProgressSectionSummary {
+  id: string;
+  title: string;
+  order: number;
+  completedItems: number;
+  totalItems: number;
+}
+
+/**
+ * One skillCoverage category, averaged across every evaluated roleplay
+ * session in this course. `category` is a raw pass-through string — both
+ * label generations seen across the platform's history can appear.
+ */
+export interface TrackSkillCategoryFeedback {
+  category: string;
+  averagePercentage: number | null;
+  sampleSize: number;
+  classification: SkillFeedbackClassification;
+}
+
+export interface TrackRoleplaySessionFeedback {
+  trackItemId: string;
+  trackItemTitle: string | null;
+  scenarioSessionId: string;
+  compositeScore: number | null;
+  occurredAt: string | null;
+}
+
+export interface TrackProgressDashboard {
+  trackId: string;
+  title: string;
+  trackEnrollmentId: string;
+  totalItems: number;
+  completedItems: number;
+  completionPct: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastActivityAt: string | null;
+  sections: TrackProgressSectionSummary[];
+  evaluatedRoleplaySessionCount: number;
+  averageCompositeScore: number | null;
+  skillCategories: TrackSkillCategoryFeedback[];
+  roleplaySessions: TrackRoleplaySessionFeedback[];
+}
+
+// ---------------------------------------------------------------------------
 // Quiz (sanitized — answer keys stripped server-side)
 // ---------------------------------------------------------------------------
 

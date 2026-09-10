@@ -39,6 +39,7 @@ export interface Tenant {
   enableDictationMode: boolean;
   enableAudioUpload: boolean;
   hideRankInCommunity: boolean;
+  engagementReminderEnabled: boolean;
   isTestOrganization: boolean;
 }
 
@@ -139,6 +140,7 @@ export interface CreateTenantBody {
   enableDictationMode?: boolean;
   enableAudioUpload?: boolean;
   hideRankInCommunity?: boolean;
+  engagementReminderEnabled?: boolean;
   isTestOrganization?: boolean;
 }
 

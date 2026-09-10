@@ -4,6 +4,7 @@ import {
   CreateKbUploadUrlRequest,
   CreateKbUploadUrlResponse,
   GetKbChunksResponse,
+  KbCorpus,
   KbChunk,
   GetKbDocumentsParams,
   GetKbDocumentsResponse,
@@ -48,11 +49,21 @@ import {
 import { baseAPI } from "./baseApi";
 
 /**
- * WhatsApp Q&A bot admin endpoints.
+ * WhatsApp Q&A bot admin endpoints, plus the shared knowledge-corpus ones.
+ *
+ * The corpus endpoints are NOT WhatsApp-specific — they take a `corpus` and serve the character
+ * library too. They live here because the WhatsApp bot was their first consumer and moving them
+ * would churn every import for no behavioural gain. The DATA layer is shared deliberately; the
+ * SCREENS are not, and should not be: one is a bot's reference library and the other is
+ * character-grounding material, and a single UI trying to be both would serve neither.
  *
  * Injected onto `baseAPI` rather than creating a new api, so no store change is needed. Every tag
  * used here is also registered in baseApi.ts's `tagTypes` — an unregistered tag is silently ignored
  * by RTK Query and the invalidation never fires, which is the documented scar in that file.
+ *
+ * The document tag is shared across corpora, so a character-library write also refetches the
+ * WhatsApp list. Deliberate: one wasted request beats registering a second tag and discovering
+ * months later that a typo made its invalidation a no-op.
  */
 const whatsappBotAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -63,6 +74,7 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.WHATSAPP_BOT.DOCUMENTS,
         method: HttpMethod.GET,
         params: {
+          corpus: params?.corpus ?? KbCorpus.WHATSAPP_QA,
           limit: params?.limit ?? 25,
           offset: params?.offset ?? 0,
           ...(params?.search ? { search: params.search } : {}),
@@ -84,10 +96,11 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
     }),
 
-    getKbStats: builder.query<KbStats, void>({
-      query: () => ({
+    getKbStats: builder.query<KbStats, KbCorpus | void>({
+      query: (corpus?: KbCorpus) => ({
         url: ApiEndpoints.WHATSAPP_BOT.STATS,
         method: HttpMethod.GET,
+        params: { corpus: corpus ?? KbCorpus.WHATSAPP_QA },
       }),
       providesTags: [TAG_TYPES.WHATSAPP_BOT_STATS],
     }),
