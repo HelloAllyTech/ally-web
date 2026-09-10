@@ -1,6 +1,7 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useBuilderSocket } from "./useBuilderSocket";
 import { useBuilderStream } from "./useBuilderStream";
+import { useCanCurateCharacterCorpus } from "./useCanCurateCharacterCorpus";
 import { useCanViewComponentLibrary } from "./useCanViewComponentLibrary";
 import { useClickOutside } from "./useClickOutside";
 import { useCreatePortal } from "./useCreatePortal";
@@ -40,5 +41,6 @@ export {
   useTranscriptDisclaimer,
   useTracks,
   useTrackTranslationsSocket,
+  useCanCurateCharacterCorpus,
   useCanViewComponentLibrary,
 };

@@ -21,12 +21,10 @@ import {
   ListToolbar,
 } from "@components";
 import { TooltipHint } from "@components/app-tooltip";
+import { CorpusDocumentPanel, DocumentStatusBadge } from "@components/knowledge-corpus";
 import { en, TooltipLocation } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbDocument, KbDocumentStatus } from "@types";
 import { formatDate, formatRelativeTime } from "@utils";
-
-import { CorpusDocumentPanel } from "./CorpusDocumentPanel";
-import { DocumentStatusBadge } from "./DocumentStatusBadge";
 
 const PAGE_SIZE = 25;
 

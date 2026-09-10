@@ -9,7 +9,7 @@ import {
   useGetLearnTrackDetailQuery,
   useLazyGetNextTrackItemQuery,
 } from "@api";
-import { ROUTES, buildTrackItemRoute } from "@constants";
+import { ROUTES, buildTrackItemRoute, buildTrackProgressRoute } from "@constants";
 import { TrackDetailItem, TrackItemStatus } from "@types";
 
 import { SectionMilestone } from "./components/SectionMilestone";
@@ -109,6 +109,15 @@ export const TrackOverview: FC = () => {
         isStarting={isStarting}
         onStartOrContinue={handleStartOrContinue}
       />
+
+      {track.enrolled && (
+        <button
+          onClick={() => navigate(buildTrackProgressRoute(trackId))}
+          className="mb-2 text-sm font-medium text-primary-500 hover:text-primary-600"
+        >
+          {t("tracks2.viewProgress")}
+        </button>
+      )}
 
       <div className="pt-4">
         {sortedSections.map((section, sectionIndex) => (

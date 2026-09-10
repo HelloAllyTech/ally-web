@@ -86,6 +86,32 @@ const SimulationsSettings = ({
     }
   };
 
+  // Engagement-reminder nudges. Stored on the tenant itself (settings.engagementReminder.remindersEnabled),
+  // same as hideRankInCommunity above, so it rides the existing updateTenant mutation rather than a
+  // dedicated query/mutation pair like Character Library/Progress Dashboard above.
+  const [localEngagementReminderEnabled, setLocalEngagementReminderEnabled] = useState(false);
+
+  useEffect(() => {
+    if (tenant) {
+      setLocalEngagementReminderEnabled(Boolean(tenant.engagementReminderEnabled));
+    }
+  }, [tenant]);
+
+  const handleEngagementReminderToggle = async () => {
+    const next = !localEngagementReminderEnabled;
+    setLocalEngagementReminderEnabled(next);
+    try {
+      await updateTenant({
+        id: organizationId,
+        data: { engagementReminderEnabled: next },
+      }).unwrap();
+      onUpdateTenant?.();
+    } catch (error: any) {
+      setLocalEngagementReminderEnabled(!next);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
   useEffect(() => {
     if (tenant && dashboardSettingsAll) {
       setEnabledDashboardIds(tenant.enabledDashboardIds ?? []);
@@ -198,6 +224,27 @@ const SimulationsSettings = ({
           />
           <span className="text-sm text-typography-900 font-normal">
             {localProgressDashboardEnabled ? en.common.enabled : en.common.disabled}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex h-9 flex-row justify-between items-center font-primary">
+        <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
+          {en.userManagement.engagementReminderEnabled}
+          <Tooltip label={en.userManagement.engagementReminderEnabledHint} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={localEngagementReminderEnabled}
+            onChange={handleEngagementReminderToggle}
+            label={en.userManagement.engagementReminderEnabled}
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {localEngagementReminderEnabled ? en.common.enabled : en.common.disabled}
           </span>
         </div>
       </div>

@@ -111,6 +111,7 @@ export const ApiEndpoints = {
   TRACKS: {
     GET_TRACKS: "/v1/learn/tracks",
     GET_TRACK_DETAIL: (trackId: string) => `/v1/learn/tracks/${trackId}`,
+    GET_PROGRESS: (trackId: string) => `/v1/learn/tracks/${trackId}/progress`,
     ENROLL: (trackId: string) => `/v1/learn/tracks/${trackId}/enroll`,
     GET_NEXT_ITEM: (trackId: string) => `/v1/learn/tracks/${trackId}/next-item`,
     START_ITEM: (itemId: string) => `/v1/learn/tracks/items/${itemId}/start`,
