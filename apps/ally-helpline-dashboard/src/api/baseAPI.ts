@@ -117,6 +117,80 @@ const refreshTokens = async (
 };
 
 /**
+ * How long before an access token actually expires we go and renew it.
+ *
+ * The window has to comfortably exceed a slow request's round trip, or a
+ * token that passed the check on the way out has still expired by the time
+ * the server reads it.
+ */
+const REFRESH_SKEW_MS = 60_000;
+
+/**
+ * `exp` out of a JWT, in ms. Returns null for anything we cannot read — an
+ * opaque or malformed token then simply falls through to the reactive 401
+ * path below, which is exactly the behaviour that was there before.
+ */
+export const getTokenExpiryMs = (token: string): number | null => {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    // Decode as UTF-8 rather than trusting atob's latin1 output: a payload
+    // carrying a non-ASCII name would otherwise fail to parse and cost us
+    // the proactive refresh on exactly the accounts most likely to have one.
+    const bytes = Uint8Array.from(atob(padded), char => char.charCodeAt(0));
+    const claims = JSON.parse(new TextDecoder().decode(bytes));
+    return typeof claims?.exp === "number" ? claims.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Renew the access token *before* it expires instead of waiting for whichever
+ * request happens to trip over it.
+ *
+ * Access tokens live 15 minutes, so every open surface eats a 401 on that
+ * cadence and depends on the reauth path below to put it right. It usually
+ * does — but "usually" is doing a lot of work when the counsellor is midway
+ * through a call summary: the 401 has to arrive, a refresh has to succeed,
+ * and the retry has to succeed, and any one of those failing surfaces as a
+ * failed request to a component that was rendering fine a second earlier.
+ * Renewing on a timer instead of on a failure removes the cliff rather than
+ * making the recovery from it more careful.
+ *
+ * Shares `refreshPromise` with the reactive path, so a burst of requests
+ * crossing the boundary together still produces one refresh.
+ */
+const ensureFreshAccessToken = async (
+  store: Parameters<BaseQueryFn>[1],
+  extraOptions: Parameters<BaseQueryFn>[2],
+): Promise<void> => {
+  const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+  const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+  if (!accessToken || !refreshToken) return;
+
+  const expiresAt = getTokenExpiryMs(accessToken);
+  if (expiresAt === null || Date.now() < expiresAt - REFRESH_SKEW_MS) return;
+
+  try {
+    if (!refreshPromise) {
+      refreshPromise = refreshTokens(store, extraOptions).finally(() => {
+        refreshPromise = null;
+      });
+    }
+    await refreshPromise;
+  } catch (error) {
+    logger.info(`Proactive token refresh failed:, ${error}`);
+  }
+  // Deliberately no handleLogout() on failure. A renewal we chose to attempt
+  // early is not evidence the session is dead — the refresh call can just as
+  // easily have hit a blip — so the request goes out on the token we have and
+  // the 401 path below stays the only thing that ends a session.
+};
+
+/**
  * This function wraps the base query to handle authentication token refresh.
  * When a 401 error is received, it attempts to refresh the access token using
  * the refresh token. If successful, it retries the original request.
@@ -133,6 +207,10 @@ export const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, store, extraOptions) => {
   try {
+    // Renew first if the token is about to lapse, so the request below goes
+    // out with a token that will still be valid when the server reads it.
+    await ensureFreshAccessToken(store, extraOptions);
+
     let result;
     try {
       result = await baseQuery(args, store, extraOptions);
