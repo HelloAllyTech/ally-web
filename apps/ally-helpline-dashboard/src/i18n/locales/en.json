@@ -1521,6 +1521,24 @@
     "lockedTooltip": "Complete the previous items to unlock this",
     "notFound": "This track could not be found",
     "backToLearn": "Back to Learn",
+    "viewProgress": "View progress",
+    "progressDashboard": {
+      "title": "Progress",
+      "notFound": "This course's progress could not be found",
+      "feedbackHeading": "Consolidated feedback",
+      "feedbackSubheading_one": "Based on {{count}} evaluated practice session",
+      "feedbackSubheading_other": "Based on {{count}} evaluated practice sessions",
+      "feedbackEmpty": "Complete and finish a practice roleplay in this course to see consolidated feedback here.",
+      "sessionsHeading": "Practice sessions",
+      "sessionScore": "Score {{score}}",
+      "sessionPending": "Pending evaluation",
+      "untitledSession": "Practice session",
+      "classification": {
+        "demonstrated": "Demonstrated",
+        "needs_practice": "Needs practice",
+        "insufficient_data": "Not enough practice yet"
+      }
+    },
     "status": {
       "completed": "Completed",
       "inProgress": "In progress"

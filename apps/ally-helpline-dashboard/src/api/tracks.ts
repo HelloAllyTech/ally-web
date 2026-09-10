@@ -21,6 +21,7 @@ import {
   TrackDetail,
   TrackItemCompletionResult,
   TrackItemStatus,
+  TrackProgressDashboard,
   VideoProgressResult,
 } from "@types";
 
@@ -77,6 +78,20 @@ const tracksAPI = baseAPI.injectEndpoints({
     getLearnTrackDetail: builder.query<TrackDetail, { trackId: string }>({
       query: ({ trackId }) => ({
         url: ApiEndpoints.TRACKS.GET_TRACK_DETAIL(trackId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
+    }),
+
+    /**
+     * Progress + consolidated feedback dashboard: percent complete plus
+     * skill-category feedback aggregated across every evaluated roleplay
+     * session in the course. Shares the track-detail tag — it goes stale on
+     * exactly the same completion mutations that already invalidate it.
+     */
+    getLearnTrackProgress: builder.query<TrackProgressDashboard, { trackId: string }>({
+      query: ({ trackId }) => ({
+        url: ApiEndpoints.TRACKS.GET_PROGRESS(trackId),
         method: HttpMethod.GET,
       }),
       providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
@@ -261,6 +276,7 @@ const tracksAPI = baseAPI.injectEndpoints({
 export const {
   useGetLearnTracksQuery,
   useGetLearnTrackDetailQuery,
+  useGetLearnTrackProgressQuery,
   useGetNextTrackItemQuery,
   useLazyGetNextTrackItemQuery,
   useEnrollTrackMutation,
