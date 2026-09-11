@@ -88,6 +88,11 @@ vi.mock("@constants", () => ({
       allCorpora: "Both",
       characterLibrary: "Character library",
       whatsappQa: "WhatsApp Q&A",
+      referenceDocuments: "Reference documents",
+      roadmapOpportunities: "Roadmap duplicates",
+      referenceSearch: "Document search",
+      roadmapMatcher: "Roadmap matching",
+      notJudged: "This surface is logged but not judged",
       retrievalsJudged: "Retrievals judged",
       passagesLabelled: "Passages labelled",
       answered: "Answered the question",
@@ -277,5 +282,19 @@ describe("RetrievalQualityTab", () => {
     expect(querySpy).toHaveBeenLastCalledWith(
       expect.objectContaining({ consumer: "whatsapp_bot" }),
     );
+  });
+
+  it("says outright when a surface is logged but not judged", () => {
+    // Its passage text lives in the AI service, so no relevance label exists. Without this
+    // the empty floor table reads as a broken judge rather than a boundary of it.
+    render(<RetrievalQualityTab range="30d" />);
+    fireEvent.click(screen.getByTestId("rag-corpus-reference_documents"));
+    expect(screen.getByTestId("rag-unjudged-corpus")).toBeTruthy();
+  });
+
+  it("does not claim that about a corpus it does judge", () => {
+    render(<RetrievalQualityTab range="30d" />);
+    fireEvent.click(screen.getByTestId("rag-corpus-character_library"));
+    expect(screen.queryByTestId("rag-unjudged-corpus")).toBeNull();
   });
 });

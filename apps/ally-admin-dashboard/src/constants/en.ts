@@ -974,6 +974,12 @@ export const en = {
     allCorpora: "Both",
     characterLibrary: "Character library",
     whatsappQa: "WhatsApp Q&A",
+    referenceDocuments: "Reference documents",
+    roadmapOpportunities: "Roadmap duplicates",
+    referenceSearch: "Document search",
+    roadmapMatcher: "Roadmap matching",
+    notJudged:
+      "This surface is logged but not judged: its passage text lives in the AI service rather than in this database, so there are no relevance labels. The score distribution and the volume are real; the floor table below will be empty.",
     retrievalsJudged: "Retrievals judged",
     passagesLabelled: "Passages labelled",
     answered: "Answered the question",

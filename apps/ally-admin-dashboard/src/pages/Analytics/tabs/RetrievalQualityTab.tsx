@@ -43,13 +43,25 @@ const CONSUMERS: { id: string | undefined; label: string }[] = [
   { id: "whatsapp_bot", label: en.ragQuality.whatsappBot },
   { id: "interview_agent", label: en.ragQuality.interviewAgent },
   { id: "admin_preview", label: en.ragQuality.adminPreview },
+  { id: "reference_search", label: en.ragQuality.referenceSearch },
+  { id: "roadmap_matcher", label: en.ragQuality.roadmapMatcher },
 ];
 
+/**
+ * The last two are logged but NOT judged: their passage text lives in ally-ai's collections,
+ * so no relevance label exists for them and the floor table will be empty. `UNJUDGED_CORPORA`
+ * is what lets the panel say that outright instead of showing zeros that look like a broken
+ * judge.
+ */
 const CORPORA: { id: string | undefined; label: string }[] = [
   { id: undefined, label: en.ragQuality.allCorpora },
   { id: "character_library", label: en.ragQuality.characterLibrary },
   { id: "whatsapp_qa", label: en.ragQuality.whatsappQa },
+  { id: "reference_documents", label: en.ragQuality.referenceDocuments },
+  { id: "roadmap_opportunities", label: en.ragQuality.roadmapOpportunities },
 ];
+
+const UNJUDGED_CORPORA = ["reference_documents", "roadmap_opportunities"];
 
 const count = (rows: { label: string; count: number }[], label: string) =>
   rows.find(r => r.label === label)?.count ?? 0;
@@ -172,6 +184,12 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ range }) => {
       {suppress && (
         <div data-testid="rag-small-sample">
           <InlineNotification kind="info" title={en.ragQuality.smallSample} />
+        </div>
+      )}
+
+      {corpus && UNJUDGED_CORPORA.includes(corpus) && (
+        <div data-testid="rag-unjudged-corpus">
+          <InlineNotification kind="info" title={en.ragQuality.notJudged} />
         </div>
       )}
 
