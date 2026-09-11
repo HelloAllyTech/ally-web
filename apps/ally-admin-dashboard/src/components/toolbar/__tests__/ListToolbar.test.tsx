@@ -475,6 +475,60 @@ describe("ListToolbar", () => {
     });
   });
 
+  describe("Tertiary Action Button", () => {
+    it("renders the tertiary action when provided", () => {
+      render(
+        <ListToolbar
+          {...defaultProps}
+          tertiaryAction={{ label: "Reference corpus", onClick: vi.fn() }}
+        />,
+      );
+
+      expect(screen.getByText("Reference corpus")).toBeInTheDocument();
+    });
+
+    it("does not render one when not provided", () => {
+      // The 32 toolbars that pass two actions must be unaffected by the new slot.
+      render(<ListToolbar {...defaultProps} action={{ label: "Add", onClick: vi.fn() }} />);
+
+      expect(screen.getAllByTestId("action-button")).toHaveLength(1);
+    });
+
+    it("calls onClick when clicked", async () => {
+      const user = userEvent.setup();
+      const mockOnClick = vi.fn();
+
+      render(
+        <ListToolbar
+          {...defaultProps}
+          tertiaryAction={{ label: "Reference corpus", onClick: mockOnClick }}
+        />,
+      );
+
+      await user.click(screen.getByText("Reference corpus"));
+
+      expect(mockOnClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the primary action last, hard against the right edge", () => {
+      // Order is the whole reason this slot renders first: every list in the console puts its
+      // primary action at the right edge, and a third button must not displace it.
+      render(
+        <ListToolbar
+          {...defaultProps}
+          action={{ label: "Add User", onClick: vi.fn() }}
+          secondaryAction={{ label: "Bulk Add", onClick: vi.fn() }}
+          tertiaryAction={{ label: "Reference corpus", onClick: vi.fn() }}
+        />,
+      );
+
+      const labels = screen.getAllByTestId("action-button").map(b => b.textContent);
+      expect(labels).toHaveLength(3);
+      expect(labels[0]).toContain("Reference corpus");
+      expect(labels[2]).toContain("Add User");
+    });
+  });
+
   describe("Combined Functionality", () => {
     it("renders all components together", () => {
       const mockFilterChips: FilterChipProps[] = [

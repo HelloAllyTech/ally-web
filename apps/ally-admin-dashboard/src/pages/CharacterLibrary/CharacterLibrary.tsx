@@ -8,8 +8,9 @@ import {
   useDeleteCharacterMutation,
   useUpdateCharacterMutation,
 } from "@api";
-import { Trash, WandStars } from "@assets";
+import { Book, Trash, WandStars } from "@assets";
 import { NotionTable, ListToolbar, ActionConfirmationPopup, CharacterSidePanel } from "@components";
+import { CharacterCorpusPanel } from "@components/character-corpus";
 import { ButtonVariant } from "@components/types";
 import {
   CHARACTER_LIBRARY_TABLE_COLUMNS,
@@ -18,7 +19,7 @@ import {
   Permissions,
   ROUTES,
 } from "@constants";
-import { useUser } from "@hooks";
+import { useCanCurateCharacterCorpus, useUser } from "@hooks";
 import { CharacterData } from "@types";
 
 export const CharacterLibrary: React.FC = () => {
@@ -44,6 +45,18 @@ export const CharacterLibrary: React.FC = () => {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(false);
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterData | null>(null);
   const [isNewCharacter, setIsNewCharacter] = useState<boolean>(false);
+  /*
+    The corpus belongs to the LIBRARY, not to one interview.
+
+    Its only entry point used to be inside the interview page, which meant uploading a PDF
+    required starting an interview — and that page boots a session and fires a hidden kickoff
+    message, so curating the material cost a model call and left a stray session behind. Every
+    interview searches the same documents, so the door belongs where the library is. The
+    in-interview link stays: noticing the material is thin while watching a draft come out thin
+    is a real moment, and it is not the only one.
+  */
+  const [corpusOpen, setCorpusOpen] = useState<boolean>(false);
+  const canCurateCorpus = useCanCurateCharacterCorpus();
 
   // Fetch characters using RTK Query
   const { data: charactersData, isLoading } = useGetCharactersQuery({
@@ -297,6 +310,27 @@ export const CharacterLibrary: React.FC = () => {
         };
   }, [selectedCharacters, handleNewCharacterClick, canDelete]);
 
+  /*
+    Hidden while a selection is live, like the other two: the toolbar becomes the selection's
+    own toolbar then, and offering the corpus next to "Delete 3 characters" reads as acting on
+    them. Gated on the same knowledge-base feature toggle and permission the corpus endpoints
+    enforce, so a trainer never sees it.
+  */
+  const listToolbarTertiaryAction = useMemo(() => {
+    if (!canCurateCorpus) return undefined;
+    if (canDelete && selectedCharacters.length > 0) return undefined;
+    return {
+      label: en.characterCorpus.trigger,
+      variant: ButtonVariant.SECONDARY,
+      icon: (
+        <div className="w-3 h-3">
+          <Book />
+        </div>
+      ),
+      onClick: () => setCorpusOpen(true),
+    };
+  }, [canCurateCorpus, canDelete, selectedCharacters]);
+
   const listToolbarSecondaryAction = useMemo(() => {
     if (canDelete && selectedCharacters.length > 0) return undefined;
     return {
@@ -322,6 +356,7 @@ export const CharacterLibrary: React.FC = () => {
           onSearchChange={onSearchChange}
           action={listToolbarAction}
           secondaryAction={listToolbarSecondaryAction}
+          tertiaryAction={listToolbarTertiaryAction}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable
@@ -355,6 +390,7 @@ export const CharacterLibrary: React.FC = () => {
             }}
           />
         )}
+        <CharacterCorpusPanel isOpen={corpusOpen} onClose={() => setCorpusOpen(false)} />
         <CharacterSidePanel
           selectedCharacter={selectedCharacter}
           isOpen={isSidePanelOpen}

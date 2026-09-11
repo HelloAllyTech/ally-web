@@ -12,6 +12,7 @@ import * as api from "@api";
 import { CharacterLibrary } from "../CharacterLibrary";
 
 vi.mock("@assets", () => ({
+  Book: () => <span data-testid="book-icon" />,
   Trash: () => <span data-testid="trash-icon" />,
   WandStars: () => <span data-testid="wand-stars-icon" />,
 }));
@@ -27,9 +28,7 @@ vi.mock("@components", () => ({
   }: any) => (
     <div data-testid="notion-table">
       <span data-testid="hide-selection-column">{String(Boolean(hideSelectionColumn))}</span>
-      <span data-testid="column-ids">
-        {tableData?.columns?.map((c: any) => c.id).join(",")}
-      </span>
+      <span data-testid="column-ids">{tableData?.columns?.map((c: any) => c.id).join(",")}</span>
       {tableData?.data?.map((row: any, idx: number) => (
         <div
           key={row?.id?.rowId ?? idx}
@@ -58,7 +57,7 @@ vi.mock("@components", () => ({
       </button>
     </div>
   ),
-  ListToolbar: ({ searchValue, onSearchChange, action }: any) => (
+  ListToolbar: ({ searchValue, onSearchChange, action, tertiaryAction }: any) => (
     <div data-testid="list-toolbar">
       <input
         data-testid="search-input"
@@ -68,6 +67,11 @@ vi.mock("@components", () => ({
       <button onClick={action?.onClick} data-testid="toolbar-action">
         {action?.label}
       </button>
+      {tertiaryAction ? (
+        <button onClick={tertiaryAction.onClick} data-testid="toolbar-tertiary-action">
+          {tertiaryAction.label}
+        </button>
+      ) : null}
     </div>
   ),
   ActionConfirmationPopup: ({
@@ -125,6 +129,17 @@ vi.mock("@components", () => ({
     ) : null,
 }));
 
+vi.mock("@components/character-corpus", () => ({
+  CharacterCorpusPanel: ({ isOpen, onClose }: any) =>
+    isOpen ? (
+      <div data-testid="character-corpus-panel">
+        <button onClick={onClose} data-testid="corpus-panel-close">
+          Close
+        </button>
+      </div>
+    ) : null,
+}));
+
 vi.mock("@components/types", () => ({
   ButtonVariant: {
     PRIMARY: "primary",
@@ -145,6 +160,9 @@ vi.mock("@constants", () => ({
       createNewCharacter: "Create new character",
       createWithInterviewAgent: "Create with interview agent",
       allyOwnedCharacter: "Ally (global)",
+    },
+    characterCorpus: {
+      trigger: "Reference corpus",
     },
     common: {
       loading: "Loading...",
@@ -188,8 +206,10 @@ const mockPermissions = vi.fn(() => [
   "edit:scenario-character",
   "delete:scenario-character",
 ]);
+const mockCanCurateCorpus = vi.fn(() => true);
 vi.mock("@hooks", () => ({
   useUser: () => ({ permissions: mockPermissions() }),
+  useCanCurateCharacterCorpus: () => mockCanCurateCorpus(),
 }));
 
 const toastSuccess = vi.fn();
@@ -200,6 +220,12 @@ vi.mock("sonner", () => ({
     error: (...args: any[]) => toastError(...args),
   },
 }));
+
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async importOriginal => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
+  return { ...actual, useNavigate: () => mockNavigate };
+});
 
 const mockCharacters = [
   {
@@ -245,6 +271,7 @@ describe("CharacterLibrary", () => {
       "edit:scenario-character",
       "delete:scenario-character",
     ]);
+    mockCanCurateCorpus.mockReturnValue(true);
     mockDeleteCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
     mockUpdateCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
     (api.useGetCharactersQuery as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -526,6 +553,52 @@ describe("CharacterLibrary", () => {
 
       expect(screen.getByTestId("side-panel-new").textContent).toBe("true");
       expect(screen.getByTestId("side-panel-readonly").textContent).toBe("false");
+    });
+  });
+
+  describe("reference corpus", () => {
+    /**
+     * The corpus is a LIBRARY asset — every interview searches the same documents — so its
+     * door belongs on the list. It used to exist only inside the interview page, which boots a
+     * session and fires a hidden kickoff message, so uploading a PDF cost a model call and
+     * left a stray session behind.
+     */
+    it("opens the corpus from the list without routing into an interview", () => {
+      renderCharacterLibrary();
+
+      fireEvent.click(screen.getByTestId("toolbar-tertiary-action"));
+
+      expect(screen.getByTestId("character-corpus-panel")).toBeInTheDocument();
+      // The interview route is the expensive path this button exists to avoid.
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("names the material rather than the mechanism", () => {
+      renderCharacterLibrary();
+      expect(screen.getByTestId("toolbar-tertiary-action")).toHaveTextContent("Reference corpus");
+    });
+
+    it("hides it from anyone who cannot curate", () => {
+      // Same feature toggle and permission the corpus endpoints enforce; a UI-only gate would
+      // be decoration.
+      mockCanCurateCorpus.mockReturnValue(false);
+      renderCharacterLibrary();
+      expect(screen.queryByTestId("toolbar-tertiary-action")).toBeNull();
+    });
+
+    it("gives way to the selection toolbar", () => {
+      // With a selection live the toolbar becomes that selection's own; offering the corpus
+      // next to "Delete 3 characters" would read as acting on them.
+      renderCharacterLibrary();
+      fireEvent.click(screen.getByTestId("trigger-selection-change"));
+      expect(screen.queryByTestId("toolbar-tertiary-action")).toBeNull();
+    });
+
+    it("closes again", () => {
+      renderCharacterLibrary();
+      fireEvent.click(screen.getByTestId("toolbar-tertiary-action"));
+      fireEvent.click(screen.getByTestId("corpus-panel-close"));
+      expect(screen.queryByTestId("character-corpus-panel")).toBeNull();
     });
   });
 });

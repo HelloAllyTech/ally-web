@@ -16,6 +16,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   addFilterCta,
   action,
   secondaryAction,
+  tertiaryAction,
   className,
   addFilterButtonRef,
 }) => {
@@ -109,7 +110,12 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
         )}
       </div>
 
+      {/*
+        Ordered least-primary first, so the primary action stays hard against the right edge
+        where every other list in the console puts it.
+      */}
       <div className="flex items-center gap-2">
+        {renderActionButton(tertiaryAction)}
         {renderActionButton(secondaryAction)}
         {renderActionButton(action)}
       </div>
