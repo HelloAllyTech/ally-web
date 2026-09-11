@@ -32,6 +32,7 @@ import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { ProductManagementTab } from "./tabs/ProductManagementTab";
+import { RetrievalQualityTab } from "./tabs/RetrievalQualityTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
 import { WeakPerformingMetricsTab } from "./tabs/WeakPerformingMetricsTab";
@@ -151,6 +152,22 @@ const TABS: TabDef[] = [
     label: "Language glossary",
     uses: { language: true, range: false },
     render: f => <GlossaryAdherenceTab {...f} />,
+  },
+  {
+    // Corpus retrieval quality: does what the agent retrieves actually answer what it asked?
+    //
+    // Sits beside the other judge-backed quality tabs rather than under the knowledge-base
+    // pages, because the question it answers is a quality question, not a curation one — and
+    // because the curator's own surface (the corpus panel's retrieval preview) already covers
+    // "is this one query working". This is the population view.
+    //
+    // Takes the range picker and no language: a corpus document is language-tagged but a
+    // retrieval is not, and offering a language filter that narrowed nothing would be worse
+    // than offering none.
+    id: "retrieval-quality",
+    label: en.ragQuality.tab,
+    uses: { language: false, range: true },
+    render: f => <RetrievalQualityTab {...f} />,
   },
   {
     // Labelled for what it measures. It was "Tokens" while its heading said "AI

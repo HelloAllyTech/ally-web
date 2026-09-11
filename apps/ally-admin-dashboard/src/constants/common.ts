@@ -418,6 +418,7 @@ export const ApiEndpoints = {
     ROLEPLAY_COST: "/v1/analytics/roleplay-cost",
     CODING_AGENT_COST: "/v1/analytics/coding-agent-cost",
     QUALITY_SENTIMENT: "/v1/analytics/quality-sentiment",
+    RAG_QUALITY: "/v1/analytics/rag-quality",
     CHART_PREFERENCES: "/v1/analytics/chart-preferences",
     ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",
     SHIP_VOLUME: "/v1/analytics/ship-volume",

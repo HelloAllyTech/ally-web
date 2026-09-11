@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 
+import { InlineLoading } from "@ally-ui-mono/ui-shared";
 import {
   useGetUserQuery,
   useGetPermissionsQuery,
@@ -61,9 +62,24 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
 
-  const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
-  const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
-  const { data: features, isLoading: isFeaturesLoading } = useGetFeatureTogglesQuery();
+  const {
+    data: userData,
+    isLoading: isUserLoading,
+    isError: isUserError,
+    refetch: refetchUser,
+  } = useGetUserQuery();
+  const {
+    data: permissions,
+    isLoading: isPermissionsLoading,
+    isError: isPermissionsError,
+    refetch: refetchPermissions,
+  } = useGetPermissionsQuery();
+  const {
+    data: features,
+    isLoading: isFeaturesLoading,
+    isError: isFeaturesError,
+    refetch: refetchFeatures,
+  } = useGetFeatureTogglesQuery();
   // One request per org toggle, skipped entirely on routes that don't ask for
   // one — which is every route but the Character Library today.
   const { data: isCharacterLibraryOrgEnabled, isLoading: isOrgToggleLoading } =
@@ -144,6 +160,42 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
         : en.accessDenied.reasonMissingRoleOrToggle
     : undefined;
 
+  /*
+    "Denied" and "we could not find out" are not the same answer, and until now they rendered
+    the identical screen.
+    
+    Failing CLOSED is right and stays: while entitlements are unknown, nothing gates open. What
+    was wrong is what the reader was TOLD. A platform admin holding 215 permissions saw "this
+    page isn't turned on for your role yet" because the API was down for ninety seconds, and
+    the copy sent them to ask an admin for access they already had. It cost this session twice
+    — once on a slow direct navigation, once on a backend restart.
+    
+    So: still no children until the answer is known, but a load says it is loading and a
+    failure says it failed and offers a retry.
+    
+    Only routes that actually GATE on something get the failure screen. A route requiring
+    neither a permission nor a feature is reachable regardless, and a blip on an endpoint it
+    never consults must not block it.
+  */
+  const routeIsGated = requiredPermissions.length > 0 || Boolean(requiredFeature);
+  const entitlementsLoading =
+    routeIsGated &&
+    (isUserLoading ||
+      isPermissionsLoading ||
+      isFeaturesLoading ||
+      (requiredOrgToggle === OrgToggle.CHARACTER_LIBRARY && isOrgToggleLoading));
+  // The org toggle is deliberately absent: it is a SECOND grant path, so its failure leaves
+  // the feature check to answer, and treating it as fatal would block a platform admin whose
+  // own toggle is fine.
+  const entitlementsFailed =
+    routeIsGated && !entitlementsLoading && (isUserError || isPermissionsError || isFeaturesError);
+
+  const retryEntitlements = () => {
+    void refetchUser();
+    void refetchPermissions();
+    void refetchFeatures();
+  };
+
   // The preview routes render bare, with no shell to preserve — but a crash
   // there used to blank the page just the same, so they get the barrier too.
   if (hasAccess && isPreview) return <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>;
@@ -168,7 +220,33 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
               sidebar, the nav and their way out of it. */}
           <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
             <ErrorBoundary resetKey={pathname}>
-              {hasAccess ? (
+              {entitlementsLoading ? (
+                <div
+                  className="flex h-full min-h-[500px] items-center justify-center"
+                  data-testid="entitlements-loading"
+                >
+                  <InlineLoading description={en.accessCheck.checking} />
+                </div>
+              ) : entitlementsFailed ? (
+                <div data-testid="entitlements-failed">
+                  <AccessDenied
+                    title={en.accessCheck.failedTitle}
+                    message={en.accessCheck.failedMessage}
+                    nextStep={en.accessCheck.failedNextStep}
+                    showBackButton={false}
+                  />
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={retryEntitlements}
+                      data-testid="entitlements-retry"
+                      className="inline-flex items-center rounded-lg bg-primary-500 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-primary-600"
+                    >
+                      {en.accessCheck.retry}
+                    </button>
+                  </div>
+                </div>
+              ) : hasAccess ? (
                 children
               ) : (
                 <AccessDenied

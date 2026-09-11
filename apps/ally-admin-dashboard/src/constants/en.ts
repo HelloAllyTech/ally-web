@@ -105,6 +105,23 @@ export const en = {
       `Linguistic style samples are required. Missing samples for: ${languages}.`,
     invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
+  /**
+   * What the shell says while it is still finding out what you may see, and when it could not
+   * find out at all.
+   *
+   * Separate from `accessDenied` on purpose. Both states withhold the page — that part is a
+   * security decision and does not change — but only one of them is about the reader's
+   * account. Telling someone whose entitlements failed to load that the page "isn't turned on
+   * for your role" sends them to an admin to fix something that is not broken.
+   */
+  accessCheck: {
+    checking: "Checking your access…",
+    failedTitle: "Couldn't check your access",
+    failedMessage:
+      "We couldn't load your permissions, so this page is held back until we can. This is not a problem with your account.",
+    failedNextStep: "Retry, or reload the page. If it keeps failing, the API may be down.",
+    retry: "Try again",
+  },
   accessDenied: {
     title: "This page is not accessible",
     message:
@@ -937,6 +954,63 @@ export const en = {
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
   },
+  /**
+   * Corpus retrieval quality (Analytics -> Retrieval quality).
+   *
+   * Copy written for a curator or an engineer deciding what to DO: whether to upload material,
+   * lower a threshold, or change how retrieval ranks. Every label names the action or the
+   * evidence, never the mechanism.
+   */
+  ragQuality: {
+    tab: "Retrieval quality",
+    failed: "Couldn't load retrieval quality",
+    consumer: "Asked by",
+    allConsumers: "Everything",
+    interviewAgent: "Interview agent",
+    adminPreview: "Admin preview",
+    corpus: "Corpus",
+    allCorpora: "Both",
+    characterLibrary: "Character library",
+    whatsappQa: "WhatsApp Q&A",
+    retrievalsJudged: "Retrievals judged",
+    passagesLabelled: "Passages labelled",
+    answered: "Answered the question",
+    nothingUseful: "Found nothing useful",
+    superficial: "Superficial matches",
+    superficialHelp:
+      "A superficial match scored well on shared wording while answering something else. That is a fact about the embedding, not about the corpus — it argues for changing how retrieval ranks rather than for uploading more material.",
+    smallSample:
+      "Too few judged retrievals for a percentage to mean anything yet, so only counts are shown. The judge labels new retrievals every 30 minutes.",
+    mixedJudges:
+      "This window contains judgments from more than one judge model or rubric version. Figures are scoped to the pinned pair; the rest are excluded rather than mixed in.",
+    floorTitle: "What each similarity floor would cost",
+    floorHelp:
+      "The floor decides which passages reach the agent at all. This is what each candidate would have kept and discarded over the judged passages in this window.",
+    floorCaveat:
+      "Every passage here already cleared the floor in force when it was retrieved, so this measures precision and estimates what a HIGHER floor would have lost. What a lower floor would have found is not recorded — re-run the query in the corpus panel's retrieval preview to see that.",
+    floor: "Floor",
+    kept: "Kept",
+    relevant: "Relevant",
+    tangential: "Tangential",
+    irrelevant: "Irrelevant",
+    precision: "Relevant share",
+    relevantLost: "Relevant lost",
+    currentFloor: "in use",
+    consumerTitle: "Who asked, and what they got",
+    retrievals: "Retrievals",
+    judged: "Judged",
+    returnedNothing: "Returned nothing",
+    gapsTitle: "What the corpus was missing",
+    gapsHelp:
+      "Retrievals the judge called partial or useless, with what it says it needed. This is the only place a corpus gap gets a name — an empty result on its own cannot tell you whether the material is absent or the floor was too tight.",
+    noGaps: "Every judged retrieval in this window answered its question.",
+    nothingJudged:
+      "Nothing judged in this window yet. The judge runs every 30 minutes over retrievals that have happened.",
+    returned: "returned",
+    atFloor: "at floor",
+    missingPrefix: "Judge wanted:",
+  },
+
   characterCorpus: {
     trigger: "Reference corpus",
     title: "Reference corpus",

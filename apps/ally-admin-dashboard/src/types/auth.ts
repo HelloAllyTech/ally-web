@@ -899,6 +899,77 @@ export interface QualityIndexCoverage {
   measuredAt: string | null;
 }
 
+/**
+ * Corpus retrieval quality — mirrors RagQualityResponseDto.
+ *
+ * COUNTS, not rates, by design. A corpus can legitimately see a handful of retrievals a day,
+ * and a percentage over six judged rows reads as authoritative when it is noise, so the server
+ * sends counts and `coverage.belowReportingFloor` says when a surface must not divide them.
+ */
+export interface RagCoverage {
+  retrievals: number;
+  /** Judged under the pinned (model, rubric) pair. Every count below is over THIS. */
+  judged: number;
+  passages: number;
+  judgedPassages: number;
+  /** True when the judged sample is too small for a percentage to mean anything. */
+  belowReportingFloor: boolean;
+}
+
+export interface RagLabelCount {
+  label: string;
+  count: number;
+}
+
+export interface RagConsumerBreakdown {
+  consumer: string;
+  retrievals: number;
+  judged: number;
+  /** Returned nothing at all — a corpus gap and a tight floor look identical here. */
+  emptyRetrievals: number;
+}
+
+/** One candidate floor: what it keeps, and what raising the floor to it would discard. */
+export interface RagFloorPoint {
+  floor: number;
+  kept: number;
+  relevant: number;
+  tangential: number;
+  irrelevant: number;
+  /** Relevant passages scoring BELOW this floor — the cost of tightening. */
+  relevantLost: number;
+}
+
+export interface RagGap {
+  query: string;
+  sufficiency: string;
+  /** What the judge would have needed. The only thing that names a corpus hole. */
+  missing: string | null;
+  consumer: string;
+  returnedCount: number;
+  minSimilarity: number;
+  occurredAt: string;
+}
+
+export interface RagJudgeVersion {
+  judgeModel: string;
+  judgePromptVersion: string;
+  judgments: number;
+}
+
+export interface RagQualityResponse {
+  window: AnalyticsWindow;
+  coverage: RagCoverage;
+  sufficiency: RagLabelCount[];
+  relevance: RagLabelCount[];
+  superficialMatches: number;
+  byConsumer: RagConsumerBreakdown[];
+  floorCurve: RagFloorPoint[];
+  gaps: RagGap[];
+  /** More than one pair means the window mixes two judges and is not comparable. */
+  judgeVersions: RagJudgeVersion[];
+}
+
 export interface QualitySentimentResponse {
   range: AnalyticsRange;
   bucket: AnalyticsBucket;
