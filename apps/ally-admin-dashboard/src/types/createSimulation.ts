@@ -388,6 +388,14 @@ export interface FormFieldConfig {
   enhanceType?: string;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
   /**
+   * CUSTOM.RADIO_BUTTONS only: fires when the user picks a different option
+   * (never on initial mount or on `formMethods.reset(...)` hydration — see
+   * RadioButtonGroup's `handleChange`). Lets one field's user-driven change
+   * imperatively drive another's value, e.g. Experience Mode → Live Events
+   * tab (see `syncLiveTabEnabledWithExperienceMode`).
+   */
+  onValueChange?: (value: string, formMethods: UseFormReturn<any>) => void;
+  /**
    * Snake-case placeholder name this field fills in the main-agent prompt
    * (e.g. "tone" for the Tone input). When set, the studio cross-checks
    * the selected prompt's `availableVariables`; if the placeholder isn't

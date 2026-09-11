@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
@@ -85,12 +85,18 @@ vi.mock("../../input-field", () => ({
 }));
 
 vi.mock("../../radio-button-group", () => ({
-  RadioButtonGroup: ({ id, label, options, isMandatory }: any) => (
+  RadioButtonGroup: ({ id, label, options, isMandatory, defaultValue, onChange }: any) => (
     <div data-testid={`radio-button-group-${id}`}>
       <label>
         {label}
         {isMandatory && <span>*</span>}
       </label>
+      <span data-testid={`radio-button-group-${id}-default-value`}>{defaultValue}</span>
+      {onChange && (
+        <button type="button" onClick={() => onChange("CHECKLIST")}>
+          simulate-change
+        </button>
+      )}
       {options.map((option: any) => (
         <div key={option.value}>
           <input type="radio" name={id} value={option.value} />
@@ -492,6 +498,55 @@ describe("FormField", () => {
 
       const asterisk = screen.getByText("*");
       expect(asterisk).toBeInTheDocument();
+    });
+
+    it("passes the config's defaultValue through to RadioButtonGroup", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField
+              config={{ ...radioButtonsConfig, defaultValue: "NONE" }}
+              formMethods={formMethods}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("radio-button-group-experienceMode-default-value")).toHaveTextContent(
+        "NONE",
+      );
+    });
+
+    it("wires config.onValueChange into RadioButtonGroup's onChange with formMethods", () => {
+      const onValueChange = vi.fn();
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField
+              config={{ ...radioButtonsConfig, onValueChange }}
+              formMethods={formMethods}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "simulate-change" }));
+
+      expect(onValueChange).toHaveBeenCalledTimes(1);
+      expect(onValueChange.mock.calls[0][0]).toBe("CHECKLIST");
+    });
+
+    it("does not pass an onChange to RadioButtonGroup when config has no onValueChange", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByRole("button", { name: "simulate-change" })).not.toBeInTheDocument();
     });
 
     it("renders all radio button options", () => {

@@ -50,6 +50,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
     accordion,
     tooltipLocation,
     aiGenerate,
+    onValueChange,
   } = config;
   const {
     formState: { errors },
@@ -346,6 +347,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             options={options ?? []}
             formMethods={formMethods}
             isMandatory={isMandatory}
+            defaultValue={typeof defaultValue === "string" ? defaultValue : undefined}
+            onChange={onValueChange ? value => onValueChange(value, formMethods) : undefined}
           />
         );
       case FORM_FIELD_TYPES.TIME_INPUT:

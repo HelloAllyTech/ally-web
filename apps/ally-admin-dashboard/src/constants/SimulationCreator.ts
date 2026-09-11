@@ -1,3 +1,5 @@
+import { UseFormReturn } from "react-hook-form";
+
 import { cellTypes } from "@components";
 import { en, ExperienceMode, TooltipLocation } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
@@ -241,6 +243,24 @@ export const FORM_FIELD_IDS = {
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
   TEMPERATURE: "temperature",
+};
+
+/**
+ * Links Experience Mode to the Live Events tab going forward: Feedback and
+ * Checklist mode both imply a live feed the learner should see, and None
+ * implies there isn't one. Wired as `experienceMode`'s `onValueChange`,
+ * which — per RadioButtonGroup's contract — only calls this from a real
+ * click, never from mount or from `formMethods.reset(...)` hydration, so an
+ * existing roleplay that already has the two mismatched is left alone until
+ * an author actually touches Experience Mode again.
+ */
+export const syncLiveTabEnabledWithExperienceMode = (
+  value: string,
+  formMethods: UseFormReturn<any>,
+): void => {
+  formMethods.setValue(FORM_FIELD_IDS.LIVE_TAB_ENABLED, value !== ExperienceMode.NONE, {
+    shouldDirty: true,
+  });
 };
 
 /**
@@ -830,6 +850,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: EXPERIENCE_MODE_OPTIONS,
         fullWidth: false,
         isMandatory: false,
+        // New roleplay default: no experience layered on until an author
+        // opts in, so a scenario with no advanced events configured never
+        // ships a Checklist/Feedback promise it can't keep. Existing
+        // roleplays are unaffected — they hydrate from their own saved value.
+        // Literal string, not `ExperienceMode.NONE` (see EXPERIENCE_MODE_OPTIONS
+        // above): this object is built at module load, and several test files
+        // mock `@src/constants` wholesale, so an eager enum-member read here
+        // would throw the way it already can't for the options list.
+        defaultValue: "NONE",
+        // Keeps Live Events tab in lockstep going forward: a mismatch here is
+        // exactly what leaves a learner staring at a tab that can never show
+        // anything (Feedback/Checklist promised, tab off) or an empty one
+        // (None picked, tab still on). Only fires on a real click — see
+        // RadioButtonGroup's `onChange` contract — so opening an existing,
+        // already-mismatched roleplay for edit does not silently "fix" it.
+        onValueChange: syncLiveTabEnabledWithExperienceMode,
       },
       {
         id: "checklistType",
@@ -930,7 +966,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Live events tab",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: true,
+        // New roleplay default flipped from true to false: paired with
+        // Experience Mode defaulting to None (see that field's comment), a
+        // brand-new roleplay is never left promising a live feed it has no
+        // events configured for. Existing roleplays hydrate from their own
+        // saved value via formatSimulationResponseData, unaffected. Overridden
+        // per-click by syncLiveTabEnabledWithExperienceMode once an author
+        // picks Feedback/Checklist.
+        defaultValue: false,
         tooltipLocation: TooltipLocation.LIVE_TAB_ENABLED,
       },
       {
