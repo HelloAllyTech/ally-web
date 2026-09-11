@@ -12,6 +12,12 @@ interface TrackProgressHeaderProps {
   track: TrackDetail;
   isStarting: boolean;
   onStartOrContinue: () => void;
+  /**
+   * Opens the progress + consolidated feedback drawer. Omitted (e.g. before
+   * enrollment) means the bar renders inert — there is no progress to drill
+   * into yet.
+   */
+  onProgressClick?: () => void;
 }
 
 /**
@@ -22,6 +28,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
   track,
   isStarting,
   onStartOrContinue,
+  onProgressClick,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -64,9 +71,15 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
       <div className="pt-4 sm:pt-6">
         <h1 className="mb-2 text-xl sm:text-2xl font-bold text-typography-900">{track.title}</h1>
 
-        <div className="mb-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onProgressClick}
+          disabled={!onProgressClick}
+          aria-label={t("tracks2.viewProgress")}
+          className={`mb-4 flex w-full items-center gap-3 text-left ${onProgressClick ? "cursor-pointer group" : "cursor-default"}`}
+        >
           <div
-            className="h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200"
+            className={`h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200 ${onProgressClick ? "transition-shadow group-hover:ring-2 group-hover:ring-primary-200" : ""}`}
             role="progressbar"
             aria-valuenow={progressPct}
             aria-valuemin={0}
@@ -81,7 +94,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
           <span className="whitespace-nowrap text-sm font-medium text-typography-700">
             {t("tracks2.progress", { completed, total })}
           </span>
-        </div>
+        </button>
 
         {track.description && (
           <p className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed">
