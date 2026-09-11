@@ -172,6 +172,7 @@ export interface TrackRoleplaySessionFeedback {
   scenarioSessionId: string;
   compositeScore: number | null;
   occurredAt: string | null;
+  evaluationMarkdown: string | null;
 }
 
 export interface TrackProgressDashboard {

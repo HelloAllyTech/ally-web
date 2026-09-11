@@ -9,6 +9,7 @@ import { TrackProgressBody } from "@src/pages/track-progress/components/TrackPro
 interface TrackProgressDrawerProps {
   trackId: string;
   onClose: () => void;
+  onContinuePress: () => void;
 }
 
 /**
@@ -17,7 +18,11 @@ interface TrackProgressDrawerProps {
  * the standalone /track/:trackId/progress page — same content, different
  * chrome (a drawer's own title bar instead of a page breadcrumb).
  */
-export const TrackProgressDrawer: FC<TrackProgressDrawerProps> = ({ trackId, onClose }) => {
+export const TrackProgressDrawer: FC<TrackProgressDrawerProps> = ({
+  trackId,
+  onClose,
+  onContinuePress,
+}) => {
   const { t } = useTranslation();
 
   const {
@@ -47,7 +52,9 @@ export const TrackProgressDrawer: FC<TrackProgressDrawerProps> = ({ trackId, onC
           </div>
         )}
 
-        {!isLoading && dashboard && <TrackProgressBody dashboard={dashboard} />}
+        {!isLoading && dashboard && (
+          <TrackProgressBody dashboard={dashboard} onContinuePress={onContinuePress} />
+        )}
       </div>
     </Drawer>
   );

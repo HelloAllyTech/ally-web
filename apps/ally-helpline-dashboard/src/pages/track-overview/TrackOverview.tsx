@@ -114,7 +114,14 @@ export const TrackOverview: FC = () => {
       />
 
       {isProgressDrawerOpen && (
-        <TrackProgressDrawer trackId={trackId} onClose={() => setIsProgressDrawerOpen(false)} />
+        <TrackProgressDrawer
+          trackId={trackId}
+          onClose={() => setIsProgressDrawerOpen(false)}
+          onContinuePress={() => {
+            setIsProgressDrawerOpen(false);
+            void handleStartOrContinue();
+          }}
+        />
       )}
 
       <div className="pt-4">

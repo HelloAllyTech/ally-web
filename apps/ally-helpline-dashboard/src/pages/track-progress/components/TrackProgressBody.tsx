@@ -4,12 +4,17 @@ import { useTranslation } from "react-i18next";
 
 import { TrackProgressDashboard } from "@types";
 
+import { LatestFeedbackPreview } from "./LatestFeedbackPreview";
+import { PracticeNudge } from "./PracticeNudge";
 import { RoleplaySessionRow } from "./RoleplaySessionRow";
+import { ScoreTrendSparkline } from "./ScoreTrendSparkline";
 import { SectionProgressBar } from "./SectionProgressBar";
 import { SkillCategoryCard } from "./SkillCategoryCard";
 
 interface TrackProgressBodyProps {
   dashboard: TrackProgressDashboard;
+  /** Continues the learner into the next unlocked item in this course. */
+  onContinuePress: () => void;
 }
 
 /**
@@ -19,9 +24,10 @@ interface TrackProgressBodyProps {
  * standalone /track/:trackId/progress page and the in-context drawer opened
  * from Track Overview's progress bar, which each frame it differently.
  */
-export const TrackProgressBody: FC<TrackProgressBodyProps> = ({ dashboard }) => {
+export const TrackProgressBody: FC<TrackProgressBodyProps> = ({ dashboard, onContinuePress }) => {
   const { t } = useTranslation();
   const sortedSections = [...dashboard.sections].sort((a, b) => a.order - b.order);
+  const latestSession = dashboard.roleplaySessions[dashboard.roleplaySessions.length - 1];
 
   return (
     <>
@@ -58,6 +64,11 @@ export const TrackProgressBody: FC<TrackProgressBodyProps> = ({ dashboard }) => 
         )}
       </section>
 
+      <PracticeNudge
+        skillCategories={dashboard.skillCategories}
+        onContinuePress={onContinuePress}
+      />
+
       {/* Consolidated feedback */}
       <section className="py-4">
         <h2 className="mb-1 text-lg font-semibold text-typography-900">
@@ -71,6 +82,10 @@ export const TrackProgressBody: FC<TrackProgressBodyProps> = ({ dashboard }) => 
           </p>
         )}
 
+        <div className="mb-4">
+          <ScoreTrendSparkline sessions={dashboard.roleplaySessions} />
+        </div>
+
         {dashboard.skillCategories.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border-light p-6 text-center text-sm text-typography-700">
             {t("tracks2.progressDashboard.feedbackEmpty")}
@@ -80,6 +95,12 @@ export const TrackProgressBody: FC<TrackProgressBodyProps> = ({ dashboard }) => 
             {dashboard.skillCategories.map(skill => (
               <SkillCategoryCard key={skill.category} skill={skill} />
             ))}
+          </div>
+        )}
+
+        {latestSession && (
+          <div className="mt-4">
+            <LatestFeedbackPreview session={latestSession} />
           </div>
         )}
       </section>

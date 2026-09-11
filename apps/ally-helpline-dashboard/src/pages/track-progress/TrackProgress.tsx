@@ -3,9 +3,9 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { useGetLearnTrackProgressQuery } from "@api";
+import { useGetLearnTrackProgressQuery, useLazyGetNextTrackItemQuery } from "@api";
 import { ArrowRight } from "@assets";
-import { ROUTES, buildTrackRoute } from "@constants";
+import { ROUTES, buildTrackItemRoute, buildTrackRoute } from "@constants";
 
 import { TrackProgressBody } from "./components/TrackProgressBody";
 
@@ -25,6 +25,20 @@ export const TrackProgress: FC = () => {
     isLoading,
     isError,
   } = useGetLearnTrackProgressQuery({ trackId }, { skip: !trackId });
+  const [getNextItem] = useLazyGetNextTrackItemQuery();
+
+  // Reaching this page at all means the learner is enrolled (the endpoint
+  // 403s otherwise), so — unlike Track Overview's Start/Continue — there is
+  // no enroll branch here.
+  const handleContinuePress = async () => {
+    try {
+      const nextResult = await getNextItem({ trackId }).unwrap();
+      if (nextResult.trackCompleted || !nextResult.nextItem) return;
+      navigate(buildTrackItemRoute(trackId, nextResult.nextItem.id));
+    } catch {
+      // Swallow — the learner stays on the dashboard and can retry.
+    }
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +79,7 @@ export const TrackProgress: FC = () => {
         </span>
       </div>
 
-      <TrackProgressBody dashboard={dashboard} />
+      <TrackProgressBody dashboard={dashboard} onContinuePress={handleContinuePress} />
     </div>
   );
 };
