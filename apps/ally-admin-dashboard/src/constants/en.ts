@@ -967,6 +967,8 @@ export const en = {
     consumer: "Asked by",
     allConsumers: "Everything",
     interviewAgent: "Interview agent",
+    whatsappBot: "WhatsApp bot",
+    queryWithheld: "Question withheld — asked by a health worker",
     adminPreview: "Admin preview",
     corpus: "Corpus",
     allCorpora: "Both",

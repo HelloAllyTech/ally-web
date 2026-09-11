@@ -54,6 +54,7 @@ const RESPONSE = {
       returnedCount: 0,
       minSimilarity: 0.35,
       occurredAt: "2026-09-10T15:41:00.000Z",
+      querySensitive: false,
     },
   ],
   judgeVersions: [{ judgeModel: "gemini-2.5-pro", judgePromptVersion: "v1", judgments: 96 }],
@@ -80,6 +81,8 @@ vi.mock("@constants", () => ({
       consumer: "Asked by",
       allConsumers: "Everything",
       interviewAgent: "Interview agent",
+      whatsappBot: "WhatsApp bot",
+      queryWithheld: "Question withheld — asked by a health worker",
       adminPreview: "Admin preview",
       corpus: "Corpus",
       allCorpora: "Both",
@@ -238,5 +241,41 @@ describe("RetrievalQualityTab", () => {
     result = { data: { ...RESPONSE, gaps: [] }, isLoading: false };
     render(<RetrievalQualityTab range="30d" />);
     expect(screen.getByTestId("rag-no-gaps")).toHaveTextContent("answered its question");
+  });
+
+  it("says a worker's question is withheld rather than rendering a blank line", () => {
+    // The bot's queries arrive as null from the server, withheld in SQL. An empty line would
+    // read as a bug and invite someone to "fix" the redaction.
+    result = {
+      data: {
+        ...RESPONSE,
+        gaps: [
+          {
+            query: null,
+            querySensitive: true,
+            sufficiency: "declined_below_threshold",
+            missing: "guidance on refusing medication",
+            consumer: "whatsapp_bot",
+            returnedCount: 0,
+            minSimilarity: 0.35,
+            occurredAt: "2026-09-11T06:20:00.000Z",
+          },
+        ],
+      },
+      isLoading: false,
+    };
+    render(<RetrievalQualityTab range="30d" />);
+
+    expect(screen.getByTestId("rag-gap-withheld")).toBeTruthy();
+    // The judge's own words still carry the actionable half.
+    expect(screen.getByText(/guidance on refusing medication/)).toBeTruthy();
+  });
+
+  it("can narrow to the bot, the highest-volume path", () => {
+    render(<RetrievalQualityTab range="30d" />);
+    fireEvent.click(screen.getByTestId("rag-consumer-whatsapp_bot"));
+    expect(querySpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ consumer: "whatsapp_bot" }),
+    );
   });
 });

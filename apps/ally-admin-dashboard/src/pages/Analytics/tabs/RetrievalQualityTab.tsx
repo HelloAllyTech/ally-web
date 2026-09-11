@@ -38,6 +38,9 @@ const CURRENT_DEFAULT_FLOOR = 0.35;
 
 const CONSUMERS: { id: string | undefined; label: string }[] = [
   { id: undefined, label: en.ragQuality.allConsumers },
+  // The bot first: it is the platform's highest-volume retrieval path, and the one whose
+  // floor has the least evidence behind it.
+  { id: "whatsapp_bot", label: en.ragQuality.whatsappBot },
   { id: "interview_agent", label: en.ragQuality.interviewAgent },
   { id: "admin_preview", label: en.ragQuality.adminPreview },
 ];
@@ -282,7 +285,21 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ range }) => {
                 className="rounded border border-border-200 p-3"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-typography-900">{gap.query}</span>
+                  {/* A withheld query is SAID, not rendered blank. The WhatsApp bot's
+                      queries are health workers' own questions and arrive as null from the
+                      server; an empty line would read as a bug and invite someone to "fix"
+                      the redaction. The judge's `missing` text below carries the useful half
+                      regardless, and it is judge-authored rather than anyone's words. */}
+                  {gap.query ? (
+                    <span className="text-sm text-typography-900">{gap.query}</span>
+                  ) : (
+                    <span
+                      className="text-sm italic text-typography-500"
+                      data-testid="rag-gap-withheld"
+                    >
+                      {en.ragQuality.queryWithheld}
+                    </span>
+                  )}
                   <span className="shrink-0 text-xs text-typography-500">
                     {gap.sufficiency} · {gap.returnedCount} {en.ragQuality.returned} ·{" "}
                     {en.ragQuality.atFloor} {gap.minSimilarity.toFixed(2)}

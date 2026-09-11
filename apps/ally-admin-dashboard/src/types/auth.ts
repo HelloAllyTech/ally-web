@@ -941,7 +941,9 @@ export interface RagFloorPoint {
 }
 
 export interface RagGap {
-  query: string;
+  /** Null when withheld: the WhatsApp bot's queries are health workers' own questions. */
+  query: string | null;
+  querySensitive: boolean;
   sufficiency: string;
   /** What the judge would have needed. The only thing that names a corpus hole. */
   missing: string | null;
