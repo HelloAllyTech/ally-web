@@ -84,6 +84,10 @@ vi.mock("@assets", () => ({
   NoResults: () => <div data-testid="no-results">No Results</div>,
   MindfullnessVideo: () => <div data-testid="mindfulness-video">Mindfulness Video</div>,
   EndSessionIllustration: () => <div data-testid="end-session-illustration">End Session</div>,
+  // Referenced by the real ../components/constants error-content map, which is
+  // now imported rather than stubbed out wholesale.
+  InDoubt: () => <div data-testid="in-doubt" />,
+  NoNetwork: () => <div data-testid="no-network" />,
 }));
 
 // Mock components
@@ -189,7 +193,12 @@ vi.mock("../utils", () => ({
 
 vi.mock("../types", () => ({}));
 
-vi.mock("../components/constants", () => ({
+// Partial mock: only the network-reason list is replaced. Stubbing the whole
+// module used to drop every other export (classifyDisconnect, the diagnostic
+// delays, the microphone-error classifier) and the suite only survived because
+// nothing under test reached them.
+vi.mock("../components/constants", async importOriginal => ({
+  ...(await importOriginal<typeof import("../components/constants")>()),
   NetworkIssuesList: ["network error", "connection lost"],
 }));
 

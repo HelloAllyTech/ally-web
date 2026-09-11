@@ -92,6 +92,10 @@ export enum SocketEvent {
   AUDIO_CHAT_MUTED = "AUDIO_CHAT_MUTED",
   AUDIO_MESSAGE = "AUDIO_MESSAGE",
   START_AUDIO_CHAT = "START_AUDIO_CHAT",
+  // Fire-and-forget report of why a recording screen is not capturing. The
+  // server only logs it (MicrophoneChatGateway#scribeStartDiagnostic) — no
+  // reply, no persistence.
+  SCRIBE_START_DIAGNOSTIC = "SCRIBE_START_DIAGNOSTIC",
   CHAT_ENDED = "CHAT_ENDED",
   UTTERANCE_ENDED = "UTTERANCE_ENDED",
   USER_JOINED = "USER_JOINED",

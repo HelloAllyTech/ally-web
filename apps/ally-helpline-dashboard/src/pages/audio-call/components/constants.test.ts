@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 
-import { classifyDisconnect } from "./constants";
+import { SocketDisconnectionReasons } from "@constants";
+
+import { classifyDisconnect, classifyMicrophoneError } from "./constants";
 
 describe("classifyDisconnect", () => {
   it("ignores an intentional client disconnect (normal end)", () => {
@@ -20,5 +22,34 @@ describe("classifyDisconnect", () => {
 
   it("treats a server-forced disconnect as terminal", () => {
     expect(classifyDisconnect("io server disconnect")).toBe("terminal");
+  });
+});
+
+describe("classifyMicrophoneError", () => {
+  it("treats a denied or dismissed permission prompt as blocked", () => {
+    expect(classifyMicrophoneError({ name: "NotAllowedError" })).toBe(
+      SocketDisconnectionReasons.MICROPHONE_BLOCKED,
+    );
+    expect(classifyMicrophoneError({ name: "SecurityError" })).toBe(
+      SocketDisconnectionReasons.MICROPHONE_BLOCKED,
+    );
+  });
+
+  it("treats a missing or busy device as unavailable", () => {
+    expect(classifyMicrophoneError({ name: "NotFoundError" })).toBe(
+      SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE,
+    );
+    expect(classifyMicrophoneError({ name: "NotReadableError" })).toBe(
+      SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE,
+    );
+  });
+
+  it("falls back to unavailable for anything it cannot name", () => {
+    expect(classifyMicrophoneError(new Error("boom"))).toBe(
+      SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE,
+    );
+    expect(classifyMicrophoneError(undefined)).toBe(
+      SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE,
+    );
   });
 });

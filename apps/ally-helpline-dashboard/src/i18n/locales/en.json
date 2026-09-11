@@ -702,41 +702,11 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": [
-              "Poor",
-              "Not helpful",
-              "Very bad",
-              "Disappointing",
-              "Unhelpful"
-            ],
-            "2": [
-              "Below average",
-              "Lacking",
-              "Unsatisfying",
-              "Weak",
-              "Needs improvement"
-            ],
-            "3": [
-              "Neutral",
-              "Okay",
-              "Average",
-              "Moderate",
-              "Acceptable"
-            ],
-            "4": [
-              "Good",
-              "Helpful",
-              "Satisfying",
-              "Effective",
-              "Worthwhile"
-            ],
-            "5": [
-              "Excellent",
-              "Amazing",
-              "Highly useful",
-              "Outstanding",
-              "Very effective"
-            ]
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
           }
         }
       }
@@ -1481,7 +1451,11 @@
       "noNetworkDesc": "Call ended due to network interruption, please check your connection and try again.",
       "noNetworkSharedDesc": "Please check your connection and try again.",
       "somethingWrong": "Something went wrong",
-      "somethingWrongDesc": "Call ended due to unknown reason, please try again.."
+      "somethingWrongDesc": "Call ended due to unknown reason, please try again..",
+      "micBlocked": "Microphone access is blocked",
+      "micBlockedDesc": "Ally needs your microphone to take notes. Allow microphone access for this site in your browser, then try again.",
+      "micUnavailable": "No microphone available",
+      "micUnavailableDesc": "Ally could not start your microphone. Check that one is connected and that no other app is using it, then try again."
     }
   },
   "stressBuster": {
