@@ -960,6 +960,13 @@ export const en = {
     previewRun: "Search",
     previewEmpty:
       "Nothing matched at this floor — the agent would be told so, and would not invent a source.",
+    // Three states, three sentences. "Nothing matched" is only the truthful one when there is
+    // something to match against; the other two name what to do instead of implying a
+    // threshold problem.
+    previewNothingIndexed:
+      "No passages are indexed yet, so a search cannot match anything. Add material, or wait for indexing to finish.",
+    previewIndexFailed:
+      "Indexing failed, so there are no passages to search. Check the failed document above and re-upload it.",
     previewEmptyTryFloor:
       "Nothing matched at the default floor. Similarity search is brittle across phrasing, so try a lower floor before concluding the corpus is missing this — the agent also retries at a different angle.",
     floor: "Match floor",

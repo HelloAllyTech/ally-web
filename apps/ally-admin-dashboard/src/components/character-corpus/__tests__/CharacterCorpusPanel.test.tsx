@@ -37,6 +37,10 @@ vi.mock("@constants", () => ({
       previewRun: "Search",
       previewEmpty:
         "Nothing matched at this floor — the agent would be told so, and would not invent a source.",
+      previewNothingIndexed:
+        "No passages are indexed yet, so a search cannot match anything. Add material, or wait for indexing to finish.",
+      previewIndexFailed:
+        "Indexing failed, so there are no passages to search. Check the failed document above and re-upload it.",
       previewEmptyTryFloor:
         "Nothing matched at the default floor. Try a lower floor before concluding the corpus is missing this.",
       floor: "Match floor",
@@ -66,6 +70,11 @@ const searchSpy = vi.fn();
 const updateSpy = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
 
 let searchResult: { data?: { passages: unknown[] }; isError?: boolean } = {};
+let statsResult: {
+  byStatus: Record<string, number>;
+  indexedChunks: number;
+  totalChunks: number;
+} = { byStatus: { indexed: 1 }, indexedChunks: 7, totalChunks: 7 };
 
 const DOCUMENT = {
   id: "doc-1",
@@ -105,7 +114,7 @@ vi.mock("@api", () => ({
   },
   useGetKbStatsQuery: (corpus: unknown, options: unknown) => {
     statsSpy(corpus, options);
-    return { data: { byStatus: { indexed: 1 }, indexedChunks: 7, totalChunks: 7 } };
+    return { data: statsResult };
   },
   useSearchKbCorpusMutation: () => [
     (body: unknown) => {
@@ -142,6 +151,7 @@ describe("CharacterCorpusPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     searchResult = {};
+    statsResult = { byStatus: { indexed: 1 }, indexedChunks: 7, totalChunks: 7 };
   });
 
   it("scopes every read to the character corpus", () => {
@@ -256,5 +266,37 @@ describe("CharacterCorpusPanel", () => {
       id: "doc-1",
       characterTopics: [KbCharacterTopic.SPEECH_AND_LANGUAGE, KbCharacterTopic.INNER_LIFE],
     });
+  });
+
+  it("says nothing is searchable when no passage is indexed, before any search", () => {
+    // "Try a lower floor" cannot help when there are no vectors to match against, and it sends
+    // a curator hunting a threshold problem that does not exist. Shown without waiting for a
+    // search, because running one to learn this is a wasted round trip.
+    statsResult = { byStatus: { indexed: 0 }, indexedChunks: 0, totalChunks: 0 };
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.getByText(/cannot match anything/i)).toBeTruthy();
+  });
+
+  it("blames indexing, not the corpus, when a document failed", () => {
+    statsResult = { byStatus: { indexed: 0, failed: 1 }, indexedChunks: 0, totalChunks: 4 };
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.getByText(/indexing failed/i)).toBeTruthy();
+  });
+
+  it("does not offer the floor hint when there is nothing indexed to find", () => {
+    // The two messages must never both appear: one says the threshold might be wrong, the
+    // other says there is nothing to threshold.
+    statsResult = { byStatus: { indexed: 0 }, indexedChunks: 0, totalChunks: 0 };
+    searchResult = { data: { passages: [] } };
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.queryByText(/try a lower floor/i)).toBeNull();
+  });
+
+  it("still points at the floor once passages exist", () => {
+    statsResult = { byStatus: { indexed: 1 }, indexedChunks: 7, totalChunks: 7 };
+    searchResult = { data: { passages: [] } };
+    render(<CharacterCorpusPanel isOpen onClose={vi.fn()} />);
+    expect(screen.getByText(/try a lower floor/i)).toBeTruthy();
+    expect(screen.queryByText(/cannot match anything/i)).toBeNull();
   });
 });

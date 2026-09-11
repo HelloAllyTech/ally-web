@@ -184,7 +184,19 @@ const FLOOR_CHOICES: { label: string; value: number | undefined }[] = [
   { label: "0.00", value: 0 },
 ];
 
-const RetrievalPreview: React.FC = () => {
+/**
+ * `indexedPassages` is what makes the empty message honest.
+ *
+ * Without it the preview says "try a lower floor" whenever nothing came back — advice that
+ * cannot possibly help when there are no vectors to match against, and which sends a curator
+ * hunting a threshold problem that does not exist. A corpus with no indexed passages, one still
+ * indexing, and one that genuinely lacks the material are three different situations with three
+ * different actions, and they were all rendering as the same sentence.
+ */
+const RetrievalPreview: React.FC<{ indexedPassages: number; anyFailed: boolean }> = ({
+  indexedPassages,
+  anyFailed,
+}) => {
   const strings = en.characterCorpus;
   const [query, setQuery] = useState("");
   const [floor, setFloor] = useState<number | undefined>(undefined);
@@ -262,7 +274,21 @@ const RetrievalPreview: React.FC = () => {
 
       {isLoading && <SkeletonText className="mt-3" />}
 
-      {hasRun && !isLoading && !passages.length && (
+      {/*
+        Said BEFORE a search, not only after one: a curator should not have to run a query to
+        find out that nothing is searchable yet. This is the state prod is in whenever every
+        document has been archived — archiving deletes a document's vectors, so the rows can be
+        gone from the list while the corpus reads as merely "empty".
+      */}
+      {indexedPassages === 0 && (
+        <InlineNotification
+          kind="warning"
+          title={anyFailed ? strings.previewIndexFailed : strings.previewNothingIndexed}
+          className="mt-3"
+        />
+      )}
+
+      {hasRun && !isLoading && !passages.length && indexedPassages > 0 && (
         // Says what the AGENT would do, not just that the search was empty — the whole
         // question a curator has here is whether a gap makes the agent invent.
         <InlineNotification
@@ -413,7 +439,10 @@ export const CharacterCorpusPanel: React.FC<CharacterCorpusPanelProps> = ({ isOp
                 ))}
               </ul>
 
-              <RetrievalPreview />
+              <RetrievalPreview
+                indexedPassages={stats?.indexedChunks ?? 0}
+                anyFailed={Boolean(stats?.byStatus?.failed)}
+              />
             </>
           )}
         </div>
