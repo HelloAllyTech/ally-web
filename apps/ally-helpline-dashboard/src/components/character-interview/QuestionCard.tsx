@@ -28,7 +28,11 @@ interface QuestionCardProps {
   answeredWith?: string;
   /** On resume: a structured multi-select/dropdown answer (locks the card). */
   answeredAnswer?: CharacterInterviewStructuredAnswer;
-  onAnswer: (payload: CharacterInterviewAnswerPayload) => void;
+  /**
+   * Sends the answer. May resolve `false` to say the interview never received
+   * it (the turn was refused), which unlocks the card again.
+   */
+  onAnswer: (payload: CharacterInterviewAnswerPayload) => void | Promise<boolean | void>;
   disabled?: boolean;
 }
 
@@ -79,17 +83,28 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const lock = (summary: string) => setLockedSummary(summary || strings.noneOfThese);
 
+  /**
+   * Lock the card, then send. A card locks optimistically so the same answer
+   * can't be clicked twice, but a turn the server refused outright leaves
+   * nothing behind — so the lock comes back off and the question can simply be
+   * answered again, rather than sitting frozen on a reply nobody received.
+   */
+  const submit = (summary: string, payload: CharacterInterviewAnswerPayload) => {
+    lock(summary);
+    void Promise.resolve(onAnswer(payload)).then(delivered => {
+      if (delivered === false) setLockedSummary(null);
+    });
+  };
+
   const submitFreeText = () => {
     const trimmed = freeText.trim();
     if (!trimmed || answered || disabled) return;
-    lock(trimmed);
-    onAnswer({ message: trimmed, questionId: question.id });
+    submit(trimmed, { message: trimmed, questionId: question.id });
   };
 
   const submitSingle = (option: CharacterInterviewQuestionOption) => {
     if (answered || disabled) return;
-    lock(option.label);
-    onAnswer({
+    submit(option.label, {
       message: option.label,
       questionId: question.id,
       answer: { selectedOptionIds: [option.id] },
@@ -99,8 +114,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const submitSingleCustom = () => {
     const trimmed = customDraft.trim();
     if (!trimmed || answered || disabled) return;
-    lock(trimmed);
-    onAnswer({
+    submit(trimmed, {
       message: trimmed,
       questionId: question.id,
       answer: { customValues: [trimmed] },
@@ -109,8 +123,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const submitNone = () => {
     if (answered || disabled) return;
-    lock(strings.noneOfThese);
-    onAnswer({
+    submit(strings.noneOfThese, {
       message: strings.noneOfThese,
       questionId: question.id,
       answer: { none: true },
@@ -142,8 +155,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     }
     const labels = [...selected.map(labelFor), ...customValues];
     const message = labels.join(", ");
-    lock(message);
-    onAnswer({
+    submit(message, {
       message,
       questionId: question.id,
       answer: {

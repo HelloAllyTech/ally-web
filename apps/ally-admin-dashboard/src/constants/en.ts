@@ -1077,7 +1077,10 @@ export const en = {
     startFailed: "Couldn't start the interview",
     resumeFailed: "Couldn't resume the interview",
     streamFailed: "The interview stream failed — please try again",
-    turnInProgress: "Please wait for the current answer to finish",
+    // Says what happened to the answer, not just to wait: the turn was never
+    // received, so it has to be sent again once the one in flight lands.
+    turnInProgress:
+      "The previous answer is still being worked on, so this one wasn't sent. Give it a moment and answer again.",
     emptyTitle: "Starting the interview…",
     emptySubtitle: "The agent will ask its first question in a moment.",
     toolLookingUpVoices: "Looking up available voices…",

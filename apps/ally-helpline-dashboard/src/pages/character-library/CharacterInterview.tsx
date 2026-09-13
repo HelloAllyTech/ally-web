@@ -149,8 +149,10 @@ export const CharacterInterview: React.FC = () => {
   if (!canView) return <AccessDenied />;
 
   const handleSend = (text: string) => void sendMessage(text);
+  // Returns the send's outcome, not void: a refused turn resolves `false` and
+  // the card unlocks so the answer can be given again.
   const handleAnswerQuestion = (payload: CharacterInterviewAnswerPayload) =>
-    void sendMessage(payload.message, { questionId: payload.questionId, answer: payload.answer });
+    sendMessage(payload.message, { questionId: payload.questionId, answer: payload.answer });
 
   const handleRetryBoot = async () => {
     setBootFailed(false);
