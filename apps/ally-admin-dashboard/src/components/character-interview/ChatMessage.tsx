@@ -8,7 +8,7 @@ import { CharacterInterviewAnswerPayload, QuestionCard } from "./QuestionCard";
 
 interface ChatMessageProps {
   message: CharacterInterviewChatMessage;
-  onAnswerQuestion: (payload: CharacterInterviewAnswerPayload) => void;
+  onAnswerQuestion: (payload: CharacterInterviewAnswerPayload) => void | Promise<boolean | void>;
   disabled?: boolean;
 }
 
