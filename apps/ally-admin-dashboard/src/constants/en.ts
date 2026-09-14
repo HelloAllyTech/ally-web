@@ -3043,7 +3043,7 @@ export const en = {
     accuracyColAccuracy: "I read it right",
     accuracyColReversalRate: "Reversed",
     accuracyReversalRateTooltip:
-      "A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong — a correction to the raw error rate above it.",
+      "A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong — a correction to the raw error rate above it. It counts over the same bugs as the rest of this row, and a dismissal takes at least a month to come back as a reversal — so widen the date range past 30 days before reading anything into a dash here.",
     accuracyColLanded: "Landed",
     accuracyRepoUnassigned: "Not yet assigned",
     accuracyDeclinesTitle: "Why you turned bugs down",

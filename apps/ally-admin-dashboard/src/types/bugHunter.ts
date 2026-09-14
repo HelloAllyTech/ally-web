@@ -62,6 +62,8 @@ export enum BugHuntEventStage {
   REGRESSED = "regressed",
   /** A sweep re-found a bug that was already declined, and dedupe suppressed it rather than opening a second row. */
   RECURRENCE_SUPPRESSED = "recurrence_suppressed",
+  /** This dismissal was proven wrong — a same-dedupe-key finding shipped. See ally-be's checkForAndRecordReversals. */
+  REVERSED = "reversed",
 }
 
 /**
