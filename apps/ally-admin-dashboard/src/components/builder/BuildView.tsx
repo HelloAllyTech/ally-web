@@ -7,6 +7,7 @@ import {
   useAnswerBuilderQuestionMutation,
   useGetBuilderPendingQuestionsQuery,
   useGetBuilderPullRequestsQuery,
+  useMergeBuilderPullRequestMutation,
   useGetBuilderRunsQuery,
   useGetBuilderSessionBudgetQuery,
   useLazyGetBuilderRunEventsQuery,
@@ -83,6 +84,35 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
     pollingInterval: isWaiting ? POLL_WITHOUT_SOCKET_MS : 0,
     skipPollingIfUnfocused: true,
   });
+  const [mergePullRequest, { isLoading: isMerging }] = useMergeBuilderPullRequestMutation();
+  const [mergingId, setMergingId] = useState<string | null>(null);
+
+  /**
+   * Merge one pull request from here.
+   *
+   * The backend does the refusing — red checks, checks it could not read, a
+   * required review GitHub will not waive — so this does not pre-judge any of
+   * it. What it must do is SHOW the refusal: these are the reasons a person
+   * needs in order to decide what to do next, and swallowing them into a
+   * generic failure would put them back in the tab this button exists to save.
+   */
+  const handleMerge = useCallback(
+    async (pullRequestId: string) => {
+      setMergingId(pullRequestId);
+      try {
+        await mergePullRequest({ sessionId, pullRequestId }).unwrap();
+        toast.success(strings.prMerged_toast);
+      } catch (error) {
+        const message =
+          (error as { data?: { message?: string } })?.data?.message ?? strings.prMergeFailed;
+        toast.error(message);
+      } finally {
+        setMergingId(null);
+      }
+    },
+    [mergePullRequest, sessionId, strings],
+  );
+
   const { data: pullRequests } = useGetBuilderPullRequestsQuery(sessionId, {
     pollingInterval: isLive ? POLL_WITH_SOCKET_MS : 0,
     skipPollingIfUnfocused: true,
@@ -382,6 +412,16 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
                   {pullRequest.repo} #{pullRequest.prNumber}
                   {pullRequest.title ? ` — ${pullRequest.title}` : ""}
                 </a>
+                {!pullRequest.merged && pullRequest.state !== "closed" && (
+                  <Button
+                    kind="ghost"
+                    size="sm"
+                    disabled={isMerging}
+                    onClick={() => handleMerge(pullRequest.id)}
+                  >
+                    {mergingId === pullRequest.id ? strings.prMerging : strings.prMerge}
+                  </Button>
+                )}
               </Tile>
             ))}
           </div>

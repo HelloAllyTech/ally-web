@@ -535,6 +535,8 @@ export const ApiEndpoints = {
     ANSWER_QUESTION: (id: string, questionId: string) =>
       `/v1/builder/sessions/${id}/questions/${questionId}/answer`,
     SESSION_PULL_REQUESTS: (id: string) => `/v1/builder/sessions/${id}/pull-requests`,
+    SESSION_PULL_REQUEST_MERGE: (id: string, prId: string) =>
+      `/v1/builder/sessions/${id}/pull-requests/${prId}/merge`,
     SESSION_REPORTS: (id: string) => `/v1/builder/sessions/${id}/reports`,
     SETTINGS: "/v1/builder/settings",
     NOTIFICATIONS: "/v1/builder/notifications",

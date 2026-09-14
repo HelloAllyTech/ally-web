@@ -287,6 +287,19 @@ export const builderAPI = baseAPI.injectEndpoints({
       providesTags: (result, error, id) => [{ type: TAG_TYPES.BUILDER_SESSION, id }],
     }),
 
+    mergeBuilderPullRequest: builder.mutation<
+      BuilderPullRequest,
+      { sessionId: string; pullRequestId: string }
+    >({
+      query: ({ sessionId, pullRequestId }) => ({
+        url: ApiEndpoints.BUILDER.SESSION_PULL_REQUEST_MERGE(sessionId, pullRequestId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: TAG_TYPES.BUILDER_SESSION, id: sessionId },
+      ],
+    }),
+
     getBuilderReports: builder.query<BuilderReport[], string>({
       query: id => ({
         url: ApiEndpoints.BUILDER.SESSION_REPORTS(id),
@@ -435,6 +448,7 @@ export const {
   useGetBuilderPendingQuestionsQuery,
   useAnswerBuilderQuestionMutation,
   useGetBuilderPullRequestsQuery,
+  useMergeBuilderPullRequestMutation,
   useGetBuilderReportsQuery,
   useGetBuilderSettingsQuery,
   useUpdateBuilderSettingsMutation,
