@@ -703,6 +703,12 @@ export interface Prompt {
   hasStates?: boolean;
   usesBlocks?: string[];
   /**
+   * Runtimes that read this prompt. Absent means undeclared, and the model
+   * picker then offers only models every runtime can execute — correct, but
+   * narrower than a single-consumer prompt actually needs.
+   */
+  runtimes?: string[];
+  /**
    * Prompt-level LLM provider override ('openai' | 'gemini' | 'anthropic'),
    * sent alongside `model` so runtimes don't infer it from the model name.
    */
