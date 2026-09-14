@@ -44,6 +44,8 @@ const funnel = (over: Partial<BugHunterFunnel> = {}): BugHunterFunnel => ({
   accuracy: null,
   lowConfidence: 0,
   unscored: 0,
+  reversed: 0,
+  reversalRate: null,
   ...over,
 });
 
@@ -210,6 +212,33 @@ describe("AccuracyPanel", () => {
 
     expect(screen.getByText("Real, but not worth fixing")).toBeInTheDocument();
     expect(screen.getByText("It isn't a bug")).toBeInTheDocument();
+  });
+
+  it("shows a dash rather than 0% for a source that has never had a finder-error dismissal", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [funnel({ key: "code_review", filed: 3, reversalRate: null })],
+      }),
+    );
+
+    expect(screen.getByText("Reversed")).toBeInTheDocument();
+    expect(
+      screen.getByText(/A reversal means you dismissed one of my findings as a mistake/),
+    ).toBeInTheDocument();
+  });
+
+  it("prints the reversal rate for a source with a proven-wrong dismissal", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [
+          funnel({ key: "code_review", filed: 3, finderErrors: 2, reversed: 1, reversalRate: 0.5 }),
+        ],
+      }),
+    );
+
+    expect(screen.getByText("50%")).toBeInTheDocument();
   });
 
   it("labels a repo-less group rather than showing a blank row", () => {

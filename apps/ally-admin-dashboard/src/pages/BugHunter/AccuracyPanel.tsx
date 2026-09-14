@@ -114,6 +114,16 @@ const FunnelTable: FC<{
               <th className="text-right font-medium px-3 py-2">
                 {en.bugHunter.accuracyColAccuracy}
               </th>
+              <th className="text-right font-medium px-3 py-2">
+                <span className="inline-flex items-center gap-1 justify-end">
+                  {en.bugHunter.accuracyColReversalRate}
+                  <Tooltip label={en.bugHunter.accuracyReversalRateTooltip} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </span>
+              </th>
               <th className="text-right font-medium px-3 py-2">{en.bugHunter.accuracyColLanded}</th>
             </tr>
           </thead>
@@ -137,6 +147,13 @@ const FunnelTable: FC<{
                       <span className="text-typography-500">—</span>
                     ) : (
                       formatRate(row.accuracy)
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {row.reversalRate == null ? (
+                      <span className="text-typography-500">—</span>
+                    ) : (
+                      formatRate(row.reversalRate)
                     )}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">{row.merged}</td>

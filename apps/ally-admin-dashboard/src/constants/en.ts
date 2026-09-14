@@ -3041,6 +3041,9 @@ export const en = {
     accuracyColFiled: "Filed",
     accuracyColJudged: "Ruled on",
     accuracyColAccuracy: "I read it right",
+    accuracyColReversalRate: "Reversed",
+    accuracyReversalRateTooltip:
+      "A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong — a correction to the raw error rate above it.",
     accuracyColLanded: "Landed",
     accuracyRepoUnassigned: "Not yet assigned",
     accuracyDeclinesTitle: "Why you turned bugs down",

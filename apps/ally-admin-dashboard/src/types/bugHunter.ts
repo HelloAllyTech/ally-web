@@ -464,6 +464,15 @@ export interface BugHunterFunnel {
   accuracy: number | null;
   lowConfidence: number;
   unscored: number;
+  /** Finder-error dismissals later proven wrong by a same-dedupe-key finding shipping. */
+  reversed: number;
+  /**
+   * `reversed / finderErrors` — a correction to the raw error rate: a
+   * reversal means a finding was incorrectly dismissed by an admin and later
+   * shipped under a duplicate report. Null when nothing has ever been
+   * dismissed as a finder error.
+   */
+  reversalRate: number | null;
 }
 
 export interface BugHunterDecline {
