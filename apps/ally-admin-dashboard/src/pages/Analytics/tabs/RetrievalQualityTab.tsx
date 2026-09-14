@@ -118,11 +118,11 @@ const FloorRow: FC<{ point: RagFloorPoint; suppressRate: boolean }> = ({ point, 
   );
 };
 
-export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ range }) => {
+export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
   const [consumer, setConsumer] = useState<string | undefined>(undefined);
   const [corpus, setCorpus] = useState<string | undefined>(undefined);
   const { data, isLoading, isError } = useGetRagQualityQuery({
-    range,
+    ...query,
     consumer,
     corpus,
   });
