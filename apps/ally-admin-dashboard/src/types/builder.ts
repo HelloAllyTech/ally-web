@@ -335,6 +335,13 @@ export interface BuilderPullRequest {
   prUrl: string;
   title: string | null;
   ciStatus: string | null;
+  /**
+   * open / closed, as GitHub reports it. Distinct from `merged`: a pull request
+   * closed *without* merging is closed and not merged, and the Merge control
+   * must stay hidden for it. Optional because rows predating the column carry
+   * NULL, which reads as "not known to be closed" rather than as closed.
+   */
+  state?: string | null;
   merged: boolean;
   mergedAt: string | null;
 }
