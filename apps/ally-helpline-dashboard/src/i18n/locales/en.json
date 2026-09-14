@@ -1498,6 +1498,7 @@
     "viewProgress": "View progress",
     "progressDashboard": {
       "title": "Progress",
+      "tapHint": "Tap to see your progress and feedback",
       "notFound": "This course's progress could not be found",
       "feedbackHeading": "Consolidated feedback",
       "feedbackSubheading_one": "Based on {{count}} evaluated practice session",

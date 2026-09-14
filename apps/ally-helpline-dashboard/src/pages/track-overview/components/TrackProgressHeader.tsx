@@ -76,24 +76,40 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
           onClick={onProgressClick}
           disabled={!onProgressClick}
           aria-label={t("tracks2.viewProgress")}
-          className={`mb-4 flex w-full items-center gap-3 text-left ${onProgressClick ? "cursor-pointer group" : "cursor-default"}`}
+          className={`mb-4 flex w-full flex-col gap-1.5 rounded-xl p-3 text-left transition-colors ${
+            onProgressClick
+              ? "cursor-pointer border border-border-light hover:bg-background-secondary"
+              : "cursor-default"
+          }`}
         >
-          <div
-            className={`h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200 ${onProgressClick ? "transition-shadow group-hover:ring-2 group-hover:ring-primary-200" : ""}`}
-            role="progressbar"
-            aria-valuenow={progressPct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuetext={`${progressPct}%`}
-          >
+          <div className="flex w-full items-center gap-3">
             <div
-              className={`h-full rounded-full transition-all duration-500 ease-out ${isComplete ? "bg-success-300" : "bg-primary-500"}`}
-              style={{ width: `${progressPct}%` }}
-            />
+              className="h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200"
+              role="progressbar"
+              aria-valuenow={progressPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuetext={`${progressPct}%`}
+            >
+              <div
+                className={`h-full rounded-full transition-all duration-500 ease-out ${isComplete ? "bg-success-300" : "bg-primary-500"}`}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="whitespace-nowrap text-sm font-medium text-typography-700">
+              {t("tracks2.progress", { completed, total })}
+            </span>
+            {onProgressClick && (
+              <span className="flex-shrink-0 text-typography-500">
+                <ArrowRight />
+              </span>
+            )}
           </div>
-          <span className="whitespace-nowrap text-sm font-medium text-typography-700">
-            {t("tracks2.progress", { completed, total })}
-          </span>
+          {onProgressClick && (
+            <span className="text-xs font-medium text-primary-500">
+              {t("tracks2.progressDashboard.tapHint")}
+            </span>
+          )}
         </button>
 
         {track.description && (
