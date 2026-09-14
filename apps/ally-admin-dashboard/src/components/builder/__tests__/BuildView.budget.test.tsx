@@ -42,6 +42,7 @@ vi.mock("@api", () => ({
   useGetBuilderRunsQuery: () => ({ data: [] }),
   useGetBuilderPendingQuestionsQuery: () => ({ data: [] }),
   useGetBuilderPullRequestsQuery: () => ({ data: [] }),
+  useMergeBuilderPullRequestMutation: () => [vi.fn(), { isLoading: false }],
   useGetBuilderSessionBudgetQuery: () => ({ data: budget, refetch: vi.fn() }),
   useLazyGetBuilderRunEventsQuery: () => [fetchEvents],
   useAnswerBuilderQuestionMutation: () => [vi.fn(), { isLoading: false }],

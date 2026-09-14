@@ -3402,6 +3402,10 @@ export const en = {
       noPullRequests: "No pull requests opened yet.",
       prMerged: "Merged",
       prOpen: "Open",
+      prMerge: "Merge",
+      prMerging: "Merging…",
+      prMergeFailed: "Could not merge",
+      prMerged_toast: "Merged.",
       reportsHeading: "Reports",
       noReports: "Nothing written up yet.",
       // A pause is a normal turn in the conversation, not a fault — the copy
