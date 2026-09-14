@@ -101,16 +101,16 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
       setMergingId(pullRequestId);
       try {
         await mergePullRequest({ sessionId, pullRequestId }).unwrap();
-        toast.success(en.builder.prMerged_toast);
+        toast.success(strings.prMerged_toast);
       } catch (error) {
         const message =
-          (error as { data?: { message?: string } })?.data?.message ?? en.builder.prMergeFailed;
+          (error as { data?: { message?: string } })?.data?.message ?? strings.prMergeFailed;
         toast.error(message);
       } finally {
         setMergingId(null);
       }
     },
-    [mergePullRequest, sessionId],
+    [mergePullRequest, sessionId, strings],
   );
 
   const { data: pullRequests } = useGetBuilderPullRequestsQuery(sessionId, {
@@ -419,7 +419,7 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
                     disabled={isMerging}
                     onClick={() => handleMerge(pullRequest.id)}
                   >
-                    {mergingId === pullRequest.id ? en.builder.prMerging : en.builder.prMerge}
+                    {mergingId === pullRequest.id ? strings.prMerging : strings.prMerge}
                   </Button>
                 )}
               </Tile>
