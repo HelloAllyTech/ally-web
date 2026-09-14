@@ -240,6 +240,7 @@ export const RoleplaySessionLogs: FC = () => {
                   className="border-b border-border-light text-sm text-typography-900 align-top cursor-pointer hover:bg-background-secondary"
                 >
                   <TableCell className="py-3 pr-4">
+                    <span className="sr-only">{`View session details for ${row.counselorName || "Unknown User"} - ${row.scenarioTitle || "Unknown Scenario"}`}</span>
                     <div className="font-medium">{row.counselorName || "—"}</div>
                     <div className="text-typography-700 text-xs">{row.counselorEmail || ""}</div>
                   </TableCell>
