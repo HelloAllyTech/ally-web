@@ -22,13 +22,13 @@ import {
   ListPagination,
   ListToolbar,
 } from "@components";
-import { FilterChipProps } from "@components/types";
 import { TooltipHint } from "@components/app-tooltip";
 import {
   CorpusDocumentPanel,
   DocumentStatusBadge,
   audienceSummary,
 } from "@components/knowledge-corpus";
+import { FilterChipProps } from "@components/types";
 import { en, TooltipLocation } from "@constants";
 import { KB_IN_FLIGHT_STATUSES, KbDocument, KbDocumentStatus } from "@types";
 import { formatDate, formatRelativeTime } from "@utils";

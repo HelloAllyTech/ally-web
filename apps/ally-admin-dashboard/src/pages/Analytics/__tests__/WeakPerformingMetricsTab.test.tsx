@@ -1,4 +1,4 @@
-import { render as rtlRender, screen, waitFor } from "@testing-library/react";
+import { act, render as rtlRender, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -1256,6 +1256,13 @@ describe("WeakPerformingMetricsTab turn conditions", () => {
 
     expect(screen.getByText(/20.0 points between the worst band and the best/)).toBeInTheDocument();
     expect(screen.queryByText(/Infinity/)).not.toBeInTheDocument();
+  });
+
+  it("the tooltip button for turn conditions factors has an accessible label (factor.description)", () => {
+    withConditions({});
+    render(<WeakPerformingMetricsTab {...filters} />);
+    const expectedAccessibleName = "Wall-clock time from the learner finishing to the reply starting.";
+    expect(screen.getByRole("button", { name: expectedAccessibleName })).toBeInTheDocument();
   });
 
   it("keeps the server's ordering rather than re-sorting in the client", () => {
