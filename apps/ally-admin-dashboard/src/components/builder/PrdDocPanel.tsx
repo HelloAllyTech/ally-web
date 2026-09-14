@@ -47,6 +47,9 @@ const PROSE_SECTIONS: (keyof BuilderPrdDocument)[] = [
   "summary",
   "problem",
   "usersAndContext",
+  // Before Goals, matching the rubric: what exists is what decides which
+  // goals are worth having.
+  "existingBehaviour",
   "goals",
   "nonGoals",
   "testPlanMd",
