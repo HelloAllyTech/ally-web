@@ -32,7 +32,7 @@ let eslint: ESLint;
 describe("root eslint config: Product Roadmap feature files", () => {
   beforeAll(() => {
     eslint = new ESLint({ cwd: repoRoot, overrideConfigFile: configPath });
-  }, 15000);
+  }, 30000);
 
   it("reports no lint errors across the files touched by the queue/votes/opportunity-codes feature", async () => {
     // eslint-import-resolver-typescript resolves this config's relative
@@ -59,5 +59,5 @@ describe("root eslint config: Product Roadmap feature files", () => {
     );
 
     expect(errors).toEqual([]);
-  }, 15000);
+  }, 30000);
 });

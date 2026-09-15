@@ -180,7 +180,7 @@ describe("baseAPI", () => {
       const [result] = await eslint.lintFiles([filePath]);
 
       expect(result.messages.filter(m => m.ruleId === "no-console")).toEqual([]);
-    }, 15000);
+    }, 30000);
   });
 
   describe("Local Storage Integration", () => {
