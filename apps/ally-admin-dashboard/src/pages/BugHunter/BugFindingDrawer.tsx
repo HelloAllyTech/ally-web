@@ -34,6 +34,7 @@ import {
   BUG_FINDING_DECISION_REASON_LABELS,
   BUG_FINDING_SEVERITY_LABELS,
   BUG_FINDING_SOURCE_LABELS,
+  engineModelLabel,
 } from "./bugFindingLabels";
 import { BugFindingStageEditor } from "./BugFindingStageEditor";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
@@ -340,6 +341,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             {finding.severity && (
               <span className="text-xs text-typography-600">
                 · {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
+              </span>
+            )}
+            {engineModelLabel(finding.engine, finding.model) && (
+              <span className="text-xs text-typography-600">
+                · {engineModelLabel(finding.engine, finding.model)}
               </span>
             )}
 

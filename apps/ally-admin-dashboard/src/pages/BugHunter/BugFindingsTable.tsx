@@ -38,7 +38,11 @@ import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
 import { BugFindingDrawer } from "./BugFindingDrawer";
-import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
+import {
+  BUG_FINDING_SEVERITY_LABELS,
+  BUG_FINDING_SOURCE_LABELS,
+  engineModelLabel,
+} from "./bugFindingLabels";
 import { BugFindingStageChip } from "./BugFindingStageChip";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { PAGE_SIZES, PageSize, useBugHunterUrlState } from "./bugHunterUrlState";
@@ -1217,6 +1221,9 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                           </>
                         )}
                         {finding.file ? ` · ${finding.file}` : ""}
+                        {engineModelLabel(finding.engine, finding.model)
+                          ? ` · ${engineModelLabel(finding.engine, finding.model)}`
+                          : ""}
                       </div>
                     </TableCell>
 
