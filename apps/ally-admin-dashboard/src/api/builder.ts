@@ -347,6 +347,8 @@ export const builderAPI = baseAPI.injectEndpoints({
       BuilderSettings,
       {
         enabled?: boolean;
+        autoFixEnabled?: boolean;
+        maxFixRunsPerPr?: number;
         maxConcurrentBuilds?: number;
         defaultBudgetUsd?: number;
         // Empty string, not undefined, is how a tier is cleared back to the
