@@ -252,6 +252,7 @@ const runOutcomes = (runs: BugHuntRun[]): RunOutcomes => {
         running += 1;
         break;
       case BugHuntRunStatus.SKIPPED_DISABLED:
+      case BugHuntRunStatus.SKIPPED_QUIET:
         skipped += 1;
         break;
     }
