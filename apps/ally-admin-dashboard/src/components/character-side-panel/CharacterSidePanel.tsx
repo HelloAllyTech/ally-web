@@ -146,8 +146,9 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
 
   useEffect(() => {
     if (selectedCharacter) {
-      setFormData(selectedCharacter);
-      setInitialData(selectedCharacter);
+      const characterData = { ...emptyCharacter, ...selectedCharacter };
+      setFormData(characterData);
+      setInitialData(characterData);
     }
   }, [selectedCharacter]);
 
