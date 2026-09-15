@@ -51,6 +51,7 @@ const PROSE_SECTIONS: (keyof BuilderPrdDocument)[] = [
   "summary",
   "problem",
   "usersAndContext",
+  "existingBehaviour",
   "goals",
   "nonGoals",
 ];

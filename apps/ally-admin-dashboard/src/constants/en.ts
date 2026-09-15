@@ -3259,6 +3259,7 @@ export const en = {
         summary: "Summary",
         problem: "Problem",
         usersAndContext: "Users & context",
+        existingBehaviour: "What already exists",
         goals: "Goals",
         nonGoals: "Non-goals",
         requirements: "Requirements",

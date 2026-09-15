@@ -80,6 +80,8 @@ export interface BuilderPrdDocument {
   summary: string;
   problem: string;
   usersAndContext: string;
+  /** What the platform already does here — written before any requirement is. */
+  existingBehaviour: string;
   goals: string;
   nonGoals: string;
   requirements: BuilderPrdRequirement[];
