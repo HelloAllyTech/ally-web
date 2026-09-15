@@ -16,7 +16,12 @@ vi.mock("react-router-dom", async () => {
 
 const toastSuccess = vi.fn();
 const toastError = vi.fn();
-vi.mock("sonner", () => ({ toast: { success: (...a: unknown[]) => toastSuccess(...a), error: (...a: unknown[]) => toastError(...a) } }));
+vi.mock("sonner", () => ({
+  toast: {
+    success: (...a: unknown[]) => toastSuccess(...a),
+    error: (...a: unknown[]) => toastError(...a),
+  },
+}));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Button: ({ children, onClick, disabled }: any) => (
@@ -75,6 +80,9 @@ const baseSettings = {
   maxConcurrentBuilds: 3,
   defaultBudgetUsd: "25",
   defaultEngine: "claude-code",
+  autoReviewEnabled: false,
+  autoApproveEnabled: false,
+  autoFixEnabled: false,
   plannerModel: null,
   coderModel: "claude-opus",
   verifierModel: null,
@@ -88,7 +96,9 @@ describe("BuilderSettings", () => {
     settingsResult = { data: baseSettings, isLoading: false, isError: false };
     repoMapsResult = {
       data: {
-        maps: [{ repo: "ally-be", commitSha: "abc1234567", generatedAt: "2026-08-23T00:00:00.000Z" }],
+        maps: [
+          { repo: "ally-be", commitSha: "abc1234567", generatedAt: "2026-08-23T00:00:00.000Z" },
+        ],
       },
     };
   });
@@ -147,5 +157,61 @@ describe("BuilderSettings", () => {
 
     expect(screen.getByText("ally-be")).toBeInTheDocument();
     expect(screen.getByText("map from rel:2026-08-23T00:00:00.000Z @ abc1234")).toBeInTheDocument();
+  });
+
+  /**
+   * The three autonomy switches, ordered by how much they let go of: review
+   * only reads, approve vouches for the result, fix writes to a branch someone
+   * may be reading.
+   *
+   * The nesting is the point. Approve is meaningless without review — it fires
+   * on a clean review and nothing else — so offering it while review is off
+   * would be a control that silently does nothing.
+   */
+  describe("the autonomy switches", () => {
+    it("hides approve until review is on", () => {
+      render(<BuilderSettings />);
+
+      expect(
+        screen.queryByLabelText("Approve a pull request it found nothing wrong with"),
+      ).toBeNull();
+
+      fireEvent.click(screen.getByLabelText("Review its own pull requests"));
+
+      expect(
+        screen.getByLabelText("Approve a pull request it found nothing wrong with"),
+      ).toBeInTheDocument();
+    });
+
+    it("sends both switches on save", async () => {
+      settingsResult = {
+        data: { ...baseSettings, autoReviewEnabled: true },
+        isLoading: false,
+        isError: false,
+      };
+      render(<BuilderSettings />);
+
+      fireEvent.click(screen.getByLabelText("Approve a pull request it found nothing wrong with"));
+      fireEvent.click(screen.getByText("Save"));
+
+      await vi.waitFor(() => {
+        expect(updateSettings).toHaveBeenCalledWith(
+          expect.objectContaining({ autoReviewEnabled: true, autoApproveEnabled: true }),
+        );
+      });
+    });
+
+    /**
+     * The approval body is what a reader sees on the pull request, so the help
+     * text has to say plainly that a machine is doing the approving — a toggle
+     * that reads like a human sign-off would be the wrong thing to hand an
+     * admin.
+     */
+    it("says the approval is a machine one", () => {
+      render(<BuilderSettings />);
+      fireEvent.click(screen.getByLabelText("Review its own pull requests"));
+
+      expect(screen.getByText(/a machine approved it/)).toBeInTheDocument();
+    });
   });
 });

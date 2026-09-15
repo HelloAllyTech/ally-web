@@ -3571,6 +3571,12 @@ export const en = {
       enabledLabel: "Builder enabled",
       enabledHelp:
         "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      autoReviewLabel: "Review its own pull requests",
+      autoReviewHelp:
+        "On, Builder reads the finished diff of its own open pull requests the way the first person to open one would, and files what it finds. The safer half of autonomy: a review writes findings and touches no branch, so it is worth running on its own with the switch below off — the findings land for you to read and nothing pushes. Only runs once checks are green, at most twice per pull request.",
+      autoApproveLabel: "Approve a pull request it found nothing wrong with",
+      autoApproveHelp:
+        "On, a review that read the full diff and reported no findings submits an approving review, with every required check green. This is the step that otherwise waits on a person: master needs an approval and Builder's bot cannot give one, so a green, reviewed, finding-free pull request sits until someone clicks Approve. It never forces — the approval is an ordinary review, every other required check still applies, it says on the pull request that a machine approved it, and you can dismiss it like any other.",
       autoFixLabel: "Answer pull-request feedback automatically",
       autoFixHelp:
         "On, Builder reads failing checks and review comments on its own open pull requests and pushes commits to address them. Separate from the switch above on purpose: agreeing Builder may write code is not the same as agreeing it may keep pushing to a pull request you are in the middle of reviewing.",

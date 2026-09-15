@@ -360,6 +360,10 @@ export interface BuilderReport {
 export interface BuilderSettings {
   id: string;
   enabled: boolean;
+  /** Whether Builder reviews its own open pull requests. Writes findings, touches no branch. */
+  autoReviewEnabled: boolean;
+  /** Whether a review that found nothing may submit an approving review. */
+  autoApproveEnabled: boolean;
   /** Whether Builder may push commits to its own open pull requests. */
   autoFixEnabled: boolean;
   /** Ceiling on fix runs per pull request. */
