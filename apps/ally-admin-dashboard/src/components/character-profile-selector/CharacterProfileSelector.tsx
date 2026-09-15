@@ -18,6 +18,7 @@ import {
 import { useClickOutside, useIsPlaceholderUsed } from "@hooks";
 import { CharacterData } from "@types";
 import { camelToSnakeCase } from "@utils/common";
+import { asList } from "@utils/characterData";
 
 interface CharacterProfileSelectorProps {
   label: string;
@@ -213,8 +214,11 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         characterData.linguisticStyleSamples,
       );
 
-      if (characterData.knowledgeSources?.length) {
-        const rows = characterData.knowledgeSources.map(source => ({
+      // `?.length` alone lets a non-empty string through and `.map` then
+      // throws, taking the whole page down on character select — see asList.
+      const knowledgeSources = asList(characterData.knowledgeSources);
+      if (knowledgeSources.length) {
+        const rows = knowledgeSources.map(source => ({
           id: source.id,
           title: source.title,
           content: source.text ?? "",
