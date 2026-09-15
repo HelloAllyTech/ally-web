@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter } from "react-router-dom";
@@ -146,5 +146,15 @@ describe("FeedCard reviewed badge", () => {
     renderFeedCard();
 
     expect(screen.queryByText("Reviewed")).not.toBeInTheDocument();
+  });
+});
+
+describe("FeedCard clickability", () => {
+  it("calls onReviewTranscript when the scenario section is clicked", () => {
+    const onReviewTranscript = vi.fn();
+    const { container } = renderFeedCard({ onReviewTranscript });
+    const scenarioSection = screen.getByTestId("scenario-section-container");
+    fireEvent.click(scenarioSection);
+    expect(onReviewTranscript).toHaveBeenCalled();
   });
 });
