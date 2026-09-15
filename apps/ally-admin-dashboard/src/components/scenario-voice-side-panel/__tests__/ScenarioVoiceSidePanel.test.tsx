@@ -716,7 +716,16 @@ describe("ScenarioVoiceSidePanel", () => {
       const options = Array.from(providerDropdown().querySelectorAll("option")).map(option =>
         option.getAttribute("value"),
       );
-      expect(options).toEqual(["", "DEEPGRAM", "ELEVENLABS", "SARVAM", "GOOGLE", "HUME"]);
+      expect(options).toEqual([
+        "",
+        "DEEPGRAM",
+        "ELEVENLABS",
+        "SARVAM",
+        "GOOGLE",
+        "HUME",
+        "CARTESIA",
+        "SMALLESTAI",
+      ]);
     });
 
     it("clears the old provider's config on switch, rather than leaking it under a same-named field", () => {
