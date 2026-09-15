@@ -353,13 +353,14 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           Object.entries(rest.linguisticStyleSamples || {})
             .map(([languageId, samples]) => [
               languageId,
-              (samples ?? []).filter(sample => sample.trim() !== ""),
+              (Array.isArray(samples) ? samples : []).filter(sample => sample.trim() !== ""),
             ])
             .filter(([, samples]) => (samples as string[]).length > 0),
         ),
-        knowledgeSources: (rest.knowledgeSources || []).filter(
-          source => source.title.trim() !== "",
-        ),
+        knowledgeSources: (Array.isArray(rest.knowledgeSources)
+          ? rest.knowledgeSources
+          : []
+        ).filter(source => source.title.trim() !== ""),
       };
 
       // If no ID exists or ID is temporary, create new character
@@ -422,8 +423,10 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         JSON.stringify(initialData.languageCharacteristics || {}) ||
       JSON.stringify(formData.linguisticStyleSamples || {}) !==
         JSON.stringify(initialData.linguisticStyleSamples || {}) ||
-      JSON.stringify(formData.knowledgeSources || []) !==
-        JSON.stringify(initialData.knowledgeSources || [])
+      JSON.stringify(Array.isArray(formData.knowledgeSources) ? formData.knowledgeSources : []) !==
+        JSON.stringify(
+          Array.isArray(initialData.knowledgeSources) ? initialData.knowledgeSources : [],
+        )
     );
   };
 
@@ -647,7 +650,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
 
             <Field label={en.simulation.knowledgeSources}>
               <CharacterKnowledgeSourcesField
-                sources={formData.knowledgeSources || []}
+                sources={Array.isArray(formData.knowledgeSources) ? formData.knowledgeSources : []}
                 onChange={sources => handleFieldChange("knowledgeSources", sources)}
               />
             </Field>
