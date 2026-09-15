@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -6,7 +6,14 @@ import { toast } from "sonner";
 import { RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useMarkArticleReadMutation } from "@api";
 import { TickGreenBackground } from "@assets";
-import { StartArticleItemPayload, TrackItemCompletionResult } from "@types";
+import {
+  StartArticleItemPayload,
+  SubmitArticleQuestionAnswerResponse,
+  TrackItemCompletionResult,
+} from "@types";
+
+import { ArticleQuestionCard } from "./ArticleQuestionCard";
+import { splitArticleHtml } from "./articleSegments";
 
 interface ArticleItemPlayerProps {
   payload: StartArticleItemPayload;
@@ -39,6 +46,13 @@ function readStoredFontScaleIndex(): number {
  * a mark-read affordance that unlocks once the reader reaches ~95% (via an
  * IntersectionObserver sentinel) or after a few seconds if the content is
  * too short to scroll.
+ *
+ * An article may also carry inline questions, anchored between its prose
+ * blocks. Those are the article's completion rule when present: the server
+ * completes the item on the last answer (and refuses mark-as-read while any
+ * are outstanding), so the reader has to work through them rather than
+ * scrolling past. The body is split on their placeholders and the segments
+ * rendered in order.
  */
 export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   payload,
@@ -55,6 +69,48 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   const [marked, setMarked] = useState(alreadyCompleted);
   const [markArticleRead, { isLoading }] = useMarkArticleReadMutation();
   const [fontScaleIndex, setFontScaleIndex] = useState(readStoredFontScaleIndex);
+
+  const segments = useMemo(
+    () => splitArticleHtml(payload.html, payload.questions ?? []),
+    [payload.html, payload.questions],
+  );
+  /**
+   * Only the questions the article actually shows. Counting
+   * `payload.questions` instead would hold the footer shut forever on a
+   * translated body that lost a placeholder — the server counts the rendered
+   * set for the same reason.
+   */
+  const shownQuestions = useMemo(
+    () =>
+      segments.flatMap(segment => (segment.kind === "question" ? [segment.question] : [])),
+    [segments],
+  );
+  // Seeded from the payload so a resumed article counts what was answered
+  // before, then advanced locally as each card reports back.
+  const [answeredIds, setAnsweredIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        (payload.questions ?? [])
+          .filter(question => question.answered)
+          .map(question => question.id),
+      ),
+  );
+  const unansweredCount = shownQuestions.filter(
+    question => !answeredIds.has(question.id),
+  ).length;
+
+  const handleQuestionAnswered = (
+    questionId: string,
+    result: SubmitArticleQuestionAnswerResponse,
+  ) => {
+    setAnsweredIds(prev => new Set(prev).add(questionId));
+    // The last answer completes the article server-side; mirror that here so
+    // the outline and the footer move without a round trip.
+    if (result.completion?.completed) {
+      setMarked(true);
+      onCompleted(result.completion);
+    }
+  };
 
   const changeFontScale = (delta: 1 | -1) => {
     setFontScaleIndex(prev => {
@@ -103,7 +159,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
     return undefined;
   }, [payload.html]);
 
-  const canMark = reachedEnd || scrollPct >= READ_SCROLL_THRESHOLD * 100;
+  const canMark = (reachedEnd || scrollPct >= READ_SCROLL_THRESHOLD * 100) && unansweredCount === 0;
 
   const handleMarkRead = async () => {
     if (marked || isLoading) return;
@@ -150,7 +206,18 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
           className="mx-auto max-w-[68ch]"
           style={{ fontSize: `${FONT_SCALE_STEPS[fontScaleIndex]}rem` }}
         >
-          <RichTextRenderer content={payload.html} allowImages />
+          {segments.map(segment =>
+            segment.kind === "html" ? (
+              <RichTextRenderer key={segment.key} content={segment.html} allowImages />
+            ) : (
+              <ArticleQuestionCard
+                key={segment.key}
+                itemId={itemId}
+                question={segment.question}
+                onAnswered={result => handleQuestionAnswered(segment.question.id, result)}
+              />
+            ),
+          )}
           <div ref={sentinelRef} aria-hidden className="h-px w-full" />
         </article>
       </div>
@@ -167,7 +234,15 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
             disabled={!canMark || isLoading}
             className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
           >
-            {canMark ? t("tracks2.article.markRead") : t("tracks2.article.keepReading")}
+            {unansweredCount > 0
+              ? t(
+                  unansweredCount === 1
+                    ? "tracks2.article.answerQuestionToContinue"
+                    : "tracks2.article.answerQuestionsToContinue",
+                )
+              : canMark
+                ? t("tracks2.article.markRead")
+                : t("tracks2.article.keepReading")}
           </button>
         )}
       </div>
