@@ -5,6 +5,7 @@
  * Key Features:
  * - Automatic Bearer token authentication
  * - Token refresh on 401 errors
+ * - Transparent retry of idempotent reads across a transient gateway failure
  * - Centralized logout handling
  * - RTK Query cache management
  */
@@ -15,6 +16,7 @@ import {
   FetchArgs,
   fetchBaseQuery,
   FetchBaseQueryError,
+  retry,
 } from "@reduxjs/toolkit/query/react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -158,9 +160,77 @@ export const baseQueryWithReauth: BaseQueryFn<
   }
 };
 
+/**
+ * Gateway statuses that mean the request never got a considered answer: the
+ * load balancer had no healthy ally-be to hand it to, or the task it picked
+ * went away mid-request.
+ */
+const RETRYABLE_STATUSES = [502, 503, 504];
+
+/** Requests per call, the first one included. So: one try, then two retries. */
+const MAX_ATTEMPTS = 3;
+
+/**
+ * Was this a failure of delivery rather than an answer we should believe?
+ *
+ * `FETCH_ERROR` is fetch itself rejecting — a reset or refused connection,
+ * where no response ever arrived. It is deliberately NOT extended to
+ * `PARSING_ERROR` or a 4xx: those are answers, and repeating the request will
+ * only produce the same one.
+ */
+const isTransientError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null || !("status" in error)) return false;
+  const { status } = error as FetchBaseQueryError;
+  if (status === "FETCH_ERROR") return true;
+  return typeof status === "number" && RETRYABLE_STATUSES.includes(status);
+};
+
+/**
+ * Only reads get replayed. A `FETCH_ERROR` cannot tell us whether the server
+ * processed the first attempt, so retrying a POST/PATCH/DELETE risks applying
+ * it twice — a duplicated scribe note or a re-toggled archive flag is worse
+ * than the error we are trying to hide. RTK Query calls a plain string arg as
+ * a GET, and `FetchArgs` without a method likewise.
+ */
+const isIdempotent = (args: unknown): boolean => {
+  if (typeof args === "string") return true;
+  if (typeof args !== "object" || args === null) return false;
+  const method = (args as FetchArgs).method?.toUpperCase();
+  return method === undefined || method === HttpMethod.GET;
+};
+
+/**
+ * Absorbs a transient gateway failure instead of handing it to the screen.
+ *
+ * ally-be rolls out several times a working day (six rolling deploys in the 31
+ * hours before the 2026-09-15 report), and an ECS task draining under SIGTERM
+ * drops whatever was in flight on it. Nothing is wrong with the request or the
+ * user — a new task is already healthy — but the counsellor got the full-screen
+ * "Unable to load call logs" wall and a manual Retry button, because
+ * `baseQueryWithReauth` special-cased only 401 and every other failure went
+ * straight through to the component.
+ *
+ * Retrying here rather than in each screen is the point: one place has to know
+ * that a 502 during a rollout is not an answer, and it is cheaper and safer
+ * than expecting every table, drawer and summary panel to work it out. The
+ * cost is up to ~2.5s of extra spinner in the genuinely-broken case (RTK
+ * Query's default jittered exponential backoff: ~0.25-0.85s, then ~0.5-1.7s),
+ * which is the right trade against showing a wall for a blip that clears in
+ * under a second.
+ *
+ * Deliberately NOT a blanket retry: see `isIdempotent` and `isTransientError`.
+ * 401 never reaches here as a retryable case — `baseQueryWithReauth` has
+ * already refreshed and replayed, or logged the user out, by the time it
+ * returns.
+ */
+export const baseQueryWithRetry = retry(baseQueryWithReauth, {
+  retryCondition: (error, args, { attempt }) =>
+    attempt < MAX_ATTEMPTS && isIdempotent(args) && isTransientError(error),
+});
+
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
-  baseQuery: baseQueryWithReauth,
+  baseQuery: baseQueryWithRetry,
   tagTypes: [
     TAG_TYPES.CALL_SUMMARY,
     TAG_TYPES.CALL_LOGS,
