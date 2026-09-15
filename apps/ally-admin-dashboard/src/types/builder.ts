@@ -360,6 +360,10 @@ export interface BuilderReport {
 export interface BuilderSettings {
   id: string;
   enabled: boolean;
+  /** Whether Builder may push commits to its own open pull requests. */
+  autoFixEnabled: boolean;
+  /** Ceiling on fix runs per pull request. */
+  maxFixRunsPerPr: number;
   maxConcurrentBuilds: number;
   defaultBudgetUsd: string | null;
   /**

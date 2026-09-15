@@ -3552,6 +3552,12 @@ export const en = {
       enabledLabel: "Builder enabled",
       enabledHelp:
         "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      autoFixLabel: "Answer pull-request feedback automatically",
+      autoFixHelp:
+        "On, Builder reads failing checks and review comments on its own open pull requests and pushes commits to address them. Separate from the switch above on purpose: agreeing Builder may write code is not the same as agreeing it may keep pushing to a pull request you are in the middle of reviewing.",
+      maxFixRunsPerPrLabel: "Fix runs per pull request",
+      maxFixRunsPerPrHelp:
+        "A fix that cannot fix it will not fix it on the fourth attempt either, and the failure mode without a ceiling is a loop that pushes commits until someone notices the bill.",
       maxConcurrentBuildsLabel: "Max concurrent builds",
       maxConcurrentBuildsHelp:
         "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",
