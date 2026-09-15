@@ -62,6 +62,23 @@ export const BUG_FINDING_DECISION_REASON_HINTS: Record<BugFindingDecisionReason,
   [BugFindingDecisionReason.OTHER]: en.bugHunter.declineOtherHint,
 };
 
+/**
+ * Short provider name for a finding's `engine` field — "Claude"/"Gemini", not
+ * the raw settings value ("claude-code"/"gemini") a reader would have to
+ * already know the mapping for. Falls back to the raw string for an engine
+ * this map doesn't know yet, rather than hiding it.
+ */
+const ENGINE_PROVIDER_LABELS: Record<string, string> = {
+  "claude-code": "Claude",
+  gemini: "Gemini",
+};
+
+/** "Claude · claude-sonnet-5", or null when either half hasn't been reported yet. */
+export const engineModelLabel = (engine: string | null, model: string | null): string | null => {
+  if (!engine || !model) return null;
+  return `${ENGINE_PROVIDER_LABELS[engine] ?? engine} · ${model}`;
+};
+
 export const BUG_FINDING_SEVERITY_LABELS: Record<BugFindingSeverity, string> = {
   [BugFindingSeverity.LOW]: en.bugHunter.findingSeverityLow,
   [BugFindingSeverity.MEDIUM]: en.bugHunter.findingSeverityMedium,
