@@ -750,6 +750,17 @@ describe("CallSummary — edits autosave without pressing Save", () => {
     expect(screen.getByLabelText("Key Concerns")).toHaveValue("typed");
   });
 
+  it("shows an error toast when autosave fails", async () => {
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't save your changes automatically. We'll keep trying."));
+  });
+
   it("surfaces a toast when the counsellor presses Save and the flush fails", async () => {
     mockUpdateCallSummary.mockImplementation(() => ({
       unwrap: () => Promise.reject(new Error("boom")),

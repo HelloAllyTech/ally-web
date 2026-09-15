@@ -172,14 +172,24 @@ const CallSummary: FC<CallSummaryProps> = ({
         }),
       );
 
-      await Promise.all([
-        Object.keys(summaryPatch).length > 0
-          ? updateCallSummary({ chatId, data: { summary: summaryPatch } }).unwrap()
-          : Promise.resolve(),
-        customValues.length > 0
-          ? upsertCustomFieldValues({ chatId, values: customValues }).unwrap()
-          : Promise.resolve(),
-      ]);
+      try {
+        await Promise.all([
+          Object.keys(summaryPatch).length > 0
+            ? updateCallSummary({ chatId, data: { summary: summaryPatch } }).unwrap()
+            : Promise.resolve(),
+          customValues.length > 0
+            ? upsertCustomFieldValues({ chatId, values: customValues }).unwrap()
+            : Promise.resolve(),
+        ]);
+      } catch (error) {
+        toast.error(
+          t(
+            "summary.autosaveFailed",
+            "Couldn't save your changes automatically. We'll keep trying.",
+          ),
+        );
+        throw error;
+      }
 
       if (customValues.length > 0) {
         // Let a parent list reflect the edit on its row immediately; the list
@@ -187,7 +197,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         onCustomFieldValuesSaved?.(chatId, customValues);
       }
     },
-    [chatId, updateCallSummary, upsertCustomFieldValues, onCustomFieldValuesSaved],
+    [chatId, updateCallSummary, upsertCustomFieldValues, onCustomFieldValuesSaved, t],
   );
 
   // Autosave. Scribe used to hold every edit in component state until the
