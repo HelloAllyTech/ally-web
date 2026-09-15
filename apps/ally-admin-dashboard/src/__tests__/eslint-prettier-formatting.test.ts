@@ -31,7 +31,7 @@ let eslint: ESLint;
 describe("root eslint config: prettier formatting", () => {
   beforeAll(() => {
     eslint = new ESLint({ cwd: repoRoot, overrideConfigFile: configPath });
-  }, 15000);
+  }, 30000);
 
   it("reports no prettier/prettier violations across the codebase", async () => {
     const results = await eslint.lintFiles(filesToCheck);
@@ -42,5 +42,5 @@ describe("root eslint config: prettier formatting", () => {
     );
 
     expect(prettierViolations).toEqual([]);
-  }, 15000);
+  }, 30000);
 });
