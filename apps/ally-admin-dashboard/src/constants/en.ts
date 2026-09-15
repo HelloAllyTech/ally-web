@@ -3041,9 +3041,9 @@ export const en = {
     accuracyColFiled: "Filed",
     accuracyColJudged: "Ruled on",
     accuracyColAccuracy: "I read it right",
-    accuracyColReversalRate: "Reversed",
+    accuracyColReversalRate: "I was right after all",
     accuracyReversalRateTooltip:
-      "A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong — a correction to the raw error rate above it. It counts over the same bugs as the rest of this row, and a dismissal takes at least a month to come back as a reversal — so widen the date range past 30 days before reading anything into a dash here.",
+      "A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong, over the same bugs as the rest of this row — so it corrects \"I read it right\" upward. A dash just means you dismissed nothing of mine as a mistake in this window. A 0% is the one to be careful with: a dismissed finding can’t come back as a reversal for at least 30 days, so a 30-day window reads 0% even where reversals are already on their way. Widen the range past 90 days before you trust a zero here.",
     accuracyColLanded: "Landed",
     accuracyRepoUnassigned: "Not yet assigned",
     accuracyDeclinesTitle: "Why you turned bugs down",

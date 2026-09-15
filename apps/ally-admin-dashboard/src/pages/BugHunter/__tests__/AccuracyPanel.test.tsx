@@ -222,10 +222,36 @@ describe("AccuracyPanel", () => {
       }),
     );
 
-    expect(screen.getByText("Reversed")).toBeInTheDocument();
+    expect(screen.getByText("I was right after all")).toBeInTheDocument();
+    // Scoped to the row: the accuracy cell beside it is a dash too, and the
+    // claim here is about this column specifically.
+    const cells = screen.getByText("code_review").closest("tr")!.querySelectorAll("td");
+    expect(cells[4]).toHaveTextContent("\u2014");
+    expect(cells[4]).not.toHaveTextContent("0%");
     expect(
       screen.getByText(/A reversal means you dismissed one of my findings as a mistake/),
     ).toBeInTheDocument();
+  });
+
+  /**
+   * The distinction the tooltip hangs on, and the one nothing pinned before.
+   * A dash means nobody dismissed anything as a finder error. A hard 0% means
+   * they did and none has reversed — which on a 30-day window is what the
+   * backend expects to see whether or not the finder is actually clean, since
+   * the decline-suppression window stops a reversal landing inside it. Read as
+   * the same symbol, the two say opposite things about the finder.
+   */
+  it("prints a hard 0% \u2014 not a dash \u2014 when dismissals exist and none has reversed", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [
+          funnel({ key: "code_review", filed: 3, finderErrors: 2, reversed: 0, reversalRate: 0 }),
+        ],
+      }),
+    );
+
+    expect(screen.getByText("0%")).toBeInTheDocument();
   });
 
   it("prints the reversal rate for a source with a proven-wrong dismissal", () => {
