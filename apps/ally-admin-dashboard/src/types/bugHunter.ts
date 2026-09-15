@@ -30,10 +30,14 @@ export enum BugHuntRunStatus {
   FAILED = "failed",
   /** The kill switch was off when this trigger fired; the run did no work. */
   SKIPPED_DISABLED = "skipped_disabled",
+  /** A scheduled sweep whose repo had nothing new since its last sweep — no commits, no log group to check either. */
+  SKIPPED_QUIET = "skipped_quiet",
 }
 
 export enum BugHuntEventStage {
   SKIPPED_DISABLED = "skipped_disabled",
+  /** See BugHuntRunStatus.SKIPPED_QUIET. */
+  SKIPPED_QUIET = "skipped_quiet",
   FINDER_RESULT = "finder_result",
   VERIFY = "verify",
   FIX_ATTEMPT = "fix_attempt",

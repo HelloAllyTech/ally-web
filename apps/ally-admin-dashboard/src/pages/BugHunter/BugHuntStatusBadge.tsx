@@ -8,6 +8,7 @@ const STYLES: Record<BugHuntRunStatus, string> = {
   [BugHuntRunStatus.COMPLETED]: "bg-green-50 text-green-700 border-green-200",
   [BugHuntRunStatus.FAILED]: "bg-destructive-50 text-destructive-700 border-destructive-200",
   [BugHuntRunStatus.SKIPPED_DISABLED]: "bg-neutral-100 text-typography-600 border-border-light",
+  [BugHuntRunStatus.SKIPPED_QUIET]: "bg-neutral-100 text-typography-600 border-border-light",
 };
 
 const LABELS: Record<BugHuntRunStatus, string> = {
@@ -15,6 +16,7 @@ const LABELS: Record<BugHuntRunStatus, string> = {
   [BugHuntRunStatus.COMPLETED]: en.bugHunter.statusCompleted,
   [BugHuntRunStatus.FAILED]: en.bugHunter.statusFailed,
   [BugHuntRunStatus.SKIPPED_DISABLED]: en.bugHunter.statusSkippedDisabled,
+  [BugHuntRunStatus.SKIPPED_QUIET]: en.bugHunter.statusSkippedQuiet,
 };
 
 export const BugHuntStatusBadge: React.FC<{ status: BugHuntRunStatus }> = ({ status }) => (
