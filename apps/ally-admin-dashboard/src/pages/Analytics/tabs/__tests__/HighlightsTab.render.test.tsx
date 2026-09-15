@@ -117,6 +117,37 @@ const render = (ui: React.ReactElement) =>
  * invisible until someone clicks that tab.
  */
 describe("HighlightsTab", () => {
+  /**
+   * 60s rather than Vitest's 5000ms default, because this render genuinely
+   * costs that much. It timed out at ~5.1s under full-suite load on CI while
+   * passing in isolation, which made it a coin-flip on every PR.
+   *
+   * Measured before reaching for the number, and the cost is simply the eight
+   * panels: 1.4s for the initial Platform mount, then 0.2-1.4s per sub-tab on a
+   * quiet machine, ~6s for the walk. The per-tab figures track panel size
+   * (Curriculum 0.2s, Orgs 0.5s, Usage levels 1.3s), so it is React rendering
+   * five to ten charts' worth of tree each time and not any one bad component —
+   * there is no hot spot to delete. Sharing a machine with the rest of the
+   * project is what moves the number: the same walk takes 14-18s alongside one
+   * other file, and was measured at 36.8s inside a full 310-file project run.
+   *
+   * Two cheaper-looking fixes were measured and rejected:
+   *
+   *  - Stubbing @carbon/charts-react. Saves only 10-30% (10-15s against the
+   *    same 14-18s baseline), so it does not clear the 5s line anyway — d3 is
+   *    not the cost, the surrounding tree is. It would also cost the test its
+   *    point: a panel that throws while shaping empty data into chart props is
+   *    exactly the crash this mounts everything to catch.
+   *  - One it() per sub-tab. Each test stays under 5s on a quiet machine but
+   *    reaches 4.4s under load — no headroom, the same flake one chart later —
+   *    and re-paying the Tabs shell and the Platform panel eight times takes
+   *    the file from ~15s to ~26s.
+   *
+   * 60000 rather than the 30000 the ESLint-booting tests were normalised to in
+   * PR #644: those measured 11.9s at worst, where this one was measured at
+   * 36.8s and would still have flaked at 30000. Same intent, and the budget
+   * only ever costs time on a run that was going to fail anyway.
+   */
   it("mounts every sub-tab with no data behind it", async () => {
     render(<HighlightsTab {...filters} />);
 
@@ -127,5 +158,5 @@ describe("HighlightsTab", () => {
       // rendered — not how many times it said its own name.
       expect((await screen.findAllByText(marker)).length).toBeGreaterThan(0);
     }
-  });
+  }, 60000);
 });
