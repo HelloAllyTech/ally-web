@@ -28,6 +28,8 @@ import { formatDate, formatRelativeTime } from "@utils";
 type SettingsDraft = Pick<
   BuilderSettingsType,
   | "enabled"
+  | "autoReviewEnabled"
+  | "autoApproveEnabled"
   | "autoFixEnabled"
   | "maxFixRunsPerPr"
   | "maxConcurrentBuilds"
@@ -94,6 +96,8 @@ export const BuilderSettings: React.FC = () => {
     if (data) {
       setDraft({
         enabled: data.enabled,
+        autoReviewEnabled: data.autoReviewEnabled,
+        autoApproveEnabled: data.autoApproveEnabled,
         autoFixEnabled: data.autoFixEnabled,
         maxFixRunsPerPr: data.maxFixRunsPerPr,
         maxConcurrentBuilds: data.maxConcurrentBuilds,
@@ -114,6 +118,8 @@ export const BuilderSettings: React.FC = () => {
     try {
       await updateSettings({
         enabled: draft.enabled,
+        autoReviewEnabled: draft.autoReviewEnabled,
+        autoApproveEnabled: draft.autoApproveEnabled,
         autoFixEnabled: draft.autoFixEnabled,
         maxFixRunsPerPr: draft.maxFixRunsPerPr,
         maxConcurrentBuilds: draft.maxConcurrentBuilds,
@@ -164,6 +170,33 @@ export const BuilderSettings: React.FC = () => {
               onToggle={(checked: boolean) => set("enabled", checked)}
             />
             <p className="pt-1 text-xs text-typography-500">{strings.enabledHelp}</p>
+          </section>
+
+          {/* Ordered by how much they let go of, not by when they were built:
+              review only reads, approve vouches for the result, fix writes to
+              a branch someone may be reading. Each is independent, so the
+              middle setting — findings land, nothing pushes — is reachable. */}
+          <section className="rounded-md border border-border-light p-4">
+            <CarbonToggle
+              id="builder-settings-auto-review"
+              labelText={strings.autoReviewLabel}
+              size="sm"
+              toggled={draft.autoReviewEnabled}
+              onToggle={(checked: boolean) => set("autoReviewEnabled", checked)}
+            />
+            <p className="pt-1 text-xs text-typography-500">{strings.autoReviewHelp}</p>
+            {draft.autoReviewEnabled && (
+              <div className="mt-3 border-t border-border-light pt-3">
+                <CarbonToggle
+                  id="builder-settings-auto-approve"
+                  labelText={strings.autoApproveLabel}
+                  size="sm"
+                  toggled={draft.autoApproveEnabled}
+                  onToggle={(checked: boolean) => set("autoApproveEnabled", checked)}
+                />
+                <p className="pt-1 text-xs text-typography-500">{strings.autoApproveHelp}</p>
+              </div>
+            )}
           </section>
 
           {/* Next to the kill switch, not under the thresholds. This decides
