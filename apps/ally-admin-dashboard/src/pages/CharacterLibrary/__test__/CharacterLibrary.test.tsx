@@ -309,6 +309,15 @@ describe("CharacterLibrary", () => {
     });
   });
 
+  it("does not crash when creating a new character", async () => {
+    renderCharacterLibrary();
+    fireEvent.click(screen.getByTestId("toolbar-action"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("character-side-panel")).toBeInTheDocument();
+    });
+  });
+
   it("renders character table with data from API", () => {
     renderCharacterLibrary();
     expect(screen.getByTestId("notion-table")).toBeInTheDocument();
