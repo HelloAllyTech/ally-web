@@ -149,8 +149,21 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     const trimmed = customDraft.trim();
     if (!trimmed) return;
     setNoneSelected(false);
-    setCustomValues(prev => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
+
+    const newCustomValues = [...customValues, trimmed].filter((v, i, a) => a.indexOf(v) === i);
+    setCustomValues(newCustomValues);
     setCustomDraft("");
+
+    const labels = [...selected.map(labelFor), ...newCustomValues];
+    const message = labels.join(", ");
+    submit(message, {
+      message,
+      questionId: question.id,
+      answer: {
+        ...(selected.length ? { selectedOptionIds: selected } : {}),
+        ...(newCustomValues.length ? { customValues: newCustomValues } : {}),
+      },
+    });
   };
 
   const selectedCount = selected.length + customValues.length;
