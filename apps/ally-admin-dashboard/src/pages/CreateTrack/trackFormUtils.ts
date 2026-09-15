@@ -7,6 +7,7 @@ import {
   itemNodeKey,
   MAX_ANNOTATION_LABELS,
   MAX_ANNOTATION_UNITS,
+  MAX_ARTICLE_QUESTIONS,
   MAX_JOURNAL_PROMPTS,
   MAX_MCQ_OPTIONS,
   MIN_MCQ_OPTIONS,
@@ -59,6 +60,7 @@ const newId = () => crypto.randomUUID();
  */
 export type QuestionPath =
   | `sections.${number}.items.${number}.quiz.questions.${number}`
+  | `sections.${number}.items.${number}.article.questions.${number}`
   | `sections.${number}.items.${number}.video.interjections.${number}.question`;
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +85,7 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
 
   switch (type) {
     case TrackItemType.ARTICLE:
-      return { ...base, article: { html: "" } };
+      return { ...base, article: { html: "", questions: [] } };
     case TrackItemType.VIDEO:
       return { ...base, video: { source: "s3", url: "" } };
     case TrackItemType.JOURNAL:
@@ -305,6 +307,33 @@ export const extractImageUrls = (html: string): string[] => {
   return urls;
 };
 
+/**
+ * Question ids the article body anchors, in reading order. The question
+ * itself is stored in `content.questions`; this is the only thing the HTML
+ * knows about it, so it is what tells us where each question sits and which
+ * ones the author has actually placed.
+ */
+export const parseArticleQuestionMarkers = (html: string): string[] => {
+  if (!html) return [];
+  const ids: string[] = [];
+  for (const match of html.matchAll(
+    /<div\b[^>]*\bdata-ally-question\s*=\s*["']([^"']+)["'][^>]*>/gi,
+  )) {
+    if (!ids.includes(match[1])) ids.push(match[1]);
+  }
+  return ids;
+};
+
+/** Drop the placeholder for a question that no longer exists. */
+export const removeArticleQuestionMarker = (html: string, questionId: string): string =>
+  (html || "").replace(
+    new RegExp(
+      `<div\\b[^>]*\\bdata-ally-question\\s*=\\s*["']${questionId}["'][^>]*>\\s*</div>`,
+      "gi",
+    ),
+    "",
+  );
+
 const stripHtml = (html: string): string => (html || "").replace(/<[^>]*>/g, "").trim();
 
 const isBlank = (value?: string | null): boolean => !value || !value.trim();
@@ -410,11 +439,34 @@ const validateItem = (item: TrackItemFormValue): string[] => {
     case TrackItemType.CASE:
       if (item.caseId == null || isBlank(String(item.caseId))) errors.push("Case: pick a case");
       break;
-    case TrackItemType.ARTICLE:
-      if (isBlank(stripHtml(item.article?.html ?? ""))) {
+    case TrackItemType.ARTICLE: {
+      const html = item.article?.html ?? "";
+      const questions = item.article?.questions ?? [];
+      if (isBlank(stripHtml(html)) && questions.length === 0) {
         errors.push("Article: content is required");
       }
+      if (questions.length > MAX_ARTICLE_QUESTIONS) {
+        errors.push(`Article: at most ${MAX_ARTICLE_QUESTIONS} questions`);
+      }
+      // The question list and the body have to agree both ways: an unplaced
+      // question never renders, and a stray placeholder renders an empty hole.
+      const placed = parseArticleQuestionMarkers(html);
+      const questionIds = new Set(questions.map(question => question.id));
+      questions.forEach((question, index) => {
+        const label = `Article question ${index + 1}`;
+        if (!placed.includes(question.id)) {
+          errors.push(`${label}: place it in the article, or delete it`);
+        }
+        errors.push(...validateQuestion(question, label));
+      });
+      for (const id of placed) {
+        if (!questionIds.has(id)) {
+          errors.push("Article: a question placeholder has no question behind it");
+          break;
+        }
+      }
       break;
+    }
     case TrackItemType.VIDEO: {
       if (isBlank(item.video?.url)) {
         errors.push("Video: upload a video or paste an embed URL");
@@ -640,7 +692,18 @@ export const serializeItem = (item: TrackItemFormValue, order: number): TrackStr
     case TrackItemType.ARTICLE: {
       const html = item.article?.html ?? "";
       const imageUrls = extractImageUrls(html);
-      payload.content = { html, ...(imageUrls.length > 0 ? { imageUrls } : {}) };
+      // Only questions the body actually anchors are sent — the server
+      // rejects a mismatch, and an author who deleted a placeholder meant to
+      // drop the question with it.
+      const placed = parseArticleQuestionMarkers(html);
+      const questions = (item.article?.questions ?? []).filter(question =>
+        placed.includes(question.id),
+      );
+      payload.content = {
+        html,
+        ...(imageUrls.length > 0 ? { imageUrls } : {}),
+        ...(questions.length > 0 ? { questions } : {}),
+      };
       break;
     }
     case TrackItemType.VIDEO:
@@ -727,6 +790,7 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
               break;
             case TrackItemType.ARTICLE:
               formItem.article = (item.content as ArticleContent) ?? { html: "" };
+              formItem.article.questions = formItem.article.questions ?? [];
               break;
             case TrackItemType.VIDEO:
               formItem.video = (item.content as VideoContent) ?? { source: "s3", url: "" };

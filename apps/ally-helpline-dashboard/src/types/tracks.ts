@@ -427,10 +427,50 @@ export interface StartQuizItemPayload extends StartTrackItemBase {
   maxAttempts: number | null;
 }
 
+/**
+ * How the learner has already answered one inline article question. Present
+ * on a resumed article so the reader redraws the resolved state rather than
+ * offering a second go at a question that is already spent.
+ */
+export interface AnsweredArticleQuestion {
+  selectedOptionId: string;
+  correct: boolean;
+  /** ISO timestamp. */
+  answeredAt: string;
+}
+
+/**
+ * A single-select MCQ embedded in an article's prose. Where it sits is marked
+ * in `html` by an empty `<div data-ally-question="<id>">` placeholder, which
+ * the player splits the body on. Sanitized like any other learner-bound
+ * question: `correctOptionId` and `explanation` arrive only once the question
+ * has been answered and can never be answered again.
+ */
+export interface ArticleQuestion extends SanitizedQuizQuestion {
+  answered: AnsweredArticleQuestion | null;
+  correctOptionId: string | null;
+  explanation: string | null;
+}
+
 export interface StartArticleItemPayload extends StartTrackItemBase {
   type: TrackItemType.ARTICLE;
   html: string;
   minReadSeconds: number;
+  /** Empty for an article authored without questions. */
+  questions?: ArticleQuestion[];
+  answeredQuestionCount?: number;
+}
+
+/** Response to `POST .../article-questions/:questionId/answer`. */
+export interface SubmitArticleQuestionAnswerResponse {
+  correct: boolean;
+  selectedOptionId: string;
+  correctOptionId: string;
+  explanation: string | null;
+  answeredQuestionCount: number;
+  totalQuestionCount: number;
+  /** Non-null only when this answer completed the article. */
+  completion: TrackItemCompletionResult | null;
 }
 
 export interface StartVideoItemPayload extends StartTrackItemBase {

@@ -116,6 +116,8 @@ export const ApiEndpoints = {
     GET_NEXT_ITEM: (trackId: string) => `/v1/learn/tracks/${trackId}/next-item`,
     START_ITEM: (itemId: string) => `/v1/learn/tracks/items/${itemId}/start`,
     ARTICLE_READ: (itemId: string) => `/v1/learn/tracks/items/${itemId}/article-read`,
+    ARTICLE_QUESTION_ANSWER: (itemId: string, questionId: string) =>
+      `/v1/learn/tracks/items/${itemId}/article-questions/${questionId}/answer`,
     VIDEO_PROGRESS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/video-progress`,
     QUIZ_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/quiz-attempts`,
     QUIZ_REGRADE: (itemId: string, attemptId: string) =>

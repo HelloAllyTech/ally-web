@@ -80,6 +80,7 @@ import {
   Pause as CPause,
   Play as CPlay,
   Quotes as CQuotes,
+  RadioButtonChecked as CRadioButtonChecked,
   Renew as CRenew,
   Restart as CRestart,
   Save as CSave,
@@ -273,6 +274,8 @@ export const Strikethrough = createCarbonIcon(CTextStrikethrough);
 export const List = createCarbonIcon(CListBulleted);
 export const ListOrdered = createCarbonIcon(CListNumbered);
 export const Quote = createCarbonIcon(CQuotes);
+/** Inline article question block — a filled radio reads as "pick one answer". */
+export const McqBlock = createCarbonIcon(CRadioButtonChecked);
 export const Minus = createCarbonIcon(CSubtract);
 export const RefreshCw = createCarbonIcon(CRenew);
 export const RotateCcw = createCarbonIcon(CRestart);
