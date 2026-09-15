@@ -209,6 +209,38 @@ export const ArticleItemEditor: FC<ArticleItemEditorProps> = ({
                 </div>
 
                 <McqEditor questionPath={questionPath} multi={false} />
+
+                <div className="flex flex-col gap-1.5">
+                  <span className="inline-flex items-center gap-1">
+                    <label className="text-sm font-medium text-typography-800">
+                      Why (optional)
+                    </label>
+                    <Tooltip
+                      label="Shown to the reader once they answer, right or wrong. Being told only which answer was correct leaves them nothing to correct — a line on why the wrong ones are wrong is what turns the question into teaching."
+                      align="top"
+                    >
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </span>
+                  <Controller
+                    control={control}
+                    name={`${questionPath}.explanation`}
+                    render={({ field: explanationField }) => (
+                      <TextArea
+                        id={`${questionPath}.explanation`}
+                        labelText="Why (optional)"
+                        hideLabel
+                        {...explanationField}
+                        value={explanationField.value ?? ""}
+                        rows={2}
+                        placeholder="Shown after they answer — e.g. why the tempting wrong answer is wrong"
+                        className="w-full"
+                      />
+                    )}
+                  />
+                </div>
               </div>
             );
           })}
