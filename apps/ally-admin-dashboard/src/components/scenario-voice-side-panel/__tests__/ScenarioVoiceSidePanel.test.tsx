@@ -716,16 +716,12 @@ describe("ScenarioVoiceSidePanel", () => {
       const options = Array.from(providerDropdown().querySelectorAll("option")).map(option =>
         option.getAttribute("value"),
       );
-      expect(options).toEqual([
-        "",
-        "DEEPGRAM",
-        "ELEVENLABS",
-        "SARVAM",
-        "GOOGLE",
-        "HUME",
-        "CARTESIA",
-        "SMALLESTAI",
-      ]);
+      // Cartesia and Smallest.ai are deliberately absent: they have a config
+      // schema and ally-be can synthesize them for the preview button, but
+      // ally-ai-learn has no TTS client for either, so a scenario saved with
+      // one plays in a fallback Deepgram voice. See
+      // RUNTIME_DISPATCHABLE_PROVIDERS.
+      expect(options).toEqual(["", "DEEPGRAM", "ELEVENLABS", "SARVAM", "GOOGLE", "HUME"]);
     });
 
     it("clears the old provider's config on switch, rather than leaking it under a same-named field", () => {

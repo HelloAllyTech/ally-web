@@ -32,6 +32,29 @@ export enum TtsProvider {
   SMALLESTAI = "SMALLESTAI",
 }
 
+/**
+ * The subset of `TtsProvider` the voice agent has a client for — i.e. the only
+ * providers a scenario voice can actually be spoken in.
+ *
+ * This is deliberately narrower than `TtsProvider`. Cartesia and Smallest.ai
+ * have a config schema here and ally-be can synthesize them for the preview
+ * button, but `ally-ai-learn/app/tts/` has no client for either, so
+ * `create_tts_client()` falls through to its `else` branch: it logs a warning
+ * and returns a default Deepgram voice. A scenario saved with one of them
+ * plays every call in the wrong voice and nothing anywhere says so — which is
+ * exactly the failure the picker must not let an admin walk into.
+ *
+ * Add a provider here only once `TTSProvider` in
+ * `ally-ai-learn/app/core/constants.py` lists it and `app/tts/` has the client.
+ */
+export const RUNTIME_DISPATCHABLE_PROVIDERS: readonly TtsProvider[] = [
+  TtsProvider.DEEPGRAM,
+  TtsProvider.ELEVENLABS,
+  TtsProvider.SARVAM,
+  TtsProvider.GOOGLE,
+  TtsProvider.HUME,
+];
+
 export enum VoiceGender {
   MALE = "male",
   FEMALE = "female",
@@ -443,7 +466,7 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
 };
 
-export const TTS_PROVIDER_OPTIONS = Object.values(TtsProvider).map(provider => ({
+export const TTS_PROVIDER_OPTIONS = RUNTIME_DISPATCHABLE_PROVIDERS.map(provider => ({
   value: provider,
   label: provider.charAt(0) + provider.slice(1).toLowerCase(),
 }));
@@ -467,7 +490,7 @@ export const getProviderLabel = (provider?: string): string =>
   getProviderLabelFrom(TTS_PROVIDER_OPTIONS, provider);
 
 export const isSupportedProvider = (provider?: string): boolean =>
-  Object.values(TtsProvider).includes(String(provider ?? "").toUpperCase() as TtsProvider);
+  RUNTIME_DISPATCHABLE_PROVIDERS.includes(String(provider ?? "").toUpperCase() as TtsProvider);
 
 const GENDER_LABELS: Record<string, string> = {
   [VoiceGender.MALE]: "Male",
