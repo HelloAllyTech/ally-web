@@ -1,6 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// `baseAPI` reads VITE_API_BASE_URL once, at module load. CI has no .env, so
+// without this `fetchBaseQuery` builds "undefined/api/..." and throws on URL
+// parsing before it ever reaches the stubbed fetch — green locally, red in CI.
+// `vi.hoisted` runs before the imports below, which is the only window for it.
+vi.hoisted(() => {
+  import.meta.env.VITE_API_BASE_URL ||= "http://test.local";
+});
+
 import { baseAPI } from "../baseAPI";
 import { tracksAPI } from "../tracks";
 
