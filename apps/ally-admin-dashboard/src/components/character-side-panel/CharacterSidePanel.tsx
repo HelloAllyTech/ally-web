@@ -34,6 +34,7 @@ import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
 // load — so any consumer's test that mocks `@api` fails to load the file.
 import { useVoicePreview } from "@hooks/useVoicePreview";
 import { CharacterData } from "@types";
+import { asList } from "@utils/characterData";
 
 import { CharacterKnowledgeSourcesField } from "./CharacterKnowledgeSourcesField";
 import { DialectSamplesField } from "./DialectSamplesField";
@@ -353,11 +354,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           Object.entries(rest.linguisticStyleSamples || {})
             .map(([languageId, samples]) => [
               languageId,
-              (samples ?? []).filter(sample => sample.trim() !== ""),
+              asList<string>(samples).filter(sample => sample.trim() !== ""),
             ])
             .filter(([, samples]) => (samples as string[]).length > 0),
         ),
-        knowledgeSources: (rest.knowledgeSources || []).filter(
+        knowledgeSources: asList(rest.knowledgeSources).filter(
           source => source.title.trim() !== "",
         ),
       };
@@ -422,8 +423,8 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         JSON.stringify(initialData.languageCharacteristics || {}) ||
       JSON.stringify(formData.linguisticStyleSamples || {}) !==
         JSON.stringify(initialData.linguisticStyleSamples || {}) ||
-      JSON.stringify(formData.knowledgeSources || []) !==
-        JSON.stringify(initialData.knowledgeSources || [])
+      JSON.stringify(asList(formData.knowledgeSources)) !==
+        JSON.stringify(asList(initialData.knowledgeSources))
     );
   };
 
@@ -647,7 +648,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
 
             <Field label={en.simulation.knowledgeSources}>
               <CharacterKnowledgeSourcesField
-                sources={formData.knowledgeSources || []}
+                sources={asList(formData.knowledgeSources)}
                 onChange={sources => handleFieldChange("knowledgeSources", sources)}
               />
             </Field>

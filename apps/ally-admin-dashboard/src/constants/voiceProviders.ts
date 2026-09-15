@@ -28,6 +28,8 @@ export enum TtsProvider {
   SARVAM = "SARVAM",
   GOOGLE = "GOOGLE",
   HUME = "HUME",
+  CARTESIA = "CARTESIA",
+  SMALLESTAI = "SMALLESTAI",
 }
 
 export enum VoiceGender {
@@ -396,6 +398,47 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
       label: "Instant mode",
       required: false,
       type: "boolean",
+    },
+  ],
+  [TtsProvider.CARTESIA]: [
+    GENDER_FIELD,
+    AGE_FIELD,
+    {
+      key: "voice",
+      label: "Voice",
+      required: true,
+      type: "string",
+      placeholder: "f786b574-daa5-4673-aa0c-cbe3e8534c02",
+      hint: "The voice's id (a UUID) from Cartesia's voice library.",
+    },
+    {
+      key: "model",
+      label: "Model",
+      required: false,
+      type: "string",
+      placeholder: "sonic-3",
+      hint: "Leave empty to use Cartesia's default model (sonic-3).",
+    },
+  ],
+  [TtsProvider.SMALLESTAI]: [
+    GENDER_FIELD,
+    AGE_FIELD,
+    {
+      key: "voice_id",
+      label: "Voice ID",
+      required: true,
+      aliases: ["voiceId"],
+      type: "string",
+      placeholder: "emily",
+      hint: "The voice's id in Smallest.ai.",
+    },
+    {
+      key: "model",
+      label: "Model",
+      required: false,
+      type: "string",
+      placeholder: "lightning_v3.1_pro",
+      hint: "Leave empty to use Smallest.ai's default model (lightning_v3.1_pro).",
     },
   ],
 };
