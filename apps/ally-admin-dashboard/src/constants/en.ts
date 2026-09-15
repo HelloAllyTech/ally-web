@@ -2877,6 +2877,7 @@ export const en = {
     statusCompleted: "Completed",
     statusFailed: "Failed",
     statusSkippedDisabled: "Skipped (off duty)",
+    statusSkippedQuiet: "Skipped (quiet night)",
     emptyTitle: "No shifts yet",
     emptySubtitle: "Put me on duty above and my first sweep will show up here.",
     loadFailed: "Couldn't load the shift log.",
