@@ -100,12 +100,24 @@ export const ArticleQuestionNode = Node.create({
       };
       renderLabel();
 
+      /**
+       * The number depends on what is *before* this chip, so it has to be
+       * recomputed on every transaction, not only when this node is
+       * re-rendered: deleting an earlier question leaves this node view
+       * untouched, and ProseMirror would never call `update` — the chip would
+       * go on claiming a number that now belongs to nobody.
+       */
+      const onTransaction = () => renderLabel();
+      editor.on("transaction", onTransaction);
+
       return {
         dom,
-        // Re-number when anything before this chip moves.
         update: () => {
           renderLabel();
           return true;
+        },
+        destroy: () => {
+          editor.off("transaction", onTransaction);
         },
       };
     };

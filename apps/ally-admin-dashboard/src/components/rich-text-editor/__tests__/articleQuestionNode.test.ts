@@ -12,11 +12,18 @@ import { sanitizeHtml } from "../richTextSanitizer";
  * placeholder the server validates and the learner's player splits on, and
  * has to survive being read back in when the author reopens the article.
  */
-const makeEditor = (content = "") =>
+const makeEditor = (content = "", mounted = false) =>
   new Editor({
+    ...(mounted ? { element: document.createElement("div") } : {}),
     extensions: [StarterKit, ArticleQuestionNode],
     content,
   });
+
+/** The chip labels the author sees, in document order. */
+const chipLabels = (editor: Editor): string[] =>
+  [...editor.view.dom.querySelectorAll(".border-dashed")].map(
+    el => el.firstElementChild?.textContent ?? "",
+  );
 
 describe("ArticleQuestionNode", () => {
   it("serialises an inserted question to the placeholder the server expects", () => {
@@ -69,6 +76,41 @@ describe("ArticleQuestionNode", () => {
   it("drops a placeholder with no id rather than emitting a bare div", () => {
     const editor = makeEditor("<div data-ally-question=''></div>");
     expect(editor.getHTML()).not.toContain("data-ally-question");
+    editor.destroy();
+  });
+
+  /**
+   * A chip's number depends on what is before it, so deleting an earlier
+   * question has to renumber the ones after. ProseMirror never calls the
+   * surviving node view's `update` for a change outside its own node, which
+   * is why the view listens for transactions instead — without that, the
+   * chip kept claiming a number that belonged to nobody, and stopped
+   * matching the question fields below the editor.
+   */
+  it("renumbers the chips when an earlier question is deleted", () => {
+    const editor = makeEditor(
+      '<div data-ally-question="q1"></div><p>x</p><div data-ally-question="q2"></div>',
+      true,
+    );
+    expect(chipLabels(editor)).toEqual(["Question 1", "Question 2"]);
+
+    let firstPos: number | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (firstPos === null && node.type.name === "articleQuestion") firstPos = pos;
+      return true;
+    });
+    editor.chain().setNodeSelection(firstPos!).deleteSelection().run();
+
+    expect(chipLabels(editor)).toEqual(["Question 1"]);
+    editor.destroy();
+  });
+
+  it("numbers a question inserted above the others as the first", () => {
+    const editor = makeEditor('<p>x</p><div data-ally-question="q2"></div>', true);
+    editor.chain().focus("start").insertArticleQuestion("q9").run();
+
+    expect(chipLabels(editor)).toEqual(["Question 1", "Question 2"]);
+    expect(editor.getHTML().indexOf("q9")).toBeLessThan(editor.getHTML().indexOf("q2"));
     editor.destroy();
   });
 });
