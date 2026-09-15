@@ -307,6 +307,10 @@ export interface BugFinding {
   sessionRunUrl: string | null;
   /** GitHub Actions run id for the fix session, once resolved. What "Stop fix session" cancels. */
   sessionRunId: string | null;
+  /** Which CLI ran this finding's most recent session ("claude-code" or "gemini"). Null until that run reports it. */
+  engine: string | null;
+  /** The model within that engine, e.g. "claude-sonnet-5" or "gemini-2.5-pro". */
+  model: string | null;
   releaseTag: string | null;
   releaseRunUrl: string | null;
   releasedBy: number | null;
