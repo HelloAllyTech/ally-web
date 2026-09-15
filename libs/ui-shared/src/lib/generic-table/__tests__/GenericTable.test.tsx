@@ -157,7 +157,24 @@ describe("GenericTable", () => {
     );
   });
 
-  it("renders Load More and spinner when loading", () => {
+  it("renders Load More and calls handler when not loading", () => {
+    const handleLoadMore = vi.fn();
+    const { container } = render(
+      <GenericTable
+        columns={[{ key: "name", header: "Name" }] as any}
+        data={[{ name: "A" }]}
+        handleLoadMore={handleLoadMore}
+        isLoading={false}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Load More"));
+    expect(handleLoadMore).toHaveBeenCalledTimes(1);
+    // Carbon's Loading spinner renders as `.cds--loading` (no progressbar role).
+    expect(container.querySelector(".cds--loading")).not.toBeInTheDocument();
+  });
+
+  it("does not call handleLoadMore when already loading", () => {
     const handleLoadMore = vi.fn();
     const { container } = render(
       <GenericTable
@@ -169,8 +186,7 @@ describe("GenericTable", () => {
     );
 
     fireEvent.click(screen.getByText("Load More"));
-    expect(handleLoadMore).toHaveBeenCalledTimes(1);
-    // Carbon's Loading spinner renders as `.cds--loading` (no progressbar role).
+    expect(handleLoadMore).not.toHaveBeenCalled();
     expect(container.querySelector(".cds--loading")).toBeInTheDocument();
   });
 });

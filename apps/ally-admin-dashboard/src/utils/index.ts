@@ -14,3 +14,4 @@ export * from "./availableVariables";
 export * from "./navigation";
 export * from "./errorMessage";
 export * from "./agentAuthored";
+export * from "./characterData";
