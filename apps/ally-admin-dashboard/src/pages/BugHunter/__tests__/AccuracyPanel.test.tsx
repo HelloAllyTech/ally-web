@@ -73,7 +73,10 @@ const metrics = (over: Partial<BugHunterMetrics> = {}): BugHunterMetrics => ({
   ...over,
 });
 
-const mount = (data: BugHunterMetrics | undefined, state: Partial<{ isLoading: boolean; isError: boolean }> = {}) => {
+const mount = (
+  data: BugHunterMetrics | undefined,
+  state: Partial<{ isLoading: boolean; isError: boolean }> = {},
+) => {
   useGetBugHunterMetricsQuery.mockReturnValue({
     data,
     isLoading: false,
@@ -138,9 +141,7 @@ describe("AccuracyPanel", () => {
       }),
     );
 
-    expect(
-      screen.getByText(/5 older decision\(s\) have no reason stored/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/5 older decision\(s\) have no reason stored/)).toBeInTheDocument();
   });
 
   it("shows an empty state before anything has been filed", () => {
