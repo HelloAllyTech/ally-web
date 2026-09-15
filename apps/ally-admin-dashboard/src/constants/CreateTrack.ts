@@ -34,6 +34,9 @@ export const MAX_JOURNAL_PROMPTS = 5;
 export const MIN_MCQ_OPTIONS = 2;
 export const MAX_MCQ_OPTIONS = 8;
 
+/** Inline questions per article. Mirrors the server's own cap. */
+export const MAX_ARTICLE_QUESTIONS = 10;
+
 export const TRACK_ITEM_TYPE_LABELS: Record<TrackItemType, string> = {
   [TrackItemType.ROLEPLAY]: "Roleplay",
   [TrackItemType.CASE]: "Case",

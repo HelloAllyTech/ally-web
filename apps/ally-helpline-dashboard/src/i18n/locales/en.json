@@ -1574,7 +1574,18 @@
       "read": "Read",
       "keepReading": "Keep reading to continue",
       "increaseFontSize": "Increase text size",
-      "decreaseFontSize": "Decrease text size"
+      "decreaseFontSize": "Decrease text size",
+      "answerQuestionToContinue": "Answer the question to continue",
+      "answerQuestionsToContinue": "Answer the questions to continue",
+      "question": {
+        "title": "Quick check",
+        "submit": "Check answer",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "correctAnswerIs": "The correct answer is marked below.",
+        "answeredHint": "You've answered this one — it can't be changed.",
+        "progress": "{{answered}} of {{total}} answered"
+      }
     },
     "video": {
       "markWatched": "Mark as watched",

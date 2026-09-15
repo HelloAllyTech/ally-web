@@ -44,6 +44,8 @@ const funnel = (over: Partial<BugHunterFunnel> = {}): BugHunterFunnel => ({
   accuracy: null,
   lowConfidence: 0,
   unscored: 0,
+  reversed: 0,
+  reversalRate: null,
   ...over,
 });
 
@@ -71,7 +73,10 @@ const metrics = (over: Partial<BugHunterMetrics> = {}): BugHunterMetrics => ({
   ...over,
 });
 
-const mount = (data: BugHunterMetrics | undefined, state: Partial<{ isLoading: boolean; isError: boolean }> = {}) => {
+const mount = (
+  data: BugHunterMetrics | undefined,
+  state: Partial<{ isLoading: boolean; isError: boolean }> = {},
+) => {
   useGetBugHunterMetricsQuery.mockReturnValue({
     data,
     isLoading: false,
@@ -136,9 +141,7 @@ describe("AccuracyPanel", () => {
       }),
     );
 
-    expect(
-      screen.getByText(/5 older decision\(s\) have no reason stored/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/5 older decision\(s\) have no reason stored/)).toBeInTheDocument();
   });
 
   it("shows an empty state before anything has been filed", () => {
@@ -210,6 +213,59 @@ describe("AccuracyPanel", () => {
 
     expect(screen.getByText("Real, but not worth fixing")).toBeInTheDocument();
     expect(screen.getByText("It isn't a bug")).toBeInTheDocument();
+  });
+
+  it("shows a dash rather than 0% for a source that has never had a finder-error dismissal", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [funnel({ key: "code_review", filed: 3, reversalRate: null })],
+      }),
+    );
+
+    expect(screen.getByText("I was right after all")).toBeInTheDocument();
+    // Scoped to the row: the accuracy cell beside it is a dash too, and the
+    // claim here is about this column specifically.
+    const cells = screen.getByText("code_review").closest("tr")!.querySelectorAll("td");
+    expect(cells[4]).toHaveTextContent("\u2014");
+    expect(cells[4]).not.toHaveTextContent("0%");
+    expect(
+      screen.getByText(/A reversal means you dismissed one of my findings as a mistake/),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * The distinction the tooltip hangs on, and the one nothing pinned before.
+   * A dash means nobody dismissed anything as a finder error. A hard 0% means
+   * they did and none has reversed — which on a 30-day window is what the
+   * backend expects to see whether or not the finder is actually clean, since
+   * the decline-suppression window stops a reversal landing inside it. Read as
+   * the same symbol, the two say opposite things about the finder.
+   */
+  it("prints a hard 0% \u2014 not a dash \u2014 when dismissals exist and none has reversed", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [
+          funnel({ key: "code_review", filed: 3, finderErrors: 2, reversed: 0, reversalRate: 0 }),
+        ],
+      }),
+    );
+
+    expect(screen.getByText("0%")).toBeInTheDocument();
+  });
+
+  it("prints the reversal rate for a source with a proven-wrong dismissal", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 3 }),
+        bySource: [
+          funnel({ key: "code_review", filed: 3, finderErrors: 2, reversed: 1, reversalRate: 0.5 }),
+        ],
+      }),
+    );
+
+    expect(screen.getByText("50%")).toBeInTheDocument();
   });
 
   it("labels a repo-less group rather than showing a blank row", () => {

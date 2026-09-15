@@ -62,6 +62,8 @@ export enum BugHuntEventStage {
   REGRESSED = "regressed",
   /** A sweep re-found a bug that was already declined, and dedupe suppressed it rather than opening a second row. */
   RECURRENCE_SUPPRESSED = "recurrence_suppressed",
+  /** This dismissal was proven wrong — a same-dedupe-key finding shipped. See ally-be's checkForAndRecordReversals. */
+  REVERSED = "reversed",
 }
 
 /**
@@ -464,6 +466,15 @@ export interface BugHunterFunnel {
   accuracy: number | null;
   lowConfidence: number;
   unscored: number;
+  /** Finder-error dismissals later proven wrong by a same-dedupe-key finding shipping. */
+  reversed: number;
+  /**
+   * `reversed / finderErrors` — a correction to the raw error rate: a
+   * reversal means a finding was incorrectly dismissed by an admin and later
+   * shipped under a duplicate report. Null when nothing has ever been
+   * dismissed as a finder error.
+   */
+  reversalRate: number | null;
 }
 
 export interface BugHunterDecline {

@@ -25,4 +25,5 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.DECISION_RECORDED]: "Declined",
   [BugHuntEventStage.REGRESSED]: "Came back",
   [BugHuntEventStage.RECURRENCE_SUPPRESSED]: "Found again",
+  [BugHuntEventStage.REVERSED]: "Dismissal reversed",
 };

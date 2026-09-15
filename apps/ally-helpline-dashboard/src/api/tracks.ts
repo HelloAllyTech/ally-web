@@ -17,6 +17,7 @@ import {
   QuizAnswerInput,
   QuizAttemptResult,
   StartTrackItemResponse,
+  SubmitArticleQuestionAnswerResponse,
   SubmitInterjectionAnswerResponse,
   TrackDetail,
   TrackItemCompletionResult,
@@ -134,6 +135,29 @@ const tracksAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
       }),
       invalidatesTags: ALL_TRACK_TAGS,
+    }),
+
+    /**
+     * Answer one inline article question. Final — the server refuses a second
+     * answer to the same question. Invalidates the track tags only when the
+     * answer completed the article, which is the one case where the outline's
+     * completion state has actually moved.
+     */
+    submitArticleQuestionAnswer: builder.mutation<
+      SubmitArticleQuestionAnswerResponse,
+      { itemId: string; questionId: string; selectedOptionId: string }
+    >({
+      query: ({ itemId, questionId, selectedOptionId }) => ({
+        url: ApiEndpoints.TRACKS.ARTICLE_QUESTION_ANSWER(itemId, questionId),
+        method: HttpMethod.POST,
+        body: { selectedOptionId },
+      }),
+      onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
+        const { data } = await queryFulfilled;
+        if (data.completion?.completed) {
+          dispatch(baseAPI.util.invalidateTags(ALL_TRACK_TAGS));
+        }
+      },
     }),
 
     /**
@@ -284,6 +308,7 @@ export const {
   useMarkArticleReadMutation,
   useReportVideoProgressMutation,
   useSubmitQuizAttemptMutation,
+  useSubmitArticleQuestionAnswerMutation,
   useSubmitInterjectionAnswerMutation,
   useRegradeQuizAttemptMutation,
   useSaveJournalDraftMutation,

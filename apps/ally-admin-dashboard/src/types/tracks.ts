@@ -40,6 +40,14 @@ export enum TrackGameKey {
 export interface ArticleContent {
   html: string;
   imageUrls?: string[];
+  /**
+   * Single-select MCQs the learner answers in place. Where each one sits is
+   * anchored in `html` by an empty `<div data-ally-question="<id>"></div>`
+   * placeholder — the question, its options and its answer key live here and
+   * never in the body, so the key is not something the rich-text sanitizer or
+   * the learner's payload ever carries.
+   */
+  questions?: McqSingleQuestion[];
 }
 
 export type VideoSource = "s3" | "youtube" | "vimeo" | "loom";

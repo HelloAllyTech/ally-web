@@ -7,6 +7,7 @@ import Underline from "@tiptap/extension-underline";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
+import { ArticleQuestionNode } from "./articleQuestionNode";
 import { sanitizeHtml } from "./richTextSanitizer";
 import { RichTextToolbar } from "./RichTextToolbar";
 
@@ -31,6 +32,13 @@ interface RichTextEditorProps {
   allowImages?: boolean;
   /** Upload handler for the toolbar image button; resolves to the public URL. */
   onImageUpload?: (file: File) => Promise<string | null>;
+  /**
+   * Opt-in inline question placeholders (track article builder). Creating the
+   * question itself is the caller's job — the toolbar button calls this and
+   * anchors a placeholder wherever the cursor is, using the id it returns.
+   * Returning null cancels (e.g. the author is already at the cap).
+   */
+  onCreateQuestion?: () => string | null;
 }
 
 export const RichTextEditor: FC<RichTextEditorProps> = ({
@@ -43,7 +51,9 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   borderless = false,
   allowImages = false,
   onImageUpload,
+  onCreateQuestion,
 }) => {
+  const allowQuestions = !!onCreateQuestion;
   // Read inside onUpdate, which TipTap creates once and would otherwise close
   // over the first render's `value`.
   const valueRef = useRef(value);
@@ -67,6 +77,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
             }),
           ]
         : []),
+      ...(allowQuestions ? [ArticleQuestionNode] : []),
       ...(maxLength != null
         ? [
             CharacterCount.configure({
@@ -85,7 +96,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
     },
     onUpdate: ({ editor: updatedEditor }) => {
       const html = updatedEditor.getHTML();
-      const sanitized = sanitizeHtml(html, { allowImages });
+      const sanitized = sanitizeHtml(html, { allowImages, allowQuestions });
       // TipTap fires onUpdate for its own initial content load, not only for
       // typing. Reporting that as an edit is destructive: the editor mounts
       // before the form has been populated from the server, so the empty
@@ -101,13 +112,13 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   useEffect(() => {
     if (!editor) return;
     const currentHtml = editor.getHTML();
-    const sanitizedValue = sanitizeHtml(value || "", { allowImages });
+    const sanitizedValue = sanitizeHtml(value || "", { allowImages, allowQuestions });
 
     // Avoid infinite loop: only update if content actually differs
     if (normalizeForCompare(currentHtml) !== normalizeForCompare(sanitizedValue)) {
       editor.commands.setContent(sanitizedValue, { emitUpdate: false });
     }
-  }, [editor, value, allowImages]);
+  }, [editor, value, allowImages, allowQuestions]);
 
   // Sync editable state
   useEffect(() => {
@@ -127,6 +138,14 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
         }
       : undefined;
 
+  const handleInsertQuestion =
+    onCreateQuestion && editor
+      ? () => {
+          const questionId = onCreateQuestion();
+          if (questionId) editor.chain().focus().insertArticleQuestion(questionId).run();
+        }
+      : undefined;
+
   return (
     <div
       className={`${borderless ? "" : "border border-border-light rounded-md"} overflow-hidden bg-white ${
@@ -134,7 +153,11 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
       } ${className}`}
       data-testid="rich-text-editor"
     >
-      <RichTextToolbar editor={editor} onInsertImage={handleInsertImage} />
+      <RichTextToolbar
+        editor={editor}
+        onInsertImage={handleInsertImage}
+        onInsertQuestion={handleInsertQuestion}
+      />
       <EditorContent editor={editor} />
       {maxLength != null && (
         <div className="flex justify-end px-3 py-1.5 border-t border-border-light bg-gray-50/30">
