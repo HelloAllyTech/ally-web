@@ -12,7 +12,11 @@ import { ActionConfirmationPopup } from "@components/action-confirmation-popup";
 import { en } from "@constants";
 import { BugFinding, BugFindingDecisionReason, BugFindingStatus } from "@types";
 
-import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
+import {
+  BUG_FINDING_SEVERITY_LABELS,
+  BUG_FINDING_SOURCE_LABELS,
+  engineModelLabel,
+} from "./bugFindingLabels";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 
@@ -108,6 +112,7 @@ export const NeedsYouCard: FC<NeedsYouCardProps> = ({ finding, onOpen }) => {
     finding.repo,
     finding.severity ? BUG_FINDING_SEVERITY_LABELS[finding.severity] : null,
     BUG_FINDING_SOURCE_LABELS[finding.source],
+    engineModelLabel(finding.engine, finding.model),
   ].filter(Boolean);
 
   return (
