@@ -34,6 +34,7 @@ import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
 // load — so any consumer's test that mocks `@api` fails to load the file.
 import { useVoicePreview } from "@hooks/useVoicePreview";
 import { CharacterData } from "@types";
+import { asList } from "@utils/characterData";
 
 import { CharacterKnowledgeSourcesField } from "./CharacterKnowledgeSourcesField";
 import { DialectSamplesField } from "./DialectSamplesField";
@@ -353,14 +354,13 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           Object.entries(rest.linguisticStyleSamples || {})
             .map(([languageId, samples]) => [
               languageId,
-              (Array.isArray(samples) ? samples : []).filter(sample => sample.trim() !== ""),
+              asList<string>(samples).filter(sample => sample.trim() !== ""),
             ])
             .filter(([, samples]) => (samples as string[]).length > 0),
         ),
-        knowledgeSources: (Array.isArray(rest.knowledgeSources)
-          ? rest.knowledgeSources
-          : []
-        ).filter(source => source.title.trim() !== ""),
+        knowledgeSources: asList(rest.knowledgeSources).filter(
+          source => source.title.trim() !== "",
+        ),
       };
 
       // If no ID exists or ID is temporary, create new character
@@ -423,10 +423,8 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         JSON.stringify(initialData.languageCharacteristics || {}) ||
       JSON.stringify(formData.linguisticStyleSamples || {}) !==
         JSON.stringify(initialData.linguisticStyleSamples || {}) ||
-      JSON.stringify(Array.isArray(formData.knowledgeSources) ? formData.knowledgeSources : []) !==
-        JSON.stringify(
-          Array.isArray(initialData.knowledgeSources) ? initialData.knowledgeSources : [],
-        )
+      JSON.stringify(asList(formData.knowledgeSources)) !==
+        JSON.stringify(asList(initialData.knowledgeSources))
     );
   };
 
@@ -650,7 +648,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
 
             <Field label={en.simulation.knowledgeSources}>
               <CharacterKnowledgeSourcesField
-                sources={Array.isArray(formData.knowledgeSources) ? formData.knowledgeSources : []}
+                sources={asList(formData.knowledgeSources)}
                 onChange={sources => handleFieldChange("knowledgeSources", sources)}
               />
             </Field>
