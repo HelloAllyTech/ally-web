@@ -21,6 +21,7 @@ import {
   BuilderSessionDetail,
   BuilderSessionStatus,
   BuilderSettings,
+  BuilderSteer,
   CreateBuilderSessionRequest,
   PatchBuilderLessonRequest,
   PatchBuilderPrdRequest,
@@ -230,6 +231,32 @@ export const builderAPI = baseAPI.injectEndpoints({
         { type: TAG_TYPES.BUILDER_SESSION, id },
         TAG_TYPES.BUILDER_SESSIONS,
       ],
+    }),
+
+    /** Steering notes on a session, newest first. */
+    getBuilderSteers: builder.query<BuilderSteer[], string>({
+      query: id => ({
+        url: ApiEndpoints.BUILDER.SESSION_STEER(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (result, error, id) => [{ type: TAG_TYPES.BUILDER_SESSION, id }],
+    }),
+
+    /**
+     * Send a correction to a build in flight. Invalidates the session so the
+     * note appears in the list without a manual refetch — the whole point is
+     * that the sender can see it was queued.
+     */
+    steerBuilderSession: builder.mutation<
+      { id: string; status: string; delivery: string },
+      { id: string; note: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.BUILDER.SESSION_STEER(id),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: TAG_TYPES.BUILDER_SESSION, id }],
     }),
 
     getBuilderRuns: builder.query<BuilderBuildRun[], string>({
@@ -442,6 +469,8 @@ export const {
   useGetBuilderRepoMapsQuery,
   useStartBuilderBuildMutation,
   useGetBuilderSessionBudgetQuery,
+  useGetBuilderSteersQuery,
+  useSteerBuilderSessionMutation,
   useRaiseBuilderSessionBudgetMutation,
   useGetBuilderRunsQuery,
   useLazyGetBuilderRunEventsQuery,

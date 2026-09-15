@@ -3210,6 +3210,22 @@ export const en = {
     } as Record<string, string>,
 
     // Interview
+    steer: {
+      title: "Redirect this build",
+      // Said plainly on the control, because the alternative to being
+      // precise here is someone believing the build changed course when it
+      // has only been told.
+      hintLive: "Reaches the build at its next phase",
+      hintIdle: "The next build on this session reads it first",
+      placeholder: "Use the existing repository rather than adding a second one…",
+      send: "Send",
+      pending: "Waiting",
+      delivered: "Read by the build",
+      deliveredAtPhase: (phase: string) => `Read at ${phase}`,
+      superseded: "Never read",
+      tooLong: "That is a change to the PRD, not a correction to a run.",
+      failed: "Could not send that note. Try again.",
+    },
     chat: {
       heading: "Scoping",
       placeholder: "Answer, or tell me something I haven't asked about…",
