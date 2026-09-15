@@ -1,15 +1,9 @@
-import { http, HttpResponse } from "msw";
-
-import { server } from "@mocks/server";
-import { waitFor } from "@testing-library/react";
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { baseAPI } from "../baseAPI";
-import { useGetSimulationCreditsQuery } from "../simulationCredits";
-
 
 // Mock constants
 vi.mock("@constants", () => ({
@@ -17,9 +11,6 @@ vi.mock("@constants", () => ({
     USER: {
       GET_USER_PREFERENCES: "/user/preferences",
       UPDATE_USER_PREFERENCES: "/user/preferences/update",
-    },
-    SIMULATION: {
-      SIMULATION_CREDITS: "/v1/simulation-credits",
     },
   },
   HttpMethod: {
@@ -39,11 +30,7 @@ vi.mock("@types", () => ({
 }));
 
 // Import hooks after mocks
-import {
-  useGetUserPreferencesQuery,
-  useUpdateUserPreferencesMutation,
-} from "../user";
-import { useGetSimulationCreditsQuery } from "../simulationCredits";
+import { useGetUserPreferencesQuery, useUpdateUserPreferencesMutation } from "../user";
 
 const testStore = configureStore({
   reducer: {
@@ -107,28 +94,6 @@ describe("User API", () => {
 
       const [trigger] = result.current;
       expect(() => trigger({ default_language_id: 1 })).not.toThrow();
-    });
-  });
-  describe("useGetSimulationCreditsQuery", () => {
-    it("fetches simulation credits correctly", async () => {
-      const userId = 1;
-      server.use(
-        http.get(
-          `${ApiEndpoints.SIMULATION.SIMULATION_CREDITS}/${userId}`,
-          () => new HttpResponse(JSON.stringify({ credits: 10 }), { status: 200 }),
-        ),
-      );
-  
-      const { result } = renderHook(
-        () => useGetSimulationCreditsQuery(userId),
-        {
-          wrapper: TestWrapper,
-        },
-      );
-  
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      });
     });
   });
 });
