@@ -10,6 +10,7 @@ import {
   Heading3,
   ImageIcon,
   List,
+  McqBlock,
   ListOrdered,
   Quote,
   Minus,
@@ -52,9 +53,15 @@ interface RichTextToolbarProps {
   editor: Editor | null;
   /** When provided, renders an image button that uploads then inserts the image. */
   onInsertImage?: (file: File) => Promise<void> | void;
+  /** When provided, renders a button that anchors a question at the cursor. */
+  onInsertQuestion?: () => void;
 }
 
-export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor, onInsertImage }) => {
+export const RichTextToolbar: FC<RichTextToolbarProps> = ({
+  editor,
+  onInsertImage,
+  onInsertQuestion,
+}) => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
@@ -188,6 +195,15 @@ export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor, onInsertImag
             className="hidden"
             onChange={handleImageFileChange}
           />
+        </>
+      )}
+
+      {onInsertQuestion && (
+        <>
+          <ToolbarDivider />
+          <ToolbarButton onClick={onInsertQuestion} title="Insert multiple choice question">
+            <McqBlock size={iconSize} />
+          </ToolbarButton>
         </>
       )}
     </div>

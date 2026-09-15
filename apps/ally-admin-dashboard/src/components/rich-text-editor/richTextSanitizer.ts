@@ -1,5 +1,7 @@
 import DOMPurify from "dompurify";
 
+import { ARTICLE_QUESTION_MARKER_ATTR } from "./articleQuestionNode";
+
 const ALLOWED_TAGS = [
   "p",
   "strong",
@@ -32,19 +34,44 @@ const PURIFY_CONFIG_WITH_IMAGES = {
   ALLOWED_ATTR: ["src", "alt"],
 };
 
+// Opt-in variant for the track article builder's inline questions. Adds only
+// the empty `div[data-ally-question]` placeholder that anchors a question in
+// the body — the question itself, options and answer key included, is stored
+// outside the HTML and never passes through here.
+const PURIFY_CONFIG_WITH_QUESTIONS = {
+  ALLOWED_TAGS: [...ALLOWED_TAGS, "div"],
+  ALLOWED_ATTR: [ARTICLE_QUESTION_MARKER_ATTR],
+  ALLOW_DATA_ATTR: false,
+  KEEP_CONTENT: true,
+};
+
+const PURIFY_CONFIG_WITH_IMAGES_AND_QUESTIONS = {
+  ALLOWED_TAGS: [...ALLOWED_TAGS, "img", "div"],
+  ALLOWED_ATTR: ["src", "alt", ARTICLE_QUESTION_MARKER_ATTR],
+  ALLOW_DATA_ATTR: false,
+  KEEP_CONTENT: true,
+};
+
 export interface SanitizeHtmlOptions {
   /** Allow `img[src, alt]` tags. Default false — existing callers unchanged. */
   allowImages?: boolean;
+  /** Allow `div[data-ally-question]` question placeholders. Default false. */
+  allowQuestions?: boolean;
 }
 
 /**
  * Sanitize HTML content to allow only safe formatting tags.
  * Strips all attributes, scripts, images, links, iframes, and embeds
- * (images survive only when `allowImages` is set).
+ * (images survive only when `allowImages` is set, and question placeholders
+ * only when `allowQuestions` is).
  */
 export function sanitizeHtml(html: string, options?: SanitizeHtmlOptions): string {
   if (!html) return "";
-  const config = options?.allowImages ? PURIFY_CONFIG_WITH_IMAGES : PURIFY_CONFIG;
+  const { allowImages, allowQuestions } = options ?? {};
+  let config = PURIFY_CONFIG;
+  if (allowImages && allowQuestions) config = PURIFY_CONFIG_WITH_IMAGES_AND_QUESTIONS;
+  else if (allowImages) config = PURIFY_CONFIG_WITH_IMAGES;
+  else if (allowQuestions) config = PURIFY_CONFIG_WITH_QUESTIONS;
   return DOMPurify.sanitize(html, config) as unknown as string;
 }
 
