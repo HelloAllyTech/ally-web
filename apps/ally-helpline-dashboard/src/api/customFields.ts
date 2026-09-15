@@ -8,6 +8,7 @@ import {
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
+import { mergeRowCustomFieldValues, patchCachedCallLogRow } from "./calls";
 
 const customFieldsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -75,8 +76,24 @@ const customFieldsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { chatId }) => [
         { type: TAG_TYPES.CUSTOM_FIELD_VALUES, id: chatId },
-        TAG_TYPES.CALL_LOGS,
       ],
+      /**
+       * The other half of the scribe autosave: custom-field edits go here, on
+       * the same 800ms debounce. The list renders these values in their own
+       * columns, and the values we just sent are exactly what the row should
+       * now show — so patch the row instead of invalidating the list and
+       * re-decrypting every other session on the page.
+       */
+      async onQueryStarted({ chatId, values }, { dispatch, getState, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } catch {
+          return;
+        }
+        patchCachedCallLogRow({ dispatch, getState }, chatId, row => {
+          row.customFieldValues = mergeRowCustomFieldValues(row.customFieldValues, values);
+        });
+      },
     }),
 
     getSummarySections: builder.query<

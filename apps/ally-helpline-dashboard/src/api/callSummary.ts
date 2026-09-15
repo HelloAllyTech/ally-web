@@ -25,6 +25,7 @@ import {
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
+import { patchCachedCallLogRow } from "./calls";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -62,7 +63,32 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY],
+      /**
+       * This is the hottest writer on the platform: scribe autosaves every
+       * field edit on an 800ms debounce, so one note write-up fires it dozens
+       * of times. It used to invalidate the whole `CallLogs` tag, and each of
+       * those invalidations re-read the counsellor's 25-row page and made
+       * ally-be decrypt all 25 `CallDetails` again.
+       *
+       * The endpoint answers with the updated chat, so the only thing the list
+       * shows that a summary edit can change — the tag chips, with the
+       * positivity ratings the server assigns *after* the write — is already in
+       * hand. Patch the row with it and read nothing back.
+       */
+      async onQueryStarted({ chatId }, { dispatch, getState, queryFulfilled }) {
+        try {
+          const { data: updatedChat } = await queryFulfilled;
+          const details = (updatedChat as { details?: unknown })?.details;
+          if (!details) return;
+          patchCachedCallLogRow({ dispatch, getState }, chatId, row => {
+            row.details = details;
+          });
+        } catch {
+          // The write failed; the list keeps the last row it was told about,
+          // and the form surfaces the failure itself.
+        }
+      },
     }),
 
     /**
@@ -77,7 +103,13 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALL_SUMMARY.RETRY_SUMMARY(chatId),
         method: HttpMethod.POST,
       }),
-      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
+      // A regenerated summary comes from the server, not from anything we sent,
+      // so this one genuinely needs a re-read — scoped to the row, so it only
+      // refetches the lists that actually show it.
+      invalidatesTags: (_result, _error, chatId) => [
+        TAG_TYPES.CALL_SUMMARY,
+        { type: TAG_TYPES.CALL_LOGS, id: chatId },
+      ],
     }),
 
     /**
@@ -120,7 +152,22 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: callInfo,
       }),
-      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY],
+      // Renaming a session changes exactly one cell of one row, and the
+      // response carries the updated chat — patch it in rather than re-reading
+      // the page. Same reasoning as `updateCallSummary` above.
+      async onQueryStarted({ chatId }, { dispatch, getState, queryFulfilled }) {
+        try {
+          const { data: updatedChat } = await queryFulfilled;
+          const details = (updatedChat as unknown as { details?: unknown })?.details;
+          if (!details) return;
+          patchCachedCallLogRow({ dispatch, getState }, chatId, row => {
+            row.details = details;
+          });
+        } catch {
+          // Leave the list showing the name it last knew about.
+        }
+      },
     }),
 
     /**
