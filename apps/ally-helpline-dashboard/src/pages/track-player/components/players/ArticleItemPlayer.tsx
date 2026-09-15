@@ -70,17 +70,34 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   const [markArticleRead, { isLoading }] = useMarkArticleReadMutation();
   const [fontScaleIndex, setFontScaleIndex] = useState(readStoredFontScaleIndex);
 
-  const questions = useMemo(() => payload.questions ?? [], [payload.questions]);
   const segments = useMemo(
-    () => splitArticleHtml(payload.html, questions),
-    [payload.html, questions],
+    () => splitArticleHtml(payload.html, payload.questions ?? []),
+    [payload.html, payload.questions],
+  );
+  /**
+   * Only the questions the article actually shows. Counting
+   * `payload.questions` instead would hold the footer shut forever on a
+   * translated body that lost a placeholder — the server counts the rendered
+   * set for the same reason.
+   */
+  const shownQuestions = useMemo(
+    () =>
+      segments.flatMap(segment => (segment.kind === "question" ? [segment.question] : [])),
+    [segments],
   );
   // Seeded from the payload so a resumed article counts what was answered
   // before, then advanced locally as each card reports back.
   const [answeredIds, setAnsweredIds] = useState<Set<string>>(
-    () => new Set(questions.filter(question => question.answered).map(question => question.id)),
+    () =>
+      new Set(
+        (payload.questions ?? [])
+          .filter(question => question.answered)
+          .map(question => question.id),
+      ),
   );
-  const unansweredCount = questions.length - answeredIds.size;
+  const unansweredCount = shownQuestions.filter(
+    question => !answeredIds.has(question.id),
+  ).length;
 
   const handleQuestionAnswered = (
     questionId: string,

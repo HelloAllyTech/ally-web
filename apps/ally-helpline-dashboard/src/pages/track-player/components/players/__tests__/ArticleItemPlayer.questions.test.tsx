@@ -223,3 +223,42 @@ describe("ArticleItemPlayer — inline questions", () => {
     expect(screen.getByRole("button", { name: /Mark as read|Keep reading/ })).toBeInTheDocument();
   });
 });
+
+/**
+ * A translated body can come back without a placeholder. The server already
+ * stops counting that question; the footer has to agree, or the reader is
+ * held behind a question that is nowhere on screen.
+ */
+describe("ArticleItemPlayer — a question the body no longer anchors", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    markArticleRead.mockReturnValue({ unwrap: () => Promise.resolve({ completed: true }) });
+  });
+
+  it("does not hold the footer shut for a question that never renders", () => {
+    const q1 = question("q1");
+    const q2 = question("q2");
+    render(
+      <ArticleItemPlayer
+        payload={{
+          type: TrackItemType.ARTICLE,
+          trackItemProgressId: "progress-1",
+          html: `<p>Body</p><div data-ally-question="q1"></div>`,
+          minReadSeconds: 0,
+          questions: [q1, q2],
+          answeredQuestionCount: 0,
+        }}
+        itemId="item-1"
+        alreadyCompleted={false}
+        onCompleted={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId("article-question-q1")).toBeInTheDocument();
+    expect(screen.queryByTestId("article-question-q2")).not.toBeInTheDocument();
+    // One outstanding question, not two.
+    expect(
+      screen.getByRole("button", { name: "Answer the question to continue" }),
+    ).toBeInTheDocument();
+  });
+});
