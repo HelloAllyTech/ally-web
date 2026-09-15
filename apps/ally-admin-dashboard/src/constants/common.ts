@@ -530,6 +530,7 @@ export const ApiEndpoints = {
     // allowed mid-build (which is the case it exists for) and authorises
     // spend, so it stands on its own.
     SESSION_BUDGET: (id: string) => `/v1/builder/sessions/${id}/budget`,
+    SESSION_STEER: (id: string) => `/v1/builder/sessions/${id}/steer`,
     RUN_EVENTS: (runId: string) => `/v1/builder/runs/${runId}/events`,
     SESSION_QUESTIONS: (id: string) => `/v1/builder/sessions/${id}/questions`,
     ANSWER_QUESTION: (id: string, questionId: string) =>
