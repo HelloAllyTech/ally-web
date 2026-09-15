@@ -3210,6 +3210,22 @@ export const en = {
     } as Record<string, string>,
 
     // Interview
+    steer: {
+      title: "Redirect this build",
+      // Said plainly on the control, because the alternative to being
+      // precise here is someone believing the build changed course when it
+      // has only been told.
+      hintLive: "Reaches the build at its next phase",
+      hintIdle: "The next build on this session reads it first",
+      placeholder: "Use the existing repository rather than adding a second one…",
+      send: "Send",
+      pending: "Waiting",
+      delivered: "Read by the build",
+      deliveredAtPhase: (phase: string) => `Read at ${phase}`,
+      superseded: "Never read",
+      tooLong: "That is a change to the PRD, not a correction to a run.",
+      failed: "Could not send that note. Try again.",
+    },
     chat: {
       heading: "Scoping",
       placeholder: "Answer, or tell me something I haven't asked about…",
@@ -3552,6 +3568,12 @@ export const en = {
       enabledLabel: "Builder enabled",
       enabledHelp:
         "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      autoFixLabel: "Answer pull-request feedback automatically",
+      autoFixHelp:
+        "On, Builder reads failing checks and review comments on its own open pull requests and pushes commits to address them. Separate from the switch above on purpose: agreeing Builder may write code is not the same as agreeing it may keep pushing to a pull request you are in the middle of reviewing.",
+      maxFixRunsPerPrLabel: "Fix runs per pull request",
+      maxFixRunsPerPrHelp:
+        "A fix that cannot fix it will not fix it on the fourth attempt either, and the failure mode without a ceiling is a loop that pushes commits until someone notices the bill.",
       maxConcurrentBuildsLabel: "Max concurrent builds",
       maxConcurrentBuildsHelp:
         "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",

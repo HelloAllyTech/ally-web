@@ -360,6 +360,10 @@ export interface BuilderReport {
 export interface BuilderSettings {
   id: string;
   enabled: boolean;
+  /** Whether Builder may push commits to its own open pull requests. */
+  autoFixEnabled: boolean;
+  /** Ceiling on fix runs per pull request. */
+  maxFixRunsPerPr: number;
   maxConcurrentBuilds: number;
   defaultBudgetUsd: string | null;
   /**
@@ -577,5 +581,23 @@ export interface BuilderExemplar {
   timeToMergeHours: number | null;
   failureTags: string[];
   summaryMd: string;
+  createdAt: string;
+}
+
+/**
+ * A correction sent to a build already running.
+ *
+ * `delivered` means a run read it and put it in a phase prompt — never that
+ * the agent complied. Nothing can promise the second, and a status that
+ * implied it would be lying to whoever sent the note.
+ */
+export interface BuilderSteer {
+  id: string;
+  sessionId: string;
+  runId: string | null;
+  note: string;
+  status: "pending" | "delivered" | "superseded";
+  deliveredAt: string | null;
+  deliveredAtPhase: string | null;
   createdAt: string;
 }

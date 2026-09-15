@@ -49,7 +49,7 @@ describe("root eslint config: react-hooks rules", () => {
   // ESLint's one-time flat-config/plugin-resolution cost (the other two
   // tests reuse the already-loaded engine). Under the full monorepo
   // suite's parallel load that cost alone exceeded the default 5000ms.
-  15000);
+  30000);
 
   it("enforces react-hooks/exhaustive-deps", async () => {
     const messages = await lint(

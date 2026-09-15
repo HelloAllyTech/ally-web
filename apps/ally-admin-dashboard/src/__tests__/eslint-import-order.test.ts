@@ -18,7 +18,7 @@ let eslint: ESLint;
 describe("root eslint config: import/order", () => {
   beforeAll(() => {
     eslint = new ESLint({ cwd: repoRoot, overrideConfigFile: configPath });
-  }, 15000);
+  }, 30000);
 
   it("reports no import/order violations in the hooks barrel file", async () => {
     const [result] = await eslint.lintFiles([fileToCheck]);
@@ -29,5 +29,5 @@ describe("root eslint config: import/order", () => {
       );
 
     expect(importOrderViolations).toEqual([]);
-  }, 15000);
+  }, 30000);
 });

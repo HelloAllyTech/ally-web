@@ -18,6 +18,7 @@ import {
   PrdDocPanel,
   ReadinessRing,
   StartBuildDialog,
+  SteerComposer,
 } from "@components/builder";
 import type { BuilderAnswerPayload } from "@components/builder";
 import { ErrorBoundary } from "@components/error-boundary";
@@ -318,6 +319,11 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   status={effectiveStatus}
                   currentStage={session.currentStage}
                 />
+                {/* Under the build feed, not beside the PRD: this is a thing
+                    you reach for while watching a build go wrong, and the PRD
+                    is frozen at that point anyway. Shown on a finished session
+                    too, because a note left now is read by the next run. */}
+                <SteerComposer sessionId={sessionId} live={effectiveStatus === "BUILDING"} />
               </ErrorBoundary>
             </section>
             <aside className="hidden w-[38%] min-w-[340px] max-w-[520px] flex-col lg:flex">

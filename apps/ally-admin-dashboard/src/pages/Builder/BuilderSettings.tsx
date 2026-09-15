@@ -28,6 +28,8 @@ import { formatDate, formatRelativeTime } from "@utils";
 type SettingsDraft = Pick<
   BuilderSettingsType,
   | "enabled"
+  | "autoFixEnabled"
+  | "maxFixRunsPerPr"
   | "maxConcurrentBuilds"
   | "defaultBudgetUsd"
   | "defaultEngine"
@@ -92,6 +94,8 @@ export const BuilderSettings: React.FC = () => {
     if (data) {
       setDraft({
         enabled: data.enabled,
+        autoFixEnabled: data.autoFixEnabled,
+        maxFixRunsPerPr: data.maxFixRunsPerPr,
         maxConcurrentBuilds: data.maxConcurrentBuilds,
         defaultBudgetUsd: data.defaultBudgetUsd,
         defaultEngine: data.defaultEngine,
@@ -110,6 +114,8 @@ export const BuilderSettings: React.FC = () => {
     try {
       await updateSettings({
         enabled: draft.enabled,
+        autoFixEnabled: draft.autoFixEnabled,
+        maxFixRunsPerPr: draft.maxFixRunsPerPr,
         maxConcurrentBuilds: draft.maxConcurrentBuilds,
         ...(draft.defaultBudgetUsd !== null
           ? { defaultBudgetUsd: Number(draft.defaultBudgetUsd) }
@@ -158,6 +164,42 @@ export const BuilderSettings: React.FC = () => {
               onToggle={(checked: boolean) => set("enabled", checked)}
             />
             <p className="pt-1 text-xs text-typography-500">{strings.enabledHelp}</p>
+          </section>
+
+          {/* Next to the kill switch, not under the thresholds. This decides
+              whether an agent may push commits to a pull request a person is
+              in the middle of reviewing — which makes it the second most
+              consequential control here, and it had no control at all until
+              now: the field existed, the API accepted it, and the only way to
+              change it was a hand-written PATCH. */}
+          <section className="rounded-md border border-border-light p-4">
+            <CarbonToggle
+              id="builder-settings-auto-fix"
+              labelText={strings.autoFixLabel}
+              size="sm"
+              toggled={draft.autoFixEnabled}
+              onToggle={(checked: boolean) => set("autoFixEnabled", checked)}
+            />
+            <p className="pt-1 text-xs text-typography-500">{strings.autoFixHelp}</p>
+            {draft.autoFixEnabled && (
+              <div className="pt-3">
+                <Field label={strings.maxFixRunsPerPrLabel} hint={strings.maxFixRunsPerPrHelp}>
+                  <NumberInput
+                    id="builder-settings-max-fix-runs"
+                    label={strings.maxFixRunsPerPrLabel}
+                    hideLabel
+                    hideSteppers
+                    min={0}
+                    max={10}
+                    value={draft.maxFixRunsPerPr}
+                    onChange={(_event: unknown, state: { value: number | string } | undefined) => {
+                      const next = Number(state?.value);
+                      if (!Number.isNaN(next)) set("maxFixRunsPerPr", next);
+                    }}
+                  />
+                </Field>
+              </div>
+            )}
           </section>
 
           <section className="flex flex-col gap-4">

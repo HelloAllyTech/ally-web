@@ -103,6 +103,10 @@ export const CharacterLibrary: React.FC = () => {
       currentLocation: "",
       genderIdentity: "",
       sexualOrientation: "",
+      voices: {},
+      languageCharacteristics: {},
+      linguisticStyleSamples: {},
+      knowledgeSources: [],
     };
     setSelectedCharacter(newCharacter);
     setIsNewCharacter(true);
