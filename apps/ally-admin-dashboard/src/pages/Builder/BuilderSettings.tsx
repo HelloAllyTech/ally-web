@@ -30,6 +30,7 @@ type SettingsDraft = Pick<
   | "enabled"
   | "autoReviewEnabled"
   | "autoApproveEnabled"
+  | "autoReleaseEnabled"
   | "autoFixEnabled"
   | "maxFixRunsPerPr"
   | "maxConcurrentBuilds"
@@ -98,6 +99,7 @@ export const BuilderSettings: React.FC = () => {
         enabled: data.enabled,
         autoReviewEnabled: data.autoReviewEnabled,
         autoApproveEnabled: data.autoApproveEnabled,
+        autoReleaseEnabled: data.autoReleaseEnabled,
         autoFixEnabled: data.autoFixEnabled,
         maxFixRunsPerPr: data.maxFixRunsPerPr,
         maxConcurrentBuilds: data.maxConcurrentBuilds,
@@ -120,6 +122,7 @@ export const BuilderSettings: React.FC = () => {
         enabled: draft.enabled,
         autoReviewEnabled: draft.autoReviewEnabled,
         autoApproveEnabled: draft.autoApproveEnabled,
+        autoReleaseEnabled: draft.autoReleaseEnabled,
         autoFixEnabled: draft.autoFixEnabled,
         maxFixRunsPerPr: draft.maxFixRunsPerPr,
         maxConcurrentBuilds: draft.maxConcurrentBuilds,
@@ -195,6 +198,23 @@ export const BuilderSettings: React.FC = () => {
                   onToggle={(checked: boolean) => set("autoApproveEnabled", checked)}
                 />
                 <p className="pt-1 text-xs text-typography-500">{strings.autoApproveHelp}</p>
+
+                {/* Nested one level deeper again. Releasing something nobody
+                    approved is not a setting anyone should be able to reach by
+                    accident, and the ladder — read, vouch, ship — is the whole
+                    shape of how much each switch lets go of. */}
+                {draft.autoApproveEnabled && (
+                  <div className="mt-3 border-t border-border-light pt-3">
+                    <CarbonToggle
+                      id="builder-settings-auto-release"
+                      labelText={strings.autoReleaseLabel}
+                      size="sm"
+                      toggled={draft.autoReleaseEnabled}
+                      onToggle={(checked: boolean) => set("autoReleaseEnabled", checked)}
+                    />
+                    <p className="pt-1 text-xs text-typography-500">{strings.autoReleaseHelp}</p>
+                  </div>
+                )}
               </div>
             )}
           </section>

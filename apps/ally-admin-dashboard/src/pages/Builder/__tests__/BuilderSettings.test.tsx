@@ -82,6 +82,7 @@ const baseSettings = {
   defaultEngine: "claude-code",
   autoReviewEnabled: false,
   autoApproveEnabled: false,
+  autoReleaseEnabled: false,
   autoFixEnabled: false,
   plannerModel: null,
   coderModel: "claude-opus",
@@ -199,6 +200,37 @@ describe("BuilderSettings", () => {
           expect.objectContaining({ autoReviewEnabled: true, autoApproveEnabled: true }),
         );
       });
+    });
+
+    /**
+     * The ladder, top to bottom: read, vouch, ship. Release is nested under
+     * approve because releasing something nobody approved is not a state
+     * anyone should be able to reach by accident.
+     */
+    it("hides release until approve is on", () => {
+      settingsResult = {
+        data: { ...baseSettings, autoReviewEnabled: true },
+        isLoading: false,
+        isError: false,
+      };
+      render(<BuilderSettings />);
+
+      expect(screen.queryByLabelText("Release it to production once it merges")).toBeNull();
+
+      fireEvent.click(screen.getByLabelText("Approve a pull request it found nothing wrong with"));
+
+      expect(screen.getByLabelText("Release it to production once it merges")).toBeInTheDocument();
+    });
+
+    it("warns that a failed release reads as done", () => {
+      settingsResult = {
+        data: { ...baseSettings, autoReviewEnabled: true, autoApproveEnabled: true },
+        isLoading: false,
+        isError: false,
+      };
+      render(<BuilderSettings />);
+
+      expect(screen.getByText(/merged-but-not-deployed reads as done/)).toBeInTheDocument();
     });
 
     /**

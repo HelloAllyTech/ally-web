@@ -3578,6 +3578,9 @@ export const en = {
       autoApproveLabel: "Approve a pull request it found nothing wrong with",
       autoApproveHelp:
         "On, a review that read the full diff and reported no findings submits an approving review, with every required check green. This is the step that otherwise waits on a person: master needs an approval and Builder's bot cannot give one, so a green, reviewed, finding-free pull request sits until someone clicks Approve. It never forces — the approval is an ordinary review, every other required check still applies, it says on the pull request that a machine approved it, and you can dismiss it like any other.",
+      autoReleaseLabel: "Release it to production once it merges",
+      autoReleaseHelp:
+        "On, a merged pull request dispatches its own production release and Builder watches it through to a verdict. The only switch here that changes what real users are running. It refuses rather than guesses: a change it cannot attribute to exactly the apps being released — anything touching shared code under libs/, or a diff too large to read in full — is left for you with a note saying why. If a release fails you are told loudly, because merged-but-not-deployed reads as done and nobody looks again.",
       autoFixLabel: "Answer pull-request feedback automatically",
       autoFixHelp:
         "On, Builder reads failing checks and review comments on its own open pull requests and pushes commits to address them. Separate from the switch above on purpose: agreeing Builder may write code is not the same as agreeing it may keep pushing to a pull request you are in the middle of reviewing.",
