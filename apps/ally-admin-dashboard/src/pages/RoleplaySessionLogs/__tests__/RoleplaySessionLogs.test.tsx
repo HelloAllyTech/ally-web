@@ -152,4 +152,12 @@ describe("RoleplaySessionLogs page", () => {
 
     expect(screen.getByText("Loading…")).toBeInTheDocument();
   });
+
+  it("renders rows with accessible labels", () => {
+    (useRoleplaySessionLogs as any).mockReturnValue(makeState());
+    render(<RoleplaySessionLogs />);
+
+    const row = screen.getByRole("row", { name: /View session details for Alice Smith - Crisis call/i });
+    expect(row).toBeInTheDocument();
+  });
 });
