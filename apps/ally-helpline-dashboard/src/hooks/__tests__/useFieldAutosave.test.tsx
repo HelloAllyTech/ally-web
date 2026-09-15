@@ -381,6 +381,181 @@ describe("useFieldAutosave", () => {
     expect(onPersist).not.toHaveBeenCalled();
   });
 
+  it("backs off exponentially instead of retrying at a fixed interval", async () => {
+    // A form left open through an outage used to make a request every delayMs
+    // for as long as the tab stayed up. The first retry still comes after the
+    // normal delay; each one after that waits twice as long.
+    const onPersist = vi.fn().mockRejectedValue(new Error("boom"));
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "typed");
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    // Fixed-interval retrying would fire a third time here.
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(3);
+  });
+
+  it("caps the backoff so retries keep coming through a long outage", async () => {
+    const onPersist = vi.fn().mockRejectedValue(new Error("boom"));
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 20_000 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "typed");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(20_000);
+      await settle();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(20_000);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    // Unchecked doubling would put the next attempt 40s out. The 30s ceiling is
+    // what keeps "we'll keep trying" from degrading into "eventually, maybe".
+    await act(async () => {
+      vi.advanceTimersByTime(29_999);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not let a keystroke pull the retry back to the base delay", async () => {
+    // Typing through an outage is the case that hammers hardest: every
+    // keystroke used to reschedule the write at delayMs, erasing the backoff.
+    const onPersist = vi.fn().mockRejectedValue(new Error("boom"));
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "a");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "ab");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    // The pending retry still fires on its own schedule, carrying the newest value.
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(3);
+    expect(onPersist).toHaveBeenLastCalledWith({ summary: { keyConcerns: "ab" } });
+  });
+
+  it("clears the backoff once a write lands", async () => {
+    const onPersist = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValue(new Error("boom"));
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "a");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(3);
+    expect(result.current.saveState).toBe("saved");
+
+    // A blip earlier in the session must not leave later writes crawling.
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "b");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(4);
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(5);
+  });
+
+  it("flush tries straight away instead of waiting out a backoff", async () => {
+    // Pressing Save is the counsellor's escape hatch when the indicator has
+    // been sitting on "couldn't save" and they want to know now.
+    const onPersist = vi.fn().mockRejectedValue(new Error("boom"));
+    const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
+
+    act(() => {
+      result.current.edit("summary", "keyConcerns", "typed");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      await result.current.flush().catch(() => {});
+      await settle();
+    });
+    expect(onPersist).toHaveBeenCalledTimes(3);
+  });
+
   it("stops claiming 'saved' once a new edit arrives", async () => {
     const onPersist = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() => useFieldAutosave({ onPersist, delayMs: 100 }));
