@@ -185,11 +185,17 @@ export const CharacterInterview: React.FC = () => {
   return (
     <div className="py-[2px] font-primary h-[calc(100vh-40px)] flex flex-col">
       <div className="flex items-center gap-2 pb-6 shrink-0">
-        <span className="text-typography-800 cursor-pointer shrink-0" onClick={handleBack}>
+        <span
+          className="flex items-center gap-2 text-typography-800 cursor-pointer shrink-0"
+          onClick={handleBack}
+          onKeyUp={e => e.key === "Enter" && handleBack()}
+          role="button"
+          tabIndex={0}
+        >
           {en.simulation.characters}
-        </span>
-        <span className="-rotate-90 shrink-0">
-          <ArrowDown />
+          <span className="-rotate-90 shrink-0">
+            <ArrowDown />
+          </span>
         </span>
         <h1 className="text-2xl text-typography-900 font-secondary">{strings.title}</h1>
 
