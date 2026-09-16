@@ -1,6 +1,8 @@
 import { CustomFieldType } from "@types";
 import { CustomFieldDefinition } from "@types";
 
+import { formatCustomFieldDate } from "./customFieldDate";
+
 export interface CustomFieldCellValue {
   fieldDefinitionId: string;
   value: string | null;
@@ -14,8 +16,13 @@ export const renderCustomFieldCell = (
   if (!fieldValue?.value) return <span className="text-typography-400">—</span>;
 
   switch (def.fieldType) {
-    case CustomFieldType.DATE:
-      return <span>{new Date(fieldValue.value).toLocaleDateString()}</span>;
+    case CustomFieldType.DATE: {
+      // Rendered from the stored calendar date, not `new Date(value)` — a
+      // date-only string parses as UTC midnight and shows the previous day in
+      // any timezone behind UTC.
+      const display = formatCustomFieldDate(fieldValue.value);
+      return display ? <span>{display}</span> : <span className="text-typography-400">—</span>;
+    }
     case CustomFieldType.BOOLEAN:
       return <span>{fieldValue.value === "true" ? "Yes" : "No"}</span>;
     case CustomFieldType.MULTI_SELECT: {
