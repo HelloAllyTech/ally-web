@@ -2,7 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { toast } from "sonner";
 
-import { Button, InlineNotification, Tag, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  ActionableNotification,
+  Button,
+  InlineNotification,
+  Tag,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBuilderQuestionMutation,
   useGetBuilderPendingQuestionsQuery,
@@ -17,6 +23,7 @@ import { useBuilderSocket } from "@hooks";
 import { BuilderBuildEvent, BuilderSessionStatus, BuilderStage, BuilderTodoItem } from "@types";
 
 import { BuildActivityFeed } from "./BuildActivityFeed";
+import { CollapsibleSection } from "./CollapsibleSection";
 import { PhaseRail } from "./PhaseRail";
 import { BuilderAnswerPayload, QuestionCard } from "./QuestionCard";
 import { RaiseBudgetDialog } from "./RaiseBudgetDialog";
@@ -339,13 +346,44 @@ export const BuildView: React.FC<BuildViewProps> = ({
    * above the phase rail because they are the only thing on this page a person
    * can act on to change the outcome.
    */
+  // A hold is a live thing — a run sitting on the ceiling, counting down —
+  // so it goes stale the moment the run ends, and a terminal session can still
+  // be holding a cached one from before it stopped.
   const budgetHeld = Boolean(budget?.hold) && (isLive || isWaiting);
-  const budgetOver = Boolean(budget?.exceeded) && (isLive || isWaiting);
+
+  /**
+   * Being over the ceiling is not a live thing, and this is shown on a stopped
+   * session on purpose.
+   *
+   * It used to need the session live or waiting, on the same reasoning as the
+   * hold above. For `exceeded` that is exactly backwards: the ceiling is *why*
+   * the session stopped, so hiding the control on a stopped session hides the
+   * only way to restart it. A session that went over budget with a question
+   * still unanswered showed no spend, no banner, no Raise button and no
+   * explanation — every route out was behind the thing doing the blocking, and
+   * `raiseBudget` on the server has no status guard precisely because it is
+   * meant to be reachable from there.
+   *
+   * Still hidden once a raise could not change anything: a completed or
+   * cancelled session's ceiling is history.
+   */
+  const budgetOver = Boolean(budget?.exceeded) && status !== "COMPLETED" && status !== "CANCELLED";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* ActionableNotification, not InlineNotification with a button inside
+          it. Carbon forbids interactive children in an InlineNotification and
+          throws at render — a notification is announced to a screen reader as
+          one block of text, so a control buried in it is unreachable. This is
+          the component Carbon provides for a notification that has an action,
+          and it takes the button as a prop rather than a child.
+
+          It threw here only once the banner became reachable on a stopped
+          session: the same markup had been rendering for live sessions, where
+          a budget hold is rare enough that nobody had hit it. */}
       {(budgetHeld || budgetOver) && budget && (
-        <InlineNotification
+        <ActionableNotification
+          inline
           kind={budgetHeld ? "error" : "warning"}
           lowContrast
           hideCloseButton
@@ -361,17 +399,10 @@ export const BuildView: React.FC<BuildViewProps> = ({
                   )
               : budgetStrings.overBody(money(budget.spentUsd), money(budget.budgetUsd))
           }
+          actionButtonLabel={budgetStrings.raise}
+          onActionButtonClick={() => setShowRaiseBudget(true)}
           className="m-3"
-        >
-          <Button
-            kind="primary"
-            size="sm"
-            className="mt-2"
-            onClick={() => setShowRaiseBudget(true)}
-          >
-            {budgetStrings.raise}
-          </Button>
-        </InlineNotification>
+        />
       )}
 
       <PhaseRail currentStage={currentStage} active={isLive} failed={status === "FAILED"} />
@@ -400,10 +431,10 @@ export const BuildView: React.FC<BuildViewProps> = ({
       <BuildActivityFeed events={displayedEvents} isLive={isLive && isViewingLive} />
 
       {pullRequests && pullRequests.length > 0 && (
-        <section className="border-t border-neutral-200 px-4 py-3">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-typography-500">
-            {strings.pullRequestsHeading}
-          </h2>
+        <CollapsibleSection
+          heading={strings.pullRequestsHeading}
+          meta={String(pullRequests.length)}
+        >
           <div className="flex flex-col gap-2">
             {pullRequests.map(pullRequest => (
               <Tile key={pullRequest.id} className="flex items-center gap-2 text-sm">
@@ -432,7 +463,7 @@ export const BuildView: React.FC<BuildViewProps> = ({
               </Tile>
             ))}
           </div>
-        </section>
+        </CollapsibleSection>
       )}
 
       {/* Only when it says something the page header does not already say. The

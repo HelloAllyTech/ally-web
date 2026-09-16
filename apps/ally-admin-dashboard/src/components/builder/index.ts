@@ -3,6 +3,7 @@ export * from "./BuilderNotificationInbox";
 export * from "./BuildView";
 export * from "./ChatComposer";
 export * from "./ChatMessage";
+export * from "./CollapsibleAside";
 export * from "./ConfirmCancelDialog";
 export * from "./DiffBlock";
 export * from "./diffLines";

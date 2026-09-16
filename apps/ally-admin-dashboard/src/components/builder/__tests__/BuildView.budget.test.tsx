@@ -1,3 +1,5 @@
+import { Children, isValidElement } from "react";
+
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -7,13 +9,47 @@ import type { BuilderBudgetState } from "@types";
 // BugHunter tests), so the barrel is stubbed rather than loaded for real.
 vi.mock("@components", () => ({ cellTypes: {} }));
 
+// NOTE: mocking the design system away is what let a real Carbon contract
+// violation ship. The banner rendered a <Button> INSIDE an InlineNotification,
+// which Carbon forbids and throws on — but the mock below accepted children
+// happily, so every test passed while the live page hit an error boundary.
+// The mock now mirrors the real components' shape: the actionable variant takes
+// its button as a PROP, so a child passed to it would go nowhere here too.
 vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
-  InlineNotification: ({ title, subtitle, children }: any) => (
+  Button: Object.assign(
+    ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+    { rendersInteractive: true },
+  ),
+  InlineNotification: ({ title, subtitle, children }: any) => {
+    // Carbon throws on INTERACTIVE children only — a plain <ul> of hints is a
+    // legitimate child and is used elsewhere in this app. Mirroring the real
+    // rule rather than a stricter one, so this mock cannot reject a valid use.
+    const interactive = (node: any): boolean =>
+      Children.toArray(node).some((child: any) => {
+        if (!isValidElement(child)) return false;
+        // Raw tags, and design-system components that render one — the real bug
+        // passed a <Button>, whose type is a function, so a tag-name check alone
+        // sails straight past it.
+        if (["button", "a", "input", "select", "textarea"].includes(child.type as string))
+          return true;
+        if ((child.type as any)?.rendersInteractive) return true;
+        return interactive((child.props as any)?.children);
+      });
+    if (interactive(children))
+      throw new Error("InlineNotification must have no interactive child nodes");
+    return (
+      <div>
+        <p>{title}</p>
+        {subtitle && <p>{subtitle}</p>}
+        {children}
+      </div>
+    );
+  },
+  ActionableNotification: ({ title, subtitle, actionButtonLabel, onActionButtonClick }: any) => (
     <div>
       <p>{title}</p>
       {subtitle && <p>{subtitle}</p>}
-      {children}
+      {actionButtonLabel && <button onClick={onActionButtonClick}>{actionButtonLabel}</button>}
     </div>
   ),
   Tag: ({ children }: any) => <span>{children}</span>,
@@ -122,12 +158,35 @@ describe("BuildView budget banner", () => {
   it("drops a stale held banner once the run has ended on its own", () => {
     // The budget query stops polling once the session goes terminal, so a
     // FAILED/CANCELLED/expired-hold session can still be sitting on a cached
-    // response whose `hold` is truthy from before it stopped. Nothing is
-    // live to raise money for any more, so the banner must not render.
+    // response whose `hold` is truthy from before it stopped. A hold is a live
+    // thing — a run counting down on the ceiling — so that one is stale.
     budget = held;
     render(<BuildView sessionId="session-1" status="FAILED" currentStage="CODING" />);
 
     expect(screen.queryByText("Paused — this build has spent its budget")).toBeNull();
+  });
+
+  /**
+   * The state this was actually found in.
+   *
+   * A session stopped over its ceiling with a question still unanswered: the
+   * raise is the only way to answer it, restart anything, or even see what was
+   * spent. Hiding the control here hid every route out of the session behind
+   * the thing that was blocking it. `exceeded` is a durable fact, not a live
+   * one, and `raiseBudget` has no status guard on the server for this reason.
+   */
+  it("still offers the raise on a session stopped over its ceiling", () => {
+    budget = { ...held, hold: null };
+    render(<BuildView sessionId="session-1" status="FAILED" currentStage="CODING" />);
+
+    expect(screen.getByRole("button", { name: "Raise budget" })).toBeInTheDocument();
+  });
+
+  /** A raise cannot unblock a session that has nothing left to do. */
+  it("stops offering it once the session is finished", () => {
+    budget = { ...held, hold: null };
+    render(<BuildView sessionId="session-1" status="COMPLETED" currentStage="CODING" />);
+
     expect(screen.queryByRole("button", { name: "Raise budget" })).toBeNull();
   });
 });

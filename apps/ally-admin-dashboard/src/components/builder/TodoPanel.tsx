@@ -4,6 +4,7 @@ import { InlineLoading } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { BuilderTodoItem } from "@types";
 
+import { CollapsibleSection } from "./CollapsibleSection";
 import { builderTransition, prefersReducedMotion } from "../../pages/Builder/builderMotion";
 
 interface TodoPanelProps {
@@ -44,18 +45,18 @@ export const TodoPanel: React.FC<TodoPanelProps> = ({ items, isLive = true }) =>
   const abandoned = !isLive && done < items.length;
 
   return (
-    <section className="border-b border-neutral-200 px-4 py-3">
-      <header className="mb-2 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-typography-500">
-          {strings.todoHeading}
-        </h2>
-        <span className="text-xs text-typography-500">
-          {abandoned
-            ? strings.todoStopped(done, items.length)
-            : strings.todoProgress(done, items.length)}
-        </span>
-      </header>
-
+    <CollapsibleSection
+      heading={strings.todoHeading}
+      meta={
+        abandoned
+          ? strings.todoStopped(done, items.length)
+          : strings.todoProgress(done, items.length)
+      }
+      // A list the agent stopped updating is history, not status — it folds
+      // itself away and leaves the count, which is all it can still honestly
+      // tell you.
+      defaultOpen={!abandoned}
+    >
       <ul className="flex flex-col gap-1">
         {items.map((item, index) => {
           const isDone = item.status === "done";
@@ -105,6 +106,6 @@ export const TodoPanel: React.FC<TodoPanelProps> = ({ items, isLive = true }) =>
           );
         })}
       </ul>
-    </section>
+    </CollapsibleSection>
   );
 };

@@ -15,6 +15,7 @@ import {
   ChatComposer,
   ChatMessage,
   ConfirmCancelDialog,
+  CollapsibleAside,
   PrdDocPanel,
   ReadinessRing,
   StartBuildDialog,
@@ -327,7 +328,16 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                 <SteerComposer sessionId={sessionId} live={effectiveStatus === "BUILDING"} />
               </ErrorBoundary>
             </section>
-            <aside className="hidden w-[38%] min-w-[340px] max-w-[520px] flex-col lg:flex">
+            {/* Folds to a rail. Once a build is running the PRD is frozen
+                reference — worth reaching for, not worth 38% of the window for
+                the whole time you are reading a transcript. During the
+                interview it is the work itself, so that copy below does not
+                fold. */}
+            <CollapsibleAside
+              label="PRD"
+              storageKey="builder.prdAside"
+              widthClassName="w-[38%] min-w-[340px] max-w-[520px]"
+            >
               <ErrorBoundary variant="panel" resetKey={sessionId} className="m-4">
                 <PrdDocPanel
                   prd={prd}
@@ -339,7 +349,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   repos={session.repos ?? []}
                 />
               </ErrorBoundary>
-            </aside>
+            </CollapsibleAside>
           </>
         ) : (
           <>
