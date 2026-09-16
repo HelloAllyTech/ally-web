@@ -30,6 +30,14 @@ interface PhaseRailProps {
   currentStage: BuilderStage | null;
   /** False once the run is terminal — a finished rail must stop pulsing. */
   active: boolean;
+  /**
+   * Whether the run ended here rather than moved on.
+   *
+   * Without this a failed run leaves the rail parked mid-way with a quiet dot,
+   * which reads as "still going" to anyone who did not scroll up to the banner
+   * — the step it stopped at and the step it is working on look identical.
+   */
+  failed?: boolean;
 }
 
 /**
@@ -41,7 +49,7 @@ interface PhaseRailProps {
  * make the interesting ones harder to find, and a remediation round is not
  * progress past coding, it is coding again.
  */
-export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active }) => {
+export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active, failed = false }) => {
   const strings = en.builder.stages;
   const railStage = currentStage ? (STAGE_OWNER[currentStage] ?? currentStage) : null;
   const currentIndex = railStage ? STAGES.indexOf(railStage) : -1;
@@ -52,6 +60,7 @@ export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active }) =>
       {STAGES.map((stage, index) => {
         const isDone = currentIndex > index;
         const isCurrent = currentIndex === index;
+        const stoppedHere = failed && isCurrent;
 
         return (
           <li key={stage} className="flex shrink-0 items-center gap-1">
@@ -79,7 +88,13 @@ export const PhaseRail: React.FC<PhaseRailProps> = ({ currentStage, active }) =>
               <span
                 className={[
                   "inline-block h-1.5 w-1.5 rounded-full",
-                  isDone ? "bg-support-success" : isCurrent ? "bg-primary-600" : "bg-neutral-300",
+                  isDone
+                    ? "bg-support-success"
+                    : stoppedHere
+                      ? "bg-support-error"
+                      : isCurrent
+                        ? "bg-primary-600"
+                        : "bg-neutral-300",
                   isCurrent && active && !reduced ? "animate-pulse" : "",
                 ].join(" ")}
               />

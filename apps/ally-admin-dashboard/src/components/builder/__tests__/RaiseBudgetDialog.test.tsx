@@ -26,7 +26,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 const success = vi.fn();
 const error = vi.fn();
-vi.mock("sonner", () => ({ toast: { success: (m: string) => success(m), error: (m: string) => error(m) } }));
+vi.mock("sonner", () => ({
+  toast: { success: (m: string) => success(m), error: (m: string) => error(m) },
+}));
 
 const raiseBudget = vi.fn();
 vi.mock("@api", () => ({
@@ -82,9 +84,7 @@ describe("RaiseBudgetDialog", () => {
   it("says the build carries on rather than restarts, since that is the whole point", () => {
     render(<RaiseBudgetDialog {...baseProps} />);
 
-    expect(
-      screen.getByText(/picks up from there — no retry, nothing re-run/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/picks up from there — no retry, nothing re-run/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Raise and continue" })).toBeInTheDocument();
   });
 
@@ -129,8 +129,7 @@ describe("RaiseBudgetDialog", () => {
 
   it("surfaces the server's own refusal, which names the figure it wanted", async () => {
     raiseBudget.mockReturnValue({
-      unwrap: () =>
-        Promise.reject({ data: { message: "This session has already spent $16.77…" } }),
+      unwrap: () => Promise.reject({ data: { message: "This session has already spent $16.77…" } }),
     });
     render(<RaiseBudgetDialog {...baseProps} />);
 

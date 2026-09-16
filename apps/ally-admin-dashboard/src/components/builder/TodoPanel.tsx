@@ -8,6 +8,19 @@ import { builderTransition, prefersReducedMotion } from "../../pages/Builder/bui
 
 interface TodoPanelProps {
   items: BuilderTodoItem[];
+  /**
+   * Whether the run is still going.
+   *
+   * The list is agent-asserted: the agent posts it once from the plan and is
+   * asked to re-send it as work completes. It frequently does not — the first
+   * real build finished with two pull requests open and this panel still
+   * reading "0 of 7" with a spinner on item one.
+   *
+   * So a finished run must stop animating and stop implying anything is in
+   * flight. What it must NOT do is mark the items done: nobody told us they
+   * were, and inventing progress is worse than admitting we lost track.
+   */
+  isLive?: boolean;
 }
 
 /**
@@ -21,11 +34,14 @@ interface TodoPanelProps {
  * This is the single most useful thing on the build screen: a transcript tells
  * you what just happened, and this tells you how much is left.
  */
-export const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
+export const TodoPanel: React.FC<TodoPanelProps> = ({ items, isLive = true }) => {
   const strings = en.builder.build;
   if (!items.length) return null;
 
   const done = items.filter(item => item.status === "done").length;
+  // A run that ended without completing its list did not stall — it stopped
+  // telling us. Saying so beats a spinner that never resolves.
+  const abandoned = !isLive && done < items.length;
 
   return (
     <section className="border-b border-neutral-200 px-4 py-3">
@@ -34,14 +50,17 @@ export const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
           {strings.todoHeading}
         </h2>
         <span className="text-xs text-typography-500">
-          {strings.todoProgress(done, items.length)}
+          {abandoned
+            ? strings.todoStopped(done, items.length)
+            : strings.todoProgress(done, items.length)}
         </span>
       </header>
 
       <ul className="flex flex-col gap-1">
         {items.map((item, index) => {
           const isDone = item.status === "done";
-          const inProgress = item.status === "in_progress";
+          // Never "in progress" once the run has ended.
+          const inProgress = isLive && item.status === "in_progress";
 
           return (
             <li

@@ -3353,6 +3353,8 @@ export const en = {
     build: {
       todoHeading: "Checklist",
       todoProgress: (done: number, total: number) => `${done} of ${total}`,
+      todoStopped: (done: number, total: number) =>
+        `${done} of ${total} — the agent stopped reporting progress`,
       planHeading: "Plan",
       verificationHeading: "Independent review",
       verificationRoundHeading: (round: number) => `Independent review · round ${round}`,

@@ -68,6 +68,12 @@ let repoMapsResult: any;
 vi.mock("@api", () => ({
   useGetBuilderSettingsQuery: () => settingsResult,
   useGetBuilderRepoMapsQuery: () => repoMapsResult,
+  useGetLlmModelsQuery: () => ({
+    data: [
+      { provider: "anthropic", model: "claude-opus-5", label: "Claude Opus 5" },
+      { provider: "anthropic", model: "claude-sonnet-5", label: "Claude Sonnet 5" },
+    ],
+  }),
   useUpdateBuilderSettingsMutation: () => [updateSettings, { isLoading: false }],
 }));
 
@@ -244,6 +250,46 @@ describe("BuilderSettings", () => {
       fireEvent.click(screen.getByLabelText("Review its own pull requests"));
 
       expect(screen.getByText(/a machine approved it/)).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * A tier is a model id the runner passes straight to the CLI, so a typo used
+   * to reach production and fail at dispatch. Picking from the catalog removes
+   * the class of mistake rather than validating it later.
+   */
+  describe("the model tiers", () => {
+    it("offers the catalog rather than a free-text box", () => {
+      render(<BuilderSettings />);
+
+      const planner = screen.getByLabelText("Planner model") as HTMLSelectElement;
+      const options = Array.from(planner.querySelectorAll("option")).map(o => o.textContent);
+
+      expect(options).toContain("Claude Opus 5 (claude-opus-5)");
+      expect(options).toContain("Claude Sonnet 5 (claude-sonnet-5)");
+    });
+
+    /** Empty is how a tier falls back to the platform default. */
+    it("keeps a blank row for the platform default", () => {
+      render(<BuilderSettings />);
+      const planner = screen.getByLabelText("Planner model") as HTMLSelectElement;
+      expect(planner.querySelector('option[value=""]')).not.toBeNull();
+    });
+
+    /**
+     * Opening the page must not silently reset a deliberate choice just because
+     * the catalog stopped offering it.
+     */
+    it("keeps a model the catalog no longer lists", () => {
+      settingsResult = {
+        data: { ...baseSettings, plannerModel: "retired-model-v1" },
+        isLoading: false,
+        isError: false,
+      };
+      render(<BuilderSettings />);
+
+      const planner = screen.getByLabelText("Planner model") as HTMLSelectElement;
+      expect(planner.value).toBe("retired-model-v1");
     });
   });
 });

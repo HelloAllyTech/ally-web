@@ -130,9 +130,7 @@ describe("verification verdicts in the feed", () => {
   it("says a failing review leads to a fix, not to a dead build", () => {
     // Under the old loop a failing verdict ended the run. It now re-invokes
     // the coder, and the card has to reflect that or it reads as a failure.
-    renderFeed([
-      event("verification", { round: 1, verdict: "fail", objections: [] }),
-    ]);
+    renderFeed([event("verification", { round: 1, verdict: "fail", objections: [] })]);
 
     expect(screen.getByText(/fixing these and will be reviewed again/i)).toBeTruthy();
   });

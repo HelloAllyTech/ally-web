@@ -108,9 +108,7 @@ describe("BuilderScoreboard failure tags", () => {
 
   it("puts the biggest cause first", () => {
     render(<BuilderScoreboard />);
-    const section = screen
-      .getByText("Where the losses come from")
-      .closest("section");
+    const section = screen.getByText("Where the losses come from").closest("section");
 
     // Each chip is an outer span wrapping a name span and a count span, so the
     // outer one's textContent is "name7". Filtering to text with an underscore
@@ -119,11 +117,7 @@ describe("BuilderScoreboard failure tags", () => {
       .map(node => node.textContent ?? "")
       .filter(text => text.includes("_") && !/\d/.test(text));
 
-    expect(names).toEqual([
-      "review_correctness",
-      "review_scope_creep",
-      "test_failure",
-    ]);
+    expect(names).toEqual(["review_correctness", "review_scope_creep", "test_failure"]);
   });
 
   it("renders nothing when the window has no failures", () => {

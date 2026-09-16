@@ -315,6 +315,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
             <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200">
               <ErrorBoundary variant="panel" resetKey={sessionId} className="m-4">
                 <BuildView
+                  sessionError={session.error}
                   sessionId={sessionId}
                   status={effectiveStatus}
                   currentStage={session.currentStage}
@@ -431,7 +432,19 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
         isOpen={showStartDialog}
         onClose={() => setShowStartDialog(false)}
         sessionId={sessionId}
-        currentRepos={session.repos ?? []}
+        // The PRD already names every repo its technical plan touches, so
+        // asking again is asking a question we answered during the interview —
+        // and the wrong answer is worse than a slow one: a build that cannot
+        // touch the repo it planned changes for fails late, after paying for a
+        // plan and a coding pass. Still a selection, not a lock: the session's
+        // own repos win when set, and the dialog remains editable.
+        currentRepos={
+          session.repos?.length
+            ? session.repos
+            : (prd?.technicalPlan?.repos ?? [])
+                .map(plan => plan.repo)
+                .filter((repo): repo is string => Boolean(repo))
+        }
         initialBudgetUsd={session.budgetUsd}
         defaultBudgetUsd={settings?.defaultBudgetUsd}
         spentUsd={session.totalCostUsd}
