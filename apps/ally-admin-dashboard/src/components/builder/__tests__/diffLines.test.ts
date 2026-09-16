@@ -22,12 +22,7 @@ describe("computeLineDiff", () => {
 
   it("keeps the surrounding lines as context when one line changes", () => {
     // The whole point: a one-line edit should read as a one-line edit.
-    expect(texts("a\nb\nc", "a\nB\nc")).toEqual([
-      "context:a",
-      "remove:b",
-      "add:B",
-      "context:c",
-    ]);
+    expect(texts("a\nb\nc", "a\nB\nc")).toEqual(["context:a", "remove:b", "add:B", "context:c"]);
   });
 
   it("reports an insertion without disturbing what surrounds it", () => {

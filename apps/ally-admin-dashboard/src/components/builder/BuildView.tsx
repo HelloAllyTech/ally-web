@@ -388,7 +388,7 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
         </section>
       ) : null}
 
-      <TodoPanel items={todoItems} />
+      <TodoPanel items={todoItems} isLive={isLive} />
 
       <BuildActivityFeed events={displayedEvents} isLive={isLive && isViewingLive} />
 

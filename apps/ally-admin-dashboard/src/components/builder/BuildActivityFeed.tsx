@@ -174,6 +174,30 @@ const buildToolCallDetail = (
  * calls and results in the order they occur — sound because a run only ever
  * has one call for a given tool outstanding at a time.
  */
+/**
+ * How much of a tool call's summary belongs on the collapsed row.
+ *
+ * The summary is usually the command itself, and Builder's commands are long —
+ * a `cd` into the runner's checkout, a heredoc, a curl with a JSON body. Printed
+ * in full they wrap over several lines each, and a run with a hundred tool calls
+ * becomes a wall nobody reads, which is how a feed with real signal in it
+ * (gate results, verification, the plan) gets scrolled past.
+ *
+ * The full text is one click away in the expanded detail, so nothing is lost —
+ * this only stops the collapsed row from being the whole command.
+ */
+const TOOL_SUMMARY_MAX = 96;
+
+export const collapseToolSummary = (summary: string): string => {
+  const oneLine = summary.replace(/\s+/g, " ").trim();
+  if (oneLine.length <= TOOL_SUMMARY_MAX) return oneLine;
+  // Cut at a word boundary when one is near the end, so the row does not end
+  // mid-token — the same reasoning the session title uses.
+  const cut = oneLine.slice(0, TOOL_SUMMARY_MAX);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${lastSpace > TOOL_SUMMARY_MAX * 0.7 ? cut.slice(0, lastSpace) : cut}…`;
+};
+
 const pairToolResults = (events: BuilderBuildEvent[]): Map<string, BuilderBuildEvent> => {
   const correlationId = (payload: Record<string, any> | undefined) =>
     asAgentText(payload?.id) || asAgentText(payload?.toolUseId) || asAgentText(payload?.callId);
@@ -282,7 +306,9 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
               summary={
                 <>
                   <span className="font-medium">{toolLabel(String(payload.name ?? ""))}</span>
-                  {asAgentText(payload.summary) ? ` — ${asAgentText(payload.summary)}` : ""}
+                  {asAgentText(payload.summary)
+                    ? ` — ${collapseToolSummary(asAgentText(payload.summary))}`
+                    : ""}
                 </>
               }
               detail={buildToolCallDetail(strings, payload, toolResultsByCall.get(event.id))}

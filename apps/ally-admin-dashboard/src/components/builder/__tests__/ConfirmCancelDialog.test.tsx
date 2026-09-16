@@ -31,15 +31,18 @@ import { ConfirmCancelDialog } from "../ConfirmCancelDialog";
 describe("ConfirmCancelDialog", () => {
   it("renders nothing when closed", () => {
     render(
-      <ConfirmCancelDialog isOpen={false} onClose={vi.fn()} onConfirm={vi.fn()} isLoading={false} />,
+      <ConfirmCancelDialog
+        isOpen={false}
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        isLoading={false}
+      />,
     );
     expect(screen.queryByText("Stop it?")).toBeNull();
   });
 
   it("asks for confirmation before stopping the build", () => {
-    render(
-      <ConfirmCancelDialog isOpen onClose={vi.fn()} onConfirm={vi.fn()} isLoading={false} />,
-    );
+    render(<ConfirmCancelDialog isOpen onClose={vi.fn()} onConfirm={vi.fn()} isLoading={false} />);
 
     expect(screen.getByText("Stop it?")).toBeInTheDocument();
   });
@@ -47,7 +50,9 @@ describe("ConfirmCancelDialog", () => {
   it("only calls onConfirm when the confirm button is pressed", () => {
     const onConfirm = vi.fn();
     const onClose = vi.fn();
-    render(<ConfirmCancelDialog isOpen onClose={onClose} onConfirm={onConfirm} isLoading={false} />);
+    render(
+      <ConfirmCancelDialog isOpen onClose={onClose} onConfirm={onConfirm} isLoading={false} />,
+    );
 
     fireEvent.click(screen.getByText("Stop this build"));
 
@@ -58,7 +63,9 @@ describe("ConfirmCancelDialog", () => {
   it("dismisses without confirming via the secondary button", () => {
     const onConfirm = vi.fn();
     const onClose = vi.fn();
-    render(<ConfirmCancelDialog isOpen onClose={onClose} onConfirm={onConfirm} isLoading={false} />);
+    render(
+      <ConfirmCancelDialog isOpen onClose={onClose} onConfirm={onConfirm} isLoading={false} />,
+    );
 
     fireEvent.click(screen.getByText("Cancel"));
 

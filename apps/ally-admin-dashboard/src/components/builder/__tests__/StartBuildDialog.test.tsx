@@ -32,7 +32,12 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     />
   ),
   TextInput: ({ id, labelText, value, onChange, placeholder }: any) => (
-    <input aria-label={labelText || id} placeholder={placeholder} value={value} onChange={onChange} />
+    <input
+      aria-label={labelText || id}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+    />
   ),
   Tooltip: ({ children }: any) => <>{children}</>,
   FilterableMultiSelect: ({ items, selectedItems, onChange, invalid, invalidText }: any) => (
@@ -100,7 +105,12 @@ const blockedReadiness: BuilderPrdReadiness = {
   ready: false,
   sections: [
     { key: "goals", label: "Goals", ok: true, hint: "" },
-    { key: "openQuestions", label: "Open questions", ok: false, hint: "One question is still open" },
+    {
+      key: "openQuestions",
+      label: "Open questions",
+      ok: false,
+      hint: "One question is still open",
+    },
   ],
   blockers: ["One question is still open"],
 };

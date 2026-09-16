@@ -24,7 +24,10 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 }));
 
 const markAllRead = vi.fn();
-let queryResult: { data: { notifications: BuilderNotification[]; unread: number } | undefined; isLoading: boolean };
+let queryResult: {
+  data: { notifications: BuilderNotification[]; unread: number } | undefined;
+  isLoading: boolean;
+};
 
 vi.mock("@api", () => ({
   useGetBuilderNotificationsQuery: () => queryResult,
