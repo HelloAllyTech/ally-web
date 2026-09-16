@@ -80,16 +80,9 @@ export const useLiveKitRoom = (
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
   useEffect(() => {
-    return () => autoTerminationAudio.current?.pause();
+    const audio = autoTerminationAudio.current;
+    return () => audio?.pause();
   }, []);
-
-  const getLiveKitUrl = (): string => {
-    const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
-    if (!url) {
-      throw new Error("LiveKit URL not found in room data or environment variables");
-    }
-    return url;
-  };
 
   const onDataReceived = useCallback(
     (payload: any, _participant?: any, _kind?: any, topic?: string) => {
@@ -171,7 +164,7 @@ export const useLiveKitRoom = (
       },
       endSessionButtonRef.current ? 0 : 1000,
     );
-  }, []);
+  }, [handleDisconnect, endSessionButtonRef]);
 
   const cleanupRoom = useCallback(() => {
     try {
@@ -210,31 +203,25 @@ export const useLiveKitRoom = (
     onActiveSpeakersChanged,
   ]);
 
-  useEffect(() => {
-    // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
-    // is left in place until the agent emits audio (or the silent-grace fallback).
-    // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
-    const connectionTimeout = setTimeout(() => {
-      connectToRoom();
-    }, STRICT_MODE_GUARD_MS);
-
-    return () => {
-      clearTimeout(connectionTimeout);
-      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
-    };
-  }, [id, cleanupRoom]);
-
-  const connectToRoom = async () => {
+  const { fallbackRoute, isPreviewRoom, dispatchAgent } = config;
+  const connectToRoom = useCallback(async () => {
     try {
       if (!id || !roomData) {
-        navigate(config.fallbackRoute ?? ROUTES.SIMULATION_STUDIO);
+        navigate(fallbackRoute ?? ROUTES.SIMULATION_STUDIO);
         return;
       }
 
       if (!isConnected && !isConnecting) {
         setRoomStatus(RoomStatus.CONNECTING);
         setError(null);
+
+        const getLiveKitUrl = (): string => {
+          const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
+          if (!url) {
+            throw new Error("LiveKit URL not found in room data or environment variables");
+          }
+          return url;
+        };
 
         const token = roomData?.accessToken;
         const livekitUrl = getLiveKitUrl();
@@ -261,13 +248,13 @@ export const useLiveKitRoom = (
 
         await room.localParticipant.setMicrophoneEnabled(true);
 
-        const isPreviewRoom =
-          id && typeof id === "string" && (config.isPreviewRoom?.(id) ?? id.startsWith("preview-"));
-        const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreviewRoom;
+        const isPreview =
+          id && typeof id === "string" && (isPreviewRoom?.(id) ?? id.startsWith("preview-"));
+        const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreview;
         if (shouldDispatch) {
           try {
             logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
-            if (config.dispatchAgent) await config.dispatchAgent(id);
+            if (dispatchAgent) await dispatchAgent(id);
             else await dispatchPreviewAgent({ roomName: id }).unwrap();
             logger.info(`[LiveKit] Agent dispatch request sent successfully`);
           } catch (dispatchError) {
@@ -275,7 +262,7 @@ export const useLiveKitRoom = (
               `Direct agent dispatch failed: ${dispatchError}. If running locally, ensure ally-be has ALLOW_DIRECT_AGENT_DISPATCH or NODE_ENV=development.`,
             );
           }
-        } else if (isPreviewRoom) {
+        } else if (isPreview) {
           logger.info(
             `[LiveKit] Skipping direct agent dispatch for preview room: ${id}. Agent should join via webhook.`,
           );
@@ -289,7 +276,37 @@ export const useLiveKitRoom = (
       setRoomStatus(RoomStatus.DISCONNECTED);
       setError(error instanceof Error ? error.message : "Failed to connect to room");
     }
-  };
+  }, [
+    id,
+    roomData,
+    navigate,
+    fallbackRoute,
+    isConnected,
+    isConnecting,
+    room,
+    onDataReceived,
+    onRoomDisconnect,
+    onRemoteParticipantConnected,
+    onActiveSpeakersChanged,
+    isPreviewRoom,
+    dispatchAgent,
+    dispatchPreviewAgent,
+  ]);
+
+  useEffect(() => {
+    // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
+    // is left in place until the agent emits audio (or the silent-grace fallback).
+    // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
+    const connectionTimeout = setTimeout(() => {
+      connectToRoom();
+    }, STRICT_MODE_GUARD_MS);
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoom();
+    };
+  }, [id, cleanupRoom, connectToRoom]);
 
   const handleRetryConnection = () => {
     setError(null);

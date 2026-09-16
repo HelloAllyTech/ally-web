@@ -81,8 +81,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
    * set for the same reason.
    */
   const shownQuestions = useMemo(
-    () =>
-      segments.flatMap(segment => (segment.kind === "question" ? [segment.question] : [])),
+    () => segments.flatMap(segment => (segment.kind === "question" ? [segment.question] : [])),
     [segments],
   );
   // Seeded from the payload so a resumed article counts what was answered
@@ -95,9 +94,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
           .map(question => question.id),
       ),
   );
-  const unansweredCount = shownQuestions.filter(
-    question => !answeredIds.has(question.id),
-  ).length;
+  const unansweredCount = shownQuestions.filter(question => !answeredIds.has(question.id)).length;
 
   const handleQuestionAnswered = (
     questionId: string,
