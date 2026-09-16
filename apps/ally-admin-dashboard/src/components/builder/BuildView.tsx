@@ -17,6 +17,7 @@ import { useBuilderSocket } from "@hooks";
 import { BuilderBuildEvent, BuilderSessionStatus, BuilderStage, BuilderTodoItem } from "@types";
 
 import { BuildActivityFeed } from "./BuildActivityFeed";
+import { CollapsibleSection } from "./CollapsibleSection";
 import { PhaseRail } from "./PhaseRail";
 import { BuilderAnswerPayload, QuestionCard } from "./QuestionCard";
 import { RaiseBudgetDialog } from "./RaiseBudgetDialog";
@@ -400,10 +401,10 @@ export const BuildView: React.FC<BuildViewProps> = ({
       <BuildActivityFeed events={displayedEvents} isLive={isLive && isViewingLive} />
 
       {pullRequests && pullRequests.length > 0 && (
-        <section className="border-t border-neutral-200 px-4 py-3">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-typography-500">
-            {strings.pullRequestsHeading}
-          </h2>
+        <CollapsibleSection
+          heading={strings.pullRequestsHeading}
+          meta={String(pullRequests.length)}
+        >
           <div className="flex flex-col gap-2">
             {pullRequests.map(pullRequest => (
               <Tile key={pullRequest.id} className="flex items-center gap-2 text-sm">
@@ -432,7 +433,7 @@ export const BuildView: React.FC<BuildViewProps> = ({
               </Tile>
             ))}
           </div>
-        </section>
+        </CollapsibleSection>
       )}
 
       {/* Only when it says something the page header does not already say. The
