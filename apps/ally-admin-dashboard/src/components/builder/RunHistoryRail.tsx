@@ -4,6 +4,7 @@ import { Tag } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { BuilderBuildRun } from "@types";
 
+import { CollapsibleSection } from "./CollapsibleSection";
 import { formatCostUsd, formatRunDuration } from "./runFormat";
 import { BUILDER_RUN_STATUS_TAG_TYPE } from "../../pages/Builder/builderMotion";
 
@@ -27,6 +28,11 @@ interface RunHistoryRailProps {
  * Horizontal rather than a sidebar list — BuildView's column is already
  * narrow next to the PRD panel — and scrolls inside its own row once the
  * strip doesn't fit, never the page body.
+ *
+ * Folds, like the other sections of the view, and keeps the run count beside
+ * the heading: a long session's strip is worth a line once you have stopped
+ * switching between runs, and the count is the part of it still worth seeing
+ * folded.
  */
 export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
   runs,
@@ -38,10 +44,7 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
   if (runs.length <= 1) return null;
 
   return (
-    <div className="border-b border-neutral-200 px-4 py-2">
-      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-typography-500">
-        {strings.runHistoryHeading}
-      </p>
+    <CollapsibleSection heading={strings.runHistoryHeading} meta={String(runs.length)}>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {runs.map(run => {
           const isSelected = run.id === selectedRunId;
@@ -79,6 +82,6 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
           );
         })}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 };
