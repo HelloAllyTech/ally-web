@@ -788,10 +788,18 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
             case TrackItemType.CASE:
               formItem.caseId = item.caseId ?? null;
               break;
-            case TrackItemType.ARTICLE:
-              formItem.article = (item.content as ArticleContent) ?? { html: "" };
-              formItem.article.questions = formItem.article.questions ?? [];
+            case TrackItemType.ARTICLE: {
+              // Copied, never patched in place: `detail` is the RTK Query
+              // cache entry, which Immer has deep-frozen, so writing the
+              // `questions` default onto `item.content` throws.
+              const article = item.content as ArticleContent | undefined;
+              formItem.article = {
+                ...article,
+                html: article?.html ?? "",
+                questions: article?.questions ?? [],
+              };
               break;
+            }
             case TrackItemType.VIDEO:
               formItem.video = (item.content as VideoContent) ?? { source: "s3", url: "" };
               if (formItem.completionCriteria.watchPct == null) {
