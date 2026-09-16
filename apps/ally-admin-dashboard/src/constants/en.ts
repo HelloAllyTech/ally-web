@@ -249,6 +249,7 @@ export const en = {
       createError: "Couldn't create a new version",
       renameError: "Couldn't rename this version",
       deleteError: "Couldn't delete this version",
+      autoBadge: "Auto",
     },
     createCharacter: "Create character",
     editCharacter: "Edit character",
