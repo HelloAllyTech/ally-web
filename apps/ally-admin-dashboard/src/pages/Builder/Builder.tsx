@@ -32,6 +32,7 @@ import {
   prefersReducedMotion,
   staggerDelayMs,
 } from "./builderMotion";
+import { sessionTitleFrom, startErrorMessage } from "./builderStart";
 
 /** Sessions the agent cannot move forward without a person. */
 const NEEDS_YOU: BuilderSessionStatus[] = ["WAITING_FOR_INPUT", "PRD_READY", "FAILED"];
@@ -265,16 +266,19 @@ export const Builder: React.FC = () => {
   const open = (id: string) => navigate(ROUTES.BUILDER_SESSION(id));
 
   const start = async () => {
-    const title = heroValue.trim();
-    if (!title || isCreating) return;
+    const typed = heroValue.trim();
+    if (!typed || isCreating) return;
     try {
-      const session = await createSession({ title }).unwrap();
+      const session = await createSession({ title: sessionTitleFrom(typed) }).unwrap();
       setHeroValue("");
-      // The typed sentence is the first thing the agent should react to, so it
-      // travels with the navigation and is sent as the opening turn.
-      navigate(ROUTES.BUILDER_SESSION(session.id), { state: { openingMessage: title } });
-    } catch {
-      toast.error(strings.createFailed);
+      // The FULL typed text is the first thing the agent should react to, so it
+      // travels with the navigation and is sent as the opening turn — only the
+      // title is shortened, and the agent rewrites that as the PRD takes shape.
+      navigate(ROUTES.BUILDER_SESSION(session.id), { state: { openingMessage: typed } });
+    } catch (error) {
+      // The server says exactly what was wrong; the old generic message threw
+      // that away and left "Couldn't start a new build." as the only clue.
+      toast.error(startErrorMessage(error, strings.createFailed));
     }
   };
 
