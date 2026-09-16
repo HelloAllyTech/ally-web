@@ -76,34 +76,7 @@ something Ally-specific.
   points, asset URLs, router basename, redirects and the `<base>` tag all derived from the
   Vite `base` — so they could not disagree. Don't add a second "am I embedded?" flag.
 - **Node 22.** The backend is 24; using the wrong one produces confusing install failures.
-- **RTK Query cache data is frozen — never patch it in place.** Every reducer runs through
-  Immer, which deep-freezes what it stores, so writing a default onto a field of `data` from
-  `useQuery`/`useLazyQuery` (e.g. `cached.article.questions = cached.article.questions ?? []`)
-  throws `TypeError: Cannot add/assign property`. This once broke the admin "Courses" builder
-  for any course containing an article component — the crash only showed up once a user with
-  such a course actually opened it. Build a new object (`{ ...cached, questions: [...] }`)
-  instead of mutating the query result, however deep it's nested.
 - **Three apps, one lib.** A `ui-shared` change needs all three test suites, not just yours.
-- **Add tooltips for non-obvious controls.** When building or touching an admin form/builder
-  screen — anything with jargon, a hidden side effect, a cross-field dependency, or a control
-  whose behaviour isn't obvious from its label — add a help tooltip rather than leaving it for
-  the trainer/admin to discover by trial and error. Pattern (already used throughout the app,
-  e.g. `apps/ally-admin-dashboard/src/pages/CreateTrack/`):
-  ```tsx
-  import { Tooltip } from "@ally-ui-mono/ui-shared";
-  import { TooltipIcon } from "@assets";
-
-  <Tooltip label="One or two sentences, written for the person filling the form in." align="top">
-    <button type="button" className="cursor-pointer inline-flex items-center">
-      <TooltipIcon />
-    </button>
-  </Tooltip>
-  ```
-  Reach for this on a case-by-case basis as you write or edit the field, not as a separate
-  sweep — skip it for controls that are already self-explanatory. There's also a data-driven
-  variant (`TooltipHint`/`AppTooltip` in `src/components/app-tooltip/`) backed by the "Manage
-  Tooltips" CMS page, for copy a non-engineer needs to edit later — most one-off engineering
-  additions don't need that.
 
 ## Commands
 

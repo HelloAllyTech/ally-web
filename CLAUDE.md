@@ -76,13 +76,6 @@ something Ally-specific.
   points, asset URLs, router basename, redirects and the `<base>` tag all derived from the
   Vite `base` — so they could not disagree. Don't add a second "am I embedded?" flag.
 - **Node 22.** The backend is 24; using the wrong one produces confusing install failures.
-- **RTK Query cache data is frozen — never patch it in place.** Every reducer runs through
-  Immer, which deep-freezes what it stores, so writing a default onto a field of `data` from
-  `useQuery`/`useLazyQuery` (e.g. `cached.article.questions = cached.article.questions ?? []`)
-  throws `TypeError: Cannot add/assign property`. This once broke the admin "Courses" builder
-  for any course containing an article component — the crash only showed up once a user with
-  such a course actually opened it. Build a new object (`{ ...cached, questions: [...] }`)
-  instead of mutating the query result, however deep it's nested.
 - **Three apps, one lib.** A `ui-shared` change needs all three test suites, not just yours.
 - **Add tooltips for non-obvious controls.** When building or touching an admin form/builder
   screen — anything with jargon, a hidden side effect, a cross-field dependency, or a control
