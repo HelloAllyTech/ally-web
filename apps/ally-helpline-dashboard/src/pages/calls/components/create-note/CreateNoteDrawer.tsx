@@ -26,6 +26,7 @@ import {
   useUser,
 } from "@hooks";
 import type { PendingEdits } from "@hooks";
+import { spokenDateToCustomFieldDate } from "@pages/calls/components/custom-fields/customFieldDate";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import SummaryFieldInput from "@pages/post-call-summary/components/SummaryFieldInput";
 import {
@@ -123,10 +124,10 @@ const encodeVoiceValue = (decoder: VoiceDecoder, value: string): string | null =
       if (["no", "false", "n"].includes(v)) return "false";
       return null;
     }
-    case CustomFieldType.DATE: {
-      const d = new Date(trimmed);
-      return Number.isNaN(d.getTime()) ? null : d.toISOString();
-    }
+    case CustomFieldType.DATE:
+      // Encoding this with `toISOString()` converted a locally-parsed date to
+      // UTC and rolled the day back one for any timezone ahead of it.
+      return spokenDateToCustomFieldDate(trimmed);
     default:
       return trimmed || null;
   }
