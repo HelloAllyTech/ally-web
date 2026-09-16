@@ -12,7 +12,12 @@ import { Branch, Close, Edit, Tick, Trash } from "@assets";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
-import { ScenarioVersion, ScenarioVersionStatus, formatVersionLabel } from "@types";
+import {
+  ScenarioVersion,
+  ScenarioVersionStatus,
+  ScenarioVersionType,
+  formatVersionLabel,
+} from "@types";
 import { formatDate } from "@utils";
 
 const t = en.simulation.versions;
@@ -270,6 +275,11 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
                           {formatVersionLabel(version)}
                         </span>
                         <StatusPill status={version.status} />
+                        {version.type === ScenarioVersionType.AUTOMATIC && (
+                          <span className="inline-flex items-center px-[6px] py-[1px] rounded-full text-[11px] font-regular bg-secondary-100 text-typography-700 shrink-0">
+                            {t.autoBadge}
+                          </span>
+                        )}
                         {isActive && (
                           <span className="text-[11px] text-typography-500 shrink-0">
                             {t.editing}

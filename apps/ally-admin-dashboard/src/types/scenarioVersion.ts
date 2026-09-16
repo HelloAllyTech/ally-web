@@ -4,6 +4,11 @@ export enum ScenarioVersionStatus {
   ARCHIVED = "ARCHIVED",
 }
 
+export enum ScenarioVersionType {
+  MANUAL = "MANUAL",
+  AUTOMATIC = "AUTOMATIC",
+}
+
 export type ScenarioVersion = {
   id: string;
   scenarioId: number;
@@ -12,6 +17,7 @@ export type ScenarioVersion = {
   /** Full UpdateScenarioDto-shaped snapshot of the studio form. */
   config: Record<string, unknown>;
   status: ScenarioVersionStatus;
+  type: ScenarioVersionType;
   /**
    * Server-computed: this version MIRRORS the live scenario rather than holding
    * a snapshot of its own. Editing it means editing the live record (the
