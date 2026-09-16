@@ -17,8 +17,8 @@ import {
 } from "@constants";
 import { useClickOutside, useIsPlaceholderUsed } from "@hooks";
 import { CharacterData } from "@types";
-import { camelToSnakeCase } from "@utils/common";
 import { asList } from "@utils/characterData";
+import { camelToSnakeCase } from "@utils/common";
 
 interface CharacterProfileSelectorProps {
   label: string;
