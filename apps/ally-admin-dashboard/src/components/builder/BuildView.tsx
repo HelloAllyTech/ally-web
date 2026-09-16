@@ -44,10 +44,17 @@ const BUDGET_COUNTDOWN_TICK_MS = 20000;
 interface BuildViewProps {
   sessionId: string;
   status: BuilderSessionStatus;
+  /** The session-level error, so the run does not repeat it. */
+  sessionError?: string | null;
   currentStage: BuilderStage | null;
 }
 
-export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, currentStage }) => {
+export const BuildView: React.FC<BuildViewProps> = ({
+  sessionId,
+  status,
+  currentStage,
+  sessionError,
+}) => {
   const strings = en.builder.build;
 
   // One transcript per run, keyed by run id, so switching back to an older
@@ -367,7 +374,7 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
         </InlineNotification>
       )}
 
-      <PhaseRail currentStage={currentStage} active={isLive} />
+      <PhaseRail currentStage={currentStage} active={isLive} failed={status === "FAILED"} />
 
       <RunHistoryRail runs={runs ?? []} selectedRunId={selectedRunId} onSelect={handleSelectRun} />
 
@@ -428,7 +435,11 @@ export const BuildView: React.FC<BuildViewProps> = ({ sessionId, status, current
         </section>
       )}
 
-      {selectedRun?.error && (
+      {/* Only when it says something the page header does not already say. The
+          session banner carries the failing run's error verbatim, so rendering
+          both put the same sentence at the top and bottom of a screen that is
+          already dense — twice the noise for none of the information. */}
+      {selectedRun?.error && selectedRun.error !== sessionError && (
         <InlineNotification
           kind="error"
           lowContrast

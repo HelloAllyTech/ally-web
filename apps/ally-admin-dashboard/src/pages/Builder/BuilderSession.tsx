@@ -315,6 +315,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
             <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200">
               <ErrorBoundary variant="panel" resetKey={sessionId} className="m-4">
                 <BuildView
+                  sessionError={session.error}
                   sessionId={sessionId}
                   status={effectiveStatus}
                   currentStage={session.currentStage}

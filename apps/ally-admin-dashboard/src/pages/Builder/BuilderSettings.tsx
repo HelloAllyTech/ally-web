@@ -11,12 +11,12 @@ import {
   Select,
   SelectItem,
   SkeletonText,
-  TextInput,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
   useGetBuilderRepoMapsQuery,
   useGetBuilderSettingsQuery,
+  useGetLlmModelsQuery,
   useUpdateBuilderSettingsMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
@@ -90,6 +90,7 @@ export const BuilderSettings: React.FC = () => {
   const { data, isLoading, isError } = useGetBuilderSettingsQuery();
   const { data: repoMapsData } = useGetBuilderRepoMapsQuery();
   const [updateSettings, { isLoading: isSaving }] = useUpdateBuilderSettingsMutation();
+  const { data: models = [] } = useGetLlmModelsQuery();
 
   const [draft, setDraft] = useState<SettingsDraft | null>(null);
 
@@ -322,27 +323,44 @@ export const BuilderSettings: React.FC = () => {
               </Tooltip>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <TextInput
-                id="builder-settings-planner-model"
-                labelText={strings.plannerModelLabel}
-                placeholder={strings.modelPlaceholder}
-                value={draft.plannerModel ?? ""}
-                onChange={event => set("plannerModel", event.target.value || null)}
-              />
-              <TextInput
-                id="builder-settings-coder-model"
-                labelText={strings.coderModelLabel}
-                placeholder={strings.modelPlaceholder}
-                value={draft.coderModel ?? ""}
-                onChange={event => set("coderModel", event.target.value || null)}
-              />
-              <TextInput
-                id="builder-settings-verifier-model"
-                labelText={strings.verifierModelLabel}
-                placeholder={strings.modelPlaceholder}
-                value={draft.verifierModel ?? ""}
-                onChange={event => set("verifierModel", event.target.value || null)}
-              />
+              {/* Picked from the catalog rather than typed. A tier is a model
+                  id the runner passes straight to the CLI, so a typo used to
+                  reach production and fail at dispatch — ally-be's preflight
+                  now rejects an unknown model, but refusing a build is a worse
+                  answer than not offering the mistake. Empty means the platform
+                  default, which is why every list carries a blank first row. */}
+              {(
+                [
+                  ["plannerModel", "builder-settings-planner-model", strings.plannerModelLabel],
+                  ["coderModel", "builder-settings-coder-model", strings.coderModelLabel],
+                  ["verifierModel", "builder-settings-verifier-model", strings.verifierModelLabel],
+                ] as const
+              ).map(([field, id, label]) => (
+                <Select
+                  key={field}
+                  id={id}
+                  labelText={label}
+                  value={draft[field] ?? ""}
+                  onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+                    set(field, event.target.value || null)
+                  }
+                >
+                  <SelectItem value="" text={strings.modelPlaceholder} />
+                  {/* A tier already pointing at something the catalog no longer
+                      offers keeps its own row, so opening this page cannot
+                      silently reset a deliberate choice. */}
+                  {draft[field] && !models.some(model => model.model === draft[field]) ? (
+                    <SelectItem value={draft[field] as string} text={draft[field] as string} />
+                  ) : null}
+                  {models.map(model => (
+                    <SelectItem
+                      key={model.model}
+                      value={model.model}
+                      text={model.label ? `${model.label} (${model.model})` : model.model}
+                    />
+                  ))}
+                </Select>
+              ))}
             </div>
           </section>
 
