@@ -2,7 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { toast } from "sonner";
 
-import { Button, InlineNotification, Tag, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  ActionableNotification,
+  Button,
+  InlineNotification,
+  Tag,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBuilderQuestionMutation,
   useGetBuilderPendingQuestionsQuery,
@@ -365,8 +371,19 @@ export const BuildView: React.FC<BuildViewProps> = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* ActionableNotification, not InlineNotification with a button inside
+          it. Carbon forbids interactive children in an InlineNotification and
+          throws at render — a notification is announced to a screen reader as
+          one block of text, so a control buried in it is unreachable. This is
+          the component Carbon provides for a notification that has an action,
+          and it takes the button as a prop rather than a child.
+
+          It threw here only once the banner became reachable on a stopped
+          session: the same markup had been rendering for live sessions, where
+          a budget hold is rare enough that nobody had hit it. */}
       {(budgetHeld || budgetOver) && budget && (
-        <InlineNotification
+        <ActionableNotification
+          inline
           kind={budgetHeld ? "error" : "warning"}
           lowContrast
           hideCloseButton
@@ -382,17 +399,10 @@ export const BuildView: React.FC<BuildViewProps> = ({
                   )
               : budgetStrings.overBody(money(budget.spentUsd), money(budget.budgetUsd))
           }
+          actionButtonLabel={budgetStrings.raise}
+          onActionButtonClick={() => setShowRaiseBudget(true)}
           className="m-3"
-        >
-          <Button
-            kind="primary"
-            size="sm"
-            className="mt-2"
-            onClick={() => setShowRaiseBudget(true)}
-          >
-            {budgetStrings.raise}
-          </Button>
-        </InlineNotification>
+        />
       )}
 
       <PhaseRail currentStage={currentStage} active={isLive} failed={status === "FAILED"} />

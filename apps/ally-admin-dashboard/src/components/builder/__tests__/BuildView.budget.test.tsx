@@ -1,3 +1,5 @@
+import { Children, isValidElement } from "react";
+
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -7,13 +9,47 @@ import type { BuilderBudgetState } from "@types";
 // BugHunter tests), so the barrel is stubbed rather than loaded for real.
 vi.mock("@components", () => ({ cellTypes: {} }));
 
+// NOTE: mocking the design system away is what let a real Carbon contract
+// violation ship. The banner rendered a <Button> INSIDE an InlineNotification,
+// which Carbon forbids and throws on — but the mock below accepted children
+// happily, so every test passed while the live page hit an error boundary.
+// The mock now mirrors the real components' shape: the actionable variant takes
+// its button as a PROP, so a child passed to it would go nowhere here too.
 vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
-  InlineNotification: ({ title, subtitle, children }: any) => (
+  Button: Object.assign(
+    ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+    { rendersInteractive: true },
+  ),
+  InlineNotification: ({ title, subtitle, children }: any) => {
+    // Carbon throws on INTERACTIVE children only — a plain <ul> of hints is a
+    // legitimate child and is used elsewhere in this app. Mirroring the real
+    // rule rather than a stricter one, so this mock cannot reject a valid use.
+    const interactive = (node: any): boolean =>
+      Children.toArray(node).some((child: any) => {
+        if (!isValidElement(child)) return false;
+        // Raw tags, and design-system components that render one — the real bug
+        // passed a <Button>, whose type is a function, so a tag-name check alone
+        // sails straight past it.
+        if (["button", "a", "input", "select", "textarea"].includes(child.type as string))
+          return true;
+        if ((child.type as any)?.rendersInteractive) return true;
+        return interactive((child.props as any)?.children);
+      });
+    if (interactive(children))
+      throw new Error("InlineNotification must have no interactive child nodes");
+    return (
+      <div>
+        <p>{title}</p>
+        {subtitle && <p>{subtitle}</p>}
+        {children}
+      </div>
+    );
+  },
+  ActionableNotification: ({ title, subtitle, actionButtonLabel, onActionButtonClick }: any) => (
     <div>
       <p>{title}</p>
       {subtitle && <p>{subtitle}</p>}
-      {children}
+      {actionButtonLabel && <button onClick={onActionButtonClick}>{actionButtonLabel}</button>}
     </div>
   ),
   Tag: ({ children }: any) => <span>{children}</span>,
