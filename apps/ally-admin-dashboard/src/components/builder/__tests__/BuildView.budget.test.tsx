@@ -122,12 +122,35 @@ describe("BuildView budget banner", () => {
   it("drops a stale held banner once the run has ended on its own", () => {
     // The budget query stops polling once the session goes terminal, so a
     // FAILED/CANCELLED/expired-hold session can still be sitting on a cached
-    // response whose `hold` is truthy from before it stopped. Nothing is
-    // live to raise money for any more, so the banner must not render.
+    // response whose `hold` is truthy from before it stopped. A hold is a live
+    // thing — a run counting down on the ceiling — so that one is stale.
     budget = held;
     render(<BuildView sessionId="session-1" status="FAILED" currentStage="CODING" />);
 
     expect(screen.queryByText("Paused — this build has spent its budget")).toBeNull();
+  });
+
+  /**
+   * The state this was actually found in.
+   *
+   * A session stopped over its ceiling with a question still unanswered: the
+   * raise is the only way to answer it, restart anything, or even see what was
+   * spent. Hiding the control here hid every route out of the session behind
+   * the thing that was blocking it. `exceeded` is a durable fact, not a live
+   * one, and `raiseBudget` has no status guard on the server for this reason.
+   */
+  it("still offers the raise on a session stopped over its ceiling", () => {
+    budget = { ...held, hold: null };
+    render(<BuildView sessionId="session-1" status="FAILED" currentStage="CODING" />);
+
+    expect(screen.getByRole("button", { name: "Raise budget" })).toBeInTheDocument();
+  });
+
+  /** A raise cannot unblock a session that has nothing left to do. */
+  it("stops offering it once the session is finished", () => {
+    budget = { ...held, hold: null };
+    render(<BuildView sessionId="session-1" status="COMPLETED" currentStage="CODING" />);
+
     expect(screen.queryByRole("button", { name: "Raise budget" })).toBeNull();
   });
 });

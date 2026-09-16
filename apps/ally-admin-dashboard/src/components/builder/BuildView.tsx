@@ -340,8 +340,28 @@ export const BuildView: React.FC<BuildViewProps> = ({
    * above the phase rail because they are the only thing on this page a person
    * can act on to change the outcome.
    */
+  // A hold is a live thing — a run sitting on the ceiling, counting down —
+  // so it goes stale the moment the run ends, and a terminal session can still
+  // be holding a cached one from before it stopped.
   const budgetHeld = Boolean(budget?.hold) && (isLive || isWaiting);
-  const budgetOver = Boolean(budget?.exceeded) && (isLive || isWaiting);
+
+  /**
+   * Being over the ceiling is not a live thing, and this is shown on a stopped
+   * session on purpose.
+   *
+   * It used to need the session live or waiting, on the same reasoning as the
+   * hold above. For `exceeded` that is exactly backwards: the ceiling is *why*
+   * the session stopped, so hiding the control on a stopped session hides the
+   * only way to restart it. A session that went over budget with a question
+   * still unanswered showed no spend, no banner, no Raise button and no
+   * explanation — every route out was behind the thing doing the blocking, and
+   * `raiseBudget` on the server has no status guard precisely because it is
+   * meant to be reachable from there.
+   *
+   * Still hidden once a raise could not change anything: a completed or
+   * cancelled session's ceiling is history.
+   */
+  const budgetOver = Boolean(budget?.exceeded) && status !== "COMPLETED" && status !== "CANCELLED";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
