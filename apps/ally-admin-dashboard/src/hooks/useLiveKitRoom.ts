@@ -293,20 +293,45 @@ export const useLiveKitRoom = (
     dispatchPreviewAgent,
   ]);
 
+  // The connect effect below is scoped to the ROOM, and these refs are what keep
+  // it that way.
+  //
+  // It briefly depended on [id, cleanupRoom, connectToRoom]. Both of those
+  // change identity constantly: `connectToRoom` lists `isConnecting` and
+  // `isConnected` — which it sets itself, on the line before it awaits
+  // `room.connect()` — and `cleanupRoom` reaches `handleDisconnect`, which call
+  // sites pass as an inline arrow. So the effect re-ran on almost every render,
+  // and its cleanup calls `room.disconnect()`. That aborted the in-flight
+  // connect every time: in production the agent joined each preview room within
+  // ~5s and the human never joined at all, so the worker declared an orphaned
+  // session at 30s while the page sat on "Connecting to session…" forever.
+  //
+  // Refs rather than a hand-trimmed dependency array, deliberately. Dropping a
+  // dep silences `react-hooks/exhaustive-deps` only until the next sweep puts it
+  // back, which is precisely how this regressed. A ref is stable, so the lint
+  // rule and the effect's intended lifetime agree instead of fighting — and the
+  // timeout always calls the freshest closure.
+  const connectToRoomRef = useRef(connectToRoom);
+  const cleanupRoomRef = useRef(cleanupRoom);
+  useEffect(() => {
+    connectToRoomRef.current = connectToRoom;
+    cleanupRoomRef.current = cleanupRoom;
+  });
+
   useEffect(() => {
     // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
     // is left in place until the agent emits audio (or the silent-grace fallback).
     // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
     const connectionTimeout = setTimeout(() => {
-      connectToRoom();
+      connectToRoomRef.current();
     }, STRICT_MODE_GUARD_MS);
 
     return () => {
       clearTimeout(connectionTimeout);
       // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
+      cleanupRoomRef.current();
     };
-  }, [id, cleanupRoom, connectToRoom]);
+  }, [id]);
 
   const handleRetryConnection = () => {
     setError(null);
@@ -323,11 +348,15 @@ export const useLiveKitRoom = (
     room.disconnect();
   };
 
-  useEffect(() => {
-    return () => {
-      cleanupRoom();
-    };
-  }, [cleanupRoom]);
+  // A second unmount-cleanup effect used to live here, keyed on [cleanupRoom].
+  // It was the same defect as the connect effect above and had the same effect
+  // on production: `cleanupRoom` changes identity on nearly every render, so its
+  // teardown — `room.disconnect()` — ran on nearly every render.
+  //
+  // Deleted rather than given a ref of its own, because it was only ever
+  // guarding unmount, and the connect effect's own cleanup already covers that:
+  // React runs every effect's cleanup when the component unmounts. Keeping both
+  // would just disconnect the same room twice.
 
   useEffect(() => {
     if (roomStatus !== RoomStatus.CONNECTED) return () => {};
