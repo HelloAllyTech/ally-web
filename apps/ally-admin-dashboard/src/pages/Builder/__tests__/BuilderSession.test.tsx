@@ -64,11 +64,13 @@ vi.mock("@hooks", () => ({
 }));
 
 let sessionResult: any;
+let pullRequests: any[] = [];
 vi.mock("@api", () => ({
   useGetBuilderSessionQuery: () => sessionResult,
   useGetBuilderSettingsQuery: () => ({ data: undefined }),
   usePatchBuilderPrdMutation: () => [vi.fn()],
   useCancelBuilderSessionMutation: () => [vi.fn(), { isLoading: false }],
+  useGetBuilderPullRequestsQuery: () => ({ data: pullRequests }),
 }));
 
 // eslint-disable-next-line import/first
@@ -93,6 +95,7 @@ describe("BuilderSession", () => {
     navigateMock.mockClear();
     onSessionInvalid = undefined;
     sessionResult = { data: baseSession, isLoading: false, isError: false };
+    pullRequests = [];
   });
 
   it("closes the embedded drawer instead of navigating away when the session is lost and 'New session' is clicked", async () => {
@@ -152,7 +155,20 @@ describe("BuilderSession", () => {
    * build of finished work opens a competing set against the same PRD.
    */
   it("does not offer one on finished work", () => {
+    pullRequests = [{ id: "pr-1" }];
     terminal("COMPLETED");
     expect(screen.queryByText("Retry build")).toBeNull();
+  });
+
+  /**
+   * "A session with no pull requests has shipped nothing, whatever its status."
+   * A run that claimed done and left an empty branch settles the session green;
+   * without this the page offers no way onward from a success that did not
+   * happen.
+   */
+  it("offers one on a completed session that shipped nothing", () => {
+    pullRequests = [];
+    terminal("COMPLETED");
+    expect(screen.getByText("Retry build")).toBeTruthy();
   });
 });

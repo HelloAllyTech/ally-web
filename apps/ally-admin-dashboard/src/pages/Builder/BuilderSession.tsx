@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button, InlineNotification, SkeletonText, Tag } from "@ally-ui-mono/ui-shared";
 import {
   useCancelBuilderSessionMutation,
+  useGetBuilderPullRequestsQuery,
   useGetBuilderSessionQuery,
   useGetBuilderSettingsQuery,
   usePatchBuilderPrdMutation,
@@ -127,6 +128,10 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
     setSessionIsLive(!["COMPLETED", "CANCELLED"].includes(sessionStatus));
   }, [sessionStatus]);
   const { data: settings } = useGetBuilderSettingsQuery();
+  // Read for one question only: did this session ship anything? See canRestart.
+  const { data: pullRequests } = useGetBuilderPullRequestsQuery(sessionId, {
+    skip: !sessionId,
+  });
   const [patchPrd] = usePatchBuilderPrdMutation();
   const [cancelSession, { isLoading: isCancelling }] = useCancelBuilderSessionMutation();
 
@@ -284,6 +289,21 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   // "why did I open this" flag through every trigger.
   const retryError = effectiveStatus === "FAILED" ? session.error : null;
 
+  /**
+   * "A session with no pull requests has shipped nothing, whatever its status"
+   * — the API says so in as many words, and applies the same rule to whether a
+   * build may start. A run whose agent claimed done and whose evidence said
+   * otherwise settles the session green with an empty branch behind it, and
+   * COMPLETED is otherwise not restartable, so the page would offer no way
+   * onward from a success that did not happen.
+   *
+   * A completed session WITH pull requests stays closed to rebuilding: a
+   * second build against the same PRD opens a competing set.
+   */
+  const shippedNothing = (pullRequests?.length ?? 0) === 0;
+  const canRestart =
+    RESTARTABLE.includes(effectiveStatus) || (effectiveStatus === "COMPLETED" && shippedNothing);
+
   const startBuildAction = (
     <Button
       kind="primary"
@@ -291,7 +311,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
       className="w-full"
       // Terminal blocks a fresh start, except the states a person would
       // obviously want to build again from — see RESTARTABLE.
-      disabled={isTerminal && !RESTARTABLE.includes(effectiveStatus)}
+      disabled={isTerminal && !canRestart}
       onClick={() => setShowStartDialog(true)}
     >
       {effectiveStatus === "FAILED"
@@ -326,7 +346,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
           <Tag type={BUILDER_STATUS_TAG_TYPE[effectiveStatus]} size="sm">
             {strings.status[effectiveStatus] ?? effectiveStatus}
           </Tag>
-          {RESTARTABLE.includes(effectiveStatus) ? (
+          {canRestart ? (
             <Button kind="primary" size="sm" onClick={() => setShowStartDialog(true)}>
               {strings.retryBuild}
             </Button>
