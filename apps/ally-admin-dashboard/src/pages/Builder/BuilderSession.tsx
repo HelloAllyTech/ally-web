@@ -77,13 +77,39 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  /**
+   * Whether the session row is still worth re-reading.
+   *
+   * Events stream over the socket, but `status`, `currentStage` and `error`
+   * live on the session row itself and were read exactly once, at page load.
+   * So watching a build meant a live transcript under a phase rail frozen at
+   * whatever stage the run had reached when the tab was opened, and the
+   * obvious remedy — refreshing — fixed it only until the next stage change.
+   *
+   * Starts true so a fresh load polls before it knows anything, and is turned
+   * off once the session reaches a state it cannot leave on its own. A
+   * finished session polled forever is a request every five seconds, per open
+   * tab, for a row that will never change again.
+   */
+  const [sessionIsLive, setSessionIsLive] = useState(true);
+
   const {
     data: session,
     isLoading,
     isError,
   } = useGetBuilderSessionQuery(sessionId, {
     skip: !sessionId,
+    pollingInterval: sessionIsLive ? 5000 : 0,
+    skipPollingIfUnfocused: true,
   });
+
+  const sessionStatus = session?.status;
+  useEffect(() => {
+    if (!sessionStatus) return;
+    // CANCELLED and COMPLETED are final. FAILED is not: a retry moves the same
+    // session back to BUILDING, and the poll has to be running to see it.
+    setSessionIsLive(!["COMPLETED", "CANCELLED"].includes(sessionStatus));
+  }, [sessionStatus]);
   const { data: settings } = useGetBuilderSettingsQuery();
   const [patchPrd] = usePatchBuilderPrdMutation();
   const [cancelSession, { isLoading: isCancelling }] = useCancelBuilderSessionMutation();
@@ -220,9 +246,18 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   // it finished: coming back to a completed session to read what happened is
   // the main reason to open one, and dropping back to the interview would
   // hide the whole outcome.
+  // FAILED is in this list on its own account, not via `currentStage`. A run
+  // can fail before it posts a single stage — a dispatch that never started, a
+  // runner that could not put the repos on a working branch — and such a
+  // session has no `currentStage` at all. That used to be survivable because a
+  // banner under the header carried the error regardless of which layout
+  // rendered. The failure now reads in the build feed, so a FAILED session
+  // that fell through to the interview layout would state its failure
+  // nowhere: status "Failed", a Retry button, and no reason on the page.
   const hasBuild =
     effectiveStatus === "BUILDING" ||
     effectiveStatus === "WAITING_FOR_INPUT" ||
+    effectiveStatus === "FAILED" ||
     Boolean(session.currentStage);
 
   // The only way to reach this dialog while FAILED is the header's retry
@@ -293,19 +328,6 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
           )}
         </div>
       </header>
-
-      {/* Names what is being retried past, right where the retry lives — a
-          person reaching for "Retry build" should not have to go dig the
-          error out of a report to know what they're about to run again. */}
-      {effectiveStatus === "FAILED" && session.error && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          hideCloseButton
-          title={session.error}
-          className="mx-4 mt-3"
-        />
-      )}
 
       <div className="flex min-h-0 flex-1">
         {/* Once a build exists the transcript is the main event and the PRD

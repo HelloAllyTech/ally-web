@@ -2,13 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { toast } from "sonner";
 
-import {
-  ActionableNotification,
-  Button,
-  InlineNotification,
-  Tag,
-  Tile,
-} from "@ally-ui-mono/ui-shared";
+import { ActionableNotification, Button, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBuilderQuestionMutation,
   useGetBuilderPendingQuestionsQuery,
@@ -369,6 +363,17 @@ export const BuildView: React.FC<BuildViewProps> = ({
    */
   const budgetOver = Boolean(budget?.exceeded) && status !== "COMPLETED" && status !== "CANCELLED";
 
+  // Only for a run you are actually looking at. Scrolling back to an earlier,
+  // successful run of a session that later failed should not stamp this
+  // session's failure onto it.
+  const runError = selectedRun?.error ?? null;
+  const failureTitle = sessionError ?? runError;
+  // Only when it is a *second* account. With no session error the run's error
+  // is already the headline, and `runError !== sessionError` is true against a
+  // null — which offered a "Details" expander onto a verbatim copy of the line
+  // above it.
+  const failureDetail = runError && failureTitle !== runError ? runError : null;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ActionableNotification, not InlineNotification with a button inside
@@ -428,7 +433,28 @@ export const BuildView: React.FC<BuildViewProps> = ({
 
       <TodoPanel items={todoItems} isLive={isLive} />
 
-      <BuildActivityFeed events={displayedEvents} isLive={isLive && isViewingLive} />
+      {/* The run's fate reads as the last thing that happened, in the feed,
+          rather than as a banner over it. There were two of these — the
+          session's error pinned under the page header and the run's own error
+          below the pull request list — saying the same failure twice, on a
+          screen that is mostly transcript, neither of them where the failure
+          occurred.
+
+          `sessionError` is the session's account and `selectedRun.error` the
+          runner's; when they differ the second is the technical one, so it
+          becomes the detail behind the expander rather than a row of its own. */}
+      <BuildActivityFeed
+        events={displayedEvents}
+        isLive={isLive && isViewingLive}
+        failure={
+          failureTitle
+            ? {
+                title: failureTitle,
+                detail: failureDetail,
+              }
+            : null
+        }
+      />
 
       {pullRequests && pullRequests.length > 0 && (
         <CollapsibleSection
@@ -464,20 +490,6 @@ export const BuildView: React.FC<BuildViewProps> = ({
             ))}
           </div>
         </CollapsibleSection>
-      )}
-
-      {/* Only when it says something the page header does not already say. The
-          session banner carries the failing run's error verbatim, so rendering
-          both put the same sentence at the top and bottom of a screen that is
-          already dense — twice the noise for none of the information. */}
-      {selectedRun?.error && selectedRun.error !== sessionError && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          hideCloseButton
-          title={selectedRun.error}
-          className="m-3"
-        />
       )}
 
       {selectedRun?.githubRunUrl && (

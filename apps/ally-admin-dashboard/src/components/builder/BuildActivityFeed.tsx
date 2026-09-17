@@ -42,6 +42,11 @@ interface BuildActivityFeedProps {
   events: BuilderBuildEvent[];
   /** True while the run is live — drives auto-scroll and the live pill. */
   isLive: boolean;
+  /**
+   * How this run ended, when it ended badly. Rendered as the last row of the
+   * feed rather than as a banner over it — see {@link FailureRow}.
+   */
+  failure?: { title: string; detail?: string | null } | null;
 }
 
 /**
@@ -95,6 +100,58 @@ const ExpandableRow: React.FC<{
           {detail}
         </pre>
       )}
+    </div>
+  );
+};
+
+/**
+ * How a build's failure reads, at the point in the feed where it happened.
+ *
+ * This used to be two banners. A session-level `InlineNotification` pinned
+ * under the page header, and a second one for the run's own error below the
+ * pull request list — so a failed build put one red block above the transcript
+ * and another below it, with the transcript's own account of the same failure
+ * in between. Neither moved when you scrolled past what they described, and
+ * each one cost a fixed strip of a window that is mostly transcript.
+ *
+ * They are one row here instead, last in the feed, because that is where the
+ * failure actually happened: the last thing the build did. The headline sentence
+ * is always visible — this is the one event on the page a person came to read —
+ * and anything more technical sits behind the same `+` every tool call in this
+ * feed uses, so there is one way to open detail rather than a second vocabulary
+ * for errors.
+ *
+ * Error-toned, not alarm-toned. By the time this renders the header already
+ * says "Failed" and offers "Retry build"; a third red rectangle restating it
+ * adds no information and makes the page harder to read.
+ */
+const FailureRow: React.FC<{ title: string; detail?: string | null }> = ({ title, detail }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded border border-support-error/30 bg-support-error/5 px-3 py-2">
+      <div className="flex items-start gap-2">
+        <span aria-hidden className="mt-0.5 shrink-0 text-support-error">
+          ⊘
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-typography-800">{title}</p>
+          {detail && (
+            <button
+              type="button"
+              className="mt-1 text-xs text-typography-500 underline-offset-2 hover:underline"
+              onClick={() => setOpen(prev => !prev)}
+              aria-expanded={open}
+            >
+              {open ? "−" : "+"} {en.builder.build.failureDetail}
+            </button>
+          )}
+          {open && detail && (
+            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-neutral-50 p-2 text-[11px] text-typography-700">
+              {detail}
+            </pre>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -243,7 +300,11 @@ const pairToolResults = (events: BuilderBuildEvent[]): Map<string, BuilderBuildE
  * tool call expanded would be more transparent and much less useful — the
  * point is to be able to follow along, not to audit every step.
  */
-export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, isLive }) => {
+export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({
+  events,
+  isLive,
+  failure,
+}) => {
   const strings = en.builder.build;
   const budgetFeed = en.builder.budget.feed;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -598,7 +659,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-3">
-        {visible.length === 0 ? (
+        {visible.length === 0 && !failure ? (
           <p className="mt-8 text-center text-sm text-typography-500">
             {isLive ? strings.feedStarting : strings.feedEmpty}
           </p>
@@ -618,6 +679,7 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({ events, is
                 </React.Fragment>
               );
             })}
+            {failure && <FailureRow title={failure.title} detail={failure.detail} />}
           </div>
         )}
       </div>

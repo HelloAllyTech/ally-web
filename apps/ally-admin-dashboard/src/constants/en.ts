@@ -3430,6 +3430,10 @@ export const en = {
       prMerging: "Merging…",
       prMergeFailed: "Could not merge",
       prMerged_toast: "Merged.",
+      // Failure copy lives in the feed, not in a banner. See FailureRow in
+      // BuildActivityFeed for why.
+      failureHeading: "The build stopped here",
+      failureDetail: "Details",
       reportsHeading: "Reports",
       noReports: "Nothing written up yet.",
       // A pause is a normal turn in the conversation, not a fault — the copy
