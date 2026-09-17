@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -99,6 +99,12 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
   // Inline rename: id of the version whose name is being edited in place.
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  // Enter in the name fields calls the handlers directly, so the confirm
+  // buttons' `disabled` can't stop a second submit — and React hasn't
+  // re-rendered with the mutation's loading flag yet either. Refs flip
+  // synchronously, so a double Enter creates/renames once.
+  const isCreatingRef = useRef(false);
+  const isRenamingRef = useRef(false);
 
   const startCreate = (opts: { fromVersionId?: string; empty?: boolean }) => {
     setRenamingId(null);
@@ -108,7 +114,8 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
   const cancelCreate = () => setCreateMode(null);
 
   const handleCreateVersion = async () => {
-    if (!createMode) return;
+    if (!createMode || isCreatingRef.current) return;
+    isCreatingRef.current = true;
     try {
       // Persist the current draft's unsaved edits first so a branch clones the
       // latest config, not the server's last-autosaved snapshot.
@@ -124,6 +131,8 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
       onEditVersion(created);
     } catch {
       toast.error(t.createError);
+    } finally {
+      isCreatingRef.current = false;
     }
   };
 
@@ -135,6 +144,8 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
   const cancelRename = () => setRenamingId(null);
 
   const handleRename = async (version: ScenarioVersion) => {
+    if (isRenamingRef.current) return;
+    isRenamingRef.current = true;
     try {
       const updated = await updateVersion({
         scenarioId,
@@ -145,6 +156,8 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
       toast.success(t.renamed(formatVersionLabel(updated)));
     } catch {
       toast.error(t.renameError);
+    } finally {
+      isRenamingRef.current = false;
     }
   };
 
