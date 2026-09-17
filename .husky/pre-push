@@ -3,6 +3,64 @@
 # Canonical source: https://raw.githubusercontent.com/HelloAllyTech/.github/main/hooks/pre-push
 # Caches into .git/docs-guard/, refreshes daily, and never blocks on its own failures.
 set -u
+
+# stdin carries the ref list and can only be read once, so capture it here and
+# hand it on to the docs guard below.
+REFS="$(cat)"
+
+# Typecheck before it leaves the machine.
+#
+# Vitest does not type-check across the programme, so a change that compiles in
+# isolation can still break the build — and the check that catches it runs later,
+# in CI, on a push that is already public. On 2026-09-17 the sibling repo lost
+# three hours of releasable master to exactly that shape.
+#
+# Only pushes that move the default branch, and only when TypeScript changed: a
+# doc-only push or a feature branch pays nothing. `SKIP_TYPECHECK=1 git push`
+# bypasses it, because a hook nobody can escape is one people learn to
+# `--no-verify` around permanently, losing every other check with it.
+run_typecheck() {
+  [ "${SKIP_TYPECHECK:-}" = "1" ] && return 0
+
+  local pushing_default=0 ref local_sha remote_sha changed
+  while read -r ref local_sha _ remote_sha; do
+    case "$ref" in refs/heads/master|refs/heads/main) ;; *) continue ;; esac
+    case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+    pushing_default=1
+    case "$remote_sha" in
+      *[!0]*) changed=$(git diff --name-only "$remote_sha" "$local_sha" 2>/dev/null || echo "?") ;;
+      *) changed="?" ;;
+    esac
+    if [ "$changed" != "?" ] && ! printf '%s\n' "$changed" | grep -qE '\.tsx?$'; then
+      pushing_default=0
+    fi
+  done <<EOF
+$REFS
+EOF
+
+  [ "$pushing_default" = "1" ] || return 0
+
+  echo "pre-push: type-checking before this reaches master"
+  local failed=0
+  for app in ally-admin-dashboard ally-helpline-dashboard; do
+    [ -f "apps/$app/tsconfig.app.json" ] || continue
+    if ! npx tsc --noEmit -p "apps/$app/tsconfig.app.json" >"/tmp/ally-web-typecheck-$app.log" 2>&1; then
+      echo "" >&2
+      echo "pre-push: TYPECHECK FAILED in $app — not pushing." >&2
+      sed 's/\x1b\[[0-9;]*m//g' "/tmp/ally-web-typecheck-$app.log" | grep -E "error TS" | head -8 >&2
+      echo "Full output: /tmp/ally-web-typecheck-$app.log" >&2
+      failed=1
+    fi
+  done
+  if [ "$failed" = "1" ]; then
+    echo "" >&2
+    echo "Override with SKIP_TYPECHECK=1 git push if you know it is broken upstream." >&2
+    return 1
+  fi
+}
+
+run_typecheck || exit 1
+
 CACHE="$(git rev-parse --git-dir)/docs-guard/pre-push"
 if [ ! -f "$CACHE" ] || [ -n "$(find "$CACHE" -mmin +1440 2>/dev/null)" ]; then
   mkdir -p "$(dirname "$CACHE")"
@@ -11,4 +69,6 @@ if [ ! -f "$CACHE" ] || [ -n "$(find "$CACHE" -mmin +1440 2>/dev/null)" ]; then
 fi
 [ -f "$CACHE" ] || exit 0
 command -v bash >/dev/null 2>&1 || exit 0
-exec bash "$CACHE"
+exec bash "$CACHE" <<EOF
+$REFS
+EOF
