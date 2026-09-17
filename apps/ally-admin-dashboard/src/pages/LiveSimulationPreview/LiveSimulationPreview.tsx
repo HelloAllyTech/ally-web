@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -12,10 +12,14 @@ import { RoomStatus } from "@types";
 export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const handleRoomDisconnected = () => {
+  // Stable identity on purpose. This is handed to `useLiveKitRoom`, which hangs
+  // the room's Disconnected listener off it; as an inline arrow it was a new
+  // function on every render, churning that listener and everything memoized
+  // behind it for no reason.
+  const handleRoomDisconnected = useCallback(() => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
     navigate(-1);
-  };
+  }, [navigate]);
 
   const endSessionButtonRef = useRef<boolean>(false);
 
