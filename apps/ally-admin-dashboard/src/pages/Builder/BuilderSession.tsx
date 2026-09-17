@@ -34,6 +34,22 @@ import { BUILDER_STATUS_TAG_TYPE } from "./builderMotion";
 const PRD_FROZEN: BuilderSessionStatus[] = ["BUILDING", "WAITING_FOR_INPUT"];
 
 /**
+ * Terminal states you can still build again from.
+ *
+ * CANCELLED belongs here and its absence was a dead end: stopping a build left
+ * a session with no way forward at all. The start control lives in the
+ * readiness panel, which stops rendering the moment a session has a build, and
+ * the header offered its retry only on FAILED — so the one deliberate act a
+ * person takes mid-build, pressing stop, was also the act that stranded the
+ * session. The PRD was still there, the branch was still there, and the only
+ * route back was to open a new session and re-run the interview.
+ *
+ * COMPLETED is deliberately NOT here. Its pull requests are open or merged, and
+ * a second build of finished work opens a competing set against the same PRD.
+ */
+const RESTARTABLE: BuilderSessionStatus[] = ["FAILED", "CANCELLED"];
+
+/**
  * One Builder session: the interview on the left, the living PRD on the right.
  *
  * The PRD and readiness are held in local state seeded from the server and
@@ -273,9 +289,9 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
       kind="primary"
       size="md"
       className="w-full"
-      // Terminal blocks a fresh start, except FAILED — that's exactly the
-      // state this same trigger is meant to retry from.
-      disabled={isTerminal && effectiveStatus !== "FAILED"}
+      // Terminal blocks a fresh start, except the states a person would
+      // obviously want to build again from — see RESTARTABLE.
+      disabled={isTerminal && !RESTARTABLE.includes(effectiveStatus)}
       onClick={() => setShowStartDialog(true)}
     >
       {effectiveStatus === "FAILED"
@@ -310,7 +326,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
           <Tag type={BUILDER_STATUS_TAG_TYPE[effectiveStatus]} size="sm">
             {strings.status[effectiveStatus] ?? effectiveStatus}
           </Tag>
-          {effectiveStatus === "FAILED" ? (
+          {RESTARTABLE.includes(effectiveStatus) ? (
             <Button kind="primary" size="sm" onClick={() => setShowStartDialog(true)}>
               {strings.retryBuild}
             </Button>

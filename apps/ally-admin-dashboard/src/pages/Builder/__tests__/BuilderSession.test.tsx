@@ -14,14 +14,18 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tag: ({ children }: any) => <span>{children}</span>,
 }));
 
+// SteerComposer and CollapsibleAside render only in the build layout, which no
+// test reached until the restart cases below.
 vi.mock("@components/builder", () => ({
   BuildView: () => <div>BuildView</div>,
   ChatComposer: () => <div>ChatComposer</div>,
   ChatMessage: () => <div>ChatMessage</div>,
+  CollapsibleAside: ({ children }: any) => <div>{children}</div>,
   ConfirmCancelDialog: () => null,
   PrdDocPanel: () => <div>PrdDocPanel</div>,
   ReadinessRing: () => <div>ReadinessRing</div>,
   StartBuildDialog: () => null,
+  SteerComposer: () => <div>SteerComposer</div>,
 }));
 
 vi.mock("@components/error-boundary", () => ({
@@ -115,5 +119,40 @@ describe("BuilderSession", () => {
     fireEvent.click(screen.getByText("New build"));
 
     expect(navigateMock).toHaveBeenCalledWith("/builder");
+  });
+
+  /**
+   * Stopping a build used to strand the session. The start control lives in the
+   * readiness panel, which stops rendering once a session has a build, and the
+   * header offered its retry only on FAILED — so pressing stop, the one
+   * deliberate mid-build action a person takes, was also the action that left
+   * the PRD and the branch with no route back into a build.
+   */
+  const terminal = (status: string) => {
+    sessionResult = {
+      data: { ...baseSession, status, currentStage: "CODING" },
+      isLoading: false,
+      isError: false,
+    };
+    render(<BuilderSession />);
+  };
+
+  it("offers a way back into a build after a stop", () => {
+    terminal("CANCELLED");
+    expect(screen.getByText("Retry build")).toBeTruthy();
+  });
+
+  it("still offers one after a failure", () => {
+    terminal("FAILED");
+    expect(screen.getByText("Retry build")).toBeTruthy();
+  });
+
+  /**
+   * Not from COMPLETED: its pull requests are open or merged, and a second
+   * build of finished work opens a competing set against the same PRD.
+   */
+  it("does not offer one on finished work", () => {
+    terminal("COMPLETED");
+    expect(screen.queryByText("Retry build")).toBeNull();
   });
 });
