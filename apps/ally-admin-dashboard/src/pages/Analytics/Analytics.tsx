@@ -24,6 +24,7 @@ import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
 import { CodingAgentCost } from "./CodingAgentCost";
+import { FixSessionEngineCost } from "./FixSessionEngineCost";
 import { TabControlsSlotProvider } from "./tabControlsSlot";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
@@ -179,6 +180,7 @@ const TABS: TabDef[] = [
       <div className="flex flex-col gap-6">
         <TokenConsumption {...f} />
         <CodingAgentCost {...f} />
+        <FixSessionEngineCost {...f} />
       </div>
     ),
   },

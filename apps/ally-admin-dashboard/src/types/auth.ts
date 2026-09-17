@@ -844,6 +844,28 @@ export interface CodingAgentCostResponse {
   computedAt: string;
 }
 
+// Average cost per COMPLETED Bug Hunter fix session, by engine — mirrors
+// FixSessionEngineCostResponseDto from GET
+// /api/v1/analytics/fix-session-engine-cost. The direct Claude-vs-Gemini
+// comparison CodingAgentCostResponse's per-model TOTAL can't give: the two
+// engines have run a very different number of times, so whichever ran less
+// often would always show the smaller total regardless of which is actually
+// cheaper per fix.
+export interface FixSessionEngineCost {
+  /** "claude-code" or "gemini" — whatever the run itself reported. */
+  engine: string;
+  /** Mean totalTokenCostUsd across this engine's completed fix sessions. */
+  avgCostUsd: number;
+  /** How many completed fix sessions the average is over — read this alongside avgCostUsd. */
+  sessionCount: number;
+}
+
+export interface FixSessionEngineCostResponse {
+  byEngine: FixSessionEngineCost[];
+  window: AnalyticsWindow;
+  computedAt: string;
+}
+
 // Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
 // from GET /api/v1/analytics/quality-sentiment.
 //

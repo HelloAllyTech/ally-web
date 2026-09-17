@@ -17,6 +17,7 @@ import {
   ConversationDriftResponse,
   DriftBackfillJob,
   FillerQualityResponse,
+  FixSessionEngineCostResponse,
   GoalsXpResponse,
   LanguageEvalReference,
   LanguageMixResponse,
@@ -316,6 +317,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getCodingAgentCost: builder.query<CodingAgentCostResponse, AnalyticsWindowQuery>({
       query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.CODING_AGENT_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Average cost per COMPLETED Bug Hunter fix session, by engine — the
+    // direct Claude-vs-Gemini comparison the chart above's per-model TOTAL
+    // can't give, since the two engines run a very different number of times.
+    getFixSessionEngineCost: builder.query<FixSessionEngineCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FIX_SESSION_ENGINE_COST,
         method: HttpMethod.GET,
         params: windowParams(q),
       }),
@@ -770,6 +781,7 @@ export const {
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
   useGetCodingAgentCostQuery,
+  useGetFixSessionEngineCostQuery,
   useGetQualitySentimentQuery,
   useGetRagQualityQuery,
   useGetXpGrowthQuery,
