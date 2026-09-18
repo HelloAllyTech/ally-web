@@ -32,3 +32,21 @@ export function buildFixSessionEngineCostBars(byEngine: FixSessionEngineCost[]):
     }))
     .sort((a, b) => b.value - a.value);
 }
+
+/** yyyy-mm-dd, what the backend's `from`/`to` (and its own `window.from`/`to`) already use. */
+export const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
+
+/**
+ * `{from, to}` for "the last N days, ending today" — this chart's own
+ * day-window control, independent of the tab-wide 30d/90d/12m range picker.
+ * See FixSessionEngineCost.tsx's own doc for why it needs one: the shared
+ * range's smallest option (30 days) would still average clean, correct
+ * recent runs together with two real pre-fix cost-reporting bugs from the
+ * same window.
+ */
+export const rangeEndingToday = (days: number): { from: string; to: string } => {
+  const to = new Date();
+  const from = new Date(to);
+  from.setDate(from.getDate() - days);
+  return { from: isoDate(from), to: isoDate(to) };
+};

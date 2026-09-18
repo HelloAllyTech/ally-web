@@ -180,7 +180,9 @@ const TABS: TabDef[] = [
       <div className="flex flex-col gap-6">
         <TokenConsumption {...f} />
         <CodingAgentCost {...f} />
-        <FixSessionEngineCost {...f} />
+        {/* Its own day-window control, not the tab-wide range picker above —
+            see the component's own doc for why. */}
+        <FixSessionEngineCost />
       </div>
     ),
   },

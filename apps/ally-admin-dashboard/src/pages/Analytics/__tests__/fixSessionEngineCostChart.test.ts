@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FixSessionEngineCost } from "@types";
 
-import { buildFixSessionEngineCostBars } from "../fixSessionEngineCostChart";
+import { buildFixSessionEngineCostBars, rangeEndingToday } from "../fixSessionEngineCostChart";
 
 const row = (over: Partial<FixSessionEngineCost> = {}): FixSessionEngineCost => ({
   engine: "claude-code",
@@ -38,5 +38,24 @@ describe("buildFixSessionEngineCostBars", () => {
 
   it("returns nothing rather than a misleading empty bar when there's no data yet", () => {
     expect(buildFixSessionEngineCostBars([])).toEqual([]);
+  });
+});
+
+describe("rangeEndingToday", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-18T15:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("ends today and starts N days before it", () => {
+    expect(rangeEndingToday(7)).toEqual({ from: "2026-09-11", to: "2026-09-18" });
+  });
+
+  it("shifts the start date, not just the label, for a different day count", () => {
+    expect(rangeEndingToday(3)).toEqual({ from: "2026-09-15", to: "2026-09-18" });
   });
 });
