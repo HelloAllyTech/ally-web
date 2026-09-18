@@ -235,8 +235,10 @@ export const Learn: FC = () => {
                 title={track.title || ""}
                 description={track.description || ""}
                 onClick={() => onTrackCardClick(track.id)}
+                isPathway
                 totalScenarios={track.totalItems}
                 completedScenarios={track.completedItems}
+                simulationCount={track.simulationsCount}
               />
             </motion.div>
           ))}
@@ -298,8 +300,10 @@ export const Learn: FC = () => {
                 description={isMultipleItems ? "" : item.description || ""}
                 onClick={() => onScenarioCardClick(itemId)}
                 isComingSoon={!isMultipleItems && item.status === ScenarioStatus.COMING_SOON}
+                isPathway={isMultipleItems}
                 totalScenarios={isMultipleItems ? item.totalScenarios : undefined}
                 completedScenarios={isMultipleItems ? item.completedScenarios : undefined}
+                simulationCount={isMultipleItems ? item.totalScenarios : undefined}
                 triggerWarnings={isMultipleItems ? undefined : item.triggerWarnings}
                 attemptCount={isMultipleItems ? undefined : item.completion?.attemptCount}
               />

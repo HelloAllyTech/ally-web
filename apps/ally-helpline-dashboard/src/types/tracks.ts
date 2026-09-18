@@ -44,6 +44,7 @@ export interface TrackListItem {
   description: string | null;
   coverImageUrl: string | null;
   totalItems: number;
+  simulationsCount: number;
   estimatedDurationMinutes: number | null;
   enrolled: boolean;
   completedItems: number;
@@ -117,6 +118,7 @@ export interface TrackDetail {
   coverImageUrl: string | null;
   status: string;
   totalItems: number;
+  simulationsCount: number;
   estimatedDurationMinutes: number | null;
   enrolled: boolean;
   trackEnrollmentId: string | null;
