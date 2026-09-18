@@ -59,7 +59,8 @@ export const FixSessionEngineCost = () => {
 
   const source = buildSource({
     derivation: "bug_hunt_runs.totalTokenCostUsd, averaged across completed fix sessions",
-    window: `last ${days} day${days === 1 ? "" : "s"}`,
+    // Every DAY_OPTIONS value is plural (3, 7, 14, 30) — no ternary needed.
+    window: `last ${days} days`,
     extra:
       byEngine.length > 0
         ? byEngine
