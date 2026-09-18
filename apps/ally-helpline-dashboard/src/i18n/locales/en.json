@@ -287,8 +287,8 @@
       "completed_other": "Completed · {{count}}×",
       "completedAria_one": "Completed once",
       "completedAria_other": "Completed {{count}} times",
-      "simulationsCount": "{{count}} Simulation",
-      "simulationsCount_plural": "{{count}} Simulations",
+      "simulationsCount_one": "{{count}} Simulation",
+      "simulationsCount_other": "{{count}} Simulations",
       "ariaLabel": "Select {{title}} scenario",
       "type": {
         "pathway": "pathway",
