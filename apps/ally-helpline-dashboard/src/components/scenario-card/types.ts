@@ -7,6 +7,8 @@ export interface ScenarioCardProps {
   totalScenarios?: number;
   completedScenarios?: number;
   triggerWarnings?: TriggerChipItemWarning[];
+  isPathway?: boolean; // New prop for pathway check
+  simulationCount?: number; // New prop for simulation count
   /**
    * How many times the learner has completed this scenario. Only meaningful
    * for a standalone scenario — pathways, cases and courses show progress via

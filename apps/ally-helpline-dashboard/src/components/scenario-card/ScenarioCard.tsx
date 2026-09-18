@@ -20,6 +20,8 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   completedScenarios = 0,
   triggerWarnings,
   attemptCount = 0,
+  isPathway,
+  simulationCount,
 }) => {
   const { t } = useTranslation();
   // Tracked per URL rather than as a sticky boolean: the course player renders
@@ -28,7 +30,6 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   // latch the fallback for good — the real cover then never appeared.
   const [failedCoverImage, setFailedCoverImage] = useState<string | null>(null);
   const imageError = !(coverImage?.length > 0) || failedCoverImage === coverImage;
-  const isPathway = totalScenarios !== undefined;
   // Standalone scenarios only: pathways/cases/courses already carry their own
   // progress ring. A COMING_SOON scenario can't have been played, so the two
   // cover badges are mutually exclusive and share the one corner slot.
@@ -121,7 +122,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
 
             {isPathway && (
               <div className="text-sm text-typography-700">
-                {t("learn.card.simulationsCount", { count: totalScenarios })}
+                {t("learn.card.simulationsCount", { count: simulationCount })}
               </div>
             )}
           </div>
