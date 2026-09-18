@@ -29,6 +29,10 @@ export function initAnalytics(): void {
     // Clicks on things that look interactive and are not. Off by default in
     // posthog-js, and the dead-click detector has nothing to read without it.
     capture_dead_clicks: true,
+    // Uncaught errors and unhandled promise rejections, as `$exception`
+    // events. Off by default in posthog-js — without it Bug Hunter's planned
+    // web-error finder has nothing to read for this app.
+    capture_exceptions: true,
     session_recording: {
       maskAllInputs: true, // PII protection — masks all inputs in session recordings
       blockClass: "ph-no-capture", // This class blocks entire section
