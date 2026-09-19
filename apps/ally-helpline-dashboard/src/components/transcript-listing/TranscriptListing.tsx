@@ -123,12 +123,12 @@ const TranscriptItem = ({
     : counsellorName || youLabel;
 
   const borderWidthClass = isActive ? "border-[3px]" : "border";
-  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#ebf0fa]" : "hover:bg-[#eae7de]") : "";
+  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-ai-50" : "hover:bg-[#eae7de]") : "";
   // A jumped-to moment is marked with a ring rather than a border change, so it
   // reads on top of whatever the audio playback highlight is doing to the row.
   const focusRingClass = isFocused ? "ring-2 ring-offset-1 ring-primary-500" : "";
   const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-all ${borderWidthClass} ${
-    isAIClient ? "border-[#264d8e] bg-[#ebf0fa]" : "border-[#bcb4a4] bg-[#f5f4ee]"
+    isAIClient ? "border-ai-500 bg-ai-50" : "border-[#bcb4a4] bg-[#f5f4ee]"
   } ${hoverBgClass} ${focusRingClass}`;
 
   const body = (
@@ -139,7 +139,7 @@ const TranscriptItem = ({
 
       <div className="flex-1 ph-mask">
         <div
-          className={`font-semibold text-base ${isAIClient ? "text-[#183059]" : "text-[#565045]"}`}
+          className={`font-semibold text-base ${isAIClient ? "text-ai-700" : "text-[#565045]"}`}
         >
           {speakerName}
         </div>

@@ -106,6 +106,24 @@ export default {
           950: "#1F1C17",
         },
         /*
+         * The AI accent. Separate from `primary` on purpose: primary is Ally
+         * Blue (brand, interactive), this is the warm clay that marks a surface
+         * a machine wrote. Keep it rare — see index.css for the split.
+         */
+        ai: {
+          DEFAULT: "rgb(var(--color-ai-DEFAULT) / <alpha-value>)",
+          50: "rgb(var(--color-ai-50) / <alpha-value>)",
+          100: "rgb(var(--color-ai-100) / <alpha-value>)",
+          200: "rgb(var(--color-ai-200) / <alpha-value>)",
+          300: "rgb(var(--color-ai-300) / <alpha-value>)",
+          400: "rgb(var(--color-ai-400) / <alpha-value>)",
+          500: "rgb(var(--color-ai-500) / <alpha-value>)",
+          600: "rgb(var(--color-ai-600) / <alpha-value>)",
+          700: "rgb(var(--color-ai-700) / <alpha-value>)",
+          800: "rgb(var(--color-ai-800) / <alpha-value>)",
+          900: "rgb(var(--color-ai-900) / <alpha-value>)",
+        },
+        /*
          * Semantic tones, resolved from the --color-tone-* variables that
          * /SJT1's result bands and the status chips already share. Exposed as
          * utilities so a component can reach them without re-declaring the hex.

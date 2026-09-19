@@ -97,7 +97,7 @@ export const SupervisorNote: FC<SupervisorNoteProps> = ({
                   onClick={() => onOpenMoment(segment.messageId)}
                   aria-label={t("postSim.debrief.momentLabel")}
                   title={t("postSim.debrief.momentLabel")}
-                  className="mx-0.5 inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 align-baseline font-primary text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100"
+                  className="mx-0.5 inline-flex items-center rounded-full border border-ai-200 bg-ai-50 px-2 py-0.5 align-baseline font-primary text-xs font-medium text-ai-700 transition-colors hover:bg-ai-100"
                 >
                   {t("postSim.debrief.momentLabel")}
                 </button>
@@ -139,7 +139,7 @@ export const SupervisorNote: FC<SupervisorNoteProps> = ({
               written in a supervisor's voice has to say plainly that a
               supervisor did not write it. */}
           <Tooltip label={t("postSim.debrief.aiTooltip")} align="top">
-            <span className="cursor-help rounded-full bg-primary-50 px-2 py-0.5 font-primary text-[11px] font-medium uppercase tracking-wide text-primary-700">
+            <span className="cursor-help rounded-full bg-ai-50 px-2 py-0.5 font-primary text-[11px] font-medium uppercase tracking-wide text-ai-700">
               {t("postSim.debrief.aiLabel")}
             </span>
           </Tooltip>

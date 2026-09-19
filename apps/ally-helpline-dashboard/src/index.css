@@ -90,6 +90,33 @@
     --color-primary-800: 16 33 60; /* #10213C */
     --color-primary-900: 10 20 36; /* #0A1424 */
 
+    /*
+     * The AI accent — warm clay, deliberately NOT the brand blue.
+     *
+     * Ally Blue says "this is Ally, and this is interactive". This ramp says
+     * something narrower: a machine wrote what you are looking at. It marks
+     * AI-authored surfaces only — the supervisor's coaching notes, the AI side
+     * of a transcript, the ask-about-this-session affordances, the live session
+     * while the agent is listening.
+     *
+     * Two colours earn their keep only if the split is held. A link inside an
+     * AI note is still part of what the AI said, so it stays warm; an ordinary
+     * button on a page that happens to contain AI output is not, and stays
+     * blue. When in doubt the answer is blue — this ramp should stay rare
+     * enough that seeing it means something.
+     */
+    --color-ai-DEFAULT: 204 120 92; /* #CC785C */
+    --color-ai-50: 247 236 231; /* #F7ECE7 */
+    --color-ai-100: 240 218 208; /* #F0DAD0 */
+    --color-ai-200: 230 191 175; /* #E6BFAF */
+    --color-ai-300: 221 159 137; /* #DD9F89 */
+    --color-ai-400: 218 119 86; /* #DA7756 */
+    --color-ai-500: 204 120 92; /* #CC785C */
+    --color-ai-600: 181 100 74; /* #B5644A */
+    --color-ai-700: 150 79 57; /* #964F39 (text on cream) */
+    --color-ai-800: 112 60 44; /* #703C2C */
+    --color-ai-900: 74 41 31; /* #4A291F */
+
     /* Warm greys — the ink ramp. 900 is the primary-CTA fill. */
     --color-secondary-DEFAULT: 61 58 52;
     --color-secondary-50: 245 244 238;
