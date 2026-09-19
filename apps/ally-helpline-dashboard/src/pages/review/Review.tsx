@@ -165,8 +165,8 @@ const ReviewWithTabs: FC = () => {
       : `${activeTab}-${scribeReadFilter}-${scribeSortBy}`;
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#FAFAFA]">
-      <div className="sticky top-0 z-10 flex flex-col items-center bg-[#FAFAFA]">
+    <div className="flex h-full w-full flex-col bg-[#faf9f5]">
+      <div className="sticky top-0 z-10 flex flex-col items-center bg-[#faf9f5]">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}

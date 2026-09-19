@@ -14,7 +14,7 @@ exports[`CustomCircularProgress > should match snapshot with default props and 5
       cy="10"
       fill="none"
       r="8.5"
-      stroke="#E0E0E0"
+      stroke="#e3dbce"
       stroke-width="3"
     />
     <circle

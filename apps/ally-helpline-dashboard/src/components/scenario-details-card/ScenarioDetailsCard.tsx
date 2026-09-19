@@ -163,7 +163,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     <>
       <motion.div
         layout
-        className="flex max-h-full w-full max-w-[600px] flex-col overflow-hidden rounded-lg border border-[#E5E7EB] bg-white origin-top transition-all duration-300"
+        className="flex max-h-full w-full max-w-[600px] flex-col overflow-hidden rounded-lg border border-[#e3dbce] bg-white origin-top transition-all duration-300"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -241,7 +241,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             image size, or whether the middle region's scroll math is even
             correct: it's a fixed sibling at the bottom of the card, not the
             last item in a scrolling flow. */}
-        <div className="shrink-0 border-t border-[#E5E7EB] p-5 font-primary">
+        <div className="shrink-0 border-t border-[#e3dbce] p-5 font-primary">
           <AppTooltip location={TooltipLocation.START_SIMULATION_BUTTON}>
             <Button
               onClick={handleStartSimulation}

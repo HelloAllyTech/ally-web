@@ -707,7 +707,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
           // be invisible on the white drawer header.)
           icon: (
             <Mic
-              className={`h-5 w-5 ${recorder.isRecording ? "text-[#da1e28]" : "text-[#161616]"}`}
+              className={`h-5 w-5 ${recorder.isRecording ? "text-[#da1e28]" : "text-[#29261f]"}`}
             />
           ),
           onClick: handleMicClick,

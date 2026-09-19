@@ -39,7 +39,7 @@ export const tableHeaders = [
 export const tagColors = {
   1: { bg: "#FFCDD2", text: "#5C0A0A" },
   2: { bg: "#FFE0B2", text: "#662400" },
-  3: { bg: "#E0E0E0", text: "#333333" },
+  3: { bg: "#e3dbce", text: "#333333" },
   4: { bg: "#B9EFC880", text: "#1B5E20" },
   5: { bg: "#D0F0C080", text: "#174F1B" },
 };

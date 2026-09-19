@@ -64,7 +64,7 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="#E0E0E0"
+            stroke="#e3dbce"
             strokeWidth={strokeWidth}
           />
           <circle
@@ -169,7 +169,7 @@ const UploadProgressDialog: FC = () => {
 
   return (
     <div className="fixed bottom-0 right-6 z-40 font-primary">
-      <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
+      <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#e3dbce] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={uploads}
           expanded={expanded}

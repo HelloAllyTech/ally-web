@@ -128,7 +128,7 @@ const ScribeReview: FC<ScribeReviewProps> = ({ readFilter, sortBy }) => {
             onReviewTranscript={() => onReviewTranscript(item.id)}
             duration={item.scribeSession?.duration}
             dateTime={item.scribeSession?.createdAt}
-            badgeBgColor="#FFF3E0"
+            badgeBgColor="#fff3E0"
             badgeTextColor="#E65100"
             badgeText={t("common.scribe", "Scribe")}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}

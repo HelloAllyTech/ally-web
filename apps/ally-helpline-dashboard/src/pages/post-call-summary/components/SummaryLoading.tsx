@@ -179,7 +179,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           </div>
           <Tooltip label={t("summaryLoading.notesTooltip")} align="bottom-end">
             <span className="inline-flex">
-              <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />
+              <Info className="w-[12px] h-[12px] text-[#29261f] cursor-pointer" />
             </span>
           </Tooltip>
         </div>

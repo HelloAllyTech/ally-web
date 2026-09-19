@@ -15,7 +15,7 @@ export const CharacterCount: FC<CharacterCountProps> = ({ value, maxLength }) =>
   const getProgressColor = () => {
     if (isError) return "#F93535";
     if (isWarning) return "#FF9800";
-    return "#0957D0";
+    return "#cc785c";
   };
 
   const getTextColor = () => {
@@ -39,7 +39,7 @@ export const CharacterCount: FC<CharacterCountProps> = ({ value, maxLength }) =>
         size={40}
         strokeWidth={3}
         progressColor={getProgressColor()}
-        backgroundColor="#E5E7EB"
+        backgroundColor="#e3dbce"
         showLabel={false}
       />
       <div className="absolute inset-0 flex items-center justify-center">

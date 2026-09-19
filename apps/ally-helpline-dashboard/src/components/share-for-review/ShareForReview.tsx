@@ -261,7 +261,7 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
         <ScribeImage />
       </div>
       <div className="flex flex-col gap-2 w-2/3">
-        <div className="text-xs bg-[#FFF3E0] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
+        <div className="text-xs bg-[#fff3E0] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
           {tag === TagType.SCRIBE ? t("common.scribe") : t("common.simulation")}
         </div>
         <h3 className="text-lg text-typography-900">

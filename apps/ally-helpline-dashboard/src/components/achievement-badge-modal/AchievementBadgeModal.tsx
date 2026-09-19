@@ -79,7 +79,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
           <div className="flex flex-col items-center gap-0.5 sm:gap-1 w-full">
             <div
               id="achievement-modal-title"
-              className="font-primary text-xl sm:text-2xl md:text-[26px] font-medium leading-tight sm:leading-[1.65] text-[#1A1A1A] text-center w-full overflow-hidden break-words line-clamp-2"
+              className="font-primary text-xl sm:text-2xl md:text-[26px] font-medium leading-tight sm:leading-[1.65] text-[#29261f] text-center w-full overflow-hidden break-words line-clamp-2"
             >
               {title}
             </div>

@@ -12,7 +12,7 @@ exports[`CommentAdditionDialog Component > should match snapshot when rendered 1
         class="flex items-center gap-2 font-primary"
       >
         <div
-          class="w-8 h-8 rounded-full border flex items-center justify-center text-[#757575] text-sm font-medium"
+          class="w-8 h-8 rounded-full border flex items-center justify-center text-[#6e6656] text-sm font-medium"
         >
           <div
             class="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"

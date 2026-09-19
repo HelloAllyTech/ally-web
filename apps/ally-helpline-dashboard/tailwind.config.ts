@@ -57,6 +57,23 @@ export default {
       // Semantic status scales (destructive, success, warning) stay literal so
       // error/success/warning colours remain recognisable across every theme.
       colors: {
+        /*
+         * `white` is BONE, not #FFF.
+         *
+         * 273 call sites in this app and ui-shared say bg-white / text-white,
+         * and on a warm cream ground pure white reads as a cold hole punched in
+         * the page. Claude's system has no #FFF: its lightest surface is bone.
+         * Overriding the core colour here retints every one of those call sites
+         * at once, in both roles — a raised card ground, and the label on a
+         * clay button, where bone is the correct on-accent colour anyway.
+         *
+         * This does not reach the admin console: it has its own
+         * tailwind.config.js, so a shared ui-shared component compiled for
+         * admin still resolves bg-white to #FFF there and bone here. That split
+         * is the whole mechanism this migration rests on — a shared component
+         * must name a token, never a hex.
+         */
+        white: "rgb(var(--color-background-raised) / <alpha-value>)",
         // Primary Colors
         primary: {
           DEFAULT: "rgb(var(--color-primary-DEFAULT) / <alpha-value>)",

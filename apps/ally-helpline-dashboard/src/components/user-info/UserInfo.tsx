@@ -24,7 +24,7 @@ const UserInfo: FC<{
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
 
   const hasPercentage = typeof CreditPercentage === "number" && CreditPercentage >= 0;
-  const ringColor = limitReached ? "#FE6F64" : "#264D8E";
+  const ringColor = limitReached ? "#FE6F64" : "#cc785c";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,7 +52,7 @@ const UserInfo: FC<{
                 style={
                   hasPercentage
                     ? {
-                        background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
+                        background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e3dbce ${CreditPercentage * 3.6}deg)`,
                       }
                     : undefined
                 }
@@ -146,7 +146,7 @@ const UserInfo: FC<{
               <div
                 data-testid="user-info-credits-bar"
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  limitReached ? "bg-red-500" : "bg-[#264D8E]"
+                  limitReached ? "bg-red-500" : "bg-[#cc785c]"
                 }`}
                 style={{ width: `${CreditPercentage}%` }}
               />

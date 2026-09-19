@@ -66,7 +66,7 @@ export const Changelog: FC = () => {
   const isInitialLoad = isFetching && offset === 0;
 
   return (
-    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#29261f]">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />
@@ -74,22 +74,22 @@ export const Changelog: FC = () => {
         <header className="mb-12">
           <Link
             to={ROUTES.BLOG}
-            className="mb-6 inline-block text-sm text-[#87867F] transition-colors hover:text-[#141413]"
+            className="mb-6 inline-block text-sm text-[#928b7c] transition-colors hover:text-[#29261f]"
           >
             ← Blog
           </Link>
           <h1 className="text-4xl sm:text-5xl">Changelog</h1>
-          <p className="mt-4 text-[#5E5D59]">{CHANGELOG_DESCRIPTION}</p>
+          <p className="mt-4 text-[#565045]">{CHANGELOG_DESCRIPTION}</p>
         </header>
 
         {isInitialLoad ? (
-          <p className="text-[#5E5D59]">Loading…</p>
+          <p className="text-[#565045]">Loading…</p>
         ) : isError ? (
-          <p className="text-[#5E5D59]">
+          <p className="text-[#565045]">
             Something went wrong loading the changelog. Please try again later.
           </p>
         ) : entries.length === 0 ? (
-          <p className="text-[#5E5D59]">No updates yet. Check back soon!</p>
+          <p className="text-[#565045]">No updates yet. Check back soon!</p>
         ) : (
           <div className="flex flex-col gap-8">
             {groups.map(group => (
@@ -97,7 +97,7 @@ export const Changelog: FC = () => {
                 <h2 className="mb-3 text-xl">{group.date}</h2>
                 <ul className="list-disc space-y-2 pl-5">
                   {group.entries.map(entry => (
-                    <li key={entry.id} className="text-sm leading-relaxed text-[#5E5D59]">
+                    <li key={entry.id} className="text-sm leading-relaxed text-[#565045]">
                       {entry.releaseNoteText}
                     </li>
                   ))}
@@ -109,7 +109,7 @@ export const Changelog: FC = () => {
                 type="button"
                 onClick={() => setOffset(prev => prev + PAGE_SIZE)}
                 disabled={isFetching}
-                className="self-center rounded-lg bg-[#141413]/5 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#141413]/10 disabled:opacity-50"
+                className="self-center rounded-lg bg-[#29261f]/5 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#29261f]/10 disabled:opacity-50"
               >
                 {isFetching ? "Loading..." : "View more"}
               </button>

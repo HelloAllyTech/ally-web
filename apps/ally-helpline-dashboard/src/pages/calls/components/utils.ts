@@ -66,7 +66,7 @@ export const getModeChipConfig = (mode: string | undefined | null, t: TFunction)
       return {
         label: t("calls.mode.dictation"),
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#FFF3E0] text-[#E65100]", // Orange tint
+        outerDivClassName: "bg-[#fff3E0] text-[#E65100]", // Orange tint
       };
     case ScribeSessionMode.SCRIBE:
     default:

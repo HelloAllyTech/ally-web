@@ -127,7 +127,7 @@ export const useEnhance = () => {
         <WandStars
           height={24}
           width={24}
-          className="[&_path]:fill-[#49454F] group-hover:[&_path]:fill-[#0957D0]"
+          className="[&_path]:fill-[#49454F] group-hover:[&_path]:fill-[#cc785c]"
         />
       </div>
     </div>

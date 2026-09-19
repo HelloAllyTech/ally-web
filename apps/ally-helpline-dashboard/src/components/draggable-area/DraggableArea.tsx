@@ -47,7 +47,7 @@ const DraggableArea: FC<DraggableAreaProps> = ({
   });
   return (
     <div
-      className="rounded-[8px] border border-dashed border-[#D9D9D9] h-[200px] flex flex-col gap-5 items-center justify-center cursor-pointer"
+      className="rounded-[8px] border border-dashed border-[#d6cdbe] h-[200px] flex flex-col gap-5 items-center justify-center cursor-pointer"
       {...getRootProps()}
     >
       <input {...getInputProps()} />

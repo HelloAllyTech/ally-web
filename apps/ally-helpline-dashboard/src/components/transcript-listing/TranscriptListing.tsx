@@ -139,7 +139,7 @@ const TranscriptItem = ({
 
       <div className="flex-1 ph-mask">
         <div
-          className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#0957D0]"}`}
+          className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#cc785c]"}`}
         >
           {speakerName}
         </div>

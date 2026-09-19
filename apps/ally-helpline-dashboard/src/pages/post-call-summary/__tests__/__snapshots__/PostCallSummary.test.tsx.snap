@@ -9,7 +9,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        class="w-full border-b border-[#E5E7EB]"
+        class="w-full border-b border-[#e3dbce]"
       >
         <div
           class="flex items-center gap-2 font-secondary justify-between"
@@ -125,7 +125,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        class="w-full border-b border-[#E5E7EB]"
+        class="w-full border-b border-[#e3dbce]"
       >
         <div
           class="flex items-center gap-2 font-secondary justify-between"

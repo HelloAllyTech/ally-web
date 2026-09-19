@@ -6,7 +6,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
     class="fixed bottom-0 right-6 z-40 font-primary"
   >
     <div
-      class="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden"
+      class="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#e3dbce] overflow-hidden"
     >
       <div
         class="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]"
@@ -116,7 +116,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
                     cy="10"
                     fill="none"
                     r="9"
-                    stroke="#E0E0E0"
+                    stroke="#e3dbce"
                     stroke-width="2"
                   />
                   <circle

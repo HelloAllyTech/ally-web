@@ -144,13 +144,13 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
     if (files.length > 0) {
       if (typeof isDropping === "number" && isDropping < 100) {
         return (
-          <div className="flex gap-5 w-full border-[0.5px] border-[#D2D2D2] rounded-[8px] p-6">
+          <div className="flex gap-5 w-full border-[0.5px] border-[#d6cdbe] rounded-[8px] p-6">
             <FileUpload />
             <div className="flex flex-col gap-2 flex-1 font-primary">
               <span className="text-typography-900 text-sm">
                 {t("calls.audioUpload.uploading")}
               </span>
-              <div className="w-full h-2 bg-[#EDEDED] rounded">
+              <div className="w-full h-2 bg-[#eae7de] rounded">
                 <div
                   className="h-2 bg-typography-900 rounded"
                   style={{ width: `${isDropping}%`, transition: "width 40ms linear" }}
@@ -163,9 +163,9 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
       }
       return (
         <div className="w-full flex flex-col gap-[10px]">
-          <div className="flex gap-5 items-center w-full border-[0.5px] border-[#D2D2D2] rounded-[8px] px-6">
+          <div className="flex gap-5 items-center w-full border-[0.5px] border-[#d6cdbe] rounded-[8px] px-6">
             <div
-              className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#E2F2FF]" : "bg-[#F5F5F5]"} cursor-pointer grid place-items-center`}
+              className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#E2F2FF]" : "bg-[#f0eee7]"} cursor-pointer grid place-items-center`}
             >
               {isPlaying ? (
                 <PauseIcon className="text-primary-500" onClick={onPauseClick} />
@@ -181,18 +181,18 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
                 url={audioUrl}
                 height={100}
                 width={300}
-                waveColor="#D2D2D2"
+                waveColor="#d6cdbe"
                 barGap={4}
                 barWidth={2}
                 onFinish={() => setIsPlaying(false)}
                 onReady={onAudioReady}
-                progressColor="#0957D0"
+                progressColor="#cc785c"
                 cursorColor="transparent"
               />
               {isWaveformLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-6 h-6 border-2 border-[#D2D2D2] border-t-[#0957D0] rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-[#d6cdbe] border-t-[#cc785c] rounded-full animate-spin" />
                     <span className="text-xs text-typography-800">
                       {t("calls.audioUpload.loadingWaveform")}
                     </span>
@@ -207,7 +207,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
           <div className="flex gap-2 w-full justify-between items-center font-primary">
             <div className="flex gap-2 items-center">
               <span className="text-xs text-black">{audioFile?.name}</span>
-              <span className="text-[10px] text-typography-800 bg-[#F5F5F5] rounded-[2px] p-1">
+              <span className="text-[10px] text-typography-800 bg-[#f0eee7] rounded-[2px] p-1">
                 {getFileSize()} MB
               </span>
             </div>

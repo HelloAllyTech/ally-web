@@ -138,7 +138,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
                 type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
                 inputStyles={{
-                  color: isEditable ? "#1A1A1A" : "#9CA3AF",
+                  color: isEditable ? "#29261f" : "#9CA3AF",
                   fontSize: "16px",
                   fontFamily: "IBM_Plex_Serif",
                 }}
@@ -330,7 +330,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId} className={carbonField.group}>
           {labelEl}
-          <div className="flex flex-col gap-2 bg-[#f4f4f4] border-b border-[#8d8d8d] p-3">
+          <div className="flex flex-col gap-2 bg-[#f0eee7] border-b border-[#928b7c] p-3">
             {(field.options ?? []).map(o => (
               <label key={o.id} className={carbonField.checkboxRow}>
                 <input

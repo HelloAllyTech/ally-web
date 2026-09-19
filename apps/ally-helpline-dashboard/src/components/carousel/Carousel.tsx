@@ -106,9 +106,9 @@ const Carousel: FC<CarouselProps> = ({
   const getSliderStyles = (isActive: boolean) => {
     switch (variant) {
       case CarouselVariant.LIGHT:
-        return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
+        return isActive ? "bg-black" : "bg-[#d6cdbe] hover:bg-slate-400";
       case CarouselVariant.DARK:
-        return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
+        return isActive ? "bg-black" : "bg-[#d6cdbe] hover:bg-slate-400";
     }
   };
 

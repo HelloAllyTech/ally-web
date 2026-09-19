@@ -22,7 +22,7 @@ const CommentsSection: FC<CommentsSectionProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="w-full h-[0.5px] bg-[#D2D2D2]" />
+      <div className="w-full h-[0.5px] bg-[#d6cdbe]" />
 
       <div className="flex flex-col gap-4">
         {comments.map(comment => (

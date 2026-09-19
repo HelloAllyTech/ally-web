@@ -92,7 +92,7 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
 export const TOOLTIP_LIGHT_PROPS = {
   tooltip: {
     sx: {
-      backgroundColor: "#FFFFFF",
+      backgroundColor: "#faf9f5",
       color: "#1D1B20",
       fontSize: "12px",
       maxWidth: "400px",
@@ -104,7 +104,7 @@ export const TOOLTIP_LIGHT_PROPS = {
 export const TOOLTIP_DARK_PROPS = {
   tooltip: {
     sx: {
-      backgroundColor: "#1C1B1F",
+      backgroundColor: "#29261f",
       color: "white",
       fontSize: "12px",
       maxWidth: "400px",
