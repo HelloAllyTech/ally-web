@@ -15,7 +15,7 @@ export const CharacterCount: FC<CharacterCountProps> = ({ value, maxLength }) =>
   const getProgressColor = () => {
     if (isError) return "#F93535";
     if (isWarning) return "#c4901f";
-    return "#cc785c";
+    return "#264d8e";
   };
 
   const getTextColor = () => {

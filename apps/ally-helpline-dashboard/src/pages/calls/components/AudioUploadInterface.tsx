@@ -186,13 +186,13 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
                 barWidth={2}
                 onFinish={() => setIsPlaying(false)}
                 onReady={onAudioReady}
-                progressColor="#cc785c"
+                progressColor="#264d8e"
                 cursorColor="transparent"
               />
               {isWaveformLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-6 h-6 border-2 border-[#d6cdbe] border-t-[#cc785c] rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-[#d6cdbe] border-t-[#264d8e] rounded-full animate-spin" />
                     <span className="text-xs text-typography-800">
                       {t("calls.audioUpload.loadingWaveform")}
                     </span>

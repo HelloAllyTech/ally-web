@@ -7,7 +7,7 @@
  * `hsl(var(--…))` call sites remain, and tailwind.config.ts resolves from the
  * `--color-*` triplets below instead) — they are retinted to the Claude
  * palette rather than left on the old brand blue so that a component pasted in
- * from a shadcn recipe inherits the right identity instead of a stale #cc785c.
+ * from a shadcn recipe inherits the right identity instead of a stale #264d8e.
  */
 @layer base {
   :root {
@@ -17,19 +17,19 @@
     --card-foreground: 40 15% 14%;
     --popover: 45 30% 98%;
     --popover-foreground: 40 15% 14%;
-    --primary: 18 52% 58%; /* #CC785C clay */
+    --primary: 218 58% 35%; /* #264D8E Ally Blue */
     --primary-foreground: 45 30% 98%;
     --secondary: 42 22% 89%; /* #EAE7DE */
     --secondary-foreground: 40 15% 14%;
     --muted: 42 22% 89%;
     --muted-foreground: 37 12% 40%; /* #6E6656 */
-    --accent: 18 52% 58%;
+    --accent: 218 58% 35%;
     --accent-foreground: 45 30% 98%;
     --destructive: 6 51% 42%; /* #A03E33 */
     --destructive-foreground: 45 30% 98%;
     --border: 35 25% 85%; /* #E3DBCE */
     --input: 35 25% 85%;
-    --ring: 18 52% 58%;
+    --ring: 218 58% 35%;
     --radius: 0.75rem;
   }
 }
@@ -40,8 +40,7 @@
  * (current/claude/carbon behind a `data-theme` attribute) is still gone. What
  * changed is which theme is locked in. The values below are the `claude` theme
  * this repo carried before the Carbon consolidation (commit f8918ee5), the same
- * ones the public /SJT1 self-check already ships (commit 73327ac7) — clay
- * #CC785C over warm creams on a #29261F warm near-black. They are the team's
+ * ones the public /SJT1 self-check already ships (commit 73327ac7) — warm creams on a #29261F warm near-black. They are the team's
  * own prior values, not invented ones, so a reviewer can trace every hex.
  *
  * Tailwind tokens (see tailwind.config.ts) resolve from these `--color-*` /
@@ -55,26 +54,41 @@
  * variables. Keep it that way: a shared ui-shared component must name a token,
  * never a hex, so it can resolve to Carbon blue there and clay here.
  *
- * CLAY IS THE AI COLOUR, NOT THE BUTTON COLOUR. --color-primary-* is clay and
- * is reserved for surfaces where the AI is acting or speaking: the live-session
- * orb, the post-session "ask about this session" panel, the XP bar. Ordinary
- * primary CTAs take near-black --color-secondary-900 / --color-typography-Default.
- * Spending clay on every button is what turns an accent into wallpaper.
+ * THE ACCENT IS NOT THE TEXT COLOUR. --color-primary-* is Ally Blue: links,
+ * selected and focus states, the brand mark, and the surfaces where the AI is
+ * acting or speaking. Ordinary primary CTAs take near-black
+ * --color-secondary-900 / --color-typography-Default, and body copy takes the
+ * ink ramp. Spending the accent on every button is what turns it into
+ * wallpaper — and pointing `body` at it, which this file used to do, turns
+ * every unstyled paragraph into an accent-coloured one.
  */
 @layer base {
   :root {
-    /* Clay — the Claude accent. Reserved for AI-authored surfaces. */
-    --color-primary-DEFAULT: 204 120 92; /* #CC785C */
-    --color-primary-50: 247 236 231; /* #F7ECE7 */
-    --color-primary-100: 240 218 208; /* #F0DAD0 */
-    --color-primary-200: 230 191 175; /* #E6BFAF */
-    --color-primary-300: 221 159 137; /* #DD9F89 */
-    --color-primary-400: 218 119 86; /* #DA7756 */
-    --color-primary-500: 204 120 92; /* #CC785C (interactive) */
-    --color-primary-600: 181 100 74; /* #B5644A (hover) */
-    --color-primary-700: 150 79 57; /* #964F39 (active, text on cream) */
-    --color-primary-800: 112 60 44; /* #703C2C */
-    --color-primary-900: 74 41 31; /* #4A291F */
+    /*
+     * Ally Blue — the brand accent, and the interactive colour.
+     *
+     * This ramp is the product's own brand blue, byte-identical to the one the
+     * admin console carries in its tailwind.config.js, so both apps agree on
+     * what Ally Blue is. It replaces the clay this app briefly ran on: clay is
+     * Claude's colour, and the design system is worth borrowing, but the brand
+     * inside it is Ally's.
+     *
+     * It is the INTERACTIVE colour — links, selected states, focus rings, the
+     * brand mark — not the default text colour. Body copy stays on the ink
+     * ramp; see the `body` rule below, which is the one place that has already
+     * gone wrong once.
+     */
+    --color-primary-DEFAULT: 38 77 142; /* #264D8E */
+    --color-primary-50: 235 240 250; /* #EBF0FA (lightest tint) */
+    --color-primary-100: 215 226 244; /* #D7E2F4 */
+    --color-primary-200: 174 197 234; /* #AEC5EA */
+    --color-primary-300: 126 162 221; /* #7EA2DD */
+    --color-primary-400: 74 125 207; /* #4A7DCF */
+    --color-primary-500: 38 77 142; /* #264D8E (interactive) */
+    --color-primary-600: 31 63 117; /* #1F3F75 (hover) */
+    --color-primary-700: 24 48 89; /* #183059 (active) */
+    --color-primary-800: 16 33 60; /* #10213C */
+    --color-primary-900: 10 20 36; /* #0A1424 */
 
     /* Warm greys — the ink ramp. 900 is the primary-CTA fill. */
     --color-secondary-DEFAULT: 61 58 52;

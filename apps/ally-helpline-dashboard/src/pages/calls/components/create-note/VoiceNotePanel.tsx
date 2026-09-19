@@ -44,7 +44,7 @@ const ListeningBars: FC<{ active: boolean }> = ({ active }) => (
     {BAR_HEIGHTS.map((peak, i) => (
       <motion.span
         key={i}
-        className="w-1 rounded-full bg-[#cc785c]"
+        className="w-1 rounded-full bg-[#264d8e]"
         style={{ height: `${peak}%` }}
         animate={active ? { scaleY: [0.4, 1, 0.4] } : { scaleY: 0.4 }}
         transition={
@@ -123,7 +123,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onGenerate}
-            className={`${ctrlButton} border-[#cc785c] bg-[#cc785c] text-white hover:bg-[#b5644a]`}
+            className={`${ctrlButton} border-[#264d8e] bg-[#264d8e] text-white hover:bg-[#1f3f75]`}
             data-testid="voice-note-timeout-retry"
           >
             {t("calls.createNote.voice.tryAgain")}
@@ -139,7 +139,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
         className="flex flex-col items-center gap-3 border border-[#e3dbce] bg-[#f0eee7] p-5"
         data-testid="voice-note-generating"
       >
-        <Loader2 className="h-6 w-6 animate-spin text-[#cc785c]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#264d8e]" />
         {isSlow ? (
           // Stop cycling the stage messages once we're past the expected
           // window: rotating "Transcribing… / Extracting…" past a minute reads
@@ -269,7 +269,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onGenerate}
-            className={`${ctrlButton} border-[#cc785c] bg-[#cc785c] text-white hover:bg-[#b5644a]`}
+            className={`${ctrlButton} border-[#264d8e] bg-[#264d8e] text-white hover:bg-[#1f3f75]`}
             data-testid="voice-note-generate"
           >
             <Sparkles className="h-4 w-4" />

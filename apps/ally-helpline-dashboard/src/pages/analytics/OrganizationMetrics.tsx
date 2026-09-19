@@ -310,7 +310,7 @@ export const OrganizationMetrics: FunctionComponent = () => {
             options={timeBarOpts({
               leftTitle: t("organizationMetrics.charts.axis.simulations"),
               bottomTitle: bucketTitle,
-              colorScale: { [simulationsSeries]: PALETTE.clay },
+              colorScale: { [simulationsSeries]: PALETTE.blue },
             })}
           />
         </ChartCard>

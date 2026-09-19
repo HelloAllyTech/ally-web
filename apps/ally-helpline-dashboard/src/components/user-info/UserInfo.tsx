@@ -24,7 +24,7 @@ const UserInfo: FC<{
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
 
   const hasPercentage = typeof CreditPercentage === "number" && CreditPercentage >= 0;
-  const ringColor = limitReached ? "#FE6F64" : "#cc785c";
+  const ringColor = limitReached ? "#FE6F64" : "#264d8e";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -146,7 +146,7 @@ const UserInfo: FC<{
               <div
                 data-testid="user-info-credits-bar"
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  limitReached ? "bg-red-500" : "bg-[#cc785c]"
+                  limitReached ? "bg-red-500" : "bg-[#264d8e]"
                 }`}
                 style={{ width: `${CreditPercentage}%` }}
               />

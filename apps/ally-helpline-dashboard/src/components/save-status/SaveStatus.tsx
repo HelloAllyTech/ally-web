@@ -10,7 +10,7 @@ interface SaveStatusProps {
 }
 
 const DOT_COLOR: Record<Exclude<SaveState, "idle">, string> = {
-  saving: "bg-[#cc785c]",
+  saving: "bg-[#264d8e]",
   saved: "bg-[#24a148]",
   error: "bg-[#da1e28]",
 };

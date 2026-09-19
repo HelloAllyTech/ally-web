@@ -63,7 +63,7 @@ const ReactionSelector = ({
           style={{
             width: borderSize,
             height: borderSize,
-            borderColor: selectedEmoji === emoji ? "#cc785c" : undefined,
+            borderColor: selectedEmoji === emoji ? "#264d8e" : undefined,
           }}
           className="flex cursor-pointer items-center justify-center rounded-full
                      border border-neutral-300 bg-white

@@ -418,10 +418,10 @@ export const ReviewDetails = () => {
           )}
           <div
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#cc785c] gap-2.5 rounded-full border justify-center px-3 shrink-0"
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#264d8e] gap-2.5 rounded-full border justify-center px-3 shrink-0"
           >
-            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#cc785c] shrink-0" />
-            <div className="text-typography-900 font-primary group-hover:text-[#cc785c] text-sm whitespace-nowrap">
+            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#264d8e] shrink-0" />
+            <div className="text-typography-900 font-primary group-hover:text-[#264d8e] text-sm whitespace-nowrap">
               {t("review.details.comments")}
             </div>
           </div>
@@ -436,7 +436,7 @@ export const ReviewDetails = () => {
                   <NativeEmoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
-                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#cc785c]" />
+                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#264d8e]" />
               )}
             </div>
             {showEmojiPicker && (

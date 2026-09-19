@@ -537,7 +537,7 @@ const CommentCard = ({
                     <NativeEmoji unified={selectedEmoji} size={14} />
                   </div>
                 ) : enableLikeUpdate ? (
-                  <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#cc785c]" />
+                  <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#264d8e]" />
                 ) : null}
               </div>
 

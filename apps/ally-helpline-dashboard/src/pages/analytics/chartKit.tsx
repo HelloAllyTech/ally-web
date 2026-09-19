@@ -17,7 +17,7 @@ export const CHART_HEIGHT = "300px";
 
 /** Central Carbon-palette hexes. Reuse these instead of inline hex literals. */
 export const PALETTE = {
-  clay: "#cc785c",
+  blue: "#264d8e",
   cyan: "#33b1ff",
   teal: "#08bdba",
   green: "#42be65",
