@@ -47,7 +47,7 @@ export const HeaderTooltip: FunctionComponent<HeaderTooltipProps> = ({ text }) =
   return (
     <span
       ref={anchorRef}
-      className="ml-1 inline-flex items-center text-[#8D8D8D] hover:text-[#525252] focus:text-[#525252] outline-none"
+      className="ml-1 inline-flex items-center text-[#928b7c] hover:text-[#565045] focus:text-[#565045] outline-none"
       onClick={e => e.stopPropagation()}
       onMouseEnter={show}
       onMouseLeave={hide}
@@ -62,7 +62,7 @@ export const HeaderTooltip: FunctionComponent<HeaderTooltipProps> = ({ text }) =
         createPortal(
           <div
             role="tooltip"
-            className="fixed z-[9999] rounded bg-[#393939] px-3 py-2 text-[12px] font-normal leading-[16px] text-white shadow-lg pointer-events-none"
+            className="fixed z-[9999] rounded bg-[#3d3a34] px-3 py-2 text-[12px] font-normal leading-[16px] text-white shadow-lg pointer-events-none"
             style={{ top: position.top, left: position.left, maxWidth: BUBBLE_MAX_WIDTH }}
           >
             {text}

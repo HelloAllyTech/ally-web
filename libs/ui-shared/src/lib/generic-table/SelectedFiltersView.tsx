@@ -34,7 +34,7 @@ function SelectedFiltersView<T extends Record<string, any>>({
     return (
       <>
         <div
-          className="p-[10px] bg-[#F5F5F7] text-[#6B7280] rounded flex items-center"
+          className="p-[10px] bg-[#f0eee7] text-[#6e6656] rounded flex items-center"
           title="Remove sort"
         >
           <span>
@@ -43,14 +43,14 @@ function SelectedFiltersView<T extends Record<string, any>>({
           </span>
           <button
             type="button"
-            className="ml-2 p-1 rounded hover:bg-[#E0E0E0] focus:outline-none"
+            className="ml-2 p-1 rounded hover:bg-[#e3dbce] focus:outline-none"
             onClick={onRemoveSort}
             title="Remove sort"
           >
             <X size={14} />
           </button>
         </div>
-        <div className="w-[1px] h-[42px] bg-[#E0E0E0]" />
+        <div className="w-[1px] h-[42px] bg-[#e3dbce]" />
       </>
     );
   };
@@ -103,12 +103,12 @@ function SelectedFiltersView<T extends Record<string, any>>({
               className="rounded flex items-center p-[10px]"
               title={`Filter: ${col?.header || f.key}`}
             >
-              <div className=" text-[#6B7280] cursor-pointer" onClick={e => openFilterList(col, e)}>
+              <div className=" text-[#6e6656] cursor-pointer" onClick={e => openFilterList(col, e)}>
                 {col?.header || f.key}: "{displayValue}"
               </div>
               <button
                 type="button"
-                className="ml-2 p-1 rounded hover:bg-[#E0E0E0] focus:outline-none text-[#6B7280]"
+                className="ml-2 p-1 rounded hover:bg-[#e3dbce] focus:outline-none text-[#6e6656]"
                 onClick={() => onRemoveFilter(f.key)}
                 title="Remove filter"
                 aria-label={`Remove filter ${col?.header || f.key}`}

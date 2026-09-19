@@ -121,7 +121,7 @@ const DateFilterUI: React.FC<DateFilterUIProps> = ({ selectedValues, onChange, o
       </div>
       <div className="flex gap-2 mb-2">
         <input
-          className="border rounded px-2 py-1 w-full text-[#6B7280]"
+          className="border rounded px-2 py-1 w-full text-[#6e6656]"
           placeholder="Starting"
           value={
             Array.isArray(range) && range[0] instanceof Date ? range[0].toLocaleDateString() : ""
@@ -129,7 +129,7 @@ const DateFilterUI: React.FC<DateFilterUIProps> = ({ selectedValues, onChange, o
           readOnly
         />
         <input
-          className="border rounded px-2 py-1 w-full text-[#6B7280]"
+          className="border rounded px-2 py-1 w-full text-[#6e6656]"
           placeholder="Ending"
           value={
             Array.isArray(range) && range[1] instanceof Date ? range[1].toLocaleDateString() : ""

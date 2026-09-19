@@ -10,7 +10,7 @@ export const sampleSuggestions = [
 export const resourceTabsStyles = {
   [SearchVariant.DARK]: {
     tabs: "border-[#5A5F6A]",
-    indicator: "#FFFFFF",
+    indicator: "#faf9f5",
     tab: "text-[12px]",
     tabColor: "#BFBFBF",
     selectedTabColor: "#BFBFBF",
@@ -19,7 +19,7 @@ export const resourceTabsStyles = {
     tabs: "border-[#D4D4D4]",
     indicator: "#0D0D0D",
     tab: "text-[14px]",
-    tabColor: "#525252",
+    tabColor: "#565045",
     selectedTabColor: "#0D0D0D",
   },
 };

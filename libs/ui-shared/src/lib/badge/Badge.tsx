@@ -22,11 +22,11 @@ const Badge: FC<BadgeProps> = ({ variant, text, className }) => {
   const getStyles = (variant: BadgeVariant) => {
     switch (variant) {
       case "outlined":
-        return "bg-[#FDFDFD] text-[#616161] border border-[#D5D9EB]";
+        return "bg-badge-bg text-badge-fg border border-badge-border";
       case SearchVariant.DARK:
-        return "bg-[#FDFDFD] text-[#1E2025]";
+        return "bg-badge-bg text-badge-darkFg";
       case SearchVariant.LIGHT:
-        return "bg-[#ECECEC] text-[#535353]";
+        return "bg-badge-lightBg text-badge-lightFg";
     }
   };
   return (

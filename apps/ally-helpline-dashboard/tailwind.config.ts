@@ -74,6 +74,20 @@ export default {
          * must name a token, never a hex.
          */
         white: "rgb(var(--color-background-raised) / <alpha-value>)",
+        /*
+         * Badge — paired with the same token names in the admin console's
+         * config, where they hold the literals ui-shared/lib/badge used to
+         * hardcode. Same component, two identities, resolved at build time per
+         * app. This is the pattern every remaining shared literal should take.
+         */
+        badge: {
+          bg: "#FAF9F5",
+          fg: "#6E6656",
+          border: "#E3DBCE",
+          darkFg: "#29261F",
+          lightBg: "#EAE7DE",
+          lightFg: "#565045",
+        },
         // Primary Colors
         primary: {
           DEFAULT: "rgb(var(--color-primary-DEFAULT) / <alpha-value>)",

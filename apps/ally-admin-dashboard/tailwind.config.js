@@ -41,6 +41,18 @@ module.exports = {
         "4xl": ["32px", { lineHeight: "44px" }], // 4X large - hero titles, main headers
       },
       colors: {
+        // Badge — the shared ui-shared/lib/badge component's three variants.
+        // These are the exact literals Badge.tsx hardcoded before W4, lifted
+        // into tokens unchanged so this console renders identically; the
+        // consumer app defines the same names with its own warm values.
+        badge: {
+          bg: "#FDFDFD",
+          fg: "#616161",
+          border: "#D5D9EB",
+          darkFg: "#1E2025",
+          lightBg: "#ECECEC",
+          lightFg: "#535353",
+        },
         // Primary Colors — Brand Blue (#264D8E), a harmonious ramp anchored on
         // the brand navy at 500/DEFAULT (interactive); 600 is the hover shade,
         // 700 the active shade. Replaces the former Carbon Blue 60 ramp.
