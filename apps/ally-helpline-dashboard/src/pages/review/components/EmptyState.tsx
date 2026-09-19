@@ -14,7 +14,7 @@ const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => {
     <div className="flex flex-col flex-1 items-center justify-center w-full min-h-[40vh] sm:min-h-[50vh] gap-3 sm:gap-[14px] px-4">
       <ReviewsEmptyState className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px]" />
       <div className="flex flex-col items-center gap-3 sm:gap-4">
-        <h2 className="font-secondary font-[350] text-xl sm:text-2xl text-[#47464F] text-center">
+        <h2 className="font-secondary font-[350] text-xl sm:text-2xl text-typography-900 text-center">
           {t("review.empty.title")}
         </h2>
         <p className="font-primary text-xs sm:text-sm text-black/60 text-center max-w-[300px] sm:max-w-[414px] leading-[1.3]">

@@ -27,7 +27,17 @@
  * both. The import must come AFTER carbon-serif.scss: Carbon declares these
  * tokens on its theme-zone classes (`.cds--white` etc., applied by
  * <GlobalTheme theme="white">) rather than on `:root`, so the override has to
- * match the same selectors and win on source order at equal specificity.
+ * match the same selectors.
+ *
+ * SELECTORS ARE DOUBLED ON PURPOSE. Source order is not enough: any Carbon
+ * stylesheet imported later re-declares the same tokens and wins. That is not
+ * hypothetical — `@carbon/charts/styles.css` redeclares the whole core set
+ * (background, layer, border-subtle, text …) and is imported inside the
+ * lazily-loaded Organization Metrics page, so it lands after this file and put
+ * /analytics back on Carbon greys while every other route stayed warm.
+ * Repeating each selector (`:root:root`, `.cds--white.cds--white`) raises
+ * specificity without changing what matches, so a later stylesheet at the
+ * normal weight can no longer take these back.
  *
  * PALETTE. Cold Carbon greys map to warm equivalents at matched luminance, and
  * Carbon's interactive blue becomes clay. Semantic error / success / caution
@@ -35,11 +45,19 @@
  * palette is a worse outcome than a slightly cool red on a warm page.
  */
 
-:root,
-.cds--white,
-.cds--g10,
-.cds--g90,
-.cds--g100 {
+:root:root,
+.cds--white.cds--white,
+.cds--g10.cds--g10,
+.cds--g90.cds--g90,
+.cds--g100.cds--g100,
+/*
+ * Carbon Charts re-declares 434 --cds-* tokens on `.cds--chart-holder`, which
+ * resets this whole block for anything inside a chart — /analytics rendered
+ * its axes, ticks and grid in Carbon greys while every other route was warm.
+ * Listing the holder here (doubled, like the rest) re-applies the retint to
+ * that subtree without duplicating a single value.
+ */
+.cds--chart-holder.cds--chart-holder {
   /* --- Interactive: Carbon Blue 60 becomes clay ------------------------- */
   --cds-interactive: #cc785c;
   --cds-focus: #cc785c;

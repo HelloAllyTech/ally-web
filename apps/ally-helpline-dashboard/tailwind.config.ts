@@ -106,6 +106,16 @@ export default {
           950: "#1F1C17",
         },
         /*
+         * Semantic tones, resolved from the --color-tone-* variables that
+         * /SJT1's result bands and the status chips already share. Exposed as
+         * utilities so a component can reach them without re-declaring the hex.
+         */
+        tone: {
+          sage: "rgb(var(--color-tone-sage) / <alpha-value>)",
+          ochre: "rgb(var(--color-tone-ochre) / <alpha-value>)",
+          alarm: "rgb(var(--color-tone-alarm) / <alpha-value>)",
+        },
+        /*
          * Status — a categorical palette in the warm family.
          *
          * Chips across this app encode three different things: a semantic state
@@ -197,38 +207,49 @@ export default {
           800: "#950808",
           900: "#5C0A0A",
         },
-        // Success/Active Colors (semantic — constant across themes)
+        /*
+         * Success — the sage family, not Material green.
+         *
+         * These scales were kept literal so "error / success / warning stay
+         * recognisable across every theme". That still holds: recognisability
+         * lives in the HUE, not in the exact value. Material's green is a cold
+         * green, and against cream it reads as a control from another product —
+         * most visibly on the organisation-settings toggles, where seven of
+         * them sat in #A5D6A7. This keeps green meaning "good" and warms it
+         * onto the same sage the status chips and /SJT1 result bands use.
+         */
         success: {
-          DEFAULT: "#18441B",
-          50: "#E8F5E9",
-          100: "#C8E6C9",
-          200: "#A5D6A7",
-          300: "#81C784",
-          400: "#66BB6A",
-          500: "#4CAF50", // Material Green 500 (fixed from invalid "bgCAF50" typo)
-          600: "#43A047",
-          700: "#388E3C",
-          800: "#2E7D32",
-          900: "#18441B",
-          light: "#B9F6CA",
-          lighter: "#69F0AE",
-          text: "#00E676",
-          darkText: "#00C853",
+          DEFAULT: "#3B5240",
+          50: "#EFF3EC",
+          100: "#DFE7DD",
+          200: "#C4D3C2",
+          300: "#A3B8A1",
+          400: "#7D9880",
+          500: "#4E6B54",
+          600: "#445D49",
+          700: "#3B5240",
+          800: "#2F4434",
+          900: "#24352A",
+          light: "#DFE7DD",
+          lighter: "#C4D3C2",
+          text: "#4E6B54",
+          darkText: "#3B5240",
         },
-        // Warning Colors (semantic — constant across themes)
+        // Warning — the ochre family, same reasoning as success above: amber
+        // still means caution, warmed onto the tone the status chips use.
         warning: {
-          DEFAULT: "#F57C00",
-          50: "#FFF3E0",
-          100: "#FFE0B2",
-          200: "#FFCC80",
-          300: "#FFB74D",
-          400: "#FFA726",
-          500: "#FF9800",
-          600: "#FB8C00",
-          700: "#F57C00",
-          800: "#EF6C00",
-          900: "#E65100",
-          text: "#662400",
+          DEFAULT: "#88591B",
+          50: "#FAF2E2",
+          100: "#F3E6C9",
+          200: "#E8D3A4",
+          300: "#DBBB77",
+          400: "#CFA449",
+          500: "#C4901F",
+          600: "#A9781A",
+          700: "#88591B",
+          800: "#6B4F22",
+          900: "#4F3A18",
+          text: "#6B4F22",
         },
         // Neutral/Gray Colors
         neutral: {

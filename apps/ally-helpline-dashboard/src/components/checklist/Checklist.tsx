@@ -63,7 +63,7 @@ export const Checklist: FC<ChecklistProps> = ({
             key={item.id}
             className={`flex items-center p-4 rounded-lg border-[1px] transition-all ${
               item?.hasOccurred
-                ? "border-[#A5D6A7] bg-green-50/30 "
+                ? "border-tone-sage/40 bg-tone-sage/10 "
                 : "border-[#FFA79C] bg-red-50/30"
             }`}
           >

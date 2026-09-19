@@ -21,7 +21,11 @@ const formatDate = (value?: string | null) =>
 
 // Muted cover colours cycled for posts without a header image, so the grid
 // keeps its rhythm instead of collapsing into grey blocks.
-const COVER_COLORS = ["#8B9A6D", "#C9CCE2", "#7C96CE", "#E4D7BC"];
+// Decorative covers for posts with no image, cycled by index. Kept as a
+// deliberate categorical set rather than tokens — their only job is to look
+// different from one another down a list — but pulled into the warm family:
+// two of them were cold blues, which read as a different site's furniture.
+const COVER_COLORS = ["#8B9A6D", "#D8CFC0", "#B9A489", "#E4D7BC"];
 
 const postDate = (post: BlogPost) => post.publishedAt ?? post.createdAt;
 
