@@ -51,7 +51,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
               isSelected
                 ? isSuccess
                   ? "bg-[#33BA60] text-white shadow-sm"
-                  : "bg-white text-[#4D4D4D] shadow-sm"
+                  : "bg-white text-typography-800 shadow-sm"
                 : "text-typography-700 hover:bg-black/5",
             )}
           >

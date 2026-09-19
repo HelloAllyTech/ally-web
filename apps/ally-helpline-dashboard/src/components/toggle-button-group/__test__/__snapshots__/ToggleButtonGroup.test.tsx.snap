@@ -17,7 +17,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
     </button>
     <button
       aria-checked="true"
-      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-[#4D4D4D] shadow-sm"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-typography-800 shadow-sm"
       disabled=""
       role="radio"
       type="button"
@@ -45,7 +45,7 @@ exports[`ToggleButtonGroup > should match snapshot when rendered with default pr
   >
     <button
       aria-checked="true"
-      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-[#4D4D4D] shadow-sm"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-typography-800 shadow-sm"
       role="radio"
       type="button"
     >

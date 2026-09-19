@@ -74,6 +74,37 @@ export default {
          * must name a token, never a hex.
          */
         white: "rgb(var(--color-background-raised) / <alpha-value>)",
+
+        /*
+         * `gray` is the WARM ramp, not Tailwind's stock cold one.
+         *
+         * 139 call sites in this app and 35 in ui-shared reach for bg-gray-200,
+         * border-gray-200, text-gray-500 and friends alongside the token
+         * scales. Those resolve to Tailwind's defaults (#e5e7eb, #f3f4f6,
+         * #6b7280 …), which are blue-biased and read as cold patches on a warm
+         * page — the single most common off-palette source left after the
+         * literal sweeps, and invisible to the hex ratchet because they are
+         * utility names, not literals.
+         *
+         * Redefining the scale here retints all of them at once. Steps keep
+         * Tailwind's lightness rhythm so existing pairings (gray-200 border on
+         * gray-50 fill) hold their contrast. The admin console has its own
+         * config and keeps stock Tailwind grey, so a shared ui-shared component
+         * still renders cold there and warm here.
+         */
+        gray: {
+          50: "#FAF9F5",
+          100: "#F0EEE7",
+          200: "#E3DBCE",
+          300: "#D6CDBE",
+          400: "#BCB4A4",
+          500: "#928B7C",
+          600: "#6E6656",
+          700: "#565045",
+          800: "#3D3A34",
+          900: "#29261F",
+          950: "#1F1C17",
+        },
         /*
          * Status — a categorical palette in the warm family.
          *
