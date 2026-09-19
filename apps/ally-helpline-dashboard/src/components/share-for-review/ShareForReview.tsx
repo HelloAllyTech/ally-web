@@ -209,7 +209,7 @@ const ScenarioDetails = ({
         <ScenarioMedia scenario={scenario} />
       </div>
       <div className="flex flex-col gap-2 w-2/3">
-        <div className="text-xs bg-[#EDE7F6] text-[#7E57C2] px-2 w-fit font-normal rounded-[3px]">
+        <div className="text-xs bg-[#ede4e8] text-[#5a3f50] px-2 w-fit font-normal rounded-[3px]">
           {tag === TagType.SIMULATION ? t("common.simulation") : t("common.scribe")}
         </div>
         <h3 className="text-lg text-typography-900">{scenario.title}</h3>
@@ -261,7 +261,7 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
         <ScribeImage />
       </div>
       <div className="flex flex-col gap-2 w-2/3">
-        <div className="text-xs bg-[#FFF3E0] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
+        <div className="text-xs bg-[#f3e6c9] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
           {tag === TagType.SCRIBE ? t("common.scribe") : t("common.simulation")}
         </div>
         <h3 className="text-lg text-typography-900">

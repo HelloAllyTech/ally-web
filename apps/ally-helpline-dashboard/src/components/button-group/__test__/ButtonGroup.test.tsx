@@ -127,7 +127,7 @@ describe("ButtonGroup", () => {
     renderComponent();
     const activeButtonContainer = screen.getByText("Active Item").closest("button");
 
-    expect(activeButtonContainer).toHaveClass("!bg-[#FDFDFD]");
+    expect(activeButtonContainer).toHaveClass("!bg-[#faf9f5]");
     // Font color test removed: Font colors change frequently during development
   });
 
@@ -135,7 +135,7 @@ describe("ButtonGroup", () => {
     renderComponent();
     const inactiveButtonContainer = screen.getByText("Inactive Item").closest("button");
 
-    expect(inactiveButtonContainer).not.toHaveClass("!bg-[#FDFDFD]");
+    expect(inactiveButtonContainer).not.toHaveClass("!bg-[#faf9f5]");
     // Font color test removed: Font colors change frequently during development
   });
 
@@ -143,7 +143,7 @@ describe("ButtonGroup", () => {
     renderComponent();
     const buttons = screen.getAllByTestId("mock-button");
 
-    const borderClass = "!border-solid border-r-[0.5px] border-[#5A5F6A]";
+    const borderClass = "!border-solid border-r-[0.5px] border-[#565045]";
 
     expect(buttons[0]).toHaveClass(borderClass);
 

@@ -122,7 +122,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
                   <NativeEmoji unified={userReaction.reaction} size={10} />
                 </div>
               </div>
-              <span className="font-primary text-base leading-5 text-[#1A1A1A] flex-1 truncate">
+              <span className="font-primary text-base leading-5 text-[#29261f] flex-1 truncate">
                 {userReaction.createdBy.name}
               </span>
             </div>
@@ -148,7 +148,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
             <X className="w-5 h-5 text-typography-700" />
           </button>
 
-          <div className="font-primary font-medium text-base leading-5 text-[#1A1A1A] pr-8">
+          <div className="font-primary font-medium text-base leading-5 text-[#29261f] pr-8">
             {t("review.reactionsModal.title")}
           </div>
 
@@ -170,7 +170,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
                   <div className="relative">
                     <button
                       onClick={handleToggleMoreEmojis}
-                      className="flex text-center items-center justify-center gap-0.5 px-1.5 py-3.5 text-[#1A1A1A] font-primary text-base leading-5"
+                      className="flex text-center items-center justify-center gap-0.5 px-1.5 py-3.5 text-[#29261f] font-primary text-base leading-5"
                     >
                       {t("review.reactionsModal.more")}
                       <div className="flex items-center justify-center text-typography-600 w-4 h-4">

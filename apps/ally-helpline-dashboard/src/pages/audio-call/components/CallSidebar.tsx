@@ -66,7 +66,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
 
   const renderNudgeCard = (nudge: Nudge) => {
     return (
-      <div className="border border-gray-200 text-white rounded-lg p-4 mb-2">
+      <div className="border border-ai-700 text-white rounded-lg p-4 mb-2">
         <CustomMarkdown content={nudge.content} className="font-primary" />
         <hr
           className="my-2 border-0 border-t"
@@ -109,15 +109,15 @@ const CallSidebar: FC<CallSidebarProps> = ({
           animate={{ width: isFocusMode ? 0 : "70%" }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full bg-[#17181A] overflow-hidden border-l-[0.5px] border-l-[#5A5F6A] z-20"
+          className="h-full bg-[#29261f] overflow-hidden border-l-[0.5px] border-l-[#565045] z-20"
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />
             <Close className="cursor-pointer" onClick={onClose} />
           </div>
           {stage && (
-            <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]">
-              <div className="text-base font-medium text-primary-500 ">
+            <div className="px-6 py-4 mx-4 mb-4 border border-ai-700 font-primary rounded-lg bg-ai-900/40">
+              <div className="text-base font-medium text-ai-300">
                 {t("audioCall.sidebar.currentStage")}
                 <span className="text-white text-base">{` ${stage}`}</span>
               </div>

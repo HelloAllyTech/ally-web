@@ -222,7 +222,7 @@ describe("CallInterface Component", () => {
         expect(visualizer).toHaveAttribute("data-width", "200");
         expect(visualizer).toHaveAttribute("data-height", "140");
         expect(visualizer).toHaveAttribute("data-bar-width", "4");
-        expect(visualizer).toHaveAttribute("data-bar-color", "#fff");
+        expect(visualizer).toHaveAttribute("data-bar-color", "#faf9f5");
       });
     });
 

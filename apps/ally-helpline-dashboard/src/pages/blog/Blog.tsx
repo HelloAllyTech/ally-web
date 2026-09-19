@@ -21,7 +21,11 @@ const formatDate = (value?: string | null) =>
 
 // Muted cover colours cycled for posts without a header image, so the grid
 // keeps its rhythm instead of collapsing into grey blocks.
-const COVER_COLORS = ["#8B9A6D", "#C9CCE2", "#7C96CE", "#E4D7BC"];
+// Decorative covers for posts with no image, cycled by index. Kept as a
+// deliberate categorical set rather than tokens — their only job is to look
+// different from one another down a list — but pulled into the warm family:
+// two of them were cold blues, which read as a different site's furniture.
+const COVER_COLORS = ["#8B9A6D", "#D8CFC0", "#B9A489", "#E4D7BC"];
 
 const postDate = (post: BlogPost) => post.publishedAt ?? post.createdAt;
 
@@ -48,14 +52,14 @@ const CardCover: FC<{ post: BlogPost; index: number; className?: string }> = ({
 const BlogCard: FC<{ post: BlogPost; index: number }> = ({ post, index }) => (
   <Link
     to={`/blog/${post.slug}`}
-    className="group flex flex-col overflow-hidden rounded-2xl border border-[#141413]/10 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(20,20,19,0.08)]"
+    className="group flex flex-col overflow-hidden rounded-2xl border border-[#29261f]/10 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(20,20,19,0.08)]"
   >
     <CardCover post={post} index={index} className="aspect-[16/10]" />
     <div className="flex flex-1 flex-col p-5">
-      <p className="text-xs text-[#87867F]">{formatDate(postDate(post))}</p>
-      <h3 className="mt-2 text-xl leading-snug text-[#141413]">{post.title}</h3>
+      <p className="text-xs text-[#928b7c]">{formatDate(postDate(post))}</p>
+      <h3 className="mt-2 text-xl leading-snug text-[#29261f]">{post.title}</h3>
       {post.category && (
-        <p className="mt-auto flex items-center gap-1.5 pt-6 text-xs text-[#87867F]">
+        <p className="mt-auto flex items-center gap-1.5 pt-6 text-xs text-[#928b7c]">
           <svg
             className="h-3.5 w-3.5"
             viewBox="0 0 24 24"
@@ -79,16 +83,16 @@ const BlogCard: FC<{ post: BlogPost; index: number }> = ({ post, index }) => (
 const FeaturedCard: FC<{ post: BlogPost }> = ({ post }) => (
   <Link
     to={`/blog/${post.slug}`}
-    className="group grid overflow-hidden rounded-2xl border border-[#141413]/10 bg-white transition-shadow hover:shadow-[0_8px_24px_rgba(20,20,19,0.08)] md:grid-cols-2"
+    className="group grid overflow-hidden rounded-2xl border border-[#29261f]/10 bg-white transition-shadow hover:shadow-[0_8px_24px_rgba(20,20,19,0.08)] md:grid-cols-2"
   >
     <div className="flex flex-col p-8 sm:p-10">
-      <p className="text-sm text-[#87867F]">
+      <p className="text-sm text-[#928b7c]">
         {post.category && <span>{post.category} · </span>}
         {formatDate(postDate(post))}
       </p>
-      <h2 className="mt-4 text-3xl leading-tight text-[#141413] sm:text-4xl">{post.title}</h2>
-      {post.tldr && <p className="mt-4 line-clamp-3 leading-relaxed text-[#5E5D59]">{post.tldr}</p>}
-      <span className="mt-8 w-fit rounded-lg bg-[#141413] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors group-hover:bg-[#3D3D3A]">
+      <h2 className="mt-4 text-3xl leading-tight text-[#29261f] sm:text-4xl">{post.title}</h2>
+      {post.tldr && <p className="mt-4 line-clamp-3 leading-relaxed text-[#565045]">{post.tldr}</p>}
+      <span className="mt-8 w-fit rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors group-hover:bg-[#3d3a34]">
         Read more
       </span>
     </div>
@@ -147,7 +151,7 @@ export const Blog: FC = () => {
   const gridPosts = featuredPost ? filteredPosts.slice(1) : filteredPosts;
 
   return (
-    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#141413]">
+    <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#29261f]">
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-28 pt-8">
         <div className="flex items-center justify-between">
           <Ally />
@@ -155,7 +159,7 @@ export const Blog: FC = () => {
             href={ALLY_URL}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg bg-[#141413] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3D3D3A]"
+            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3d3a34]"
           >
             Try Ally
           </a>
@@ -164,7 +168,7 @@ export const Blog: FC = () => {
         <header className="grid gap-10 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
           <div>
             <h1 className="text-lg font-semibold">Blog</h1>
-            <p className="mt-5 max-w-xs leading-relaxed text-[#5E5D59]">{BLOG_INDEX_DESCRIPTION}</p>
+            <p className="mt-5 max-w-xs leading-relaxed text-[#565045]">{BLOG_INDEX_DESCRIPTION}</p>
           </div>
           {categories.length > 0 && (
             <nav aria-label="Post categories" className="flex flex-col items-start gap-1">
@@ -176,13 +180,13 @@ export const Blog: FC = () => {
                     type="button"
                     onClick={() => setActiveCategory(isActive ? null : category)}
                     className={`group flex items-baseline gap-3 text-left text-4xl leading-tight transition-colors sm:text-5xl ${
-                      isActive ? "text-[#D97757]" : "text-[#141413] hover:text-[#5E5D59]"
+                      isActive ? "text-[#D97757]" : "text-[#29261f] hover:text-[#565045]"
                     }`}
                   >
                     {category}
                     <span
                       aria-hidden="true"
-                      className="text-3xl text-[#87867F] transition-transform group-hover:translate-x-1 sm:text-4xl"
+                      className="text-3xl text-[#928b7c] transition-transform group-hover:translate-x-1 sm:text-4xl"
                     >
                       →
                     </span>
@@ -194,24 +198,24 @@ export const Blog: FC = () => {
         </header>
 
         {isFetching ? (
-          <p className="text-[#5E5D59]">Loading…</p>
+          <p className="text-[#565045]">Loading…</p>
         ) : isError ? (
-          <p className="text-[#5E5D59]">
+          <p className="text-[#565045]">
             Something went wrong loading posts. Please try again later.
           </p>
         ) : posts.length === 0 ? (
-          <p className="text-[#5E5D59]">No posts published yet. Check back soon!</p>
+          <p className="text-[#565045]">No posts published yet. Check back soon!</p>
         ) : (
           <>
             {activeCategory && (
-              <div className="mb-6 flex items-center gap-3 text-sm text-[#5E5D59]">
+              <div className="mb-6 flex items-center gap-3 text-sm text-[#565045]">
                 <span>
-                  Showing <span className="font-medium text-[#141413]">{activeCategory}</span>
+                  Showing <span className="font-medium text-[#29261f]">{activeCategory}</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setActiveCategory(null)}
-                  className="rounded-full border border-[#141413]/15 px-3 py-0.5 transition-colors hover:bg-[#141413]/5"
+                  className="rounded-full border border-[#29261f]/15 px-3 py-0.5 transition-colors hover:bg-[#29261f]/5"
                 >
                   Clear ×
                 </button>
@@ -219,7 +223,7 @@ export const Blog: FC = () => {
             )}
 
             {filteredPosts.length === 0 ? (
-              <p className="text-[#5E5D59]">No posts match your search.</p>
+              <p className="text-[#565045]">No posts match your search.</p>
             ) : (
               <div className="flex flex-col gap-4">
                 {featuredPost && <FeaturedCard post={featuredPost} />}
@@ -236,7 +240,7 @@ export const Blog: FC = () => {
             <div className="pointer-events-none fixed inset-x-0 bottom-6 z-10 px-6">
               <div className="pointer-events-auto relative mx-auto w-full max-w-md">
                 <svg
-                  className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#87867F]"
+                  className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#928b7c]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -254,7 +258,7 @@ export const Blog: FC = () => {
                   onChange={event => setSearch(event.target.value)}
                   placeholder="Search posts"
                   aria-label="Search posts"
-                  className="w-full rounded-xl border border-[#141413]/15 bg-white/90 py-3 pl-11 pr-4 text-sm text-[#141413] shadow-[0_8px_30px_rgba(20,20,19,0.12)] backdrop-blur placeholder:text-[#87867F] focus:border-[#141413]/40 focus:outline-none"
+                  className="w-full rounded-xl border border-[#29261f]/15 bg-white/90 py-3 pl-11 pr-4 text-sm text-[#29261f] shadow-[0_8px_30px_rgba(20,20,19,0.12)] backdrop-blur placeholder:text-[#928b7c] focus:border-[#29261f]/40 focus:outline-none"
                 />
               </div>
             </div>

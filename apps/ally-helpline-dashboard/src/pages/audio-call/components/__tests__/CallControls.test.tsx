@@ -320,14 +320,14 @@ describe("CallControls Component", () => {
       render(<CallControls {...defaultProps} isFocusMode={false} />);
 
       const focusIcon = screen.getByTestId("focus-icon");
-      expect(focusIcon).toHaveClass("[&_path]:fill-[#FFFFFF]");
+      expect(focusIcon).toHaveClass("[&_path]:fill-[#faf9f5]");
     });
 
     it("should render focus icon without fill styling when in focus mode", () => {
       render(<CallControls {...defaultProps} isFocusMode={true} />);
 
       const focusIcon = screen.getByTestId("focus-icon");
-      expect(focusIcon).not.toHaveClass("[&_path]:fill-[#FFFFFF]");
+      expect(focusIcon).not.toHaveClass("[&_path]:fill-[#faf9f5]");
     });
 
     it("should render stop icon", () => {

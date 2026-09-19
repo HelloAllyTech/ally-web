@@ -15,23 +15,23 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
   containerClassName = "max-w-6xl",
   className = "",
 }) => (
-  <footer className={`blog-serif mt-16 border-t border-[#141413]/10 bg-[#FAF9F5] ${className}`}>
+  <footer className={`blog-serif mt-16 border-t border-[#29261f]/10 bg-[#FAF9F5] ${className}`}>
     <div
-      className={`mx-auto flex ${containerClassName} flex-col gap-4 px-6 py-8 text-sm text-[#87867F] sm:flex-row sm:items-center sm:justify-between`}
+      className={`mx-auto flex ${containerClassName} flex-col gap-4 px-6 py-8 text-sm text-[#928b7c] sm:flex-row sm:items-center sm:justify-between`}
     >
       <p>© {new Date().getFullYear()} Ally</p>
       <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Link to={ROUTES.BLOG} className="transition-colors hover:text-[#141413]">
+        <Link to={ROUTES.BLOG} className="transition-colors hover:text-[#29261f]">
           Blog
         </Link>
-        <Link to={ROUTES.CHANGELOG} className="transition-colors hover:text-[#141413]">
+        <Link to={ROUTES.CHANGELOG} className="transition-colors hover:text-[#29261f]">
           Changelog
         </Link>
         <a
           href={ALLY_PRIVACY_POLICY_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#141413]"
+          className="transition-colors hover:text-[#29261f]"
         >
           Privacy
         </a>
@@ -39,7 +39,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
           href={ALLY_TERMS_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#141413]"
+          className="transition-colors hover:text-[#29261f]"
         >
           Terms
         </a>
@@ -47,7 +47,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
           href={ALLY_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#141413]"
+          className="transition-colors hover:text-[#29261f]"
         >
           helloally.ai
         </a>

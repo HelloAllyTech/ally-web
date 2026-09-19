@@ -14,20 +14,20 @@ export const getStatusChipConfig = (status: ChatSummaryStatus, t: TFunction): Ch
     case ChatSummaryStatus.IN_PROGRESS:
       return {
         label: t("calls.status.processing"),
-        outerDivClassName: "bg-[#F8E6BA]", // Light yellow
-        dotClassName: "bg-[#FFAD0D]", // Yellow
+        outerDivClassName: "bg-status-ochreBg",
+        dotClassName: "bg-status-ochreDot",
       };
     case ChatSummaryStatus.SUCCESS:
       return {
         label: t("calls.status.generated"),
-        dotClassName: "bg-[#47B881]", // Green
-        outerDivClassName: "bg-[#DCEBDD]", // Light green
+        dotClassName: "bg-status-sageDot",
+        outerDivClassName: "bg-status-sageBg",
       };
     case ChatSummaryStatus.FAILED:
       return {
         label: t("calls.status.error"),
-        dotClassName: "bg-[#E5675A]", // Red
-        outerDivClassName: "bg-[#FBDED9]", // Light red
+        dotClassName: "bg-status-alarmDot",
+        outerDivClassName: "bg-status-alarmBg",
       };
     case ChatSummaryStatus.NO_AUDIO:
       return {
@@ -37,8 +37,8 @@ export const getStatusChipConfig = (status: ChatSummaryStatus, t: TFunction): Ch
     default:
       return {
         label: t("calls.status.unknown"),
-        dotClassName: "bg-[#6B7280]", // Gray
-        outerDivClassName: "bg-[#F3F4F6]", // Light gray
+        dotClassName: "bg-status-sandDot",
+        outerDivClassName: "bg-status-sandBg",
       };
   }
 };
@@ -49,13 +49,13 @@ export const getSourceChipConfig = (provider: CallProvider, t: TFunction): ChipC
       return {
         label: t("calls.source.uploaded"),
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#E2F2FF] text-primary-500", // Blue
+        outerDivClassName: "bg-status-sandBg text-status-sandFg",
       };
     default:
       return {
         label: t("calls.source.liveSession"),
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#EDE7F6] text-[#673AB7]", // Purple
+        outerDivClassName: "bg-status-clayBg text-status-clayFg",
       };
   }
 };
@@ -66,14 +66,14 @@ export const getModeChipConfig = (mode: string | undefined | null, t: TFunction)
       return {
         label: t("calls.mode.dictation"),
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#FFF3E0] text-[#E65100]", // Orange tint
+        outerDivClassName: "bg-status-ochreBg text-status-ochreFg",
       };
     case ScribeSessionMode.SCRIBE:
     default:
       return {
         label: t("calls.mode.scribe"),
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#E8EAF6] text-[#3949AB]", // Indigo tint
+        outerDivClassName: "bg-status-mauveBg text-status-mauveFg",
       };
   }
 };

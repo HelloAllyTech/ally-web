@@ -97,7 +97,7 @@ const TextField: FC<TextFieldProps> = ({
         // `relative` scroll panel, where only the last one in DOM order was
         // clickable.
         <div
-          className={`relative flex items-center gap-2 w-full ${showBorder ? "border border-[#E5E7EB] rounded" : ""}`}
+          className={`relative flex items-center gap-2 w-full ${showBorder ? "border border-[#e3dbce] rounded" : ""}`}
         >
           {InputProps?.startAdornment}
           <div className="flex-1 min-w-0">{inputElement}</div>

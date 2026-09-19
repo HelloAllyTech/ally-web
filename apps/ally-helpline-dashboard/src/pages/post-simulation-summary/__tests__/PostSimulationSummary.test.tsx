@@ -134,7 +134,7 @@ vi.mock("../../calls/constants", async importOriginal => {
     tabStyles: {
       textTransform: "none",
       fontWeight: 500,
-      color: "#49454F",
+      color: "#3d3a34",
     },
   };
 });
@@ -632,7 +632,7 @@ describe("PostSimulationSummary Component", () => {
       expect(tabs).toHaveClass("w-full");
       expect(tabs).toHaveClass("shrink-0");
       expect(tabs).toHaveClass("border-b");
-      expect(tabs).toHaveClass("border-[#DBDBDB]");
+      expect(tabs).toHaveClass("border-[#d6cdbe]");
     });
 
     it("should render all tab buttons", () => {

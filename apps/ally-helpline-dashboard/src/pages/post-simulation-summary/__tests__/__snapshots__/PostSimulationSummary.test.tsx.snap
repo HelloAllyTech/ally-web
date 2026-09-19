@@ -33,7 +33,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -42,7 +42,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
@@ -92,8 +92,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -122,8 +122,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -152,8 +152,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -182,8 +182,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -212,8 +212,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -246,7 +246,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -348,7 +348,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -357,7 +357,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
@@ -407,8 +407,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -437,8 +437,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -467,8 +467,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -497,8 +497,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -527,8 +527,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -561,7 +561,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav

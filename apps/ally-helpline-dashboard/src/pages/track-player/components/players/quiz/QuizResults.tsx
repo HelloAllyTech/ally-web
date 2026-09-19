@@ -111,7 +111,7 @@ export const QuizResults: FC<QuizResultsProps> = ({
           total={100}
           size={96}
           strokeWidth={8}
-          progressColor={result.passed ? "#81C784" : "#EF5350"}
+          progressColor={result.passed ? "#4e6b54" : "#EF5350"}
           textColor="text-typography-900"
         />
         <div

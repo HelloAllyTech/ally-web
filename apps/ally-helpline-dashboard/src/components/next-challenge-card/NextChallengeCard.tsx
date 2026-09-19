@@ -37,7 +37,7 @@ export const NextChallengeCard: FC<NextChallengeCardProps> = ({ recommendation }
           <span className="text-xs font-semibold uppercase tracking-wide text-typography-800 font-tertiary">
             {t("postSim.nextChallenge.title")}
           </span>
-          <span className="rounded-full bg-[#EDE7F6] px-2 py-0.5 text-xs text-typography-800">
+          <span className="rounded-full bg-[#ede4e8] px-2 py-0.5 text-xs text-typography-800">
             {difficultyLabel}
           </span>
         </div>

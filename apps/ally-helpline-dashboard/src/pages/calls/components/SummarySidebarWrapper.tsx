@@ -58,7 +58,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
             {/* One tab is not a choice — the strip would only repeat the
                 heading the tab's own content already renders. */}
             {(tabList?.length ?? 0) > 1 && (
-              <div className="mb-4 w-full shrink-0 border-b border-[#DBDBDB]">
+              <div className="mb-4 w-full shrink-0 border-b border-[#d6cdbe]">
                 <Tabs
                   items={tabList?.map(tab => ({ id: String(tab.id), label: tab.label })) ?? []}
                   activeId={String(selectedTab)}

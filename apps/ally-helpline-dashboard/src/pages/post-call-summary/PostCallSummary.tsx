@@ -289,7 +289,7 @@ export const PostCallSummary = () => {
         content
       ) : (
         <>
-          <div className="w-full border-b border-[#E5E7EB]">
+          <div className="w-full border-b border-[#e3dbce]">
             {header}
             <Tabs
               items={summaryTabs.map(tab => ({ id: tab.value, label: tab.label }))}

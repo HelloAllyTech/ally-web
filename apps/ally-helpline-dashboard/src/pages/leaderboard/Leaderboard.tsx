@@ -113,7 +113,7 @@ export const Leaderboard = () => {
 
   return (
     <div
-      className={"p-4 sm:p-6 overflow-y-auto sm:overflow-hidden w-full h-full"}
+      className={"p-4 sm:p-6 overflow-y-auto lg:overflow-hidden w-full h-full"}
       data-testid="leaderboard-page"
     >
       <div
@@ -122,7 +122,7 @@ export const Leaderboard = () => {
       >
         {t("community.title")}
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 pb-4 h-full items-stretch lg:items-start">
         <LeaderboardList
           currentUser={currentUser}
           onTimeFilterChange={handleWindowChange}
@@ -134,7 +134,7 @@ export const Leaderboard = () => {
           data={leaderboardData}
         />
         {/* achievements card */}
-        <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-[16px] sm:self-start flex-shrink-0">
+        <div className="w-full min-w-0 lg:w-1/2 lg:max-w-md lg:mt-[16px] lg:self-start">
           <AchievementsCard
             achievements={getBadgesList()}
             viewedBadgesCount={viewedBadgesCount}

@@ -164,17 +164,17 @@ const TableHeader = <T extends Record<string, any>>({
       className="font-['IBM_Plex_Serif']"
     >
       <span aria-hidden className="block h-0 w-0" />
-      <PopoverContent className="border border-[#E0E0E0]">
+      <PopoverContent className="border border-[#e3dbce]">
         <div>
           <div
-            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7] text-[#6e6656]"
             onClick={() => handleSortSelect("ASC")}
           >
             <ArrowUp size={16} className="mr-2" />
             <div>Ascending</div>
           </div>
           <div
-            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7] text-[#6e6656]"
             onClick={() => handleSortSelect("DESC")}
           >
             <ArrowDown size={16} className="mr-2" />
@@ -196,11 +196,11 @@ const TableHeader = <T extends Record<string, any>>({
         className="font-['IBM_Plex_Serif']"
       >
         <span aria-hidden className="block h-0 w-0" />
-        <PopoverContent className="border border-[#E0E0E0] font-['IBM_Plex_Serif']">
+        <PopoverContent className="border border-[#e3dbce] font-['IBM_Plex_Serif']">
           <div>
             {col.sortable && (
               <div
-                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7] text-[#6e6656]"
                 onClick={handleSortClick}
               >
                 <SortAscending size={16} className="mr-2" />
@@ -209,7 +209,7 @@ const TableHeader = <T extends Record<string, any>>({
             )}
             {col.filterable && (
               <div
-                className="text-[#6B7280] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+                className="text-[#6e6656] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7]"
                 onClick={handleFilterClick}
               >
                 <Filter size={16} className="mr-2" />
@@ -246,7 +246,7 @@ const TableHeader = <T extends Record<string, any>>({
                 >
                   <div className="flex flex-row items-center">
                     {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
-                    <div className="font-[500] text-[#6B7280]">{col.header}</div>
+                    <div className="font-[500] text-[#6e6656]">{col.header}</div>
                     {col.tooltip && <HeaderTooltip text={col.tooltip} />}
                   </div>
                 </div>

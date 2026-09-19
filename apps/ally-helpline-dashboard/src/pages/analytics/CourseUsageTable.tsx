@@ -22,15 +22,15 @@ const getCourseStatusChipConfig = (
     case "ACTIVE":
       return {
         label: t("organizationMetrics.courseUsage.status.active"),
-        dotClassName: "bg-[#47B881]", // Green
-        outerDivClassName: "bg-[#DCEBDD]",
+        dotClassName: "bg-[#4e6b54]", // Green
+        outerDivClassName: "bg-[#dfe7dd]",
       };
     case "ARCHIVED":
     default:
       return {
         label: t("organizationMetrics.courseUsage.status.archived"),
-        dotClassName: "bg-[#6B7280]", // Gray
-        outerDivClassName: "bg-[#F3F4F6]",
+        dotClassName: "bg-[#6e6656]", // Gray
+        outerDivClassName: "bg-[#f0eee7]",
       };
   }
 };

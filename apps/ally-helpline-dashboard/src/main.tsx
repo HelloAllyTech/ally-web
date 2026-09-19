@@ -9,6 +9,11 @@ import { PersistGate } from "redux-persist/integration/react";
 import "./index.css";
 // Centralised IBM Carbon serif design system (single source for all apps).
 import "@ally-ui-mono/ui-shared/styles/carbon-serif.scss";
+// MUST stay after carbon-serif.scss: Carbon declares its --cds-* tokens on the
+// theme-zone classes this file also targets, so the retint wins on source order
+// at equal specificity. Consumer app only — the admin console has its own entry
+// point and never loads it, which is what keeps it on Carbon's own palette.
+import "./carbon-claude.css";
 import { initAnalytics } from "@utils/analytics";
 
 import { AnalyticsProvider } from "./analytics";

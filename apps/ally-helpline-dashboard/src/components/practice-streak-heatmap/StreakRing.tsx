@@ -22,7 +22,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
  * instead of read from a `--color-*` variable. They are SVG gradient stops, so
  * they need values rather than classes either way.
  */
-const WARNING = { 500: "#FF9800", 300: "#FFB74D", 50: "#FFF3E0" };
+const WARNING = { 500: "#c4901f", 300: "#FFB74D", 50: "#f3e6c9" };
 
 const STROKE_BY_STATE: Record<StreakState, { from: string; to: string; track: string }> = {
   [StreakState.SECURED]: {

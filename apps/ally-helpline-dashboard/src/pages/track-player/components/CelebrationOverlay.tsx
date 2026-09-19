@@ -41,9 +41,9 @@ export const CelebrationOverlay: FC<CelebrationOverlayProps> = ({
   useEffect(() => {
     if (!kind || prefersReducedMotion()) return;
     const colors = [
-      cssVarColor("--color-primary-500", "#6366F1"),
+      cssVarColor("--color-primary-500", "#5a3f50"),
       cssVarColor("--color-primary-300", "#A5B4FC"),
-      cssVarColor("--color-success-300", "#81C784"),
+      cssVarColor("--color-success-300", "#4e6b54"),
     ];
     confetti({
       particleCount: kind === "track" ? 160 : 90,

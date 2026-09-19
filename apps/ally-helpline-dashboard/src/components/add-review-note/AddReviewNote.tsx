@@ -26,7 +26,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
         <Tooltip label={t("review.details.addNote")} align="top">
           <div
             onClick={onAddNote}
-            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"
+            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer"
           >
             <AddIcon className="w-2 h-2" />
           </div>
@@ -38,7 +38,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
         <Tooltip label={t("review.details.editNote")} align="top">
           <div
             onClick={onEditNote}
-            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"
+            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer"
           >
             <PencilIcon className="w-2 h-2" />
           </div>
@@ -50,7 +50,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
 
   return (
     <div
-      className={`flex flex-col gap-1 ${(note && note.length > 0) || timeDiff < 10 ? "bg-[#FFF3E080] p-4 border-l-[1px] border-l-[#FFA726]" : "bg-white"} `}
+      className={`flex flex-col gap-1 ${(note && note.length > 0) || timeDiff < 10 ? "bg-[#F3E6C980] p-4 border-l-[1px] border-l-[#c4901f]" : "bg-white"} `}
     >
       {(timeDiff < 10 || (note && note.length > 0)) && (
         <div className="flex items-center gap-2.5">

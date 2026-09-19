@@ -286,7 +286,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
       <div className="flex items-center gap-3">
         <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className={`h-full ${isComplete ? "bg-[#81C784]" : "bg-primary-500"} rounded-full transition-all duration-300`}
+            className={`h-full ${isComplete ? "bg-[#4e6b54]" : "bg-primary-500"} rounded-full transition-all duration-300`}
             style={{ width: `${progressPercentage}%` }}
           />
         </div>

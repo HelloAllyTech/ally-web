@@ -9,6 +9,7 @@
     "format:check": "prettier --check .",
     "prepare": "husky install || true",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:colors": "node scripts/check-color-literals.mjs",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "build:prod": "npx nx build ally-helpline-dashboard --configuration=production",
     "build:admin": "npx nx build ally-admin-dashboard",

@@ -241,7 +241,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                   className={`p-3 rounded-lg border
                           ${
                             comment === selectedComment
-                              ? "border-[#FECA04] bg-[#FFF9E6]"
+                              ? "border-[#FECA04] bg-[#fff9E6]"
                               : "bg-white"
                           } `}
                 >

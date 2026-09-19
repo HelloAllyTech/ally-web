@@ -397,7 +397,7 @@ export const ReviewDetails = () => {
               className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
-              <span className="ml-1 font-primary font-regular text-base leading-[1.3] text-[#1A1A1A]">
+              <span className="ml-1 font-primary font-regular text-base leading-[1.3] text-[#29261f]">
                 {t("review.privacy.share")}
               </span>
               <ToggleSwitch
@@ -418,10 +418,10 @@ export const ReviewDetails = () => {
           )}
           <div
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3 shrink-0"
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#264d8e] gap-2.5 rounded-full border justify-center px-3 shrink-0"
           >
-            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0] shrink-0" />
-            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm whitespace-nowrap">
+            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#264d8e] shrink-0" />
+            <div className="text-typography-900 font-primary group-hover:text-[#264d8e] text-sm whitespace-nowrap">
               {t("review.details.comments")}
             </div>
           </div>
@@ -436,7 +436,7 @@ export const ReviewDetails = () => {
                   <NativeEmoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
-                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
+                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#264d8e]" />
               )}
             </div>
             {showEmojiPicker && (
@@ -483,7 +483,7 @@ export const ReviewDetails = () => {
           <div className="flex flex-col justify-center gap-1.5 font-primary">
             <div className="font-medium text-typography-900 flex flex-row items-center">
               <div
-                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#EDE7F6] text-[#7E57C2]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
+                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#f3e6c9] text-[#E65100]" : "bg-[#ede4e8] text-[#5a3f50]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
                 {isScribeReview ? t("common.scribe") : t("common.simulation")}
               </div>

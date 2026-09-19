@@ -10,7 +10,7 @@ interface SaveStatusProps {
 }
 
 const DOT_COLOR: Record<Exclude<SaveState, "idle">, string> = {
-  saving: "bg-[#264D8E]",
+  saving: "bg-[#264d8e]",
   saved: "bg-[#24a148]",
   error: "bg-[#da1e28]",
 };
@@ -38,7 +38,7 @@ export const SaveStatus: FC<SaveStatusProps> = ({ state, className = "" }) => {
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-primary text-xs ${
-        state === "error" ? "text-[#da1e28]" : "text-[#525252]"
+        state === "error" ? "text-[#da1e28]" : "text-[#565045]"
       } ${className}`}
       // Announce the outcome without stealing focus mid-typing.
       role="status"

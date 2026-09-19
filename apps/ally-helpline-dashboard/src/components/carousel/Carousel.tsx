@@ -79,7 +79,7 @@ const Carousel: FC<CarouselProps> = ({
       case CarouselVariant.LIGHT:
         return "bg-white";
       case CarouselVariant.DARK:
-        return "!bg-[#F3F3F3] border-[0.5px] border-[#D3D3D3] !p-2";
+        return "!bg-[#f0eee7] border-[0.5px] border-[#D3D3D3] !p-2";
     }
   };
 
@@ -106,9 +106,9 @@ const Carousel: FC<CarouselProps> = ({
   const getSliderStyles = (isActive: boolean) => {
     switch (variant) {
       case CarouselVariant.LIGHT:
-        return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
+        return isActive ? "bg-black" : "bg-[#d6cdbe] hover:bg-slate-400";
       case CarouselVariant.DARK:
-        return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
+        return isActive ? "bg-black" : "bg-[#d6cdbe] hover:bg-slate-400";
     }
   };
 

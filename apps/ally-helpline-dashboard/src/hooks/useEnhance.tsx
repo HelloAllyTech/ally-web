@@ -123,11 +123,11 @@ export const useEnhance = () => {
       }
       onClick={() => triggerEnhance(fieldName, inputText, updateValue)}
     >
-      <div className="border-[0.5px] border-[#49454F] active:border-primary-500 hover:border-primary-500 rounded-full p-2 cursor-pointer bg-white group">
+      <div className="border-[0.5px] border-[#3d3a34] active:border-primary-500 hover:border-primary-500 rounded-full p-2 cursor-pointer bg-white group">
         <WandStars
           height={24}
           width={24}
-          className="[&_path]:fill-[#49454F] group-hover:[&_path]:fill-[#0957D0]"
+          className="[&_path]:fill-[#3d3a34] group-hover:[&_path]:fill-[#264d8e]"
         />
       </div>
     </div>

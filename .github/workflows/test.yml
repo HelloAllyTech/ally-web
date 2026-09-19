@@ -102,6 +102,22 @@ jobs:
         continue-on-error: true
         run: npm run format:check
 
+      # NOT report-only, following the Typecheck job's precedent rather than the
+      # two steps above: this one is green today with nothing to grandfather.
+      #
+      # It is a ratchet, not a ban. ~685 colour literals remain in .ts/.tsx
+      # across the consumer app and ui-shared, and some of them are correct —
+      # chart series, artifact swatches and medal colours are categorical
+      # identity sets, not theme colours. What it enforces is that the count
+      # never goes UP, so new work has to name a token. That matters because a
+      # token is what lets one shared component render Carbon blue in the admin
+      # console and clay in the consumer app; a hex cannot be re-themed per app.
+      #
+      # Re-baseline after a cleanup with:
+      #   node scripts/check-color-literals.mjs --update
+      - name: Colour literals
+        run: npm run lint:colors
+
   # NOT report-only, unlike the lint job above: the debt was 11 errors total
   # (10 admin, 1 helpline, 0 ui-shared) and this PR clears all of them, so there
   # is nothing to grandfather. Mark "Typecheck" required alongside "Vitest".

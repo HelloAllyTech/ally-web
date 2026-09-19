@@ -226,12 +226,12 @@ export const GenericTable = forwardRef(
           className="font-['IBM_Plex_Serif'] z-50"
         >
           <span aria-hidden className="block h-0 w-0" />
-          <PopoverContent className="border border-[#E0E0E0] mt-[2px]">
+          <PopoverContent className="border border-[#e3dbce] mt-[2px]">
             <div>
               {filterableColumns.map(col => (
                 <div
                   key={col.key as string}
-                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7] text-[#6e6656]"
                   onClick={e => handleSelectColumn(col, e)}
                 >
                   <div>{col.header}</div>

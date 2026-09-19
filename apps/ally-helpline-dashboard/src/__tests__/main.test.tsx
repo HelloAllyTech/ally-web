@@ -72,6 +72,7 @@ vi.mock("../analytics", () => ({
 // Mock CSS / SCSS imports
 vi.mock("../index.css", () => ({}));
 vi.mock("@ally-ui-mono/ui-shared/styles/carbon-serif.scss", () => ({}));
+vi.mock("../carbon-claude.css", () => ({}));
 
 // Mock App component
 vi.mock("../App.tsx", () => ({

@@ -115,7 +115,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     }
     return (
       <span className="inline-flex items-center gap-1 text-sm text-neutral-500">
-        <RoundCheckmark color="#9CA3AF" />
+        <RoundCheckmark color="#928b7c" />
         {t("tracks2.journal.saved")}
       </span>
     );

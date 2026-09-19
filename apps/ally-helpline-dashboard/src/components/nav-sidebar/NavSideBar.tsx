@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -74,17 +74,38 @@ const Tab: FC<TabProps> = ({
   href,
 }) => {
   const { t } = useTranslation();
-  // Tabs that leave the app render as a real anchor, not a click-only div, so
-  // they are keyboard-reachable, middle-clickable and preview the destination
-  // on hover. In-app tabs keep the existing div (they route via onClick).
+  // Tabs that leave the app render as a real anchor, so they are
+  // middle-clickable and preview the destination on hover.
+  //
+  // In-app tabs still route via onClick rather than an href, but they are no
+  // longer click-only divs: primary navigation that can't be reached with Tab
+  // or activated with Enter locks out keyboard and screen-reader users, and
+  // this sidebar is the only way to move around the app. They carry a button
+  // role, take focus, respond to Enter and Space, and mark the current page
+  // with aria-current so it is announced rather than only coloured.
   const Wrapper = href ? "a" : "div";
-  const wrapperProps = href ? { href, target: "_blank" as const, rel: "noopener noreferrer" } : {};
+  const isActive = activeTab === id;
+  const wrapperProps = href
+    ? { href, target: "_blank" as const, rel: "noopener noreferrer" }
+    : {
+        role: "button",
+        tabIndex: 0,
+        "aria-current": isActive ? ("page" as const) : undefined,
+        onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          // Space scrolls the page by default, and Enter can submit an
+          // enclosing form; a control that navigates must do neither.
+          event.preventDefault();
+          onClick?.();
+        },
+      };
   return (
     <Wrapper
       data-testid={`nav-tab-${id}`}
       className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
-          ${activeTab === id ? "bg-background-tertiary rounded-[2px]" : "hover:bg-background-secondary"}
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500
+          ${isActive ? "bg-background-tertiary" : "hover:bg-background-secondary"}
           transition-all duration-300 group
         `}
       onClick={onClick}

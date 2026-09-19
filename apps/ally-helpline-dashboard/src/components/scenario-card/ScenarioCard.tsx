@@ -134,7 +134,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
                 total={totalScenarios}
                 size={40}
                 strokeWidth={2}
-                progressColor={completedScenarios === totalScenarios ? "#81C784" : "#6366F1"}
+                progressColor={completedScenarios === totalScenarios ? "#4e6b54" : "#5a3f50"}
                 textColor="text-typography-800"
               />
             </div>

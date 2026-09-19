@@ -8,7 +8,6 @@ import { SjtIntro } from "./SjtIntro";
 import { SjtQuestion } from "./SjtQuestion";
 import { SjtResults } from "./SjtResults";
 import { useSjtCopy } from "./useSjtCopy";
-import { useSjtFonts } from "./useSjtFonts";
 import { EMPTY_PROGRESS, useSjtProgress } from "./useSjtProgress";
 import { usePageMeta } from "../blog/usePageMeta";
 
@@ -36,7 +35,6 @@ export const Sjt1: FC = () => {
   const { copy } = useSjtCopy();
 
   usePageMeta({ title: copy.meta.title, description: copy.meta.description, url: "/SJT1" });
-  useSjtFonts();
 
   const [progress, setProgress] = useSjtProgress();
   const { stage, index, answers } = progress;

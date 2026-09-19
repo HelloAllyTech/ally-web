@@ -33,18 +33,18 @@ describe("Badge", () => {
   it("applies correct styles for outlined variant", () => {
     render(<Badge text="Outlined Badge" variant="outlined" />);
     const badge = screen.getByText("Outlined Badge");
-    expect(badge).toHaveClass("bg-[#FDFDFD]", "text-[#616161]", "border", "border-[#D5D9EB]");
+    expect(badge).toHaveClass("bg-badge-bg", "text-badge-fg", "border", "border-badge-border");
   });
 
   it("applies correct styles for dark variant", () => {
     render(<Badge text="Dark Badge" variant={SearchVariant.DARK} />);
     const badge = screen.getByText("Dark Badge");
-    expect(badge).toHaveClass("bg-[#FDFDFD]", "text-[#1E2025]");
+    expect(badge).toHaveClass("bg-badge-bg", "text-badge-darkFg");
   });
 
   it("applies correct styles for light variant", () => {
     render(<Badge text="Light Badge" variant={SearchVariant.LIGHT} />);
     const badge = screen.getByText("Light Badge");
-    expect(badge).toHaveClass("bg-[#ECECEC]", "text-[#535353]");
+    expect(badge).toHaveClass("bg-badge-lightBg", "text-badge-lightFg");
   });
 });

@@ -9,7 +9,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        class="w-full border-b border-[#E5E7EB]"
+        class="w-full border-b border-[#e3dbce]"
       >
         <div
           class="flex items-center gap-2 font-secondary justify-between"
@@ -29,7 +29,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -38,7 +38,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
@@ -125,7 +125,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        class="w-full border-b border-[#E5E7EB]"
+        class="w-full border-b border-[#e3dbce]"
       >
         <div
           class="flex items-center gap-2 font-secondary justify-between"
@@ -145,7 +145,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -154,7 +154,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
