@@ -1,0 +1,238 @@
+/*
+ * ===== Carbon, retinted to Claude — consumer app only =====
+ *
+ * WHY THIS FILE EXISTS INSTEAD OF A CARBON REMOVAL.
+ *
+ * The original plan for this phase was to stop importing Carbon in this app and
+ * replace the shared Carbon-backed components with serif-native ones. That plan
+ * was wrong about the size of the surface: `libs/ui-shared/src/primitives` is
+ * the one module allowed to import `@carbon/react` (an ESLint rule enforces it)
+ * and it re-exports roughly forty Carbon components — Button, TextInput,
+ * TextArea, Select, ComboBox, Checkbox, RadioButton, Modal, Tabs, Tile, Tag,
+ * Accordion, DatePicker, Loading, notifications and more. This app renders most
+ * of them. Dropping Carbon's stylesheet would leave every one of those unstyled
+ * until an equal number of replacements existed, which is a large rewrite and a
+ * long window where the app is visibly broken.
+ *
+ * Carbon is themeable, and this repo already themes it: carbon-serif.scss
+ * overrides Carbon's `$font-families` map and repoints a dozen `--cds-*` colour
+ * tokens to the brand blue. This file does the same job with the Claude palette
+ * and a wider set of tokens. No component is replaced, nothing is unstyled at
+ * any point, and the phase is revertable by deleting one import.
+ *
+ * WHY THE ADMIN CONSOLE CANNOT SEE THIS.
+ *
+ * It is imported from this app's main.tsx only, and the two apps have separate
+ * entry points. carbon-serif.scss is untouched and still configures Carbon for
+ * both. The import must come AFTER carbon-serif.scss: Carbon declares these
+ * tokens on its theme-zone classes (`.cds--white` etc., applied by
+ * <GlobalTheme theme="white">) rather than on `:root`, so the override has to
+ * match the same selectors and win on source order at equal specificity.
+ *
+ * PALETTE. Cold Carbon greys map to warm equivalents at matched luminance, and
+ * Carbon's interactive blue becomes clay. Semantic error / success / caution
+ * keep their own hues — an error that stops reading as an error to save a
+ * palette is a worse outcome than a slightly cool red on a warm page.
+ */
+
+:root,
+.cds--white,
+.cds--g10,
+.cds--g90,
+.cds--g100 {
+  /* --- Interactive: Carbon Blue 60 becomes clay ------------------------- */
+  --cds-interactive: #cc785c;
+  --cds-focus: #cc785c;
+  --cds-border-interactive: #cc785c;
+  --cds-icon-interactive: #cc785c;
+  --cds-background-brand: #cc785c;
+
+  --cds-link-primary: #964f39;
+  --cds-link-primary-hover: #703c2c;
+  --cds-link-secondary: #703c2c;
+  --cds-link-visited: #7a4a63;
+
+  --cds-button-primary: #cc785c;
+  --cds-button-primary-hover: #b5644a;
+  --cds-button-primary-active: #964f39;
+  --cds-button-tertiary: #cc785c;
+  --cds-button-tertiary-hover: #b5644a;
+  --cds-button-tertiary-active: #964f39;
+
+  /* Secondary buttons are the warm near-black, not Carbon Gray 80. */
+  --cds-button-secondary: #3d3a34;
+  --cds-button-secondary-hover: #565045;
+  --cds-button-secondary-active: #6e6656;
+  --cds-button-separator: #e3dbce;
+  --cds-button-disabled: #d6cdbe;
+
+  /* --- Grounds ---------------------------------------------------------- */
+  --cds-background: #f5f4ee;
+  --cds-background-inverse: #3d3a34;
+  --cds-background-inverse-hover: #565045;
+  --cds-background-hover: rgba(146, 139, 124, 0.12);
+  --cds-background-active: rgba(146, 139, 124, 0.5);
+  --cds-background-selected: rgba(146, 139, 124, 0.2);
+  --cds-background-selected-hover: rgba(146, 139, 124, 0.32);
+
+  --cds-layer-01: #f0eee7;
+  --cds-layer-02: #faf9f5;
+  --cds-layer-03: #f0eee7;
+  --cds-layer-hover-01: #eae7de;
+  --cds-layer-hover-02: #f0eee7;
+  --cds-layer-hover-03: #eae7de;
+  --cds-layer-active-01: #d6cdbe;
+  --cds-layer-active-02: #d6cdbe;
+  --cds-layer-active-03: #d6cdbe;
+  --cds-layer-selected-01: #eae7de;
+  --cds-layer-selected-02: #f0eee7;
+  --cds-layer-selected-03: #eae7de;
+  --cds-layer-selected-hover-01: #e3dbce;
+  --cds-layer-selected-hover-02: #eae7de;
+  --cds-layer-selected-hover-03: #e3dbce;
+  --cds-layer-selected-inverse: #29261f;
+  --cds-layer-accent-01: #e3dbce;
+  --cds-layer-accent-02: #e3dbce;
+  --cds-layer-accent-03: #e3dbce;
+  --cds-layer-accent-hover-01: #d6cdbe;
+  --cds-layer-accent-hover-02: #d6cdbe;
+  --cds-layer-accent-hover-03: #d6cdbe;
+  --cds-layer-accent-active-01: #bcb4a4;
+  --cds-layer-accent-active-02: #bcb4a4;
+  --cds-layer-accent-active-03: #bcb4a4;
+
+  /* --- Fields ----------------------------------------------------------- */
+  --cds-field-01: #f0eee7;
+  --cds-field-02: #faf9f5;
+  --cds-field-03: #f0eee7;
+  --cds-field-hover-01: #eae7de;
+  --cds-field-hover-02: #f0eee7;
+  --cds-field-hover-03: #eae7de;
+
+  /* --- Text ------------------------------------------------------------- */
+  --cds-text-primary: #29261f;
+  --cds-text-secondary: #565045;
+  --cds-text-helper: #6e6656;
+  --cds-text-placeholder: rgba(41, 38, 31, 0.4);
+  --cds-text-disabled: rgba(41, 38, 31, 0.25);
+  --cds-text-inverse: #faf9f5;
+  --cds-text-on-color: #faf9f5;
+  --cds-text-on-color-disabled: #928b7c;
+
+  --cds-icon-primary: #29261f;
+  --cds-icon-secondary: #565045;
+  --cds-icon-inverse: #faf9f5;
+  --cds-icon-on-color: #faf9f5;
+  --cds-icon-disabled: rgba(41, 38, 31, 0.25);
+  --cds-icon-on-color-disabled: #928b7c;
+
+  /* --- Borders ---------------------------------------------------------- */
+  --cds-border-subtle-00: #e3dbce;
+  --cds-border-subtle-01: #d6cdbe;
+  --cds-border-subtle-02: #e3dbce;
+  --cds-border-subtle-03: #d6cdbe;
+  --cds-border-subtle-selected-01: #d6cdbe;
+  --cds-border-subtle-selected-02: #d6cdbe;
+  --cds-border-subtle-selected-03: #d6cdbe;
+  --cds-border-strong-01: #928b7c;
+  --cds-border-strong-02: #928b7c;
+  --cds-border-strong-03: #928b7c;
+  --cds-border-disabled: #d6cdbe;
+  --cds-border-inverse: #29261f;
+
+  /* --- Misc surfaces ---------------------------------------------------- */
+  --cds-skeleton-background: #eae7de;
+  --cds-skeleton-element: #d6cdbe;
+  --cds-overlay: rgba(41, 38, 31, 0.6);
+  --cds-highlight: #f7ece7;
+  --cds-toggle-off: #928b7c;
+
+  /*
+   * Informational blue is the one "semantic" colour that moves: it carries no
+   * warning, so on a warm page it only reads as a leftover from another system.
+   * Error, success and caution keep their hues deliberately.
+   */
+  --cds-support-info: #964f39;
+  --cds-support-info-inverse: #cc785c;
+  --cds-tag-background-blue: #f7ece7;
+  --cds-tag-color-blue: #703c2c;
+  --cds-tag-border-blue: #ddaf9d;
+  --cds-tag-background-gray: #eae7de;
+  --cds-tag-color-gray: #29261f;
+  --cds-tag-border-gray: #d6cdbe;
+  --cds-tag-background-cool-gray: #eae7de;
+  --cds-tag-color-cool-gray: #29261f;
+  --cds-tag-border-cool-gray: #d6cdbe;
+  --cds-tag-background-warm-gray: #eae7de;
+  --cds-tag-color-warm-gray: #29261f;
+  --cds-tag-border-warm-gray: #d6cdbe;
+}
+
+/*
+ * ===== Shape =====
+ *
+ * Carbon is square by design; Claude is not. Carbon exposes no radius token, so
+ * the corners have to be set per component. This is the short list of shapes
+ * this app actually renders — deliberately not a blanket `.cds--* { radius }`,
+ * which would round things that read better square (table cells, the data-table
+ * container, notification rails).
+ *
+ * 12px cards / 8px controls / 6px chips matches the Tailwind `--radius` scale
+ * set in index.css, so Carbon and non-Carbon UI agree at the same edge.
+ */
+.cds--btn,
+.cds--text-input,
+.cds--text-area,
+.cds--search-input,
+.cds--select-input,
+.cds--dropdown,
+.cds--number input[type="number"],
+.cds--date-picker__input {
+  border-radius: 8px;
+}
+
+.cds--modal-container,
+.cds--tile,
+.cds--accordion__item,
+.cds--inline-notification,
+.cds--actionable-notification,
+.cds--toast-notification {
+  border-radius: 12px;
+}
+
+.cds--tag,
+.cds--checkbox-label::before,
+.cds--progress-bar__track,
+.cds--progress-bar__bar {
+  border-radius: 6px;
+}
+
+/*
+ * Carbon draws field affordance as a 1px bottom border only, which against a
+ * cream ground reads as an underline rather than an input. A full hairline
+ * matches how every non-Carbon field in this app is drawn.
+ */
+.cds--text-input,
+.cds--text-area,
+.cds--select-input,
+.cds--search-input {
+  border: 1px solid var(--cds-border-subtle-01);
+}
+
+/*
+ * ===== Type =====
+ *
+ * carbon-serif.scss points Carbon's whole $font-families map at IBM Plex Serif,
+ * which is right for the admin console and wrong here — this app runs on the
+ * Source Serif 4 / Newsreader pair. Most Carbon components inherit from `html`
+ * and already pick it up; the handful that set the family themselves (popovers
+ * and tooltips are the ones this app renders) do not, so they came out in a
+ * third serif that matched nothing else on the page.
+ *
+ * Scoped to Carbon's own class prefix rather than set globally, and it leaves
+ * code snippets on the monospace family — an ID or a payload is the one place
+ * where losing character-level distinction actually costs the reader something.
+ */
+[class*="cds--"]:not([class*="snippet"]):not([class*="code"]) {
+  font-family: var(--font-primary);
+}
