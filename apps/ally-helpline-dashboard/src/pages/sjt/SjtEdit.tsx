@@ -7,7 +7,6 @@ import { SjtIntro } from "./SjtIntro";
 import { SjtQuestion } from "./SjtQuestion";
 import { SjtResults } from "./SjtResults";
 import { CopyOverrides, buildExport, coerceOverrides, useSjtCopy } from "./useSjtCopy";
-import { useSjtFonts } from "./useSjtFonts";
 import { usePageMeta } from "../blog/usePageMeta";
 
 import "./sjt.css";
@@ -98,7 +97,6 @@ export const SjtEdit: FC = () => {
     // it has no business in search results next to /SJT1 itself.
     robots: "noindex, nofollow",
   });
-  useSjtFonts();
 
   const [stage, setStage] = useState<EditStage>("intro");
   const [index, setIndex] = useState(0);

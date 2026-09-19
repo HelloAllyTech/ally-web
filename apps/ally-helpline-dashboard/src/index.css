@@ -96,10 +96,20 @@
     --color-neutral-300: 214 209 197;
     --color-neutral-400: 181 175 161;
     --color-neutral-500: 146 139 124;
-    --color-neutral-600: 113 106 92;
+    --color-neutral-600: 110 102 86; /* #6E6656 — the value the app settled on */
     --color-neutral-700: 86 80 69;
     --color-neutral-800: 61 57 48;
     --color-neutral-900: 41 38 31;
+
+    /*
+     * Semantic tones. Warm enough to sit on cream, distinct enough to still
+     * read as good / caution / bad. Shared: the session-status chips, the
+     * rating scale and the /SJT1 result bands all key off these, which is why
+     * they live here rather than being re-declared per surface.
+     */
+    --color-tone-sage: 78 107 84; /* #4E6B54 — demonstrated, passed, good */
+    --color-tone-ochre: 136 89 27; /* #88591B — needs practice, in progress */
+    --color-tone-alarm: 160 62 51; /* #A03E33 — failed, ended, bad */
 
     --color-scrollbar-track: 234 231 222;
     --color-scrollbar-thumb: 181 172 156;
@@ -210,8 +220,8 @@
  *
  * Self-hosted rather than linked from fonts.googleapis.com: these load on every
  * route of a mental-health product, and a third-party origin on first paint is
- * a request we don't need to make on a learner's behalf. /SJT1's route-scoped
- * <link> loader (useSjtFonts) becomes redundant once these are global.
+ * a request we don't need to make on a learner's behalf. They replaced /SJT1's
+ * route-scoped <link> loader, which is gone — every route renders in them now.
  *
  * One file per style per subset, not per weight — both families are variable,
  * so `font-weight` here is the supported RANGE. A browser fetches only the

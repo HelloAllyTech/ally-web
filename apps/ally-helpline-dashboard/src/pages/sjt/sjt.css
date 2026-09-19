@@ -1,55 +1,51 @@
-/* Bespoke, fully self-scoped styling for the public /SJT1 self-check.
+/* Page-specific layout for the public /SJT1 self-check.
  *
- * Every rule is nested under `.sjt`, so this page keeps its own look without
- * touching the Carbon/Tailwind design tokens the rest of the app runs on — and
- * nothing here can leak into another route. The two serif families it asks for
- * are loaded by a <link> that mounts and unmounts with the page (see
- * useSjtFonts), rather than an @import here, so no other route pays for them.
+ * Every rule is nested under `.sjt`, so nothing here can leak into another
+ * route. What this file no longer owns is the PALETTE. When it was written the
+ * rest of the app was still on IBM Carbon, so it carried a private copy of the
+ * `claude` theme (commit f8918ee5) to get the look it wanted. The app has since
+ * moved onto those same values globally, so the copy became a second source of
+ * truth for one page — the thing most likely to drift.
  *
- * DESIGN SYSTEM — Claude. The palette below is the `claude` theme this repo
- * carried before the Carbon consolidation (commit f8918ee5): clay #CC785C on
- * warm creams over a #29261F near-black, with its 16px card / 10px button
- * radii. Values are that theme's own, not invented ones, so a future reviewer
- * can trace them.
+ * The local names below are kept, because ~70 rules in this file read them and
+ * renaming those buys nothing. They are now ALIASES onto the app-wide tokens in
+ * index.css rather than literals. Change a colour there and this page follows.
  *
- * TYPE — serif only, no sans and no monospace anywhere. Two families do all
- * the work, mirroring Claude's own display/text pairing: Source Serif 4 for
- * headings, controls and labels, Newsreader for running prose. The small
- * letterspaced labels that were monospace are now the display serif in
- * uppercase — the tracking, not the family, is what marks them as labels.
+ * The two serif families are global now too, so the route-scoped <link> loader
+ * (useSjtFonts) is gone — every screen already renders in them.
  */
 .sjt {
-  /* Ink — warm near-black rather than a cold navy. */
-  --ink: #29261f;
-  --ink-soft: #565045;
-  --ink-faint: #6e6656;
+  /* Ink */
+  --ink: rgb(var(--color-secondary-900));
+  --ink-soft: rgb(var(--color-neutral-700));
+  --ink-faint: rgb(var(--color-neutral-600));
 
   /* Grounds — page sits on the deeper cream, cards lift off it. */
-  --wash: #eae7de;
-  --card: #f5f4ee;
-  --card-raised: #faf9f5;
+  --wash: rgb(var(--color-background-tertiary));
+  --card: rgb(var(--color-background-DEFAULT));
+  --card-raised: rgb(var(--color-background-raised));
 
   /* Hairlines */
-  --line: #d6cdbe;
-  --line-soft: #e3dbce;
+  --line: rgb(var(--color-border-medium));
+  --line-soft: rgb(var(--color-border-DEFAULT));
 
-  /* Clay — the Claude accent, and the "needs attention" tone. */
-  --mark: #cc785c;
-  --mark-deep: #964f39;
-  --mark-deepest: #703c2c;
-  --mark-wash: #f7ece7;
+  /* Clay — the accent, and the "needs attention" tone. */
+  --mark: rgb(var(--color-primary-500));
+  --mark-deep: rgb(var(--color-primary-700));
+  --mark-deepest: rgb(var(--color-primary-800));
+  --mark-wash: rgb(var(--color-primary-50));
 
-  /* Result tones, tuned to sit inside the same warm family. */
-  --sage: #4e6b54;
-  --ochre: #88591b;
-  --alarm: #a03e33;
+  /* Result tones, shared with the session-status chips and the rating scale. */
+  --sage: rgb(var(--color-tone-sage));
+  --ochre: rgb(var(--color-tone-ochre));
+  --alarm: rgb(var(--color-tone-alarm));
 
   --radius-card: 16px;
   --radius-control: 10px;
   --radius-chip: 8px;
 
-  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --body: "Newsreader", Georgia, "Times New Roman", serif;
+  --display: var(--font-primary);
+  --body: var(--font-secondary);
 
   background: var(--wash);
   color: var(--ink);
