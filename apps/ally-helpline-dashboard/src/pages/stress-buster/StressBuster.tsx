@@ -90,7 +90,7 @@ export const StressBuster = () => {
 
   if (isEnding) {
     return (
-      <div className="w-screen h-dvh bg-[#17181A] flex justify-center items-center">
+      <div className="w-screen h-dvh bg-[#29261f] flex justify-center items-center">
         <motion.div
           key={getKeyFromIndex(messageIndex, "message")}
           initial={{ opacity: 0 }}

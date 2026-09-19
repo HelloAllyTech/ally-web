@@ -9,7 +9,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
       class="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#e3dbce] overflow-hidden"
     >
       <div
-        class="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]"
+        class="flex items-center justify-between mx-4 py-2 border-b border-[#eae7de]"
       >
         <span
           class="text-sm font-medium text-typography-900"

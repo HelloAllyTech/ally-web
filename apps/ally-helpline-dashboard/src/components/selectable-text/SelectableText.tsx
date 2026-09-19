@@ -368,7 +368,7 @@ const SelectableText = ({
       onClick={onSegmentClick}
       className={`relative ${segment.commentIds.length > 0 && !isPartOfNewSelection ? "cursor-pointer" : ""} ${
         isPartOfNewSelection
-          ? "bg-[#E1F1FE]"
+          ? "bg-[#eae7de]"
           : segment.commentIds.length > 0
             ? `${String(selectedMessageId) === String(transcript.id) && segment.commentIds.includes(selectedThreadId) ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
             : ""
@@ -379,7 +379,7 @@ const SelectableText = ({
         <div
           ref={setPositionRef}
           onClick={() => setAddCommentDialogOpen(`${index}-${segIdx}`)}
-          className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
+          className="absolute hover:bg-[#f0eee7] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
         >
           <AddComment className="w-6 h-6 pt-1" />
           <span className="text-sm font-medium whitespace-nowrap">

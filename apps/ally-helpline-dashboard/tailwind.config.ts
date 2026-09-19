@@ -75,6 +75,42 @@ export default {
          */
         white: "rgb(var(--color-background-raised) / <alpha-value>)",
         /*
+         * Status — a categorical palette in the warm family.
+         *
+         * Chips across this app encode three different things: a semantic state
+         * (processing / generated / failed), and two purely categorical facts
+         * (how a session arrived, which mode it ran in). Those were a scatter of
+         * Material blues, purples and indigos, which on a cream ground read as
+         * borrowings from three other products.
+         *
+         * The semantic three keep their hue — ochre for in-progress, sage for
+         * done, alarm for failed — because a failure that stops looking like a
+         * failure is a worse outcome than an off-palette red. The categorical
+         * ones only have to stay TELLABLE APART, not carry meaning, so they take
+         * warm tints instead of borrowed hues.
+         *
+         * Each pair is a tint plus the text colour that passes on it; never mix
+         * a tint from one row with text from another.
+         */
+        status: {
+          ochreBg: "#F3E6C9",
+          ochreFg: "#6B4F22",
+          ochreDot: "#C4901F",
+          sageBg: "#DFE7DD",
+          sageFg: "#3B5240",
+          sageDot: "#4E6B54",
+          alarmBg: "#F3DDD9",
+          alarmFg: "#7A2E25",
+          alarmDot: "#A03E33",
+          sandBg: "#EAE7DE",
+          sandFg: "#565045",
+          sandDot: "#928B7C",
+          clayBg: "#F7ECE7",
+          clayFg: "#703C2C",
+          mauveBg: "#EDE4E8",
+          mauveFg: "#5A3F50",
+        },
+        /*
          * Badge — paired with the same token names in the admin console's
          * config, where they hold the literals ui-shared/lib/badge used to
          * hardcode. Same component, two identities, resolved at build time per

@@ -139,8 +139,8 @@ const SimulationReview: FC<SimulationReviewProps> = ({
             onReviewTranscript={() => onReviewTranscript(item.id)}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
-            badgeBgColor="#EDE7F6"
-            badgeTextColor="#7E57C2"
+            badgeBgColor="#ede4e8"
+            badgeTextColor="#5a3f50"
             badgeText={t("common.simulation", "Simulation")}
             isEdited={item.isEdited}
             isReviewed={item.isReviewed}

@@ -164,7 +164,7 @@ const FeedCard: FC<FeedCardProps> = ({
               </span>
               {isEdited && (
                 <>
-                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-[#D1D5DB]">
+                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-[#d6cdbe]">
                     •
                   </span>
                   <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-gray-500">
@@ -209,8 +209,8 @@ const FeedCard: FC<FeedCardProps> = ({
       <div
         className="h-4 w-fit flex flex-col rounded-[2px] items-center justify-center px-1 py-[1.5px] text-[10px]"
         style={{
-          backgroundColor: badgeBgColor ?? "#EDE7F6",
-          color: badgeTextColor ?? "#7E57C2",
+          backgroundColor: badgeBgColor ?? "#ede4e8",
+          color: badgeTextColor ?? "#5a3f50",
         }}
       >
         {badgeText}

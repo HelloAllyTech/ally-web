@@ -123,12 +123,12 @@ const TranscriptItem = ({
     : counsellorName || youLabel;
 
   const borderWidthClass = isActive ? "border-[3px]" : "border";
-  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
+  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#f7ece7]" : "hover:bg-[#eae7de]") : "";
   // A jumped-to moment is marked with a ring rather than a border change, so it
   // reads on top of whatever the audio playback highlight is doing to the row.
   const focusRingClass = isFocused ? "ring-2 ring-offset-1 ring-primary-500" : "";
   const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-all ${borderWidthClass} ${
-    isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
+    isAIClient ? "border-[#cc785c] bg-[#f7ece7]" : "border-[#bcb4a4] bg-[#f5f4ee]"
   } ${hoverBgClass} ${focusRingClass}`;
 
   const body = (
@@ -139,7 +139,7 @@ const TranscriptItem = ({
 
       <div className="flex-1 ph-mask">
         <div
-          className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#cc785c]"}`}
+          className={`font-semibold text-base ${isAIClient ? "text-[#964f39]" : "text-[#565045]"}`}
         >
           {speakerName}
         </div>
@@ -419,7 +419,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
               ? transcriptList.map((item, index) => (
                   <div
                     key={`dictation-${index}`}
-                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask p-4 border border-[#cfd3d8] rounded-md bg-white"
+                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask p-4 border border-[#d6cdbe] rounded-md bg-white"
                   >
                     {item.content}
                   </div>

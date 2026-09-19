@@ -23,7 +23,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
+    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#eae7de]">
       <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads, t)}</span>
       <div className="flex items-center gap-2 text-typography-800">
         <Button

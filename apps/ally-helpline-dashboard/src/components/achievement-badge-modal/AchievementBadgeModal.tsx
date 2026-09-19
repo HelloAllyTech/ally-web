@@ -63,7 +63,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
 
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center text-[#424242] hover:text-gray-600 transition-colors z-10"
+          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center text-[#3d3a34] hover:text-gray-600 transition-colors z-10"
           aria-label={t("common.close")}
         >
           <CloseIcon className="text-neutral" />
@@ -84,7 +84,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
               {title}
             </div>
 
-            <div className="font-primary text-[10px] sm:text-[11px] leading-[1.38] text-[#6B7280] text-center px-1 sm:px-2">
+            <div className="font-primary text-[10px] sm:text-[11px] leading-[1.38] text-[#6e6656] text-center px-1 sm:px-2">
               {description}
             </div>
           </div>

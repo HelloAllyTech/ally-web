@@ -173,7 +173,7 @@ const ReviewWithTabs: FC = () => {
           transition={{ duration: 0.3 }}
           className="flex items-center self-stretch gap-4 sm:gap-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-5 bg-white"
         >
-          <h1 className="font-secondary text-xl sm:text-2xl text-[#0D0D0D] cursor-default">
+          <h1 className="font-secondary text-xl sm:text-2xl text-[#29261f] cursor-default">
             {t("review.title")}
           </h1>
         </motion.div>

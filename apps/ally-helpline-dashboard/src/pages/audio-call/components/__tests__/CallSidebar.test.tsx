@@ -172,10 +172,10 @@ describe("CallSidebar", () => {
       const motionDiv = screen.getByTestId("motion-div");
       expect(motionDiv).toHaveClass(
         "h-full",
-        "bg-[#17181A]",
+        "bg-[#29261f]",
         "overflow-hidden",
         "border-l-[0.5px]",
-        "border-l-[#5A5F6A]",
+        "border-l-[#565045]",
         "z-20",
       );
     });

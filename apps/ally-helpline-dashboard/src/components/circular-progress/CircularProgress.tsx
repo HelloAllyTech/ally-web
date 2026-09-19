@@ -17,7 +17,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({
   total,
   size = 40,
   strokeWidth = 2,
-  progressColor = "#6366F1",
+  progressColor = "#5a3f50",
   backgroundColor = "#e3dbce",
   textColor = "text-primary-500",
   showLabel = true,

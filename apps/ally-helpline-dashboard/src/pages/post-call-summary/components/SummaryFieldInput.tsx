@@ -151,7 +151,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
             <span
               className="font-primary whitespace-pre-wrap break-words"
               style={{
-                color: field.isEditable ? "#29261f" : "#9CA3AF",
+                color: field.isEditable ? "#29261f" : "#928b7c",
                 fontSize: "16px",
                 fontFamily: "IBM_Plex_Serif",
               }}
@@ -166,7 +166,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
               rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
               className="w-full"
               inputStyles={{
-                color: field.isEditable ? "#29261f" : "#9CA3AF",
+                color: field.isEditable ? "#29261f" : "#928b7c",
                 fontSize: "16px",
                 fontFamily: "IBM_Plex_Serif",
                 cursor: isEnhancing ? "not-allowed" : "auto",
@@ -198,7 +198,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
                 <span
                   className="font-primary whitespace-pre-wrap break-words"
                   style={{
-                    color: field.isEditable ? "#29261f" : "#9CA3AF",
+                    color: field.isEditable ? "#29261f" : "#928b7c",
                     fontSize: "16px",
                     fontFamily: "IBM_Plex_Serif",
                   }}
@@ -211,7 +211,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
                   onChange={e => onChange(field.key, e.target.value)}
                   placeholder={field.placeholder}
                   inputStyles={{
-                    color: field.isEditable ? "#29261f" : "#9CA3AF",
+                    color: field.isEditable ? "#29261f" : "#928b7c",
                     fontSize: "16px",
                     fontFamily: "IBM_Plex_Serif",
                   }}

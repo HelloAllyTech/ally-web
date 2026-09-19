@@ -115,7 +115,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onDiscard}
-            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#e8e8e8]`}
+            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
             data-testid="voice-note-timeout-back"
           >
             {t("calls.createNote.voice.backToForm")}
@@ -165,7 +165,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
         <button
           type="button"
           onClick={onDiscard}
-          className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#e8e8e8]`}
+          className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
           data-testid="voice-note-cancel"
         >
           {t("calls.createNote.voice.cancel")}
@@ -208,7 +208,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
             <button
               type="button"
               onClick={onPause}
-              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#e8e8e8]`}
+              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#eae7de]`}
               data-testid="voice-note-pause"
             >
               <Pause className="h-4 w-4" />
@@ -218,7 +218,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
             <button
               type="button"
               onClick={onResume}
-              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#e8e8e8]`}
+              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#eae7de]`}
               data-testid="voice-note-resume"
             >
               <Play className="h-4 w-4" />
@@ -260,7 +260,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onDiscard}
-            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#e8e8e8]`}
+            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
             data-testid="voice-note-discard"
           >
             <Trash2 className="h-4 w-4" />

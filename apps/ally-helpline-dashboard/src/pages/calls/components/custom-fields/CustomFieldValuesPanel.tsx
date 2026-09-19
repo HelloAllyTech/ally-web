@@ -138,7 +138,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
                 type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
                 inputStyles={{
-                  color: isEditable ? "#29261f" : "#9CA3AF",
+                  color: isEditable ? "#29261f" : "#928b7c",
                   fontSize: "16px",
                   fontFamily: "IBM_Plex_Serif",
                 }}

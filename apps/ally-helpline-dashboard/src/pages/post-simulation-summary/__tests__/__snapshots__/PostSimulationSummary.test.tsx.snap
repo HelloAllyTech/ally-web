@@ -246,7 +246,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -561,7 +561,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav

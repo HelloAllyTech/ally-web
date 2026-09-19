@@ -510,8 +510,8 @@ const CallSummary: FC<CallSummaryProps> = ({
         {isFailedSummary ? (
           // Summary generation failed but the transcript was saved: let the
           // user retry generation or fill the fields in manually and save.
-          <div className="flex items-center justify-between gap-3 rounded-md border border-[#EC930F] bg-[#FDF8E4] px-4 py-3 mb-2">
-            <span className="text-[#873200] font-primary text-sm">
+          <div className="flex items-center justify-between gap-3 rounded-md border border-[#c4901f] bg-[#f3e6c9] px-4 py-3 mb-2">
+            <span className="text-[#6b4f22] font-primary text-sm">
               {t("summary.generationFailedEditable")}
             </span>
             <Button onClick={handleRetrySummary} disabled={isRetrying} className="shrink-0">
@@ -523,10 +523,10 @@ const CallSummary: FC<CallSummaryProps> = ({
           <InfoBanner
             message={t("summary.disclaimer")}
             icon={() => (
-              <Warning className="border-[#EC930F] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
+              <Warning className="border-[#c4901f] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
             )}
-            wrapperClassName="border-[#EC930F] bg-[#FDF8E4]"
-            messageClassName="text-[#873200]"
+            wrapperClassName="border-[#c4901f] bg-[#f3e6c9]"
+            messageClassName="text-[#6b4f22]"
           />
         )}
         {headerContent}

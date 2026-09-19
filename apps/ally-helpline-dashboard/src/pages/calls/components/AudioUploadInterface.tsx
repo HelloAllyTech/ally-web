@@ -165,7 +165,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
         <div className="w-full flex flex-col gap-[10px]">
           <div className="flex gap-5 items-center w-full border-[0.5px] border-[#d6cdbe] rounded-[8px] px-6">
             <div
-              className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#E2F2FF]" : "bg-[#f0eee7]"} cursor-pointer grid place-items-center`}
+              className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#eae7de]" : "bg-[#f0eee7]"} cursor-pointer grid place-items-center`}
             >
               {isPlaying ? (
                 <PauseIcon className="text-primary-500" onClick={onPauseClick} />

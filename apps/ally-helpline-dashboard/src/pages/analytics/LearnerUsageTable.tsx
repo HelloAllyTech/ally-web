@@ -49,27 +49,27 @@ const getLearnerStatusChipConfig = (
     case "active":
       return {
         label: t("organizationMetrics.learnerUsage.status.active"),
-        dotClassName: "bg-[#47B881]", // Green
-        outerDivClassName: "bg-[#DCEBDD]",
+        dotClassName: "bg-[#4e6b54]", // Green
+        outerDivClassName: "bg-[#dfe7dd]",
       };
     case "at_risk":
       return {
         label: t("organizationMetrics.learnerUsage.status.atRisk"),
-        dotClassName: "bg-[#FFAD0D]", // Yellow
-        outerDivClassName: "bg-[#F8E6BA]",
+        dotClassName: "bg-[#c4901f]", // Yellow
+        outerDivClassName: "bg-[#f3e6c9]",
       };
     case "dormant":
       return {
         label: t("organizationMetrics.learnerUsage.status.dormant"),
-        dotClassName: "bg-[#E5675A]", // Red
-        outerDivClassName: "bg-[#FBDED9]",
+        dotClassName: "bg-[#a03e33]", // Red
+        outerDivClassName: "bg-[#f3ddd9]",
       };
     case "never_started":
     default:
       return {
         label: t("organizationMetrics.learnerUsage.status.neverStarted"),
-        dotClassName: "bg-[#6B7280]", // Gray
-        outerDivClassName: "bg-[#F3F4F6]",
+        dotClassName: "bg-[#6e6656]", // Gray
+        outerDivClassName: "bg-[#f0eee7]",
       };
   }
 };

@@ -50,7 +50,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         class="flex justify-end items-center gap-2"
       >
         <div
-          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
+          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
         >
           <div
             data-testid="more-vert-icon"
@@ -155,7 +155,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         class="flex justify-end items-center gap-2"
       >
         <div
-          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
+          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
         >
           <div
             data-testid="more-vert-icon"

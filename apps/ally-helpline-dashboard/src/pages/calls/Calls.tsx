@@ -197,7 +197,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         {isScribe && (
           <div className="flex justify-end items-center gap-2">
             <div
-              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
+              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
             >
               <MoreVertIcon />

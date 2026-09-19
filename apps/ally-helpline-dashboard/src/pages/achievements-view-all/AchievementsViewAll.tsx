@@ -123,7 +123,7 @@ export const AchievementsViewAll: FC = () => {
             </button>
           )}
           <h1
-            className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
+            className="text-[#29261f] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
             data-testid="achievements-view-all-title"
           >
             {t("achievements.title")}
@@ -140,7 +140,7 @@ export const AchievementsViewAll: FC = () => {
                   style={{
                     fontWeight: 400,
                     fontSize: "13px",
-                    color: "#F5EFF7",
+                    color: "#ede4e8",
                   }}
                 >
                   {t("achievements.badgesTooltip")}
@@ -177,7 +177,7 @@ export const AchievementsViewAll: FC = () => {
           style={{
             fontWeight: 600,
             fontSize: "13px",
-            color: "#F5EFF7",
+            color: "#ede4e8",
           }}
         >
           {`${getBadgeTypeLabels(t)[category]} ${t("achievements.badgeTypes.suffix")}`}
@@ -186,7 +186,7 @@ export const AchievementsViewAll: FC = () => {
           style={{
             fontWeight: 400,
             fontSize: "13px",
-            color: "#F5EFF7",
+            color: "#ede4e8",
             lineHeight: "1.4",
           }}
         >

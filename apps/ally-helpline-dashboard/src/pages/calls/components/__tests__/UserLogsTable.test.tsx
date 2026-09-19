@@ -155,7 +155,9 @@ vi.mock("../utils", () => ({
   getModeChipConfig: vi.fn((mode: string | undefined) => ({
     label: mode === "DICTATION" ? "Dictation" : "Scribe",
     outerDivClassName:
-      mode === "DICTATION" ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#E8EAF6] text-[#3949AB]",
+      mode === "DICTATION"
+        ? "bg-status-ochreBg text-status-ochreFg"
+        : "bg-status-mauveBg text-status-mauveFg",
   })),
 }));
 

@@ -93,7 +93,7 @@ export const TOOLTIP_LIGHT_PROPS = {
   tooltip: {
     sx: {
       backgroundColor: "#faf9f5",
-      color: "#1D1B20",
+      color: "#29261f",
       fontSize: "12px",
       maxWidth: "400px",
       zIndex: 1000,

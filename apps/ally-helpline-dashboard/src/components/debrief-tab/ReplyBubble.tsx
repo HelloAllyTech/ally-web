@@ -60,7 +60,7 @@ const ReplyCitations: FC<{
 
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-primary-100">
-      <div className="w-full bg-[#E2F2FF80] px-3 py-2 font-primary text-sm">
+      <div className="w-full bg-[#EAE7DE80] px-3 py-2 font-primary text-sm">
         {t("postSim.debrief.transcriptReferences")}
       </div>
       <Table className="w-full font-primary text-xs">

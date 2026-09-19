@@ -50,7 +50,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
 
   return (
     <div
-      className={`flex flex-col gap-1 ${(note && note.length > 0) || timeDiff < 10 ? "bg-[#fff3E080] p-4 border-l-[1px] border-l-[#FFA726]" : "bg-white"} `}
+      className={`flex flex-col gap-1 ${(note && note.length > 0) || timeDiff < 10 ? "bg-[#F3E6C980] p-4 border-l-[1px] border-l-[#c4901f]" : "bg-white"} `}
     >
       {(timeDiff < 10 || (note && note.length > 0)) && (
         <div className="flex items-center gap-2.5">

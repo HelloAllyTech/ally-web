@@ -428,7 +428,7 @@ export const PostSimulationSummary: FC = () => {
               onChange={id => setSelectedTab(Number(id))}
               // Sticky so switching tabs stays reachable once a long note or
               // transcript has been scrolled past.
-              className="sticky top-0 z-20 w-full shrink-0 border-b border-[#DBDBDB] bg-white font-primary"
+              className="sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
               showCount={false}
             />
             <div className="flex w-full flex-1 flex-col" data-testid="post-sim-tab-panel">

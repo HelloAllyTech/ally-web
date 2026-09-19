@@ -88,7 +88,7 @@ const FeaturedCard: FC<{ post: BlogPost }> = ({ post }) => (
       </p>
       <h2 className="mt-4 text-3xl leading-tight text-[#29261f] sm:text-4xl">{post.title}</h2>
       {post.tldr && <p className="mt-4 line-clamp-3 leading-relaxed text-[#565045]">{post.tldr}</p>}
-      <span className="mt-8 w-fit rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors group-hover:bg-[#3D3D3A]">
+      <span className="mt-8 w-fit rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors group-hover:bg-[#3d3a34]">
         Read more
       </span>
     </div>
@@ -155,7 +155,7 @@ export const Blog: FC = () => {
             href={ALLY_URL}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3D3D3A]"
+            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3d3a34]"
           >
             Try Ally
           </a>

@@ -20,7 +20,7 @@ const BADGE_CLASSES: Record<TrackSkillCategoryFeedback["classification"], string
 // CustomCircularProgress takes a raw color, not a Tailwind class.
 const RING_COLOR: Record<TrackSkillCategoryFeedback["classification"], string> = {
   demonstrated: "#4CAF50",
-  needs_practice: "#FF9800",
+  needs_practice: "#c4901f",
   insufficient_data: "rgb(var(--color-neutral-400))",
 };
 

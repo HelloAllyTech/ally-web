@@ -59,7 +59,7 @@ export const BlogPost: FC = () => {
             href={ALLY_URL}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3D3D3A]"
+            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3d3a34]"
           >
             Try Ally
           </a>

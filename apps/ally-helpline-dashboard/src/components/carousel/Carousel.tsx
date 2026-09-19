@@ -79,7 +79,7 @@ const Carousel: FC<CarouselProps> = ({
       case CarouselVariant.LIGHT:
         return "bg-white";
       case CarouselVariant.DARK:
-        return "!bg-[#F3F3F3] border-[0.5px] border-[#D3D3D3] !p-2";
+        return "!bg-[#f0eee7] border-[0.5px] border-[#D3D3D3] !p-2";
     }
   };
 

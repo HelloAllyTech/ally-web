@@ -483,7 +483,7 @@ export const ReviewDetails = () => {
           <div className="flex flex-col justify-center gap-1.5 font-primary">
             <div className="font-medium text-typography-900 flex flex-row items-center">
               <div
-                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#fff3E0] text-[#E65100]" : "bg-[#EDE7F6] text-[#7E57C2]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
+                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#f3e6c9] text-[#E65100]" : "bg-[#ede4e8] text-[#5a3f50]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
                 {isScribeReview ? t("common.scribe") : t("common.simulation")}
               </div>

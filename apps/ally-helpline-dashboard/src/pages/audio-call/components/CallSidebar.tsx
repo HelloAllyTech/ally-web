@@ -109,7 +109,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
           animate={{ width: isFocusMode ? 0 : "70%" }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full bg-[#17181A] overflow-hidden border-l-[0.5px] border-l-[#5A5F6A] z-20"
+          className="h-full bg-[#29261f] overflow-hidden border-l-[0.5px] border-l-[#565045] z-20"
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />
