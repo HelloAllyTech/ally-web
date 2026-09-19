@@ -83,7 +83,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
     <div className={cn("p-4 pt-0", isEmpty && "flex justify-center")}>
       <button
         onClick={onViewAll}
-        className="text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
+        className="-m-1.5 p-1.5 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
       >
         {isEmpty ? t("achievements.viewAllBadges") : t("achievements.viewAll")}
       </button>

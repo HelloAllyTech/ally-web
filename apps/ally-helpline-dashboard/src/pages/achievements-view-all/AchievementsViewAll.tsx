@@ -151,7 +151,7 @@ export const AchievementsViewAll: FC = () => {
             >
               <button
                 type="button"
-                className="inline-flex cursor-pointer border-0 bg-transparent p-0"
+                className="-m-1 inline-flex cursor-pointer border-0 bg-transparent p-1"
               >
                 <Info className="w-5 h-5" />
               </button>
@@ -201,7 +201,7 @@ export const AchievementsViewAll: FC = () => {
           {getBadgeTypeLabels(t)[category]}
         </div>
         <Tooltip label={tooltipContent} align="top" autoAlign>
-          <button type="button" className="inline-flex cursor-pointer border-0 bg-transparent p-0">
+          <button type="button" className="-m-1 inline-flex cursor-pointer border-0 bg-transparent p-1">
             <Info className="w-5 h-5" />
           </button>
         </Tooltip>

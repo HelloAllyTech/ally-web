@@ -138,8 +138,13 @@ export const Learn: FC = () => {
           <span className={emphasisStyles}> {t("learn.header.emphasis2")} </span>
           {t("learn.header.suffix")}
         </motion.div>
+        {/* The tab strip stacks above the credits badge until sm. As one row at
+            every width the two split a phone screen between them: the strip was
+            left with 194px of 375 and showed under two of its four tabs, with
+            the rest behind a horizontal scroll nobody looks for inside a tab
+            bar. */}
         {hasPathPermissions && (
-          <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
+          <div className="flex flex-col items-stretch gap-1 border-b border-typography-300 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <Tabs
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}

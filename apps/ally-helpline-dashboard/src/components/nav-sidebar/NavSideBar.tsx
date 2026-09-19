@@ -91,7 +91,7 @@ const Tab: FC<TabProps> = ({
         role: "button",
         tabIndex: 0,
         "aria-current": isActive ? ("page" as const) : undefined,
-        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+        onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
           if (event.key !== "Enter" && event.key !== " ") return;
           // Space scrolls the page by default, and Enter can submit an
           // enclosing form; a control that navigates must do neither.
