@@ -246,18 +246,62 @@ describe("TranslationManagement", () => {
     expect(toast.success).toHaveBeenCalledWith("Saved English");
   });
 
-  it("blocks saving when placeholders do not match", async () => {
+  it("blocks a translation whose placeholders disagree with English", async () => {
+    render(<TranslationManagement />);
+
+    const hindiCell = screen.getByDisplayValue("नमस्ते {{name}}");
+    fireEvent.change(hindiCell, { target: { value: "नमस्ते" } });
+
+    expect(screen.getByText("Placeholder mismatch with English")).toBeInTheDocument();
+
+    fireEvent.blur(hindiCell);
+
+    await waitFor(() => {
+      expect(updateTranslation).not.toHaveBeenCalled();
+    });
+  });
+
+  it("lets English retire a placeholder and names the translations left behind", async () => {
     render(<TranslationManagement />);
 
     const englishCell = screen.getByDisplayValue("Hello {{name}}");
     fireEvent.change(englishCell, { target: { value: "Welcome" } });
 
-    expect(screen.getByText("Placeholder mismatch")).toBeInTheDocument();
+    expect(screen.queryByText("Placeholder mismatch with English")).not.toBeInTheDocument();
+    expect(screen.getByText("Also update: Hindi")).toBeInTheDocument();
 
     fireEvent.blur(englishCell);
 
     await waitFor(() => {
-      expect(updateTranslation).not.toHaveBeenCalled();
+      expect(updateTranslation).toHaveBeenCalledWith({
+        language: "en",
+        namespace: "common",
+        key: "app.title",
+        value: "Welcome",
+      });
+    });
+  });
+
+  it("accepts the matching translation once English has dropped the placeholder", async () => {
+    render(<TranslationManagement />);
+
+    const englishCell = screen.getByDisplayValue("Hello {{name}}");
+    fireEvent.change(englishCell, { target: { value: "Welcome" } });
+
+    const hindiCell = screen.getByDisplayValue("नमस्ते {{name}}");
+    fireEvent.change(hindiCell, { target: { value: "स्वागत" } });
+
+    expect(screen.queryByText("Placeholder mismatch with English")).not.toBeInTheDocument();
+
+    fireEvent.blur(hindiCell);
+
+    await waitFor(() => {
+      expect(updateTranslation).toHaveBeenCalledWith({
+        language: "hi",
+        namespace: "common",
+        key: "app.title",
+        value: "स्वागत",
+      });
     });
   });
 
