@@ -77,6 +77,8 @@ export const mapServerMessagesToFeed = (
 ): BuilderChatMessage[] => {
   const feed: BuilderChatMessage[] = [];
   const answersByQuestionId = new Map<string, { text: string; answer?: BuilderStructuredAnswer }>();
+  /** Questions that will be rendered as their own card further down the feed. */
+  const questionIds = new Set<string>();
 
   for (const message of serverMessages) {
     const questionId = message.metadata?.questionId;
@@ -86,13 +88,30 @@ export const mapServerMessagesToFeed = (
         answer: message.metadata?.answer,
       });
     }
+    for (const question of message.metadata?.questions ?? []) {
+      questionIds.add(question.id);
+    }
   }
 
   for (const message of serverMessages) {
     const content = (message.content ?? "").replace(ANSWER_PREFIX_RE, "");
 
     if (message.role === "user") {
-      if (content) {
+      // An answer is drawn once, on the card it answers.
+      //
+      // It used to be drawn twice: the card renders "Answered — Fill the form
+      // directly" from the loop below, and the same row was pushed again as a
+      // bubble immediately under it. On screen that reads as the admin having
+      // said the same thing twice, which is exactly what it looks like when a
+      // click double-fires — so the feed was reporting a bug that had not
+      // happened, next to the answer it was meant to confirm.
+      //
+      // Only when the card is actually in this feed. A questionId whose
+      // question is not here has nothing to render the text, and dropping it
+      // would lose what the admin said.
+      const answersARenderedCard =
+        Boolean(message.metadata?.questionId) && questionIds.has(message.metadata!.questionId!);
+      if (content && !answersARenderedCard) {
         feed.push({ id: `srv_${message.id}`, role: "user", content });
       }
       continue;
@@ -441,11 +460,32 @@ export const useBuilderStream = ({
       currentAssistantIdRef.current = assistantId;
       pendingTokensRef.current = "";
 
-      setMessages(prev => [
-        ...prev,
-        { id: userMsgId, role: "user", content: trimmed },
-        { id: assistantId, role: "assistant", content: "", isStreaming: true },
-      ]);
+      setMessages(prev => {
+        // An answer belongs on the card it answers, and the card is already in
+        // the feed — so mark it rather than appending a bubble saying the same
+        // thing. Two effects, both of which were wrong before: the card kept
+        // its buttons live after it had been answered (so a second click sent
+        // the same answer again, and two identical bubbles appeared), and a
+        // reload re-rendered the answer in both places at once.
+        const card = options?.questionId
+          ? prev.find(message => message.question?.id === options.questionId)
+          : undefined;
+        if (card) {
+          return [
+            ...prev.map(message =>
+              message === card
+                ? { ...message, answeredWith: trimmed, answeredAnswer: options?.answer }
+                : message,
+            ),
+            { id: assistantId, role: "assistant" as const, content: "", isStreaming: true },
+          ];
+        }
+        return [
+          ...prev,
+          { id: userMsgId, role: "user" as const, content: trimmed },
+          { id: assistantId, role: "assistant" as const, content: "", isStreaming: true },
+        ];
+      });
       setIsStreaming(true);
 
       const first = await runStream(sessionId, trimmed, options, userMsgId, assistantId);
