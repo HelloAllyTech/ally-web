@@ -39,6 +39,7 @@ export enum LanguageMap {
   hi = "Hindi",
   kn = "Kannada",
   ml = "Malayalam",
+  mr = "Marathi",
   or = "Oriya",
   pa = "Punjabi",
   ta = "Tamil",

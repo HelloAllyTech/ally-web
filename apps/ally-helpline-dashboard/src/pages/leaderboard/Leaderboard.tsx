@@ -103,13 +103,19 @@ export const Leaderboard = () => {
       skip: !isBadgesEnabled,
     },
   );
+  const { data: unlockedBadgesCountResponse } = useGetBadgesCountQuery(
+    {},
+    {
+      skip: !isBadgesEnabled,
+    },
+  );
 
   const myBadges = badgesResponse?.data ?? [];
   const viewedBadgesCount = badgesCountResponse?.count ?? 0;
 
   const handleViewAllBadges = () => {
     track(ANALYTICS_EVENTS.ACHIEVEMENTS_OPENED, {
-      [ANALYTICS_PROPS.UNLOCKED_COUNT]: viewedBadgesCount,
+      [ANALYTICS_PROPS.UNLOCKED_COUNT]: unlockedBadgesCountResponse?.count ?? 0,
     });
     navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL, { state: { from: "community" } });
   };

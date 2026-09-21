@@ -112,10 +112,6 @@ const GeneralCommentsToShow = ({
 
   const handleComment = async () => {
     try {
-      track(ANALYTICS_EVENTS.REVIEW_COMMENT_ADDED, {
-        [ANALYTICS_PROPS.REVIEW_ID]: reviewId,
-        [ANALYTICS_PROPS.COMMENT_LENGTH]: comment.length,
-      });
       await createComment({
         reviewId: reviewId,
         body: {
@@ -126,6 +122,10 @@ const GeneralCommentsToShow = ({
           selection: null,
         },
         isScribe: isScribeReview,
+      }).unwrap();
+      track(ANALYTICS_EVENTS.REVIEW_COMMENT_ADDED, {
+        [ANALYTICS_PROPS.REVIEW_ID]: reviewId,
+        [ANALYTICS_PROPS.COMMENT_LENGTH]: comment.length,
       });
       setShowCommentBox(false);
     } catch (error) {

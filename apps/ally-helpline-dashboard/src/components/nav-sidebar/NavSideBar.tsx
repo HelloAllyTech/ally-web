@@ -442,17 +442,21 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const handleProfileUpload = async () => {
     const existingProfileUrl = user.profileImageUrl;
 
-    track(ANALYTICS_EVENTS.PROFILE_UPDATED, {
-      // Profile Settings renders the name as a disabled input and the form only
-      // carries `profileImageUrl`, so a name change is not reachable today.
-      // Sent anyway so the payload matches the spec if the field opens up.
-      [ANALYTICS_PROPS.NAME_CHANGED]: false,
-      [ANALYTICS_PROPS.IMAGE_CHANGED]: !!profileUrl && profileUrl !== existingProfileUrl,
-    });
-    await uploadProfile({ profileImageUrl: profileUrl });
-    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
-    await refetchUser();
-    setOpenSettings(false);
+    try {
+      await uploadProfile({ profileImageUrl: profileUrl });
+      if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+      await refetchUser();
+      track(ANALYTICS_EVENTS.PROFILE_UPDATED, {
+        // Profile Settings renders the name as a disabled input and the form only
+        // carries `profileImageUrl`, so a name change is not reachable today.
+        // Sent anyway so the payload matches the spec if the field opens up.
+        [ANALYTICS_PROPS.NAME_CHANGED]: false,
+        [ANALYTICS_PROPS.IMAGE_CHANGED]: !!profileUrl && profileUrl !== existingProfileUrl,
+      });
+      setOpenSettings(false);
+    } catch (error) {
+      console.error("Failed to update profile", error);
+    }
   };
 
   return (

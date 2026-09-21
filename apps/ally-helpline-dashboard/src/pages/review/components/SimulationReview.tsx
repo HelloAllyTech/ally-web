@@ -98,6 +98,10 @@ const SimulationReview: FC<SimulationReviewProps> = ({
       // `reviewer_name` is not on the inbox payload — the list only carries who
       // SHARED the session, not who reviewed it. Left off rather than filled
       // with the sharer's name, which would read as the reviewer in PostHog.
+      // Same gap applies to actor_type below: `item` has no field for the
+      // session's actual owner, only `createdBy` (who shared it), so a
+      // share-on-someone-else's-behalf case is misclassified until the
+      // payload carries the real owner id.
       [ANALYTICS_PROPS.ACTOR_TYPE]:
         user?.id === item.createdBy?.id ? REVIEW_ACTOR_TYPE.LEARNER : REVIEW_ACTOR_TYPE.REVIEWER,
     });

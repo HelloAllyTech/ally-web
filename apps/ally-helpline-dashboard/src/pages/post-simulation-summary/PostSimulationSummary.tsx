@@ -251,20 +251,28 @@ export const PostSimulationSummary: FC = () => {
         };
         await createReview(params).unwrap();
       }
+      return true;
     } catch (err: any) {
       toast.error(err?.data?.message ?? t("common.somethingWentWrong"));
+      return false;
     }
   };
 
-  const handleToggleChange = (value: string) => {
-    track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
-      [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
-      [ANALYTICS_PROPS.ENABLED]: value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
-    });
+  const handleToggleChange = async (value: string) => {
     if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
       setShareForReview(true);
+      track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
+        [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+        [ANALYTICS_PROPS.ENABLED]: true,
+      });
     } else {
-      handleCreateReview(value);
+      const success = await handleCreateReview(value);
+      if (success) {
+        track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
+          [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+          [ANALYTICS_PROPS.ENABLED]: false,
+        });
+      }
     }
   };
 

@@ -314,12 +314,16 @@ const SelectableText = ({
       selection: { startIndex: segment.start, endIndex: segment.end },
     };
     setCommentContent(comment);
-    trackCommentAdded(comment);
-    await createComment({
-      reviewId: reviewId,
-      body: body,
-      isScribe: isScribeReview,
-    });
+    try {
+      await createComment({
+        reviewId: reviewId,
+        body: body,
+        isScribe: isScribeReview,
+      }).unwrap();
+      trackCommentAdded(comment);
+    } catch (error) {
+      console.error("Failed to create comment", error);
+    }
   };
 
   const handleNewComment = async (comment: string) => {
@@ -335,12 +339,16 @@ const SelectableText = ({
       },
     };
     setCommentContent(comment);
-    trackCommentAdded(comment);
-    await createComment({
-      reviewId: reviewId,
-      body: body,
-      isScribe: isScribeReview,
-    });
+    try {
+      await createComment({
+        reviewId: reviewId,
+        body: body,
+        isScribe: isScribeReview,
+      }).unwrap();
+      trackCommentAdded(comment);
+    } catch (error) {
+      console.error("Failed to create comment", error);
+    }
   };
 
   const handleCloseSelectedComment = useCallback(() => {

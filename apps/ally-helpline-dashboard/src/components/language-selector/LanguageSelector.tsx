@@ -7,6 +7,7 @@ import {
   ANALYTICS_PROPS,
   LANGUAGE_CHANGE_SOURCE,
 } from "@constants/analyticsEvents";
+import { LanguageMap } from "@constants/common";
 import { useAnalytics } from "@hooks";
 
 import i18n from "../../i18n";
@@ -19,15 +20,6 @@ const LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
   { code: "ta", label: "தமிழ்" },
   { code: "kn", label: "ಕನ್ನಡ" },
 ];
-
-// English names for PostHog — LANGUAGE_OPTIONS holds the native display labels.
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English",
-  hi: "Hindi",
-  mr: "Marathi",
-  ta: "Tamil",
-  kn: "Kannada",
-};
 
 const getLabelFromCode = (code: string): string => {
   const exact = LANGUAGE_OPTIONS.find(o => o.code === code)?.label;
@@ -69,7 +61,7 @@ const LanguageSelector = ({
     // The spec reports the English language name, not the native label or the
     // ISO code, so the value stays stable as display labels are localised.
     track(ANALYTICS_EVENTS.LANGUAGE_CHANGED, {
-      [ANALYTICS_PROPS.LANGUAGE]: LANGUAGE_NAMES[newCode] ?? newCode,
+      [ANALYTICS_PROPS.LANGUAGE]: LanguageMap[newCode] ?? newCode,
       [ANALYTICS_PROPS.SOURCE]: source,
     });
     await i18n.changeLanguage(newCode);
