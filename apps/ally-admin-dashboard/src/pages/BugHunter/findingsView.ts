@@ -21,17 +21,19 @@ import type { BucketFilter } from "./LifecycleBucketChips";
  * nothing about free-text search, severity or the seven lifecycle buckets. It
  * could learn — but every surface on this tab (the card's status line, the
  * chips, the queue, this table) needs the *same* hundred findings, and they
- * currently share exactly one RTK Query cache entry because they all ask for
+ * ordinarily share exactly one RTK Query cache entry because they all ask for
  * `{status: "all", limit: 100}`. Pushing filters into the query would fork that
  * entry per filter combination and turn one request into five, to sift a list
  * small enough that the sifting is free.
  *
- * So the window stays server-side (newest 100) and everything inside it is
- * computed here. The honest consequence is that filters describe the window and
- * not the whole table, which is why `FindingsView.windowed` exists: the table
- * states it in words rather than letting a reader assume a filter searched
- * history. That is the same failure the old workload strip's footnote was
- * apologising for, fixed by being accurate about the denominator instead.
+ * So the window stays server-side (newest 100, or more once a reader has
+ * clicked "Load more" — see `BugFindingsTable`'s `limit` state) and everything
+ * inside it is computed here. The honest consequence is that filters describe
+ * the window and not the whole table, which is why `FindingsView.windowed`
+ * exists: the table states it in words rather than letting a reader assume a
+ * filter searched history. That is the same failure the old workload strip's
+ * footnote was apologising for, fixed by being accurate about the denominator
+ * instead.
  *
  * ## Every facet is multi-select
  *
