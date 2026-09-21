@@ -23,6 +23,7 @@ const filesToCheck = [
   "apps/ally-helpline-dashboard/src/components/error-boundary/ErrorBoundary.tsx",
   "apps/ally-helpline-dashboard/src/hooks/useLiveKitRoom.ts",
   "apps/ally-helpline-dashboard/src/pages/calls/components/SimulationSummarySidebar.tsx",
+  "apps/ally-helpline-dashboard/src/components/debrief-tab/ReplyBubble.tsx",
   "libs/ui-shared/src/lib/simulation/SimulationInterface.tsx",
 ].map(relativePath => path.join(repoRoot, relativePath));
 
