@@ -384,6 +384,25 @@ export const AccuracyPanel: FC = () => {
             </div>
           )}
 
+          {data.escalations.length > 0 && (
+            <div className="border border-border-light rounded-lg bg-white px-4 py-3">
+              <p className="text-xs font-medium text-typography-700 mb-2">
+                {en.bugHunter.accuracyEscalationsTitle}
+              </p>
+              <ul className="flex flex-col gap-1">
+                {data.escalations.map(entry => (
+                  <li
+                    key={entry.summary}
+                    className="flex items-baseline justify-between gap-3 text-xs"
+                  >
+                    <span className="text-typography-700">{entry.summary}</span>
+                    <span className="text-typography-900 tabular-nums shrink-0">{entry.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <FunnelTable
             title={en.bugHunter.accuracyBySourceTitle}
             keyColumn={en.bugHunter.accuracyColSource}

@@ -488,6 +488,18 @@ export interface BugHunterDecline {
   finderError: boolean;
 }
 
+export interface BugHunterEscalation {
+  /**
+   * The escalation event's exact summary text. Several escalation paths
+   * report a fixed, literal string (a model-tier bump, a multi-repo plan,
+   * suite-still-red-after-cap), so grouping on this already separates them
+   * cleanly; an open product question is genuine free text and shows up as
+   * many small one-off groups.
+   */
+  summary: string;
+  count: number;
+}
+
 export interface BugHunterStageLatency {
   /** Median, not mean — one stalled bug should not describe the month. */
   medianHours: number | null;
@@ -504,6 +516,7 @@ export interface BugHunterMetrics {
   bySource: BugHunterFunnel[];
   byRepo: BugHunterFunnel[];
   declines: BugHunterDecline[];
+  escalations: BugHunterEscalation[];
   latency: {
     filedToDecided: BugHunterStageLatency;
     filedToMerged: BugHunterStageLatency;

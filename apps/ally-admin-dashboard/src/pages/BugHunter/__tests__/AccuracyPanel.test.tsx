@@ -57,6 +57,7 @@ const metrics = (over: Partial<BugHunterMetrics> = {}): BugHunterMetrics => ({
   bySource: [],
   byRepo: [],
   declines: [],
+  escalations: [],
   latency: {
     filedToDecided: { medianHours: null, p90Hours: null, sampled: 0 },
     filedToMerged: { medianHours: null, p90Hours: null, sampled: 0 },
@@ -213,6 +214,28 @@ describe("AccuracyPanel", () => {
 
     expect(screen.getByText("Real, but not worth fixing")).toBeInTheDocument();
     expect(screen.getByText("It isn't a bug")).toBeInTheDocument();
+  });
+
+  it("shows why sessions escalated, with counts", () => {
+    mount(
+      metrics({
+        overall: funnel({ filed: 5 }),
+        escalations: [
+          { summary: "suite still red after the attempt cap", count: 4 },
+          { summary: "asked the admin an open product question", count: 1 },
+        ],
+      }),
+    );
+
+    expect(screen.getByText("suite still red after the attempt cap")).toBeInTheDocument();
+    expect(screen.getByText("asked the admin an open product question")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+  });
+
+  it("omits the escalations section entirely when there are none", () => {
+    mount(metrics({ overall: funnel({ filed: 5 }), escalations: [] }));
+
+    expect(screen.queryByText("Why I asked for help")).not.toBeInTheDocument();
   });
 
   it("shows a dash rather than 0% for a source that has never had a finder-error dismissal", () => {

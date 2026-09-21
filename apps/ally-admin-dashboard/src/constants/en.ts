@@ -3056,6 +3056,7 @@ export const en = {
     accuracyRepoUnassigned: "Not yet assigned",
     accuracyDeclinesTitle: "Why you turned bugs down",
     accuracyDeclineNotRecorded: "No reason stored",
+    accuracyEscalationsTitle: "Why I asked for help",
     accuracyEmptyTitle: "Nothing to measure yet",
     accuracyEmptySubtitle: "Once I've filed some bugs and you've ruled on them, this fills in.",
     accuracyLoadFailed: "Couldn't load the accuracy figures.",
