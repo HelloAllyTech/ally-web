@@ -27,6 +27,7 @@ import {
   CreateSimulationSubSection,
   ReportSection,
   ReportSectionHandle,
+  PreviewMonologueRuns,
   ReportPrimaryTab,
   ScenarioVersionPanel,
   SimulationEventMapTable,
@@ -172,6 +173,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
   const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPreviewRunsOpen, setIsPreviewRunsOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
   // Agent Builder Copilot tab: whether the right-half chat pane is collapsed.
   // Default expanded; collapsing hands the full canvas to the Basic Settings
@@ -200,8 +202,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     // (a write), and the version panel is hidden there anyway.
     { skip: !simulationId || viewMode },
   );
+  // With no version explicitly selected the editor is on the live scenario, so
+  // the header must name the version that MIRRORS it (`isLive`) — not merely
+  // the newest one, which after a branch would mislabel live edits as "v2".
   const currentVersion =
     scenarioVersions.find(v => v.id === activeVersionId) ??
+    scenarioVersions.find(v => v.isLive) ??
     scenarioVersions.find(v => v.status === ScenarioVersionStatus.PUBLISHED) ??
     scenarioVersions[0];
   // An explicitly-selected non-draft (archived) version is read-only — edits
@@ -715,6 +721,16 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       triggerWarningIds: triggerWarning,
       status,
       behaviorInstructions: behaviourInstructionsArray,
+      // The full selection. A cluster picked in the builder arrives here
+      // already expanded to its member competencies — the cluster itself is
+      // never persisted, so re-clustering can't change a published roleplay.
+      // competencyId is sent too for anything still reading the scalar; the
+      // backend derives it from competencyIds[0] regardless.
+      competencyIds: Array.isArray(restForm.competencies)
+        ? restForm.competencies.map((competency: any) => competency?.id).filter(Boolean)
+        : restForm.competency?.id
+          ? [restForm.competency.id]
+          : [],
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
       timerMode: timerMode,
@@ -725,14 +741,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
             content: item.content,
           }))
         : [],
-      // Which post-session tabs this roleplay shows, nested under the
-      // enableFeedback master switch. Always send all three keys — a
-      // partial object could be misread as "off" for whichever key is
-      // missing, since the backend resolver treats an absent key as on.
-      // Sent regardless of enableFeedback's own value: turning the master
-      // switch off only hides these controls in the form, it doesn't clear
-      // their stored preference (see the field configs in
-      // SimulationCreator.ts), so re-enabling it later restores them as-is.
+      // Which post-session tabs this roleplay shows. Always send both keys —
+      // a partial object leans on the backend resolver's "absent means on"
+      // default for whichever key is missing, which is right for a legacy
+      // roleplay but wrong for a deliberate save. There is no master switch
+      // above these two any more (retired 2026-08-31); both off IS the
+      // wholesale opt-out.
       feedbackTabs: buildFeedbackTabsPayload(restForm),
       // Carry the draft's event mappings on the version config (only when
       // editing a version and the event table has provided them). The live
@@ -742,13 +756,12 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         : {}),
     };
 
-    // The three sub-toggles above are folded into feedbackTabs; drop their
-    // flat copies (added by extractValidData, which normalizes every
+    // The two toggles above are folded into feedbackTabs; drop their flat
+    // copies (added by extractValidData, which normalizes every
     // SIMULATION_CREATOR_FIELD_GROUPS field including these) so the payload
     // matches the backend contract exactly instead of also carrying loose
     // top-level booleans.
     delete (simulationData as any).feedbackTabDebrief;
-    delete (simulationData as any).feedbackTabSkills;
     delete (simulationData as any).feedbackTabTranscript;
 
     if (Array.isArray((simulationData as any).stateNames)) {
@@ -924,6 +937,22 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     const interval = setInterval(() => autosaveRef.current(), AUTOSAVE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
+
+  // Browser-level unsaved-changes guard (in addition to the in-app discard
+  // popup). Background autosave above closes most of the gap, but only runs
+  // every AUTOSAVE_INTERVAL_MS — a real tab close in between still lost
+  // whatever changed since the last tick with no warning at all. Mirrors
+  // CreateTrack.tsx's guard.
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!viewMode && Object.keys(dirtyFields).length > 0) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [viewMode, dirtyFields]);
 
   // Note: a brand-new roleplay is NOT persisted on mount. Nothing is saved until
   // the user actually edits a field — at which point the interval autosave above
@@ -1298,10 +1327,13 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
                 onEditVersion={async version => {
                   // Save the outgoing draft/live edits before the form reset.
                   await flushPendingEdits();
-                  if (version.status === ScenarioVersionStatus.PUBLISHED) {
-                    // The published version IS the live scenario — edit it via
-                    // the live path. Clearing activeVersionId makes the load
-                    // effect re-sync the form from the live record.
+                  if (version.isLive || version.status === ScenarioVersionStatus.PUBLISHED) {
+                    // This version IS the live scenario — edit it via the live
+                    // path. Clearing activeVersionId makes the load effect
+                    // re-sync the form from the live record. Its stored config
+                    // is a stale seed (the studio saves live edits to the
+                    // scenario row, not to this version), so loading that
+                    // instead would blank the form.
                     setActiveVersionId(undefined);
                     setVersionEvents(undefined);
                     draftMappedEventsRef.current = undefined;
@@ -1351,6 +1383,19 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
           >
             {en.simulation.preview}
           </Button>
+          {/* Sits next to Preview because it is the record of Preview: past
+              runs are the only way to read a preview's internal monologue
+              after it ended. Hidden until the simulation exists — an unsaved
+              one cannot have been previewed. */}
+          {simulationId && (
+            <Button
+              variant={ButtonVariant.TEXT}
+              onClick={() => setIsPreviewRunsOpen(true)}
+              className="px-4 h-[40px] text-typography-900"
+            >
+              {en.previewMonologueRuns.trigger}
+            </Button>
+          )}
           {viewMode ? (
             <Button
               variant={ButtonVariant.PRIMARY}
@@ -1411,7 +1456,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
           chrome above matches the parent; the editable form is bounded
           (~Notion's editor width) and centered so whitespace is balanced on
           both sides instead of stretching fields edge-to-edge. */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
+      <div ref={containerRef} className="relative flex-1 overflow-y-auto custom-scrollbar">
         {/* The Agent Builder Copilot tab is a full-width split screen, so it
             opts out of the centered, max-width reading column the other tabs
             use. */}
@@ -1465,6 +1510,13 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         }}
       />
 
+      {simulationId && (
+        <PreviewMonologueRuns
+          scenarioId={Number(simulationId)}
+          isOpen={isPreviewRunsOpen}
+          onClose={() => setIsPreviewRunsOpen(false)}
+        />
+      )}
       {previewSimulation && (
         <SimulationPreview
           simulation={previewSimulation}

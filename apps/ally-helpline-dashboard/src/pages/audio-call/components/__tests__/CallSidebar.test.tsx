@@ -172,10 +172,10 @@ describe("CallSidebar", () => {
       const motionDiv = screen.getByTestId("motion-div");
       expect(motionDiv).toHaveClass(
         "h-full",
-        "bg-[#17181A]",
+        "bg-[#29261f]",
         "overflow-hidden",
         "border-l-[0.5px]",
-        "border-l-[#5A5F6A]",
+        "border-l-[#565045]",
         "z-20",
       );
     });
@@ -248,10 +248,10 @@ describe("CallSidebar", () => {
         "mx-4",
         "mb-4",
         "border",
-        "border-[#0473F2]",
+        "border-ai-700",
         "font-primary",
         "rounded-lg",
-        "bg-[#8CD3FF26]",
+        "bg-ai-900/40",
       );
     });
   });
@@ -312,7 +312,7 @@ describe("CallSidebar", () => {
         .getByText("This is a test nudge content")
         .closest("div")?.parentElement;
       // Font color test removed: Font colors change frequently during development
-      expect(nudgeCard).toHaveClass("border", "border-gray-200", "rounded-lg", "p-4", "mb-2");
+      expect(nudgeCard).toHaveClass("border", "border-ai-700", "rounded-lg", "p-4", "mb-2");
     });
 
     it("should render CustomMarkdown with correct props", () => {

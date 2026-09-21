@@ -9,8 +9,13 @@ import PrivateRouteLayout from "../PrivateRouteLayout";
 // Mock the useUser hook
 const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: () => mockUseUser(),
   useAutoActiveCallRedirect: vi.fn(),
+  // Exhaustive mock: the analytics landing fallback is gated on this hook, not
+  // on the permission alone — a tenant with no dashboards has nothing to land on.
+  useCanViewAnalytics: () => ({ canView: true, isGateLoading: false }),
   useAchievementBadgeModal: () => ({
     currentBadge: null,
     closeModal: vi.fn(),
@@ -28,6 +33,7 @@ vi.mock("@api", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
@@ -44,6 +50,7 @@ vi.mock("@assets", () => ({
 
 // Mock the pages
 vi.mock("@pages", () => ({
+  Progress: () => <div data-testid="progress-page">Progress Page</div>,
   Calls: () => <div data-testid="calls-page">Calls Page</div>,
   Archives: () => <div data-testid="archives-page">Archives Page</div>,
   Analytics: () => <div data-testid="analytics-page">Analytics Page</div>,
@@ -167,7 +174,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 // Mock utils
 vi.mock("@utils", () => ({
-  hasAnalyticsPermission: vi.fn((permissions: any[]) => true),
   hasCallPermission: vi.fn((permissions: any[]) => true),
   hasScribeLogsPermission: vi.fn((permissions: any[]) => true),
   hasRoleplayLogsPermission: vi.fn((permissions: any[]) => false),

@@ -1,8 +1,16 @@
 #!/bin/sh
 
-# Run tests before commit (skip cache to avoid stale/failed cache blocking commits)
+# Run tests before commit (skip cache to avoid stale/failed cache blocking commits).
+#
+# --parallel=1 because `npm test` is `nx run-many --target=test --all`, and Nx
+# defaults to three projects at once. Each project's Vitest pool is already
+# capped (vitest.resource-limits.ts), but three capped pools running together is
+# still ~12 jsdom workers plus three 4 GB Node heaps — which is how a commit on a
+# 16 GB machine ends up fighting the editor for memory. Projects run one at a
+# time here; CI keeps the default parallelism, where a clean runner can take it.
+# (test:coverage in package.json already pins --parallel=1 for the same reason.)
 echo "Running tests before commit..."
-npm test -- --skip-nx-cache
+npm test -- --skip-nx-cache --parallel=1
 
 # Run lint-staged for code formatting and linting
 npx lint-staged

@@ -175,7 +175,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               <input
                 type="checkbox"
                 id="remember"
-                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-primary-500 focus:ring-primary-500 cursor-pointer"
+                className="h-4 w-4 rounded border-2 border-[#e3dbce] text-primary-500 focus:ring-primary-500 cursor-pointer"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />

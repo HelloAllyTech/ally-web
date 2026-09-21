@@ -1,3 +1,33 @@
+/**
+ * Which knowledge corpus a request is about.
+ *
+ * One pipeline, several consumers; on the backend each corpus resolves to its own Weaviate
+ * collection, so this is a scope that cannot be forgotten rather than a filter that can. The
+ * WhatsApp Q&A bot was the first, which is why these endpoints live in this file — the data
+ * layer is shared, the screens are not.
+ */
+export enum KbCorpus {
+  WHATSAPP_QA = "whatsapp_qa",
+  CHARACTER_LIBRARY = "character_library",
+}
+
+/**
+ * Which part of a character a document helps ground. A curator's hint that BOOSTS those topics
+ * in retrieval — mapped documents are searched first and the rest of the corpus tops up a short
+ * result — never a restriction. Empty is the default and a perfectly good answer.
+ *
+ * Named for the SUBJECT, not for the interviewer prompt's phase numbering: that wording and
+ * ordering change without a migration, so a mapping keyed to "phase 4" would be stale on
+ * arrival.
+ */
+export enum KbCharacterTopic {
+  IDENTITY = "identity",
+  LIFE_CONTEXT = "life_context",
+  INNER_LIFE = "inner_life",
+  HISTORY_AND_PRESENTING_CONCERN = "history_and_presenting_concern",
+  SPEECH_AND_LANGUAGE = "speech_and_language",
+}
+
 /** Types for the WhatsApp Q&A bot admin tab. Mirrors ally-be's DTOs. */
 
 export enum KbDocumentSourceType {
@@ -32,6 +62,9 @@ export const KB_IN_FLIGHT_STATUSES: KbDocumentStatus[] = [
 
 export interface KbDocument {
   id: string;
+  corpus: KbCorpus;
+  /** Only meaningful for the character library; empty elsewhere. */
+  characterTopics: KbCharacterTopic[];
   title: string;
   sourceType: KbDocumentSourceType;
   sourceUrl: string | null;
@@ -45,12 +78,26 @@ export interface KbDocument {
   statusMessage: string | null;
   chunkCount: number;
   indexedChunkCount: number;
+  /** Available to every organisation. When true, `tenantIds` is always empty. */
+  isGlobal: boolean;
+  /**
+   * The organisations that can retrieve it. Empty AND `isGlobal` false means the document
+   * reaches nobody — a real state an admin can save, so the table names it rather than
+   * rendering it as if it were unrestricted.
+   */
+  tenantIds: string[];
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface GetKbDocumentsParams {
+  /**
+   * Which corpus to list. Optional on the wire for one reason only — ally-be deploys before
+   * ally-web and defaults it to the WhatsApp corpus so the shipped dashboard keeps working in
+   * between. Always send it.
+   */
+  corpus?: KbCorpus;
   /** Whitelisted server-side; an unknown key falls back to the default order. */
   sortBy?: string;
   sortDir?: "asc" | "desc";
@@ -59,6 +106,8 @@ export interface GetKbDocumentsParams {
   search?: string;
   status?: KbDocumentStatus;
   sourceType?: KbDocumentSourceType;
+  /** Only what this organisation can retrieve: its own documents plus the global ones. */
+  tenantId?: string;
   includeArchived?: boolean;
 }
 
@@ -80,6 +129,8 @@ export interface CreateKbUploadUrlResponse {
 }
 
 export interface CreateKbDocumentRequest {
+  corpus?: KbCorpus;
+  characterTopics?: KbCharacterTopic[];
   title: string;
   sourceType: KbDocumentSourceType;
   text?: string;
@@ -90,6 +141,20 @@ export interface CreateKbDocumentRequest {
   sizeBytes?: number;
   language?: string;
   tags?: string[];
+  isGlobal?: boolean;
+  tenantIds?: string[];
+}
+
+/**
+ * Retargeting is its own request, not a field on the metadata update.
+ *
+ * PATCH /documents/:id is metadata-only and never touches the search index; this rewrites the
+ * audience on every indexed chunk, so it can fail in ways a title edit cannot.
+ */
+export interface UpdateKbDocumentAudienceRequest {
+  id: string;
+  isGlobal: boolean;
+  tenantIds: string[];
 }
 
 export interface UpdateKbDocumentRequest {
@@ -97,6 +162,11 @@ export interface UpdateKbDocumentRequest {
   title?: string;
   tags?: string[];
   language?: string;
+  /**
+   * Free to change: a ranking hint read at query time, so it invalidates no chunk and
+   * triggers no re-index. `[]` clears it, which is a real answer ("no hint"), not a no-op.
+   */
+  characterTopics?: KbCharacterTopic[];
 }
 
 export interface ReplaceKbDocumentContentRequest {
@@ -131,6 +201,9 @@ export interface KbStats {
 }
 
 export interface KbSearchRequest {
+  corpus?: KbCorpus;
+  /** Boosts documents a curator mapped to these topics; never restricts to them. */
+  characterTopics?: KbCharacterTopic[];
   query: string;
   limit?: number;
   minSimilarity?: number;
@@ -249,6 +322,12 @@ export interface WaBotSettings {
   fallbackText: string;
   declineText: string;
   unsupportedMediaText: string;
+  /**
+   * Sent when the sender's number is not on any Ally profile, so the corpus cannot be scoped.
+   * Should carry the way out — adding the number to the profile — since a refusal with no next
+   * step reads as a broken bot.
+   */
+  unrecognisedNumberText: string;
   rateLimitText: string;
   rateLimit: { perMinute: number; perHour: number; perDay: number };
   retrieval: WaRetrievalSettings;
@@ -314,11 +393,18 @@ export interface WaPreviewResponse {
   model: string;
   promptVersion: string;
   latencyMs: number;
+  /**
+   * Which corpus answered. Echoed back because "the bot found this fine" from an unscoped
+   * preview is otherwise indistinguishable from what one customer's worker would actually get.
+   */
+  audience: { tenantId: string | null; includesGlobal: boolean };
 }
 
 export interface WaPreviewRequest {
   question: string;
   retrieval?: Partial<WaRetrievalSettings>;
+  /** Answer as a worker from this organisation would be. Omitted searches the whole corpus. */
+  tenantId?: string;
 }
 
 // ── Conversation log ─────────────────────────────────────────────────────────
@@ -332,6 +418,12 @@ export enum WaHandledBy {
   CLARIFIED = "clarified",
   RATE_LIMITED = "rate_limited",
   UNSUPPORTED_MEDIA = "unsupported_media",
+  /**
+   * The number is not linked to an Ally account, so there was no organisation to scope the
+   * corpus to and no answer was attempted. Distinct from DECLINED: that means the corpus is
+   * thin, this means a real worker cannot get in.
+   */
+  UNIDENTIFIED = "unidentified",
   ERROR = "error",
 }
 
@@ -346,6 +438,9 @@ export interface WaConversationSummary {
   phoneLast4: string;
   consentStatus: string;
   blockedAt: string | null;
+  /** Null for a number that is not on any Ally profile — which is why the thread was refused. */
+  tenantId: string | null;
+  tenantName: string | null;
 }
 
 export interface GetWaConversationsResponse {
@@ -383,6 +478,11 @@ export interface WaConversationDetail {
     locale: string | null;
     blockedAt: string | null;
     messageCount: number;
+    tenantId: string | null;
+    identifiedAt: string | null;
+    identitySource: string | null;
+    /** Named rather than an id. Null is meaningful: it is why the corpus could not be scoped. */
+    organisation: { id: string; name: string } | null;
   } | null;
   messages: WaConversationMessage[];
 }
@@ -452,6 +552,12 @@ export interface WaAnalyticsOverview {
   template: number;
   errors: number;
   rateLimited: number;
+  /**
+   * Messages from a number that is not on any Ally profile, so no organisation's documents could
+   * be searched. Counted apart from `declined`: that one means the corpus is thin, this one means
+   * a real worker is locked out and someone has to add their number.
+   */
+  unidentified: number;
   /** Null when there were too few answered-or-declined messages to form a ratio. */
   declineRate: number | null;
   latencyP50Ms: number | null;
@@ -490,4 +596,93 @@ export interface WaCorpusCoverageResponse {
    * must say so — a truncated worklist read as a complete one is worse than no worklist.
    */
   omittedDocuments: number;
+}
+
+// ── Phone → organisation mappings ────────────────────────────────────────────
+// Managed under User Management, because it is about people — but owned by the bot, because a
+// mapping decides which organisation's material a number can be answered from.
+
+export interface WaPhoneMapping {
+  id: string;
+  /** Digits only, no `+`. Shown in full: this is reference data being managed, not traffic. */
+  phoneE164: string;
+  tenantId: string;
+  tenantName: string | null;
+  /** Who the number belongs to, in the admin's words. The table's only human handle. */
+  label: string | null;
+  /** Attribution only — the organisation always comes from `tenantId`. */
+  userId: number | null;
+  /**
+   * The organisation on the matching user's profile, when it disagrees with this mapping.
+   * The mapping still wins; this exists so the disagreement is visible somewhere.
+   */
+  conflictingTenantName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetWaPhoneMappingsParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  tenantId?: string;
+}
+
+export interface GetWaPhoneMappingsResponse {
+  mappings: WaPhoneMapping[];
+  count: number;
+}
+
+export interface CreateWaPhoneMappingRequest {
+  phone: string;
+  tenantId: string;
+  label?: string;
+}
+
+export interface UpdateWaPhoneMappingRequest {
+  id: string;
+  tenantId?: string;
+  label?: string;
+}
+
+export interface BulkWaPhoneMappingRow {
+  phone: string;
+  /** Per-row organisation, for a file spanning several. Falls back to `defaultTenantId`. */
+  tenantId?: string;
+  label?: string;
+}
+
+export interface BulkWaPhoneMappingsRequest {
+  rows: BulkWaPhoneMappingRow[];
+  defaultTenantId?: string;
+  /** Move numbers already mapped to a different organisation. Off by default, deliberately. */
+  overwriteConflicts?: boolean;
+}
+
+/** What happened to one uploaded row. */
+export type WaPhoneMappingOutcome =
+  | "created"
+  | "updated"
+  | "unchanged"
+  | "conflict"
+  | "invalid"
+  | "duplicate";
+
+export interface BulkWaPhoneMappingResult {
+  /** 1-based position in the submitted rows, so a reported line matches what the admin pasted. */
+  line: number;
+  phone: string;
+  outcome: WaPhoneMappingOutcome;
+  reason: string | null;
+}
+
+export interface BulkWaPhoneMappingsResponse {
+  created: number;
+  updated: number;
+  unchanged: number;
+  conflicts: number;
+  invalid: number;
+  duplicates: number;
+  /** Per row, not a total: the admin needs the lines to fix. */
+  results: BulkWaPhoneMappingResult[];
 }

@@ -7,10 +7,10 @@ import { Plus, TooltipIcon, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
 import { FillBlankDef, TrackFormValues } from "@types";
 
-import { nextBlankTokenId, parseBlankTokens } from "../../../trackFormUtils";
+import { nextBlankTokenId, parseBlankTokens, QuestionPath } from "../../../trackFormUtils";
 
 interface FillBlankEditorProps {
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  questionPath: QuestionPath;
 }
 
 export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {

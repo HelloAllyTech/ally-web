@@ -42,7 +42,7 @@ export const usePostSessionStreak = (enabled: boolean) => {
   });
 
   useEffect(() => {
-    if (!enabled || resolvedRef.current) return;
+    if (!enabled || resolvedRef.current) return undefined;
 
     const timer = setTimeout(() => setGivenUp(true), GIVE_UP_AFTER_MS);
     return () => clearTimeout(timer);

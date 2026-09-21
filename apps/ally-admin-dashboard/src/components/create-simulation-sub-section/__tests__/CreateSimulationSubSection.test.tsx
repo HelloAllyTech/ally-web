@@ -22,11 +22,17 @@ vi.mock("../FormField", () => ({
 // hooks from the barrel. Empty mock keeps the import resolving cleanly.
 vi.mock("@hooks", () => ({}));
 
-// The component reads per-user featureFlags via useSelector. There's no Redux
-// Provider in this test, so stub useSelector to return undefined — featureFlag
-// gated fields are simply hidden (no existing case asserts them).
+// The component reads per-user permissions, feature toggles and featureFlags
+// via useSelector. There's no Redux Provider here, so run each selector against
+// a stand-in state. It defaults to `{}`, which makes every one of them return
+// undefined — identical to the previous blanket `() => undefined` stub, so
+// gated fields stay hidden unless a test opts in by setting `reduxStateMock`.
+const { reduxStateMock } = vi.hoisted(() => ({
+  reduxStateMock: { current: {} as any },
+}));
+
 vi.mock("react-redux", () => ({
-  useSelector: () => undefined,
+  useSelector: (selector: (state: any) => unknown) => selector(reduxStateMock.current),
 }));
 
 // Mock for the prompts-by-type query that drives the parent-level
@@ -979,5 +985,59 @@ describe("CreateSimulationSubSection", () => {
 
       expect(screen.getByTestId("form-field-mandatory")).toBeInTheDocument();
     });
+  });
+});
+
+describe("CreateSimulationSubSection — requiredFeature gate", () => {
+  // Per-admin feature toggles, unlike permissions, are handed out one user at a
+  // time from Admin User Management. The AI video actor's Studio switch rides
+  // on one so it can be trialled by a couple of people rather than a whole
+  // tier — which only works if the default state genuinely hides it.
+  const gatedItems: FormFieldConfig[] = [
+    { id: "plainField", label: "Plain Field", type: "text" },
+    {
+      id: "videoActorEnabled",
+      label: "AI video actor (experimental)",
+      type: "toggle_button",
+      requiredFeature: "video_actor",
+    },
+  ];
+
+  const renderGated = () =>
+    render(
+      <TestWrapper>
+        {(formMethods: any) => (
+          <CreateSimulationSubSection items={gatedItems} formMethods={formMethods} />
+        )}
+      </TestWrapper>,
+    );
+
+  beforeEach(() => {
+    reduxStateMock.current = {};
+  });
+
+  it("hides the gated field when the admin holds no feature toggles", () => {
+    // The shipped state for every platform admin: the key is granted to nobody.
+    renderGated();
+    expect(screen.getByTestId("form-field-plainField")).toBeInTheDocument();
+    expect(screen.queryByTestId("form-field-videoActorEnabled")).not.toBeInTheDocument();
+  });
+
+  it("hides it when the admin has other toggles but not this one", () => {
+    reduxStateMock.current = { user: { features: ["ai_lab", "bug_hunter"] } };
+    renderGated();
+    expect(screen.queryByTestId("form-field-videoActorEnabled")).not.toBeInTheDocument();
+  });
+
+  it("shows it once the video_actor toggle is granted", () => {
+    reduxStateMock.current = { user: { features: ["video_actor"] } };
+    renderGated();
+    expect(screen.getByTestId("form-field-videoActorEnabled")).toBeInTheDocument();
+  });
+
+  it("leaves ungated fields alone whatever the toggles say", () => {
+    reduxStateMock.current = { user: { features: [] } };
+    renderGated();
+    expect(screen.getByTestId("form-field-plainField")).toBeInTheDocument();
   });
 });

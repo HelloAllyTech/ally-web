@@ -15,6 +15,7 @@ import { TooltipIcon } from "@assets";
 import { Button, DeletePopup, Input, ListToolbar } from "@components";
 import { ButtonVariant } from "@components/types";
 import { Cohort, UNASSIGNED_COHORT_ID } from "@types";
+import { getErrorMessage } from "@utils";
 
 const PAGE_SIZE = 25;
 
@@ -103,7 +104,7 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
       setIsCreating(false);
       setDraftName("");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Could not save the group");
+      toast.error(getErrorMessage(error, "Could not save the group"));
     }
   };
 
@@ -114,7 +115,7 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
       toast.success(`Deleted “${deleting.name}”`);
       setDeleting(null);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Could not delete the group");
+      toast.error(getErrorMessage(error, "Could not delete the group"));
     }
   };
 
@@ -123,7 +124,7 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
     try {
       await moveMembers({ tenantId, userIds: [userId], cohortId }).unwrap();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Could not move this person");
+      toast.error(getErrorMessage(error, "Could not move this person"));
     } finally {
       setMovingUserId(null);
     }
@@ -237,11 +238,7 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
       <section className="flex flex-col gap-3">
         <h3 className="text-base font-medium text-typography-900">People</h3>
 
-        <ListToolbar
-          searchValue={search}
-          onSearchChange={setSearch}
-          placeholder="Search people"
-        />
+        <ListToolbar searchValue={search} onSearchChange={setSearch} placeholder="Search people" />
 
         {members.length === 0 && !membersFetching ? (
           <p className="rounded bg-neutral-50 p-4 text-sm text-typography-600">

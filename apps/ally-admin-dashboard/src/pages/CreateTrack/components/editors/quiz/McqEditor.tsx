@@ -7,9 +7,11 @@ import { Plus, TooltipIcon, Trash } from "@assets";
 import { MAX_MCQ_OPTIONS, MIN_MCQ_OPTIONS } from "@constants";
 import { TrackFormValues } from "@types";
 
+import { QuestionPath } from "../../../trackFormUtils";
+
 interface McqEditorProps {
   /** Absolute RHF path to the question node. */
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  questionPath: QuestionPath;
   multi: boolean;
 }
 

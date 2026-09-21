@@ -23,6 +23,22 @@ We provide two approaches for running tests:
 
 ## Quick Start
 
+> **Run one suite at a time.** [`vitest.resource-limits.ts`](vitest.resource-limits.ts) caps
+> every project's worker pool at 4 **locally** — Vitest otherwise starts one fork per CPU
+> core, each holding its own jsdom, and the admin app alone is ~290 files / ~5000 tests.
+> CI is deliberately exempt. The cap bounds a single run; it does not make two concurrent
+> runs safe, and running this suite alongside ally-be's Jest suite has exhausted a 16 GB
+> machine.
+>
+> Override either way with `VITEST_MAX_WORKERS` (`=1` to serialise while debugging a
+> cross-file leak, higher on a machine with headroom).
+>
+> Prefer scoping to what you changed — `npm run test:admin` for one project, or
+> `npx vitest run --project ally-admin-dashboard src/components/competency` for one
+> directory. `npm test` is `nx run-many --target=test --all`, which runs three
+> projects at once by default; the pre-commit hook pins it to `--parallel=1` for
+> exactly this reason, and so does `test:coverage`.
+
 ### Run All Tests (Recommended)
 
 ```bash
@@ -34,7 +50,6 @@ npm run test:docker
 ### Run Specific Tests
 
 ```bash
-npm run test:docker:web          # Test ally-web
 npm run test:docker:admin        # Test ally-admin-dashboard
 npm run test:docker:helpline     # Test ally-helpline-dashboard
 npm run test:docker:ui-shared    # Test ui-shared library
@@ -71,7 +86,6 @@ npm run test:docker:clean
 | Command                         | Description                                   |
 | ------------------------------- | --------------------------------------------- |
 | `npm run test:docker`           | Run all tests in isolated containers          |
-| `npm run test:docker:web`       | Run only ally-web tests                       |
 | `npm run test:docker:admin`     | Run only admin dashboard tests                |
 | `npm run test:docker:helpline`  | Run only helpline dashboard tests             |
 | `npm run test:docker:ui-shared` | Run only ui-shared library tests              |
@@ -88,7 +102,6 @@ npm run test:docker:clean
 Available commands:
 
 - `all` - Run all tests
-- `web` - Run ally-web tests
 - `admin` - Run admin tests
 - `helpline` - Run helpline tests
 - `ui-shared` - Run ui-shared tests
@@ -130,7 +143,7 @@ docker-compose up -d
 npm run test:docker:watch
 
 # Or run tests directly in a service
-docker-compose exec web npm run test:web:watch
+docker-compose exec admin npm run test:admin:watch
 ```
 
 ---
@@ -148,12 +161,12 @@ The `compose.test.yaml` file defines separate test services that:
 
 ```yaml
 services:
-  web-test:
+  admin-test:
     build: ...
     environment:
       - NODE_ENV=test
       - CI=true
-    command: ["npx", "nx", "test", "ally-web", "--passWithNoTests"]
+    command: ["npx", "nx", "test", "ally-admin-dashboard", "--run"]
 ```
 
 ### File Structure
@@ -165,7 +178,6 @@ ally-web/
 ├── test-docker.sh         # Test runner script
 ├── TESTING.md            # This file
 └── apps/
-    ├── ally-web/
     ├── ally-admin-dashboard/
     └── ally-helpline-dashboard/
 ```
@@ -204,7 +216,7 @@ jobs:
 
 ### Tests Fail to Start
 
-**Problem:** `ERROR: Service 'web-test' failed to build`
+**Problem:** `ERROR: Service 'admin-test' failed to build`
 
 **Solution:**
 
@@ -261,7 +273,7 @@ docker system prune -a --volumes
 
 2. Or run tests directly in dev containers:
    ```bash
-   docker-compose exec web npm run test:web
+   docker-compose exec admin npm run test:admin
    ```
 
 ---
@@ -306,15 +318,15 @@ docker system prune -a --volumes
 ```bash
 docker-compose -f compose.test.yaml run --rm \
   -e API_URL=http://custom-backend:8001 \
-  web-test
+  admin-test
 ```
 
 ### Run Specific Test Files
 
 ```bash
 docker-compose -f compose.test.yaml run --rm \
-  web-test \
-  npx nx test ally-web --testFile=src/app/api.test.ts
+  admin-test \
+  npx nx test ally-admin-dashboard --testFile=src/api/api.test.ts
 ```
 
 ### Debug Tests
@@ -322,12 +334,12 @@ docker-compose -f compose.test.yaml run --rm \
 ```bash
 # Run tests with verbose output
 docker-compose -f compose.test.yaml run --rm \
-  web-test \
-  npx nx test ally-web --verbose
+  admin-test \
+  npx nx test ally-admin-dashboard --verbose
 
 # Or attach to running container
-docker-compose exec web bash
-cd apps/ally-web
+docker-compose exec admin bash
+cd apps/ally-admin-dashboard
 npm run test -- --verbose
 ```
 
@@ -343,7 +355,7 @@ npm run test -- --verbose
 
 4. **Limit test scope**: Run only the tests for the code you're working on:
    ```bash
-   npm run test:docker:web  # Only web tests
+   npm run test:docker:admin  # Only admin tests
    ```
 
 ---

@@ -36,7 +36,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       action: onFocusButtonClick,
       isActive: isFocusMode,
       isDisabled: isEndingSession || isPaused,
-      leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
+      leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-white"} />,
       show: showFocusButton,
       text: isFocusMode ? (translations?.focused ?? "Focused") : (translations?.focus ?? "Focus"),
       testId: "simulation-controls-focus-button",
@@ -51,7 +51,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: isPaused ? (
         <Play className="w-[18px] h-[18px] [&_path]:fill-[#1E2025]" />
       ) : (
-        <Pause className="w-[18px] h-[18px] [&_path]:fill-[#FFFFFF]" />
+        <Pause className="w-[18px] h-[18px] [&_path]:fill-white" />
       ),
       show: Boolean(onPauseClick),
       text: isPaused ? (translations?.resume ?? "Resume") : (translations?.pause ?? "Pause"),

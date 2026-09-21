@@ -5,12 +5,10 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
-import { BugReportForm, BugReportSubmitError } from "@ally-ui-mono/ui-shared";
+import { BugReportForm, BugReportSubmitError, detectDeviceOs } from "@ally-ui-mono/ui-shared";
 import { useCreateBugReportMutation } from "@api";
 import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
 import { useAnalytics } from "@hooks";
-
-import { detectDeviceOs } from "./detectDeviceOs";
 
 export interface ReportProblemModalProps {
   open: boolean;

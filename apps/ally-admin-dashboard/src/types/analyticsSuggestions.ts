@@ -15,6 +15,18 @@ export enum AnalyticsSuggestionStatus {
 export type AnalyticsSuggestionStatusFilter = AnalyticsSuggestionStatus | "all";
 
 /**
+ * Which pipeline drafted a suggestion.
+ *
+ * Both sources share this queue and one accept/reject flow; the distinction only
+ * tells a reviewer what kind of evidence backs the card — a platform-analytics
+ * window, or PostHog behavioural telemetry.
+ */
+export enum AnalyticsSuggestionSource {
+  ANALYTICS_WINDOW = "analytics_window",
+  UX_SIGNAL = "ux_signal",
+}
+
+/**
  * The window a suggestion was derived from, carried on every row.
  *
  * Stored per suggestion rather than per batch so a card read weeks later still
@@ -43,6 +55,8 @@ export interface AnalyticsSuggestion {
   suggestedGoal: string | null;
   suggestedType: RoadmapOpportunityType;
   status: AnalyticsSuggestionStatus;
+  /** Which pipeline drafted it. Older rows predate the column and read as a window run. */
+  source: AnalyticsSuggestionSource;
   rejectedReason: string | null;
   /** Set on accept. Also null if the filed opportunity was later deleted. */
   opportunityId: string | null;

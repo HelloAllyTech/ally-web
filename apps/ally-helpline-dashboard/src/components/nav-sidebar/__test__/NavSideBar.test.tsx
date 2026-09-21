@@ -5,34 +5,40 @@ import { BrowserRouter } from "react-router-dom";
 // --- Mocks Setup ---
 
 // Mock useUser hook
-const { mockUser, mockPermissions, mockLogout, mockUseUser } = vi.hoisted(() => {
-  const user = {
-    id: 123,
-    name: "Test User",
-    email: "test@example.com",
-    role: "standard" as any,
-    userId: 123,
-    profileImageUrl: "",
-  };
+const { mockUser, mockPermissions, mockLogout, mockUseUser, mockUseCanViewAnalytics } = vi.hoisted(
+  () => {
+    const user = {
+      id: 123,
+      name: "Test User",
+      email: "test@example.com",
+      role: "standard" as any,
+      userId: 123,
+      profileImageUrl: "",
+    };
 
-  const permissions = ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD"];
-  const logout = vi.fn();
+    const permissions = ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD"];
+    const logout = vi.fn();
+    const useCanViewAnalyticsMock = vi.fn(() => ({ canView: true, isGateLoading: false }));
 
-  const useUserMock = vi.fn(() => ({
-    user,
-    permissions,
-    logout,
-  }));
+    const useUserMock = vi.fn(() => ({
+      user,
+      permissions,
+      logout,
+    }));
 
-  return {
-    mockUser: user,
-    mockPermissions: permissions,
-    mockLogout: logout,
-    mockUseUser: useUserMock,
-  };
-});
+    return {
+      mockUser: user,
+      mockPermissions: permissions,
+      mockLogout: logout,
+      mockUseUser: useUserMock,
+      mockUseCanViewAnalytics: useCanViewAnalyticsMock,
+    };
+  },
+);
 
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: mockUseUser,
   // Exhaustive mock: NavSideBar reads the streak pill from this hook.
   usePracticeStreakSummary: () => ({ summary: undefined }),
@@ -42,6 +48,10 @@ vi.mock("@hooks", () => ({
   useCanViewCharacterLibrary: () => ({ canView: false, isLoading: false }),
   // useAnalytics reads the role from the Redux store; this suite renders without one.
   useAnalytics: () => ({ track: vi.fn() }),
+  // Exhaustive mock: NavSideBar gates the Statistics tab on this hook, which
+  // combines VIEW_ANALYTICS_DASHBOARD with the tenant actually having something
+  // to show. Visible by default so the routing tests below still have a tab.
+  useCanViewAnalytics: mockUseCanViewAnalytics,
 }));
 
 // Mock react-router-dom
@@ -61,9 +71,14 @@ vi.mock("@api", () => ({
   useGetLogoUrlQuery: vi.fn(() => ({ data: null })),
   useUploadProfileImageMutation: vi.fn(() => [vi.fn()]),
   useGetUnreadReviewCountQuery: vi.fn(() => ({ data: { count: 0 } })),
+  // NavSideBar renders NotificationBell, which reads this. A `vi.mock` factory replaces the
+  // WHOLE module, so a hook the sidebar only reaches transitively still has to be listed here
+  // or every test in this file dies on render — which is how master went red.
+  useGetUnreadNotificationCountQuery: vi.fn(() => ({ data: { count: 0 } })),
 }));
 
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   Ally: ({ className, ...props }: any) => (
     <svg className={className} {...props} data-testid="ally-logo" />
   ),
@@ -276,6 +291,7 @@ describe("NavSideBar", () => {
     mockOnClose.mockClear();
     mockHasAllyAdminAccess.mockReset();
     mockHasAllyAdminAccess.mockReturnValue(false);
+    mockUseCanViewAnalytics.mockReturnValue({ canView: true, isGateLoading: false });
     // Reset window.innerWidth
     Object.defineProperty(window, "innerWidth", {
       writable: true,
@@ -407,6 +423,9 @@ describe("NavSideBar", () => {
       permissions: ["VIEW_CALL_LOGS"], // Only one permission
       logout: mockLogout,
     });
+    // useCanViewAnalytics folds the missing VIEW_ANALYTICS_DASHBOARD into its
+    // own answer — the tab no longer consults `permissions` directly.
+    mockUseCanViewAnalytics.mockReturnValue({ canView: false, isGateLoading: false });
 
     renderComponent();
 
@@ -414,6 +433,36 @@ describe("NavSideBar", () => {
     expect(screen.getByText("Sessions")).toBeInTheDocument();
     // Statistics should not render (requires VIEW_ANALYTICS_DASHBOARD)
     expect(screen.queryByText("Statistics")).not.toBeInTheDocument();
+  });
+
+  it("hides Statistics when the tenant has no analytics configured", () => {
+    // Holds the permission, but the tenant has no dashboard and no native org
+    // metrics — the page would render nothing but its empty state, so the tab
+    // shouldn't be there to click.
+    mockUseUser.mockReturnValue({
+      user: mockUser,
+      permissions: ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD"],
+      logout: mockLogout,
+    });
+    mockUseCanViewAnalytics.mockReturnValue({ canView: false, isGateLoading: false });
+
+    renderComponent();
+
+    expect(screen.getByText("Sessions")).toBeInTheDocument();
+    expect(screen.queryByTestId(`nav-tab-${TabId.ANALYTICS}`)).not.toBeInTheDocument();
+  });
+
+  it("shows Statistics when the tenant has analytics to show", () => {
+    mockUseUser.mockReturnValue({
+      user: mockUser,
+      permissions: ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD"],
+      logout: mockLogout,
+    });
+    mockUseCanViewAnalytics.mockReturnValue({ canView: true, isGateLoading: false });
+
+    renderComponent();
+
+    expect(screen.getByTestId(`nav-tab-${TabId.ANALYTICS}`)).toBeInTheDocument();
   });
 
   // --- Resize Tests ---
@@ -463,6 +512,9 @@ describe("NavSideBar", () => {
       permissions: [],
       logout: mockLogout,
     });
+    // Statistics is gated by useCanViewAnalytics rather than the permissions
+    // array, so an empty permissions array has to be reflected there too.
+    mockUseCanViewAnalytics.mockReturnValue({ canView: false, isGateLoading: false });
 
     renderComponent();
     expect(screen.getByTestId("mock-user-info")).toBeInTheDocument();

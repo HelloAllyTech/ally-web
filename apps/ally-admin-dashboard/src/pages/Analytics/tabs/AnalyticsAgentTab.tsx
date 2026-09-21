@@ -24,7 +24,7 @@ import {
   Tile,
 } from "@ally-ui-mono/ui-shared";
 import { useAskAnalyticsAgentMutation, useGetAnalyticsAgentCatalogQuery } from "@api";
-import { roleplayMarkdownComponents } from "@components";
+import { sharedMarkdownComponents } from "@components";
 import { en } from "@constants";
 import { AnalyticsAgentMessage, AnalyticsAgentTurnInput, AskAnalyticsAgentResponse } from "@types";
 
@@ -211,7 +211,7 @@ const AgentAnswer = ({
       {response.outcome === "answer" ? (
         <>
           <div className="text-sm text-typography-900">
-            <ReactMarkdown components={roleplayMarkdownComponents} remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown components={sharedMarkdownComponents} remarkPlugins={[remarkGfm]}>
               {response.answer}
             </ReactMarkdown>
           </div>

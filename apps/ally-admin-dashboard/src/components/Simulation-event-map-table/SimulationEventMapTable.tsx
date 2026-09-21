@@ -4,6 +4,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
@@ -32,6 +33,7 @@ import {
   MAPPED_EVENT_FIELDS,
   isNonEmptyString,
   addScoreColors,
+  getErrorMessage,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
@@ -79,20 +81,40 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
   const [viewMode, setViewMode] = useState<EventMapViewMode>("full");
 
-  const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
-    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
-    sortBy: SORT_BY.CREATED_AT,
-    order: SORT_ORDER.DESC,
-  });
-  const { data: mappedScenarioEventsData, isLoading: isMappedEventsLoading } =
-    useGetMappedScenarioEventsQuery(
-      {
-        id: String(simulationId || ""),
-      },
-      {
-        refetchOnMountOrArgChange: true,
-      },
-    );
+  // The whole active-event catalogue backs the event picker, so this one
+  // request decides whether an event can be found at all. It gets
+  // `refetchOnMountOrArgChange` for the same reason the mapped-events query
+  // below does: a cached failure must not survive as a silently empty
+  // catalogue — that reads as "no such event" and only a full page reload
+  // cleared it. `isError` is carried through to the picker so a failed load
+  // never masquerades as an empty one.
+  const {
+    data: sessionEventsData,
+    isLoading: isSessionEventsLoading,
+    isError: isSessionEventsError,
+    refetch: refetchSessionEvents,
+  } = useGetSessionEventsQuery(
+    {
+      visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
+      sortBy: SORT_BY.CREATED_AT,
+      order: SORT_ORDER.DESC,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const {
+    data: mappedScenarioEventsData,
+    isLoading: isMappedEventsLoading,
+    refetch: refetchMappedEvents,
+  } = useGetMappedScenarioEventsQuery(
+    {
+      id: String(simulationId || ""),
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
@@ -108,6 +130,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   // resolves gets silently reverted (and never re-sent).
   const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
   const isSavingRef = useRef(false);
+  const reloadTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
@@ -155,7 +178,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+  }, [mappedEvents.length, mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
 
   // Version mode: report the full event set to the parent on every change so it
   // can be saved into the version config (never to the live scenario). Deps are
@@ -163,7 +186,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   useEffect(() => {
     if (!versionId || !onVersionEventsChange) return;
     onVersionEventsChange(convertToApiFormat(mappedEvents));
-  }, [mappedEvents, versionId]);
+  }, [mappedEvents, onVersionEventsChange, versionId]);
 
   // Table columns configuration
   const tableColumns = useMemo(() => {
@@ -324,8 +347,17 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     setEventOrderMapping(orderMapping);
   };
 
+  // The refresh control used to only re-sort the rows already on screen, so
+  // when the catalogue or the mapping had failed to load, the one control that
+  // looks like "reload" changed nothing and a full page reload was the only way
+  // out. Refetch both queries first, then re-sort.
   const onReloadMappedEvents = () => {
-    setTimeout(() => {
+    refetchSessionEvents?.();
+    refetchMappedEvents?.();
+    if (reloadTimeoutRef.current) {
+      clearTimeout(reloadTimeoutRef.current);
+    }
+    reloadTimeoutRef.current = setTimeout(() => {
       updateEventOrderMapping(mappedEvents);
       // Target the NotionTable's scrollable container (has overflow-auto class)
       const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
@@ -346,13 +378,15 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     return addScoreColors(sortMappedEvents);
   }, [sortMappedEvents]);
 
-  // Helper function to save events to API
+  // Helper function to save events to API. Returns whether the save succeeded
+  // so callers that applied an optimistic local update can roll it back on
+  // failure instead of leaving state that was never actually persisted.
   const saveEventsToApi = useCallback(
-    async (events: UpdateScenarioEventDataParam[]) => {
-      if (!simulationId) return;
+    async (events: UpdateScenarioEventDataParam[]): Promise<boolean> => {
+      if (!simulationId) return true;
       // Version mode persists through onVersionEventsChange (see effect above);
       // never write event changes to the live scenario.
-      if (versionId) return;
+      if (versionId) return true;
       const apiEvents = convertToApiFormat(events);
       isSavingRef.current = true;
       try {
@@ -360,11 +394,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
           scenarioId: Number(simulationId),
           events: apiEvents,
         });
-        if (response?.error?.data?.message) {
-          toast.error(response.error.data.message || en.errors.failedToSaveEvents);
+        if (response?.error) {
+          toast.error(getErrorMessage(response.error, en.errors.failedToSaveEvents));
+          return false;
         }
+        return true;
       } catch {
         toast.error(en.errors.failedToSaveEvents);
+        return false;
       } finally {
         isSavingRef.current = false;
       }
@@ -392,6 +429,22 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
       }, DEBOUNCE_DELAY);
     },
     [saveEventsToApi],
+  );
+
+  // Both timers above outlive the component if they are not cancelled: the
+  // reload one calls setState from its callback, which after an unmount threw
+  // from inside React and surfaced in CI as an unhandled error attributed to
+  // whichever test happened to be running.
+  useEffect(
+    () => () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+      }
+      if (debouncedSaveTimeoutRef.current) {
+        clearTimeout(debouncedSaveTimeoutRef.current);
+      }
+    },
+    [],
   );
 
   // Helper function to update an event by ID
@@ -559,18 +612,26 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         return;
       }
 
-      // Add events to the beginning of mappedEvents array
+      // Keep the pre-add snapshot so we can roll back if the save fails —
+      // the mapScenarioEvents call persists the whole batch in one request,
+      // so a failure means none of these events were actually saved.
+      const previousEvents = mappedEvents;
       const updatedEvents = [...events, ...mappedEvents];
       setMappedEvents(updatedEvents);
 
-      // Save to API
-      await saveEventsToApi(events);
-
-      // Close panel
+      // Close panel optimistically; on failure we reopen state via the toast,
+      // but keep the panel closed so the admin isn't stuck mid-flow.
       setIsBulkAddPanelOpen(false);
 
-      // Show success message
-      toast.success(en.simulation.bulkAddSuccess(events.length));
+      const saved = await saveEventsToApi(events);
+
+      if (saved) {
+        toast.success(en.simulation.bulkAddSuccess(events.length));
+      } else {
+        // Roll back the optimistic insert — none of the batch persisted.
+        setMappedEvents(previousEvents);
+        toast.error(en.errors.failedToBulkAddEvents(events.length));
+      }
     },
     [mappedEvents, saveEventsToApi],
   );
@@ -606,15 +667,40 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     <div className="flex flex-col h-full w-full">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
         <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
-          <div className="cursor-pointer" onClick={onReloadMappedEvents}>
-            <Refresh className="w-4 h-4" />
-          </div>
+          {/* Opens downward: this row is the top of a scrolling panel, and the
+              tooltip has no auto-flip. */}
+          <Tooltip label={en.simulation.reloadEvents} align="bottom">
+            <button
+              type="button"
+              aria-label={en.simulation.reloadEvents}
+              className="cursor-pointer inline-flex items-center"
+              onClick={onReloadMappedEvents}
+            >
+              <Refresh className="w-4 h-4" />
+            </button>
+          </Tooltip>
           <SegmentedToggle
             label="Advanced settings view"
             value={viewMode}
             options={VIEW_MODE_OPTIONS}
             onChange={setViewMode}
           />
+          {/*
+            A failed catalogue fetch is not an empty catalogue: without this the
+            only sign was every event search answering "No options found".
+          */}
+          {isSessionEventsError && (
+            <span className="flex items-center gap-2 text-sm font-normal text-destructive-500">
+              {en.simulation.eventCatalogLoadFailed}
+              <button
+                type="button"
+                className="underline text-primary-600"
+                onClick={() => refetchSessionEvents?.()}
+              >
+                {en.common.retry}
+              </button>
+            </span>
+          )}
         </div>
         <div className="flex gap-2">
           {!isLoading && (
@@ -653,6 +739,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         sessionEvents={sessionEvents}
         availableEventOptions={sessionEventsOptions}
         onEventSelect={handleEventSelect}
+        catalogFailedToLoad={isSessionEventsError}
+        onRetryCatalog={() => refetchSessionEvents?.()}
       />
       <BulkAddEventsSidePanel
         isOpen={isBulkAddPanelOpen}

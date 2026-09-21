@@ -53,6 +53,14 @@ export interface PracticeStreakSummary {
   dailyGoalMinutes: number;
   minutesToGoal: number;
   atRisk: boolean;
+  /** Days this ISO week that earned XP — of any kind, not roleplay minutes alone. */
+  daysActiveThisWeek: number;
+  /** Active days needed this week to earn the consistency bonus. */
+  weeklyGoalDays: number;
+  weeklyGoalMet: boolean;
+  /** Active days still needed. Zero once the goal is met. */
+  daysToWeeklyGoal: number;
+  /** Consecutive active days. An active day is one that earned XP, of any kind. */
   currentStreak: number;
   longestStreak: number;
   streakStartDate: string | null;

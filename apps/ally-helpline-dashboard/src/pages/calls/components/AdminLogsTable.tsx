@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, FC } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
 
 import { GenericTable, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -56,6 +55,7 @@ import {
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { LogsTableProps } from "./types";
+import { useLogsFetchErrorToast } from "./useLogsFetchErrorToast";
 import {
   getSourceChipConfig,
   getStatusChipConfig,
@@ -103,6 +103,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const {
     data: callLogsData,
     isLoading: isCallLogsLoading,
+    isError: isCallLogsError,
     refetch: refetchCallLogs,
     error: callLogsError,
   } = useGetAdminCallLogsQuery(
@@ -113,6 +114,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
+    isError: isSimulationLogsError,
     refetch: refetchSimulationLogs,
   } = useGetAdminSimulationLogsQuery(
     { ...filters, sortBy: "createdAt", order: "DESC", languageCode: i18n.language },
@@ -122,9 +124,10 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const { data: callLogs = [] } = callLogsData || {};
   const { data: simulationLogs = [] } = simulationLogsData || {};
   const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
-  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
+  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 }, { skip: !isCall });
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
+  const isError = isCall ? isCallLogsError : isSimulationLogsError;
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -188,34 +191,46 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     }
   };
 
-  useEffect(() => {
-    if (callLogsError && !isCallLogsLoading) {
-      let errorMessage = "Failed to fetch call logs. Please try again.";
-      // RTK Query error types
-      if (typeof callLogsError === "object" && callLogsError !== null) {
-        // FetchBaseQueryError: { status, data }
-        if (
-          "data" in callLogsError &&
-          callLogsError.data &&
-          typeof callLogsError.data === "object" &&
-          callLogsError.data !== null &&
-          "message" in callLogsError.data &&
-          typeof (callLogsError.data as any).message === "string"
-        ) {
-          errorMessage = (callLogsError.data as any).message;
-        } else if ("error" in callLogsError && typeof callLogsError.error === "string") {
-          // SerializedError: { error: string }
-          errorMessage = callLogsError.error;
-        }
-      }
-      toast.error(`${errorMessage}. It can be issue with applied filters. Please try again.`);
-    }
-  }, [callLogsError, isCallLogsLoading]);
+  useLogsFetchErrorToast(callLogsError, isCallLogsLoading);
 
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
+      </div>
+    );
+  }
+
+  // A fetch failure must not be indistinguishable from "no calls yet" — the
+  // counsellor needs to know the difference and get a way back in, not a
+  // table that silently looks empty.
+  //
+  // Only when there is nothing left to show, though. `isLoading` is true for a
+  // cache entry's FIRST load only, so a failed *background* refetch — the
+  // refetchOnFocus that fires every time the counsellor tabs back in, or the
+  // invalidation after a custom-field save — leaves isLoading false with
+  // isError true while RTK Query still holds the last good page. Rendering the
+  // fallback there throws away rows that are on screen and correct, and turns
+  // one transient blip (an expired access token at the 15-minute boundary, a
+  // dropped connection) into a wall the counsellor can only clear by
+  // reloading. The toast above already tells them the refresh failed.
+  if (isError && !isLoading && logs.length === 0) {
+    const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
+    return (
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={
+            isCall ? t("calls.fallback.callErrorTitle") : t("calls.fallback.simErrorTitle")
+          }
+          description={
+            isCall ? t("calls.fallback.callErrorDesc") : t("calls.fallback.simErrorDesc")
+          }
+          button={{
+            text: t("common.retry"),
+            onClick: () => refetchFn?.(),
+          }}
+        />
       </div>
     );
   }

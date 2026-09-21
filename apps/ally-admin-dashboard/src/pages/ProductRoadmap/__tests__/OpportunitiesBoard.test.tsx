@@ -11,12 +11,12 @@ import {
 
 // The board is a table shell around several heavy children. Stub the ones that pull @api / the
 // store in, so this stays a test of the pagination footer rather than of the whole page.
-vi.mock("../useAllocateCoins", () => ({
-  useAllocateCoins: () => vi.fn(),
+vi.mock("../useSetVotes", () => ({
+  useSetVotes: () => vi.fn(),
 }));
 
-vi.mock("../CoinAllocator", () => ({
-  CoinAllocator: () => null,
+vi.mock("../VoteButton", () => ({
+  VoteButton: () => null,
 }));
 
 vi.mock("../RoadmapAdvancedFilters", () => ({
@@ -70,7 +70,10 @@ import { EMPTY_ADVANCED_FILTERS } from "../utils/filters";
 
 const PAGE_SIZE = 50;
 
-const row = (n: number, source: RoadmapOpportunitySource = RoadmapOpportunitySource.STAFF): RoadmapOpportunity => ({
+const row = (
+  n: number,
+  source: RoadmapOpportunitySource = RoadmapOpportunitySource.STAFF,
+): RoadmapOpportunity => ({
   id: `opp-${n}`,
   description: `Opportunity ${n}`,
   type: RoadmapOpportunityType.IDEA,
@@ -81,7 +84,7 @@ const row = (n: number, source: RoadmapOpportunitySource = RoadmapOpportunitySou
   claudePrompt: null,
   releasedAt: null,
   priorityScore: n,
-  myCoins: 0,
+  myVotes: 0,
   commentCount: 0,
   source,
   createdAt: "2026-08-01T00:00:00.000Z",
@@ -117,6 +120,8 @@ const renderBoard = (overrides: Partial<React.ComponentProps<typeof Opportunitie
       onStageFilterChange={vi.fn()}
       sourceFilter={[]}
       onSourceFilterChange={vi.fn()}
+      effortFilter={[]}
+      onEffortFilterChange={vi.fn()}
       goalFilter={[]}
       onGoalFilterChange={vi.fn()}
       ownerFilter={[]}
@@ -133,7 +138,6 @@ const renderBoard = (overrides: Partial<React.ComponentProps<typeof Opportunitie
       onAddClick={vi.fn()}
       selectedIds={new Set()}
       onToggleSelected={vi.fn()}
-      onSplit={vi.fn()}
       offset={0}
       pageSize={PAGE_SIZE}
       onOffsetChange={onOffsetChange}
@@ -215,9 +219,7 @@ describe("OpportunitiesBoard row content", () => {
     renderBoard({ data: response(1, 1) });
 
     const table = screen.getByRole("table");
-    expect(
-      within(table).getByRole("columnheader", { name: "Opportunity" }),
-    ).toBeInTheDocument();
+    expect(within(table).getByRole("columnheader", { name: "Opportunity" })).toBeInTheDocument();
     expect(within(table).queryByRole("columnheader", { name: "Goal" })).not.toBeInTheDocument();
     expect(within(table).getByText(/Engagement & Usability/)).toBeInTheDocument();
   });

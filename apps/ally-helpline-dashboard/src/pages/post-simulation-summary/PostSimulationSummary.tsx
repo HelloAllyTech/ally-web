@@ -21,7 +21,6 @@ import {
   NextChallengeCard,
   SessionRatingTrigger,
   ShareForReview,
-  SkillsTab,
   ToggleSwitch,
 } from "@components";
 import {
@@ -32,18 +31,22 @@ import {
   REVIEW_PRIVACY_OPTIONS_VALUES,
   ROUTES,
 } from "@constants";
-import { FeedbackDialog, ShortSessionUI, useSimulationSummaryPolling } from "@containers";
+import {
+  FeedbackDialog,
+  ShortSessionUI,
+  TechnicalInterruptionUI,
+  useSimulationSummaryPolling,
+} from "@containers";
 import { useAnalytics, useContinueTrack, useNextChallenge } from "@hooks";
 import {
   ActiveTrackContext,
-  pageType,
   SessionType,
   ShareForReviewsInput,
   TranscriptFocusRequest,
 } from "@types";
-import { readTrackContext } from "@utils";
+import { readTrackContext, resolveFeedbackTabs } from "@utils";
 
-import { StreakMoment, UpNextTab } from "./components";
+import { StreakMoment } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { containerVariants } from "../learn/constants";
 
@@ -54,18 +57,14 @@ import { containerVariants } from "../learn/constants";
  */
 const TAB_IDS = {
   DEBRIEF: 6,
-  SKILLS: 5,
   TRANSCRIPT: 2,
-  UP_NEXT: 3,
 } as const;
 
 // PostHog reports the product-facing tab names, which the analytics spec fixes
 // verbatim — they are not derived from the labels, which are translated.
 const ANALYTICS_TAB: Record<number, string> = {
   [TAB_IDS.DEBRIEF]: ROLEPLAY_SUMMARY_TAB.DEBRIEF,
-  [TAB_IDS.SKILLS]: ROLEPLAY_SUMMARY_TAB.SKILLS_DEMONSTRATED,
   [TAB_IDS.TRANSCRIPT]: ROLEPLAY_SUMMARY_TAB.ANNOTATED_TRANSCRIPT,
-  [TAB_IDS.UP_NEXT]: ROLEPLAY_SUMMARY_TAB.UP_NEXT,
 };
 
 export const PostSimulationSummary: FC = () => {
@@ -83,10 +82,18 @@ export const PostSimulationSummary: FC = () => {
     { sessionId: sessionId ?? "", languageCode: i18n.language },
     { skip: !sessionId },
   );
-  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
-    sessionId,
-    i18n.language,
-  );
+  const {
+    summaryData,
+    retryMaxReached,
+    isShortSession,
+    isTechnicalInterruption,
+    checkAgain,
+    isCheckingAgain,
+  } = useSimulationSummaryPolling(sessionId, i18n.language);
+  // Neither a too-short session nor a technically-interrupted one has enough
+  // of a real conversation to rate, share for review, or count toward a
+  // streak — same reasoning that already applied to isShortSession alone.
+  const hideEvaluationChrome = isShortSession || isTechnicalInterruption;
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
   const nextChallenge = useNextChallenge(summary);
@@ -125,14 +132,15 @@ export const PostSimulationSummary: FC = () => {
   }, [summary?.metadata?.languageId, availableLanguages]);
 
   // Which post-session tabs this roleplay shows. The backend sends this
-  // already resolved; the fallback here only covers a response cached from
-  // before the sub-toggles existed, where every tab was on.
-  const feedbackTabs = summary?.scenario?.metadata?.feedbackTabs ?? {
-    debrief: true,
-    skills: true,
-    transcript: true,
-  };
+  // already resolved; the fallback in resolveFeedbackTabs only covers a
+  // response cached from before these toggles existed.
+  const feedbackTabs = resolveFeedbackTabs(summary?.scenario?.metadata);
 
+  // Exactly two tabs, one per surviving toggle. Skills Demonstrated and the
+  // legacy "Up next" tab were both dropped on 2026-08-31: Skills had been off
+  // platform-wide since 2026-08-24, and Up next only ever appeared for legacy
+  // pathway/case sessions (Track 2.0 gets the breadcrumb + continue CTA
+  // below instead, via useContinueTrack).
   const tabList = [
     ...(feedbackTabs.debrief
       ? [
@@ -144,20 +152,15 @@ export const PostSimulationSummary: FC = () => {
                 sessionId={sessionId ?? ""}
                 summaryData={summaryData}
                 retryMaxReached={retryMaxReached}
-                // Anchors only become chips when there is a transcript tab to
-                // open; otherwise they render as plain prose.
+                checkAgain={checkAgain}
+                isCheckingAgain={isCheckingAgain}
+                // Anchors and cited timestamps only become chips when there is
+                // a transcript tab to open; otherwise they render as plain
+                // prose.
                 onOpenMoment={feedbackTabs.transcript ? handleOpenMoment : undefined}
+                agentName={summary?.scenario?.metadata?.name}
               />
             ),
-          },
-        ]
-      : []),
-    ...(feedbackTabs.skills
-      ? [
-          {
-            id: TAB_IDS.SKILLS,
-            label: t("postSim.tabs.skillsDemonstrated"),
-            content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
           },
         ]
       : []),
@@ -165,7 +168,7 @@ export const PostSimulationSummary: FC = () => {
       ? [
           {
             id: TAB_IDS.TRANSCRIPT,
-            label: t("postSim.tabs.annotatedTranscript"),
+            label: t("postSim.tabs.transcript"),
             content: (
               <SimulationTranscriptTab
                 sessionId={sessionId}
@@ -173,21 +176,6 @@ export const PostSimulationSummary: FC = () => {
                 agentName={summary?.scenario?.metadata?.name}
                 originalLanguageCode={originalLanguageCode}
                 focusMessage={momentRequest}
-              />
-            ),
-          },
-        ]
-      : []),
-    ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
-      ? [
-          {
-            id: TAB_IDS.UP_NEXT,
-            label: t("postSim.tabs.upNext"),
-            content: (
-              <UpNextTab
-                sessionId={sessionId}
-                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
-                metaData={summary?.metadata}
               />
             ),
           },
@@ -217,14 +205,11 @@ export const PostSimulationSummary: FC = () => {
   const feedbackDialogEvaluatedRef = useRef<boolean>(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
 
-  // When the trainer has disabled post-session feedback for this scenario, we
-  // skip the evaluation surface entirely. Default to enabled when the flag is
-  // missing (legacy scenarios). Switching every sub-toggle off is the same
-  // thing said a longer way, so it lands in the same branch — there is nothing
-  // left to show but the star rating.
-  const feedbackEnabled =
-    summary?.scenario?.metadata?.enableFeedback !== false &&
-    (feedbackTabs.debrief || feedbackTabs.skills || feedbackTabs.transcript);
+  // Both tabs off means the author wants no post-session evaluation surface at
+  // all — the wholesale opt-out that the retired `enableFeedback` master
+  // switch used to express, now said by the two toggles themselves. There is
+  // nothing left to show but the star rating.
+  const feedbackEnabled = feedbackTabs.debrief || feedbackTabs.transcript;
 
   useEffect(() => {
     if (summaryData && !isLoading && !feedbackDialogEvaluatedRef.current) {
@@ -363,7 +348,11 @@ export const PostSimulationSummary: FC = () => {
   }
 
   return (
-    <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
+    // The page scrolls, the tabs do not. This was a viewport-locked shell where
+    // every tab panel got whatever height the header, streak banner and footer
+    // left over — about four lines of the debrief note on a laptop — and each
+    // tab then scrolled internally. One scrollbar, full-length content.
+    <div className="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10">
       <FeedbackDialog
         open={showFeedbackDialog}
         onClose={() => setShowFeedbackDialog(false)}
@@ -374,7 +363,7 @@ export const PostSimulationSummary: FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        className="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
       >
         {trackContext && (
           <div className="mt-8 flex w-full shrink-0 items-center gap-2 text-sm text-typography-700 min-w-0">
@@ -401,11 +390,11 @@ export const PostSimulationSummary: FC = () => {
               <BackCircle />
             </button>
             {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
-            {!isShortSession && (
+            {!hideEvaluationChrome && (
               <SessionRatingTrigger value={displayRating} onSelect={handleStarSelect} size="sm" />
             )}
           </div>
-          {!isShortSession && (
+          {!hideEvaluationChrome && (
             <div className="flex justify-center gap-2 items-center">
               <div className="flex items-center gap-2">
                 <span className="font-primary font-normal text-sm">
@@ -442,11 +431,14 @@ export const PostSimulationSummary: FC = () => {
         </div>
         {/* Sits on the page shell rather than inside a tab: OverallScoreMeter
             lives in the Skills tab, which is not the landing tab, so anchoring
-            the moment there would hide it from most users. A short session
-            cannot have secured the streak, so it is disabled for that branch. */}
-        <StreakMoment enabled={!isShortSession && !!summary} />
+            the moment there would hide it from most users. Neither a too-short
+            nor a technically-interrupted session can have secured the streak,
+            so it is disabled for both branches. */}
+        <StreakMoment enabled={!hideEvaluationChrome && !!summary} />
 
-        {isShortSession ? (
+        {isTechnicalInterruption ? (
+          <TechnicalInterruptionUI className="flex-1" summaryData={summaryData} />
+        ) : isShortSession ? (
           <ShortSessionUI className="flex-1" summaryData={summaryData} />
         ) : (
           <>
@@ -465,17 +457,19 @@ export const PostSimulationSummary: FC = () => {
               items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
               activeId={String(selectedTab)}
               onChange={id => handleTabChange(Number(id))}
-              className="w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+              // Sticky so switching tabs stays reachable once a long note or
+              // transcript has been scrolled past.
+              className="sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
               showCount={false}
             />
-            <div
-              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
-              data-testid="post-sim-tab-panel"
-            >
+            <div className="flex w-full flex-1 flex-col" data-testid="post-sim-tab-panel">
               {getTabContent()}
             </div>
             {!isLoading && trackContext && (
-              <div className="flex flex-col items-center gap-2 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+              <div
+                data-testid="post-sim-footer"
+                className="flex w-full shrink-0 flex-col items-center gap-2 bg-white p-[20px]"
+              >
                 <span className="font-primary text-sm text-typography-700">
                   {t("tracks2.continueLearning.label")}
                 </span>
@@ -486,7 +480,10 @@ export const PostSimulationSummary: FC = () => {
               !trackContext &&
               !summary?.scenarioPathSessionItemId &&
               !summary?.caseSessionItemId && (
-                <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <div
+                  data-testid="post-sim-footer"
+                  className="flex w-full shrink-0 flex-col items-center gap-3 bg-white p-[20px]"
+                >
                   {nextChallenge && (
                     <div className="w-full max-w-4xl px-4 sm:px-6">
                       <NextChallengeCard recommendation={nextChallenge} />

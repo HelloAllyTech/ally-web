@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { RadioButtonGroup, RadioButtonGroupProps } from "../RadioButtonGroup";
 
@@ -336,6 +336,115 @@ describe("RadioButtonGroup", () => {
       radioButtons.forEach(button => {
         expect(button).toHaveAttribute("type", "radio");
       });
+    });
+  });
+
+  describe("defaultValue prop", () => {
+    it("auto-selects the given defaultValue instead of options[0] when unset", () => {
+      render(
+        <TestWrapper defaultValues={{ experienceMode: "" }}>
+          {(formMethods: any) => (
+            <RadioButtonGroup {...defaultProps} formMethods={formMethods} defaultValue="CHECKLIST" />
+          )}
+        </TestWrapper>,
+      );
+
+      const feedbackInput = screen.getByRole("radio", { name: "Feedback" }) as HTMLInputElement;
+      const checklistInput = screen.getByRole("radio", { name: "Checklist" }) as HTMLInputElement;
+
+      expect(checklistInput.checked).toBe(true);
+      expect(feedbackInput.checked).toBe(false);
+    });
+
+    it("falls back to options[0] when no defaultValue is given", () => {
+      render(
+        <TestWrapper defaultValues={{ experienceMode: "" }}>
+          {(formMethods: any) => <RadioButtonGroup {...defaultProps} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const feedbackInput = screen.getByRole("radio", { name: "Feedback" }) as HTMLInputElement;
+      expect(feedbackInput.checked).toBe(true);
+    });
+
+    it("does not override an already-set value with defaultValue", () => {
+      render(
+        <TestWrapper defaultValues={{ experienceMode: "FEEDBACK" }}>
+          {(formMethods: any) => (
+            <RadioButtonGroup {...defaultProps} formMethods={formMethods} defaultValue="CHECKLIST" />
+          )}
+        </TestWrapper>,
+      );
+
+      const feedbackInput = screen.getByRole("radio", { name: "Feedback" }) as HTMLInputElement;
+      const checklistInput = screen.getByRole("radio", { name: "Checklist" }) as HTMLInputElement;
+
+      expect(feedbackInput.checked).toBe(true);
+      expect(checklistInput.checked).toBe(false);
+    });
+  });
+
+  describe("onChange callback", () => {
+    it("fires with the clicked value on a real user click", () => {
+      const onChange = vi.fn();
+
+      render(
+        <TestWrapper defaultValues={{ experienceMode: "FEEDBACK" }}>
+          {(formMethods: any) => (
+            <RadioButtonGroup {...defaultProps} formMethods={formMethods} onChange={onChange} />
+          )}
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByRole("radio", { name: "Checklist" }));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("CHECKLIST");
+    });
+
+    it("does not fire on mount, including when the unset-value default kicks in", () => {
+      const onChange = vi.fn();
+
+      render(
+        <TestWrapper defaultValues={{ experienceMode: "" }}>
+          {(formMethods: any) => (
+            <RadioButtonGroup
+              {...defaultProps}
+              formMethods={formMethods}
+              defaultValue="CHECKLIST"
+              onChange={onChange}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("does not fire when the value is set via reset() rather than a click", () => {
+      const onChange = vi.fn();
+
+      const ResetWrapper = () => {
+        const formMethods = useForm({ defaultValues: { experienceMode: "FEEDBACK" } });
+        return (
+          <>
+            <RadioButtonGroup {...defaultProps} formMethods={formMethods} onChange={onChange} />
+            <button
+              type="button"
+              onClick={() => formMethods.reset({ experienceMode: "CHECKLIST" })}
+            >
+              reset
+            </button>
+          </>
+        );
+      };
+
+      render(<ResetWrapper />);
+
+      fireEvent.click(screen.getByRole("button", { name: "reset" }));
+
+      expect(screen.getByRole("radio", { name: "Checklist" })).toHaveProperty("checked", true);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 

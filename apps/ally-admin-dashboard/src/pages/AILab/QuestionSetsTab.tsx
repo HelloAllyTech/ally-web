@@ -21,11 +21,12 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { QuestionSet } from "@types";
 
+import { AiLabErrorState } from "./AiLabErrorState";
 import { QuestionSetDrawer } from "./QuestionSetDrawer";
 
 export const QuestionSetsTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useGetQuestionSetsQuery({
+  const { data, isLoading, isError, refetch } = useGetQuestionSetsQuery({
     search: search || undefined,
     includeArchived: true,
   });
@@ -110,6 +111,8 @@ export const QuestionSetsTab: React.FC = () => {
       <div className="mt-5">
         {isLoading ? (
           <p className="text-typography-600 py-8 text-center">{en.common.loading}</p>
+        ) : isError ? (
+          <AiLabErrorState message={en.aiLab.questionSets.loadFailed} onRetry={refetch} />
         ) : sets.length === 0 ? (
           <EmptyState
             title={en.aiLab.questionSets.empty}

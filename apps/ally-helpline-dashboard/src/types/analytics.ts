@@ -98,29 +98,48 @@ export const LEARNER_USAGE_SORT_FIELDS = [
   "email",
   "signupDate",
   "lastPracticeSessionAt",
+  "lastActivityAt",
+  "status",
   "roleplaySessionsStarted",
   "roleplaySessionsCompleted",
   "avgScore",
   "totalPracticeMinutes",
+  "roleplayPointsPerMinute",
   "coursesAssigned",
   "coursesStarted",
   "coursesCompleted",
+  "level",
+  "totalXp",
+  "itemsCompleted",
+  "itemsCompletedPct",
+  "quizzesPassed",
+  "avgQuizScorePct",
+  "readWatchCompleted",
+  "reflectionCompleted",
 ] as const;
 export type LearnerUsageSortField = (typeof LEARNER_USAGE_SORT_FIELDS)[number];
 
 /**
- * One row of the per-learner usage table. `lastPracticeSessionAt`,
- * `signupDate`, and the `courses*` fields are all-time (not scoped to
- * `range`); `roleplaySessions*`, `avgScore`, and `totalPracticeMinutes` are
- * scoped to `range` and reconcile with the KPI tiles above the table.
+ * One row of the per-learner usage table. `lastActivityAt`,
+ * `lastPracticeSessionAt`, `signupDate`, `level`/`totalXp` and the `courses*`
+ * and course-item fields are all-time (not scoped to `range`);
+ * `roleplaySessions*`, `avgScore`, and `totalPracticeMinutes` are scoped to
+ * `range` and reconcile with the KPI tiles above the table.
  */
 export interface LearnerUsageRow {
   id: number;
   name: string;
   email: string;
   signupDate: string;
+  /** Most recent ROLEPLAY session only — kept for the Last active tooltip. */
   lastPracticeSessionAt: string | null;
-  /** null when the learner has never started a session. */
+  /**
+   * Last sign of life anywhere: the later of `lastPracticeSessionAt` and the
+   * learner's most recent course activity. `status` is derived from THIS, so a
+   * learner who only ever does quizzes no longer reads as "Never started".
+   */
+  lastActivityAt: string | null;
+  /** null when the learner has never done anything. */
   daysSinceLastActivity: number | null;
   status: LearnerUsageStatus;
   roleplaySessionsStarted: number;
@@ -129,11 +148,32 @@ export interface LearnerUsageRow {
   roleplayCompletionRatePct: number | null;
   avgScore: number | null;
   totalPracticeMinutes: number;
+  /**
+   * Composite score summed over the window's completed sessions divided by
+   * those practice minutes. null when the window holds no measurable practice
+   * time — never 0. Can be negative: composite scores go below zero.
+   */
+  roleplayPointsPerMinute: number | null;
   coursesAssigned: number;
   coursesStarted: number;
   coursesCompleted: number;
   /** null when nothing is assigned. */
   courseCompletionRatePct: number | null;
+  /** Level ladder position 1-10; 1 for a learner who has earned no XP yet. */
+  level: number;
+  totalXp: number;
+  /** Course items across every enrolled course, locked ones included. */
+  itemsTotal: number;
+  itemsCompleted: number;
+  /** null when nothing is enrolled. */
+  itemsCompletedPct: number | null;
+  quizzesPassed: number;
+  /** Quiz items with >=1 graded attempt — the denominator behind the avg. */
+  quizzesAttempted: number;
+  /** Avg of the LATEST graded attempt per quiz item, so repeat failures show. */
+  avgQuizScorePct: number | null;
+  readWatchCompleted: number;
+  reflectionCompleted: number;
 }
 
 export interface GetLearnerUsageTableResponse {
@@ -146,6 +186,13 @@ export interface GetLearnerUsageTableResponse {
 export interface GetLearnerUsageTableRequest {
   range: OrganizationMetricsRange;
   search?: string;
+  /**
+   * Status facet, applied server-side (it has to be: filtering after
+   * LIMIT/OFFSET would filter one page and leave `count` describing the
+   * unfiltered set). fetchBaseQuery comma-joins the array into one param,
+   * which the backend DTO splits back apart.
+   */
+  status?: LearnerUsageStatus[];
   sortBy?: LearnerUsageSortField;
   order?: "ASC" | "DESC";
   limit?: number;

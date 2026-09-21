@@ -9,6 +9,8 @@ import {
   useUpdateTenantMutation,
   useGetCharacterLibraryEnabledQuery,
   useUpdateCharacterLibraryEnabledMutation,
+  useGetProgressDashboardEnabledQuery,
+  useUpdateProgressDashboardEnabledMutation,
 } from "@src/api";
 import { TooltipIcon } from "@src/assets";
 import { ToggleSwitch } from "@src/components/toggle-switch";
@@ -54,6 +56,58 @@ const SimulationsSettings = ({
       // Roll the switch back rather than leaving the UI claiming a state the
       // server never accepted.
       setLocalCharacterLibraryEnabled(!next);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  // Org-level Learner Progress (XP/levels) switch. Same shape as Character
+  // Library above: a `preference` row, not a tenant column, off by default.
+  const { data: progressDashboardEnabled } = useGetProgressDashboardEnabledQuery(organizationId);
+  const [updateProgressDashboardEnabled] = useUpdateProgressDashboardEnabledMutation();
+  const [localProgressDashboardEnabled, setLocalProgressDashboardEnabled] = useState(false);
+
+  useEffect(() => {
+    if (progressDashboardEnabled !== undefined) {
+      setLocalProgressDashboardEnabled(progressDashboardEnabled);
+    }
+  }, [progressDashboardEnabled]);
+
+  const handleProgressDashboardToggle = async () => {
+    const next = !localProgressDashboardEnabled;
+    setLocalProgressDashboardEnabled(next);
+    try {
+      await updateProgressDashboardEnabled({
+        tenantId: organizationId,
+        enabled: next,
+      }).unwrap();
+    } catch (error: any) {
+      setLocalProgressDashboardEnabled(!next);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  // Engagement-reminder nudges. Stored on the tenant itself (settings.engagementReminder.remindersEnabled),
+  // same as hideRankInCommunity above, so it rides the existing updateTenant mutation rather than a
+  // dedicated query/mutation pair like Character Library/Progress Dashboard above.
+  const [localEngagementReminderEnabled, setLocalEngagementReminderEnabled] = useState(false);
+
+  useEffect(() => {
+    if (tenant) {
+      setLocalEngagementReminderEnabled(Boolean(tenant.engagementReminderEnabled));
+    }
+  }, [tenant]);
+
+  const handleEngagementReminderToggle = async () => {
+    const next = !localEngagementReminderEnabled;
+    setLocalEngagementReminderEnabled(next);
+    try {
+      await updateTenant({
+        id: organizationId,
+        data: { engagementReminderEnabled: next },
+      }).unwrap();
+      onUpdateTenant?.();
+    } catch (error: any) {
+      setLocalEngagementReminderEnabled(!next);
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
     }
   };
@@ -149,6 +203,48 @@ const SimulationsSettings = ({
           />
           <span className="text-sm text-typography-900 font-normal">
             {localCharacterLibraryEnabled ? en.common.enabled : en.common.disabled}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex h-9 flex-row justify-between items-center font-primary">
+        <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
+          {en.userManagement.progressDashboardEnabled}
+          <Tooltip label={en.userManagement.progressDashboardEnabledHint} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={localProgressDashboardEnabled}
+            onChange={handleProgressDashboardToggle}
+            label={en.userManagement.progressDashboardEnabled}
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {localProgressDashboardEnabled ? en.common.enabled : en.common.disabled}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex h-9 flex-row justify-between items-center font-primary">
+        <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
+          {en.userManagement.engagementReminderEnabled}
+          <Tooltip label={en.userManagement.engagementReminderEnabledHint} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={localEngagementReminderEnabled}
+            onChange={handleEngagementReminderToggle}
+            label={en.userManagement.engagementReminderEnabled}
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {localEngagementReminderEnabled ? en.common.enabled : en.common.disabled}
           </span>
         </div>
       </div>

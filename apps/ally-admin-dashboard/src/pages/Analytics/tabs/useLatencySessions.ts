@@ -15,10 +15,31 @@ export const LATENCY_SESSIONS_PAGE_SIZE = 25;
  * than owned here. Two independent RTK Query hooks (list + summary) so
  * paging through sessions never re-triggers (or flickers) the summary
  * average, which only depends on scenarioId/language/window.
+ *
+ * `initialScenarioId`, when given, seeds the picked simulation AND re-applies
+ * on every change (not just the first) — so a parent (the by-scenario
+ * ranking panel) can push a new scenario in each time a different row is
+ * clicked, not just once on mount.
+ *
+ * `focusToken` should change on every push, even a repeat of the same
+ * `initialScenarioId` — e.g. "View sessions" clicked for simulation A, then a
+ * manual pick here diverges to B, then "View sessions" for A again. Since
+ * `initialScenarioId` alone would go 1 -> 1 that time, its own change would
+ * bail out via `Object.is` and never re-apply; `focusToken` (any value that's
+ * fresh per click, e.g. a counter) forces the effect to run again anyway.
  */
-export function useLatencySessions(query: AnalyticsWindowQuery, language: string) {
-  const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
+export function useLatencySessions(
+  query: AnalyticsWindowQuery,
+  language: string,
+  initialScenarioId?: number,
+  focusToken?: unknown,
+) {
+  const [scenarioId, setScenarioId] = useState<number | undefined>(initialScenarioId);
   const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    if (initialScenarioId != null) setScenarioId(initialScenarioId);
+  }, [initialScenarioId, focusToken]);
 
   // A new simulation or language narrows/widens the result set — start over
   // at the first page rather than showing a stale offset into a new list.

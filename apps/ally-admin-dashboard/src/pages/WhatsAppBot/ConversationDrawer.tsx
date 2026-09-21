@@ -82,6 +82,29 @@ export const ConversationDrawer: React.FC<ConversationDrawerProps> = ({
         </div>
 
         <div className="flex-1 min-h-0 px-10 pb-10 overflow-y-auto custom-scrollbar">
+          {/* Which organisation's documents this thread was answered from, at the top rather than
+              beside each message: it is a property of the contact, and it is the first thing to
+              check when someone reports that the bot refused them or answered from the wrong
+              material. */}
+          {data?.contact && (
+            <div className="flex items-center gap-2 pb-4 text-sm">
+              <span className="text-typography-500">
+                {en.whatsappBot.conversations.organisation}
+              </span>
+              {data.contact.organisation ? (
+                <span className="text-typography-900">{data.contact.organisation.name}</span>
+              ) : (
+                <Tag
+                  type="gray"
+                  size="sm"
+                  title={en.whatsappBot.conversations.organisationUnknownHelp}
+                >
+                  {en.whatsappBot.conversations.organisationUnknown}
+                </Tag>
+              )}
+            </div>
+          )}
+
           {isLoading && <SkeletonText paragraph lineCount={8} />}
 
           {isError && (
@@ -123,6 +146,9 @@ const HANDLED_BY_TAG_TYPE: Record<string, "red" | "green" | "blue" | "gray"> = {
   [WaHandledBy.CONSENT]: "gray",
   [WaHandledBy.RATE_LIMITED]: "gray",
   [WaHandledBy.UNSUPPORTED_MEDIA]: "gray",
+  // Amber-adjacent rather than gray: it is not a normal outcome, it is a worker who could not be
+  // served, and it needs someone to act (add the number to their Ally profile).
+  [WaHandledBy.UNIDENTIFIED]: "blue",
 };
 
 const MessageBubble: React.FC<{

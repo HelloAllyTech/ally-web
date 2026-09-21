@@ -3,6 +3,8 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRecordGameResultMutation } from "@api";
+import { NoResults } from "@assets";
+import { FallbackUI } from "@components";
 import { StartGameItemPayload, TrackItemCompletionResult, TrackGameKey } from "@types";
 
 interface GameItemPlayerProps {
@@ -39,10 +41,11 @@ const FRAME_HEIGHT: Record<TrackGameKey, string> = {
  * learner's language for itself — anything it renders in words has to be handed
  * to it on the `focus` message. The runner and the tic-tac-toe board are pure
  * canvas and need nothing; the memory deck has a move counter and an
- * end-of-round card, the puzzle has a level list, a solved count and the lines
- * that teach it, and the plant has a picker, a running commentary and the whole
- * of its screen-reader narration, so those three get these. A bundle falls back
- * to its own baked-in English if the host sends nothing, which keeps this list
+ * end-of-round card, the snake has a score/best readout and a game-over line,
+ * the puzzle has a level list, a solved count and the lines that teach it, and
+ * the plant has a picker, a running commentary and the whole of its
+ * screen-reader narration, so those four get these. A bundle falls back to its
+ * own baked-in English if the host sends nothing, which keeps this list
  * optional.
  */
 const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
@@ -54,6 +57,7 @@ const FRAME_STRING_NAMES: Partial<Record<TrackGameKey, readonly string[]>> = {
     "playAgain",
     "cardLabel",
   ],
+  [TrackGameKey.SNAKE]: ["score", "best", "restart", "gameOver"],
   [TrackGameKey.CUB_N_PUP]: [
     "levels",
     "close",
@@ -129,6 +133,10 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
   const [bestScore, setBestScore] = useState<number | null>(payload.bestScore);
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [recordGameResult] = useRecordGameResultMutation();
+  // Bumped to force-remount the iframe on retry (a fresh `src` load, not a
+  // reload of whatever crashed state the old document was left in).
+  const [frameAttempt, setFrameAttempt] = useState(0);
+  const [frameFailed, setFrameFailed] = useState(false);
 
   /**
    * `skipInterpolation` because these are templates for the bundle to fill in,
@@ -148,10 +156,18 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
   }, [gameKey, t]);
 
   // The server already completed this item; tell the player so Next unlocks.
+  // This fires regardless of whether the iframe below ever loads, so a
+  // broken game bundle never blocks track progression — no separate
+  // skip/mark-complete affordance is needed for the failure case below.
   const completion = payload.completion;
   useEffect(() => {
     onCompleted(completion);
   }, [completion, onCompleted]);
+
+  const handleFrameRetry = useCallback(() => {
+    setFrameFailed(false);
+    setFrameAttempt(attempt => attempt + 1);
+  }, []);
 
   const handleRunFinished = useCallback(
     (score: number) => {
@@ -204,15 +220,33 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
           )}
 
           <div className="overflow-hidden rounded-xl border border-border-light bg-white">
-            <iframe
-              ref={frameRef}
-              src={gameUrl(payload.gameKey)}
-              title={t("tracks2.game.frameTitle")}
-              // No allow-same-origin: the bundle needs no storage or cookies,
-              // and without it the frame cannot touch anything of ours.
-              sandbox="allow-scripts"
-              className={`block w-full border-0 ${FRAME_HEIGHT[payload.gameKey]}`}
-            />
+            {frameFailed ? (
+              <div className={`flex items-center justify-center ${FRAME_HEIGHT[payload.gameKey]}`}>
+                <FallbackUI
+                  icon={<NoResults />}
+                  mainMessage={t("tracks2.game.loadFailed")}
+                  description={t("tracks2.game.loadFailedDescription")}
+                  button={{ text: t("tracks2.player.retry"), onClick: handleFrameRetry }}
+                />
+              </div>
+            ) : (
+              <iframe
+                key={frameAttempt}
+                ref={frameRef}
+                src={gameUrl(payload.gameKey)}
+                title={t("tracks2.game.frameTitle")}
+                // No allow-same-origin: the bundle needs no storage or cookies,
+                // and without it the frame cannot touch anything of ours.
+                sandbox="allow-scripts"
+                className={`block w-full border-0 ${FRAME_HEIGHT[payload.gameKey]}`}
+                // Reliable only for a genuine load failure on the initial
+                // document (e.g. a 404 on the bundle) — an in-app JS error
+                // inside the sandboxed frame won't trigger this. Still
+                // strictly better than the blank white box learners saw
+                // before, and the frame is remountable via the key bump above.
+                onError={() => setFrameFailed(true)}
+              />
+            )}
           </div>
 
           <p className="text-center text-xs text-typography-500">

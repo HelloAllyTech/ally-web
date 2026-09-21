@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -12,7 +12,13 @@ vi.mock("@api", () => ({
   useApproveBugFindingMutation: () => [approveFinding, { isLoading: false }],
   useRejectBugFindingMutation: () => [rejectFinding, { isLoading: false }],
   useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
+  // Only consulted for the run-scope banner's wording, and skipped entirely
+  // while no `?run=` is set — but the hook is still called on every render, so
+  // the mock has to exist or the table throws before it draws a row.
+  useGetBugHuntRunQuery: () => ({ data: undefined }),
 }));
+
+vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /> }));
 
 // The table can now act on a bug without opening the drawer — row buttons, the
 // keyboard, and the bulk bar all go through these.
@@ -30,7 +36,12 @@ vi.mock("@components/action-confirmation-popup", () => ({
   ),
 }));
 
-vi.mock("@utils", () => ({ formatDate: (d: string) => d, logger: { error: vi.fn() } }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+  logger: { error: vi.fn() },
+}));
 
 vi.mock("@components", () => ({
   cellTypes: {},
@@ -127,7 +138,7 @@ const mount = (items: BugFinding[], count?: number, url = "/") => {
   });
   return render(
     <MemoryRouter initialEntries={[url]}>
-      <BugFindingsTable onShowShortcuts={vi.fn()} />
+      <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
     </MemoryRouter>,
   );
 };
@@ -165,13 +176,56 @@ describe("BugFindingsTable — triage controls", () => {
       finding({ id: "b", repo: "ally-web" }),
     ]);
 
-    const repoFilter = screen.getByLabelText("Repo");
-    expect(repoFilter).toContainHTML('<option value="ally-web">ally-web</option>');
-    expect(repoFilter).not.toContainHTML("ally-mobile");
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    const panel = screen.getByRole("dialog", { name: "Filter bugs" });
 
-    fireEvent.change(repoFilter, { target: { value: "ally-web" } });
+    // Only repos in the loaded window — a facet must never offer a value that
+    // matches nothing.
+    expect(within(panel).getByLabelText(/ally-web/)).toBeInTheDocument();
+    expect(within(panel).queryByLabelText(/ally-mobile/)).not.toBeInTheDocument();
+
+    fireEvent.click(within(panel).getByLabelText(/ally-web/));
     expect(screen.getByText("Bug b")).toBeInTheDocument();
     expect(screen.queryByText("Bug a")).not.toBeInTheDocument();
+  });
+
+  it("ORs several values inside one facet instead of replacing the last", () => {
+    mount([
+      finding({ id: "a", repo: "ally-be" }),
+      finding({ id: "b", repo: "ally-web" }),
+      finding({ id: "c", repo: "ally-ai" }),
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    const panel = screen.getByRole("dialog", { name: "Filter bugs" });
+    fireEvent.click(within(panel).getByLabelText(/ally-be/));
+    fireEvent.click(within(panel).getByLabelText(/ally-web/));
+
+    expect(screen.getByText("Bug a")).toBeInTheDocument();
+    expect(screen.getByText("Bug b")).toBeInTheDocument();
+    expect(screen.queryByText("Bug c")).not.toBeInTheDocument();
+  });
+
+  /**
+   * Hiding the facets behind a button is only safe if the state stays visible —
+   * a shut panel with a filter still on is a table silently showing a third of
+   * its rows.
+   */
+  it("shows an active facet as a pill that removes just that value", () => {
+    mount([
+      finding({ id: "a", repo: "ally-be" }),
+      finding({ id: "b", repo: "ally-web" }),
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Filter bugs" })).getByLabelText(/ally-web/),
+    );
+    expect(screen.queryByText("Bug a")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove the ally-web filter" }));
+    expect(screen.getByText("Bug a")).toBeInTheDocument();
+    expect(screen.getByText("Bug b")).toBeInTheDocument();
   });
 
   it("honours the lifecycle bucket the address bar has set", () => {
@@ -276,7 +330,7 @@ describe("BugFindingsTable — triage controls", () => {
     // a real router is what proves it did.
     render(
       <MemoryRouter initialEntries={["/?bucket=needs_you"]}>
-        <BugFindingsTable onShowShortcuts={vi.fn()} />
+        <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
       </MemoryRouter>,
     );
 
@@ -332,7 +386,7 @@ describe("BugFindingsTable — triage controls", () => {
     });
     const { container } = render(
       <MemoryRouter>
-        <BugFindingsTable onShowShortcuts={vi.fn()} />
+        <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
       </MemoryRouter>,
     );
 

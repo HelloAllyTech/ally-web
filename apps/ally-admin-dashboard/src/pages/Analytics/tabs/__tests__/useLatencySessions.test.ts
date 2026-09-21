@@ -149,4 +149,52 @@ describe("useLatencySessions", () => {
     expect(result.current.rangeStart).toBe(1);
     expect(result.current.rangeEnd).toBe(LATENCY_SESSIONS_PAGE_SIZE);
   });
+
+  it("seeds the picked simulation from initialScenarioId", () => {
+    const { result } = renderHook(() => useLatencySessions({}, "", 42));
+
+    expect(result.current.scenarioId).toBe(42);
+    expect(getVoiceLatencySessionsQueryMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ scenarioId: 42 }),
+      { skip: false },
+    );
+  });
+
+  it("re-syncs on every initialScenarioId change, not just the first", () => {
+    const { result, rerender } = renderHook(
+      ({ initialScenarioId }: { initialScenarioId?: number }) =>
+        useLatencySessions({}, "", initialScenarioId),
+      { initialProps: { initialScenarioId: 1 } },
+    );
+
+    expect(result.current.scenarioId).toBe(1);
+
+    // A manual pick via the panel's own picker...
+    act(() => result.current.setScenarioId(2));
+    expect(result.current.scenarioId).toBe(2);
+
+    // ...must not block a later push from the ranking panel above it.
+    rerender({ initialScenarioId: 3 });
+    expect(result.current.scenarioId).toBe(3);
+  });
+
+  it("re-applies initialScenarioId when a repeat push follows a manual pick, using focusToken to break the tie", () => {
+    const { result, rerender } = renderHook(
+      ({ initialScenarioId, focusToken }: { initialScenarioId?: number; focusToken?: number }) =>
+        useLatencySessions({}, "", initialScenarioId, focusToken),
+      { initialProps: { initialScenarioId: 1, focusToken: 1 } },
+    );
+
+    expect(result.current.scenarioId).toBe(1);
+
+    // A manual pick via the panel's own picker diverges from the pushed value...
+    act(() => result.current.setScenarioId(2));
+    expect(result.current.scenarioId).toBe(2);
+
+    // ...and a later "View sessions" click for the SAME simulation as before must
+    // still win, even though initialScenarioId itself is unchanged (1 -> 1) --
+    // that's what focusToken (bumped on every click) is for.
+    rerender({ initialScenarioId: 1, focusToken: 2 });
+    expect(result.current.scenarioId).toBe(1);
+  });
 });

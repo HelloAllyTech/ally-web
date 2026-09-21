@@ -1,16 +1,17 @@
 /**
- * Learn module APIs
- *
- * This module provides all Learn/Training related endpoints including:
- * - Scenarios catalog (list and detail)
- * - Simulation room lifecycle (list, create, delete)
+ * User preferences APIs
  */
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import { UserPreferences } from "@types";
 
 import { baseAPI } from "./baseAPI";
 
-const learnAPI = baseAPI.injectEndpoints({
+// Exported (not just its generated hooks) so callers that need a typed
+// `baseAPI.util.updateQueryData("getUserPreferences", ...)` — e.g. an
+// optimistic cache patch ahead of the mutation actually resolving — have an
+// api reference TypeScript knows these two endpoints are injected on.
+// Mirrors ally-admin-dashboard's `authAPI` export in api/auth.ts.
+export const userAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
      * Get user preferences
@@ -21,6 +22,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.USER.GET_USER_PREFERENCES,
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
 
     /**
@@ -34,6 +36,11 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: preferences,
       }),
+      // The read is cached for the session, so without this a saved
+      // preference (e.g. the org-metrics block order) stayed invisible to
+      // anything that remounted and re-read it — see the note on
+      // SCRIBE_VOICE_NOTE_ENABLED in baseAPI.ts for the same trap.
+      invalidatesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
   }),
 });
@@ -42,4 +49,4 @@ export const {
   useGetUserPreferencesQuery,
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
-} = learnAPI;
+} = userAPI;

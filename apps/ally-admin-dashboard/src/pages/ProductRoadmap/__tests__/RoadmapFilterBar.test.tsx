@@ -57,6 +57,7 @@ const renderBar = (overrides: Partial<React.ComponentProps<typeof RoadmapFilterB
     onTypeFilterChange: vi.fn(),
     onStageFilterChange: vi.fn(),
     onSourceFilterChange: vi.fn(),
+    onEffortFilterChange: vi.fn(),
     onGoalFilterChange: vi.fn(),
     onOwnerFilterChange: vi.fn(),
     onAdvancedChange: vi.fn(),
@@ -69,6 +70,7 @@ const renderBar = (overrides: Partial<React.ComponentProps<typeof RoadmapFilterB
       typeFilter={[]}
       stageFilter={[]}
       sourceFilter={[]}
+      effortFilter={[]}
       goalFilter={[]}
       ownerFilter={[]}
       advanced={{ ...EMPTY_ADVANCED_FILTERS }}
@@ -102,10 +104,12 @@ describe("RoadmapFilterBar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Filter" }));
 
     expect(screen.getByTestId("filter-popover")).toBeInTheDocument();
+    // No "Type" section: bugs left the board for Bug Hunter, so every listed
+    // row is an idea — see buildFacetSections in utils/filterSelection.ts.
     expect(captured.dropdown.sections.map((s: any) => s.label)).toEqual([
-      "Type",
       "Stage",
       "Source",
+      "Effort",
       "Goal",
       "Owner",
       "Filed by",

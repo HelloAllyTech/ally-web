@@ -6,10 +6,10 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
+      class="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10"
     >
       <div
-        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        class="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
@@ -33,7 +33,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -42,7 +42,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
@@ -92,8 +92,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -122,8 +122,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -152,8 +152,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -182,8 +182,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -212,8 +212,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -246,7 +246,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -265,20 +265,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
-            >
-              Skills  Demonstrated 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
-              Annotated Transcript 
+              Transcript 
             </button>
           </nav>
         </div>
         <div
-          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          class="flex w-full flex-1 flex-col"
           data-testid="post-sim-tab-panel"
         >
           <div
@@ -304,7 +298,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]"
+          class="flex w-full shrink-0 flex-col items-center gap-3 bg-white p-[20px]"
+          data-testid="post-sim-footer"
         >
           <button
             class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px]
@@ -326,10 +321,10 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
+      class="flex min-h-[100dvh] w-full flex-col items-center bg-white pb-10"
     >
       <div
-        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
+        class="relative flex w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
@@ -353,7 +348,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   clip-path="url(#clip0_2523_4287)"
                 >
                   <rect
-                    fill="#F9F9F9"
+                    fill="#faf9f5"
                     height="40"
                     rx="20"
                     width="40"
@@ -362,7 +357,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <path
                     d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
+                    fill="#3d3a34"
                   />
                 </g>
                 <defs>
@@ -412,8 +407,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -442,8 +437,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -472,8 +467,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -502,8 +497,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -532,8 +527,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <path
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    fill="#EDEDED"
-                    stroke="#BDBDBD"
+                    fill="#eae7de"
+                    stroke="#bcb4a4"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
@@ -566,7 +561,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"
           data-testid="tabs"
         >
           <nav
@@ -585,20 +580,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </button>
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-5"
-            >
-              Skills  Demonstrated 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
               data-testid="tab-2"
             >
-              Annotated Transcript 
+              Transcript 
             </button>
           </nav>
         </div>
         <div
-          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          class="flex w-full flex-1 flex-col"
           data-testid="post-sim-tab-panel"
         >
           <div
@@ -624,7 +613,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]"
+          class="flex w-full shrink-0 flex-col items-center gap-3 bg-white p-[20px]"
+          data-testid="post-sim-footer"
         >
           <button
             class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px]

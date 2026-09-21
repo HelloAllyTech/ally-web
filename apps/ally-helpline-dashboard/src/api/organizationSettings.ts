@@ -378,20 +378,19 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
 
     // Deleting a cohort returns its members to Unassigned AND drops every
     // restriction that named it, so all three cohort tags must be invalidated.
-    deleteOrgCohort: builder.mutation<
-      { success: boolean },
-      { tenantId: string; cohortId: string }
-    >({
-      query: ({ tenantId, cohortId }) => ({
-        url: ApiEndpoints.COHORTS.DELETE(tenantId, cohortId),
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [
-        TAG_TYPES.ORG_COHORTS,
-        TAG_TYPES.ORG_COHORT_MEMBERS,
-        TAG_TYPES.ORG_COHORT_RESTRICTIONS,
-      ],
-    }),
+    deleteOrgCohort: builder.mutation<{ success: boolean }, { tenantId: string; cohortId: string }>(
+      {
+        query: ({ tenantId, cohortId }) => ({
+          url: ApiEndpoints.COHORTS.DELETE(tenantId, cohortId),
+          method: HttpMethod.DELETE,
+        }),
+        invalidatesTags: [
+          TAG_TYPES.ORG_COHORTS,
+          TAG_TYPES.ORG_COHORT_MEMBERS,
+          TAG_TYPES.ORG_COHORT_RESTRICTIONS,
+        ],
+      },
+    ),
 
     getOrgCohortMembers: builder.query<CohortMemberListResponse, CohortMembersParams>({
       query: ({ tenantId, ...params }) => ({

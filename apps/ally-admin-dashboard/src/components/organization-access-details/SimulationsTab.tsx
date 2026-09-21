@@ -7,6 +7,7 @@ import { AccessFilterValue, Simulation, SimulationStatus } from "@types";
 import { isNonEmptyArray, toAssignmentStatus } from "@utils";
 
 import { AccessFilter } from "./AccessFilter";
+import { useCohortRestrictions } from "./useCohortRestrictions";
 
 const SIMULATIONS_PAGE_SIZE = 30;
 
@@ -64,6 +65,11 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     status: SimulationStatus.ACTIVE,
     assignmentStatus: toAssignmentStatus(accessFilter),
   };
+
+  // Group targeting sits on top of the tenant assignment this tab manages: the
+  // toggle decides whether the org has the simulation at all, the pill narrows
+  // it to some of the org's people.
+  const { renderRestrictionCell } = useCohortRestrictions(organizationId ?? "", "scenario");
 
   const {
     data: simulationsResponse,
@@ -142,6 +148,13 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
                 }}
                 hasAccess={simulation.isAssignedToTenant ?? false}
                 onToggleAccess={enabled => handleToggleAccess(simulation.id, enabled)}
+                rowAction={
+                  // Only for assigned rows: restricting content the org does
+                  // not have would be a control with nothing to act on.
+                  simulation.isAssignedToTenant
+                    ? renderRestrictionCell(simulation.id, simulation.title)
+                    : null
+                }
               />
             ))}
             {hasMore && (

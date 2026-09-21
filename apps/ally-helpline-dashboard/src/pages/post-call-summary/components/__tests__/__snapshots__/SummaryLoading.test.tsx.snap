@@ -50,7 +50,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
               class="inline-flex"
             >
               <svg
-                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
             </span>
@@ -154,7 +154,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
               class="inline-flex"
             >
               <svg
-                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
             </span>
@@ -257,7 +257,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
               class="inline-flex"
             >
               <svg
-                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
             </span>
@@ -350,7 +350,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
               class="inline-flex"
             >
               <svg
-                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
             </span>

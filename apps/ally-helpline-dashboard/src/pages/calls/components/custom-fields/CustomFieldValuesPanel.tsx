@@ -1,6 +1,5 @@
 import { FC, useState, useEffect, useRef } from "react";
 
-import { format } from "date-fns";
 import { useSelector } from "react-redux";
 
 import {
@@ -25,6 +24,13 @@ import {
   CustomFieldValue,
   SingleSelectOption,
 } from "@types";
+
+import {
+  formatCustomFieldDate,
+  normalizeCustomFieldDate,
+  parseCustomFieldDate,
+  toCustomFieldDate,
+} from "./customFieldDate";
 
 interface CustomFieldValuesPanelProps {
   chatId: number;
@@ -132,7 +138,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
                 type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
                 inputStyles={{
-                  color: isEditable ? "#1A1A1A" : "#9CA3AF",
+                  color: isEditable ? "#29261f" : "#928b7c",
                   fontSize: "16px",
                   fontFamily: "IBM_Plex_Serif",
                 }}
@@ -201,6 +207,11 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     }
 
     if (field.fieldType === CustomFieldType.DATE) {
+      // A DATE value is a calendar date stored as YYYY-MM-DD, so it is read
+      // and written through these helpers rather than `new Date(value)` /
+      // `toISOString()` — that pair used to store local midnight as an instant,
+      // which in IST is 18:30 the previous day.
+      const pickedDate = parseCustomFieldDate(value);
       return (
         <div key={field.fieldDefinitionId} className="flex items-center gap-1">
           <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
@@ -209,10 +220,10 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
           {isEditable ? (
             <DatePicker
               datePickerType="single"
-              value={value ? [new Date(value)] : []}
+              value={pickedDate ? [pickedDate] : []}
               onChange={(dates: Date[]) => {
                 const date = dates?.[0];
-                handleChange(field.fieldDefinitionId, date ? date.toISOString() : null);
+                handleChange(field.fieldDefinitionId, date ? toCustomFieldDate(date) : null);
               }}
             >
               <DatePickerInput
@@ -225,7 +236,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             </DatePicker>
           ) : (
             <span className="text-lg font-primary text-typography-800">
-              {value ? format(new Date(value), "MM/dd/yyyy") : "—"}
+              {formatCustomFieldDate(value) ?? "—"}
             </span>
           )}
         </div>
@@ -319,7 +330,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId} className={carbonField.group}>
           {labelEl}
-          <div className="flex flex-col gap-2 bg-[#f4f4f4] border-b border-[#8d8d8d] p-3">
+          <div className="flex flex-col gap-2 bg-[#f0eee7] border-b border-[#928b7c] p-3">
             {(field.options ?? []).map(o => (
               <label key={o.id} className={carbonField.checkboxRow}>
                 <input
@@ -345,13 +356,8 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             type="date"
             className={carbonField.input}
             disabled={!isEditable}
-            value={value ? new Date(value).toISOString().slice(0, 10) : ""}
-            onChange={e =>
-              handleChange(
-                field.fieldDefinitionId,
-                e.target.value ? new Date(e.target.value).toISOString() : null,
-              )
-            }
+            value={normalizeCustomFieldDate(value) ?? ""}
+            onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
             {...formFieldProtectionProps}
           />
         </div>

@@ -3,23 +3,6 @@
 # Or use the test scripts in package.json
 
 services:
-  # Test runner for ally-web (Next.js)
-  web-test:
-    build:
-      context: .
-      dockerfile: apps/ally-web/Dockerfile.dev
-    working_dir: /app/apps/ally-web
-    environment:
-      - NODE_ENV=test
-      - CI=true
-      - NX_NO_CLOUD=true
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: ["npx", "nx", "test", "ally-web", "--passWithNoTests"]
-    profiles:
-      - test
-
   # Test runner for ally-helpline-dashboard
   helpline-test:
     build:

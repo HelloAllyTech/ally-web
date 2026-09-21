@@ -396,15 +396,13 @@ describe("EditableTextPopup", () => {
   });
 
   describe("Text Display", () => {
-    it("displays text with proper container styling", () => {
+    it("wraps display text instead of truncating it to one line", () => {
       const { getByText } = render(<EditableTextPopup {...defaultProps} value="Test content" />);
 
       const displayText = getByText("Test content");
       expect(displayText).toBeInTheDocument();
-
-      // Verify container has h-full class for proper height
-      const outerContainer = displayText.closest(".h-full");
-      expect(outerContainer).toBeInTheDocument();
+      expect(displayText).toHaveClass("break-words");
+      expect(displayText).not.toHaveClass("whitespace-nowrap");
     });
   });
 });

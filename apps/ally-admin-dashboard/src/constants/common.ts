@@ -47,6 +47,9 @@ export const ApiEndpoints = {
     LOOKUP_ELEVENLABS_VOICE: "/v1/learn/scenario-voices/elevenlabs-lookup",
     BULK_SYNC_ELEVENLABS_VOICES: "/v1/learn/scenario-voices/sync-elevenlabs/bulk",
     TTS_CATALOG: "/v1/learn/scenario-voices/tts-catalog",
+    VIDEO_ACTOR_PROVIDERS: "/v1/learn/scenarios/video-actor-providers",
+    VIDEO_ACTOR_FACES: "/v1/learn/scenarios/video-actor-faces",
+    VIDEO_ACTOR_FACE_COVER: "/v1/learn/scenarios/video-actor-face-cover",
     UPDATE_SCENARIO_VOICE: (id: string | number) => `/v1/learn/scenario-voices/${id}`,
     SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
     STT_CONFIGS: "/v1/learn/stt-configs",
@@ -54,6 +57,9 @@ export const ApiEndpoints = {
     LLM_CONFIGS: "/v1/learn/llm-configs",
     PREVIEW_LLM_CONFIG: (id: string) => `/v1/llm-preview/generate/${id}`,
     LLM_MODEL_CATALOG: "/v1/llm/catalog",
+    // The AI task registry: every platform action that calls a model, and which
+    // model serves it. Read-only — ally-be derives it from code.
+    AI_TASKS: "/v1/llm/tasks",
     LLM_MODEL_CATALOG_BY_ID: (id: string) => `/v1/llm/catalog/${id}`,
     PREVIEW_LLM_MODEL: (id: string) => `/v1/llm-preview/model/${id}`,
     UPDATE_LLM_CONFIG: (id: string) => `/v1/learn/llm-configs/${id}`,
@@ -94,6 +100,9 @@ export const ApiEndpoints = {
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     DISPATCH_PREVIEW_AGENT: "/v1/learn/scenarios/preview/dispatch-agent",
+    PREVIEW_MONOLOGUES: (scenarioId: number) =>
+      `/v1/learn/scenarios/${scenarioId}/preview-monologues`,
+    PREVIEW_MONOLOGUE_RUN: (runId: string) => `/v1/learn/preview-monologues/${runId}`,
     END_SCENARIO_PREVIEW: (sessionId: number | string) =>
       `/v1/learn/scenarios/preview/${sessionId}/end`,
     SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
@@ -156,6 +165,8 @@ export const ApiEndpoints = {
     COMPETENCIES: "/v1/learn/competencies",
     COMPETENCY_BY_ID: (id: string) => `/v1/learn/competencies/${id}`,
     COMPETENCY_BEHAVIOURS: (id: string) => `/v1/learn/competencies/${id}/behaviours`,
+    COMPETENCY_CLUSTERS: "/v1/learn/competency-clusters",
+    COMPETENCY_CLUSTER_BY_ID: (id: string) => `/v1/learn/competency-clusters/${id}`,
     AGENT_TEST_CASES: "/v1/learn/agent-test-cases",
     AGENT_TEST_CASE_BY_ID: (id: string) => `/v1/learn/agent-test-cases/${id}`,
   },
@@ -186,6 +197,16 @@ export const ApiEndpoints = {
       `/v1/learn/admin/tracks/${id}/translations/${languageId}/unpublish`,
   },
 
+  // Component Library — global, cross-tenant Track/Course item templates.
+  COMPONENT_TEMPLATES: {
+    LIST: "/v1/learn/admin/component-templates",
+    GET_BY_ID: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+    CREATE: "/v1/learn/admin/component-templates",
+    UPDATE: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+    DELETE_BULK: "/v1/learn/admin/component-templates",
+    DELETE_ONE: (id: string) => `/v1/learn/admin/component-templates/${id}`,
+  },
+
   CHARACTERS: {
     GET_CHARACTERS: "/v1/scenario-characters",
     CREATE_CHARACTER: "/v1/scenario-characters",
@@ -214,6 +235,7 @@ export const ApiEndpoints = {
     CUSTOM_FIELD_TYPES: `/v1/settings/custom-field-types`,
     CUSTOM_FIELDS_ENABLED: `/v1/settings/custom-fields-enabled`,
     CHARACTER_LIBRARY_ENABLED: `/v1/settings/character-library-enabled`,
+    PROGRESS_DASHBOARD_ENABLED: `/v1/settings/progress-dashboard-enabled`,
     SCRIBE_NOTE_CREATION_ENABLED: `/v1/settings/scribe-note-creation-enabled`,
     SCRIBE_VOICE_NOTE_ENABLED: `/v1/settings/scribe-voice-note-enabled`,
     CUSTOM_FIELD_DEFINITIONS: `/v1/custom-fields/definitions`,
@@ -280,20 +302,42 @@ export const ApiEndpoints = {
   },
   PRODUCT_ROADMAP: {
     OPPORTUNITIES: "/v1/product-roadmap/opportunities",
+    /**
+     * The same route helpline and mobile file a bug on. Not `/opportunities` with
+     * type=bug: this one captures the reporter's screen/device context for triage and
+     * stamps `source` from the reporter's own roles, so a staff report and a consumer
+     * report arrive in Bug Hunter's findings table in identical shape.
+     */
+    BUG_REPORTS: "/v1/product-roadmap/bug-reports",
     OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
     OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
     OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
+    /**
+     * Presigns one reference-image upload. NOT under `/opportunities/:id`: the drawer uploads
+     * before the opportunity exists, and the image is attached by the create or update call
+     * that follows.
+     */
+    REFERENCE_IMAGE_UPLOAD_URL: "/v1/product-roadmap/reference-images/upload-url",
     OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
+    OPPORTUNITY_VOTERS: (id: string) => `/v1/product-roadmap/opportunities/${id}/voters`,
     COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
     BOARD: "/v1/product-roadmap/board",
     BOARD_LANE: "/v1/product-roadmap/board/lane",
     ALLOCATIONS: "/v1/product-roadmap/allocations",
-    COIN_BUDGET: "/v1/product-roadmap/me/coin-budget",
+    VOTE_BUDGET: "/v1/product-roadmap/me/vote-budget",
     FACETS: "/v1/product-roadmap/facets",
     PRODUCT_GOALS: "/v1/product-roadmap/product-goals",
     PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
     PRODUCT_GOALS_ORDER: "/v1/product-roadmap/product-goals/order",
     PRODUCT_GOALS_USAGE: "/v1/product-roadmap/product-goals/usage",
+    // Product STRATEGY goals — the outcomes the composite rank scores against. A different
+    // concept from PRODUCT_GOALS above, which is the one-per-opportunity filing category.
+    STRATEGY_GOALS: "/v1/product-roadmap/strategy-goals",
+    STRATEGY_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/strategy-goals/${id}`,
+    STRATEGY_GOALS_ORDER: "/v1/product-roadmap/strategy-goals/order",
+    STRATEGY_GOALS_ASSESS_MISSING: "/v1/product-roadmap/strategy-goals/assess-missing",
+    RANK_WEIGHTS: "/v1/product-roadmap/rank-weights",
+    OPPORTUNITY_GOAL_IMPACT: (id: string) => `/v1/product-roadmap/opportunities/${id}/goal-impact`,
     OWNERS: "/v1/product-roadmap/opportunity-owners",
     OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
     OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
@@ -301,19 +345,23 @@ export const ApiEndpoints = {
     OWNERS_USAGE: "/v1/product-roadmap/opportunity-owners/usage",
     INTERVIEW_NOTES: "/v1/product-roadmap/interview-notes",
     INTERVIEW_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/interview-notes/${id}`,
-    RELEASE_NOTES: "/v1/product-roadmap/release-notes",
-    RELEASE_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/release-notes/${id}`,
     VIEWS: "/v1/product-roadmap/views",
     VIEW_BY_ID: (id: string) => `/v1/product-roadmap/views/${id}`,
     VIEW_PIN: (id: string) => `/v1/product-roadmap/views/${id}/pin`,
     VIEW_TAB_ORDER: "/v1/product-roadmap/views/tab-order",
-    AI_REVIEW: "/v1/product-roadmap/ai/review",
-    AI_ENHANCE: "/v1/product-roadmap/ai/enhance",
+    AI_READINESS: "/v1/product-roadmap/ai/readiness",
+    AI_READINESS_CRITERIA: "/v1/product-roadmap/ai/readiness/criteria",
     AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
     AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
-    AI_RELEASE_NOTES: "/v1/product-roadmap/ai/release-notes",
-    AI_GENERATE_CLAUDE_PROMPT: "/v1/product-roadmap/ai/generate-claude-prompt",
+    /** One turn of the guided interview. Stateless — the whole conversation goes with each call. */
+    AI_OPPORTUNITY_INTERVIEW: "/v1/product-roadmap/ai/opportunity-interview",
+    /**
+     * Open or resume the Builder session for an opportunity. Replaced
+     * AI_GENERATE_CLAUDE_PROMPT, whose output a human pasted into a terminal by hand.
+     */
+    BUILDER_SESSION: (opportunityId: string) =>
+      `/v1/product-roadmap/opportunities/${opportunityId}/builder-session`,
     ADMIN_REINDEX: "/v1/product-roadmap/admin/reindex",
   },
   AI_LAB: {
@@ -360,24 +408,35 @@ export const ApiEndpoints = {
     COHORT_RETENTION: "/v1/analytics/cohort-retention",
     USAGE_LEVELS: "/v1/analytics/usage-levels",
     CERTIFICATION: "/v1/analytics/certification",
+    XP_GROWTH: "/v1/analytics/xp-growth",
+    XP_GOALS: "/v1/analytics/xp-goals",
     ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
     USAGE_LADDER: "/v1/analytics/usage-ladder",
     PRACTICE_STICKINESS: "/v1/analytics/practice-stickiness",
     QUALIFIED_SESSIONS: "/v1/analytics/qualified-sessions",
     ORG_ENGAGEMENT: "/v1/analytics/org-engagement",
     ROLEPLAY_COST: "/v1/analytics/roleplay-cost",
+    CODING_AGENT_COST: "/v1/analytics/coding-agent-cost",
+    FIX_SESSION_ENGINE_COST: "/v1/analytics/fix-session-engine-cost",
+    BUG_AGENT_PERFORMANCE: "/v1/analytics/bug-agent-performance",
     QUALITY_SENTIMENT: "/v1/analytics/quality-sentiment",
+    RAG_QUALITY: "/v1/analytics/rag-quality",
     CHART_PREFERENCES: "/v1/analytics/chart-preferences",
     ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",
+    SHIP_VOLUME: "/v1/analytics/ship-volume",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
     VOICE_LATENCY_SESSIONS_SUMMARY: "/v1/analytics/voice-latency/sessions/summary",
+    VOICE_LATENCY_BY_SCENARIO: "/v1/analytics/voice-latency/by-scenario",
     AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",
     CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
     LANGUAGE_QUALITY: "/v1/analytics/language-quality",
     LANGUAGE_QUALITY_REFERENCE: "/v1/analytics/language-quality/reference",
+    // Thinking-filler quality. Separate from LANGUAGE_QUALITY because the
+    // denominator is different in kind: played fillers, not judged turns.
+    FILLER_QUALITY: "/v1/analytics/filler-quality",
     // The five simulator-quality metrics under active repair. One endpoint
     // rather than five: they share a filter tuple, and reading them apart is
     // how a composition artefact gets mistaken for a regression.
@@ -423,8 +482,15 @@ export const ApiEndpoints = {
     ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
     REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
   },
+  // UX Signals — the PostHog scan that files into Bug Hunter and the Suggestions
+  // queue. Its own namespace because it is a producer for both, owned by neither.
+  UX_SIGNALS: {
+    SCAN: "/v1/ux-signals/scan",
+    SCANS: "/v1/ux-signals/scans",
+  },
   BUG_HUNTER: {
     SETTINGS: "/v1/bug-hunter/settings",
+    MODEL_SETTINGS: "/v1/bug-hunter/settings/models",
     RUNS: "/v1/bug-hunter/runs",
     RUNS_TRIGGER: "/v1/bug-hunter/runs/trigger",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
@@ -435,12 +501,59 @@ export const ApiEndpoints = {
     FINDING_REJECT: (id: string) => `/v1/bug-hunter/findings/${id}/reject`,
     FINDING_ANSWER: (id: string) => `/v1/bug-hunter/findings/${id}/answer`,
     FINDING_DESCRIPTION: (id: string) => `/v1/bug-hunter/findings/${id}/description`,
+    FINDING_STAGE: (id: string) => `/v1/bug-hunter/findings/${id}/stage`,
+    FINDING_BY_REPORTED_BUG: (opportunityId: string) =>
+      `/v1/bug-hunter/findings/by-reported-bug/${opportunityId}`,
     FINDING_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/fix-session`,
     FINDING_CANCEL_FIX_SESSION: (id: string) => `/v1/bug-hunter/findings/${id}/cancel-fix-session`,
+    FINDING_MERGE: (id: string) => `/v1/bug-hunter/findings/${id}/merge`,
     FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,
+    METRICS: "/v1/bug-hunter/metrics",
     NOTIFICATIONS: "/v1/bug-hunter/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/bug-hunter/notifications/read-all",
+  },
+  BUILDER: {
+    SESSIONS: "/v1/builder/sessions",
+    SESSION_BY_ID: (id: string) => `/v1/builder/sessions/${id}`,
+    SESSION_CANCEL: (id: string) => `/v1/builder/sessions/${id}/cancel`,
+    SESSION_ARCHIVE: (id: string) => `/v1/builder/sessions/${id}/archive`,
+    SESSION_UNARCHIVE: (id: string) => `/v1/builder/sessions/${id}/unarchive`,
+    SESSION_PRD: (id: string) => `/v1/builder/sessions/${id}/prd`,
+    SESSION_PRD_VERSIONS: (id: string) => `/v1/builder/sessions/${id}/prd/versions`,
+    // SSE — driven by useBuilderStream (fetch + getReader), not RTK Query.
+    SESSION_MESSAGES_STREAM: (id: string) => `/v1/builder/sessions/${id}/messages/stream`,
+    REPO_COMMANDS: "/v1/builder/repo-commands",
+    REPO_MAPS: "/v1/builder/repo-maps",
+    // Builds
+    SESSION_START_BUILD: (id: string) => `/v1/builder/sessions/${id}/start-build`,
+    SESSION_RUNS: (id: string) => `/v1/builder/sessions/${id}/runs`,
+    // Raising the ceiling is a POST, not part of the session PATCH: it is
+    // allowed mid-build (which is the case it exists for) and authorises
+    // spend, so it stands on its own.
+    SESSION_BUDGET: (id: string) => `/v1/builder/sessions/${id}/budget`,
+    SESSION_STEER: (id: string) => `/v1/builder/sessions/${id}/steer`,
+    RUN_EVENTS: (runId: string) => `/v1/builder/runs/${runId}/events`,
+    SESSION_QUESTIONS: (id: string) => `/v1/builder/sessions/${id}/questions`,
+    ANSWER_QUESTION: (id: string, questionId: string) =>
+      `/v1/builder/sessions/${id}/questions/${questionId}/answer`,
+    SESSION_PULL_REQUESTS: (id: string) => `/v1/builder/sessions/${id}/pull-requests`,
+    SESSION_PULL_REQUEST_MERGE: (id: string, prId: string) =>
+      `/v1/builder/sessions/${id}/pull-requests/${prId}/merge`,
+    SESSION_REPORTS: (id: string) => `/v1/builder/sessions/${id}/reports`,
+    SETTINGS: "/v1/builder/settings",
+    NOTIFICATIONS: "/v1/builder/notifications",
+    NOTIFICATION_READ: (id: string) => `/v1/builder/notifications/${id}/read`,
+    NOTIFICATIONS_READ_ALL: "/v1/builder/notifications/read-all",
+    // Scoreboard + knowledge (lessons/exemplars) — the visibility surfaces.
+    SCOREBOARD: "/v1/builder/scoreboard",
+    // Where a run's time and money go. The scoreboard answers "is Builder
+    // getting better"; this answers "and what would make it faster".
+    PIPELINE_HEALTH: "/v1/builder/pipeline-health",
+    LESSONS: "/v1/builder/lessons",
+    LESSON_BY_ID: (id: string) => `/v1/builder/lessons/${id}`,
+    LESSONS_CONSOLIDATE: "/v1/builder/lessons/consolidate",
+    EXEMPLARS: "/v1/builder/exemplars",
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -448,6 +561,7 @@ export const ApiEndpoints = {
     DOCUMENT_UPLOAD_URL: "/v1/knowledge-base/documents/upload-url",
     DOCUMENT_BY_ID: (id: string) => `/v1/knowledge-base/documents/${id}`,
     DOCUMENT_CONTENT: (id: string) => `/v1/knowledge-base/documents/${id}/content`,
+    DOCUMENT_TENANTS: (id: string) => `/v1/knowledge-base/documents/${id}/tenants`,
     DOCUMENT_CHUNKS: (id: string) => `/v1/knowledge-base/documents/${id}/chunks`,
     DOCUMENT_REINDEX: (id: string) => `/v1/knowledge-base/documents/${id}/reindex`,
     DOCUMENT_ARCHIVE: (id: string) => `/v1/knowledge-base/documents/${id}/archive`,
@@ -456,6 +570,11 @@ export const ApiEndpoints = {
     SEARCH: "/v1/knowledge-base/search",
     STATS: "/v1/knowledge-base/stats",
     // Bot (ally-be src/whatsapp)
+    // Phone → organisation mappings. Surfaced under User Management, but owned by the bot:
+    // a mapping decides which organisation's material a number can be answered from.
+    PHONE_MAPPINGS: "/v1/whatsapp/phone-mappings",
+    PHONE_MAPPINGS_BULK: "/v1/whatsapp/phone-mappings/bulk",
+    PHONE_MAPPING_BY_ID: (id: string) => `/v1/whatsapp/phone-mappings/${id}`,
     TEMPLATES: "/v1/whatsapp/templates",
     TEMPLATE_BY_ID: (id: string) => `/v1/whatsapp/templates/${id}`,
     TEMPLATE_ARCHIVE: (id: string) => `/v1/whatsapp/templates/${id}/archive`,
@@ -488,38 +607,28 @@ export const ApiEndpoints = {
     LIST: "/v1/aws-logs",
     STREAMS: "/v1/aws-logs/streams",
   },
+  MOBILE_RELEASES: {
+    RUNS: "/v1/mobile-releases/runs",
+    CURRENT_VERSION: "/v1/mobile-releases/current-version",
+    TRIGGER: "/v1/mobile-releases/trigger",
+    PROMOTE_ANDROID: "/v1/mobile-releases/promote-android",
+    ANDROID_PRODUCTION_STATUS: "/v1/mobile-releases/android-production-status",
+    IOS_TESTFLIGHT_STATUS: "/v1/mobile-releases/ios-testflight-status",
+    IOS_TESTFLIGHT_HISTORY: "/v1/mobile-releases/ios-testflight-history",
+    IOS_APP_STORE_REVIEW_HISTORY: "/v1/mobile-releases/ios-app-store-review-history",
+    SUBMIT_APP_STORE_REVIEW: "/v1/mobile-releases/submit-ios-app-store-review",
+    IOS_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/ios-whats-new-suggestion",
+    ANDROID_WHATS_NEW_SUGGESTION: "/v1/mobile-releases/android-whats-new-suggestion",
+  },
+  APP_VERSION: {
+    IOS: "/v1/app-version/ios",
+    ANDROID: "/v1/app-version/android",
+    UPDATE: "/v1/app-version/app-version",
+  },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
-  },
-  ROLEPLAY_STUDIO: {
-    SPECS: "/v1/roleplay-studio/specs",
-    SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
-    SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
-    // Draft saves are spec-scoped: the draft lives on the spec row and the
-    // backend appends an immutable version snapshot on every save.
-    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
-    PUBLISH_VERSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
-    // specId travels in the POST body (backend DTO), not the URL.
-    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
-    COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
-    COPILOT_SESSION_MESSAGES: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
-    COPILOT_SESSION_STREAM: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
-    CREATE_SESSION: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
-    SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
-    SESSION_RUBRIC_SCORES: (sessionId: string) =>
-      `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
-    // Improve: test-case-driven test runs + per-case reports.
-    TEST_RUNS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-runs`,
-    TEST_REPORTS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-reports`,
-    TEST_REPORT_BY_ID: (reportId: string) => `/v1/roleplay-studio/test-reports/${reportId}`,
-    TEST_RUN_CANCEL: (runId: string) => `/v1/roleplay-studio/test-runs/${runId}/cancel`,
+    TURN_ENDPOINTING: "/v1/settings/turn-endpointing",
   },
 };
 
@@ -531,10 +640,12 @@ export const ROUTES = {
   MANAGE_EVENTS: "/manage-events",
   CHARACTER_LIBRARY: "/character-library",
   CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
+  COMPONENT_LIBRARY: "/component-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_STT_CONFIGS: "/manage-stt-configs",
   MANAGE_LLM_CONFIGS: "/manage-llm-configs",
   MANAGE_LLM_MODEL_CATALOG: "/manage-llm-model-catalog",
+  AI_TASKS: "/ai-tasks",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
   MANAGE_LANGUAGE_GLOSSARY: (id: string | number) => `/manage-scenario-languages/${id}/glossary`,
   MANAGE_PROMPTS: "/manage-prompts",
@@ -560,19 +671,22 @@ export const ROUTES = {
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
   LOGS: "/logs",
+  MOBILE_RELEASES: "/mobile-releases",
   WHATSAPP_BOT: "/whatsapp-bot",
   TERMS: "/terms",
   PRIVACY: "/privacy",
   // Fully public, no-login gallery of the centralised design-system components.
   DESIGN_SYSTEM: "/designsystem",
-  ROLEPLAY_STUDIO: "/roleplay-studio",
-  ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
-  ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
-  ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
   BUG_HUNTER: "/bug-hunter",
+  BUILDER: "/builder",
+  BUILDER_SESSION: (id: string) => `/builder/${id}`,
+  BUILDER_SETTINGS: "/builder/settings",
+  BUILDER_SCOREBOARD: "/builder/scoreboard",
+  BUILDER_PIPELINE: "/builder/pipeline",
+  BUILDER_KNOWLEDGE: "/builder/knowledge",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -660,6 +774,7 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_TYPES: "customFieldTypes",
   CUSTOM_FIELDS_ENABLED: "customFieldsEnabled",
   CHARACTER_LIBRARY_ENABLED: "characterLibraryEnabled",
+  PROGRESS_DASHBOARD_ENABLED: "progressDashboardEnabled",
   SCRIBE_NOTE_CREATION_ENABLED: "scribeNoteCreationEnabled",
   SCRIBE_VOICE_NOTE_ENABLED: "scribeVoiceNoteEnabled",
   CUSTOM_FIELD_DEFINITIONS: "customFieldDefinitions",
@@ -674,15 +789,12 @@ export const TAG_TYPES = {
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",
   COMPETENCY_BEHAVIOURS: "competencyBehaviours",
+  COMPETENCY_CLUSTERS: "competencyClusters",
   AGENT_TEST_CASES: "agentTestCases",
   ADMIN_TENANTS: "adminTenants",
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
-  ROLEPLAY_SPECS: "roleplaySpecs",
-  ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
-  ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
-  ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   WHATSAPP_BOT_DOCUMENTS: "whatsAppBotDocuments",
   WHATSAPP_BOT_DOCUMENT_CHUNKS: "whatsAppBotDocumentChunks",
@@ -692,6 +804,7 @@ export const TAG_TYPES = {
   WHATSAPP_BOT_CONVERSATIONS: "whatsAppBotConversations",
   WHATSAPP_BOT_UNANSWERED: "whatsAppBotUnanswered",
   WHATSAPP_BOT_ANALYTICS: "whatsAppBotAnalytics",
+  WHATSAPP_BOT_PHONE_MAPPINGS: "whatsAppBotPhoneMappings",
 
   // Cohorts (per-organization user grouping). Restrictions are a separate tag so
   // a restriction edit refreshes the content tab without refetching the roster.
@@ -701,6 +814,9 @@ export const TAG_TYPES = {
 
   TRACKS_V2: "tracksV2",
   TRACK_TRANSLATIONS: "trackTranslations",
+  // Component Library. Also registered in baseApi.ts's `tagTypes` — an
+  // unregistered tag is silently ignored and its invalidation never fires.
+  COMPONENT_LIBRARY: "componentLibrary",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
   // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions
@@ -712,22 +828,39 @@ export const TAG_TYPES = {
   // Product Roadmap. NOTE: every one of these must ALSO be listed in baseApi.ts's
   // `tagTypes` array — an unregistered tag makes invalidatesTags a silent no-op.
   PRODUCT_ROADMAP_OPPORTUNITIES: "productRoadmapOpportunities",
-  PRODUCT_ROADMAP_COIN_BUDGET: "productRoadmapCoinBudget",
+  PRODUCT_ROADMAP_VOTE_BUDGET: "productRoadmapVoteBudget",
   PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
   PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
+  PRODUCT_ROADMAP_STRATEGY_GOALS: "productRoadmapStrategyGoals",
+  PRODUCT_ROADMAP_RANK_WEIGHTS: "productRoadmapRankWeights",
+  PRODUCT_ROADMAP_GOAL_IMPACT: "productRoadmapGoalImpact",
   PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
   PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
+  PRODUCT_ROADMAP_VOTERS: "productRoadmapVoters",
   PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
-  PRODUCT_ROADMAP_RELEASE_NOTES: "productRoadmapReleaseNotes",
   PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
   // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
   ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
   ANALYTICS_CHART_PREFERENCES: "analyticsChartPreferences",
   BUG_HUNTER_SETTINGS: "bugHunterSettings",
+  // Also registered in baseApi.ts's `tagTypes` — an unregistered tag is
+  // silently ignored and its invalidation never fires.
+  BUG_HUNTER_MODEL_SETTINGS: "bugHunterModelSettings",
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
+  // UX Signals scan log. Also registered in baseApi.ts's `tagTypes`.
+  UX_SIGNAL_SCANS: "uxSignalScans",
+  // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag
+  // is silently ignored and its invalidation never fires.
+  BUILDER_SESSIONS: "builderSessions",
+  BUILDER_SESSION: "builderSession",
+  BUILDER_PRD_VERSIONS: "builderPrdVersions",
+  BUILDER_SETTINGS: "builderSettings",
+  BUILDER_NOTIFICATIONS: "builderNotifications",
+  BUILDER_LESSONS: "builderLessons",
+  BUILDER_EXEMPLARS: "builderExemplars",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
@@ -738,6 +871,13 @@ export const TAG_TYPES = {
   AI_LAB_QUESTION_SETS: "aiLabQuestionSets",
   // Evaluator portal (separate evaluatorAPI)
   EVAL_ASSIGNMENTS: "evalAssignments",
+  // Mobile Releases. Also registered in baseApi.ts's `tagTypes` — an
+  // unregistered tag is silently ignored and its invalidation never fires.
+  MOBILE_RELEASE_RUNS: "mobileReleaseRuns",
+  // Force-update minimum app version (ally-be's app-version module, not
+  // mobile-releases — shared with the same admin page though). Also
+  // registered in baseApi.ts's `tagTypes`, same caveat as above.
+  MIN_APP_VERSION: "minAppVersion",
 };
 
 /**
@@ -781,17 +921,26 @@ export enum TooltipLocation {
   // superadmins author the text and enable each under Manage Tooltips.
   SESSION_TIMER = "session_timer",
   SCORE = "score",
-  // Post-session feedback master switch (was "AI Feedback Summary" — the
-  // label changed but the slug stays put so any already-authored Manage
-  // Tooltips row keeps applying) plus its three per-tab sub-toggles, nested
-  // under it via dependsOn/visibleWhen in SimulationCreator.ts. Seeded blank
-  // + inactive; superadmins author the text and enable each under Manage
-  // Tooltips.
-  AI_FEEDBACK_SUMMARY = "ai_feedback_summary",
+  // The two post-session tab toggles. The `ai_feedback_summary` (master
+  // switch) and `feedback_tab_skills` slugs were dropped on 2026-08-31 when
+  // those controls were retired — any Manage Tooltips row a superadmin
+  // already authored against them is left in the DB rather than deleted: the
+  // Tooltips page lists rows from the DB, not from this enum, so the text
+  // stays visible and editable there, it simply no longer attaches to a
+  // control. Seeded blank + inactive; superadmins author the text and enable
+  // each under Manage Tooltips.
   FEEDBACK_TAB_DEBRIEF = "feedback_tab_debrief",
-  FEEDBACK_TAB_SKILLS = "feedback_tab_skills",
   FEEDBACK_TAB_TRANSCRIPT = "feedback_tab_transcript",
   ALLOW_PAUSE_RESUME = "allow_pause_resume",
+  // Live supervisor notes: an AI supervisor watching the session sends the
+  // learner short coaching hints in a Supervisor sidebar tab, and those notes
+  // also inform the post-session debrief. Off by default — mid-session
+  // feedback suits a novice but breaks the pressure a confident learner
+  // practises for, so it is a per-roleplay judgement call.
+  SUPERVISOR_NOTES_ENABLED = "supervisor_notes_enabled",
+  // Learner-facing Live events tab. Unlike supervisor notes above,
+  // this is on by default (opt-out) — only an explicit false hides it.
+  LIVE_TAB_ENABLED = "live_tab_enabled",
   DEFAULT_ORG_VISIBILITY = "default_org_visibility",
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
@@ -820,3 +969,16 @@ export enum TooltipLocation {
 }
 
 export const CUSTOM_CHARACTER_ID = "custom";
+
+// Live supervisor notes arrive on their own LiveKit data-channel topic so they
+// can never be mistaken for scored coaching events. Must match
+// SUPERVISOR_DATA_TOPIC in ally-ai-learn's app/core/supervisor/service.py.
+export const SUPERVISOR_TOPIC = "supervisor" as const;
+export const SUPERVISOR_NOTE_EVENT_TYPE = "supervisor.note" as const;
+
+// Topics whose packets belong to the scored coaching-event feed. Coaching
+// events are published on "events"; AGENT_STATE and the pause/resume control
+// packets carry no topic at all. Anything else — notably the v2 "director"
+// feed, which has its own observer panel — is dropped rather than folded into
+// `events`, where it would silently contribute to the preview's score.
+export const EVENT_FEED_TOPICS: readonly (string | undefined)[] = [undefined, "", "events"];

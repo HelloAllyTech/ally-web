@@ -92,7 +92,8 @@
       "organizationSettings": "Org. Settings",
       "organizationSettingsTag": "Testing",
       "allyAdmin": "Ally Admin",
-      "characterLibrary": "Character Library"
+      "characterLibrary": "Character Library",
+      "progress": "Progress"
     },
     "logout": {
       "title": {
@@ -160,11 +161,13 @@
       "momentum": "Momentum",
       "contribution": "Contribution",
       "resonance": "Resonance",
+      "ascent": "Ascent",
       "tooltip": {
         "journey": "Earned by completing simulation minutes. Only completed simulation time is counted.",
         "momentum": "Complete at least one role play per day to build a streak. Missing a day resets your streak.",
         "contribution": "Number of comments and reactions you add to sessions by others. Activity on your own sessions is not included.",
-        "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded."
+        "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded.",
+        "ascent": "Earned by reaching a new level on your progress ladder. Levels come from practice minutes, completed sessions and course items."
       }
     }
   },
@@ -173,6 +176,7 @@
       "greetingLine1": "Hey,",
       "greetingLine2": "Welcome to {{app}}",
       "subtitle": "Enter your email address to continue",
+      "back": "Back",
       "email": {
         "label": "Email",
         "placeholder": "Enter your email address",
@@ -204,7 +208,8 @@
         "generateOtp": "Failed to generate OTP. Please try again.",
         "verifyOtp": "Failed to verify OTP. Please try again.",
         "agreeTerms": "Failed to agree to terms and conditions"
-      }
+      },
+      "sessionExpired": "You were signed out because your session expired. Sign in again to pick up where you left off."
     }
   },
   "user": {
@@ -282,8 +287,8 @@
       "completed_other": "Completed · {{count}}×",
       "completedAria_one": "Completed once",
       "completedAria_other": "Completed {{count}} times",
-      "simulationsCount": "{{count}} Simulation",
-      "simulationsCount_plural": "{{count}} Simulations",
+      "simulationsCount_one": "{{count}} Simulation",
+      "simulationsCount_other": "{{count}} Simulations",
       "ariaLabel": "Select {{title}} scenario",
       "type": {
         "pathway": "pathway",
@@ -326,6 +331,39 @@
       }
     },
     "evaluationChecklist": "Evaluation Checklist"
+  },
+  "progress": {
+    "title": "Your progress",
+    "hero": {
+      "level": "Level {{level}}",
+      "toNextLevel_one": "{{count}} XP to level {{level}}",
+      "toNextLevel_other": "{{count}} XP to level {{level}}",
+      "maxLevel": "You've reached the top level",
+      "xpTotal_one": "{{count}} XP earned in total",
+      "xpTotal_other": "{{count}} XP earned in total"
+    },
+    "stats": {
+      "lifetimeMinutes": "Practice minutes",
+      "sessions": "Sessions completed",
+      "trackItems": "Course items done",
+      "currentStreak": "Day streak",
+      "weeklyConsistency": "Active days this week"
+    },
+    "rank": {
+      "line": "You're #{{rank}} in your organisation this week"
+    },
+    "badges": {
+      "link": "See all your badges"
+    },
+    "errors": {
+      "title": "Couldn't load your progress",
+      "description": "Something went wrong fetching your progress. Try again."
+    },
+    "a11y": {
+      "level": "Level {{level}}, {{xp}} XP earned in total",
+      "levelBar": "Progress through level {{level}}",
+      "navLevel": "Your progress, level {{level}}"
+    }
   },
   "practiceStreak": {
     "title": "Practice streak",
@@ -472,8 +510,10 @@
       "noAccess": "Organization metrics are available to organization admins only.",
       "retry": "Retry",
       "empty": "No data for this range",
-      "notEnoughData": "Not enough data yet"
+      "notEnoughData": "Not enough data yet",
+      "reorderFailed": "Couldn't save the new layout"
     },
+    "dragHandleLabel": "Drag to reorder",
     "mostUsedSimulations": {
       "title": "Most practiced simulations",
       "caption": "Top scenarios by completed sessions in the selected period",
@@ -482,7 +522,7 @@
     },
     "learnerUsage": {
       "title": "Learner usage",
-      "caption": "One row per learner — see who is (and isn't) using Ally",
+      "caption": "One row per learner — who is (and isn't) using Ally, and how much of the effort is practice versus coursework",
       "exportCsv": "Export CSV",
       "errorTitle": "Couldn't load the learner usage table",
       "errorSubtitle": "There was a problem fetching the data.",
@@ -502,12 +542,38 @@
         "signupDate": "Signup date",
         "roleplaySessionsStarted": "Roleplay sessions started",
         "roleplaySessionsCompleted": "Roleplay sessions completed",
-        "avgScore": "Avg score",
         "totalPracticeMinutes": "Total practice minutes",
         "coursesStartedAssigned": "Courses started / assigned",
         "coursesAssigned": "Courses assigned",
         "coursesStarted": "Courses started",
-        "coursesCompleted": "Courses completed"
+        "coursesCompleted": "Courses completed",
+        "lastActive": "Last active",
+        "level": "Level",
+        "totalXp": "XP",
+        "roleplaySessions": "Roleplays done / started",
+        "avgScore": "Avg roleplay score",
+        "itemsCompletedPct": "Course items done",
+        "quizzes": "Quizzes passed / tried",
+        "readWatch": "Articles / videos",
+        "reflection": "Journals / games",
+        "pointsPerMinute": "Points / min"
+      },
+      "daysAgo": "{{count}}d ago",
+      "today": "Today",
+      "levelShort": "L{{level}}",
+      "tooltips": {
+        "status": "Based on when the learner was last active anywhere: Active within 14 days, At risk 15–30 days, Dormant over 30 days, Never started if they have never done anything. All-time, not affected by the period above.",
+        "lastActive": "The later of their last roleplay and their last course activity — so a learner doing only quizzes still counts as active. All-time.",
+        "level": "Position on the 1–10 level ladder, earned from practice minutes, completed sessions and course items. All-time. This is the same level the learner sees in the app.",
+        "totalXp": "Lifetime XP: 1 per practice minute, 10 per completed session, 25 per course item, 50 for a personal best, with a daily cap so no single activity can be farmed. All-time.",
+        "roleplaySessions": "Roleplays completed of roleplays started, in the selected period.",
+        "totalPracticeMinutes": "Minutes spent in completed roleplays, in the selected period.",
+        "pointsPerMinute": "Roleplay score earned per minute of practice, in the selected period — it separates a learner who scores steadily from one who only accumulates minutes. Can be negative, because roleplay scores can go below zero. Blank until the learner has at least 10 practice minutes, since below that the ratio is too noisy to be meaningful.",
+        "itemsCompletedPct": "Course items completed out of every item in the courses this learner is enrolled in, including items they have not unlocked yet. All-time. Counted per item, not per course, so progress through a long course still shows.",
+        "quizzes": "Quiz items passed, out of those they have attempted, and in brackets the average of their most recent graded attempt on each — so repeated failures show rather than being hidden by a later pass. All-time.",
+        "readWatch": "Article and video items completed. All-time.",
+        "reflection": "Journal, annotation and game items completed. All-time.",
+        "coursesCompleted": "Courses finished end to end, and in brackets that as a share of the courses they are enrolled in. All-time."
       }
     },
     "courseUsage": {
@@ -591,21 +657,6 @@
       }
     ]
   },
-  "askAi": {
-    "initial": {
-      "titlePrefix": "What would you like",
-      "titleSuffix": " feedback on?",
-      "subtitle": "Select a prompt or ask your own."
-    },
-    "cards": {
-      "responseEffectiveness": "Where did I respond most effectively in this session?",
-      "pacingPresence": "How was my pacing and presence overall?",
-      "missedClientCues": "Where might I have missed or misread the client?",
-      "therapeuticTechniques": "What therapeutic techniques/moves were most helpful?"
-    },
-    "transcriptReferences": "Transcript References",
-    "inputPlaceholder": "Ask a question about the session.... (0/{{max}})"
-  },
   "postSim": {
     "titlePrefix": "Role play",
     "skills": {
@@ -628,10 +679,7 @@
       "feedbackUnavailable": "Feedback couldn't be generated for this session"
     },
     "tabs": {
-      "annotatedTranscript": "Annotated Transcript",
-      "upNext": "Up next",
-      "askAi": "Ask AI",
-      "skillsDemonstrated": "Skills  Demonstrated",
+      "transcript": "Transcript",
       "sessionReview": "Session Review",
       "debrief": "Debrief"
     },
@@ -639,9 +687,11 @@
       "title": "Session ended too soon",
       "description": "We need more interaction data to provide meaningful feedback."
     },
+    "technicalInterruption": {
+      "title": "Session ended early",
+      "description": "It looks like we lost you for a bit — often a dropped connection. Your progress up to that point was saved, so feel free to start again."
+    },
     "feedback": {
-      "generating": "Generating your feedback…",
-      "sessionFeedback": "Session Feedback",
       "noData": "No data found",
       "dialog": {
         "header": "Did this feel like useful practice for real sessions?",
@@ -689,9 +739,19 @@
       "generating": "Ally is writing your debrief…",
       "generatingHint": "This usually takes a few moments.",
       "failed": "Ally couldn't write your debrief for this session.",
+      "stillWorking": "Ally is taking longer than usual to finish this debrief. It may still be on its way.",
+      "checkAgain": "Check again",
+      "checkingAgain": "Checking…",
+      "notAvailable": "This session doesn't have a written debrief — it took place before Ally started writing them.",
       "momentLabel": "See this moment",
       "momentNotFound": "We couldn't jump to that moment — here's the full transcript instead.",
-      "replyPlaceholder": "Reply to Ally about this session… (0/{{max}})",
+      "section": {
+        "what_worked": "What worked",
+        "what_it_cost": "What it cost",
+        "try_next": "Try this next"
+      },
+      "replyPlaceholder": "Reply to Ally about this session…",
+      "transcriptReferences": "Transcript References",
       "replyPrompt": "Have a question about any of this? Reply below."
     }
   },
@@ -1122,13 +1182,21 @@
         "unsupported": "Audio recording isn't supported in this browser.",
         "noSpeech": "We couldn't hear any speech. Please try recording again.",
         "generateError": "Couldn't generate notes from the recording. Please try again.",
-        "generated": "Notes generated from your recording",
+        "generated_one": "Filled in {{fields}} from your recording",
+        "generated_other": "Filled in {{count}} fields from your recording: {{fields}}",
         "nothingExtracted": "We transcribed the audio but couldn't fill any fields from it.",
+        "cancel": "Cancel",
+        "timeout": "This is taking longer than expected, so we stopped waiting. Try again or go back to fill the form manually.",
+        "backToForm": "Back to form",
+        "tryAgain": "Try again",
         "processing": {
           "transcribing": "Transcribing your recording…",
           "extracting": "Extracting note details…",
           "populating": "Filling in the fields…"
-        }
+        },
+        "stillWorking": "Still working — this one is taking longer than usual. You can keep waiting, or cancel and fill the form in yourself.",
+        "extractionFailed": "We saved what you dictated, but couldn't fill the fields from it. Please fill them in below, or try recording again.",
+        "notEnabled": "Voice notes aren't switched on for your organisation. Ask an administrator to enable them."
       }
     },
     "table": {
@@ -1158,7 +1226,11 @@
       "callEmptyTitle": "No call logs found",
       "callEmptyDesc": "Try adjusting filters or refresh the page.",
       "simEmptyTitle": "No simulation logs found",
-      "simEmptyDesc": "Try adjusting filters or refresh the page."
+      "simEmptyDesc": "Try adjusting filters or refresh the page.",
+      "callErrorTitle": "Unable to load call logs",
+      "callErrorDesc": "Something went wrong while loading call logs. Please try again.",
+      "simErrorTitle": "Unable to load simulation logs",
+      "simErrorDesc": "Something went wrong while loading simulation logs. Please try again."
     },
     "status": {
       "processing": "Processing",
@@ -1289,6 +1361,18 @@
     "remindersTab": "Reminders",
     "descriptionTab": "Description",
     "noRemindersYet": "No reminders for this scenario yet.",
+    "supervisorTab": "Supervisor",
+    "supervisorEmptyState": "Your supervisor is listening — notes appear here when there's something useful.",
+    "supervisorAiLabel": "AI-generated",
+    "supervisorAiTooltip": "Ally is an AI supervisor. It's listening live and sending these notes automatically — not a person.",
+    "connectionFailedTitle": "We couldn't connect you to this session",
+    "connectionFailedMessage": "Sorry — something went wrong setting up this roleplay. Check your internet connection and try again.",
+    "agentNotJoinedTitle": "Your practice partner didn't join",
+    "agentNotJoinedMessage": "Sorry — we reached the session but no one picked up on the other side. Trying again usually sorts it.",
+    "retryConnection": "Try again",
+    "exitSimulation": "Leave this session",
+    "reconnecting": "Reconnecting…",
+    "missedSupervisorHints": "Some supervisor hints may not have reached you",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",
@@ -1367,7 +1451,11 @@
       "noNetworkDesc": "Call ended due to network interruption, please check your connection and try again.",
       "noNetworkSharedDesc": "Please check your connection and try again.",
       "somethingWrong": "Something went wrong",
-      "somethingWrongDesc": "Call ended due to unknown reason, please try again.."
+      "somethingWrongDesc": "Call ended due to unknown reason, please try again..",
+      "micBlocked": "Microphone access is blocked",
+      "micBlockedDesc": "Ally needs your microphone to take notes. Allow microphone access for this site in your browser, then try again.",
+      "micUnavailable": "No microphone available",
+      "micUnavailableDesc": "Ally could not start your microphone. Check that one is connected and that no other app is using it, then try again."
     }
   },
   "stressBuster": {
@@ -1407,6 +1495,30 @@
     "lockedTooltip": "Complete the previous items to unlock this",
     "notFound": "This track could not be found",
     "backToLearn": "Back to Learn",
+    "viewProgress": "View progress",
+    "progressDashboard": {
+      "title": "Progress",
+      "tapHint": "Tap to see your progress and feedback",
+      "notFound": "This course's progress could not be found",
+      "feedbackHeading": "Consolidated feedback",
+      "feedbackSubheading_one": "Based on {{count}} evaluated practice session",
+      "feedbackSubheading_other": "Based on {{count}} evaluated practice sessions",
+      "feedbackEmpty": "Complete and finish a practice roleplay in this course to see consolidated feedback here.",
+      "scoreTrendAlt": "Score trend: {{first}} to {{latest}} over {{count}} sessions",
+      "latestScore": "Latest: {{score}}",
+      "latestFeedbackHeading": "Latest feedback",
+      "readFullFeedback": "Read full feedback",
+      "practiceNudge": "{{category}} could use more practice.",
+      "sessionsHeading": "Practice sessions",
+      "sessionScore": "Score {{score}}",
+      "sessionPending": "Pending evaluation",
+      "untitledSession": "Practice session",
+      "classification": {
+        "demonstrated": "Demonstrated",
+        "needs_practice": "Needs practice",
+        "insufficient_data": "Not enough practice yet"
+      }
+    },
     "status": {
       "completed": "Completed",
       "inProgress": "In progress"
@@ -1443,7 +1555,10 @@
       "finish": "Finish",
       "overallProgress": "{{pct}}% complete",
       "loadFailed": "Could not load this item. Please try again.",
-      "retry": "Retry"
+      "trackLoadFailed": "Could not load this course",
+      "trackLoadFailedDescription": "Something went wrong while loading this course. Please try again.",
+      "retry": "Retry",
+      "reviewItem": "Review {{title}}"
     },
     "celebration": {
       "sectionCompleteTitle": "Section complete!",
@@ -1459,11 +1574,32 @@
       "read": "Read",
       "keepReading": "Keep reading to continue",
       "increaseFontSize": "Increase text size",
-      "decreaseFontSize": "Decrease text size"
+      "decreaseFontSize": "Decrease text size",
+      "answerQuestionToContinue": "Answer the question to continue",
+      "answerQuestionsToContinue": "Answer the questions to continue",
+      "question": {
+        "title": "Quick check",
+        "submit": "Check answer",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "correctAnswerIs": "The correct answer is marked below.",
+        "answeredHint": "You've answered this one — it can't be changed.",
+        "progress": "{{answered}} of {{total}} answered"
+      }
     },
     "video": {
       "markWatched": "Mark as watched",
-      "watched": "Watched"
+      "watched": "Watched",
+      "loadFailed": "This video could not be loaded.",
+      "openExternally": "Open video externally",
+      "interjection": {
+        "title": "Quick check",
+        "submit": "Submit answer",
+        "continue": "Continue video",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "pending": "Grading your answer…"
+      }
     },
     "journal": {
       "submit": "Submit",
@@ -1580,6 +1716,8 @@
         "SPROUT": "Most growth in one sitting: {{score}}"
       },
       "optional": "Play as long as you like, or skip straight on — either way you're good to continue.",
+      "loadFailed": "This game could not be loaded.",
+      "loadFailedDescription": "There was a problem loading this game. You're still free to continue — nothing here is scored or required.",
       "frameStrings": {
         "MEMORY_MATCH": {
           "moves": "{{moves}} moves",
@@ -1588,6 +1726,12 @@
           "wonDetail": "{{moves}} moves — {{score}}% of a perfect round",
           "playAgain": "Play again",
           "cardLabel": "Card {{number}}"
+        },
+        "SNAKE": {
+          "score": "Score",
+          "best": "Best",
+          "restart": "Start over",
+          "gameOver": "Game over — {{score}}"
         },
         "CUB_N_PUP": {
           "levels": "Levels",
@@ -1632,5 +1776,14 @@
         }
       }
     }
+  },
+  "errorBoundary": {
+    "pageTitle": "Sorry — this page stopped working",
+    "pageMessage": "Something went wrong while showing this page. Try again, or reload if that doesn't help.",
+    "panelTitle": "Sorry — this section stopped working",
+    "panelMessage": "Something went wrong here. The rest of the app still works — try again, or come back to this later.",
+    "tryAgain": "Try again",
+    "reloadPage": "Reload the page",
+    "detailLabel": "Technical detail"
   }
 }

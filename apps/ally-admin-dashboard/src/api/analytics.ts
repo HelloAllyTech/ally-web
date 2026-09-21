@@ -6,47 +6,58 @@ import {
   AnalyticsHighlightsResponse,
   AnalyticsOverviewResponse,
   AnalyticsRange,
+  BugAgentPerformanceResponse,
+  CertificationResponse,
+  ChartPreference,
+  ChartPreferencesResponse,
   CoachingLoopResponse,
+  CodingAgentCostResponse,
   CohortRetentionResponse,
   CompetencyMapResponse,
   CompletionRateResponse,
   ConversationDriftResponse,
   DriftBackfillJob,
+  FillerQualityResponse,
+  FixSessionEngineCostResponse,
+  GoalsXpResponse,
   LanguageEvalReference,
   LanguageMixResponse,
   LanguageQualityResponse,
-  WeakMetricsResponse,
   LearnerKpisResponse,
+  ListVoiceLatencySessionsResponse,
+  OrgEngagementResponse,
   OrgHealthResponse,
   OrgSessionDistributionResponse,
+  QualifiedSessionsResponse,
   QualityDistributionResponse,
+  QualitySentimentResponse,
+  RagQualityResponse,
   RoadmapDeliveryResponse,
+  RoleplayCostResponse,
   RoleplayVolumeResponse,
   ScenarioUsageResponse,
   ScribeAdoptionResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
+  ShipVolumeQuery,
+  ShipVolumeResponse,
   SkillGrowthLearnerSeriesResponse,
   SkillGrowthLearnersQuery,
   SkillGrowthLearnersResponse,
   SkillGrowthResponse,
   StartLatencyResponse,
+  StickinessResponse,
   TokenConsumptionResponse,
   TrackDropoffResponse,
-  CertificationResponse,
-  ChartPreference,
-  ChartPreferencesResponse,
-  OrgEngagementResponse,
-  QualifiedSessionsResponse,
-  QualitySentimentResponse,
-  RoleplayCostResponse,
-  StickinessResponse,
   UsageLadderGrain,
   UsageLadderResponse,
   UsageLevelResponse,
+  VoiceLatencyByScenarioResponse,
   VoiceLatencyResponse,
-  ListVoiceLatencySessionsResponse,
   VoiceLatencySessionsSummary,
+  WeakMetricsResponse,
+  XpGoalGrain,
+  XpGrowthResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -105,6 +116,10 @@ type VoiceLatencySessionsQuery = AnalyticsWindowQuery & {
 
 type VoiceLatencySessionsSummaryQuery = AnalyticsWindowQuery & {
   scenarioId: number;
+  language?: string;
+};
+
+type VoiceLatencyByScenarioQuery = AnalyticsWindowQuery & {
   language?: string;
 };
 
@@ -222,6 +237,29 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
+    // Cumulative platform XP over time, from the append-only xp_events ledger.
+    // Takes the standard window params — `bucket` is the day/week/month/year
+    // grain the chart's own control drives. On a narrowed window the server
+    // still opens the curve at the pre-window total, so "lifetime XP" keeps
+    // meaning lifetime rather than "since the window opened".
+    getXpGrowth: builder.query<XpGrowthResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.XP_GROWTH,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Actual XP earned vs. goal, by month/quarter/year — the Analytics → Goals
+    // tab. Goals are read-only here; they are seeded directly into
+    // analytics_xp_goals by migration. Platform-wide only, no tenant param —
+    // takes just the grain, which is the chart's own control.
+    getGoalsXp: builder.query<GoalsXpResponse, { grain?: XpGoalGrain }>({
+      query: ({ grain } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.XP_GOALS,
+        method: HttpMethod.GET,
+        params: grain ? { grain } : {},
+      }),
+    }),
     // Learner usage ladder L1-L5 by LIFETIME roleplay minutes. One response
     // feeds four charts (attainment, cumulative holders, funnel, ladder), so
     // they cannot disagree. Takes no window — the rungs are lifetime totals —
@@ -275,6 +313,35 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: windowParams(q),
       }),
     }),
+    // Bug Hunter + Builder cost specifically — the platform-wide chart above
+    // has no filter to isolate one feature and no time axis at all.
+    getCodingAgentCost: builder.query<CodingAgentCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CODING_AGENT_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Average cost per COMPLETED Bug Hunter fix session, by engine — the
+    // direct Claude-vs-Gemini comparison the chart above's per-model TOTAL
+    // can't give, since the two engines run a very different number of times.
+    getFixSessionEngineCost: builder.query<FixSessionEngineCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FIX_SESSION_ENGINE_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Precision, fix throughput, speed, cost and reliability — bucketed by
+    // week regardless of the requested bucket, since this chart is inherently
+    // a week-over-week view.
+    getBugAgentPerformance: builder.query<BugAgentPerformanceResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.BUG_AGENT_PERFORMANCE,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
     // LLM-judge composite score against a PROXY NPS derived from the 1-5
     // post-session rating, plus their correlation. Render `proxyNote` wherever
     // the proxy appears — it is not an NPS and must never be labelled as one.
@@ -283,6 +350,23 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.QUALITY_SENTIMENT,
         method: HttpMethod.GET,
         params: windowParams(q),
+      }),
+    }),
+    // Corpus retrieval quality: the judge's labels over the retrieval log. Counts
+    // only — divide them yourself, and only when `coverage.belowReportingFloor`
+    // is false.
+    getRagQuality: builder.query<
+      RagQualityResponse,
+      AnalyticsWindowQuery & { consumer?: string; corpus?: string }
+    >({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.RAG_QUALITY,
+        method: HttpMethod.GET,
+        params: {
+          ...windowParams(q),
+          ...(q.consumer ? { consumer: q.consumer } : {}),
+          ...(q.corpus ? { corpus: q.corpus } : {}),
+        },
       }),
     }),
     // The caller's saved per-chart window/grain, across every analytics tab.
@@ -314,7 +398,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
-    // Coins shipped per month by owner, off the internal product roadmap. Takes
+    // Votes shipped per month by owner, off the internal product roadmap. Takes
     // NO params at all — not even `tenantId`: the roadmap tables carry no tenant
     // (it is Ally's own backlog), and the axis is all-time by construction
     // because a quarter can hold a handful of releases.
@@ -322,6 +406,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       query: () => ({
         url: ApiEndpoints.ANALYTICS.ROADMAP_DELIVERY,
         method: HttpMethod.GET,
+      }),
+    }),
+    // Changed lines per week across the Ally repos, split by repo. Takes only
+    // `weeks` — no tenant (this measures our own engineering) and no page range:
+    // the window is the chart's own control, because a weekly axis wider than a
+    // year stops being readable long before "all time" would.
+    getShipVolume: builder.query<ShipVolumeResponse, ShipVolumeQuery>({
+      query: ({ weeks }) => ({
+        url: ApiEndpoints.ANALYTICS.SHIP_VOLUME,
+        method: HttpMethod.GET,
+        params: weeks ? { weeks } : undefined,
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
@@ -359,6 +454,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
           scenarioId,
           ...(language ? { language } : {}),
         },
+      }),
+    }),
+    getVoiceLatencyByScenario: builder.query<
+      VoiceLatencyByScenarioResponse,
+      VoiceLatencyByScenarioQuery
+    >({
+      query: ({ language, ...q } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.VOICE_LATENCY_BY_SCENARIO,
+        method: HttpMethod.GET,
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
@@ -444,6 +549,21 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     >({
       query: ({ language, ...q } = {}) => ({
         url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY,
+        method: HttpMethod.GET,
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
+      }),
+    }),
+    // Thinking-filler quality. Deliberately NOT folded into the latency query
+    // it renders beside: latency is per-turn pipeline telemetry available for
+    // every session, this is LLM-judge output that exists only for sessions
+    // that both played a filler and have been judged. One request returning
+    // both would make the judged subset look like the whole window.
+    getFillerQuality: builder.query<
+      FillerQualityResponse,
+      AnalyticsWindowQuery & { language?: string }
+    >({
+      query: ({ language, ...q } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FILLER_QUALITY,
         method: HttpMethod.GET,
         params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
@@ -634,15 +754,18 @@ export const {
   useGetUsageLevelsQuery,
   useGetRoleplayVolumeQuery,
   useGetRoadmapDeliveryQuery,
+  useGetShipVolumeQuery,
   useGetVoiceLatencyQuery,
   useGetVoiceLatencySessionsQuery,
   useGetVoiceLatencySessionsSummaryQuery,
+  useGetVoiceLatencyByScenarioQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
   useGetLanguageQualityQuery,
+  useGetFillerQualityQuery,
   useGetWeakPerformingMetricsQuery,
   useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,
@@ -668,7 +791,13 @@ export const {
   useGetQualifiedSessionsQuery,
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
+  useGetCodingAgentCostQuery,
+  useGetFixSessionEngineCostQuery,
+  useGetBugAgentPerformanceQuery,
   useGetQualitySentimentQuery,
+  useGetRagQualityQuery,
+  useGetXpGrowthQuery,
+  useGetGoalsXpQuery,
   useGetChartPreferencesQuery,
   useSaveChartPreferencesMutation,
 } = analyticsAPI;

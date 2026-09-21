@@ -36,8 +36,17 @@ const MAX_AUDIO_BYTES = 20 * 1024 * 1024; // 20 MB
  * Archiving hides a track from the roleplay picker going forward without
  * breaking scenarios that already use it (playback resolves by URL), so it is
  * the safe alternative to deleting a track that is still in use.
+ *
+ * `hideHeading` drops the title/description block for hosts that already name
+ * the panel — the Settings page's own tab strip and description do, and
+ * repeating "Comfort Audio" directly under the "Comfort Audio" tab reads as a
+ * second, nested section rather than the tab's content.
  */
-export const ComfortAudioSettings = () => {
+type ComfortAudioSettingsProps = {
+  hideHeading?: boolean;
+};
+
+export const ComfortAudioSettings = ({ hideHeading = false }: ComfortAudioSettingsProps) => {
   // includeArchived so the management screen can see and unarchive tracks
   // (the roleplay picker uses the default, active-only list).
   const { data, isLoading, isError } = useGetComfortAudioTracksQuery({
@@ -281,10 +290,12 @@ export const ComfortAudioSettings = () => {
 
   return (
     <section className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-lg font-secondary text-typography-900">{en.comfortAudio.title}</h2>
-        <p className="text-sm text-typography-600">{en.comfortAudio.description}</p>
-      </div>
+      {!hideHeading && (
+        <div>
+          <h2 className="text-lg font-secondary text-typography-900">{en.comfortAudio.title}</h2>
+          <p className="text-sm text-typography-600">{en.comfortAudio.description}</p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 max-w-2xl border border-border-light rounded-md p-4">
         <TextInput

@@ -7,6 +7,7 @@ import {
   useGetPermissionsQuery,
   useGetUserPreferencesQuery,
   useGetCharacterLibraryEnabledQuery,
+  useGetFeatureTogglesQuery,
 } from "@api";
 import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle } from "@constants";
 // Import the specific module rather than the "@utils" barrel: the barrel pulls
@@ -52,6 +53,14 @@ export const DefaultRedirect: React.FC = () => {
   const { data: isCharacterLibraryOrgEnabled } = useGetCharacterLibraryEnabledQuery(undefined, {
     skip: !isAuthenticated,
   });
+  // Per-user feature toggles. Required, not optional: every feature-gated tab
+  // is invisible to deriveNavigationItems without them, so passing undefined
+  // (as this screen used to) silently excludes them all from being the landing
+  // tab — including Simulation Studio, which is the default landing for almost
+  // every admin now that content_management gates it.
+  const { data: features, isLoading: isFeaturesLoading } = useGetFeatureTogglesQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
@@ -59,7 +68,7 @@ export const DefaultRedirect: React.FC = () => {
 
   // Never decide while core data is loading — prevents a premature bounce to the
   // fallback before the per-user tab list is known.
-  if (isUserLoading || isPermsLoading) {
+  if (isUserLoading || isPermsLoading || isFeaturesLoading) {
     return null;
   }
   if (isPrefsUninitialized || isPrefsLoading) {
@@ -68,11 +77,7 @@ export const DefaultRedirect: React.FC = () => {
 
   const items = deriveNavigationItems({
     permissions: permissions ?? [],
-    // This screen doesn't fetch the per-user toggles, so feature-gated tabs are
-    // never the landing tab here — passing undefined states the long-standing
-    // runtime behaviour instead of leaving a stale `role` prop the function
-    // stopped accepting.
-    features: undefined,
+    features: features ?? [],
     savedOrder: preferences?.admin_sidebar_order,
     orgToggles: {
       [OrgToggle.CHARACTER_LIBRARY]: Boolean(isCharacterLibraryOrgEnabled),

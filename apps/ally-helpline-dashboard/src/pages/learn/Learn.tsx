@@ -124,7 +124,7 @@ export const Learn: FC = () => {
     if (tabs.length > 0 && (!tabFromUrl || !isValidTabId(tabFromUrl))) {
       setSearchParams({ tab: tabs[0].id }, { replace: true });
     }
-  }, [tabFromUrl, setSearchParams, tabs]);
+  }, [tabFromUrl, setSearchParams, tabs, isValidTabId]);
 
   // `initial_tab` must be the tab the learner actually lands on, and which tabs
   // exist depends on all four queries — so wait for them to settle rather than
@@ -176,8 +176,13 @@ export const Learn: FC = () => {
           <span className={emphasisStyles}> {t("learn.header.emphasis2")} </span>
           {t("learn.header.suffix")}
         </motion.div>
+        {/* The tab strip stacks above the credits badge until sm. As one row at
+            every width the two split a phone screen between them: the strip was
+            left with 194px of 375 and showed under two of its four tabs, with
+            the rest behind a horizontal scroll nobody looks for inside a tab
+            bar. */}
         {hasPathPermissions && (
-          <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
+          <div className="flex flex-col items-stretch gap-1 border-b border-typography-300 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <Tabs
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}
@@ -282,8 +287,10 @@ export const Learn: FC = () => {
                 title={track.title || ""}
                 description={track.description || ""}
                 onClick={() => onTrackCardClick(track.id)}
+                isPathway
                 totalScenarios={track.totalItems}
                 completedScenarios={track.completedItems}
+                simulationCount={track.simulationsCount}
               />
             </motion.div>
           ))}
@@ -345,8 +352,10 @@ export const Learn: FC = () => {
                 description={isMultipleItems ? "" : item.description || ""}
                 onClick={() => onScenarioCardClick(itemId)}
                 isComingSoon={!isMultipleItems && item.status === ScenarioStatus.COMING_SOON}
+                isPathway={isMultipleItems}
                 totalScenarios={isMultipleItems ? item.totalScenarios : undefined}
                 completedScenarios={isMultipleItems ? item.completedScenarios : undefined}
+                simulationCount={isMultipleItems ? item.totalScenarios : undefined}
                 triggerWarnings={isMultipleItems ? undefined : item.triggerWarnings}
                 attemptCount={isMultipleItems ? undefined : item.completion?.attemptCount}
               />

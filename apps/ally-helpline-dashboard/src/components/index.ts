@@ -5,8 +5,6 @@ import { AchievementItem, AchievementItemData } from "./achievement-item";
 import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
 import { AddReviewNote } from "./add-review-note";
-import { AskAiTab } from "./ask-ai-tab";
-import { DebriefTab } from "./debrief-tab";
 import { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
@@ -26,6 +24,7 @@ import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
 import CustomMenu, { MenuItem } from "./custom-menu";
 import { DatePicker, TimePicker } from "./date-time-pickers";
+import { DebriefTab } from "./debrief-tab";
 import DraggableArea from "./draggable-area";
 import Drawer from "./drawer";
 import Dropdown from "./dropdown";
@@ -36,6 +35,7 @@ import FeedCard from "./feed-card/FeedCard";
 import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
+import { LevelIndicator } from "./level-indicator";
 import LoginDialog from "./login-dialog";
 import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
@@ -62,7 +62,6 @@ import SelectableText from "./selectable-text/SelectableText";
 import { SessionRatingTrigger } from "./session-rating-trigger";
 import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
-import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
 import StreakPill from "./streak-pill";
 import TagGroup from "./tag-group";
@@ -75,7 +74,6 @@ import { ToggleSwitch } from "./toggle-switch";
 import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
-import { UpNextSimulationCard } from "./up-next-simulation-card";
 import UserInfo from "./user-info";
 
 export {
@@ -134,6 +132,7 @@ export {
   TagGroup,
   TextField,
   TimePicker,
+  LevelIndicator,
   StreakPill,
   ToggleButtonGroup,
   UserInfo,
@@ -154,12 +153,9 @@ export {
   ReviewCommentsSidepanel,
   Transcription,
   TranscriptListing,
-  UpNextSimulationCard,
   NextChallengeCard,
-  AskAiTab,
   DebriefTab,
   Checklist,
-  SkillsTab,
   ShareForReview,
   ToggleSwitch,
   EmojiPickerTrigger,

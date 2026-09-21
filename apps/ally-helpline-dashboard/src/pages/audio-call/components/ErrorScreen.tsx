@@ -38,7 +38,7 @@ const ErrorScreen = ({
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Icon stroke="#fff" />
+        <Icon stroke="#faf9f5" />
       </motion.div>
 
       <motion.div

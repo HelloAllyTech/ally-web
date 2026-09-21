@@ -14,7 +14,13 @@ vi.mock("@api", () => ({
   useApproveBugFindingMutation: () => [approveFinding, { isLoading: false }],
   useRejectBugFindingMutation: () => [rejectFinding, { isLoading: false }],
   useStartBugFixSessionMutation: () => [startFixSession, { isLoading: false }],
+  // Only consulted for the run-scope banner's wording, and skipped entirely
+  // while no `?run=` is set — but the hook is still called on every render, so
+  // the mock has to exist or the table throws before it draws a row.
+  useGetBugHuntRunQuery: () => ({ data: undefined }),
 }));
+
+vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /> }));
 
 // The table can now act on a bug without opening the drawer — row buttons, the
 // keyboard, and the bulk bar all go through these.
@@ -34,6 +40,8 @@ vi.mock("@components/action-confirmation-popup", () => ({
 
 vi.mock("@utils", () => ({
   formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
   logger: { error: vi.fn() },
 }));
 
@@ -162,7 +170,7 @@ const findings = [
 const renderTable = () =>
   render(
     <MemoryRouter>
-      <BugFindingsTable onShowShortcuts={vi.fn()} />
+      <BugFindingsTable onShowShortcuts={vi.fn()} canTriage />
     </MemoryRouter>,
   );
 

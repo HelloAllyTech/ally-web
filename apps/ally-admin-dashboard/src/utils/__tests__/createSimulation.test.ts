@@ -7,6 +7,7 @@ import { extractValidData } from "../common";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
+  formatVersionConfigToForm,
   buildFeedbackTabsPayload,
   buildToggleDefaultValues,
 } from "../createSimulation";
@@ -135,35 +136,49 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(false);
       });
 
-      it("should keep enableFeedback's field id stable while its label describes the whole post-session experience", () => {
+      it("should expose exactly two post-session tab toggles, both defaulting ON", () => {
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const field = section?.fields.find(f => f.id === "enableFeedback");
-        expect(field).toBeDefined();
-        expect(field?.label).toBe("Post-Session Feedback");
+        const tabFields = section?.fields.filter(f => f.id.startsWith("feedbackTab")) ?? [];
+
+        expect(tabFields.map(f => f.id)).toEqual(["feedbackTabDebrief", "feedbackTabTranscript"]);
+        expect(tabFields.map(f => f.label)).toEqual(["Debrief", "Transcript"]);
+        tabFields.forEach(field => {
+          expect(field.defaultValue).toBe(true);
+        });
       });
 
-      it("should nest the three feedback-tab toggles under enableFeedback, hidden until it's on", () => {
+      it("should no longer expose the enableFeedback master switch or the Skills toggle", () => {
+        // Retired 2026-08-31. The master switch only ever meant "both of the
+        // two off", which the surviving toggles say for themselves; migration
+        // 1944200000000 translated the stored flag into that shape.
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const tabFieldIds = ["feedbackTabDebrief", "feedbackTabSkills", "feedbackTabTranscript"];
 
-        tabFieldIds.forEach(id => {
+        expect(section?.fields.find(f => f.id === "enableFeedback")).toBeUndefined();
+        expect(section?.fields.find(f => f.id === "feedbackTabSkills")).toBeUndefined();
+      });
+
+      it("should show both tab toggles unconditionally, with nothing gating them", () => {
+        // They used to be nested under enableFeedback via dependsOn/visibleWhen.
+        // With the master gone there is nothing left to hide them behind, and a
+        // toggle the author cannot see is how a roleplay ends up silently dark.
+        const section = getCreateSimulationSubSectionById("basic-settings");
+
+        ["feedbackTabDebrief", "feedbackTabTranscript"].forEach(id => {
           const field = section?.fields.find(f => f.id === id);
           expect(field).toBeDefined();
-          expect(field?.dependsOn).toBe("enableFeedback");
-          expect(field?.visibleWhen?.({ enableFeedback: true })).toBe(true);
-          expect(field?.visibleWhen?.({ enableFeedback: false })).toBe(false);
-          expect(field?.visibleWhen?.({})).toBe(false);
+          expect(field?.dependsOn).toBeUndefined();
+          expect(field?.visibleWhen).toBeUndefined();
         });
       });
 
       it("should give each feedback-tab toggle its own tooltip location, not a reused one", () => {
         const section = getCreateSimulationSubSectionById("basic-settings");
-        const locations = ["feedbackTabDebrief", "feedbackTabSkills", "feedbackTabTranscript"].map(
+        const locations = ["feedbackTabDebrief", "feedbackTabTranscript"].map(
           id => section?.fields.find(f => f.id === id)?.tooltipLocation,
         );
 
-        expect(locations).toEqual(["feedback_tab_debrief", "feedback_tab_skills", "feedback_tab_transcript"]);
-        expect(new Set(locations).size).toBe(3);
+        expect(locations).toEqual(["feedback_tab_debrief", "feedback_tab_transcript"]);
+        expect(new Set(locations).size).toBe(2);
       });
     });
   });
@@ -230,6 +245,7 @@ describe("createSimulation utils", () => {
         behaviorInstructions: [],
         characterProfileText: undefined,
         competency: undefined,
+        competencies: [],
         currentLocation: "New York",
         gender: "male",
         genderIdentity: "Male/Man",
@@ -247,13 +263,17 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         agentTestCaseIds: [],
         showScoreMeter: undefined,
-        enableFeedback: true,
         // Response's metadata has no feedbackTabs at all — absent reads as
-        // all three ON, mirroring the backend resolver.
+        // both tabs ON, mirroring the backend resolver.
         feedbackTabDebrief: true,
-        feedbackTabSkills: true,
         feedbackTabTranscript: true,
         pauseEnabled: false,
+        // Opt-in: a roleplay saved before live supervisor notes existed
+        // hydrates as off, which is also the default for new ones.
+        supervisorNotesEnabled: false,
+        // Opt-out, unlike supervisorNotesEnabled above: absent in metadata
+        // hydrates as ON (only an explicit false turns it off).
+        liveTabEnabled: true,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         category: "",
@@ -269,13 +289,19 @@ describe("createSimulation utils", () => {
         customFields: [],
         optGuardrails: false,
         temperature: 0.7,
-        fillerEnabled: false,
+        // Absent in metadata hydrates as ON: thinking filler is on by
+        // default across every scenario.
+        fillerEnabled: true,
         // Absent in metadata hydrates as ON, mirroring the backend's
         // default-ON glossary read (`!== false`).
         languageGlossaryEnabled: true,
         comfortAudioEnabled: false,
         comfortAudioUrl: "",
         comfortAudioVolume: 0.3,
+        // Experimental, opt-in: metadata with no videoActorEnabled key at all
+        // — i.e. every roleplay that exists — hydrates the toggle off.
+        videoActorEnabled: false,
+        videoActorAvatarId: "",
         historyTrimEnabled: true,
         continuousBackchanneling: false,
         currentState: false,
@@ -472,6 +498,7 @@ describe("createSimulation utils", () => {
           ],
         },
         competency: undefined,
+        competencies: [],
         behaviorInstructions: [
           {
             category: "c",
@@ -510,6 +537,7 @@ describe("createSimulation utils", () => {
         difficultyLevel: "medium",
         metadata: {},
         competency: undefined,
+        competencies: [],
         behaviorInstructions: [
           {
             category: "SHOULD_DO" as any,
@@ -702,159 +730,123 @@ describe("createSimulation utils", () => {
       });
     });
 
-    it("should pass through turnMaxEndpointingDelay when set", () => {
-      const mockResponse = {
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: { turnMaxEndpointingDelay: 1.5 },
-      } as any;
+    describe("buildFeedbackTabsPayload (write side)", () => {
+      // The bug this locks in: on a brand-new simulation the form's
+      // TOGGLE_BUTTON defaultValue never reaches the controller, so both toggles
+      // arrive undefined. Coerced with Boolean() that saved as all-false and the
+      // learner finished a session to a blank post-session screen.
+      it("should treat an untouched (undefined) toggle as ON", () => {
+        expect(buildFeedbackTabsPayload({})).toEqual({
+          debrief: true,
+          transcript: true,
+        });
+      });
 
-      const result = formatSimulationResponseData(mockResponse);
+      it("should honor an explicit false on one tab while its untouched sibling stays ON", () => {
+        expect(buildFeedbackTabsPayload({ feedbackTabDebrief: false })).toEqual({
+          debrief: false,
+          transcript: true,
+        });
+      });
 
-      expect(result.turnMaxEndpointingDelay).toBe(1.5);
-    });
+      it("should send both off when the author turned every tab off", () => {
+        // Not a bug state: this is the wholesale opt-out the retired
+        // enableFeedback master switch used to express.
+        expect(
+          buildFeedbackTabsPayload({
+            feedbackTabDebrief: false,
+            feedbackTabTranscript: false,
+          }),
+        ).toEqual({ debrief: false, transcript: false });
+      });
 
-    it("should leave turnMaxEndpointingDelay undefined when unset (no fallback default)", () => {
-      const mockResponse = {
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: {},
-      } as any;
+      it("should never emit a skills key", () => {
+        expect(buildFeedbackTabsPayload({})).not.toHaveProperty("skills");
+      });
 
-      const result = formatSimulationResponseData(mockResponse);
+      it("should round-trip with formatSimulationResponseData", () => {
+        const written = buildFeedbackTabsPayload({ feedbackTabTranscript: false });
+        const rehydrated = formatSimulationResponseData({
+          id: "sim-1",
+          title: "T",
+          description: "D",
+          status: "DRAFT",
+          metadata: { feedbackTabs: written },
+        } as any);
 
-      expect(result.turnMaxEndpointingDelay).toBeUndefined();
-    });
-
-  describe("buildFeedbackTabsPayload (write side)", () => {
-    // The bug this locks in: on a brand-new simulation the form's
-    // TOGGLE_BUTTON defaultValue never reaches the controller, so all three
-    // arrive undefined. Coerced with Boolean() that saved as all-false and the
-    // learner finished a session to a blank post-session screen.
-    it("should treat an untouched (undefined) toggle as ON", () => {
-      expect(buildFeedbackTabsPayload({})).toEqual({
-        debrief: true,
-        skills: true,
-        transcript: true,
+        expect(rehydrated.feedbackTabDebrief).toBe(true);
+        expect(rehydrated.feedbackTabTranscript).toBe(false);
       });
     });
-
-    it("should honor an explicit false while untouched siblings stay ON", () => {
-      expect(buildFeedbackTabsPayload({ feedbackTabSkills: false })).toEqual({
-        debrief: true,
-        skills: false,
-        transcript: true,
-      });
-    });
-
-    it("should send all three off when the author turned every tab off", () => {
-      expect(
-        buildFeedbackTabsPayload({
-          feedbackTabDebrief: false,
-          feedbackTabSkills: false,
-          feedbackTabTranscript: false,
-        }),
-      ).toEqual({ debrief: false, skills: false, transcript: false });
-    });
-
-    it("should round-trip with formatSimulationResponseData", () => {
-      const written = buildFeedbackTabsPayload({ feedbackTabTranscript: false });
-      const rehydrated = formatSimulationResponseData({
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        metadata: { feedbackTabs: written },
-      } as any);
-
-      expect(rehydrated.feedbackTabDebrief).toBe(true);
-      expect(rehydrated.feedbackTabSkills).toBe(true);
-      expect(rehydrated.feedbackTabTranscript).toBe(false);
-    });
-  });
 
     describe("feedbackTabs (post-session tab visibility)", () => {
-      it("should hydrate all three tabs as ON when metadata has no feedbackTabs at all", () => {
-        const mockResponse = {
+      const responseWith = (metadata?: unknown) =>
+        ({
           id: "sim-1",
           title: "T",
           description: "D",
           status: "DRAFT",
-          metadata: {},
-        } as any;
+          ...(metadata === undefined ? {} : { metadata }),
+        }) as any;
 
-        const result = formatSimulationResponseData(mockResponse);
+      it("should hydrate both tabs ON when metadata has no feedbackTabs at all", () => {
+        const result = formatSimulationResponseData(responseWith({}));
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(true);
         expect(result.feedbackTabTranscript).toBe(true);
       });
 
-      it("should hydrate all three tabs as ON when metadata itself is absent", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
+      it("should hydrate both tabs ON when metadata itself is absent", () => {
+        const result = formatSimulationResponseData(responseWith(undefined));
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(true);
         expect(result.feedbackTabTranscript).toBe(true);
       });
 
-      it("should honor an explicit false on a single tab while the others default ON", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { skills: false } },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
+      it("should read a partially written object's missing key as ON", () => {
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { transcript: false } }),
+        );
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(false);
-        expect(result.feedbackTabTranscript).toBe(true);
-      });
-
-      it("should read all three as OFF when every key is explicitly false", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { debrief: false, skills: false, transcript: false } },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.feedbackTabDebrief).toBe(false);
-        expect(result.feedbackTabSkills).toBe(false);
         expect(result.feedbackTabTranscript).toBe(false);
       });
 
-      it("should read all three as ON when every key is explicitly true", () => {
-        const mockResponse = {
-          id: "sim-1",
-          title: "T",
-          description: "D",
-          status: "DRAFT",
-          metadata: { feedbackTabs: { debrief: true, skills: true, transcript: true } },
-        } as any;
+      it("should read both as OFF when every key is explicitly false", () => {
+        // What migration 1944200000000 wrote for every roleplay that had the
+        // old enableFeedback master switch turned off.
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { debrief: false, transcript: false } }),
+        );
 
-        const result = formatSimulationResponseData(mockResponse);
+        expect(result.feedbackTabDebrief).toBe(false);
+        expect(result.feedbackTabTranscript).toBe(false);
+      });
+
+      it("should read both as ON when every key is explicitly true", () => {
+        const result = formatSimulationResponseData(
+          responseWith({ feedbackTabs: { debrief: true, transcript: true } }),
+        );
 
         expect(result.feedbackTabDebrief).toBe(true);
-        expect(result.feedbackTabSkills).toBe(true);
         expect(result.feedbackTabTranscript).toBe(true);
+      });
+
+      it("should ignore a leftover skills key and a leftover enableFeedback flag", () => {
+        // Both are stripped by the migration, but a cached admin response or a
+        // row written by an older build can still carry them. Neither may
+        // influence what the two surviving toggles show.
+        const result = formatSimulationResponseData(
+          responseWith({
+            enableFeedback: false,
+            feedbackTabs: { debrief: true, skills: true, transcript: true },
+          }),
+        );
+
+        expect(result.feedbackTabDebrief).toBe(true);
+        expect(result.feedbackTabTranscript).toBe(true);
+        expect(result).not.toHaveProperty("feedbackTabSkills");
+        expect(result).not.toHaveProperty("enableFeedback");
       });
     });
   });
@@ -913,24 +905,6 @@ describe("createSimulation utils", () => {
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.temperature).toBeNull();
-    });
-
-    it("should keep a NUMBER field value as a float (not truncate to int)", () => {
-      const formData = {
-        turnMaxEndpointingDelay: "1.5",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.turnMaxEndpointingDelay).toBe(1.5);
-    });
-
-    it("should convert empty NUMBER field value to null", () => {
-      const formData = {
-        turnMaxEndpointingDelay: "",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.turnMaxEndpointingDelay).toBeNull();
     });
 
     it("should handle image upload field with valid URL", () => {
@@ -1011,21 +985,24 @@ describe("createSimulation utils", () => {
       // explicitly rather than derived from the same config the function
       // reads, so a default silently flipped in SimulationCreator.ts fails
       // here instead of quietly agreeing with itself.
-      expect(defaults.enableFeedback).toBe(true);
       expect(defaults.feedbackTabDebrief).toBe(true);
-      expect(defaults.feedbackTabSkills).toBe(true);
       expect(defaults.feedbackTabTranscript).toBe(true);
       expect(defaults.optGuardrails).toBe(true);
       expect(defaults.languageGlossaryEnabled).toBe(true);
       expect(defaults.historyTrimEnabled).toBe(true);
       expect(defaults.interimReplyEnabled).toBe(true);
+      expect(defaults.fillerEnabled).toBe(true);
     });
 
     it("should leave the OFF-by-default and undeclared toggles off", () => {
+      // The Skills toggle and the enableFeedback master switch were retired
+      // on 2026-08-31, so they are not seeded at all any more.
+      expect(defaults).not.toHaveProperty("feedbackTabSkills");
+      expect(defaults).not.toHaveProperty("enableFeedback");
       expect(defaults.summaryChecklistEnabled).toBe(false);
       expect(defaults.pauseEnabled).toBe(false);
-      expect(defaults.fillerEnabled).toBe(false);
       expect(defaults.comfortAudioEnabled).toBe(false);
+      expect(defaults.videoActorEnabled).toBe(false);
       expect(defaults.continuousBackchanneling).toBe(false);
       // No `defaultValue` in the config at all — absent reads as OFF.
       expect(defaults.isGlobal).toBe(false);
@@ -1046,7 +1023,8 @@ describe("createSimulation utils", () => {
         ...defaults,
       });
 
-      expect(saved.enableFeedback).toBe(true);
+      expect(saved.feedbackTabDebrief).toBe(true);
+      expect(saved.feedbackTabTranscript).toBe(true);
       expect(saved.historyTrimEnabled).toBe(true);
       expect(saved.interimReplyEnabled).toBe(true);
       expect(saved.languageGlossaryEnabled).toBe(true);
@@ -1069,7 +1047,8 @@ describe("createSimulation utils", () => {
         metadata: saved,
       } as any);
 
-      expect(reloaded.enableFeedback).toBe(true);
+      expect(reloaded.feedbackTabDebrief).toBe(true);
+      expect(reloaded.feedbackTabTranscript).toBe(true);
       expect(reloaded.historyTrimEnabled).toBe(true);
       expect(reloaded.interimReplyEnabled).toBe(true);
       expect(reloaded.languageGlossaryEnabled).toBe(true);
@@ -1112,6 +1091,53 @@ describe("createSimulation utils", () => {
       // in the backend regardless of this toggle.
       expect(guardrailsField).not.toHaveProperty("disabled");
       expect(guardrailsField).not.toHaveProperty("readOnly");
+    });
+  });
+
+  describe("formatVersionConfigToForm", () => {
+    it("derives the three primary-language ids from metadata.defaultLanguageId", () => {
+      // A version snapshot stores `defaultLanguageId` (a metadata field); the
+      // live GET instead exposes the three `*PrimaryLanguageId` keys the server
+      // derives from it. Without the derivation a forked Tamil sim loaded with
+      // primary=null, so the panels fell back to English: the Tamil source text
+      // showed under the English tab and the Tamil tab read as blank.
+      const form = formatVersionConfigToForm({
+        title: "t",
+        description: "the brief",
+        defaultLanguageId: 6,
+      });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBe(6);
+      expect(form.openingDialoguePrimaryLanguageId).toBe(6);
+      expect(form.remindersPrimaryLanguageId).toBe(6);
+    });
+
+    it("prefers an explicitly stored primary-language id over the derived one", () => {
+      const form = formatVersionConfigToForm({
+        defaultLanguageId: 6,
+        challengeDescriptionPrimaryLanguageId: 1,
+      });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBe(1);
+      // The other two still derive.
+      expect(form.remindersPrimaryLanguageId).toBe(6);
+    });
+
+    it("leaves the primary-language ids null when the snapshot has no language", () => {
+      const form = formatVersionConfigToForm({ title: "t" });
+
+      expect(form.challengeDescriptionPrimaryLanguageId).toBeNull();
+    });
+
+    it("carries the challenge description through a version snapshot", () => {
+      const form = formatVersionConfigToForm({
+        title: "t",
+        description: "the brief",
+        translationDescription: { "6": "sample" },
+      });
+
+      expect(form.description).toBe("the brief");
+      expect(form.translationDescription).toEqual({ "6": "sample" });
     });
   });
 });

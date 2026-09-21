@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,7 @@ import {
   ProfileSettings,
   ReportProblemModal,
   StreakPill,
+  LevelIndicator,
   UserInfo,
 } from "@components";
 import {
@@ -29,8 +30,10 @@ import {
 } from "@constants";
 import {
   useAnalytics,
+  useCanViewAnalytics,
   useCanViewCharacterLibrary,
   usePracticeStreakSummary,
+  useProgressSummary,
   useUser,
 } from "@hooks";
 
@@ -38,6 +41,7 @@ import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
 import LanguageSelector from "../language-selector/LanguageSelector";
 import NotificationBadge from "../notification-badge/NotificationBadge";
+import { NotificationBell } from "../notification-feed";
 
 const EXPANDED_WIDTH = 1200;
 
@@ -73,17 +77,38 @@ const Tab: FC<TabProps> = ({
   href,
 }) => {
   const { t } = useTranslation();
-  // Tabs that leave the app render as a real anchor, not a click-only div, so
-  // they are keyboard-reachable, middle-clickable and preview the destination
-  // on hover. In-app tabs keep the existing div (they route via onClick).
+  // Tabs that leave the app render as a real anchor, so they are
+  // middle-clickable and preview the destination on hover.
+  //
+  // In-app tabs still route via onClick rather than an href, but they are no
+  // longer click-only divs: primary navigation that can't be reached with Tab
+  // or activated with Enter locks out keyboard and screen-reader users, and
+  // this sidebar is the only way to move around the app. They carry a button
+  // role, take focus, respond to Enter and Space, and mark the current page
+  // with aria-current so it is announced rather than only coloured.
   const Wrapper = href ? "a" : "div";
-  const wrapperProps = href ? { href, target: "_blank" as const, rel: "noopener noreferrer" } : {};
+  const isActive = activeTab === id;
+  const wrapperProps = href
+    ? { href, target: "_blank" as const, rel: "noopener noreferrer" }
+    : {
+        role: "button",
+        tabIndex: 0,
+        "aria-current": isActive ? ("page" as const) : undefined,
+        onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          // Space scrolls the page by default, and Enter can submit an
+          // enclosing form; a control that navigates must do neither.
+          event.preventDefault();
+          onClick?.();
+        },
+      };
   return (
     <Wrapper
       data-testid={`nav-tab-${id}`}
       className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
-          ${activeTab === id ? "bg-background-tertiary rounded-[2px]" : "hover:bg-background-secondary"}
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500
+          ${isActive ? "bg-background-tertiary" : "hover:bg-background-secondary"}
           transition-all duration-300 group
         `}
       onClick={onClick}
@@ -140,6 +165,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   // Shared with the /learn bar via a single void-arg cache entry, so the pill
   // and the bar are always the same number.
   const { summary: streakSummary } = usePracticeStreakSummary();
+  const { summary: progressSummary, canViewProgress } = useProgressSummary();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },
@@ -149,6 +175,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const [openReportProblem, setOpenReportProblem] = useState<boolean>(false);
   const { canView: canViewCharacterLibrary } = useCanViewCharacterLibrary();
+  const { canView: canViewAnalytics } = useCanViewAnalytics();
   const permittedTabs = navBarOptions.filter(tab => {
     // Organization Settings is gated by ADMIN role + a temporary email
     // allowlist, not by a permission (see canViewOrganizationSettings).
@@ -160,6 +187,21 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     // tenant's CHARACTER_LIBRARY_ENABLED org toggle — see useCanViewCharacterLibrary.
     if (tab.id === TabId.CHARACTER_LIBRARY) {
       return canViewCharacterLibrary;
+    }
+
+    // Progress needs VIEW_USER_RANK AND the tenant's PROGRESS_DASHBOARD_ENABLED org
+    // toggle — see useProgressSummary. Every learner holds the permission, so a
+    // permission-only check would show the tab to orgs that never opted in.
+    if (tab.id === TabId.PROGRESS) {
+      return canViewProgress;
+    }
+
+    // Statistics needs VIEW_ANALYTICS_DASHBOARD AND something for the page to
+    // render — a registered dashboard, or the native Organization Metrics view.
+    // See useCanViewAnalytics: the permission alone put an empty tab in front of
+    // every tenant that has no dashboards configured.
+    if (tab.id === TabId.ANALYTICS) {
+      return canViewAnalytics;
     }
 
     // Check if user has permission for this tab
@@ -281,6 +323,34 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
       );
     };
 
+    /**
+     * Persistent level ring on the Progress tab.
+     *
+     * Shares the void-argument summary query with the Progress page, so the rail and the
+     * page it links to resolve to one RTK Query cache entry and cannot disagree.
+     *
+     * Level 1 with no XP still renders: unlike a streak, which is genuinely absent until
+     * earned, every learner has a level, and hiding it until level 2 would make the tab
+     * look broken on day one.
+     */
+    const renderLevelIndicator = () => {
+      if (!progressSummary) return null;
+
+      return (
+        <LevelIndicator
+          level={progressSummary.level}
+          progress={progressSummary.progress}
+          isMaxLevel={progressSummary.isMaxLevel}
+          // Collapsed, the trailing slot is a small corner overlay on an 18px icon, so
+          // the ring is swapped for the pill the streak marker already uses there.
+          variant={isExpanded ? "ring" : "pill"}
+          ariaLabel={t("progress.a11y.navLevel", {
+            level: progressSummary.level,
+          })}
+        />
+      );
+    };
+
     return (
       <div
         className="flex-1 flex-col gap-1 m-2 border-t border-t-border-light pt-3"
@@ -298,7 +368,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               isExpanded={isExpanded}
               onClick={() => onTabClick(path)}
               badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
-              trailing={id === TabId.LEARN ? renderStreakPill() : undefined}
+              trailing={
+                id === TabId.LEARN
+                  ? renderStreakPill()
+                  : id === TabId.PROGRESS
+                    ? renderLevelIndicator()
+                    : undefined
+              }
             />
           );
 
@@ -440,6 +516,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
         <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
+
+          <NotificationBell isExpanded={isExpanded} />
 
           {isExpanded && FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
             <AppTooltip location={TooltipLocation.LANGUAGE_SELECTOR}>

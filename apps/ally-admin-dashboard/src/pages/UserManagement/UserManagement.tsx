@@ -40,13 +40,13 @@ import {
   USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2,
   UserRole,
   Permissions,
-  isSuperDuperAdminRole,
   FeatureToggleKey,
 } from "@constants";
 import { RootState } from "@store";
 import { TabType } from "@types";
 import { formatCapitalizedEnum, hasFeature } from "@utils";
 
+import { PhoneMappingsTab } from "./PhoneMappings";
 import { useOrganizationManagement } from "./useOrganizationManagement";
 import { useUserManagement } from "./useUserManagement";
 import { SuperAdmins } from "../SuperAdmins/SuperAdmins";
@@ -63,20 +63,20 @@ export const UserManagement: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const permissions = useSelector((state: RootState) => state.user.permissions);
   const features = useSelector((state: RootState) => state.user.features);
-  const currentUser = useSelector((state: RootState) => state.user.user);
   const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
   const canEditUser = permissions.includes(Permissions.EDIT_USER);
-  const isSuperDuperAdmin = isSuperDuperAdminRole(currentUser?.role);
-  // Dual-gated during the role->toggle migration: either the legacy
-  // super-duper-admin role or the admin_user_management toggle unlocks this
-  // tab (mirrors PrivateLayout's `requiredRole || requiredFeature`).
-  const canManagePlatformAdmins =
-    isSuperDuperAdmin || hasFeature(features, FeatureToggleKey.ADMIN_USER_MANAGEMENT);
+  const canManagePlatformAdmins = hasFeature(features, FeatureToggleKey.ADMIN_USER_MANAGEMENT);
   // Platform accounts are now always part of the Users list rather than an
   // opt-in filter, so this has to match the backend's own gate exactly: the
   // flag rides on every users request, and a mismatch would 403 the whole list
   // instead of just one filter.
   const canListPlatformAdmins = permissions.includes(Permissions.VIEW_SUPER_DUPER_ADMINS);
+  // Gated on the WhatsApp bot's feature toggle alone, exactly like the WhatsApp Bot page itself
+  // — which carries no `Permissions` member on purpose, because adding one would need a backend
+  // grant migration for gating the toggle already does. The endpoints behind this tab ARE
+  // permission-gated server-side (view/edit:whatsapp-bot), so the authority for a mapping still
+  // sits with whoever runs the bot; this only decides whether the tab is offered.
+  const canManagePhoneMappings = hasFeature(features, FeatureToggleKey.WHATSAPP_BOT);
 
   // Platform-admin count for the tab strip. RTK Query shares this cache entry
   // with the SuperAdmins tab itself, so no duplicate request is made.
@@ -89,7 +89,8 @@ export const UserManagement: FC = () => {
   // The Ally admins tab is gated; a deep link to it from anyone else falls
   // back to Users (the backing endpoints would 403 anyway).
   const activeTab =
-    requestedTab === TabType.SUPER_ADMINS && !canManagePlatformAdmins
+    (requestedTab === TabType.SUPER_ADMINS && !canManagePlatformAdmins) ||
+    (requestedTab === TabType.PHONE_MAPPINGS && !canManagePhoneMappings)
       ? TabType.USERS
       : requestedTab;
 
@@ -184,6 +185,9 @@ export const UserManagement: FC = () => {
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
     ...(canManagePlatformAdmins
       ? [{ id: TabType.SUPER_ADMINS, label: en.superAdmins.title, count: superAdminTierCount }]
+      : []),
+    ...(canManagePhoneMappings
+      ? [{ id: TabType.PHONE_MAPPINGS, label: en.whatsappBot.phoneMappings.tabLabel }]
       : []),
   ];
 
@@ -608,6 +612,8 @@ export const UserManagement: FC = () => {
         );
       case TabType.SUPER_ADMINS:
         return canManagePlatformAdmins ? <SuperAdmins /> : null;
+      case TabType.PHONE_MAPPINGS:
+        return canManagePhoneMappings ? <PhoneMappingsTab /> : null;
     }
   };
 

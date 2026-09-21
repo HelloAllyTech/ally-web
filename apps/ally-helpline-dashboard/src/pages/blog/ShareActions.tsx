@@ -12,7 +12,7 @@ interface ShareActionsProps {
 const buildUrl = (slug: string) => `${window.location.origin}/blog/${slug}`;
 
 const iconButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-full border border-border-light text-typography-600 transition-colors hover:bg-background-secondary hover:text-typography-900";
+  "flex h-8 w-8 items-center justify-center rounded-full border border-[#29261f]/15 text-[#565045] transition-colors hover:bg-[#29261f]/5 hover:text-[#29261f]";
 
 export const ShareActions: FC<ShareActionsProps> = ({
   slug,

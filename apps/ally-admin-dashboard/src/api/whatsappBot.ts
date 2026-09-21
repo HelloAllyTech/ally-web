@@ -4,6 +4,7 @@ import {
   CreateKbUploadUrlRequest,
   CreateKbUploadUrlResponse,
   GetKbChunksResponse,
+  KbCorpus,
   KbChunk,
   GetKbDocumentsParams,
   GetKbDocumentsResponse,
@@ -12,7 +13,15 @@ import {
   KbSearchResponse,
   KbStats,
   ReplaceKbDocumentContentRequest,
+  BulkWaPhoneMappingsRequest,
+  BulkWaPhoneMappingsResponse,
+  CreateWaPhoneMappingRequest,
+  GetWaPhoneMappingsParams,
+  GetWaPhoneMappingsResponse,
+  UpdateKbDocumentAudienceRequest,
   UpdateKbDocumentRequest,
+  UpdateWaPhoneMappingRequest,
+  WaPhoneMapping,
   CreateWaTemplateRequest,
   GetWaTemplatesResponse,
   TestWaTemplateRequest,
@@ -40,11 +49,21 @@ import {
 import { baseAPI } from "./baseApi";
 
 /**
- * WhatsApp Q&A bot admin endpoints.
+ * WhatsApp Q&A bot admin endpoints, plus the shared knowledge-corpus ones.
+ *
+ * The corpus endpoints are NOT WhatsApp-specific — they take a `corpus` and serve the character
+ * library too. They live here because the WhatsApp bot was their first consumer and moving them
+ * would churn every import for no behavioural gain. The DATA layer is shared deliberately; the
+ * SCREENS are not, and should not be: one is a bot's reference library and the other is
+ * character-grounding material, and a single UI trying to be both would serve neither.
  *
  * Injected onto `baseAPI` rather than creating a new api, so no store change is needed. Every tag
  * used here is also registered in baseApi.ts's `tagTypes` — an unregistered tag is silently ignored
  * by RTK Query and the invalidation never fires, which is the documented scar in that file.
+ *
+ * The document tag is shared across corpora, so a character-library write also refetches the
+ * WhatsApp list. Deliberate: one wasted request beats registering a second tag and discovering
+ * months later that a typo made its invalidation a no-op.
  */
 const whatsappBotAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -55,6 +74,7 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.WHATSAPP_BOT.DOCUMENTS,
         method: HttpMethod.GET,
         params: {
+          corpus: params?.corpus ?? KbCorpus.WHATSAPP_QA,
           limit: params?.limit ?? 25,
           offset: params?.offset ?? 0,
           ...(params?.search ? { search: params.search } : {}),
@@ -76,10 +96,11 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
     }),
 
-    getKbStats: builder.query<KbStats, void>({
-      query: () => ({
+    getKbStats: builder.query<KbStats, KbCorpus | void>({
+      query: (corpus?: KbCorpus) => ({
         url: ApiEndpoints.WHATSAPP_BOT.STATS,
         method: HttpMethod.GET,
+        params: { corpus: corpus ?? KbCorpus.WHATSAPP_QA },
       }),
       providesTags: [TAG_TYPES.WHATSAPP_BOT_STATS],
     }),
@@ -106,11 +127,85 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS, TAG_TYPES.WHATSAPP_BOT_STATS],
     }),
 
+    // ── Phone → organisation mappings ───────────────────────────────────────
+    // The admin's answer to "the bot does not recognise this number". Resolution prefers these
+    // over a `users.phone` match, so this is the surface that actually fixes a refusal.
+
+    getWaPhoneMappings: builder.query<GetWaPhoneMappingsResponse, GetWaPhoneMappingsParams | void>({
+      query: params => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS,
+        params: params ? { ...params } : undefined,
+      }),
+      providesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    createWaPhoneMapping: builder.mutation<WaPhoneMapping, CreateWaPhoneMappingRequest>({
+      query: body => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    /**
+     * Upload many.
+     *
+     * The response is per-row, so the caller must render it rather than showing a count: a
+     * 200-line roster with three conflicts and one typo is four lines to fix, and a success
+     * toast would hide all four.
+     */
+    bulkCreateWaPhoneMappings: builder.mutation<
+      BulkWaPhoneMappingsResponse,
+      BulkWaPhoneMappingsRequest
+    >({
+      query: body => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPINGS_BULK,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    updateWaPhoneMapping: builder.mutation<WaPhoneMapping, UpdateWaPhoneMappingRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPING_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
+    deleteWaPhoneMapping: builder.mutation<{ id: string; removed: boolean }, string>({
+      query: id => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PHONE_MAPPING_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS],
+    }),
+
     /** Metadata only (title, tags, language). Never triggers a re-index. */
     updateKbDocument: builder.mutation<KbDocument, UpdateKbDocumentRequest>({
       query: ({ id, ...body }) => ({
         url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_BY_ID(id),
         method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
+    }),
+
+    /**
+     * Target a document at one, some or all organisations.
+     *
+     * Separate from updateKbDocument because it is not metadata: it rewrites the audience on
+     * every indexed chunk, so it can fail where a title edit cannot — a 500 here means the
+     * assignment saved but retrieval may still use the old audience, and the panel has to say so
+     * rather than closing as if nothing happened.
+     */
+    setKbDocumentAudience: builder.mutation<KbDocument, UpdateKbDocumentAudienceRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.WHATSAPP_BOT.DOCUMENT_TENANTS(id),
+        method: HttpMethod.PUT,
         body,
       }),
       invalidatesTags: [TAG_TYPES.WHATSAPP_BOT_DOCUMENTS],
@@ -525,6 +620,12 @@ export const {
   useCreateKbUploadUrlMutation,
   useCreateKbDocumentMutation,
   useUpdateKbDocumentMutation,
+  useSetKbDocumentAudienceMutation,
+  useGetWaPhoneMappingsQuery,
+  useCreateWaPhoneMappingMutation,
+  useBulkCreateWaPhoneMappingsMutation,
+  useUpdateWaPhoneMappingMutation,
+  useDeleteWaPhoneMappingMutation,
   useReplaceKbDocumentContentMutation,
   useReindexKbDocumentMutation,
   useArchiveKbDocumentMutation,

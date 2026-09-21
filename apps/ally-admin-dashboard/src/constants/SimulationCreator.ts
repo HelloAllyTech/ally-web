@@ -1,6 +1,10 @@
+import { UseFormReturn } from "react-hook-form";
+
 import { cellTypes } from "@components";
 import { en, ExperienceMode, TooltipLocation } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
+
+import { FeatureToggleKey } from "./featureToggles";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -170,6 +174,7 @@ export const FORM_FIELD_TYPES = {
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
     COMFORT_AUDIO_TRACK: "comfort_audio_track",
+    VIDEO_ACTOR_PICKER: "video_actor_picker",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -183,6 +188,10 @@ export const FORM_FIELD_TYPES = {
 export const FORM_FIELD_IDS = {
   TITLE: "title",
   COMPETENCY: "competency",
+  // The authoritative multi-competency selection. `COMPETENCY` above still
+  // holds COMPETENCIES[0] as an object, because the Agent Builder Copilot and
+  // the field's own required-validation read a single competency.
+  COMPETENCIES: "competencies",
   CATEGORY: "category",
   PARTNER_ORG_NAME: "partnerOrgName",
   DIFFICULTY_LEVEL: "difficultyLevel",
@@ -210,10 +219,10 @@ export const FORM_FIELD_IDS = {
   TIMER_MODE: "timerMode",
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
-  ENABLE_FEEDBACK: "enableFeedback",
   FEEDBACK_TAB_DEBRIEF: "feedbackTabDebrief",
-  FEEDBACK_TAB_SKILLS: "feedbackTabSkills",
   FEEDBACK_TAB_TRANSCRIPT: "feedbackTabTranscript",
+  SUPERVISOR_NOTES_ENABLED: "supervisorNotesEnabled",
+  LIVE_TAB_ENABLED: "liveTabEnabled",
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   REMINDERS_ENABLED: "remindersEnabled",
@@ -224,14 +233,34 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
+  VIDEO_ACTOR_ENABLED: "videoActorEnabled",
+  VIDEO_ACTOR_AVATAR_ID: "videoActorAvatarId",
+  VIDEO_ACTOR_PROVIDER: "videoActorProvider",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
-  TURN_MAX_ENDPOINTING_DELAY: "turnMaxEndpointingDelay",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
   TEMPERATURE: "temperature",
+};
+
+/**
+ * Links Experience Mode to the Live Events tab going forward: Feedback and
+ * Checklist mode both imply a live feed the learner should see, and None
+ * implies there isn't one. Wired as `experienceMode`'s `onValueChange`,
+ * which — per RadioButtonGroup's contract — only calls this from a real
+ * click, never from mount or from `formMethods.reset(...)` hydration, so an
+ * existing roleplay that already has the two mismatched is left alone until
+ * an author actually touches Experience Mode again.
+ */
+export const syncLiveTabEnabledWithExperienceMode = (
+  value: string,
+  formMethods: UseFormReturn<any>,
+): void => {
+  formMethods.setValue(FORM_FIELD_IDS.LIVE_TAB_ENABLED, value !== ExperienceMode.NONE, {
+    shouldDirty: true,
+  });
 };
 
 /**
@@ -266,14 +295,16 @@ export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
 
 /**
- * Per-simulation override (seconds) for how long ally-ai-learn's semantic
- * turn-detection waits for a learner who seems mid-thought before giving up
- * and replying anyway. Mirrors ally-be's DTO bounds (@Min(0.1) @Max(10)).
- * Left unset by default — unset means "use the global platform default"
- * (settings.TURN_MAX_ENDPOINTING_DELAY), not a specific number.
+ * Turn-detection timing bounds (seconds) for the global "Turn Detection
+ * Timing" control on the admin Settings page. Bounds mirror ally-be's DTO
+ * validators for `PUT /v1/settings/turn-endpointing`. Formerly a per-simulation
+ * experiment (`EXPERIMENT(turn-endpointing)`); promoted to a single
+ * platform-wide setting once a good pair was found on real scenarios.
  */
-export const TURN_MAX_ENDPOINTING_DELAY_MIN = 0.1;
-export const TURN_MAX_ENDPOINTING_DELAY_MAX = 10;
+export const TURN_ENDPOINTING_MIN_FLOOR = 0.05;
+export const TURN_ENDPOINTING_MIN_CEILING = 5;
+export const TURN_ENDPOINTING_MAX_FLOOR = 0.1;
+export const TURN_ENDPOINTING_MAX_CEILING = 10;
 
 /**
  * STT providers ally-ai-learn's `app/stt/factory.py` can construct. Kept in
@@ -392,6 +423,95 @@ export const LLM_MODEL_CATALOG_COLUMNS = [
     minWidth: 120,
   },
 ];
+
+/**
+ * Columns for the AI Tasks registry.
+ *
+ * Deliberately narrower than the underlying row. `kind`, `provider` and
+ * `hotPath` are folded into the cells they qualify rather than given columns of
+ * their own: a nine-column table of mostly one-word values is harder to scan
+ * than a five-column one that carries the same facts, and the three of them are
+ * only ever read as qualifiers on the model or the trigger.
+ */
+export const AI_TASK_COLUMNS = [
+  {
+    id: "trigger",
+    label: "What triggers it",
+    accessor: "trigger",
+    dataType: cellTypes.normalText,
+    minWidth: 300,
+  },
+  {
+    id: "runtimeLabel",
+    label: "Runs in",
+    accessor: "runtimeLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+  },
+  {
+    id: "modelLabel",
+    label: "Model",
+    accessor: "modelLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    // id must match the accessor: Cell.tsx's VERBATIM_TEXT_COLUMN_IDS is keyed
+    // on the column id, and `agent_turn` is the literal stored in
+    // `llm_usage.task` — sentence-casing it to "Agent turn" makes it unusable
+    // for the query someone came here to write.
+    id: "taskLabel",
+    label: "Usage label",
+    accessor: "taskLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "configuredByLabel",
+    label: "Configured by",
+    accessor: "configuredByLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 280,
+  },
+];
+
+/** Service ids from ally-be's LlmRuntime, spelled the way an admin reads them. */
+export const AI_TASK_RUNTIME_LABELS: Record<string, string> = {
+  "ai-learn": "Voice agent",
+  "ally-ai": "AI service",
+  "ally-be": "Backend",
+};
+
+/**
+ * Provider ids to display names. `resolved` and `multiple` are not vendors —
+ * they mark a call whose provider is not known until request time, which an
+ * admin needs to see rather than have guessed at.
+ */
+export const AI_TASK_PROVIDER_LABELS: Record<string, string> = {
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  gemini: "Gemini",
+  deepgram: "Deepgram",
+  multiple: "Several",
+  resolved: "Set per session",
+};
+
+/** Call shapes. Only COMPLETION is an LLM prompt; the rest bill differently. */
+export const AI_TASK_KIND_LABELS: Record<string, string> = {
+  completion: "Chat",
+  embedding: "Embedding",
+  transcription: "Speech to text",
+  speech: "Text to speech",
+  image: "Image",
+  video: "Video avatar",
+};
 
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
 export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
@@ -544,8 +664,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 2500,
         isMandatory: false,
         enhanceType: ENHANCE_TYPE.CHARACTER_PROFILE_TEXT,
-        promptVariable: "character_profile_text",
-        hideWhenUnused: true,
+        // No promptVariable, and deliberately never hidden. This field has a
+        // parallel consumer, which is exactly the case hideWhenUnused documents
+        // as out of scope. Main Agent Prompt #3 drops {character_profile_text}
+        // from its body, but ai-learn's working-memory corpus (corpus.py) builds
+        // the client's recall pool FROM this text — so under #3 the backstory is
+        // MORE load-bearing than before, not less. Gating it on the placeholder
+        // hid the field for every scenario migrated to #3 and left curators
+        // unable to author the thing the recall pool is made of.
       },
       {
         id: "customFields",
@@ -565,12 +691,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         tooltipLocation: TooltipLocation.KNOWLEDGE_SOURCES,
         fullWidth: true,
-        // Knowledge sources feed RAG retrieval, which substitutes
-        // into `{retrieved_context}`. Variants that don't reference
-        // that placeholder won't surface retrieved knowledge at
-        // render time, so the field is useless.
-        promptVariable: "retrieved_context",
-        hideWhenUnused: true,
+        // No promptVariable, and deliberately never hidden. The old reasoning
+        // here — "variants that don't reference {retrieved_context} won't
+        // surface retrieved knowledge, so the field is useless" — is not how
+        // the runtime works: RETRIEVED_CONTEXT_DEFER_TO_SUFFIX defaults true
+        // (ai-learn config.py) and appends retrieval as a trailing
+        // SystemMessage AFTER history, so knowledge reaches the model whether
+        // or not the body names the placeholder. Prompt #3 omits the
+        // placeholder for precisely that reason. Gating on it hid a field that
+        // was still fully wired.
       },
       {
         id: "coverImageUrl",
@@ -581,6 +710,11 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         // rather than two full-width tiles stacked vertically.
         fullWidth: false,
         aiGenerate: true,
+        // Stays visible even when an avatar is chosen. Choosing an avatar
+        // REPOINTS this field at that face's own picture rather than hiding it:
+        // the author can then see what the learner will see, and re-upload over
+        // it if they want something else. Hiding it instead left them stranded
+        // whenever the avatar toggle went back off.
       },
       {
         id: "coverVideoUrl",
@@ -589,6 +723,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         // Pairs with Cover Image above on the same row (see note there).
         fullWidth: false,
+        // Repointed, not hidden, when an avatar is chosen (see note there).
+      },
+      // Sits with Cover Image / Cover Video deliberately: picking a Tavus face
+      // fills the cover from that face's own thumbnail, so the three fields are
+      // one decision about what the learner sees before and during the call.
+      {
+        // Owns BOTH videoActorProvider and videoActorAvatarId, because a face id
+        // is only meaningful against the vendor it came from — see VideoActorPicker.
+        id: "videoActorAvatarId",
+        label: "Avatar",
+        type: FORM_FIELD_TYPES.CUSTOM.VIDEO_ACTOR_PICKER,
+        fullWidth: true,
+        dependsOn: "videoActorEnabled",
+        visibleWhen: (formValues: any) => formValues.videoActorEnabled === true,
+        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
+        note: "Pick the face this character wears. Choose one whose apparent age, gender and ethnicity match the character — the learner reads the person, not just the mouth. Choosing a face also sets this roleplay's cover image and video from that face; you can still upload your own cover over it afterwards.",
       },
       {
         // Self-hides when the selected main-agent prompt does not declare hasStates=true.
@@ -700,6 +850,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: EXPERIENCE_MODE_OPTIONS,
         fullWidth: false,
         isMandatory: false,
+        // New roleplay default: no experience layered on until an author
+        // opts in, so a scenario with no advanced events configured never
+        // ships a Checklist/Feedback promise it can't keep. Existing
+        // roleplays are unaffected — they hydrate from their own saved value.
+        // Literal string, not `ExperienceMode.NONE` (see EXPERIENCE_MODE_OPTIONS
+        // above): this object is built at module load, and several test files
+        // mock `@src/constants` wholesale, so an eager enum-member read here
+        // would throw the way it already can't for the options list.
+        defaultValue: "NONE",
+        // Keeps Live Events tab in lockstep going forward: a mismatch here is
+        // exactly what leaves a learner staring at a tab that can never show
+        // anything (Feedback/Checklist promised, tab off) or an empty one
+        // (None picked, tab still on). Only fires on a real click — see
+        // RadioButtonGroup's `onChange` contract — so opening an existing,
+        // already-mismatched roleplay for edit does not silently "fix" it.
+        onValueChange: syncLiveTabEnabledWithExperienceMode,
       },
       {
         id: "checklistType",
@@ -750,59 +916,33 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.SCORE,
       },
       {
-        // Master switch for the whole post-session experience — the debrief
-        // note + reply thread from Ally, the score/skills view, and the
-        // annotated transcript. Renamed from "AI Feedback Summary": that
-        // label undersold it once the feature grew from a single summary
-        // into three distinct tabs. The FIELD ID stays `enableFeedback`
-        // (it's what's already persisted) — only the human-facing label
-        // and tooltip copy changed.
-        id: "enableFeedback",
-        label: "Post-Session Feedback",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: true,
-        tooltipLocation: TooltipLocation.AI_FEEDBACK_SUMMARY,
-      },
-      {
-        // Nested sub-toggle: only meaningful (and only shown) while
-        // enableFeedback is on. Turning enableFeedback off hides this
-        // control but does NOT clear its stored value — re-enabling the
-        // master switch restores whatever tab visibility was configured
-        // before. Persists to scenarios.metadata.feedbackTabs.debrief
-        // (see CreateSimulation.tsx's payload builder); absent metadata
-        // reads as ON everywhere the backend resolves it.
+        // One of exactly two post-session controls, one per tab the learner
+        // gets. There is no master switch above them any more: "Post-Session
+        // Feedback" plus three sub-toggles was four controls for two
+        // outcomes, and the wholesale opt-out it expressed is just both of
+        // these switched off. Migration 1944200000000 translated every
+        // roleplay that had it off into that shape, so those roleplays now
+        // show their real state here instead of hiding it behind a collapsed
+        // master. Skills went in the same pass — off platform-wide since
+        // 2026-08-24.
+        //
+        // Persists to scenarios.metadata.feedbackTabs.debrief; absent
+        // metadata reads as ON everywhere the backend resolves it.
         id: "feedbackTabDebrief",
         label: "Debrief",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_DEBRIEF,
       },
       {
-        // See feedbackTabDebrief above — same nesting/persistence rules.
-        // Persists to scenarios.metadata.feedbackTabs.skills.
-        id: "feedbackTabSkills",
-        label: "Skills",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: true,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
-        tooltipLocation: TooltipLocation.FEEDBACK_TAB_SKILLS,
-      },
-      {
-        // See feedbackTabDebrief above — same nesting/persistence rules.
+        // See feedbackTabDebrief above — same persistence rules.
         // Persists to scenarios.metadata.feedbackTabs.transcript.
         id: "feedbackTabTranscript",
         label: "Transcript",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
-        dependsOn: "enableFeedback",
-        visibleWhen: (formValues: any) => formValues.enableFeedback === true,
         tooltipLocation: TooltipLocation.FEEDBACK_TAB_TRANSCRIPT,
       },
       {
@@ -812,6 +952,29 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         tooltipLocation: TooltipLocation.ALLOW_PAUSE_RESUME,
+      },
+      {
+        id: "supervisorNotesEnabled",
+        label: "Live supervisor notes",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        tooltipLocation: TooltipLocation.SUPERVISOR_NOTES_ENABLED,
+      },
+      {
+        id: "liveTabEnabled",
+        label: "Live events tab",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        // New roleplay default flipped from true to false: paired with
+        // Experience Mode defaulting to None (see that field's comment), a
+        // brand-new roleplay is never left promising a live feed it has no
+        // events configured for. Existing roleplays hydrate from their own
+        // saved value via formatSimulationResponseData, unaffected. Overridden
+        // per-click by syncLiveTabEnabledWithExperienceMode once an author
+        // picks Feedback/Checklist.
+        defaultValue: false,
+        tooltipLocation: TooltipLocation.LIVE_TAB_ENABLED,
       },
       {
         id: "isGlobal",
@@ -864,7 +1027,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Thinking Filler",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
+        defaultValue: true,
         tooltipLocation: TooltipLocation.THINKING_FILLER,
       },
       {
@@ -907,20 +1070,30 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         note: "How loud the comfort audio plays under the conversation (0 = silent, 1 = full).",
       },
       {
+        // EXPERIMENTAL. Gated on the per-admin `video_actor` feature toggle
+        // rather than a permission, so it can be opened to two people trialling
+        // it instead of a whole tier — this has a real cost and latency profile
+        // and is not something an author should switch on for a live cohort on
+        // a whim. Granted to nobody by default, from Admin User Management.
+        //
+        // Seeing this switch is still only one of three gates: the roleplay is
+        // off until someone turns it on here, and ally-ai-learn's own
+        // VIDEO_ACTOR_ENABLED can stop all of it in one restart.
+        id: "videoActorEnabled",
+        label: "AI video actor (experimental)",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        requiredFeature: FeatureToggleKey.VIDEO_ACTOR,
+        note: "Give this roleplay's character a face: a lip-synced video track alongside its voice. Turn it on only where reading the character's face is part of what's being practised — it costs roughly $4-5 per session, far more than everything else in a roleplay combined, and it adds start-up latency and bandwidth. Lip-sync quality is materially worse outside English. Needs the platform-level video actor switch on as well; sessions fall back to audio-only if the video can't start.",
+      },
+      {
         id: "historyTrimEnabled",
         label: "Trim History",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
-      },
-      {
-        id: "turnMaxEndpointingDelay",
-        label: "Max Endpointing Delay (seconds)",
-        type: FORM_FIELD_TYPES.NUMBER,
-        fullWidth: true,
-        placeholder: `Platform default (${TURN_MAX_ENDPOINTING_DELAY_MIN}-${TURN_MAX_ENDPOINTING_DELAY_MAX})`,
-        note: "How long the agent waits for a learner who seems mid-thought before replying anyway. Lower = faster replies but more risk of interrupting; higher = fewer interruptions but more perceived delay. Leave blank to use the platform default.",
       },
       {
         id: "continuousBackchanneling",

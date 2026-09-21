@@ -10,17 +10,31 @@
  * The board's own state is not that shape — three facets are enums, two are name arrays, and
  * creator is `number[]`. Converting in a pure module (rather than inline in the component) keeps it
  * testable without pulling Carbon or `@components` into the test's module graph, which is the same
- * reason utils/filters.ts and utils/coins.ts exist.
+ * reason utils/filters.ts and utils/votes.ts exist.
  */
 import {
   RoadmapFacets,
+  RoadmapOpportunityEffort,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
 } from "@types";
 
-import { SOURCE_LABEL, STAGE_LABEL, typeLabel } from "./stages";
+import {
+  EFFORT_LABEL,
+  EFFORT_UNSIZED_LABEL,
+  ROADMAP_EFFORT_UNSIZED,
+  SOURCE_LABEL,
+  STAGE_LABEL,
+  typeLabel,
+} from "./stages";
+
+/**
+ * A selected effort facet value: a real size, or the "Not sized" sentinel meaning
+ * `effort IS NULL` — see ROADMAP_EFFORT_UNSIZED.
+ */
+export type RoadmapEffortFilterValue = RoadmapOpportunityEffort | typeof ROADMAP_EFFORT_UNSIZED;
 
 /**
  * The popover's shape. Keys are the section ids FilterDropdown round-trips, and are deliberately
@@ -31,6 +45,7 @@ export interface RoadmapFacetSelection {
   type: string[];
   stage: string[];
   source: string[];
+  effort: string[];
   productGoal: string[];
   owner: string[];
   createdBy: string[];
@@ -41,6 +56,7 @@ export interface RoadmapFacetState {
   typeFilter: RoadmapOpportunityType[];
   stageFilter: RoadmapOpportunityStage[];
   sourceFilter: RoadmapOpportunitySource[];
+  effortFilter: RoadmapEffortFilterValue[];
   goalFilter: string[];
   ownerFilter: string[];
   createdBy: number[];
@@ -50,6 +66,7 @@ export const EMPTY_FACET_STATE: RoadmapFacetState = {
   typeFilter: [],
   stageFilter: [],
   sourceFilter: [],
+  effortFilter: [],
   goalFilter: [],
   ownerFilter: [],
   createdBy: [],
@@ -72,6 +89,7 @@ export const toFacetSelection = (state: RoadmapFacetState): RoadmapFacetSelectio
   type: [...state.typeFilter],
   stage: [...state.stageFilter],
   source: [...state.sourceFilter],
+  effort: [...state.effortFilter],
   productGoal: [...state.goalFilter],
   owner: [...state.ownerFilter],
   createdBy: state.createdBy.map(String),
@@ -81,6 +99,7 @@ export const fromFacetSelection = (selection: RoadmapFacetSelection): RoadmapFac
   typeFilter: selection.type as RoadmapOpportunityType[],
   stageFilter: selection.stage as RoadmapOpportunityStage[],
   sourceFilter: selection.source as RoadmapOpportunitySource[],
+  effortFilter: selection.effort as RoadmapEffortFilterValue[],
   goalFilter: [...selection.productGoal],
   ownerFilter: [...selection.owner],
   // A non-numeric id can only arrive from a corrupted saved view; dropping it beats sending NaN,
@@ -111,6 +130,20 @@ export const mergeFacetSelection = (
 };
 
 /**
+ * Presentation switches shared by the section builder, the chip describer and the group count.
+ *
+ * `omitStage` exists for the Queue, whose stage set (New + Prioritised + In development) is the
+ * view's DEFINITION rather than a filter someone applied: offering the stage facet there would
+ * let a reader edit the Queue into something that is no longer a queue, and describing it as a
+ * chip would render a permanent "Stage: …" with a clear button that does exactly that. One flag
+ * feeds all three helpers so the popover, the chips and the badge cannot disagree about whether
+ * stage is a filter.
+ */
+export interface FacetPresentationOpts {
+  omitStage?: boolean;
+}
+
+/**
  * The popover's sections, in the order they are read.
  *
  * Type/Stage/Source come from enums so they are always offered. Goal, Owner and Filed-by are
@@ -124,24 +157,29 @@ export const mergeFacetSelection = (
 export const buildFacetSections = (
   goals: RoadmapTaxonomyItem[],
   facets?: RoadmapFacets,
+  opts?: FacetPresentationOpts,
 ): RoadmapFacetSection[] => {
   const sections: RoadmapFacetSection[] = [
-    {
-      id: "type",
-      label: "Type",
-      options: Object.values(RoadmapOpportunityType).map(value => ({
-        label: typeLabel(value),
-        value,
-      })),
-    },
-    {
-      id: "stage",
-      label: "Stage",
-      options: Object.values(RoadmapOpportunityStage).map(value => ({
-        label: STAGE_LABEL[value] ?? value,
-        value,
-      })),
-    },
+    // No "Type" facet. It offered Idea and Bug, and bugs are no longer listed on
+    // this board at all (they live in Bug Hunter) — so one option matched
+    // everything and the other matched nothing. A filter whose every setting is
+    // either a no-op or an empty table is worse than no filter.
+    //
+    // `typeFilter` itself survives in RoadmapViewState because saved views
+    // migrated from the standalone app carry it; normaliseTypeFilter in views.ts
+    // strips 'bug' on read so such a view shows the board rather than nothing.
+    ...(opts?.omitStage
+      ? []
+      : [
+          {
+            id: "stage" as const,
+            label: "Stage",
+            options: Object.values(RoadmapOpportunityStage).map(value => ({
+              label: STAGE_LABEL[value] ?? value,
+              value,
+            })),
+          },
+        ]),
     {
       id: "source",
       label: "Source",
@@ -149,6 +187,18 @@ export const buildFacetSections = (
         label: SOURCE_LABEL[value] ?? value,
         value,
       })),
+    },
+    {
+      id: "effort",
+      label: "Effort",
+      // "Not sized" last: it is the absence of a size rather than one more size on the scale.
+      options: [
+        ...Object.values(RoadmapOpportunityEffort).map(value => ({
+          label: EFFORT_LABEL[value] ?? value,
+          value,
+        })),
+        { label: EFFORT_UNSIZED_LABEL, value: ROADMAP_EFFORT_UNSIZED },
+      ],
     },
   ];
 
@@ -191,6 +241,10 @@ export interface RoadmapFilterChip {
   values: string[];
 }
 
+/** An effort facet value's display label, including the "Not sized" sentinel. */
+export const effortFilterLabel = (value: RoadmapEffortFilterValue): string =>
+  value === ROADMAP_EFFORT_UNSIZED ? EFFORT_UNSIZED_LABEL : (EFFORT_LABEL[value] ?? value);
+
 /**
  * What is currently narrowing the list, as one chip per active facet.
  *
@@ -207,6 +261,7 @@ export interface RoadmapFilterChip {
 export const describeActiveFacets = (
   state: RoadmapFacetState,
   facets?: RoadmapFacets,
+  opts?: FacetPresentationOpts,
 ): RoadmapFilterChip[] => {
   const creatorName = (id: number): string => {
     const match = facets?.creators?.find(creator => creator.id === id);
@@ -225,12 +280,17 @@ export const describeActiveFacets = (
       label: "Source",
       values: state.sourceFilter.map(source => SOURCE_LABEL[source] ?? source),
     },
+    {
+      id: "effort",
+      label: "Effort",
+      values: state.effortFilter.map(effortFilterLabel),
+    },
     { id: "productGoal", label: "Goal", values: [...state.goalFilter] },
     { id: "owner", label: "Owner", values: [...state.ownerFilter] },
     { id: "createdBy", label: "Filed by", values: state.createdBy.map(creatorName) },
   ];
 
-  return chips.filter(chip => chip.values.length > 0);
+  return chips.filter(chip => chip.values.length > 0 && !(opts?.omitStage && chip.id === "stage"));
 };
 
 /**
@@ -239,5 +299,5 @@ export const describeActiveFacets = (
  * Groups, not values: someone who ticked three owners has applied one filter ("owner is one of
  * these three"), and reporting "3" would suggest three independent narrowings.
  */
-export const countActiveFacets = (state: RoadmapFacetState): number =>
-  describeActiveFacets(state).length;
+export const countActiveFacets = (state: RoadmapFacetState, opts?: FacetPresentationOpts): number =>
+  describeActiveFacets(state, undefined, opts).length;

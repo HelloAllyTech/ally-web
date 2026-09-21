@@ -5,6 +5,8 @@ import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import svgr from "vite-plugin-svgr";
 import path from "path";
+
+import { testResourceLimits } from "../../vitest.resource-limits";
 // Get absolute paths
 const projectRoot = __dirname;
 
@@ -69,6 +71,10 @@ export default defineConfig(() => ({
     include: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
   },
   test: {
+    // Bounded worker pool — this is the largest suite in the workspace and the
+    // default (one fork per core) will exhaust a 16 GB machine. See
+    // vitest.resource-limits.ts.
+    ...testResourceLimits,
     watch: false,
     globals: true,
     environment: "jsdom",

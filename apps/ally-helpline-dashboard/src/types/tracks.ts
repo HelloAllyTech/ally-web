@@ -44,6 +44,7 @@ export interface TrackListItem {
   description: string | null;
   coverImageUrl: string | null;
   totalItems: number;
+  simulationsCount: number;
   estimatedDurationMinutes: number | null;
   enrolled: boolean;
   completedItems: number;
@@ -117,6 +118,7 @@ export interface TrackDetail {
   coverImageUrl: string | null;
   status: string;
   totalItems: number;
+  simulationsCount: number;
   estimatedDurationMinutes: number | null;
   enrolled: boolean;
   trackEnrollmentId: string | null;
@@ -138,6 +140,58 @@ export interface NextTrackItem extends TrackDetailItem {
 export interface GetNextTrackItemResponse {
   trackCompleted: boolean;
   nextItem: NextTrackItem | null;
+}
+
+// ---------------------------------------------------------------------------
+// Progress + consolidated feedback dashboard
+// ---------------------------------------------------------------------------
+
+export type SkillFeedbackClassification = "demonstrated" | "needs_practice" | "insufficient_data";
+
+export interface TrackProgressSectionSummary {
+  id: string;
+  title: string;
+  order: number;
+  completedItems: number;
+  totalItems: number;
+}
+
+/**
+ * One skillCoverage category, averaged across every evaluated roleplay
+ * session in this course. `category` is a raw pass-through string — both
+ * label generations seen across the platform's history can appear.
+ */
+export interface TrackSkillCategoryFeedback {
+  category: string;
+  averagePercentage: number | null;
+  sampleSize: number;
+  classification: SkillFeedbackClassification;
+}
+
+export interface TrackRoleplaySessionFeedback {
+  trackItemId: string;
+  trackItemTitle: string | null;
+  scenarioSessionId: string;
+  compositeScore: number | null;
+  occurredAt: string | null;
+  evaluationMarkdown: string | null;
+}
+
+export interface TrackProgressDashboard {
+  trackId: string;
+  title: string;
+  trackEnrollmentId: string;
+  totalItems: number;
+  completedItems: number;
+  completionPct: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastActivityAt: string | null;
+  sections: TrackProgressSectionSummary[];
+  evaluatedRoleplaySessionCount: number;
+  averageCompositeScore: number | null;
+  skillCategories: TrackSkillCategoryFeedback[];
+  roleplaySessions: TrackRoleplaySessionFeedback[];
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +250,36 @@ export interface QuizAnswerInput {
   pairs?: { leftId: string; rightId: string }[];
   blanks?: { blankId: string; answer: string }[];
   text?: string;
+}
+
+/**
+ * A quiz question that hard-pauses a Track video at `timestampSeconds` until
+ * answered. `source: "s3"` videos only — an embed player can't reliably
+ * pause and overlay content, so the server sends an empty list otherwise.
+ * `question` is sanitized the same way as a regular quiz question (no
+ * answer key), and never `open_ended` (LLM-graded, doesn't fit a
+ * synchronous hard-pause).
+ */
+export interface VideoInterjection {
+  id: string;
+  timestampSeconds: number;
+  question: SanitizedQuizQuestion;
+  /** Present once the learner has answered — skips re-triggering the overlay. */
+  answered?: { passed: boolean; pointsAwarded?: number };
+}
+
+export interface InterjectionGrading {
+  questionId: string;
+  correct: boolean | null;
+  pointsAwarded: number;
+  pointsPossible: number;
+  llm?: { feedback?: string };
+}
+
+/** Response to `POST .../interjections/:interjectionId/answer`. */
+export interface SubmitInterjectionAnswerResponse {
+  correct: boolean | null;
+  grading: InterjectionGrading;
 }
 
 export type QuizAttemptStatus = "GRADED" | "PENDING_GRADING";
@@ -345,10 +429,50 @@ export interface StartQuizItemPayload extends StartTrackItemBase {
   maxAttempts: number | null;
 }
 
+/**
+ * How the learner has already answered one inline article question. Present
+ * on a resumed article so the reader redraws the resolved state rather than
+ * offering a second go at a question that is already spent.
+ */
+export interface AnsweredArticleQuestion {
+  selectedOptionId: string;
+  correct: boolean;
+  /** ISO timestamp. */
+  answeredAt: string;
+}
+
+/**
+ * A single-select MCQ embedded in an article's prose. Where it sits is marked
+ * in `html` by an empty `<div data-ally-question="<id>">` placeholder, which
+ * the player splits the body on. Sanitized like any other learner-bound
+ * question: `correctOptionId` and `explanation` arrive only once the question
+ * has been answered and can never be answered again.
+ */
+export interface ArticleQuestion extends SanitizedQuizQuestion {
+  answered: AnsweredArticleQuestion | null;
+  correctOptionId: string | null;
+  explanation: string | null;
+}
+
 export interface StartArticleItemPayload extends StartTrackItemBase {
   type: TrackItemType.ARTICLE;
   html: string;
   minReadSeconds: number;
+  /** Empty for an article authored without questions. */
+  questions?: ArticleQuestion[];
+  answeredQuestionCount?: number;
+}
+
+/** Response to `POST .../article-questions/:questionId/answer`. */
+export interface SubmitArticleQuestionAnswerResponse {
+  correct: boolean;
+  selectedOptionId: string;
+  correctOptionId: string;
+  explanation: string | null;
+  answeredQuestionCount: number;
+  totalQuestionCount: number;
+  /** Non-null only when this answer completed the article. */
+  completion: TrackItemCompletionResult | null;
 }
 
 export interface StartVideoItemPayload extends StartTrackItemBase {
@@ -358,6 +482,8 @@ export interface StartVideoItemPayload extends StartTrackItemBase {
   durationSeconds: number;
   requiredWatchPct: number;
   maxWatchedPct: number;
+  /** Empty/absent unless `source === "s3"`. */
+  interjections?: VideoInterjection[];
 }
 
 export interface StartJournalItemPayload extends StartTrackItemBase {

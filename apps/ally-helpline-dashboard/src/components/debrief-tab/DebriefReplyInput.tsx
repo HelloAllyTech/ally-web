@@ -57,27 +57,41 @@ export const DebriefReplyInput: FC<DebriefReplyInputProps> = ({ onSend, disabled
   };
 
   return (
-    <div className="absolute bottom-[16px] right-[16px] left-[16px] flex items-end gap-2 rounded-[32px] border border-gray-300 bg-white p-[6px] shadow-lg">
-      <CharacterCount value={messageLength} maxLength={MAX_MESSAGE_LENGTH} />
-      <textarea
-        ref={inputRef}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        className="custom-scrollbar max-h-[120px] w-full flex-1 resize-none overflow-y-auto p-2 px-3 font-primary text-sm outline-none disabled:opacity-60"
-        placeholder={t("postSim.debrief.replyPlaceholder", { max: MAX_MESSAGE_LENGTH })}
-        disabled={disabled}
-        maxLength={MAX_MESSAGE_LENGTH}
-        rows={1}
-      />
-      <Button
-        variant="primary"
-        type="button"
-        className="!h-10 !w-10 shrink-0 items-center justify-center !rounded-full !p-2 disabled:opacity-60 flex"
-        onClick={handleSend}
-        disabled={disabled || messageLength === 0}
-      >
-        <UpArrow />
-      </Button>
+    // Sticky rather than absolutely positioned: it used to float over the note
+    // and the thread scrolled underneath it, leaving half-covered lines of text
+    // showing above and below the composer. The opaque wrapper is what makes
+    // content pass cleanly behind it.
+    <div className="sticky bottom-0 z-10 bg-white pt-3 pb-1">
+      <div className="flex items-end gap-2 rounded-[32px] border border-gray-300 bg-white p-[6px] shadow-md">
+        {/* Only once there is something to count. A "0" ring sitting in an
+            empty field is noise, and on a phone it was stealing the width the
+            placeholder needed. */}
+        {messageLength > 0 && (
+          <CharacterCount value={messageLength} maxLength={MAX_MESSAGE_LENGTH} />
+        )}
+        <textarea
+          ref={inputRef}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          className="custom-scrollbar max-h-[120px] w-full flex-1 resize-none overflow-y-auto p-2 px-3 font-primary text-sm outline-none disabled:opacity-60"
+          // No character count in the placeholder: CharacterCount sits right
+          // beside it saying the same thing, and the pair overflowed the field
+          // on a phone.
+          placeholder={t("postSim.debrief.replyPlaceholder")}
+          disabled={disabled}
+          maxLength={MAX_MESSAGE_LENGTH}
+          rows={1}
+        />
+        <Button
+          variant="primary"
+          type="button"
+          className="!h-10 !w-10 shrink-0 items-center justify-center !rounded-full !p-2 disabled:opacity-60 flex"
+          onClick={handleSend}
+          disabled={disabled || messageLength === 0}
+        >
+          <UpArrow />
+        </Button>
+      </div>
     </div>
   );
 };

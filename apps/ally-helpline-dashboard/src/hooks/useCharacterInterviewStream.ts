@@ -285,11 +285,7 @@ export const useCharacterInterviewStream = ({
           flushTokens();
           const id = currentAssistantIdRef.current;
           if (id) patchAssistantMessage(id, { error: event.data.message, streaming: false });
-          if (event.data.code === "turn_in_progress") {
-            toast.error(strings.turnInProgress);
-          } else {
-            toast.error(event.data.message || strings.streamFailed);
-          }
+          toast.error(event.data.message || strings.streamFailed);
           break;
         }
         case "ping":
@@ -361,6 +357,8 @@ export const useCharacterInterviewStream = ({
       userMsgId: string | null;
       assistantId: string;
       sessionLost: boolean;
+      /** The server refused the turn outright — nothing of it was recorded. */
+      refused: boolean;
       aborted: boolean;
     }> => {
       const userMsgId = hideUserBubble ? null : nextMessageId();
@@ -377,6 +375,7 @@ export const useCharacterInterviewStream = ({
       setIsStreaming(true);
 
       let sessionLost = false;
+      let refused = false;
 
       try {
         const url = `${API_BASE_URL}/api${ApiEndpoints.CHARACTER_LIBRARY.INTERVIEW_SESSION_STREAM(activeSessionId)}`;
@@ -409,6 +408,14 @@ export const useCharacterInterviewStream = ({
               sessionLost = true; // handled by sendMessage; don't toast the raw error
               continue;
             }
+            // The session's turn mutex was still held, so the server never
+            // read this message: no transcript row, no reply coming. It is a
+            // refusal, not a failed turn — sendMessage rolls the bubbles back
+            // so the answer can simply be given again.
+            if (event.type === "error" && event.data.code === "turn_in_progress") {
+              refused = true;
+              continue;
+            }
             handleEvent(event);
           }
         }
@@ -419,7 +426,7 @@ export const useCharacterInterviewStream = ({
         if (controller.signal.aborted) {
           // Keep the partial text, marked interrupted.
           patchAssistantMessage(assistantId, { streaming: false, interrupted: true });
-        } else if (!sessionLost) {
+        } else if (!sessionLost && !refused) {
           logger.error(`[Character Interview] ${error}`);
           patchAssistantMessage(assistantId, {
             streaming: false,
@@ -433,18 +440,46 @@ export const useCharacterInterviewStream = ({
         if (isMountedRef.current) setIsStreaming(false);
       }
 
-      return { userMsgId, assistantId, sessionLost, aborted: controller.signal.aborted };
+      return {
+        userMsgId,
+        assistantId,
+        sessionLost,
+        refused,
+        aborted: controller.signal.aborted,
+      };
     },
     [fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
   );
 
+  /**
+   * Sends one turn. Resolves `false` when the turn was refused and nothing was
+   * recorded — the caller can offer the same answer again as if it had never
+   * been given (a question card unlocks itself on that).
+   */
   const sendMessage = useCallback(
-    async (text: string, opts?: CharacterInterviewSendOptions, hideUserBubble = false) => {
+    async (
+      text: string,
+      opts?: CharacterInterviewSendOptions,
+      hideUserBubble = false,
+    ): Promise<boolean> => {
       const trimmed = text.trim();
-      if (!trimmed || !sessionId || abortRef.current) return;
+      if (!trimmed || !sessionId || abortRef.current) return false;
 
       const first = await runStream(trimmed, sessionId, opts, hideUserBubble);
-      if (!first.sessionLost || first.aborted) return;
+      if (first.refused) {
+        // Nothing of this turn exists server-side, so leaving the bubbles up
+        // would show an answer the interview never received. Take them back
+        // out and say what to do.
+        setMessages(prev =>
+          prev.filter(m => m.id !== first.userMsgId && m.id !== first.assistantId),
+        );
+        toast.error(strings.turnInProgress);
+        return false;
+      }
+      // Anything else reached the server and is in the transcript — including
+      // a turn the admin stopped half-way, which is why Stop doesn't unlock
+      // the card either.
+      if (!first.sessionLost || first.aborted) return true;
 
       // The server session is gone (e.g. a local DB reset dropped it).
       // Re-create one and replay the turn once so the admin never sees the
@@ -453,16 +488,25 @@ export const useCharacterInterviewStream = ({
       const freshId = onSessionInvalid ? await onSessionInvalid() : null;
       if (!freshId) {
         toast.error(strings.streamFailed);
-        return;
+        return false;
       }
       const retry = await runStream(trimmed, freshId, opts, hideUserBubble);
+      if (retry.refused) {
+        setMessages(prev =>
+          prev.filter(m => m.id !== retry.userMsgId && m.id !== retry.assistantId),
+        );
+        toast.error(strings.turnInProgress);
+        return false;
+      }
       if (retry.sessionLost && !retry.aborted) {
         patchAssistantMessage(retry.assistantId, {
           streaming: false,
           error: strings.streamFailed,
         });
         toast.error(strings.streamFailed);
+        return false;
       }
+      return true;
     },
     [onSessionInvalid, patchAssistantMessage, runStream, sessionId],
   );

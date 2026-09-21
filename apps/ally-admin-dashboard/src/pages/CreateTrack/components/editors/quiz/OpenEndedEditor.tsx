@@ -6,8 +6,14 @@ import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
 import { TrackFormValues } from "@types";
 
+import { QuestionPath } from "../../../trackFormUtils";
+
 interface OpenEndedEditorProps {
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  // `open_ended` is never authored as an interjection (excluded from the
+  // type picker there), but `renderTypeBody`'s single signature is shared
+  // across both call sites, so this prop takes the same union as its
+  // siblings.
+  questionPath: QuestionPath;
 }
 
 export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {

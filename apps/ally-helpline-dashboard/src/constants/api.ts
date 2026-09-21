@@ -111,14 +111,19 @@ export const ApiEndpoints = {
   TRACKS: {
     GET_TRACKS: "/v1/learn/tracks",
     GET_TRACK_DETAIL: (trackId: string) => `/v1/learn/tracks/${trackId}`,
+    GET_PROGRESS: (trackId: string) => `/v1/learn/tracks/${trackId}/progress`,
     ENROLL: (trackId: string) => `/v1/learn/tracks/${trackId}/enroll`,
     GET_NEXT_ITEM: (trackId: string) => `/v1/learn/tracks/${trackId}/next-item`,
     START_ITEM: (itemId: string) => `/v1/learn/tracks/items/${itemId}/start`,
     ARTICLE_READ: (itemId: string) => `/v1/learn/tracks/items/${itemId}/article-read`,
+    ARTICLE_QUESTION_ANSWER: (itemId: string, questionId: string) =>
+      `/v1/learn/tracks/items/${itemId}/article-questions/${questionId}/answer`,
     VIDEO_PROGRESS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/video-progress`,
     QUIZ_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/quiz-attempts`,
     QUIZ_REGRADE: (itemId: string, attemptId: string) =>
       `/v1/learn/tracks/items/${itemId}/quiz-attempts/${attemptId}/regrade`,
+    INTERJECTION_ANSWER: (itemId: string, interjectionId: string) =>
+      `/v1/learn/tracks/items/${itemId}/interjections/${interjectionId}/answer`,
     GAME_RESULT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/game-result`,
     JOURNAL_DRAFT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal`,
     JOURNAL_SUBMIT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal/submit`,
@@ -134,6 +139,14 @@ export const ApiEndpoints = {
   LEADERBOARD: {
     GET_LEADERBOARD: "/v1/community/leaderboard",
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
+  },
+  PROGRESS: {
+    // Full dashboard payload: level state, lifetime totals and the ladder.
+    GET_PROGRESS: "/v1/progress/me",
+    // Level state only — for the persistent nav indicator, which mounts on every route.
+    GET_PROGRESS_SUMMARY: "/v1/progress/me/summary",
+    // One boolean about the caller's own org; readable by any authenticated user.
+    GET_PROGRESS_ENABLED: "/v1/progress/me/enabled",
   },
   PRACTICE_STREAK: {
     GET_PRACTICE_STREAK: "/v1/community/practice-streak",
@@ -244,6 +257,10 @@ export const ApiEndpoints = {
     GET_PUBLIC_BLOGS: "/v1/blog/public",
     GET_PUBLIC_BLOG_BY_SLUG: (slug: string) => `/v1/blog/public/${slug}`,
   },
+  CHANGELOG: {
+    // Public (ungated) changelog reads for the /blog/changelog page.
+    GET_PUBLIC: "/v1/changelog/public",
+  },
   TENANT: {
     // Own-tenant endpoints — scoped server-side to the caller's JWT tenant.
     // Never pass a tenantId; the backend resolves it from the token.
@@ -295,6 +312,12 @@ export const ApiEndpoints = {
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",
+  },
+  NOTIFICATIONS: {
+    LIST: "/v1/notifications",
+    UNREAD_COUNT: "/v1/notifications/unread-count",
+    MARK_READ: (id: string) => `/v1/notifications/${id}/read`,
+    MARK_ALL_READ: "/v1/notifications/read-all",
   },
   PRODUCT_ROADMAP: {
     // "Report a problem" — any logged-in app user, not just admin staff. Backend tags the

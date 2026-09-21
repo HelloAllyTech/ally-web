@@ -76,6 +76,7 @@ const useWakeLock = (sessionId: string | undefined) => {
 
 export const SimulationPage: FC<SimulationPageProps> = ({
   room,
+  sidebarExtraTabs,
   roomData = {},
   roomStatus,
   sessionId,
@@ -83,8 +84,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   startTime,
   events,
   detectedEventIds,
+  supervisorNotes = [],
   score,
   isPreview = false,
+  connectionError = null,
+  agentJoinTimedOut = false,
+  onRetryConnection,
+  onExitSimulation,
+  missedSupervisorNoteCount = 0,
   onEndSimulation,
   renderWarningDialog,
   renderFooter,
@@ -428,6 +435,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           roomData={roomData}
           events={events}
           detectedEventIds={detectedEventIds}
+          supervisorNotes={supervisorNotes}
+          // Opt-in per roleplay: only an explicit true shows the tab (the
+          // pauseEnabled precedent below is the same shape, inverted default).
+          supervisorNotesEnabled={roomData?.supervisorNotesEnabled === true}
+          // Opt-in per roleplay, same shape again. Permission to render a
+          // video surface, not a guarantee one exists — SimulationInterface
+          // keeps the static call card until a track is actually published.
+          videoActorEnabled={roomData?.videoActorEnabled === true}
+          // Opt-out per roleplay, unlike supervisorNotesEnabled/pauseEnabled above:
+          // only an explicit false hides the tab, so missing/undefined keeps it shown.
+          liveTabEnabled={roomData?.liveTabEnabled !== false}
+          sidebarExtraTabs={sidebarExtraTabs}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           isPaused={isPaused}
@@ -437,6 +456,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          connectionError={connectionError}
+          agentJoinTimedOut={agentJoinTimedOut}
+          onRetryConnection={onRetryConnection}
+          onExitSimulation={onExitSimulation}
+          missedSupervisorNoteCount={missedSupervisorNoteCount}
           score={score}
           stateNames={stateNames}
           difficultyLevel={difficultyLevel}

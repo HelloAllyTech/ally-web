@@ -736,6 +736,15 @@ interface KpiTileProps {
   /** Trend behind the headline number. */
   spark?: (number | null)[];
   loading?: boolean;
+  /**
+   * A fetch failure, distinct from a legitimate zero/thin sample. Without this,
+   * `isLoading` resolving to `false` on error fell through to the value branch
+   * and rendered `formatCount(undefined)` as "—" — the same dash used for a
+   * real zero, on a screen where the sibling {@link ChartCard} on the *same*
+   * query correctly showed a red error banner three lines below it.
+   */
+  error?: boolean;
+  onRetry?: () => void;
 }
 
 /**
@@ -765,6 +774,8 @@ export const KpiTile = ({
   deltaDecimals = 1,
   spark,
   loading = false,
+  error = false,
+  onRetry,
 }: KpiTileProps) => {
   const thin = minN !== undefined && isThinSample(n, minN);
   const d = thin
@@ -777,6 +788,21 @@ export const KpiTile = ({
 
       {loading ? (
         <SkeletonPlaceholder className="analytics-kpi-skeleton" />
+      ) : error ? (
+        <div className="flex flex-col items-start gap-2">
+          <InlineNotification
+            kind="error"
+            lowContrast
+            hideCloseButton
+            title="Couldn't load"
+            subtitle="There was a problem fetching this number."
+          />
+          {onRetry && (
+            <Button kind="tertiary" size="sm" onClick={onRetry}>
+              Retry
+            </Button>
+          )}
+        </div>
       ) : thin ? (
         <>
           <p className="text-lg font-medium text-typography-500">Not enough data</p>

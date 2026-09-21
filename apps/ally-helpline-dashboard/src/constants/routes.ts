@@ -4,6 +4,7 @@ import {
   ScenarioIcon,
   LearnIcon,
   Leaderboard,
+  ProgressLadderIcon,
   ReviewNavIcon,
   Badge,
   ManageAccount,
@@ -25,6 +26,15 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   BLOG: "/blog",
   BLOG_POST: "/blog/:slug",
+  CHANGELOG: "/blog/changelog",
+  // Standalone public self-check. Capitalised because that is the URL the
+  // link is shared as; React Router matches it case-insensitively, so
+  // /sjt1 lands on the same page.
+  SJT1: "/SJT1",
+  // The same page with every line of its text editable in place. Public like
+  // the page it edits, and harmless for that: edits live in the editor's own
+  // browser and reach /SJT1 only by being exported and committed.
+  SJT1_EDIT: "/SJT1/edit",
 
   // Private Routes
   HOME: "/",
@@ -48,10 +58,12 @@ export const ROUTES = {
   // Track 2.0 (multi-component learning tracks)
   TRACK: "/track/:trackId",
   TRACK_ITEM: "/track/:trackId/item/:itemId",
+  TRACK_PROGRESS: "/track/:trackId/progress",
   SIMULATION: "/simulation/:id/:scenarioTitle",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   COMMUNITY_LEADERBOARD: "/community",
+  PROGRESS: "/progress",
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements",
   SIMULATION_REVIEW_DETAILS: "/simulation-review/:reviewId",
@@ -64,6 +76,7 @@ export const ROUTES = {
 export const buildTrackRoute = (trackId: string) => `/track/${trackId}`;
 export const buildTrackItemRoute = (trackId: string, itemId: string) =>
   `/track/${trackId}/item/${itemId}`;
+export const buildTrackProgressRoute = (trackId: string) => `/track/${trackId}/progress`;
 
 export const excludeNavBar = [
   ROUTES.AUDIO_CALL,
@@ -82,7 +95,14 @@ export const navBarOptions = [
     key: "nav.tabs.learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE, ROUTES.TRACK, ROUTES.TRACK_ITEM],
+    activePages: [
+      ROUTES.SCENARIO,
+      ROUTES.PATHWAY,
+      ROUTES.CASE,
+      ROUTES.TRACK,
+      ROUTES.TRACK_ITEM,
+      ROUTES.TRACK_PROGRESS,
+    ],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {
@@ -102,6 +122,19 @@ export const navBarOptions = [
     path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
     activePages: [],
     permissions: [Permissions.VIEW_BADGES],
+  },
+  {
+    id: TabId.PROGRESS,
+    title: "Progress",
+    key: "nav.tabs.progress",
+    Icon: ProgressLadderIcon,
+    path: ROUTES.PROGRESS,
+    activePages: [],
+    // Empty on purpose. Visibility needs more than "holds a permission" — every learner
+    // holds VIEW_USER_RANK, so the org toggle is the real gate. NavSideBar special-cases
+    // this tab id against useProgressSummary, the same escape hatch the Character
+    // Library tab uses.
+    permissions: [] as Permissions[],
   },
   {
     id: TabId.LEADERBOARD,
@@ -137,7 +170,12 @@ export const navBarOptions = [
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     activePages: [],
-    permissions: [Permissions.VIEW_ANALYTICS_DASHBOARD],
+    // Empty on purpose. VIEW_ANALYTICS_DASHBOARD says the user is allowed to see
+    // analytics, not that their tenant has any — a permission-only gate showed a
+    // Statistics tab to tenants whose only content was "no dashboards available".
+    // NavSideBar special-cases this tab id against useCanViewAnalytics, the same
+    // escape hatch Progress and Character Library use.
+    permissions: [] as Permissions[],
   },
   {
     id: TabId.ORGANIZATION_SETTINGS,

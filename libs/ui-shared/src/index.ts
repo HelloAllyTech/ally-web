@@ -46,7 +46,11 @@ export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
 export type { SimulationTranslations, TurnIndicatorTranslations } from "./lib/simulation";
-export type { ProgressVideoPlayerProps, ProgressVideoPlayerProgress } from "./lib/progress-video";
+export type {
+  ProgressVideoPlayerProps,
+  ProgressVideoPlayerProgress,
+  ProgressVideoPlayerHandle,
+} from "./lib/progress-video";
 export type {
   ArtifactUnit,
   ArtifactLabel,
@@ -74,6 +78,8 @@ export {
   BUG_REPORT_DESCRIPTION_MAX,
   DEFAULT_BUG_REPORT_LABELS,
 } from "./lib/bug-report-form/BugReportForm";
+export type { DeviceOs } from "./lib/bug-report-form/detectDeviceOs";
+export { detectDeviceOs } from "./lib/bug-report-form/detectDeviceOs";
 
 export {
   Badge,

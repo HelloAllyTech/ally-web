@@ -38,6 +38,11 @@ const extractPlaceholders = (value = "") =>
 
 const samePlaceholders = (left: string[], right: string[]) => left.join("|") === right.join("|");
 
+// Placeholders are contracted by the source language: the code decides which
+// variables it interpolates and English carries them first. Matches the rule the
+// Add key flow already applies, and the one the API now enforces.
+const SOURCE_LANGUAGE = "en";
+
 const SECTION_FILTER_KEY = "__section";
 const KEY_FILTER_KEY = "__key";
 
@@ -148,9 +153,29 @@ export const TranslationManagement: React.FC = () => {
   };
 
   const hasPlaceholderMismatch = (row: DynamicI18nAggregatedRow, language: string) => {
-    const original = row.values[language] ?? "";
+    // Editing English is how a placeholder gets introduced or retired at all,
+    // so it is never blocked — only its translations are held to it.
+    if (language === SOURCE_LANGUAGE) return false;
+    const source = getCellValue(row, SOURCE_LANGUAGE);
     const edited = getCellValue(row, language);
-    return !samePlaceholders(extractPlaceholders(original), extractPlaceholders(edited));
+    return !samePlaceholders(extractPlaceholders(source), extractPlaceholders(edited));
+  };
+
+  // Retiring a placeholder in English leaves every translation of it stale.
+  // Naming them at the point of the edit is the only moment the editor knows
+  // which cells they still have to go and fix.
+  const languagesTrailingSource = (row: DynamicI18nAggregatedRow) => {
+    if (!isCellDirty(row, SOURCE_LANGUAGE)) return [];
+    const source = extractPlaceholders(getCellValue(row, SOURCE_LANGUAGE));
+    if (samePlaceholders(source, extractPlaceholders(row.values[SOURCE_LANGUAGE] ?? ""))) {
+      return [];
+    }
+    return languages.filter(
+      lang =>
+        lang !== SOURCE_LANGUAGE &&
+        (row.values[lang] ?? "") !== "" &&
+        !samePlaceholders(source, extractPlaceholders(getCellValue(row, lang))),
+    );
   };
 
   const saveCell = async (row: DynamicI18nAggregatedRow, language: string) => {
@@ -221,7 +246,7 @@ export const TranslationManagement: React.FC = () => {
     }
     const enPlaceholders = extractPlaceholders(enValue);
     for (const lang of languages) {
-      if (lang === "en") continue;
+      if (lang === SOURCE_LANGUAGE) continue;
       const val = (addKeyValues[lang] ?? "").trim();
       if (!val) continue;
       if (!samePlaceholders(extractPlaceholders(val), enPlaceholders)) {
@@ -515,6 +540,8 @@ export const TranslationManagement: React.FC = () => {
                         const value = getCellValue(row, lang);
                         const dirty = isCellDirty(row, lang);
                         const placeholderMismatch = hasPlaceholderMismatch(row, lang);
+                        const trailing =
+                          lang === SOURCE_LANGUAGE ? languagesTrailingSource(row) : [];
                         return (
                           <TableCell
                             key={lang}
@@ -538,8 +565,15 @@ export const TranslationManagement: React.FC = () => {
                               rows={2}
                               className="min-h-[56px] w-full"
                             />
-                            {placeholderMismatch && (
-                              <div className="mt-1 text-xs text-red-600">Placeholder mismatch</div>
+                            {dirty && placeholderMismatch && (
+                              <div className="mt-1 text-xs text-red-600">
+                                Placeholder mismatch with English
+                              </div>
+                            )}
+                            {trailing.length > 0 && (
+                              <div className="mt-1 text-xs text-amber-700">
+                                Also update: {trailing.map(labelForLanguage).join(", ")}
+                              </div>
                             )}
                           </TableCell>
                         );

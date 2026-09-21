@@ -16,7 +16,11 @@ vi.mock("@api", () => ({
 }));
 vi.mock("@hooks", () => ({}));
 vi.mock("@components", () => ({ cellTypes: {} }));
-vi.mock("@utils", () => ({ formatDate: (d: string) => d }));
+vi.mock("@utils", () => ({
+  formatDate: (d: string) => d,
+  formatDateTime: (d: string) => d,
+  formatTimestamp: (d: string) => d,
+}));
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Button: ({ children, onClick, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}>

@@ -17,7 +17,40 @@ export const socketDisconnectionReasonContentMap = {
     titleKey: "audioCall.error.somethingWrong",
     descriptionKey: "audioCall.error.somethingWrongDesc",
   },
+  [SocketDisconnectionReasons.MICROPHONE_BLOCKED]: {
+    icon: InDoubt,
+    titleKey: "audioCall.error.micBlocked",
+    descriptionKey: "audioCall.error.micBlockedDesc",
+  },
+  [SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE]: {
+    icon: InDoubt,
+    titleKey: "audioCall.error.micUnavailable",
+    descriptionKey: "audioCall.error.micUnavailableDesc",
+  },
 };
+
+/**
+ * Why the microphone could not be opened, in the two flavours worth telling a
+ * counsellor apart: one they can fix in the browser, one they have to fix on
+ * the machine.
+ *
+ * Exists because `getUserMedia` rejecting used to be swallowed entirely — the
+ * session looked live, recorded nothing, and only failed at the summary screen
+ * with "No audio detected".
+ */
+export const classifyMicrophoneError = (error: unknown): SocketDisconnectionReasons => {
+  const name = (error as DOMException)?.name;
+  return name === "NotAllowedError" || name === "SecurityError"
+    ? SocketDisconnectionReasons.MICROPHONE_BLOCKED
+    : SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE;
+};
+
+// How long after the recording screen mounts to report the start conditions to
+// the server if the session still is not capturing. The first fires around when
+// a counsellor would notice nothing is happening; the second catches the ones
+// who wait it out. Mirrors the mobile SCRIBE_START_DIAGNOSTIC cadence so the
+// two platforms' log lines are comparable.
+export const START_DIAGNOSTIC_DELAYS_MS = [5_000, 15_000];
 
 export const NetworkIssuesList = [
   "io client disconnect",

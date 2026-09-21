@@ -1,4 +1,14 @@
-import { ChangeEvent, FC, ReactNode, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  ReactNode,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -101,10 +111,20 @@ const getStoredPlaybackRate = (): PlaybackRate => {
   return isPlaybackRate(stored) ? stored : 1;
 };
 
-/** Native `<audio>` for playback/seek/volume, plus a speed control synced to localStorage. */
-const RecordingPlayer: FC<{ url: string }> = ({ url }) => {
+/**
+ * Native `<audio>` for playback/seek/volume, plus a speed control synced to
+ * localStorage. Exposes the element via `ref` and reports playback position
+ * via `onTimeUpdate` so the transcript below can highlight the turn under
+ * playback and seek the audio when a turn is clicked.
+ */
+const RecordingPlayer = forwardRef<
+  HTMLAudioElement,
+  { url: string; onTimeUpdate?: (seconds: number) => void }
+>(({ url, onTimeUpdate }, forwardedRef) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playbackRate, setPlaybackRate] = useState<PlaybackRate>(getStoredPlaybackRate);
+
+  useImperativeHandle(forwardedRef, () => audioRef.current as HTMLAudioElement);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = playbackRate;
@@ -131,6 +151,9 @@ const RecordingPlayer: FC<{ url: string }> = ({ url }) => {
         onLoadedMetadata={() => {
           if (audioRef.current) audioRef.current.playbackRate = playbackRate;
         }}
+        onTimeUpdate={() => {
+          if (audioRef.current) onTimeUpdate?.(audioRef.current.currentTime);
+        }}
       />
       <select
         value={playbackRate}
@@ -146,7 +169,7 @@ const RecordingPlayer: FC<{ url: string }> = ({ url }) => {
       </select>
     </div>
   );
-};
+});
 
 /**
  * Weak-performing-metric grouping and presentation.
@@ -257,8 +280,30 @@ export const RoleplaySessionLogDetail: FC = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError } = useGetRoleplaySessionLogQuery(id, { skip: !id });
   const transcriptDisclaimer = useTranscriptDisclaimer();
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
 
   const goBack = () => navigate(ROUTES.ROLEPLAY_SESSION_LOGS);
+
+  // Index of the transcript turn under playback: the largest startSeconds
+  // still <= the audio's current position. Mirrors the helpline dashboard's
+  // TranscriptListing so both surfaces highlight the same way.
+  const activeTranscriptIndex = useMemo(() => {
+    const transcript = data?.transcript ?? [];
+    let bestIdx = -1;
+    let bestStart = -Infinity;
+    for (let i = 0; i < transcript.length; i++) {
+      const start = transcript[i].startSeconds;
+      // A turn with unknown timing can't win "largest start <= currentTime" —
+      // treating it as start 0 would highlight it before playback gets there.
+      if (start === null) continue;
+      if (audioCurrentTime >= start && start >= bestStart) {
+        bestStart = start;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, [data?.transcript, audioCurrentTime]);
 
   if (isLoading) {
     return <p className="p-2 text-typography-700 font-primary">Loading…</p>;
@@ -296,6 +341,7 @@ export const RoleplaySessionLogDetail: FC = () => {
 
       {/* Summary card */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 p-4 rounded-lg border border-border-light bg-white">
+        <Field label="Session ID" value={data.id} />
         <Field label="User" value={data.counselorName || "—"} />
         <Field label="Email" value={data.counselorEmail || "—"} />
         <Field label="Organization" value={data.orgName || "—"} />
@@ -620,9 +666,7 @@ export const RoleplaySessionLogDetail: FC = () => {
           can be opened here and read turn by turn. */}
       {data.weakMetrics && (
         <section className="mt-6">
-          <h2 className="text-lg font-secondary text-typography-900 mb-2">
-            Weak performing metrics
-          </h2>
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Actor quality metrics</h2>
           <p className="text-xs text-typography-500 mb-2">
             Parameters {data.weakMetrics.metricsVersion}
             {data.weakMetrics.judged
@@ -914,7 +958,11 @@ export const RoleplaySessionLogDetail: FC = () => {
               (data.recording.url ? (
                 <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
                   <span className="text-xs text-typography-700">Recording</span>
-                  <RecordingPlayer url={data.recording.url} />
+                  <RecordingPlayer
+                    url={data.recording.url}
+                    ref={audioRef}
+                    onTimeUpdate={setAudioCurrentTime}
+                  />
                 </div>
               ) : (
                 <Field label="Recording" value={`Available (egress ${data.recording.egressId})`} />
@@ -1026,7 +1074,7 @@ export const RoleplaySessionLogDetail: FC = () => {
           <p className="text-sm text-typography-700">No transcript available for this session.</p>
         ) : (
           <div className="flex flex-col gap-3">
-            {data.transcript.map(turn => {
+            {data.transcript.map((turn, index) => {
               const isUser = turn.senderId === data.counselorId;
               // Language-quality annotations anchored to this AI message
               // (matched by message id — resolved server-side, judge ordering).
@@ -1036,10 +1084,36 @@ export const RoleplaySessionLogDetail: FC = () => {
               // Drift judgment for this AI message: chip only when noteworthy
               // (coherence below fully_coherent, a failure mode, or garbled input).
               const driftTurn = (data.drift?.turns ?? []).find(t => t.messageId === turn.id);
+              const isActive = index === activeTranscriptIndex;
+              const canSeek = data.recording?.url && turn.startSeconds !== null;
               return (
                 <div
                   key={turn.id}
-                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                  role={canSeek ? "button" : undefined}
+                  tabIndex={canSeek ? 0 : undefined}
+                  onClick={
+                    canSeek
+                      ? () => {
+                          if (audioRef.current && turn.startSeconds !== null) {
+                            audioRef.current.currentTime = turn.startSeconds;
+                          }
+                        }
+                      : undefined
+                  }
+                  onKeyDown={
+                    canSeek
+                      ? event => {
+                          if (event.key !== "Enter" && event.key !== " ") return;
+                          event.preventDefault();
+                          if (audioRef.current && turn.startSeconds !== null) {
+                            audioRef.current.currentTime = turn.startSeconds;
+                          }
+                        }
+                      : undefined
+                  }
+                  className={`max-w-[80%] rounded-lg px-3 py-2 border-2 ${
+                    isActive ? "border-primary-500" : "border-transparent"
+                  } ${canSeek ? "cursor-pointer" : ""} ${
                     isUser
                       ? "self-end bg-primary-50 text-typography-900"
                       : "self-start bg-neutral-100 text-typography-900"

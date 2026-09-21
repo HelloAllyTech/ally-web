@@ -16,7 +16,8 @@ import {
   CallType,
   ScribeSessionMode,
 } from "@constants";
-import { useSocket } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics, useSocket } from "@hooks";
 import { RootState } from "@store";
 import {
   Chat,
@@ -28,7 +29,13 @@ import {
   QueueStatus,
 } from "@types";
 
-import { NetworkIssuesList, classifyDisconnect, RECONNECT_GRACE_MS } from "../components/constants";
+import {
+  NetworkIssuesList,
+  classifyDisconnect,
+  classifyMicrophoneError,
+  RECONNECT_GRACE_MS,
+  START_DIAGNOSTIC_DELAYS_MS,
+} from "../components/constants";
 import { AUDIO_FILE_SIZE } from "../constants";
 import { Nudge } from "../types";
 
@@ -82,13 +89,22 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [isUserJoined, setIsUserJoined] = useState<boolean>(false);
+  const { track } = useAnalytics();
   const [socketDisconnectionReason, setSocketDisconnectionReason] =
     useState<SocketDisconnectionReasons>();
   const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
   const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState<boolean>(false);
   const [isEndCallDialogOpen, setIsEndCallDialogOpen] = useState<boolean>(false);
 
+  // The stream lives in state as well as in the ref: assigning a ref renders
+  // nothing, so a recorder-setup effect keyed only on the ref would run at
+  // whatever moment some unrelated state happened to change next — or never.
+  const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
+  // Frames actually handed to the socket. Zero of these at the end of a call is
+  // exactly what produces the "No audio detected" summary, so it is also the
+  // one number that says whether a start diagnostic is worth sending.
+  const audioFramesSentRef = useRef<number>(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   // Fallback timer armed on a transient disconnect: if socket.io hasn't
   // reconnected within the window, we give up and surface an error. Cleared on
@@ -109,6 +125,42 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
   const isPauseTranscriptionDisabled =
     !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isSocketDisconnected;
 
+  /**
+   * Call lifecycle analytics.
+   *
+   * `call_started` is keyed on the `isUserJoined` transition rather than on
+   * either of the two places that set it (the USER_JOINED socket event, and
+   * rejoining a chat already ACTIVE): both mean "the call is live", and
+   * instrumenting the transition once means a third start path could not
+   * silently go untracked.
+   *
+   * The ref is what makes the pair a funnel rather than two loose counters. It
+   * supplies the duration and guarantees exactly one `call_ended` per
+   * `call_started` — a call can end through the API or through AUDIO_CHAT_ENDED,
+   * and on a bad network it can attempt both.
+   */
+  const callStartedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isUserJoined || callStartedAtRef.current !== null) return;
+    callStartedAtRef.current = Date.now();
+    track(ANALYTICS_EVENTS.CALL_STARTED, {
+      [ANALYTICS_PROPS.CALL_ID]: microphoneChatId ?? activeChat?.chatId ?? null,
+      [ANALYTICS_PROPS.CALL_TYPE]: CallProvider.MICROPHONE,
+    });
+  }, [isUserJoined, microphoneChatId, activeChat?.chatId, track]);
+
+  const trackCallEnded = (chatId: number | null) => {
+    const startedAt = callStartedAtRef.current;
+    if (startedAt === null) return;
+    callStartedAtRef.current = null;
+    track(ANALYTICS_EVENTS.CALL_ENDED, {
+      [ANALYTICS_PROPS.CALL_ID]: chatId,
+      [ANALYTICS_PROPS.CALL_TYPE]: CallProvider.MICROPHONE,
+      [ANALYTICS_PROPS.CALL_DURATION_SEC]: Math.round((Date.now() - startedAt) / 1000),
+    });
+  };
+
   const endSessionAndNavigate = async (triggerApi: boolean = true, chatId: number) => {
     if (triggerApi) {
       const response = await endCall({ chatId });
@@ -116,6 +168,10 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
         return;
       }
     }
+    // Tracked here rather than in the socket handlers because both the API path
+    // and the AUDIO_CHAT_ENDED path funnel through this function — one call end
+    // is one event however it was reached.
+    trackCallEnded(chatId || activeChat?.chatId || microphoneChatId);
     navigate(ROUTES.STRESS_BUSTER, {
       state: { chatId: chatId || activeChat?.chatId || microphoneChatId },
       replace: true,
@@ -348,6 +404,7 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
         const base64AudioData = fileReader.result as string;
         // Remove the data URL prefix (e.g., "data:audio/webm;base64,") to get just the base64 string
         const base64String = base64AudioData.split(",")[1];
+        audioFramesSentRef.current += 1;
         emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
           audioData: base64String,
           chatId: activeChatId ?? microphoneChatId,
@@ -444,19 +501,47 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
     };
   }, [userId, connect]);
 
-  // Get user media stream
+  // Open the microphone. A rejection here used to be swallowed — no `.catch`,
+  // so a denied permission prompt, a mic held by another app or a machine with
+  // no input device left the ref null, built no recorder, and still showed a
+  // live session with a running timer. The counsellor found out at the summary
+  // screen, which failed with "No audio detected"; 7 of 54 production web
+  // sessions over 60 days ended that way, concentrated in a handful of people
+  // rather than scattered, which is the shape of a per-device mic problem.
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      microphoneStreamRef.current = stream;
-    });
+    let isCancelled = false;
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setSocketDisconnectionReason(SocketDisconnectionReasons.MICROPHONE_UNAVAILABLE);
+      return undefined;
+    }
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(stream => {
+        if (isCancelled) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+        microphoneStreamRef.current = stream;
+        setMicrophoneStream(stream);
+      })
+      .catch(error => {
+        if (isCancelled) return;
+        setSocketDisconnectionReason(classifyMicrophoneError(error));
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Setup media recorder when stream and chatId are available
   useEffect(() => {
-    if (microphoneStreamRef.current && microphoneChatId) {
-      setupMediaRecorder(microphoneStreamRef.current);
+    if (microphoneStream && microphoneChatId) {
+      setupMediaRecorder(microphoneStream);
     }
-  }, [microphoneStreamRef.current, microphoneChatId]);
+  }, [microphoneStream, microphoneChatId]);
 
   // Handle mute/unmute
   useEffect(() => {
@@ -498,6 +583,15 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
         setIsStartAudioChatEmitted(true);
         return;
       }
+      // Do not open a session we cannot record. Waiting for the stream costs a
+      // moment at the start and buys three things: no chat row that can only
+      // ever end in NO_AUDIO, no ACTIVE chat left dangling to reject the
+      // counsellor's next attempt with "user already has an active chat", and
+      // no race — the recorder's stream is guaranteed to exist by the time the
+      // chatId arrives. If the microphone failed, the effect above has already
+      // put the error screen up and this never fires.
+      if (!microphoneStream) return;
+
       const socketData = {
         platform: "WEB",
         sampleRate: 48000,
@@ -506,7 +600,79 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, socketData);
       setIsStartAudioChatEmitted(true);
     }
-  }, [microphoneChatId, isSessionCreated, isStartAudioChatEmitted, emitSocketEvent]);
+  }, [
+    microphoneChatId,
+    microphoneStream,
+    isSessionCreated,
+    isStartAudioChatEmitted,
+    mode,
+    emitSocketEvent,
+  ]);
+
+  /**
+   * Report why this screen is not capturing, once at 5s and once at 15s.
+   *
+   * The server side of this already exists for mobile
+   * (MicrophoneChatGateway#scribeStartDiagnostic): it writes one log line and
+   * does nothing else. Web needed it for the same reason mobile did — production
+   * could show a session that was created, joined and ended without a single
+   * audio frame, and nothing anywhere said which of the three possible causes it
+   * was: the microphone never opened, the recorder was never built, or the
+   * counsellor never lifted the pause the session starts in.
+   *
+   * The only suppression is a session that is genuinely capturing. Anything
+   * else — including states we think we have now fixed — is worth a line;
+   * instrumentation that goes quiet on the conditions it exists to reveal is
+   * how the mobile equivalent wasted a release.
+   */
+  const [micPermissionState, setMicPermissionState] = useState<string>("unknown");
+  const diagnosticSentRef = useRef<Record<number, boolean>>({});
+  const gatesRef = useRef<Record<string, unknown>>({});
+
+  gatesRef.current = {
+    platform: "WEB",
+    hasStream: !!microphoneStream,
+    micPermissionState,
+    hasRecorder: !!mediaRecorder,
+    recorderState: mediaRecorder?.state ?? "none",
+    isMuted,
+    isSessionCreated,
+    isStartAudioChatEmitted,
+    hasChatId: !!(activeChatId ?? microphoneChatId),
+    audioFramesSent: audioFramesSentRef.current,
+    errorReason: socketDisconnectionReason ?? null,
+    isOffline: typeof navigator !== "undefined" && navigator.onLine === false,
+  };
+
+  useEffect(() => {
+    // Best effort, and deliberately defensive: Firefox has no "microphone"
+    // permission descriptor, and browsers that lack it reject, throw
+    // synchronously, or have no Permissions API at all. None of those may break
+    // the recording screen — this only labels a log line.
+    try {
+      navigator?.permissions
+        ?.query({ name: "microphone" as PermissionName })
+        ?.then(status => setMicPermissionState(status.state))
+        ?.catch(() => setMicPermissionState("unsupported"));
+    } catch {
+      setMicPermissionState("unsupported");
+    }
+  }, []);
+
+  useEffect(() => {
+    const send = (afterMs: number) => {
+      if (diagnosticSentRef.current[afterMs]) return;
+      if ((gatesRef.current.audioFramesSent as number) > 0) return;
+      diagnosticSentRef.current[afterMs] = true;
+      emitSocketEvent(SocketEvent.SCRIBE_START_DIAGNOSTIC, {
+        afterMs,
+        ...gatesRef.current,
+      });
+    };
+
+    const timers = START_DIAGNOSTIC_DELAYS_MS.map(delay => setTimeout(() => send(delay), delay));
+    return () => timers.forEach(clearTimeout);
+  }, [emitSocketEvent]);
 
   // Fetch active chat
   useEffect(() => {

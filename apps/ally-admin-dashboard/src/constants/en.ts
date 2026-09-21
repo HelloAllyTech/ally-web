@@ -26,6 +26,7 @@ export const en = {
     noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
+    saving: "Saving...",
     enabled: "Enabled",
     disabled: "Disabled",
     edit: "Edit",
@@ -82,6 +83,8 @@ export const en = {
     failedToCreateEvent: "Failed to create event",
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
     failedToSaveEvents: "Failed to save events. Please try again.",
+    failedToBulkAddEvents: (count: number) =>
+      `Failed to save ${count} event${count !== 1 ? "s" : ""}. None of them were added — please try again.`,
     failedToDeleteEvent: "Failed to delete event. Please try again.",
     errorUpdatingEvent: "Error updating event",
     userIdNotFound: "User id not found",
@@ -102,10 +105,31 @@ export const en = {
       `Linguistic style samples are required. Missing samples for: ${languages}.`,
     invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
+  /**
+   * What the shell says while it is still finding out what you may see, and when it could not
+   * find out at all.
+   *
+   * Separate from `accessDenied` on purpose. Both states withhold the page — that part is a
+   * security decision and does not change — but only one of them is about the reader's
+   * account. Telling someone whose entitlements failed to load that the page "isn't turned on
+   * for your role" sends them to an admin to fix something that is not broken.
+   */
+  accessCheck: {
+    checking: "Checking your access…",
+    failedTitle: "Couldn't check your access",
+    failedMessage:
+      "We couldn't load your permissions, so this page is held back until we can. This is not a problem with your account.",
+    failedNextStep: "Retry, or reload the page. If it keeps failing, the API may be down.",
+    retry: "Try again",
+  },
   accessDenied: {
     title: "This page is not accessible",
     message:
       "You don't have permission to access this page. Please contact your administrator if you believe this is an error.",
+    reasonMissingPermission: "Your account doesn't have the permission this page requires.",
+    reasonMissingRoleOrToggle: "This page isn't turned on for your role yet.",
+    reasonNotAllowlisted: "This page is in a limited rollout your account isn't part of yet.",
+    nextStepContactAdmin: "Ask an Ally admin to grant access if you believe this is a mistake.",
   },
   /**
    * What a crashed page or panel says. Two deliberate choices here. The tone
@@ -133,6 +157,7 @@ export const en = {
     userFetchFailed: "User fetch failed",
     permissionsFetchFailed: "Permissions fetch failed",
     authenticationFailed: "Authentication failed",
+    forbidden: "You don't have permission to do that.",
   },
   auth: {
     hey: "Hey",
@@ -224,6 +249,7 @@ export const en = {
       createError: "Couldn't create a new version",
       renameError: "Couldn't rename this version",
       deleteError: "Couldn't delete this version",
+      autoBadge: "Auto",
     },
     createCharacter: "Create character",
     editCharacter: "Edit character",
@@ -285,6 +311,12 @@ export const en = {
     imageMaxSizeLabel: "2MB",
     file: "File",
     addEvent: "Add event",
+    // The event picker lists the whole active-event catalogue, so a failed
+    // catalogue fetch used to look exactly like "there is nothing to pick" —
+    // every search answered "No options found" until the page was reloaded.
+    // Say which of the two it is, and offer the reload in place.
+    eventCatalogLoadFailed: "Couldn’t load the event list",
+    reloadEvents: "Reload the event list and re-sort rows by score",
     advancedEventsLatencyWarning: (count: number) =>
       `Heads up: ${count} advanced events are selected for this simulation. Selecting more than 10 can increase response latency during a session.`,
     bulkAddEvents: "Bulk add events",
@@ -756,6 +788,28 @@ export const en = {
     cases: "Cases",
     courses: "Courses",
     groups: "Groups",
+    // Per-row group targeting on the content tabs. "Everyone" is the honest
+    // name for an item with no restriction rows — never "None" or "0 groups",
+    // which would read as nobody can see it.
+    cohortRestrictionEveryone: "Everyone",
+    cohortRestrictionOneGroup: "1 group",
+    cohortRestrictionCount: (count: number) => `${count} groups`,
+    cohortRestrictionAria: (title: string) => `Change who can see ${title}`,
+    cohortRestrictionTitle: (title: string) => `Who can see \u201C${title}\u201D?`,
+    cohortRestrictionHint:
+      "Leave every group unchecked to keep this available to everyone in this organization.",
+    cohortRestrictionUnassignedHint: "(people not in any group)",
+    cohortRestrictionReachAll: (total: number) =>
+      `Visible to everyone \u2014 all ${total} people in this organization.`,
+    cohortRestrictionReach: (reach: number, total: number) =>
+      `Visible to ${reach} of ${total} people.`,
+    cohortRestrictionGraceNote:
+      "People who have already started this keep access until they finish. New starts are limited to the groups above.",
+    cohortRestrictionCleared: (title: string) => `\u201C${title}\u201D is now visible to everyone`,
+    cohortRestrictionSaved: (title: string, count: number) =>
+      `\u201C${title}\u201D is now limited to ${count} ${count === 1 ? "group" : "groups"}`,
+    cohortRestrictionFailed: "Failed to update access",
+    peopleCount: (count: number) => `${count} ${count === 1 ? "person" : "people"}`,
     badges: "Badges",
     access: "Access",
     global: "Global",
@@ -781,6 +835,12 @@ export const en = {
     characterLibraryEnabled: "Enable Character Library",
     characterLibraryEnabledHint:
       "Lets this organisation's admins build their own characters, including with the interview agent. They see only characters their own organisation creates, and cannot edit or delete one once saved.",
+    progressDashboardEnabled: "Enable Learner Progress",
+    progressDashboardEnabledHint:
+      "Shows learners in this organisation their XP, level, and badges on a personal Progress screen, plus a level widget elsewhere in the app. Off by default for every new organisation.",
+    engagementReminderEnabled: "Enable engagement reminders",
+    engagementReminderEnabledHint:
+      "Sends an automated in-app + push nudge to learners in this organisation who've been inactive for a threshold number of days, on a cooldown so the same learner isn't reminded repeatedly. Off by default for every new organisation.",
     scribeNoteCreationEnabled: "Enable manual note creation",
     voiceNoteEnabled: "Enable voice note (mic dictation)",
     customFieldTypes: "Custom field types",
@@ -895,278 +955,118 @@ export const en = {
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
   },
-  roleplayStudio: {
-    navLabel: "Roleplay Studio",
-    title: "Roleplay Studio",
-    subtitle: "Design state-driven roleplay personas with the copilot",
-    newRoleplay: "New Roleplay",
-    untitledRoleplay: "Untitled roleplay",
-    open: "Open",
-    delete: "Delete",
-    deleteTitle: "Delete this",
-    deleteTitleItalic: "Roleplay?",
-    deleteDescription:
-      "This will permanently delete the roleplay spec, its versions, and its rehearsal history. This action cannot be undone.",
-    emptyTitle: "No roleplays yet",
-    emptySubtitle: "Create your first roleplay and let the copilot interview you into a spec.",
-    loadFailed: "Failed to load roleplays",
-    createFailed: "Failed to create roleplay",
-    deleteFailed: "Failed to delete roleplay",
-    duplicate: "Duplicate",
-    duplicating: "Duplicating…",
-    duplicateFailed: "Failed to duplicate roleplay",
-    copyOfPrefix: "Copy of ",
-    columns: {
-      title: "Title",
-      status: "Status",
-      updatedAt: "Last updated",
-      actions: "",
-    },
-    steps: {
-      chat: "Chat",
-      spec: "Spec",
-      publish: "Publish",
-    },
-    workbench: {
-      specView: "Spec",
-      stateMachineView: "State machine",
-      copilotManaged: "Copilot-managed — only voice toggles are editable",
-      editToggle: "Edit spec directly",
-      editingHint: "Direct edits autosave",
-      editLockedHint: "Editing is paused while the copilot is active",
-    },
-    autosave: {
-      saving: "Saving…",
-      saved: "Draft saved",
-      failed: "Couldn’t save — retrying shortly",
-      conflict: "Newer draft on server — reloaded",
-    },
-    titlePlaceholder: "Name this roleplay",
-    copilot: {
-      title: "Copilot",
-      placeholder: "Describe the persona, scenario, or ask for changes…",
-      send: "Send",
-      stop: "Stop",
-      interrupted: "(interrupted)",
-      thinking: "Thinking…",
-      resumeFailed: "Couldn’t resume the copilot session",
-      startFailed: "Couldn’t start a copilot session",
-      streamFailed: "The copilot stream failed — please try again",
-      emptyTitle: "Start the interview",
-      emptySubtitle:
-        "Tell the copilot who the trainee will be talking to. It will draft the persona, states, secrets, and rubric live on the right.",
-      toolRunning: "Working",
-      answer: "Answer",
-      submitAnswer: "Submit answer",
-      freeTextPlaceholder: "Type your answer…",
-      confirmSelection: "Confirm",
-      noneOfThese: "None of these",
-      addCustom: "Add your own",
-      addCustomPlaceholder: "Add your own…",
-      add: "Add",
-      selectPlaceholder: "Select…",
-      minSelectionsHint: (n: number) => `Select at least ${n}`,
-      behaviourReviewHelpful: "Helpful behaviours",
-      behaviourReviewUnhelpful: "Unhelpful behaviours",
-      behaviourReviewConfirm: "Confirm behaviours",
-      behaviourReviewEmpty: "No behaviours selected yet",
-      selectedCountLabel: (n: number) => `${n} selected`,
-    },
-    spec: {
-      personaBible: "Persona Bible",
-      identityCore: "Identity core",
-      scenarioContext: "Scenario context",
-      chunks: "Persona chunks",
-      addChunk: "Add chunk",
-      chunkTopics: "Topics (comma separated)",
-      chunkContent: "Content",
-      stateMachine: "State Machine",
-      disclosureLedger: "Disclosure Ledger",
-      addSecret: "Add secret",
-      secretTopic: "Topic",
-      secretContent: "Content",
-      secretUnlockConditions: "Unlock conditions",
-      secretLockedDeflection: "Locked deflection",
-      secretTier: "Tier",
-      rubric: "Rubric",
-      addBehavior: "Add behavior",
-      behaviorName: "Name",
-      behaviorDescription: "Description",
-      behaviorWeight: "Weight",
-      behaviorExamples: "Examples",
-      polarityPositive: "Positive",
-      polarityNegative: "Negative",
-      engineeredEvents: "Engineered Events",
-      addEvent: "Add event",
-      eventName: "Name",
-      eventDescription: "Description",
-      voiceAndLanguage: "Voice & Language",
-      languages: "Languages the actor can be played in",
-      languagesPlaceholder: "Select one or more languages",
-      voicesPerLanguage: "Voice per language",
-      voicePending: "Voice assigned by the copilot",
-      openingStatement: "Opening statement",
-      difficulty: "Difficulty",
-      voiceNaturalness: "Voice Naturalness",
-      thinkingFiller: "Thinking Filler",
-      thinkingFillerHelp:
-        "Play a brief 'thinking' sound the instant the learner stops speaking, masking reply latency.",
-      comfortAudio: "Comfort Audio",
-      comfortAudioHelp:
-        "Loop a faint ambient room tone so the line never sounds dead between turns.",
-      continuousBackchanneling: "Continuous Back-channeling",
-      continuousBackchannelingHelp:
-        'Play brief listener affirmations ("mm-hmm") while the learner speaks on long turns.',
-      interimReply: "Interim Reply",
-      interimReplyHelp:
-        "Speak a short holding reply from the partial transcript while the learner finishes, then cut to the real reply.",
-      emptySection: "Nothing here yet — the copilot fills this in during the interview.",
-      remove: "Remove",
-    },
-    stateMachine: {
-      addState: "Add state",
-      maxStatesTooltip: "A roleplay supports at most 6 states",
-      minStatesTooltip: "A roleplay needs at least 3 states",
-      editState: "Edit state",
-      editTransition: "Edit transition",
-      deleteStateTitle: "Delete this",
-      deleteStateTitleItalic: "State?",
-      deleteStateDescription: "Deleting this state also removes the transitions listed below.",
-      orphanedTransitions: "Transitions that will be removed:",
-      noOrphanedTransitions: "No transitions reference this state.",
-      stateName: "Name",
-      emotionalRegister: "Emotional register",
-      disclosurePosture: "Disclosure posture",
-      resistanceLevel: "Resistance level",
-      stateCard: "State card",
-      defaultStageDirection: "Default stage direction",
-      prosodyHints: "Prosody hints",
-      initialState: "Initial state",
-      transitionDescription: "Description",
-      whenBehaviorsAny: "When any of these behaviors",
-      whenBehaviorsAll: "When all of these behaviors",
-      minTurnsInState: "Min turns in state",
-      minCumulativeScore: "Min cumulative score",
-      toState: "To state",
-      readOnly: "Read-only",
-      viewJourney: "Journey",
-      viewOutline: "Outline",
-      viewCanvas: "Canvas",
-      viewLabel: "State machine view",
-      addTransition: "Add transition",
-      addTransitionFrom: "Add a transition from this state",
-      deleteState: "Delete state",
-      transitionTo: (name: string) => `Advances to ${name}`,
-      skipsTo: (name: string) => `Skips ahead to ${name}`,
-      returnsTo: (name: string) => `Falls back to ${name}`,
-      loopsOn: "Stays in this state",
-      unknownTarget: "missing state",
-      danglingTransition: "Points at a deleted state",
-      unreachable: "Not reachable from the initial state",
-      guardAnyOf: (names: string) => `any of: ${names}`,
-      guardAllOf: (names: string) => `all of: ${names}`,
-      guardMinTurns: (n: number) => `≥${n} turn${n === 1 ? "" : "s"} in state`,
-      guardMinScore: (n: number) => `score ≥ ${n}`,
-      guardAlways: "always (no conditions)",
-      outgoingTransitions: "Leads to",
-      incomingTransitions: "Reached from",
-      noOutgoingTransitions: "No transitions out of this state yet.",
-      noIncomingTransitions: "Nothing transitions into this state.",
-      arcHint: "The client's emotional arc, from the opening state onward.",
-    },
-    publish: {
-      title: "Publish",
-      readiness: "Readiness checklist",
-      checkStates: "3–6 states in the state machine",
-      checkSecret: "At least one secret in the disclosure ledger",
-      checkRubric: "Rubric has at least one behavior",
-      checkVoice: "A voice is selected",
-      versions: "Versions",
-      publish: "Publish",
-      publishing: "Publishing…",
-      published: "Version published",
-      publishFailed: "Failed to publish version",
-      newVersion: "New version",
-      tryLive: "Try live",
-      preview: "Preview",
-      previewLanguage: "Preview language",
-      previewHint: "Add 3–6 states and a voice to preview the draft",
-      publishHint: "Complete the readiness checklist to publish",
-      startingSession: "Starting session…",
-      sessionFailed: "Failed to start a live session",
-      noVersions: "No versions yet",
-    },
-    improve: {
-      button: "Improve",
-      buttonHint: "Add 3–6 states and a voice to run test cases",
-      drawerTitle: "Improve",
-      drawerSubtitle:
-        "Run agent test cases against the current draft, then feed a report back to the copilot to fix the spec.",
-      testCasesHeading: "Test cases",
-      searchPlaceholder: "Filter test cases…",
-      noTestCases: "No agent test cases yet — create some under Agent Test Cases first.",
-      noMatchingTestCases: "No test cases match this filter.",
-      loadTestCasesFailed: "Failed to load test cases",
-      typeCondition: "Condition",
-      typeFullSession: "Full session",
-      runTestCases: (n: number) => `Run test cases (${n})`,
-      startingRun: "Starting…",
-      runInProgressHint: "A test run is already in progress",
-      selectCasesHint: "Select at least one test case",
-      runStarted: "Test run started",
-      runStartFailed: "Failed to start the test run",
-      reportsHeading: "Test reports",
-      reportsEmpty: "No test reports yet — select test cases above and run them.",
-      loadReportsFailed: "Failed to load test reports",
-      pending: "Running…",
-      progressLabel: (completed: number, total: number) => `${completed}/${total} complete`,
-      cancelRun: "Cancel run",
-      runCancelled: "Test run cancelled",
-      cancelFailed: "Failed to cancel the test run",
-      statusFailed: "Failed",
-      statusCancelled: "Cancelled",
-      verdictPassed: "Passed",
-      verdictFailed: "Failed",
-      verdictInconclusive: "Inconclusive",
-      versionLabel: (n: number | string) => `v${n}`,
-      autoImprove: "Auto improve",
-      autoImproveHint:
-        "Send this report to the copilot; it patches the spec, then the same test case re-runs",
-      autoImproveQueued: "Sent to the copilot — watch it patch the spec in Chat",
-      autoImprovePrompt: (title: string) =>
-        `Auto-improve the spec from the test report for "${title}".`,
-      autoImproveRejected:
-        "Auto-improve was rejected — the report is already improving or a run is in flight",
-      turnInProgress: "The copilot is already mid-turn — try again once it finishes",
-      improving: "Improving…",
-      rerunning: "Re-running…",
-      noChanges: "Copilot made no changes — see its explanation in Chat",
-      improveFailed: "Auto-improve failed",
-      improvedFrom: "Improved from an earlier report",
-      overallScore: "Overall score",
-      rubricScores: "Rubric scores",
-      sessionQuality: "Session quality",
-      judgeNotes: "Judge notes",
-      reportSection: "Report",
-      transcript: "Transcript",
-      showTranscript: "Show transcript",
-      hideTranscript: "Hide transcript",
-      detailLoadFailed: "Failed to load the report",
-      noReportContent: "No report content available.",
-    },
-    preview: {
-      directorFeed: "Director feed",
-      turn: "Turn",
-      behaviors: "Behaviors",
-      stateChange: "State",
-      unlocks: "Unlocks",
-      score: "Score",
-      feedback: "Feedback",
-      stale: "stale",
-      waiting: "Waiting for the director…",
-    },
-    saveConflict: "Someone else saved this draft — reloaded the latest version",
+  /**
+   * Corpus retrieval quality (Analytics -> Retrieval quality).
+   *
+   * Copy written for a curator or an engineer deciding what to DO: whether to upload material,
+   * lower a threshold, or change how retrieval ranks. Every label names the action or the
+   * evidence, never the mechanism.
+   */
+  ragQuality: {
+    tab: "Retrieval quality",
+    failed: "Couldn't load retrieval quality",
+    consumer: "Asked by",
+    allConsumers: "Everything",
+    interviewAgent: "Interview agent",
+    whatsappBot: "WhatsApp bot",
+    queryWithheld: "Question withheld — asked by a health worker",
+    adminPreview: "Admin preview",
+    corpus: "Corpus",
+    allCorpora: "Both",
+    characterLibrary: "Character library",
+    whatsappQa: "WhatsApp Q&A",
+    referenceDocuments: "Reference documents",
+    roadmapOpportunities: "Roadmap duplicates",
+    referenceSearch: "Document search",
+    roadmapMatcher: "Roadmap matching",
+    notJudged:
+      "This surface is logged but not judged: its passage text lives in the AI service rather than in this database, so there are no relevance labels. The score distribution and the volume are real; the floor table below will be empty.",
+    retrievalsJudged: "Retrievals judged",
+    passagesLabelled: "Passages labelled",
+    answered: "Answered the question",
+    nothingUseful: "Found nothing useful",
+    superficial: "Superficial matches",
+    superficialHelp:
+      "A superficial match scored well on shared wording while answering something else. That is a fact about the embedding, not about the corpus — it argues for changing how retrieval ranks rather than for uploading more material.",
+    smallSample:
+      "Too few judged retrievals for a percentage to mean anything yet, so only counts are shown. The judge labels new retrievals every 30 minutes.",
+    mixedJudges:
+      "This window contains judgments from more than one judge model or rubric version. Figures are scoped to the pinned pair; the rest are excluded rather than mixed in.",
+    floorTitle: "What each similarity floor would cost",
+    floorHelp:
+      "The floor decides which passages reach the agent at all. This is what each candidate would have kept and discarded over the judged passages in this window.",
+    floorCaveat:
+      "Every passage here already cleared the floor in force when it was retrieved, so this measures precision and estimates what a HIGHER floor would have lost. What a lower floor would have found is not recorded — re-run the query in the corpus panel's retrieval preview to see that.",
+    floor: "Floor",
+    kept: "Kept",
+    relevant: "Relevant",
+    tangential: "Tangential",
+    irrelevant: "Irrelevant",
+    precision: "Relevant share",
+    relevantLost: "Relevant lost",
+    currentFloor: "in use",
+    consumerTitle: "Who asked, and what they got",
+    retrievals: "Retrievals",
+    judged: "Judged",
+    returnedNothing: "Returned nothing",
+    gapsTitle: "What the corpus was missing",
+    gapsHelp:
+      "Retrievals the judge called partial or useless, with what it says it needed. This is the only place a corpus gap gets a name — an empty result on its own cannot tell you whether the material is absent or the floor was too tight.",
+    noGaps: "Every judged retrieval in this window answered its question.",
+    nothingJudged:
+      "Nothing judged in this window yet. The judge runs every 30 minutes over retrievals that have happened.",
+    returned: "returned",
+    atFloor: "at floor",
+    missingPrefix: "Judge wanted:",
   },
+
+  characterCorpus: {
+    trigger: "Reference corpus",
+    title: "Reference corpus",
+    subtitle:
+      "Craft guidance on building believable people, plus lived-experience and observational material. This is what the interview agent reaches for so its questions are specific and its drafts are real rather than plausible \u2014 clinical guidelines and protocols belong in the WhatsApp bot's corpus, not here.",
+    empty: "Nothing here yet",
+    emptyBody:
+      "Add a case account, a first-person piece, notes on how people in a particular situation actually talk, or distilled craft principles for writing characters — anything the agent should know that an admin shouldn't have to type.",
+    add: "Add material",
+    topics: "Grounds",
+    topicsHelp:
+      "Which parts of a character this helps with. A hint that ranks it higher for those, never a restriction — leave it blank if you're not sure.",
+    topicsNone: "No hint",
+    saveTopics: "Save",
+    topicsSaved: "Saved",
+    topicsFailed: "Couldn't save that",
+    preview: "Try a search",
+    previewHelp:
+      "Ask what the agent would ask, and see what comes back with its match score. Scores below the floor are never returned.",
+    previewPlaceholder: "e.g. how does early-stage dementia change how someone speaks?",
+    previewRun: "Search",
+    previewEmpty:
+      "Nothing matched at this floor — the agent would be told so, and would not invent a source.",
+    // Three states, three sentences. "Nothing matched" is only the truthful one when there is
+    // something to match against; the other two name what to do instead of implying a
+    // threshold problem.
+    previewNothingIndexed:
+      "No passages are indexed yet, so a search cannot match anything. Add material, or wait for indexing to finish.",
+    previewIndexFailed:
+      "Indexing failed, so there are no passages to search. Check the failed document above and re-upload it.",
+    previewEmptyTryFloor:
+      "Nothing matched at the default floor. Similarity search is brittle across phrasing, so try a lower floor before concluding the corpus is missing this — the agent also retries at a different angle.",
+    floor: "Match floor",
+    archive: "Archive",
+    unarchive: "Restore",
+    archived: "Archived",
+    archiveFailed: "Couldn't archive that",
+    archiveHelp:
+      "Archiving deletes the passages so the agent stops using this, and keeps the document here so any citation already recorded still resolves. It is reversible.",
+    previewFailed: "The search failed",
+    score: "match",
+    indexed: "Indexed",
+    inProgress: "In progress",
+    failed: "Failed",
+    passages: "Passages",
+  },
+
   characterInterview: {
     title: "Character interview",
     subtitle: "Answer a few questions and the agent will draft a rich, consistent character.",
@@ -1178,7 +1078,10 @@ export const en = {
     startFailed: "Couldn't start the interview",
     resumeFailed: "Couldn't resume the interview",
     streamFailed: "The interview stream failed — please try again",
-    turnInProgress: "Please wait for the current answer to finish",
+    // Says what happened to the answer, not just to wait: the turn was never
+    // received, so it has to be sent again once the one in flight lands.
+    turnInProgress:
+      "The previous answer is still being worked on, so this one wasn't sent. Give it a moment and answer again.",
     emptyTitle: "Starting the interview…",
     emptySubtitle: "The agent will ask its first question in a moment.",
     toolLookingUpVoices: "Looking up available voices…",
@@ -1214,6 +1117,68 @@ export const en = {
     tooltipCreated: "Tooltip created successfully",
     tooltipUpdated: "Tooltip updated successfully",
     locationAlreadyExists: "A tooltip for this location already exists",
+  },
+  settings: {
+    title: "Settings",
+    // Every tab here is platform-wide, not per-tenant — the page-level line says
+    // so once, so no individual tab has to repeat the warning.
+    subtitle: "Platform-wide configuration. Changes apply to every organisation.",
+    tabs: {
+      legal: "Legal",
+      comfortAudio: "Comfort Audio",
+      turnDetection: "Turn Detection",
+      aiModels: "AI Models",
+    },
+    aiModelsDescription:
+      "Which models Bug Hunter and Builder run on. Each section reads and writes its own feature's backend — this tab only brings the two together.",
+    aiModels: {
+      bugHunterHeading: "Bug Hunter",
+      bugHunterLoadFailed: "Couldn't load Bug Hunter's model settings.",
+      bugHunterSaveFailed: "Couldn't save Bug Hunter's model settings.",
+      bugHunterEngineLabel: "Engine",
+      bugHunterEngineHelp:
+        "Which CLI the sweep and fix session run on. Claude Code is battle-tested and supports escalation. Gemini CLI is wired in but has no equivalent to the escalation subagent, so a Gemini run skips escalation entirely — switching engine clears the default model, since a model id from one engine means nothing to the other.",
+      defaultModelLabel: "Default model",
+      defaultModelHelp:
+        "Runs the sweep and fix session end to end. Takes effect on the next run, not this one.",
+      escalationModelLabel: "Escalation model",
+      escalationModelHelp:
+        "Handed to the escalation subagent for one finding that resists a straightforward fix — a root cause spanning several files, a guarded-path change, or a retry after a non-obvious failure. Not used anywhere else.",
+      escalationModelDisabledHelp:
+        "Gemini CLI has no equivalent to the escalation subagent this depends on, so a Gemini-engine run skips escalation rather than pretending to honor this field.",
+      escalationModelDisabledOption: "Not available on Gemini",
+      builderHeading: "Builder",
+      builderLoadFailed: "Couldn't load Builder's model settings.",
+      builderSaveFailed: "Couldn't save Builder's model settings.",
+      builderEngineLabel: "Engine",
+      builderEngineHelp:
+        "Which coding-agent CLI runs the build. Claude Code is battle-tested; Gemini CLI is wired in but unverified end-to-end — its install/run/event-parsing code is built against the installed package's own schema, not a completed real run. Switching engine clears the model fields below, since a model id from one engine means nothing to the other.",
+      saved: "Saved.",
+      save: "Save",
+    },
+    legalDescription:
+      "Edit the content shown on the public Terms of Service and Privacy Policy pages.",
+    termsTitle: "Terms of Service",
+    privacyTitle: "Privacy Policy",
+    legalPlaceholder: (title: string) => `Write the ${title} content...`,
+    termsSaved: "Terms of Service updated",
+    termsSaveFailed: "Failed to update Terms of Service",
+    privacySaved: "Privacy Policy updated",
+    privacySaveFailed: "Failed to update Privacy Policy",
+    turnDetectionTitle: "Turn Detection Timing",
+    turnDetectionDescription:
+      "How long a Studio v1 roleplay agent waits before replying. Applies to every roleplay session platform-wide — there is no per-simulation override.",
+    turnDetectionMinLabel: "Minimum reply delay (seconds)",
+    turnDetectionMinHelp:
+      "How fast the agent may reply once it’s confident the learner has finished. Lower = snappier, more risk of cutting the learner off.",
+    turnDetectionMaxLabel: "Maximum reply delay (seconds)",
+    turnDetectionMaxHelp:
+      "How long the agent waits for a learner who seems mid-thought before replying anyway. Higher = fewer interruptions, more perceived dead air.",
+    turnDetectionPairError: "Maximum delay must be greater than the minimum delay.",
+    turnDetectionSaved: "Turn detection timing updated",
+    turnDetectionSaveFailed: "Failed to update turn detection timing",
+    save: "Save",
+    saving: "Saving...",
   },
   comfortAudio: {
     title: "Comfort Audio",
@@ -1366,6 +1331,9 @@ export const en = {
       declineLabel: "When the corpus has no answer",
       fallbackLabel: "When something goes wrong",
       unsupportedMediaLabel: "When a photo or voice note arrives",
+      unrecognisedNumberLabel: "When the number is not on any Ally profile",
+      unrecognisedNumberHelp:
+        "Documents are targeted at organisations, so the bot cannot answer a number it does not recognise. Say how to fix it — the number goes on the person's Ally profile.",
       rateLimitLabel: "When someone sends too many messages",
       helplineNumbersLabel: "Helpline numbers",
       helplineNumbersHelp: "Inserted wherever a reply uses {helpline_numbers}.",
@@ -1451,8 +1419,13 @@ export const en = {
         clarified: "Asked for clarification",
         rate_limited: "Rate limited",
         unsupported_media: "Unreadable message",
+        unidentified: "Number not recognised",
         error: "Error",
       },
+      organisation: "Organisation",
+      organisationUnknown: "Not recognised",
+      organisationUnknownHelp:
+        "This number is not on any Ally profile, so the bot could not tell which organisation's documents to answer from. Adding it to the person's profile fixes it for their next message.",
       sources: "Sources",
       retrieval: "Retrieval",
       modelUsed: "Model",
@@ -1529,6 +1502,7 @@ export const en = {
       declined: "No answer",
       declineRate: "Decline rate",
       crisis: "Crisis replies",
+      unidentified: "Number not recognised",
       errors: "Errors",
       latency: "Reply time (p50 / p95)",
       outcomesHeading: "Outcomes",
@@ -1583,6 +1557,80 @@ export const en = {
       declineReason: "Reason",
       empty: "Ask a question to see the reply, its sources and the retrieval scores.",
     },
+    phoneMappings: {
+      tabLabel: "WhatsApp Numbers",
+      heading: "WhatsApp Numbers",
+      subtitle:
+        "Which organisation a phone number belongs to. The bot answers a worker only from their own organisation's documents, so a number it cannot place gets no answer at all.",
+      searchPlaceholder: "Search a number or a name",
+      add: "Add number",
+      edit: "Edit number",
+      bulkAdd: "Upload numbers",
+      columnPhone: "Number",
+      columnOrganisation: "Organisation",
+      columnLabel: "Who",
+      columnAdded: "Added",
+      remove: "Remove",
+      removeConfirmTitle: "Remove this number?",
+      removeConfirmDescription:
+        "The bot will stop recognising it, unless the number is also on someone's Ally profile. You can add it again at any time.",
+      removed: "Number removed",
+      created: "Number added",
+      updated: "Number updated",
+      saveFailed: "Could not save that number",
+      phoneLabel: "Phone number",
+      phonePlaceholder: "+91 98765 43210",
+      phoneHelp:
+        "Any format. Matched on the last 10 digits, so spaces, dashes and the country code make no difference.",
+      organisationLabel: "Organisation",
+      organisationHelp: "Whose documents this number can be answered from.",
+      whoLabel: "Who is this?",
+      whoPlaceholder: "e.g. Priya, night shift, Ward 4",
+      whoHelp:
+        "Optional, and the only thing that makes this list readable later. Whoever removes a number in six months will not be whoever added it.",
+      validationPhone: "A phone number is required",
+      validationOrganisation: "Pick an organisation",
+      conflictWarning: (organisation: string) =>
+        `This number is on an Ally profile in ${organisation}. This mapping wins — the bot will use the organisation set here.`,
+      empty: "No numbers mapped yet",
+      emptySubtitle:
+        "Add the numbers your workers message from, so the bot knows whose documents to answer from.",
+      emptyFiltered: "No numbers match that search",
+      emptyFilteredSubtitle: "Try a different number or name.",
+      listError: "Could not load the numbers.",
+      listErrorSubtitle: "Refresh to try again.",
+      bulkHeading: "Upload numbers",
+      bulkSubtitle:
+        "One number per line. Add an organisation and a name after it, separated by commas, if the list spans more than one organisation.",
+      bulkExample: "Example:\n919876543210, Acme Health, Priya\n919876500000",
+      bulkPasteLabel: "Numbers",
+      bulkPastePlaceholder: "919876543210, Acme Health, Priya",
+      bulkChooseFile: "Choose a CSV file",
+      bulkFileHint:
+        "A .csv or .txt file fills the box below, so you can check it before uploading.",
+      bulkDefaultOrganisationLabel: "Organisation for lines that do not name one",
+      bulkOverwriteLabel: "Move numbers that already belong to another organisation",
+      bulkOverwriteHelp:
+        "Off by default. Numbers already mapped elsewhere are listed as conflicts and left alone, so a file cannot quietly move workers between organisations.",
+      bulkSubmit: (count: number) => `Upload ${count} number${count === 1 ? "" : "s"}`,
+      bulkParsingProblems: (count: number) =>
+        `${count} line${count === 1 ? "" : "s"} could not be read and will not be uploaded:`,
+      bulkNothingToUpload: "Nothing to upload yet — paste some numbers above.",
+      bulkFailed: "The upload failed. Nothing was saved.",
+      bulkSummary: "Upload finished",
+      bulkOutcome: {
+        created: "Added",
+        updated: "Moved",
+        unchanged: "Already there",
+        conflict: "Belongs to another organisation",
+        invalid: "Could not be used",
+        duplicate: "Repeated in this file",
+      },
+      bulkResultsHeading: "Lines that need attention",
+      bulkAllGood: "Every line was accepted.",
+      bulkRetryWithOverwrite: "Upload again, moving the conflicts",
+      bulkClose: "Done",
+    },
     corpus: {
       heading: "Knowledge Corpus",
       subtitle:
@@ -1595,6 +1643,7 @@ export const en = {
       columnTitle: "Document",
       columnStatus: "Status",
       columnChunks: "Passages",
+      columnOrganisations: "Organisations",
       columnUpdated: "Updated",
       sourceType: {
         paste: "Text",
@@ -1643,6 +1692,30 @@ export const en = {
       tagsPlaceholder: "Add a tag and press Enter",
       languageLabel: "Language",
       languageHelp: "Leave blank to detect it automatically.",
+      audienceLabel: "Available to",
+      audienceHelp:
+        "Who can get answers from this document. Workers only ever see documents their own organisation has.",
+      audienceAll: "All organisations",
+      audienceSpecific: "Specific organisations",
+      audienceAllBadge: "All",
+      audiencePickLabel: "Organisations",
+      audiencePickPlaceholder: "Search organisations",
+      audienceNoneWarning: "No organisations selected — nobody can get answers from this document.",
+      audienceNoneCell: "Nobody",
+      audienceMore: "+{count} more",
+      audienceSaved: "Organisations updated",
+      audienceIndexFailed:
+        "The organisations were saved, but the search index could not be updated. Use Retry on the document.",
+      filterButton: "Filter",
+      filterOrganisationLabel: "Organisation",
+      filterOrganisationChip: "Shows what this organisation can see",
+      previewAsLabel: "Answer as",
+      previewAsWholeCorpus: "Whole corpus (ignores targeting)",
+      previewAsHelp:
+        "Pick an organisation to see what its workers would actually get. The whole corpus is not what anyone receives.",
+      previewAudienceWholeCorpus:
+        "Answered from the whole corpus, ignoring organisation targeting.",
+      previewAudienceScoped: "Answered as a worker from this organisation would be.",
       created: "Document added — indexing has been queued",
       updated: "Document updated",
       contentUnchanged: "The text is unchanged, so nothing was re-indexed",
@@ -1703,6 +1776,7 @@ export const en = {
       invalidMaxTokens: "Max tokens must be a positive whole number",
       empty: "No skills yet",
       emptySubtitle: "Create a system-prompt template to reuse across runs.",
+      loadFailed: "Couldn't load skills.",
       created: "Skill created",
       updated: "Skill updated",
       deleted: "Skill deleted",
@@ -1727,6 +1801,7 @@ export const en = {
       descriptionPlaceholder: "What does this variable represent?",
       empty: "No variables yet",
       emptySubtitle: "Define placeholder names you can drop into skill prompts.",
+      loadFailed: "Couldn't load variables.",
       created: "Variable created",
       updated: "Variable updated",
       deleted: "Variable deleted",
@@ -1756,6 +1831,7 @@ export const en = {
       columnValue: "Value",
       empty: "No values yet",
       emptySubtitle: "Add values for your variables so runs have something to substitute.",
+      loadFailed: "Couldn't load values.",
       noVariables: "Create a variable first — values are bound to a variable.",
       created: "Value created",
       updated: "Value updated",
@@ -1775,6 +1851,7 @@ export const en = {
       searchPlaceholder: "Search runs...",
       empty: "No runs yet",
       emptySubtitle: "Create a run to execute one or more skills and see their output here.",
+      loadFailed: "Couldn't load runs.",
       // Drawer
       drawerTitle: "Create New Run",
       selectSkills: "Select skills",
@@ -1963,6 +2040,7 @@ export const en = {
       emailPlaceholder: "evaluator@example.com",
       empty: "No evaluators yet",
       emptySubtitle: "Create evaluator accounts to assign published records for human review.",
+      loadFailed: "Couldn't load evaluators.",
       created: "Evaluator created",
       createFailed: "Failed to create evaluator",
       duplicate: "An evaluator with this email already exists",
@@ -2014,6 +2092,7 @@ export const en = {
       questionCount: (count: number) => `${count} question${count === 1 ? "" : "s"}`,
       empty: "No question sets yet",
       emptySubtitle: "Create a reusable list of questions to apply when publishing runs.",
+      loadFailed: "Couldn't load question sets.",
       saveDraft: "Save Draft",
       publishButton: "Publish",
       publishHelp: "Publishing locks the question list — it can no longer be edited.",
@@ -2179,6 +2258,7 @@ export const en = {
     // from is a claim nobody can check.
     provenance: "{window} · {model}",
     noGoalMatched: "No goal matched",
+    sourceUxSignal: "From UX telemetry",
     rationaleLabel: "Why now",
     evidenceLabel: "From the data",
     accept: "Accept",
@@ -2219,6 +2299,42 @@ export const en = {
     rejectSubmit: "Reject suggestion",
     rejected: "Rejected.",
     rejectFailed: "Could not reject this suggestion.",
+  },
+  uxSignals: {
+    title: "UX Signals",
+    description:
+      "Reads the last seven days of product telemetry, then files what looks broken as a bug below and what looks like a missed opportunity into Analytics \u2192 Suggestions. Nothing is fixed or filed to the roadmap without your decision.",
+    scanNow: "Scan now",
+    scanning: "Scanning telemetry\u2026",
+    scanTooltip:
+      "Takes about two minutes: seven detector queries, then one triage pass. It runs in the background, so you can leave this page.",
+    neverScanned: "No scan has run yet. Scans run automatically once a day.",
+    // The scan outlives the request that started it, so the running line has to
+    // say the page is watching \u2014 otherwise the only honest reading of a
+    // two-minute wait with no feedback is that something is stuck.
+    scanRunning: "A scan is running now. This page updates when it finishes.",
+    // A RUNNING row past the backend\u2019s staleness cutoff: the scan died with
+    // whatever process was running it. Saying so beats a spinner that never ends.
+    scanStalled:
+      "The scan that started {when} never reported back \u2014 it was interrupted. Anything it had already filed is in the table below. You can start another.",
+    lastScanSummary: "Last scan {when}: {findings} bugs, {suggestions} suggestions filed.",
+    lastScanFailed: "Last scan {when} failed: {reason}",
+    // Zero is a real answer, so the copy has to read correctly at zero: "0 bugs
+    // and 0 suggestions filed" is a successful quiet week, not a failure.
+    scanDone: "Scan complete: {findings} bugs and {suggestions} suggestions filed.",
+    scanDetail: "{signals} signals crossed a threshold; {skipped} were already known.",
+    detectorsFailed: "These detectors could not run: {detectors}.",
+    scanConflict: "A scan is already running. Wait for it to finish before starting another.",
+    scanUnavailable: "Product telemetry access isn\u2019t configured, so there is nothing to scan.",
+    // The catch-all, and the one place the app genuinely does not know what
+    // happened: the request to start a scan got no usable answer, which does not
+    // tell us whether the scan was claimed. Its predecessor asserted "Nothing was
+    // filed" here and was wrong in production \u2014 a scan that filed seven
+    // findings reported itself as a failure. Say what is known, then the next step.
+    scanFailed:
+      "Couldn\u2019t confirm the scan started. Reload to see whether one is running before trying again.",
+    scanFailedReason: "The scan failed: {reason}",
+    scanUnknownReason: "no reason was recorded",
   },
   bugHunter: {
     tabLabel: "Bug Hunter",
@@ -2355,6 +2471,9 @@ export const en = {
     cancel: "Cancel",
     updateFailed: "Couldn't update the setting. Try again.",
     lastChangedBy: "Working style last set by user #{userId}",
+    // Links to the shared Model Settings hub (see `en.modelSettings`) rather
+    // than a Bug-Hunter-only page — Builder's model tiers live there too.
+    settingsLink: "Model settings",
     // ── About me (was the FAQ) ───────────────────────────────────────────────
     // Questions in the second person, answers in the first: this reads as
     // asking a colleague how they work, not as product documentation. Both
@@ -2401,19 +2520,25 @@ export const en = {
     findingsSubtitle:
       "Everything I know about, from any source. Search it, or filter by what needs doing.",
     findingColumnTitle: "Bug",
-    findingColumnSource: "Source",
     findingColumnRepo: "Repo",
     findingColumnSeverity: "Severity",
     findingColumnStatus: "Status",
-    findingColumnDiscovered: "Discovered",
+    // Sorting by status walks the lifecycle rather than the alphabet, which is
+    // worth saying: "sort by status" reads as an arbitrary ordering until you
+    // know that clicking it brings your own unfinished work to the top.
+    findingColumnStatusTooltip:
+      "Where a bug is in my pipeline. Sorting by it groups the list the way the chips above do — whatever is waiting on you first, then my own work in the order I do it, then what's finished.",
+    // `findingColumnStage` itself already lives with the stage labels below.
+    findingColumnStageTooltip:
+      "The coarse roadmap ladder — New, Prioritised, In development, Released — so a bug reads the same way as an idea on the roadmap board. I derive it from the status on its left unless somebody pinned it by hand.",
     findingColumnPr: "PR",
-    findingFilterAll: "All statuses",
     findingSourceTestFailure: "Failing test",
     findingSourceLintError: "Lint error",
     findingSourceCodeReview: "Code review",
     findingSourceProductionLog: "Production log",
     findingSourceReportedBug: "Reported by team",
     findingSourceAnalyticsSuggestion: "Analytics suggestion",
+    findingSourceUxSignal: "UX signal",
     findingSeverityLow: "Low",
     findingSeverityMedium: "Medium",
     findingSeverityHigh: "High",
@@ -2435,20 +2560,88 @@ export const en = {
     findingStatusRejected: "Rejected",
     findingStatusFailed: "Failed",
     findingStatusCancelled: "Cancelled",
+    // The coarse roadmap ladder, shown beside the pipeline status because bugs
+    // are no longer listed on the roadmap board — this is the vocabulary the
+    // team already reads, and Bug Hunter is now the only place a bug appears.
+    findingStageNew: "New",
+    findingStagePrioritised: "Prioritised",
+    findingStageUnderDevelopment: "In development",
+    findingStageReleased: "Released",
+    findingStageArchived: "Archived",
+    findingColumnStage: "Stage",
+    findingStagePinnedTooltip:
+      "Stage set by hand by {name} on {date}. It no longer follows the fix pipeline.",
+    findingStageAutoTooltip:
+      "Stage follows the fix pipeline automatically — it's {stage} because this bug is {status}.",
+    findingStagePinned: "pinned",
+    stageSectionTitle: "Stage",
+    stageAutoLabel: "Following the pipeline",
+    stageEditLabel: "Set stage by hand",
+    stageEditHint:
+      "Use this when the bug was fixed outside Bug Hunter — a hand-written PR, a config change, a fix that came along with other work. Once set by hand, the stage stops following the pipeline.",
+    stageSelectLabel: "Stage",
+    stageSave: "Set stage",
+    stageBackToAuto: "Back to automatic",
+    stageCancel: "Cancel",
+    stageSaved: "Stage updated.",
+    stageSaveFailed: "Couldn't update the stage.",
+    // The reporter block: only ever present on a bug a person filed, and the
+    // only thing now distinguishing one from an agent-found lint error.
+    reporterSectionTitle: "Reported by",
+    reporterConsumer: "Consumer",
+    reporterStaff: "Staff",
+    reporterUnknown: "Unknown reporter",
+    reporterConsumerTooltip: "Filed through the in-app \u201cReport a problem\u201d form.",
+    reporterStaffTooltip: "Filed by somebody internal.",
+    reporterContextTitle: "Captured with the report",
+    reporterContextEmpty: "Their client captured no extra context.",
+    reporterContextScreen: "Screen",
+    reporterContextDevice: "Device",
+    reporterContextOs: "OS",
+    reporterContextAppVersion: "App version",
+    reporterContextClientTimestamp: "Reported at (their clock)",
+    reporterTenant: "Tenant",
     findingsEmptyTitle: "No bugs yet",
     findingsEmptySubtitle:
       "Once I'm on duty, anything I find — or your team reports — shows up here.",
     findingsLoadFailed: "Couldn't load the bugs table.",
     viewPr: "View PR",
     searchLabel: "Search bugs",
-    searchPlaceholder: "Search by title, file or repo…",
-    filterRepoLabel: "Repo",
-    filterRepoAll: "All repos",
-    filterSeverityLabel: "Severity",
-    filterSeverityAll: "Any severity",
-    filterSourceLabel: "Source",
-    filterSourceAll: "Any source",
+    // Names every field it actually looks in. It searched title, file and repo
+    // and said so; it now also reads the description and the reporter's name,
+    // and a placeholder that under-promises is why nobody tried "Priya" in it.
+    searchPlaceholder: "Search title, description, file, repo or reporter…",
     clearFilters: "Clear filters",
+    // ── The filter panel ──────────────────────────────────────────────────────
+    // One button holding eight facets, rather than eight controls on a row that
+    // already wrapped. See FindingsFilterBar for the argument, and for why the
+    // active values stay visible as pills while the panel itself is shut.
+    // ── Page sections ─────────────────────────────────────────────────────────
+    // Named for the question each answers, not for what they contain. "Work" is
+    // a triager's daily surface; "Performance" is the monthly governance one —
+    // see BugHunter.tsx on why those are two readers and not one long page.
+    sectionWork: "Work",
+    sectionPerformance: "Performance",
+    sectionAbout: "About",
+    filtersButton: "Filters",
+    filtersPanelLabel: "Filter bugs",
+    filterSectionStatus: "Status",
+    filterSectionRepo: "Repo",
+    filterSectionSeverity: "Severity",
+    filterSectionSource: "Source",
+    filterSectionStage: "Roadmap stage",
+    filterSectionAge: "Age",
+    filterSectionClear: "Clear",
+    filterAgeAll: "Any age",
+    filterAgeDay: "Found today",
+    // The two "over" bands use the same week/month boundaries as the amber and
+    // red tints in the Age column, so what the filter returns is exactly what
+    // the column had already coloured. Worded as the reader reads the tint.
+    filterAgeWeek: "Under a week old",
+    filterAgeStale: "Over a week old",
+    filterAgeAncient: "Over a month old",
+    filterDuplicatesOnly: "Duplicates only",
+    filterPillRemove: "Remove the {label} filter",
     // Distinct from findingsEmptyTitle on purpose: "Once I'm on duty, anything
     // I find shows up here" is the wrong thing to tell someone who has just
     // typed a typo into the search box.
@@ -2464,6 +2657,12 @@ export const en = {
     // are, and only when the window is actually smaller than the table.
     windowNotice:
       "These filters search my {loaded} most recent bugs, of {total} I've tracked in total.",
+    // Named for the fetch it triggers, not vaguely "Show more" — clicking it
+    // asks the server for the next `{count}` bugs rather than revealing rows
+    // already sitting in memory, so the number said is a promise about a
+    // network request.
+    loadMoreAction: "Load {count} more",
+    loadMorePending: "Loading…",
     rowOpenLabel: "Open bug: {title}",
     duplicateTag: "×{count}",
     duplicateTooltip:
@@ -2471,6 +2670,17 @@ export const en = {
     pagePrev: "Previous",
     pageNext: "Next",
     pageStatus: "Page {page} of {pages}",
+    pageSizeLabel: "Rows",
+    // Two halves of one sentence: the prompt states the situation, the button
+    // states what clicking it will do — and both name the number, because
+    // "select all" over a filtered list that spans five pages is exactly the
+    // control people press without knowing how much it grabbed.
+    selectAllMatchingPrompt: "Your selection covers this page only.",
+    selectAllMatchingAction: "Select all {count} matching bugs",
+    // A poll failed while rows were already on screen. Deliberately not the
+    // same words as findingsLoadFailed: nothing is missing from the page, the
+    // rows are just from a minute ago.
+    findingsStaleNotice: "Showing the last bugs I loaded — my latest check didn't get through.",
     // ── Finding drawer ────────────────────────────────────────────────────────
     drawerDescriptionTitle: "Description",
     // ── Editing the brief ─────────────────────────────────────────────────────
@@ -2508,6 +2718,63 @@ export const en = {
       'I\'ll pick it up in the fix stage of my next sweep for this repo. If you want it done now, use "Put me on it" instead.',
     drawerRejectConfirmTitle: "Reject this bug?",
     drawerRejectConfirmBody: "I'll never pick it up. This can't be undone.",
+    // ── declining a bug: the reason, and what it is for ────────────────────
+    // Written in Bug Hunter's own first-person voice, like the rest of this
+    // block (see agentPersona.ts): the reader is answering a colleague who
+    // wants to know whether it got this one wrong, not filling in a database
+    // field.
+    declineReasonLabel: "Why are you turning it down?",
+    declineReasonHelp:
+      "I read these back before my next sweep, so I stop re-filing the ones I got wrong. It's also how the scorecard works out how often I'm right.",
+    declineNotABug: "It isn't a bug",
+    declineNotABugHint: "I misread the code. Tell me and I won't file it again.",
+    declineWontFix: "Real, but not worth fixing",
+    declineWontFixHint:
+      "I got this right — it just isn't worth the change. I may raise it again if it starts mattering.",
+    declineDuplicate: "Already tracked elsewhere",
+    declineDuplicateHint: "Same bug as something you already have.",
+    declineWrongRepo: "Real, but in a different codebase",
+    declineWrongRepoHint: "I pointed at the wrong repo. File it where it belongs.",
+    declineTooRisky: "Too risky to fix this way",
+    declineTooRiskyHint: "The fix would cost more than the bug. Somebody should do this by hand.",
+    declineOther: "Something else",
+    declineOtherHint: "Add a note so this is worth reading later.",
+    declineNoteLabel: "Anything to add? (optional)",
+    declineNotePlaceholder: "What did you check, and what settled it?",
+    declineNoteTooLong: "That's longer than I can store — {max} characters at most.",
+    declineReasonRequired: "Pick a reason first.",
+    bulkDeclineOneReason: "The same reason goes on all {count}.",
+    drawerDeclinedAs: "Turned down: {reason}",
+    drawerRediscovered:
+      "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
+
+    // ── confidence and regressions ─────────────────────────────────────────
+    drawerConfidenceLabel: "How sure my checkers were",
+    drawerConfidenceTooltip:
+      "Two verifiers read the code separately, without seeing my reasoning. This is the LOWER of their two scores — if one of them was unsure, the finding is unsure.",
+    drawerConfidenceUnscored: "Not scored",
+    drawerConfidenceUnscoredTooltip:
+      "Either this was proven outright (a failing test or a real production error, so there was nothing to argue about), or I found it before I started scoring.",
+    findingLowConfidenceChip: "Low confidence",
+    findingLowConfidenceTooltip:
+      "Both checkers accepted it but at least one wasn't sure. I hold these for you rather than fixing them myself.",
+    findingRegressedChip: "Came back",
+    findingRegressedTooltip:
+      "I fixed and shipped this, and it is happening again. Worth checking whether the root cause was the one I found.",
+    findingRegressionOfChip: "Fix didn't hold",
+    drawerRegressionOfLink: "See the fix that didn't hold",
+    drawerRegressedByLink: "See where it came back",
+
+    // ── merging a green PR from here ───────────────────────────────────────
+    drawerMerge: "Merge it",
+    drawerMergeTooltip:
+      "I can't merge in this repo — master needs a review and I only have push access — so my PR is sitting green and waiting. This merges it as you, without leaving the tab. I check the PR's own CI first and refuse if anything is red.",
+    drawerMergeConfirmTitle: "Merge this fix to master?",
+    drawerMergeConfirmBody:
+      "I'll merge the PR as you. This does NOT deploy it — releasing to production is still a separate press.",
+    drawerMergeConfirm: "Merge",
+    drawerMergeFailed: "Couldn't merge that PR.",
+    queueAwaitingMerge: "Green and waiting for your merge",
     drawerDecisionFailed: "Couldn't record that decision. Try again.",
     drawerEscalationQuestionTitle: "I need your answer",
     drawerAnswerLabel: "Your answer",
@@ -2577,6 +2844,7 @@ export const en = {
     drawerReleasedNotice: "This is live in production as {tag}.",
     drawerReleaseFailedNotice:
       "Release {tag} went red. The fix is still merged to master — it just isn't deployed. Check the run, then ask me to retry.",
+    drawerFixSessionFailedNotice: "The fix session failed. Start a new session to retry.",
     drawerReleaseBlocked: "Why I can't release this from here",
     drawerReleasedBy: "Released by user #{userId}",
     drawerViewReleaseRun: "View release run",
@@ -2593,8 +2861,14 @@ export const en = {
     columnCost: "Est. cost",
     columnTokens: "Tokens",
     columnStarted: "Started",
+    // Rewritten because the old wording ("Bugs I identified on that sweep") read
+    // as "new bugs", and on a normal night most of this number is bugs your team
+    // filed earlier that I re-read — rows that already existed and kept their
+    // original date. That mismatch is what made a sweep of ten look like a sweep
+    // that lost ten. Now the number says what it counts, and clicks through to
+    // the rows so nobody has to take my word for it.
     columnFoundTooltip:
-      "Bugs I identified on that sweep, across all four sources — tests, code review, logs and bugs your team reported. The individual ones are in my bugs table above.",
+      "Bugs I looked at on that sweep, across all four sources — tests, code review, logs and bugs your team reported. Not all of them are new: re-reading a bug your team filed weeks ago counts here too, and that bug keeps its original date in my table. Click the number to see exactly which bugs this was.",
     columnAutoMergedTooltip:
       "Trivial fixes I merged myself: lint or type-only, or backed by a new red-then-green regression test.",
     columnPrPendingTooltip:
@@ -2610,6 +2884,7 @@ export const en = {
     statusCompleted: "Completed",
     statusFailed: "Failed",
     statusSkippedDisabled: "Skipped (off duty)",
+    statusSkippedQuiet: "Skipped (quiet night)",
     emptyTitle: "No shifts yet",
     emptySubtitle: "Put me on duty above and my first sweep will show up here.",
     loadFailed: "Couldn't load the shift log.",
@@ -2625,11 +2900,65 @@ export const en = {
     pipelineStageReview: "Review",
     pipelineStageMerged: "Merged",
     pipelineStageShip: "Ship",
+    // The dense rail has no visible stage names, so its group name carries
+    // them — see the `dense` prop in PipelineRail.tsx.
+    pipelineRailDenseLabel: "Pipeline stage: {stage}, step {step} of {total}",
     // ── Live clock (freshness readout next to the status pill) ──────────────
     updatedJustNow: "Updated just now",
     updatedSecondsAgo: "Updated {count}s ago",
     updatedMinutesAgo: "Updated {count}m ago",
     updatedHoursAgo: "Updated {count}h ago",
+    // The same clock in `elapsed` mode: a bare duration, because the caller's
+    // own words say what it is a duration of. No "just now" case — a counter
+    // climbing from 0s is the signal.
+    elapsedSeconds: "{count}s",
+    elapsedMinutes: "{count}m",
+    elapsedHours: "{count}h",
+    // Both modes hover to the exact moment, to the second. The relative form
+    // answers "is this still moving?"; only a real timestamp answers "which
+    // sweep was this?", and an incident review needs the second one.
+    clockUpdatedExactTitle: "Last updated {timestamp}",
+    clockElapsedExactTitle: "Started {timestamp}",
+    // ── Live work board ("on it right now") ─────────────────────────────────
+    // The tab's only present-tense section, and the only one that reports the
+    // agent's own work in progress rather than a record of it. Voice rules
+    // apply as everywhere else — first person, plain, and every line ends with
+    // what happens next — with one extra constraint specific to this section:
+    // nothing here may be written to sound busier than the data is. The board
+    // is absent entirely when nothing is in flight, so no string below ever has
+    // to cover an idle agent.
+    liveWorkTitle: "On it right now",
+    liveWorkSubtitle:
+      "These are moving on their own — nothing here needs you. Open one to follow along.",
+    liveWorkSweeping: "I'm sweeping {repo}.",
+    liveWorkSweepElapsedLabel: "Sweeping for {duration}",
+    liveWorkStageElapsedLabel: "{duration} on this step",
+    liveWorkNoRepo: "No codebase matched to this one yet",
+    // What each in-flight status means, as the thing it is doing.
+    liveWorkQueued: "I've queued a fix session — it starts as soon as a runner frees up.",
+    liveWorkFixing:
+      "I'm writing the fix now: a failing test that reproduces it first, then the change, then the whole suite.",
+    liveWorkCoordinating:
+      "This one spans repos, so I'm working through them in order — one has to land before the next starts.",
+    liveWorkReleasing: "The release is running. I'll report how it went here in a few minutes.",
+    liveWorkGeneric: "I'm working on this one now.",
+    // Where a bug just got to. Shown for a few seconds after it stops being in
+    // flight, which is the only moment on the tab where finishing is visible as
+    // it happens rather than as a row that quietly changed colour.
+    liveWorkLandedPrOpened: "Fix written and pushed — the PR is open for review.",
+    liveWorkLandedMerged: "Merged to master. Putting it in front of users is your call.",
+    liveWorkLandedReleased: "Released to production. Users have this fix now.",
+    liveWorkLandedReleaseFailed:
+      "It's merged, but the release went red. The details are on the bug.",
+    liveWorkLandedNeedsInput:
+      "I've stopped on this one — my question for you is in the queue above.",
+    liveWorkLandedPendingApproval: "Waiting on your call before I start fixing it.",
+    liveWorkLandedFailed: "That attempt went red. Whether I try again is your call.",
+    liveWorkLandedCancelled: "You stopped this session. The bug is still open.",
+    liveWorkLandedClosed: "Off the board — I won't pick this one up.",
+    liveWorkLandedRequeued: "Back in the queue. I'll pick it up on my next pass.",
+    liveWorkShowAll: "Show {count} more",
+    liveWorkShowFewer: "Show fewer",
     // ── Scorecard (the governor's view: cost, throughput, reliability) ─────
     // Every other surface on this tab answers "what should I do next?". This one
     // answers "should this thing still be merging its own code?" — a different
@@ -2674,12 +3003,91 @@ export const en = {
     scorecardEmptySubtitle:
       "Once I've worked a shift, what it cost and what it turned up shows up here.",
     scorecardLoadFailed: "Couldn't load the scorecard.",
+
+    // ── the accuracy panel (GET /metrics) ─────────────────────────────────
+    // The governor's other half: the run scorecard above says what Bug Hunter
+    // cost, this says whether it was right. Every figure names its own
+    // denominator, because the ones here are easy to read as flattering when
+    // they are simply thin.
+    accuracyTitle: "How often I'm right",
+    accuracySubtitle:
+      "Of the bugs you've ruled on, how many I read correctly — plus how long the pipeline takes and what a landed fix costs.",
+    accuracyWindow30: "30 days",
+    accuracyWindow90: "90 days",
+    accuracyRateLabel: "I read it right",
+    accuracyRateTooltip:
+      "Of the findings you actually ruled on, the share where I wasn't wrong about the code. Turning a bug down as 'not worth fixing' doesn't count against me — that's your call on priority, not a mistake of mine. Only 'isn't a bug', 'wrong codebase' and 'already tracked' do.",
+    accuracyRateDetail: "{errors} of {judged} I got wrong",
+    accuracyNotEnough: "Not enough decisions yet",
+    accuracyNotEnoughDetail: "Rule on a few and this fills in.",
+    accuracyReasonNotRecorded:
+      "{count} older decision(s) have no reason stored, so they're left out of this rather than guessed at.",
+    accuracyFiledLabel: "Bugs I filed",
+    accuracyFiledTooltip:
+      "Everything I opened in this window, counted by the day I found it — so this number and every rate over it share one denominator.",
+    accuracyLandedLabel: "Fixes that landed",
+    accuracyLandedTooltip: "Reached master. A released fix is counted here too.",
+    accuracyOpenDetail: "{count} still open",
+    accuracyCostPerFixLabel: "Cost per landed fix",
+    accuracyCostPerFixTooltip:
+      "What my fix sessions cost in this window, divided by the fixes that actually reached master. Sessions that failed before landing are in the top half and not the bottom, so this rises when I'm struggling — which is the point of it.",
+    accuracyRegressionLabel: "Fixes that came back",
+    accuracyRegressionTooltip:
+      "Fixes I shipped in this window that have since broken again. This is the number worth watching before you let me merge my own work more freely.",
+    accuracyRegressionDetail: "{count} of {merged} shipped",
+    accuracyLatencyTitle: "How long each step takes",
+    accuracyLatencyDecided: "Filed → you decide",
+    accuracyLatencyMerged: "Filed → merged",
+    accuracyLatencyReleased: "Merged → live",
+    accuracyLatencyValue: "{median} median · {p90} at worst",
+    accuracyLatencySample: "from {count}",
+    accuracyLatencyNone: "nothing yet",
+    accuracyBySourceTitle: "By where I found it",
+    accuracyByRepoTitle: "By repo",
+    accuracyColSource: "Source",
+    accuracyColRepo: "Repo",
+    accuracyColFiled: "Filed",
+    accuracyColJudged: "Ruled on",
+    accuracyColAccuracy: "I read it right",
+    accuracyColReversalRate: "I was right after all",
+    accuracyReversalRateTooltip:
+      'A reversal means you dismissed one of my findings as a mistake, and I later found the same bug again and it actually got fixed. This is the share of my finder-error dismissals that turned out to be wrong, over the same bugs as the rest of this row — so it corrects "I read it right" upward. A dash just means you dismissed nothing of mine as a mistake in this window. A 0% is the one to be careful with: a dismissed finding can’t come back as a reversal for at least 30 days, so a 30-day window reads 0% even where reversals are already on their way. Widen the range past 90 days before you trust a zero here.',
+    accuracyColLanded: "Landed",
+    accuracyRepoUnassigned: "Not yet assigned",
+    accuracyDeclinesTitle: "Why you turned bugs down",
+    accuracyDeclineNotRecorded: "No reason stored",
+    accuracyEscalationsTitle: "Why I asked for help",
+    accuracyEmptyTitle: "Nothing to measure yet",
+    accuracyEmptySubtitle: "Once I've filed some bugs and you've ruled on them, this fills in.",
+    accuracyLoadFailed: "Couldn't load the accuracy figures.",
+    accuracyHours: "{count}h",
+    accuracyDays: "{count}d",
     // ── Age / staleness column ─────────────────────────────────────
     findingColumnAge: "Age",
     findingColumnAgeTooltip:
       "How long a bug has been on my list. I only colour it for bugs still waiting on a decision — something that shipped last month isn't stale, it's finished.",
     findingAgeStaleTooltip: "Waiting on a decision for over a week.",
     findingAgeAncientTooltip: "Waiting on a decision for over a month.",
+    // ── "Updated" column, and the run scope it exists to explain ────
+    // Not "Last triaged". `updatedAt` moves for anything at all — my own sweep
+    // re-reading the bug, a status change, an admin rewriting the description —
+    // and a column promising it was me who last looked would be wrong roughly
+    // whenever a human touched the row.
+    findingColumnUpdated: "Updated",
+    // Only shows once something in view has actually moved since it was found,
+    // so this tooltip is never explaining a column of repeated Age values.
+    findingColumnUpdatedTooltip:
+      "When anything last happened to a bug — I re-read it on a sweep, its status moved, or someone rewrote it. Age is how long it's been on my list; this is whether it's been touched lately. On a bug your team reported weeks ago and I only looked at last night, those two are very far apart.",
+    runScopeBanner: "Showing only the bugs my {repo} sweep at {timestamp} touched.",
+    runScopeBannerLoading: "Showing only the bugs one sweep touched.",
+    // The point of the sentence. "Found 10" meant ten rows touched, and most of
+    // what a nightly sweep touches is bugs your team filed weeks ago — so the
+    // ten were never going to be at the top of a table sorted by age, and the
+    // only reading left was that they had gone missing.
+    runScopeBannerHint:
+      "Counts and filters below describe this sweep only. Some of these bugs are older than the sweep — I re-read what your team reported, so a bug filed weeks ago still counts as found on the night I looked at it.",
+    runScopeClear: "Show all bugs",
+    runScopeCellLabel: "Show the {count} bugs this {repo} sweep touched",
     // ── Row selection and quick actions ─────────────────────────────
     rowSelectLabel: "Select bug: {title}",
     selectAllLabel: "Select every bug on this page",
@@ -2697,7 +3105,7 @@ export const en = {
     quickApproveConfirm: "Approve it",
     quickRejectConfirm: "Reject it",
     quickActionNotApplicable: "That doesn't apply to this bug from where it is.",
-    densityLabel: "Rows",
+    densityLabel: "Row height",
     densityComfortable: "Comfortable",
     densityCompact: "Compact",
     // ── Bulk triage ─────────────────────────────────────────────
@@ -2739,7 +3147,6 @@ export const en = {
     shortcutsTitle: "Keyboard shortcuts",
     shortcutsIntro:
       "For working the list without reaching for the mouse. These apply whenever the bugs table is on screen and you aren't typing into a field.",
-    shortcutsHint: "Press ? for shortcuts",
     shortcutsClose: "Close",
     shortcutsGroupMove: "Moving around",
     shortcutsGroupAct: "Acting on the bug you're on",
@@ -2761,6 +3168,632 @@ export const en = {
       "Copies a link that opens this exact bug for whoever you send it to — the address bar carries the open bug and your filters, so a bookmark of this page is a bookmark of this view.",
     drawerCopyLinkDone: "Link copied.",
     drawerCopyLinkFailed: "Couldn't copy the link.",
+  },
+
+  builder: {
+    tabLabel: "Builder",
+    // ── Voice ────────────────────────────────────────────────────────────
+    // Builder speaks in the first person about the work, present tense, and
+    // says what happens next. The same split as Bug Hunter holds: the agent
+    // speaks about the build ("I couldn't reach the repo"), the app speaks
+    // about itself ("Couldn't load your sessions"). Having the agent
+    // apologise for a failed fetch would misplace the fault.
+    agentName: "Builder",
+    agentRole: "Product engineer",
+
+    // Mission control
+    heroTitle: "What do you want to build?",
+    heroSubtitle:
+      "Describe it in a sentence. I'll ask what I need to know, write the PRD with you, then build it.",
+    heroPlaceholder: "A weekly digest email summarising what shipped…",
+    heroSubmit: "Start",
+    newSession: "New build",
+    needsYouHeading: "Needs you",
+    activeHeading: "In progress",
+    recentHeading: "Recent",
+    emptyTitle: "No builds yet",
+    emptyBody:
+      "Start one above. The first few questions take about a minute, and you can leave and come back to it.",
+    loadFailed: "Couldn't load your Builder sessions.",
+    createFailed: "Couldn't start a new build.",
+    searchPlaceholder: "Search builds…",
+    filterButton: "Filter",
+    filterStatusLabel: "Status",
+    settingsLink: "Settings",
+    // Links to the shared Model Settings hub (see `en.modelSettings`) —
+    // distinct from `settingsLink` above, which is Builder's own full
+    // settings page (kill switch, budget, repo maps) and still has its own
+    // model-tier fields too.
+    modelSettingsLink: "Model settings",
+    pipelineLink: "Pipeline",
+    scoreboardLink: "Scoreboard",
+    knowledgeLink: "Knowledge",
+    noMatchingSessions: "Nothing matches this filter.",
+
+    // Session states, as a person would say them
+    status: {
+      INTERVIEWING: "Scoping",
+      PRD_READY: "Ready to build",
+      BUILDING: "Building",
+      WAITING_FOR_INPUT: "Waiting on you",
+      COMPLETED: "Done",
+      FAILED: "Failed",
+      CANCELLED: "Stopped",
+    } as Record<string, string>,
+
+    // Interview
+    steer: {
+      title: "Redirect this build",
+      // Said plainly on the control, because the alternative to being
+      // precise here is someone believing the build changed course when it
+      // has only been told.
+      hintLive: "Reaches the build at its next phase",
+      hintIdle: "The next build on this session reads it first",
+      placeholder: "Use the existing repository rather than adding a second one…",
+      send: "Send",
+      pending: "Waiting",
+      delivered: "Read by the build",
+      deliveredAtPhase: (phase: string) => `Read at ${phase}`,
+      superseded: "Never read",
+      tooLong: "That is a change to the PRD, not a correction to a run.",
+      failed: "Could not send that note. Try again.",
+    },
+    chat: {
+      heading: "Scoping",
+      placeholder: "Answer, or tell me something I haven't asked about…",
+      send: "Send",
+      stop: "Stop",
+      streamFailed: "That turn didn't finish. Try again.",
+      droppedFrames: (count: number) =>
+        count === 1
+          ? "One update was lost in transit — the chat may be missing a line."
+          : `${count} updates were lost in transit — the chat may be missing some lines.`,
+      thinking: "Thinking",
+      emptyTitle: "Tell me what you want to build",
+      emptyBody:
+        "A sentence is enough to start. I'll read the codebase and ask about what I can't work out on my own.",
+    },
+
+    // Question cards — shared by the interview and mid-build pauses
+    question: {
+      recommended: "Recommended",
+      noneOfThese: "None of these",
+      addCustom: "Something else",
+      addCustomPlaceholder: "Your own answer…",
+      add: "Add",
+      freeTextPlaceholder: "Your answer…",
+      submitAnswer: "Answer",
+      selectPlaceholder: "Choose…",
+      confirmSelection: "Confirm",
+      selectedCountLabel: (count: number) => (count === 1 ? "1 selected" : `${count} selected`),
+      minSelectionsHint: (min: number) => `pick at least ${min}`,
+      answeredLabel: "Answered",
+    },
+
+    // The living PRD
+    prd: {
+      heading: "PRD",
+      versionLabel: (version: number) => `v${version}`,
+      edit: "Edit",
+      save: "Save",
+      cancel: "Cancel",
+      preview: "Preview",
+      write: "Write",
+      emptySection: "Nothing here yet.",
+      saveFailed: "Couldn't save that edit.",
+      lockedWhileBuilding:
+        "The PRD is locked while a build is running — it's what the build is working from. Stop the build to edit it.",
+      sections: {
+        summary: "Summary",
+        problem: "Problem",
+        usersAndContext: "Users & context",
+        existingBehaviour: "What already exists",
+        goals: "Goals",
+        nonGoals: "Non-goals",
+        requirements: "Requirements",
+        assumptions: "Assumptions",
+        technicalPlan: "Technical plan",
+        testPlanMd: "Test plan",
+        e2ePlanMd: "End-to-end checks",
+        openQuestions: "Open questions",
+      } as Record<string, string>,
+      acceptanceCriteria: "Acceptance criteria",
+      assumptionUnconfirmed: "Unconfirmed",
+      assumptionConfirmed: "Confirmed",
+      unnamedRepo: "Repo not chosen",
+      noRequirements: "No requirements captured yet.",
+      noAssumptions: "Nothing assumed so far.",
+      noOpenQuestions: "Nothing outstanding.",
+      export: {
+        // "Download" rather than "Export": the file lands in the browser's
+        // downloads folder, and nothing is sent anywhere.
+        menuLabel: "Download this PRD",
+        pdf: "Download as PDF",
+        markdown: "Download as Markdown (.md)",
+        // Says what the download is and, just as importantly, that it is a
+        // snapshot — the agent keeps writing after you take one.
+        hint: "Downloads the PRD as it stands right now — a snapshot, not a live copy. PDF to share or print; Markdown to paste into a ticket or a repo.",
+        failed: "Couldn't build that file.",
+        // Sub-title inside the exported file itself.
+        metaLine: ({ version, repos, date }: { version: number; repos: string; date: string }) =>
+          `PRD v${version} · ${repos} · exported ${date}`,
+        dataModel: "Data model",
+        api: "API",
+        pageLabel: (page: number, total: number) => `Page ${page} of ${total}`,
+      },
+    },
+
+    // Readiness
+    readiness: {
+      heading: "Build readiness",
+      ready: "Ready to build",
+      notReady: (count: number) => (count === 1 ? "1 thing left" : `${count} things left`),
+      // Shown when the document is written through but something is still
+      // unsettled — the score and the verdict genuinely disagree here, and
+      // saying so is clearer than hiding one of them.
+      writtenButBlocked: "Written through, but not settled yet",
+      startBuild: "Start build",
+      startBuildEarly: "Start anyway",
+      startBuildBlockedTitle: "Some things are still open",
+      startBuildBlockedBody:
+        "I can start, but I'll have to guess at these — and a guess found at review time costs a whole build:",
+      startBuildDisabledHint: "Finish scoping first.",
+    },
+
+    // Build stages, as a person would name them
+    stages: {
+      SETUP: "Getting oriented",
+      PLANNING: "Planning",
+      CODING: "Writing code",
+      TESTING: "Testing",
+      GATE: "Running the checks",
+      VERIFYING: "Independent review",
+      REMEDIATING: "Fixing what the checks found",
+      FINALISING: "Shipping",
+      E2E_VERIFY: "End-to-end",
+      OPENING_PRS: "Opening PRs",
+      REPORTING: "Writing up",
+      DONE: "Done",
+    } as Record<string, string>,
+
+    // The build screen
+    build: {
+      todoHeading: "Checklist",
+      todoProgress: (done: number, total: number) => `${done} of ${total}`,
+      todoStopped: (done: number, total: number) =>
+        `${done} of ${total} — the agent stopped reporting progress`,
+      planHeading: "Plan",
+      verificationHeading: "Independent review",
+      verificationRoundHeading: (round: number) => `Independent review · round ${round}`,
+      verificationPassed: "No blocking objections",
+      verificationFailed: "Blocking objections",
+      // A failing review used to end the run. It no longer does, and a red
+      // card that does not say so reads as a dead build.
+      verificationRemediating: "Builder is fixing these and will be reviewed again.",
+      // "Checked" rather than "reported": the gate is the one thing in this
+      // feed the agent did not write about itself.
+      gateVerified: "Checked by Builder, not self-reported",
+      gatePassed: "Passed",
+      gateFailed: "Failed",
+      gateNewFailures: (count: number) =>
+        count === 1 ? "1 failure this change caused" : `${count} failures this change caused`,
+      gatePreExisting: (count: number) =>
+        count === 1
+          ? "1 failure was already there before this change"
+          : `${count} failures were already there before this change`,
+      gateOutput: "Command output",
+      // Tool-call detail: arguments and the paired result, shown once expanded.
+      toolArgumentsHeading: "Arguments",
+      toolResultHeading: "Result",
+      noToolResult: "No result recorded for this call.",
+      // Gap between two events, shown inline so a long silence (a slow test
+      // suite, a big diff) reads as time passing rather than as nothing
+      // having happened.
+      eventGap: (label: string) => `${label} later`,
+      diffNoChange: "No visible change.",
+      diffAdditions: (count: number) => (count === 1 ? "1 addition" : `${count} additions`),
+      diffDeletions: (count: number) => (count === 1 ? "1 deletion" : `${count} deletions`),
+      reportHeading: "Report",
+      testOutput: "Test results",
+      e2eEvidence: "End-to-end evidence",
+      e2eSkipped: (reason: string) => `Skipped the end-to-end check — ${reason}`,
+      jumpToLive: "Jump to live",
+      feedStarting: "Waiting for the first update…",
+      feedEmpty: "Nothing recorded for this run.",
+      runLabel: (sequence: number, mode: string) =>
+        mode === "resume"
+          ? `Run ${sequence} (resumed)`
+          : mode === "fix"
+            ? `Run ${sequence} (fix)`
+            : `Run ${sequence}`,
+      // Run history rail — reading an older run's transcript without losing
+      // the live one is the whole point, so the rail says which run is which
+      // rather than leaving that to a bare sequence number.
+      runHistoryHeading: "Runs",
+      runHistoryEmpty: "No runs yet.",
+      runDurationLive: "Running…",
+      runDurationUnknown: "—",
+      runModeLabels: {
+        build: "Build",
+        resume: "Resume",
+        fix: "Fix",
+      } as Record<string, string>,
+      runLiveBadge: "Live",
+      runStatusLabels: {
+        QUEUED: "Queued",
+        RUNNING: "Running",
+        SUCCEEDED: "Succeeded",
+        FAILED: "Failed",
+        CANCELLED: "Stopped",
+        TIMED_OUT: "Timed out",
+        WAITING_FOR_INPUT: "Waiting on you",
+      } as Record<string, string>,
+      watchOnGithub: "Watch on GitHub",
+      pullRequestsHeading: "Pull requests",
+      noPullRequests: "No pull requests opened yet.",
+      prMerged: "Merged",
+      prOpen: "Open",
+      prMerge: "Merge",
+      prMerging: "Merging…",
+      prMergeFailed: "Could not merge",
+      prMerged_toast: "Merged.",
+      // Failure copy lives in the feed, not in a banner. See FailureRow in
+      // BuildActivityFeed for why.
+      failureHeading: "The build stopped here",
+      failureDetail: "Details",
+      reportsHeading: "Reports",
+      noReports: "Nothing written up yet.",
+      // A pause is a normal turn in the conversation, not a fault — the copy
+      // says so, because an alarming label here would make every question
+      // read as something going wrong.
+      waitingHeading: "I need a decision",
+      waitingBody:
+        "The build is holding here until you answer. Nothing is lost — I'll pick up exactly where I stopped.",
+      answerFailed: "Couldn't record that answer.",
+      resumed: "Thanks — picking it back up.",
+      startFailed: "Couldn't start the build.",
+      tabActivity: "Activity",
+      tabPrd: "PRD",
+      tabReports: "Reports",
+    },
+
+    // Session actions
+    cancelSession: "Stop this build",
+    cancelSessionConfirm: "Stop it?",
+    cancelSessionConfirmBody:
+      "The current run stops immediately. Nothing already written is lost, but this pass won't finish — you'll need to start again.",
+    cancelFailed: "Couldn't stop the build.",
+    costLabel: "Spend",
+    repoLabel: "Repos",
+    noReposYet: "Not decided yet",
+    retryBuild: "Retry build",
+    sessionGone: "This session is gone — start a new one.",
+    showArchivedLabel: "Show archived",
+    archiveAction: "Archive",
+    unarchiveAction: "Unarchive",
+    archiveSuccess: "Build archived.",
+    archiveFailed: "Couldn't archive that build.",
+    unarchiveSuccess: "Build restored.",
+    unarchiveFailed: "Couldn't restore that build.",
+    archivedEmptyTitle: "No archived builds yet",
+    archivedEmptyBody:
+      "Builds you archive from the default view show up here, and can be restored any time.",
+
+    // Start-build dialog — also used for a retry from FAILED, since the
+    // backend accepts start-build from either state with the same payload.
+    startBuildDialog: {
+      title: "Start build",
+      retryTitle: "Retry build",
+      // Shown above the form on a retry, with the session's own error text —
+      // the point isn't to explain the failure, just to say what is being
+      // retried past before asking for the same decisions again.
+      retryIntro: "The last attempt failed:",
+      reposLabel: "Repos to change",
+      reposHint:
+        "Builder only touches the repos you choose here — pick every repo this PRD's technical plan calls out.",
+      reposPlaceholder: "Choose repos…",
+      reposRequired: "Choose at least one repo before starting.",
+      budgetLabel: "Budget (USD)",
+      budgetHint:
+        "Builder stops itself once this build's spend reaches this figure. Leave the platform default unless you have a reason to change it.",
+      modelOverridesHeading: "Model overrides",
+      modelOverridesHint:
+        "Leave any of these blank to use the platform default for that tier. Only set one if you specifically need a different model for this build.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      saveReposFailed: "Couldn't save the chosen repos.",
+      submit: "Start build",
+      retrySubmit: "Retry build",
+    },
+
+    /**
+     * Mid-build budget. The wording follows the graceful-failure model in
+     * Stacks' "Graceful Failure: Transparent Acknowledgment and Fallbacks" and
+     * "Preserve State During Agent Failure in Multistep Tasks": say what
+     * happened, say what is at stake, and put the action that fixes it in the
+     * same place — the run is holding its work, not throwing it away.
+     */
+    budget: {
+      heldTitle: "Paused — this build has spent its budget",
+      heldBody: (spent: string, ceiling: string, remaining: string) =>
+        `It has spent ${spent} of its ${ceiling} ceiling and is holding everything it has written so far. ${remaining} to raise the budget and carry on from where it stopped — after that it gives up and this run's work is lost.`,
+      heldBodyExpiring:
+        "The window to raise it has closed, so this run is stopping. Raising the budget now lets you retry, but the work in progress is gone.",
+      overTitle: "Spend is past the ceiling",
+      overBody: (spent: string, ceiling: string) =>
+        `${spent} of ${ceiling} spent. This build will pause at the end of the current phase and wait for a raise.`,
+      raise: "Raise budget",
+      // Countdown, deliberately coarse: a to-the-second timer on a twenty
+      // minute window reads as more urgent than it is.
+      minutesLeft: (minutes: number) =>
+        minutes <= 1 ? "Less than a minute left" : `About ${minutes} minutes left`,
+      dialog: {
+        title: "Raise budget",
+        heldIntro:
+          "The build is holding its work at a phase boundary. Raise the ceiling and it picks up from there — no retry, nothing re-run.",
+        intro: "Raise this session's spend ceiling.",
+        spentLabel: "Spent so far",
+        currentLabel: "Current ceiling",
+        currentNone: "No ceiling",
+        newLabel: "New ceiling (USD)",
+        newHint:
+          "Has to be above what the session has already spent, or the build would stop again immediately. Set 0 to remove the ceiling entirely.",
+        submit: "Raise budget",
+        submitHeld: "Raise and continue",
+        raised: "Budget raised.",
+        released: "Budget raised — the build is carrying on from where it stopped.",
+        failed: "Couldn't raise the budget.",
+      },
+      // Feed rows for the budget_hold event.
+      feed: {
+        held: (spent: string, ceiling: string) =>
+          `Paused: spent ${spent} of the ${ceiling} ceiling, holding this run's work while it waits for a raise.`,
+        raised: (ceiling: string) => `Budget raised to ${ceiling} — carrying on.`,
+        headroom: (ceiling: string) => `Budget raised to ${ceiling}.`,
+        expired: "Nobody raised the budget in time, so this run stopped.",
+      },
+    },
+
+    // Notifications
+    notifications: {
+      title: "Notifications",
+      unreadLabel: (count: number) => (count === 1 ? "1 unread" : `${count} unread`),
+      markAllRead: "Mark all read",
+      empty: "Nothing yet.",
+      kinds: {
+        question_pending: "Needs an answer",
+        build_completed: "Build finished",
+        build_failed: "Build failed",
+        prs_opened: "PRs opened",
+        budget_reached: "Budget reached",
+      } as Record<string, string>,
+    },
+
+    // Platform settings (SUPER_DUPER_ADMIN)
+    settings: {
+      title: "Builder settings",
+      subtitle: "Platform-wide controls — these apply to every build, not one session.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load Builder's settings.",
+      saveFailed: "Couldn't save Builder's settings.",
+      saved: "Saved.",
+      save: "Save",
+      // The kill switch sits alone, first, for the same reason WhatsApp's does:
+      // it's the control someone reaches for in an incident and shouldn't be
+      // buried under thresholds.
+      enabledLabel: "Builder enabled",
+      enabledHelp:
+        "Off means no build will dispatch, whatever a session's own readiness says. The Builder tab stays visible; nothing behind it will run.",
+      autoReviewLabel: "Review its own pull requests",
+      autoReviewHelp:
+        "On, Builder reads the finished diff of its own open pull requests the way the first person to open one would, and files what it finds. The safer half of autonomy: a review writes findings and touches no branch, so it is worth running on its own with the switch below off — the findings land for you to read and nothing pushes. Only runs once checks are green, at most twice per pull request.",
+      autoApproveLabel: "Approve a pull request it found nothing wrong with",
+      autoApproveHelp:
+        "On, a review that read the full diff and reported no findings submits an approving review, with every required check green. This is the step that otherwise waits on a person: master needs an approval and Builder's bot cannot give one, so a green, reviewed, finding-free pull request sits until someone clicks Approve. It never forces — the approval is an ordinary review, every other required check still applies, it says on the pull request that a machine approved it, and you can dismiss it like any other.",
+      autoReleaseLabel: "Release it to production once it merges",
+      autoReleaseHelp:
+        "On, a merged pull request dispatches its own production release and Builder watches it through to a verdict. The only switch here that changes what real users are running. It refuses rather than guesses: a change it cannot attribute to exactly the apps being released — anything touching shared code under libs/, or a diff too large to read in full — is left for you with a note saying why. If a release fails you are told loudly, because merged-but-not-deployed reads as done and nobody looks again.",
+      autoFixLabel: "Answer pull-request feedback automatically",
+      autoFixHelp:
+        "On, Builder reads failing checks and review comments on its own open pull requests and pushes commits to address them. Separate from the switch above on purpose: agreeing Builder may write code is not the same as agreeing it may keep pushing to a pull request you are in the middle of reviewing.",
+      maxFixRunsPerPrLabel: "Fix runs per pull request",
+      maxFixRunsPerPrHelp:
+        "A fix that cannot fix it will not fix it on the fourth attempt either, and the failure mode without a ceiling is a loop that pushes commits until someone notices the bill.",
+      maxConcurrentBuildsLabel: "Max concurrent builds",
+      maxConcurrentBuildsHelp:
+        "Each running build holds a GitHub runner for up to two hours — this is a capacity and spend ceiling, not a correctness one.",
+      defaultBudgetLabel: "Default budget (USD)",
+      defaultBudgetHelp: "Applied to a new session's spend ceiling unless a build overrides it.",
+      engineLabel: "Engine",
+      engineHelp:
+        "Which coding-agent CLI a new build runs on when the session/dispatch doesn't say. Claude Code is battle-tested; Gemini CLI is wired in but unverified end-to-end.",
+      modelsHeading: "Model tiers",
+      modelsHelp:
+        "Per-tier defaults for new runs. Leave a field blank to fall through to the platform default — a per-build override still wins over these.",
+      plannerModelLabel: "Planner model",
+      coderModelLabel: "Coder model",
+      verifierModelLabel: "Verifier model",
+      modelPlaceholder: "Platform default",
+      repoMapsHeading: "Repo maps",
+      repoMapsHelp:
+        "What Builder's own map of each repo was generated from — read-only here. A stale map is still usable; it just means recent commits aren't reflected in what the agent reads about the repo before it starts.",
+      repoMapNeverGenerated: "Never generated",
+      repoMapGeneratedAt: (age: string, sha: string) => `map from ${age} @ ${sha}`,
+    },
+
+    // Scoreboard — how builds are actually going, not just what one build did.
+    pipeline: {
+      title: "Builder pipeline",
+      subtitle: "Where a run spends its time and money, phase by phase.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the pipeline view.",
+      retry: "Retry",
+      empty: "No finished runs in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      unmeasuredNote:
+        "A dash means not measured — runs from before the runner reported timings carry cost but no clock.",
+      time: {
+        heading: "Where the time goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnMedianWall: "Median",
+        columnP95Wall: "p95",
+        columnTurns: "Median turns",
+        columnSplit: "Model vs tools",
+        splitLabel: (apiPercent: number, toolPercent: number) =>
+          `${apiPercent}% waiting on the model, ${toolPercent}% running its tools`,
+      },
+      money: {
+        heading: "Where the money goes",
+        columnPhase: "Phase",
+        columnModel: "Model",
+        columnInvocations: "Runs",
+        columnTotal: "Total",
+        columnMedian: "Median per run",
+      },
+      gate: {
+        heading: "Test gate",
+        subheading:
+          "Lint and typecheck failing means work that was never run; tests failing means a wider blast radius than the plan saw.",
+        columnRepo: "Repo",
+        columnKind: "Check",
+        columnResults: "Results",
+        columnPassed: "Passed",
+        columnPassRate: "Pass rate",
+      },
+      outcomes: {
+        heading: "How runs end",
+        columnStatus: "Status",
+        columnMode: "Mode",
+        columnRuns: "Runs",
+        columnMedianMinutes: "Median runner minutes",
+      },
+    },
+
+    scoreboard: {
+      title: "Builder scoreboard",
+      subtitle: "Cost, review friction, and how often a build actually ships — over time.",
+      backToBuilder: "Back to Builder",
+      loadFailed: "Couldn't load the scoreboard.",
+      retry: "Retry",
+      empty: "No builds in this window yet.",
+      windowFieldLabel: "Window",
+      windowLabel: (days: number) => `Last ${days} days`,
+      kpi: {
+        builds: "Builds",
+        mergeRate: "Merge rate",
+        totalCost: "Total spend",
+        medianCost: "Median cost per build",
+      },
+      trend: {
+        buildsHeading: "Builds started, weekly",
+        mergeRateHeading: "Merge rate, weekly",
+        costHeading: "Median cost per build, weekly",
+        fixRunsHeading: "Median fix runs, weekly",
+        timeToMergeHeading: "Median time to merge, weekly",
+      },
+      failureTags: {
+        heading: "Where the losses come from",
+        subheading:
+          "Every failure tag across the window, biggest cause first. A tag counts once per build it was recorded against.",
+      },
+      table: {
+        heading: "Every build in this window",
+        columnTitle: "Build",
+        columnRepos: "Repos",
+        columnOutcome: "Outcome",
+        columnCreated: "Started",
+        columnDuration: "Duration",
+        columnCost: "Cost",
+        columnRuns: "Runs",
+        columnFixRuns: "Fix runs",
+        columnReviewComments: "Review comments",
+        columnCiFailures: "CI failures",
+        columnTimeToMerge: "Time to merge",
+        columnFailureTags: "Failure tags",
+        durationUnknown: "—",
+        noFailureTags: "—",
+      },
+      outcome: {
+        merged: "Merged",
+        open: "Open",
+        failed: "Failed",
+        cancelled: "Stopped",
+      } as Record<string, string>,
+    },
+
+    // Knowledge — what the automatic curator has distilled from past builds,
+    // and the runs worth reading in full because they were unusually clean
+    // or unusually expensive.
+    knowledge: {
+      navLink: "Knowledge",
+      title: "Builder knowledge",
+      subtitle: "What Builder has learned from past builds, and the runs worth learning from.",
+      backToBuilder: "Back to Builder",
+      tabLessons: "Lessons",
+      tabExemplars: "Exemplars",
+
+      lessons: {
+        loadFailed: "Couldn't load Builder's lessons.",
+        empty: "Nothing here yet — lessons appear once a few builds have run.",
+        filterStatusLabel: "Status",
+        filterStatusAll: "All statuses",
+        filterCategoryLabel: "Category",
+        filterCategoryPlaceholder: "Any category…",
+        filterRepoLabel: "Repo",
+        filterRepoPlaceholder: "Any repo…",
+        statusLabels: {
+          candidate: "Candidate",
+          active: "Active",
+          merged: "Merged",
+          retired: "Retired",
+        } as Record<string, string>,
+        columnLesson: "Lesson",
+        columnCategory: "Category",
+        columnStatus: "Status",
+        columnSources: "Sources",
+        columnApplied: "Applied",
+        columnContradicted: "Contradicted",
+        columnRepos: "Repos",
+        columnPinned: "Pinned",
+        edit: "Edit",
+        save: "Save",
+        cancel: "Cancel",
+        saveFailed: "Couldn't save that lesson.",
+        pin: "Pin",
+        unpin: "Unpin",
+        // The curator runs on its own schedule and edits or retires lessons
+        // without asking — pinning is the one way to take a lesson out of its
+        // reach on purpose, and the copy says so rather than just naming the
+        // toggle. (Stacks: "Automated Pipelines as Amplifiers, Not
+        // Replacements" — automation proposes, a person can override it.)
+        pinHint:
+          "A pinned lesson is one the automatic curator may never edit or retire. Pin the ones you've checked and want kept exactly as written.",
+        pinFailed: "Couldn't pin that lesson.",
+        unpinFailed: "Couldn't unpin that lesson.",
+        retire: "Retire",
+        retireConfirmTitle: "Retire this lesson?",
+        retireConfirmBody:
+          "A retired lesson stops being read into new builds. Nothing is deleted — set its status back to bring it back.",
+        retireFailed: "Couldn't retire that lesson.",
+        consolidateNow: "Consolidate now",
+        consolidateHint:
+          "Runs the curator immediately instead of waiting for its next scheduled pass — it reviews candidate lessons and merges duplicates, and never edits or retires a pinned one.",
+        consolidateStarted: "Consolidation started — check back in a moment for the result.",
+        consolidateFailed: "Couldn't start consolidation.",
+      },
+
+      exemplars: {
+        caption: "Builds worth learning from — the cleanest runs, and the costliest ones.",
+        loadFailed: "Couldn't load Builder's exemplars.",
+        empty: "No exemplars recorded yet.",
+        noFailureTags: "No failure tags recorded.",
+      },
+    },
   },
   evaluate: {
     title: "Ally Evaluation",
@@ -2803,5 +3836,77 @@ export const en = {
     submittedOn: "Submitted",
     readOnlyNote: "This evaluation was submitted and can no longer be edited.",
     loadFailed: "Failed to load",
+  },
+
+  /**
+   * Copy for the internal-monologue panel (Studio preview + session detail).
+   * Sentences rather than labels: the reader is following a mind, and a
+   * labelled grid makes them assemble the narrative themselves.
+   */
+  internalMonologue: {
+    title: "Internal monologue",
+    subtitle: "What the client is thinking, turn by turn",
+    waiting: "Waiting for the first turn…",
+    emptyStored: "No monologue was recorded for this session.",
+    turn: "Turn",
+    score: "score",
+    sentToActor: "Sent to the actor this turn",
+    hide: "Hide",
+    show: "Internal monologue",
+    counsellor: "Counsellor",
+    client: "Client",
+    staleTurn: "This turn ran on the previous turn's memory — the update timed out.",
+    moved: (from: string, to: string) => `Moved from ${from} to ${to}.`,
+    heldFor: (stance: string, turns: number) => `Still at ${stance}, for ${turns} turns now.`,
+    nowAt: (stance: string) => `Now at ${stance}.`,
+    credited: (events: string) => `Credited to the counsellor: ${events}.`,
+    feels: (affect: string) => `Feels ${affect}.`,
+    privately: (appraisal: string) => `Privately, she reads him as: "${appraisal}"`,
+    speaking: (register: string) => `Speaking ${register}.`,
+    justSaid: (facts: string) => `Just told him: ${facts}.`,
+    notSaying: (topics: string) => `Still not talking about: ${topics}.`,
+    leftHanging: (topics: string) => `Left hanging: ${topics}.`,
+    finished: (topics: string) => `Finished with: ${topics}.`,
+    onMind: (facts: string) => `On her mind from her own life: ${facts}.`,
+    willLookFor: (cues: string) => `Listening next for: ${cues}.`,
+  },
+  previewMonologueRuns: {
+    trigger: "Past runs",
+    title: "Preview runs",
+    subtitle: "Reopen a preview and read what the client was thinking.",
+    close: "Close",
+    empty:
+      "No preview of this simulation has been recorded yet. Run a preview and its monologue will appear here.",
+    loading: "Loading runs…",
+    failed: "Could not load preview runs.",
+    pickRun: "Pick a run on the left to read it.",
+    noTurns: "This run ended before the client formed any thoughts.",
+    inProgress: "Still running",
+    stillRunning: "This preview is still running — open the live panel to watch it.",
+    turns: (count: number) => `${count} ${count === 1 ? "turn" : "turns"}`,
+    ranBy: (name: string) => `by ${name}`,
+    draftVersion: "draft version",
+  },
+  componentLibrary: {
+    title: "Component Library",
+    searchPlaceholder: "Search templates...",
+    createTemplate: "Create template",
+    createTemplatePanelTitle: "Create template",
+    editTemplatePanelTitle: "Edit template",
+    templateNameLabel: "Template name",
+    templateNamePlaceholder: "Name this template",
+    saveAsTemplateDescription:
+      "This name is only for the template — it's separate from the item's own title, and editing one will never change the other.",
+    allTypes: "All types",
+    emptyState: "No templates yet. Save one from a course, or create one here.",
+    template: "template",
+    templates: "templates",
+    templateCreatedSuccessfully: "Template created successfully",
+    templateUpdatedSuccessfully: "Template updated successfully",
+    templateDeletedSuccessfully: "Template deleted successfully",
+    failedToSaveTemplate: "Failed to save template",
+    failedToDeleteTemplate: "Failed to delete template(s)",
+    deleteTemplate: "Delete template",
+    deleteTemplateConfirmation: "Are you sure you want to delete this template?",
   },
 };

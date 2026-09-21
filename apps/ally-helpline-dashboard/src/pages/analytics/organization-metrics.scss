@@ -15,6 +15,10 @@
 // Redefining the var here — same selector, later in source order — keeps
 // chart text on the app's serif face (same fix as the admin dashboard).
 .cds--chart-holder {
-  --cds-charts-font-family: "IBM Plex Serif", serif;
-  --cds-charts-font-family-condensed: "IBM Plex Serif", serif;
+  // Carbon Charts' precompiled styles.css hardcodes IBM Plex Sans here. It was
+  // repointed at IBM Plex Serif when the whole app ran on that face; the app
+  // now runs on the Source Serif 4 / Newsreader pair, so this follows the
+  // token rather than naming a family and drifting again.
+  --cds-charts-font-family: var(--font-primary);
+  --cds-charts-font-family-condensed: var(--font-primary);
 }

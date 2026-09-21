@@ -11,7 +11,7 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
-  Branch,
+  Catalog,
   Chat,
   Chemistry,
   MachineLearningModel,
@@ -22,10 +22,13 @@ import {
   Info,
   Languages,
   List,
+  Mobile,
   Search,
   Settings,
   SkillLevel,
+  Template,
   Terminal,
+  Tools,
 } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -57,6 +60,7 @@ import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } fro
 import { useClickOutside, useUser } from "@hooks";
 
 import { BugHunterNavBadge } from "./BugHunterNavBadge";
+import { BuilderNavBadge } from "./BuilderNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
 
 const EXPANDED_WIDTH = 1200;
@@ -181,6 +185,8 @@ export const Sidebar: React.FC = () => {
         return <HappyEmoji />;
       case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
         return <CharacterLibrary />;
+      case SIDEBAR_ITEMS.COMPONENT_LIBRARY:
+        return <Template size={20} />;
       // Voices is TTS — the side that talks — so a persona with a speaker. The
       // microphone belongs to Speech Recognition, the side that listens.
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
@@ -189,6 +195,8 @@ export const Sidebar: React.FC = () => {
         return <Mic />;
       case SIDEBAR_ITEMS.LLM_MODEL_CATALOG:
         return <MachineLearningModel size={20} />;
+      case SIDEBAR_ITEMS.AI_TASKS:
+        return <Catalog size={20} />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
@@ -213,6 +221,8 @@ export const Sidebar: React.FC = () => {
         return <List size={20} />;
       case SIDEBAR_ITEMS.AI_LAB:
         return <Chemistry size={20} />;
+      case SIDEBAR_ITEMS.BUILDER:
+        return <Tools size={20} />;
       case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
         return <Roadmap size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
@@ -220,12 +230,12 @@ export const Sidebar: React.FC = () => {
       // Deliberately NOT the List icon that ROLEPLAY_SESSION_LOGS uses. These are raw CloudWatch
       // streams rather than a browsable list of sessions, and two log entries sharing one glyph are
       // indistinguishable once the sidebar is collapsed to icons.
-      // Branching, not a book: the v2 studio authors a state machine, where SIMULATION_STUDIO
-      // authors linear scenarios and already holds Book.
-      case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
-        return <Branch size={20} />;
       case SIDEBAR_ITEMS.LOGS:
         return <Terminal size={20} />;
+      // A phone, not the Terminal glyph Logs uses: this page is about the app's
+      // shipped versions and the pipeline that ships them, not raw log output.
+      case SIDEBAR_ITEMS.MOBILE_RELEASES:
+        return <Mobile size={20} />;
       case SIDEBAR_ITEMS.WHATSAPP_BOT:
         return <Chat size={20} />;
       // Bug Hunter is the one tab that is a *someone* rather than a section:
@@ -243,15 +253,17 @@ export const Sidebar: React.FC = () => {
 
   /**
    * Trailing status for a tab, for the rare one that has something waiting on
-   * you elsewhere in the console. Only Bug Hunter has one today; keeping it a
-   * switch rather than a prop on NavigationItem keeps the data-fetching in a
-   * component that can be mounted conditionally, so a user without the
-   * permission never issues the request.
+   * you elsewhere in the console. Only Bug Hunter and Builder have one today;
+   * keeping it a switch rather than a prop on NavigationItem keeps the
+   * data-fetching in a component that can be mounted conditionally, so a user
+   * without the permission never issues the request.
    */
   const renderBadge = (id: string): React.ReactNode | undefined => {
     switch (id) {
       case SIDEBAR_ITEMS.BUG_HUNTER:
         return <BugHunterNavBadge />;
+      case SIDEBAR_ITEMS.BUILDER:
+        return <BuilderNavBadge />;
       default:
         return undefined;
     }
@@ -270,6 +282,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
       case ROUTES.CHARACTER_LIBRARY:
         return location.pathname.includes(ROUTES.CHARACTER_LIBRARY);
+      case ROUTES.COMPONENT_LIBRARY:
+        return location.pathname.includes(ROUTES.COMPONENT_LIBRARY);
       case ROUTES.MANAGE_SCENARIO_LANGUAGES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:
@@ -278,6 +292,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_STT_CONFIGS);
       case ROUTES.MANAGE_LLM_MODEL_CATALOG:
         return location.pathname.includes(ROUTES.MANAGE_LLM_MODEL_CATALOG);
+      case ROUTES.AI_TASKS:
+        return location.pathname.includes(ROUTES.AI_TASKS);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
       case ROUTES.MANAGE_GUARDRAILS:
@@ -296,6 +312,10 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
       case ROUTES.AI_LAB:
         return location.pathname.includes(ROUTES.AI_LAB);
+      // Matches the session detail route too, so the tab stays highlighted
+      // while you are inside a build rather than only on the list.
+      case ROUTES.BUILDER:
+        return location.pathname.includes(ROUTES.BUILDER);
       case ROUTES.PRODUCT_ROADMAP:
         return location.pathname.includes(ROUTES.PRODUCT_ROADMAP);
       case ROUTES.SETTINGS:
@@ -325,7 +345,7 @@ export const Sidebar: React.FC = () => {
             onChange={e => setNavSearch(e.target.value)}
             placeholder={en.common.searchMenu}
             aria-label={en.common.searchMenu}
-            className="w-full rounded-lg border border-border-light bg-transparent pl-9 pr-8 py-2 text-sm text-typography-900 placeholder-typography-600 outline-none focus:border-primary-500"
+            className="w-full rounded-none border-0 border-b border-border-dark bg-secondary-50 pl-9 pr-8 py-2 text-sm text-typography-900 placeholder-typography-600 outline-none focus:border-b-2 focus:border-primary-500"
           />
           {navSearch.length > 0 && (
             <button

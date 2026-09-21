@@ -44,7 +44,6 @@ export interface Scenario {
   metadata?: {
     name?: string;
     experienceMode?: string;
-    enableFeedback?: boolean;
     /**
      * Opt-in, per roleplay, for showing the checklist on the post-session
      * summary. Absent means off. Does not affect the in-session checklist
@@ -52,15 +51,18 @@ export interface Scenario {
      */
     summaryChecklistEnabled?: boolean;
     /**
-     * Which post-session tabs this roleplay shows, as sub-toggles of the
-     * `enableFeedback` master switch. The backend always sends this RESOLVED,
-     * so the client never has to re-implement the "absent means all on"
-     * default — but it stays optional here because a cached or older response
-     * may predate it, in which case treat every tab as on.
+     * Which post-session tabs this roleplay shows: the debrief note and the
+     * annotated transcript. The backend always sends this RESOLVED, so the
+     * client never has to re-implement the "absent means on" default — but it
+     * stays optional here because a cached or older response may predate it,
+     * in which case treat both tabs as on.
+     *
+     * Both false is the wholesale opt-out. There is no master switch above
+     * these two: `enableFeedback` was retired on 2026-08-31 and folded into
+     * them by migration 1944200000000.
      */
     feedbackTabs?: {
       debrief: boolean;
-      skills: boolean;
       transcript: boolean;
     };
   };
@@ -72,6 +74,18 @@ export interface Scenario {
   timerMode?: boolean;
   showScoreMeter?: boolean;
   pauseEnabled?: boolean;
+  /** Live in-session coaching hints in the Supervisor sidebar tab. Opt-in per
+   * roleplay, so only an explicit true shows the tab. */
+  supervisorNotesEnabled?: boolean;
+  /** EXPERIMENTAL. Whether this roleplay's character publishes a lip-synced
+   * video track alongside its voice. Opt-in, so only an explicit true lets the
+   * call card make room for video — and even then the agent has its own global
+   * kill-switch, so a true here is permission to render, not a promise a track
+   * will arrive. */
+  videoActorEnabled?: boolean;
+  /** Whether the learner-facing Live events tab is shown for this
+   * roleplay. Opt-out, so only an explicit false hides the tab. */
+  liveTabEnabled?: boolean;
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];
@@ -230,6 +244,13 @@ export interface SimulationSummary {
   };
   totalScore: number;
   eventStatus?: string;
+  /**
+   * Set only when this session was force-ended by the agent's stall
+   * watchdog (commonly a network dropout, but any cause of the learner
+   * going silent past the timeout) rather than ending normally. Currently
+   * only value on the wire: "TECHNICAL_INTERRUPTION".
+   */
+  endReason?: string | null;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
   details: {
@@ -351,11 +372,6 @@ export interface SimulationTranscriptMessage {
   endSeconds?: number | null;
   createdAt?: string;
   threads?: Thread[];
-  tags?: {
-    tagId: string;
-    label: string;
-    category?: string;
-  }[];
 }
 
 /**

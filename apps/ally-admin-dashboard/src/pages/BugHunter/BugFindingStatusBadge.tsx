@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { en } from "@constants";
 import { BugFindingStatus } from "@types";
+
+import { BUG_FINDING_STATUS_LABELS } from "./bugFindingLabels";
 
 /** Matches `fadeInOut`'s configured duration in tailwind.config.js — the class loops infinite, so the flash is capped to one cycle by removing it after this long. */
 const STATUS_FLASH_DURATION_MS = 1500;
@@ -29,26 +30,6 @@ const STYLES: Record<BugFindingStatus, string> = {
   // Deliberately the same neutral grey as DISMISSED/REJECTED, not the FAILED
   // red — a human stopped this on purpose, it didn't give up on its own.
   [BugFindingStatus.CANCELLED]: "bg-neutral-100 text-typography-600 border-border-light",
-};
-
-const LABELS: Record<BugFindingStatus, string> = {
-  [BugFindingStatus.NEW]: en.bugHunter.findingStatusNew,
-  [BugFindingStatus.PENDING_APPROVAL]: en.bugHunter.findingStatusPendingApproval,
-  [BugFindingStatus.APPROVED]: en.bugHunter.findingStatusApproved,
-  [BugFindingStatus.QUEUED]: en.bugHunter.findingStatusQueued,
-  [BugFindingStatus.BLOCKED]: en.bugHunter.findingStatusBlocked,
-  [BugFindingStatus.COORDINATING]: en.bugHunter.findingStatusCoordinating,
-  [BugFindingStatus.FIXING]: en.bugHunter.findingStatusFixing,
-  [BugFindingStatus.NEEDS_INPUT]: en.bugHunter.findingStatusNeedsInput,
-  [BugFindingStatus.PR_OPENED]: en.bugHunter.findingStatusPrOpened,
-  [BugFindingStatus.MERGED]: en.bugHunter.findingStatusMerged,
-  [BugFindingStatus.RELEASING]: en.bugHunter.findingStatusReleasing,
-  [BugFindingStatus.RELEASED]: en.bugHunter.findingStatusReleased,
-  [BugFindingStatus.RELEASE_FAILED]: en.bugHunter.findingStatusReleaseFailed,
-  [BugFindingStatus.DISMISSED]: en.bugHunter.findingStatusDismissed,
-  [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
-  [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
-  [BugFindingStatus.CANCELLED]: en.bugHunter.findingStatusCancelled,
 };
 
 /**
@@ -80,7 +61,7 @@ export const BugFindingStatusBadge: React.FC<{ status: BugFindingStatus }> = ({ 
         STYLES[status]
       } ${flash ? "animate-fadeInOut motion-reduce:animate-none" : ""}`}
     >
-      {LABELS[status]}
+      {BUG_FINDING_STATUS_LABELS[status]}
     </span>
   );
 };

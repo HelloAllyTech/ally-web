@@ -45,6 +45,7 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
+import { useLogsFetchErrorToast } from "./useLogsFetchErrorToast";
 import {
   getSourceChipConfig,
   getStatusChipConfig,
@@ -98,6 +99,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const {
     data: callLogsData,
     isLoading: isCallLogsLoading,
+    isError: isCallLogsError,
+    error: callLogsError,
     refetch: refetchCallLogs,
   } = useGetCallLogsQuery(
     {
@@ -114,6 +117,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
+    isError: isSimulationLogsError,
     refetch: refetchSimulationLogs,
   } = useGetSimulationLogsQuery(
     {
@@ -130,6 +134,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const { data: simulationLogs = [] } = simulationLogsData || {};
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
+  const isError = isCall ? isCallLogsError : isSimulationLogsError;
+
+  useLogsFetchErrorToast(callLogsError, isCallLogsLoading);
 
   const handleScroll = () => {
     if (tableRef.current) {
@@ -221,6 +228,40 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     return (
       <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
+      </div>
+    );
+  }
+
+  // A fetch failure must not be indistinguishable from "no calls yet" — the
+  // counsellor needs to know the difference and get a way back in, not a
+  // table that silently looks empty.
+  //
+  // Only when there is nothing left to show, though. `isLoading` is true for a
+  // cache entry's FIRST load only, so a failed *background* refetch — the
+  // refetchOnFocus that fires every time the counsellor tabs back in, or the
+  // invalidation after a custom-field save — leaves isLoading false with
+  // isError true while RTK Query still holds the last good page. Rendering the
+  // fallback there throws away rows that are on screen and correct, and turns
+  // one transient blip (an expired access token at the 15-minute boundary, a
+  // dropped connection) into a wall the counsellor can only clear by
+  // reloading. The toast above already tells them the refresh failed.
+  if (isError && !isLoading && logs.length === 0) {
+    const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
+    return (
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={
+            isCall ? t("calls.fallback.callErrorTitle") : t("calls.fallback.simErrorTitle")
+          }
+          description={
+            isCall ? t("calls.fallback.callErrorDesc") : t("calls.fallback.simErrorDesc")
+          }
+          button={{
+            text: t("common.retry"),
+            onClick: () => refetchFn?.(),
+          }}
+        />
       </div>
     );
   }

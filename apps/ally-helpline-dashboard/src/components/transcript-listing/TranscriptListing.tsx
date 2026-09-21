@@ -45,12 +45,6 @@ interface TranscriptListingProps {
   focusRequest?: TranscriptFocusRequest | null;
 }
 
-const categoryColoeMap = {
-  POSITIVE: "bg-[#C8E6C9] text-[#18441B]",
-  NEGATIVE: "bg-[#FFD9D4] text-[#390002]",
-  NEUTRAL: "bg-[#E0E0E0] text-[#333333]",
-};
-
 const convertSecondsToTime = (sec: number) => {
   const totalSeconds = Math.floor(sec);
   const minutes = Math.floor(totalSeconds / 60);
@@ -129,12 +123,12 @@ const TranscriptItem = ({
     : counsellorName || youLabel;
 
   const borderWidthClass = isActive ? "border-[3px]" : "border";
-  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
+  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-ai-50" : "hover:bg-[#eae7de]") : "";
   // A jumped-to moment is marked with a ring rather than a border change, so it
   // reads on top of whatever the audio playback highlight is doing to the row.
   const focusRingClass = isFocused ? "ring-2 ring-offset-1 ring-primary-500" : "";
   const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-all ${borderWidthClass} ${
-    isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
+    isAIClient ? "border-ai-500 bg-ai-50" : "border-[#bcb4a4] bg-[#f5f4ee]"
   } ${hoverBgClass} ${focusRingClass}`;
 
   const body = (
@@ -144,23 +138,9 @@ const TranscriptItem = ({
       </div>
 
       <div className="flex-1 ph-mask">
-        <div
-          className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#0957D0]"}`}
-        >
+        <div className={`font-semibold text-base ${isAIClient ? "text-ai-700" : "text-[#565045]"}`}>
           {speakerName}
         </div>
-        {"tags" in transcript && transcript.tags && transcript.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 my-1">
-            {transcript.tags.map(tag => (
-              <div
-                key={tag.tagId}
-                className={`text-typography-900 px-1 text-xs rounded-[2px] leading-relaxed ${categoryColoeMap[tag.category]}`}
-              >
-                {tag.label}
-              </div>
-            ))}
-          </div>
-        )}
         <div className="text-typography-900 text-base leading-relaxed">{transcript.content}</div>
       </div>
     </>
@@ -216,8 +196,17 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const nearEndLastCallRef = useRef(0);
 
   const [activeIndex, setActiveIndex] = useState(-1);
-  /** Message currently marked as the jumped-to moment; cleared on a timer. */
-  const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
+  /**
+   * Message currently marked as the jumped-to moment, plus the requestId that
+   * asked for it; cleared on a timer. requestId rides along so a repeat tap on
+   * the same message still produces a new object and re-triggers the
+   * scroll/highlight effect below — a plain messageId string would be
+   * `Object.is`-equal to the current state and React would bail out.
+   */
+  const [focusedMessage, setFocusedMessage] = useState<{
+    id: string;
+    requestId: number;
+  } | null>(null);
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const [transcriptSeekRequest, setTranscriptSeekRequest] =
@@ -324,22 +313,19 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     const targetId = String(focusRequest.messageId);
     if (!transcriptList.some(message => getMessageId(message) === targetId)) return;
     handledFocusRequestRef.current = focusRequest.requestId;
-    setFocusedMessageId(targetId);
+    setFocusedMessage({ id: targetId, requestId: focusRequest.requestId });
   }, [focusRequest, transcriptList]);
 
   // Scroll only once the highlighted row has rendered and its ref is attached,
   // then let the highlight expire on its own.
   useEffect(() => {
-    if (!focusedMessageId) return undefined;
+    if (!focusedMessage) return undefined;
     focusedItemRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    focusHighlightTimerRef.current = setTimeout(
-      () => setFocusedMessageId(null),
-      FOCUS_HIGHLIGHT_MS,
-    );
+    focusHighlightTimerRef.current = setTimeout(() => setFocusedMessage(null), FOCUS_HIGHLIGHT_MS);
     return () => {
       if (focusHighlightTimerRef.current) clearTimeout(focusHighlightTimerRef.current);
     };
-  }, [focusedMessageId]);
+  }, [focusedMessage]);
 
   // ── While playing, prefetch when near the chronological end of loaded data ──
   useEffect(() => {
@@ -431,7 +417,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
               ? transcriptList.map((item, index) => (
                   <div
                     key={`dictation-${index}`}
-                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask p-4 border border-[#cfd3d8] rounded-md bg-white"
+                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask p-4 border border-[#d6cdbe] rounded-md bg-white"
                   >
                     {item.content}
                   </div>
@@ -439,7 +425,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
               : transcriptList.map((transcript, index) => {
                   const isItemActive = index === activeIndex;
                   const isItemFocused =
-                    focusedMessageId !== null && getMessageId(transcript) === focusedMessageId;
+                    focusedMessage !== null && getMessageId(transcript) === focusedMessage.id;
                   return (
                     <TranscriptItem
                       key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}

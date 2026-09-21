@@ -2,7 +2,7 @@ import React from "react";
 
 import { DatePicker, DatePickerInput, NumberInput } from "@ally-ui-mono/ui-shared";
 
-import { RoadmapAdvancedFilterValues } from "./utils/filters";
+import { RoadmapAdvancedFilterValues, toIsoDate } from "./utils/filters";
 
 interface RoadmapAdvancedFiltersProps {
   /** Owned by RoadmapFilterBar, which renders the disclosure button and its count badge. */
@@ -104,7 +104,8 @@ export const RoadmapAdvancedFilters: React.FC<RoadmapAdvancedFiltersProps> = ({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <span className="text-typography-secondary w-24 shrink-0 pb-2">Priority score</span>
+        {/* "Total votes", matching the table column it filters. */}
+        <span className="text-typography-secondary w-24 shrink-0 pb-2">Total votes</span>
         {/* `allowEmpty` is load-bearing, not cosmetic. Carbon's NumberInput treats an empty value
             as failing `min={0}` unless told otherwise, so both bounds rendered in the red invalid
             state — complete with error icons — the entire time no score filter was set, which is
@@ -136,10 +137,6 @@ export const RoadmapAdvancedFilters: React.FC<RoadmapAdvancedFiltersProps> = ({
     </div>
   );
 };
-
-/** Carbon hands back a Date; the API and saved-view state both want YYYY-MM-DD. */
-const toIsoDate = (date?: Date): string =>
-  date instanceof Date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "";
 
 /**
  * Carbon's NumberInput reports "" while a field is being cleared and can report a non-numeric

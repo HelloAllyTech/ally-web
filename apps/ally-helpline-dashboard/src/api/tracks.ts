@@ -17,9 +17,12 @@ import {
   QuizAnswerInput,
   QuizAttemptResult,
   StartTrackItemResponse,
+  SubmitArticleQuestionAnswerResponse,
+  SubmitInterjectionAnswerResponse,
   TrackDetail,
   TrackItemCompletionResult,
   TrackItemStatus,
+  TrackProgressDashboard,
   VideoProgressResult,
 } from "@types";
 
@@ -81,6 +84,20 @@ const tracksAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
     }),
 
+    /**
+     * Progress + consolidated feedback dashboard: percent complete plus
+     * skill-category feedback aggregated across every evaluated roleplay
+     * session in the course. Shares the track-detail tag — it goes stale on
+     * exactly the same completion mutations that already invalidate it.
+     */
+    getLearnTrackProgress: builder.query<TrackProgressDashboard, { trackId: string }>({
+      query: ({ trackId }) => ({
+        url: ApiEndpoints.TRACKS.GET_PROGRESS(trackId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
+    }),
+
     /** Next unlocked-but-incomplete item for deep-linking into the player. */
     getNextTrackItem: builder.query<GetNextTrackItemResponse, { trackId: string }>({
       query: ({ trackId }) => ({
@@ -118,6 +135,29 @@ const tracksAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
       }),
       invalidatesTags: ALL_TRACK_TAGS,
+    }),
+
+    /**
+     * Answer one inline article question. Final — the server refuses a second
+     * answer to the same question. Invalidates the track tags only when the
+     * answer completed the article, which is the one case where the outline's
+     * completion state has actually moved.
+     */
+    submitArticleQuestionAnswer: builder.mutation<
+      SubmitArticleQuestionAnswerResponse,
+      { itemId: string; questionId: string; selectedOptionId: string }
+    >({
+      query: ({ itemId, questionId, selectedOptionId }) => ({
+        url: ApiEndpoints.TRACKS.ARTICLE_QUESTION_ANSWER(itemId, questionId),
+        method: HttpMethod.POST,
+        body: { selectedOptionId },
+      }),
+      onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
+        const { data } = await queryFulfilled;
+        if (data.completion?.completed) {
+          dispatch(baseAPI.util.invalidateTags(ALL_TRACK_TAGS));
+        }
+      },
     }),
 
     /**
@@ -169,6 +209,23 @@ const tracksAPI = baseAPI.injectEndpoints({
         body: { answers },
       }),
       invalidatesTags: ALL_TRACK_TAGS,
+    }),
+
+    /**
+     * Answer one video interjection (hard-pause quiz question). Graded and
+     * recorded server-side immediately; unlike `submitQuizAttempt` this
+     * gates nothing about item completion, so — like the journal draft
+     * autosave below — it invalidates no caches.
+     */
+    submitInterjectionAnswer: builder.mutation<
+      SubmitInterjectionAnswerResponse,
+      { itemId: string; interjectionId: string; answer: QuizAnswerInput }
+    >({
+      query: ({ itemId, interjectionId, answer }) => ({
+        url: ApiEndpoints.TRACKS.INTERJECTION_ANSWER(itemId, interjectionId),
+        method: HttpMethod.POST,
+        body: answer,
+      }),
     }),
 
     /** Re-run grading for a PENDING_GRADING attempt (LLM grader retry). */
@@ -243,6 +300,7 @@ const tracksAPI = baseAPI.injectEndpoints({
 export const {
   useGetLearnTracksQuery,
   useGetLearnTrackDetailQuery,
+  useGetLearnTrackProgressQuery,
   useGetNextTrackItemQuery,
   useLazyGetNextTrackItemQuery,
   useEnrollTrackMutation,
@@ -250,6 +308,8 @@ export const {
   useMarkArticleReadMutation,
   useReportVideoProgressMutation,
   useSubmitQuizAttemptMutation,
+  useSubmitArticleQuestionAnswerMutation,
+  useSubmitInterjectionAnswerMutation,
   useRegradeQuizAttemptMutation,
   useSaveJournalDraftMutation,
   useSubmitJournalMutation,

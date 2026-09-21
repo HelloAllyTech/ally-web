@@ -13,6 +13,7 @@ import { ROUTES, buildTrackItemRoute } from "@constants";
 import { TrackDetailItem, TrackItemStatus } from "@types";
 
 import { SectionMilestone } from "./components/SectionMilestone";
+import { TrackProgressDrawer } from "./components/TrackProgressDrawer";
 import { TrackProgressHeader } from "./components/TrackProgressHeader";
 
 /**
@@ -30,6 +31,7 @@ export const TrackOverview: FC = () => {
   const [enrollTrack] = useEnrollTrackMutation();
   const [getNextItem] = useLazyGetNextTrackItemQuery();
   const [isStarting, setIsStarting] = useState(false);
+  const [isProgressDrawerOpen, setIsProgressDrawerOpen] = useState(false);
 
   /** First actionable item across the whole track (for the "Next" chip). */
   const findNextItemId = (): string | null => {
@@ -108,7 +110,19 @@ export const TrackOverview: FC = () => {
         track={track}
         isStarting={isStarting}
         onStartOrContinue={handleStartOrContinue}
+        onProgressClick={track.enrolled ? () => setIsProgressDrawerOpen(true) : undefined}
       />
+
+      {isProgressDrawerOpen && (
+        <TrackProgressDrawer
+          trackId={trackId}
+          onClose={() => setIsProgressDrawerOpen(false)}
+          onContinuePress={() => {
+            setIsProgressDrawerOpen(false);
+            void handleStartOrContinue();
+          }}
+        />
+      )}
 
       <div className="pt-4">
         {sortedSections.map((section, sectionIndex) => (

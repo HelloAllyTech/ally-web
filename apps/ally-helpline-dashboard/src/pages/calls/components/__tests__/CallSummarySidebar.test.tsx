@@ -61,6 +61,7 @@ vi.mock("@api", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Download: () => <div data-testid="download-icon">Download</div>,
@@ -159,6 +160,8 @@ vi.mock("@containers", () => ({
 
 // Mock hooks
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useFileExport: () => ({
     exportTxtFromText: vi.fn(),
   }),

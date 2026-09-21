@@ -21,11 +21,14 @@ vi.mock("@api", () => ({
 
 // Mock hooks
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useDebounce: (fn: any) => fn,
 }));
 
 // Mock assets/components
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Edit: (props: any) => <div {...props}>EditIcon</div>,
@@ -111,6 +114,37 @@ describe("SummaryHeader", () => {
       chatId,
       callInfo: { summaryName: "New Name" },
     });
+  });
+
+  it("does not send an empty name to the API when the field is cleared", () => {
+    render(
+      <SummaryHeader
+        summaryName="Old Name"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counsellorId={counsellorId}
+      />,
+    );
+    const input = screen.getByDisplayValue("Old Name") as HTMLInputElement;
+    // Clearing the field mid-rename must not autosave: the API rejects an
+    // empty summaryName with a 400 and the previous name stays on the session.
+    fireEvent.change(input, { target: { value: "" } });
+    expect(setSummaryName).toHaveBeenCalledWith("");
+    expect(mockUpdateCallInfo).not.toHaveBeenCalled();
+  });
+
+  it("does not send a whitespace-only name to the API", () => {
+    render(
+      <SummaryHeader
+        summaryName="Old Name"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counsellorId={counsellorId}
+      />,
+    );
+    const input = screen.getByDisplayValue("Old Name") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "   " } });
+    expect(mockUpdateCallInfo).not.toHaveBeenCalled();
   });
 
   it("blurring input disables renaming", () => {

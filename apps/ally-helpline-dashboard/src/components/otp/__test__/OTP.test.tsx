@@ -342,7 +342,7 @@ describe("OTP Component", () => {
       inputs.forEach(input => {
         expect(input.className).toContain("w-[64px]");
         expect(input.className).toContain("h-[64px]");
-        expect(input.className).toContain("bg-[#F5F5F5]");
+        expect(input.className).toContain("bg-[#f0eee7]");
         expect(input.className).toContain("rounded-[12px]");
         expect(input.className).toContain("text-center");
       });

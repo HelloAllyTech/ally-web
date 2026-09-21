@@ -17,8 +17,8 @@ const ButtonGroup: FC<ButtonGroupProps> = ({ buttonList }) => (
             onClick={action}
             disabled={isDisabled}
             variant="text"
-            className={`sm:w-[120px] md:w-[140px] lg:w-[196px] h-12 flex items-center justify-center px-15 py-3 rounded-none leading-[16px] text-wrap ${isActive ? "!bg-[#FDFDFD]" : ""}
-              ${isLastButton ? "" : "!border-solid border-r-[0.5px] border-[#5A5F6A]"}`}
+            className={`sm:w-[120px] md:w-[140px] lg:w-[196px] h-12 flex items-center justify-center px-15 py-3 rounded-none leading-[16px] text-wrap ${isActive ? "!bg-[#faf9f5]" : ""}
+              ${isLastButton ? "" : "!border-solid border-r-[0.5px] border-[#565045]"}`}
           >
             {leftIcon}
             <span className={`text-xs ${isActive ? "text-typography-900" : "text-white"}`}>

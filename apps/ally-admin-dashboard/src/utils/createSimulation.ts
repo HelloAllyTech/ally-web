@@ -31,10 +31,31 @@ export const getCreateSimulationSubSectionById = (id: string) => {
 export const formatVersionConfigToForm = (config: Record<string, any>) => {
   const cfg = config ?? {};
 
+  // The three `*PrimaryLanguageId` keys are read off the live GET, where the
+  // server derives all three from `metadata.defaultLanguageId`. They're absent
+  // from a version snapshot (which stores the metadata field itself), so derive
+  // them the same way. Without this they load as null and the panels fall back
+  // to English — putting a non-English sim's primary text under the English tab
+  // and showing its real language tab as blank.
+  const primaryLanguageId = cfg.defaultLanguageId != null ? Number(cfg.defaultLanguageId) : null;
+
   const adminShape = {
     ...cfg,
     metadata: { ...cfg },
+    openingDialoguePrimaryLanguageId: cfg.openingDialoguePrimaryLanguageId ?? primaryLanguageId,
+    challengeDescriptionPrimaryLanguageId:
+      cfg.challengeDescriptionPrimaryLanguageId ?? primaryLanguageId,
+    remindersPrimaryLanguageId: cfg.remindersPrimaryLanguageId ?? primaryLanguageId,
     competency: cfg.competency ?? (cfg.competencyId ? { id: cfg.competencyId } : undefined),
+    // A version snapshot stores ids, not the hydrated competencies. `base`
+    // (the live scenario) supplies the names, so prefer its objects for the
+    // ids the snapshot names and fall back to a bare {id} for any it doesn't
+    // know — the picker re-reads names from the competency list anyway.
+    competencies:
+      cfg.competencies ??
+      (Array.isArray(cfg.competencyIds)
+        ? cfg.competencyIds.map((competencyId: string) => ({ id: competencyId }))
+        : undefined),
     // config stores trigger warnings as a string[] of ids; formatSim expects
     // objects under `triggerWarnings`.
     triggerWarnings: Array.isArray(cfg.triggerWarningIds)
@@ -90,23 +111,24 @@ export const buildToggleDefaultValues = (
   );
 
 /**
- * Build the `feedbackTabs` metadata payload from the three form toggles.
+ * Build the `feedbackTabs` metadata payload from the two form toggles.
  *
- * Every key is `!== false`, never `Boolean(...)`. `buildToggleDefaultValues`
- * above now seeds these up front, so in the normal case they arrive as real
+ * Both read `!== false`, never `Boolean(...)`. `buildToggleDefaultValues`
+ * above seeds them up front, so in the normal case they arrive as real
  * booleans — but this stays defensive on purpose, because the cost of an
- * `undefined` slipping through is a newly authored roleplay saved with all
- * three tabs dark, and a learner finishing a session to a blank screen. Reading
+ * `undefined` slipping through is a newly authored roleplay saved with its
+ * tabs dark, and a learner finishing a session to a blank screen. Reading
  * absent as ON also keeps this symmetric with `formatSimulationResponseData`
- * and with the backend resolver, both of which treat absent as on.
+ * and with the backend resolver.
+ *
+ * Both off is a legitimate, deliberate state: it is the wholesale opt-out the
+ * retired `enableFeedback` master switch used to express.
  */
 export const buildFeedbackTabsPayload = (form: {
   feedbackTabDebrief?: boolean;
-  feedbackTabSkills?: boolean;
   feedbackTabTranscript?: boolean;
 }) => ({
   debrief: form.feedbackTabDebrief !== false,
-  skills: form.feedbackTabSkills !== false,
   transcript: form.feedbackTabTranscript !== false,
 });
 
@@ -157,7 +179,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       message: event.message,
     })),
     selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
-    selectedEvaluatorPromptCode: data?.metadata?.selectedEvaluatorPromptCode,
+    selectedEvaluatorPromptCode: (data?.metadata as any)?.selectedEvaluatorPromptCode,
     mainPromptVariantByLanguage: data?.metadata?.mainPromptVariantByLanguage ?? {},
     states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
@@ -182,7 +204,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
-    fillerEnabled: data?.metadata?.fillerEnabled ?? false,
+    // Absent = ON: thinking filler is on by default across every scenario
+    // unless the stored value is explicitly false. Hydrating absent as false
+    // made the edit form LIE about live behavior — and a super-duper-admin
+    // saving the form would then write the explicit false back.
+    fillerEnabled: data?.metadata?.fillerEnabled ?? true,
     // Absent = ON: the backend serves the glossary unless the stored value is
     // explicitly false (default-ON rollout). Hydrating absent as false made
     // the edit form LIE about live behavior — and a super-duper-admin saving
@@ -191,11 +217,13 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
+    // Opt-in, same shape as supervisorNotesEnabled below: only an explicit
+    // true hydrates on, so a roleplay saved before this experiment existed
+    // shows the toggle off — which is also what it actually does.
+    videoActorEnabled: (data?.metadata as any)?.videoActorEnabled === true,
+    videoActorAvatarId: (data?.metadata as any)?.videoActorAvatarId ?? "",
+    videoActorProvider: (data?.metadata as any)?.videoActorProvider ?? undefined,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
-    // No fallback: unset genuinely means "use the global platform default"
-    // (settings.TURN_MAX_ENDPOINTING_DELAY in ally-ai-learn), not a specific
-    // number the form should silently write back.
-    turnMaxEndpointingDelay: data?.metadata?.turnMaxEndpointingDelay,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,
@@ -210,23 +238,37 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       ),
     })),
     showScoreMeter: data?.metadata?.showScoreMeter,
-    enableFeedback: data?.metadata?.enableFeedback ?? true,
     // feedbackTabs mirrors the backend resolver exactly: an absent
-    // `feedbackTabs` object (every scenario saved before this feature
-    // existed) hydrates as all three ON, and within the object each key is
-    // ON unless explicitly `false`. Only `=== false` reads as off.
+    // `feedbackTabs` object hydrates both tabs as ON (each is ON unless
+    // explicitly `false`). `enableFeedback` is deliberately not hydrated —
+    // it was retired on 2026-08-31 and migration 1944200000000 rewrote every
+    // roleplay that had it off as both tabs off, so the two toggles below now
+    // tell the whole story.
     feedbackTabDebrief: (data?.metadata as any)?.feedbackTabs?.debrief !== false,
-    feedbackTabSkills: (data?.metadata as any)?.feedbackTabs?.skills !== false,
     feedbackTabTranscript: (data?.metadata as any)?.feedbackTabs?.transcript !== false,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
+    // Same opt-in shape: a roleplay saved before live supervisor notes existed
+    // hydrates as off, which is also the intended default for new ones.
+    supervisorNotesEnabled: (data?.metadata as any)?.supervisorNotesEnabled === true,
+    // Opt-out toggle, unlike pauseEnabled/supervisorNotesEnabled above: missing
+    // or undefined keeps the Live tab shown, only an explicit false hides it.
+    liveTabEnabled: (data?.metadata as any)?.liveTabEnabled ?? true,
     // Per-language STT picks, keyed like languageVoices. Absent = inherit.
     sttConfigByLanguage: (data?.metadata as any)?.sttConfigByLanguage ?? {},
     characterProfileText: data?.metadata?.characterProfileText,
-    helperAgentPrompt: data?.metadata?.helperAgentPrompt,
+    helperAgentPrompt: (data?.metadata as any)?.helperAgentPrompt,
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,
     agentBuilderPrompt: (data?.metadata as any)?.agentBuilderPrompt,
     competency: data?.competency,
+    // Multi-competency selection. A roleplay saved before it existed carries
+    // only the scalar, so read through to that rather than loading an empty
+    // picker over a populated rubric.
+    competencies: data?.competencies?.length
+      ? data.competencies
+      : data?.competency
+        ? [data.competency]
+        : [],
     stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
       id: source.id,

@@ -7,6 +7,7 @@ import {
   itemNodeKey,
   MAX_ANNOTATION_LABELS,
   MAX_ANNOTATION_UNITS,
+  MAX_ARTICLE_QUESTIONS,
   MAX_JOURNAL_PROMPTS,
   MAX_MCQ_OPTIONS,
   MIN_MCQ_OPTIONS,
@@ -33,6 +34,7 @@ import {
   QuizQuestionType,
   TrackDetail,
   TrackFormValues,
+  TrackItemContent,
   TrackItemFormValue,
   TrackItemType,
   TrackMetadataInput,
@@ -47,6 +49,19 @@ import {
 import { unitsToSourceText } from "./annotationSegmentation";
 
 const newId = () => crypto.randomUUID();
+
+/**
+ * Absolute RHF path to a question node — either a quiz item's own question,
+ * or a video item's interjection question. Shared by `QuizItemEditor`'s
+ * question-type editors (`McqEditor` and siblings) so they can be reused
+ * unchanged for interjection authoring; each editor casts sub-paths to a
+ * fixed dummy literal for RHF's `Path<T>` typing regardless of which branch
+ * this resolves to; see `McqEditor.tsx` for the pattern.
+ */
+export type QuestionPath =
+  | `sections.${number}.items.${number}.quiz.questions.${number}`
+  | `sections.${number}.items.${number}.article.questions.${number}`
+  | `sections.${number}.items.${number}.video.interjections.${number}.question`;
 
 /* -------------------------------------------------------------------------- */
 /* Factories                                                                  */
@@ -70,7 +85,7 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
 
   switch (type) {
     case TrackItemType.ARTICLE:
-      return { ...base, article: { html: "" } };
+      return { ...base, article: { html: "", questions: [] } };
     case TrackItemType.VIDEO:
       return { ...base, video: { source: "s3", url: "" } };
     case TrackItemType.JOURNAL:
@@ -102,6 +117,69 @@ export const createItemOfType = (type: TrackItemType): TrackItemFormValue => {
     default:
       return base;
   }
+};
+
+/**
+ * Builds a `TrackItemFormValue` from a saved Component Library template (or
+ * from a fresh `{ type, title, content, completionCriteria }` tuple), for
+ * inserting into a course as a brand-new, fully independent item. Mirrors
+ * `deserializeTrack`'s per-item mapping below, but starting from a template's
+ * shape rather than a `TrackItemDetail`.
+ *
+ * Callers (the type-picker's "Choose from library" flow, and the Component
+ * Library page loading an existing template into its own editor) are
+ * responsible for deep-copying `content`/`completionCriteria` before calling
+ * this — this function does not clone, so a caller re-using a cached template
+ * object across multiple inserts must clone per-insert.
+ */
+export const createItemFormValueFromTemplate = (template: {
+  type: TrackItemType;
+  title: string;
+  content?: TrackItemContent | null;
+  completionCriteria?: CompletionCriteria | null;
+}): TrackItemFormValue => {
+  const base = createItemOfType(template.type);
+  const item: TrackItemFormValue = {
+    ...base,
+    title: template.title,
+    completionCriteria: {
+      ...DEFAULT_COMPLETION_CRITERIA[template.type],
+      ...(template.completionCriteria ?? {}),
+    },
+  };
+
+  switch (template.type) {
+    case TrackItemType.ARTICLE:
+      item.article = (template.content as ArticleContent) ?? base.article;
+      break;
+    case TrackItemType.VIDEO:
+      item.video = (template.content as VideoContent) ?? base.video;
+      break;
+    case TrackItemType.JOURNAL:
+      item.journal = (template.content as JournalContent) ?? base.journal;
+      break;
+    case TrackItemType.QUIZ:
+      item.quiz = (template.content as QuizContent) ?? base.quiz;
+      break;
+    case TrackItemType.ANNOTATED_ARTIFACT: {
+      const annotation = template.content as AnnotationContent | undefined;
+      const units = annotation?.units ?? [];
+      item.annotation = {
+        kind: annotation?.kind ?? "TRANSCRIPT",
+        intro: annotation?.intro ?? "",
+        units,
+        labels: annotation?.labels ?? base.annotation!.labels,
+        targets: annotation?.targets ?? [],
+        settings: annotation?.settings ?? { ...DEFAULT_ANNOTATION_SETTINGS },
+        sourceText: unitsToSourceText(units, annotation?.kind ?? "TRANSCRIPT"),
+      };
+      break;
+    }
+    default:
+      break;
+  }
+
+  return item;
 };
 
 export const createQuestionOfType = (type: QuizQuestionType): QuizQuestion => {
@@ -229,6 +307,33 @@ export const extractImageUrls = (html: string): string[] => {
   return urls;
 };
 
+/**
+ * Question ids the article body anchors, in reading order. The question
+ * itself is stored in `content.questions`; this is the only thing the HTML
+ * knows about it, so it is what tells us where each question sits and which
+ * ones the author has actually placed.
+ */
+export const parseArticleQuestionMarkers = (html: string): string[] => {
+  if (!html) return [];
+  const ids: string[] = [];
+  for (const match of html.matchAll(
+    /<div\b[^>]*\bdata-ally-question\s*=\s*["']([^"']+)["'][^>]*>/gi,
+  )) {
+    if (!ids.includes(match[1])) ids.push(match[1]);
+  }
+  return ids;
+};
+
+/** Drop the placeholder for a question that no longer exists. */
+export const removeArticleQuestionMarker = (html: string, questionId: string): string =>
+  (html || "").replace(
+    new RegExp(
+      `<div\\b[^>]*\\bdata-ally-question\\s*=\\s*["']${questionId}["'][^>]*>\\s*</div>`,
+      "gi",
+    ),
+    "",
+  );
+
 const stripHtml = (html: string): string => (html || "").replace(/<[^>]*>/g, "").trim();
 
 const isBlank = (value?: string | null): boolean => !value || !value.trim();
@@ -334,11 +439,34 @@ const validateItem = (item: TrackItemFormValue): string[] => {
     case TrackItemType.CASE:
       if (item.caseId == null || isBlank(String(item.caseId))) errors.push("Case: pick a case");
       break;
-    case TrackItemType.ARTICLE:
-      if (isBlank(stripHtml(item.article?.html ?? ""))) {
+    case TrackItemType.ARTICLE: {
+      const html = item.article?.html ?? "";
+      const questions = item.article?.questions ?? [];
+      if (isBlank(stripHtml(html)) && questions.length === 0) {
         errors.push("Article: content is required");
       }
+      if (questions.length > MAX_ARTICLE_QUESTIONS) {
+        errors.push(`Article: at most ${MAX_ARTICLE_QUESTIONS} questions`);
+      }
+      // The question list and the body have to agree both ways: an unplaced
+      // question never renders, and a stray placeholder renders an empty hole.
+      const placed = parseArticleQuestionMarkers(html);
+      const questionIds = new Set(questions.map(question => question.id));
+      questions.forEach((question, index) => {
+        const label = `Article question ${index + 1}`;
+        if (!placed.includes(question.id)) {
+          errors.push(`${label}: place it in the article, or delete it`);
+        }
+        errors.push(...validateQuestion(question, label));
+      });
+      for (const id of placed) {
+        if (!questionIds.has(id)) {
+          errors.push("Article: a question placeholder has no question behind it");
+          break;
+        }
+      }
       break;
+    }
     case TrackItemType.VIDEO: {
       if (isBlank(item.video?.url)) {
         errors.push("Video: upload a video or paste an embed URL");
@@ -349,6 +477,20 @@ const validateItem = (item: TrackItemFormValue): string[] => {
       if (watchPct != null && (watchPct < 1 || watchPct > 100)) {
         errors.push("Video: watch percentage must be between 1 and 100");
       }
+      const interjections = item.video?.source === "s3" ? (item.video?.interjections ?? []) : [];
+      const duration = item.video?.durationSeconds;
+      interjections.forEach((interjection, index) => {
+        const label = `Video interjection ${index + 1}`;
+        if (interjection.timestampSeconds == null || interjection.timestampSeconds < 0) {
+          errors.push(`${label}: timestamp must be 0 or later`);
+        } else if (duration != null && interjection.timestampSeconds > duration) {
+          errors.push(`${label}: timestamp must be within the video's duration`);
+        }
+        if (interjection.question.type === "open_ended") {
+          errors.push(`${label}: open-ended questions aren't supported for interjections`);
+        }
+        errors.push(...validateQuestion(interjection.question, label));
+      });
       break;
     }
     case TrackItemType.JOURNAL: {
@@ -523,7 +665,15 @@ const serializeQuiz = (quiz: QuizContent): QuizContent => ({
   }),
 });
 
-const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureItemInput => {
+/**
+ * Exported so the Component Library page/dialogs can reuse the exact same
+ * per-type content shaping (article image extraction, quiz correctOrder/blanks
+ * derivation, annotation label/target pruning) that a normal course save uses,
+ * rather than re-implementing it. `order` is meaningless for a template — pass
+ * any value; callers building a template payload discard it along with `id`
+ * and `description`.
+ */
+export const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureItemInput => {
   const payload: TrackStructureItemInput = {
     ...(item.serverId ? { id: item.serverId } : {}),
     type: item.type,
@@ -542,7 +692,18 @@ const serializeItem = (item: TrackItemFormValue, order: number): TrackStructureI
     case TrackItemType.ARTICLE: {
       const html = item.article?.html ?? "";
       const imageUrls = extractImageUrls(html);
-      payload.content = { html, ...(imageUrls.length > 0 ? { imageUrls } : {}) };
+      // Only questions the body actually anchors are sent — the server
+      // rejects a mismatch, and an author who deleted a placeholder meant to
+      // drop the question with it.
+      const placed = parseArticleQuestionMarkers(html);
+      const questions = (item.article?.questions ?? []).filter(question =>
+        placed.includes(question.id),
+      );
+      payload.content = {
+        html,
+        ...(imageUrls.length > 0 ? { imageUrls } : {}),
+        ...(questions.length > 0 ? { questions } : {}),
+      };
       break;
     }
     case TrackItemType.VIDEO:
@@ -627,9 +788,18 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
             case TrackItemType.CASE:
               formItem.caseId = item.caseId ?? null;
               break;
-            case TrackItemType.ARTICLE:
-              formItem.article = (item.content as ArticleContent) ?? { html: "" };
+            case TrackItemType.ARTICLE: {
+              // Copied, never patched in place: `detail` is the RTK Query
+              // cache entry, which Immer has deep-frozen, so writing the
+              // `questions` default onto `item.content` throws.
+              const article = item.content as ArticleContent | undefined;
+              formItem.article = {
+                ...article,
+                html: article?.html ?? "",
+                questions: article?.questions ?? [],
+              };
               break;
+            }
             case TrackItemType.VIDEO:
               formItem.video = (item.content as VideoContent) ?? { source: "s3", url: "" };
               if (formItem.completionCriteria.watchPct == null) {

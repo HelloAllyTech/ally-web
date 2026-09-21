@@ -285,6 +285,14 @@ export enum UserRole {
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
   /**
+   * Consumer-app role marking an account as an evaluator: the consumer apps
+   * show it extra evaluation questions on particular screens and events. It
+   * carries only `evaluator:access` and is meant to be granted alongside the
+   * account's real app role, not instead of one — the "Change role" picker is
+   * multi-select, so tick it in addition to LEARNER/COUNSELOR.
+   */
+  EVALUATOR = "EVALUATOR",
+  /**
    * The single platform-tier role that replaced SUPER_ADMIN /
    * SUPER_DUPER_ADMIN / MULTI_TENANT_ADMIN. Access within it is per-user
    * feature toggles, not sub-tiers. Named PLATFORM_ADMIN because ADMIN already
@@ -380,9 +388,34 @@ export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean 
  * user's gating changes. Falls back to `role` for any client or cache entry
  * predating `roles`.
  */
+// PLATFORM_ADMIN belongs here for exactly the reason MULTI_TENANT_ADMIN was
+// added above: it's a valid ADMIN_PORTAL_LOGIN_ROLES entry, so a user holding
+// e.g. [ADMIN, PLATFORM_ADMIN] would otherwise collapse to "ADMIN" (which
+// outranks the backend's own priority-list fallback). PrivateLayout's own
+// role gate now reads `roles[]` directly rather than this collapsed value
+// (see PrivateLayout.tsx), which removes the hazard there structurally — but
+// `resolveAdminRole`'s single-`role` output still drives other UI (sidebar,
+// display) outside that gate, so this precedence list stays as the correct
+// source for those. Any future platform-tier role added to
+// ADMIN_PORTAL_LOGIN_ROLES must be added here too, or a multi-role account
+// misreports everywhere this collapsed value is still read.
+//
+// Ordering, which is the whole point of the list — "highest tier held":
+//   - PLATFORM_ADMIN outranks MULTI_TENANT_ADMIN because it is a strict
+//     superset of it (the collapse migration seeded PLATFORM_ADMIN from
+//     SUPER_DUPER_ADMIN, and MULTI_TENANT_ADMIN's permissions are a verified
+//     subset). A dual-holder previously reported the *weaker* of the two.
+//   - PLATFORM_ADMIN stays BELOW the two super tiers on purpose, for as long
+//     as the collapse migration's rollback window keeps the old `user_groups`
+//     rows alive. A migrated ex-SUPER_DUPER_ADMIN holds
+//     [PLATFORM_ADMIN, SUPER_DUPER_ADMIN]; hoisting PLATFORM_ADMIN above them
+//     would resolve such an account to PLATFORM_ADMIN and fail
+//     isSuperDuperAdminRole, silently dropping the SDA-only surfaces. Do not
+//     "simplify" this by moving PLATFORM_ADMIN to the top.
 const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
   UserRole.SUPER_DUPER_ADMIN,
   UserRole.SUPER_ADMIN,
+  UserRole.PLATFORM_ADMIN,
   UserRole.MULTI_TENANT_ADMIN,
 ];
 

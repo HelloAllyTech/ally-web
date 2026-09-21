@@ -48,6 +48,14 @@ interface MappedEventSidePanelProps {
   sessionEvents: SessionEvent[];
   availableEventOptions: Array<{ label: string; value: string }>;
   onEventSelect: (eventId: string) => void;
+  /**
+   * The event catalogue behind `availableEventOptions` failed to load. Without
+   * this the picker cannot tell "nothing matched your search" from "we never
+   * got the list", and it always said the former — so a failed fetch read as
+   * "that event doesn't exist" and only a page reload fixed it.
+   */
+  catalogFailedToLoad?: boolean;
+  onRetryCatalog?: () => void;
 }
 
 interface FieldProps {
@@ -102,6 +110,8 @@ const EventDropdown: React.FC<{
   onToggle: () => void;
   onSelect: (eventId: string) => void;
   dropdownRef: React.RefObject<HTMLDivElement>;
+  catalogFailedToLoad?: boolean;
+  onRetryCatalog?: () => void;
 }> = ({
   isOpen,
   selectedEventName,
@@ -110,6 +120,8 @@ const EventDropdown: React.FC<{
   onToggle,
   onSelect,
   dropdownRef,
+  catalogFailedToLoad = false,
+  onRetryCatalog,
 }) => {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,6 +195,22 @@ const EventDropdown: React.FC<{
                 <span className="text-sm">{option.label}</span>
               </div>
             ))
+          ) : catalogFailedToLoad ? (
+            // Say the list never arrived, and offer the retry here: this
+            // dropdown is inside a full-screen panel, so the table's own retry
+            // control is not reachable from where the search actually happens.
+            <div className="px-4 py-3 text-sm text-typography-800 flex items-center gap-2">
+              {en.simulation.eventCatalogLoadFailed}
+              {onRetryCatalog && (
+                <button
+                  type="button"
+                  className="underline text-primary-600"
+                  onClick={onRetryCatalog}
+                >
+                  {en.common.retry}
+                </button>
+              )}
+            </div>
           ) : (
             <div className="px-4 py-3 text-sm text-typography-800">No results</div>
           )}
@@ -218,6 +246,8 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
   sessionEvents,
   availableEventOptions,
   onEventSelect,
+  catalogFailedToLoad = false,
+  onRetryCatalog,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
   const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
@@ -374,6 +404,8 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 onToggle={toggleDropdown}
                 onSelect={handleEventSelection}
                 dropdownRef={dropdownRef}
+                catalogFailedToLoad={catalogFailedToLoad}
+                onRetryCatalog={onRetryCatalog}
               />
             ) : (
               <div className="text-2xl font-light w-full">{selectedEventName}</div>

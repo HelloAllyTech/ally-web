@@ -21,9 +21,8 @@ import { UsageTab } from "./UsageTab";
  * Gated in two places, matching every other feature-toggle-gated tab here: the
  * `whatsapp_bot` entry in `buildSidebarItemFeatureKeyMap` (utils/navigation.ts)
  * hides the sidebar entry, and `requiredFeature={FeatureToggleKey.WHATSAPP_BOT}`
- * (dual-gated with the legacy `requiredRole={SUPER_DUPER_ADMIN_ROLES}` during
- * the role->toggle migration) on the route in RouteLayout blocks direct
- * navigation. There is deliberately no `Permissions` member — Settings, Logs,
+ * on the route in RouteLayout blocks direct navigation. There is deliberately
+ * no `Permissions` member — Settings, Logs,
  * Tooltips and Badges are all pure role/toggle gates, and adding one would need
  * a backend grant migration for zero extra gating.
  *

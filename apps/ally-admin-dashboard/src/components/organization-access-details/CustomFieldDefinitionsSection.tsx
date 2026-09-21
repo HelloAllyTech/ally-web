@@ -12,7 +12,7 @@ import {
 } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
-import { isSuperAdminRole } from "@constants";
+import { Permissions } from "@constants";
 import { RootState } from "@store";
 import {
   CustomFieldDefinition,
@@ -20,6 +20,7 @@ import {
   CustomFieldFillMode,
   CustomFieldType,
 } from "@types";
+import { hasPermissions } from "@utils";
 
 const FIELD_TYPE_LABELS: Record<CustomFieldType, string> = {
   [CustomFieldType.SINGLE_SELECT]: "Single select",
@@ -87,8 +88,33 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
 }) => {
   const formId = useId();
 
-  const user = useSelector((state: RootState) => state.user.user);
-  const isSuperAdmin = isSuperAdminRole(user?.role);
+  const permissions = useSelector((state: RootState) => state.user.permissions);
+  /**
+   * Gate the write controls on the permission ally-be actually enforces on all
+   * three definition mutations (MANAGE_CUSTOM_FIELD_DEFINITIONS on
+   * CustomFieldsController), not on a role-tier name.
+   *
+   * This previously read the retired super-admin tiers via `isSuperAdminRole`,
+   * whose list is only [SUPER_ADMIN, SUPER_DUPER_ADMIN] — so an admin minted by
+   * the Ally admins tab held the permission and still saw no Add / Edit /
+   * Delete. `user.role` was not the culprit: the getUser transform already
+   * re-resolves it through resolveAdminRole, and PLATFORM_ADMIN is in
+   * ADMIN_ROLE_PRECEDENCE. It simply isn't in SUPER_ADMIN_ROLES, which made the
+   * denial deterministic.
+   *
+   * The bug was masked because the collapse migration left the legacy
+   * `user_groups` rows in place, so a *migrated* admin still resolves to a super
+   * tier; only PLATFORM_ADMIN-only accounts lost the controls.
+   *
+   * Scope is unchanged for everyone else: MULTI_TENANT_ADMIN reaches this route
+   * but lacks the permission (hidden, as before), and a tenant ADMIN holds the
+   * permission but cannot reach the route at all (no view:users / edit:user) —
+   * they manage their own tenant's fields through the helpline
+   * OrgCustomFieldDefinitionsSection. Fails closed while permissions load.
+   */
+  const canManageDefinitions = hasPermissions(permissions, [
+    Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS,
+  ]);
 
   const { data: definitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(tenantId);
   const [createDefinition, { isLoading: isCreating }] = useCreateCustomFieldDefinitionMutation();
@@ -219,7 +245,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     <div className="mt-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-typography-700">Custom field definitions</p>
-        {isSuperAdmin && (
+        {canManageDefinitions && (
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={openCreate}
@@ -257,7 +283,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   </span>
                 )}
               </div>
-              {isSuperAdmin && (
+              {canManageDefinitions && (
                 <div className="flex items-center gap-1 ml-2">
                   <Button
                     variant={ButtonVariant.TEXT}

@@ -139,7 +139,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
                   width={200}
                   height={140}
                   barWidth={4}
-                  barColor="#fff"
+                  barColor="#faf9f5"
                 />
               </div>
             )}
@@ -150,7 +150,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
                   width={200}
                   height={140}
                   barWidth={4}
-                  barColor="#fff"
+                  barColor="#faf9f5"
                 />
               </div>
             )}

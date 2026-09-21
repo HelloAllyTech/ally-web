@@ -9,6 +9,7 @@ import {
 } from "@livekit/components-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { ActorVideo } from "./ActorVideo";
 import { SessionSidebar } from "./SessionSidebar";
 import { TurnState } from "./TurnIndicator";
 import {
@@ -17,6 +18,8 @@ import {
   ChecklistMode,
   StateInstruction,
   SimulationTranslations,
+  SupervisorNoteType,
+  SessionSidebarExtraTab,
 } from "./types";
 import { UserCallCard } from "./UserCallCard";
 import { FEATURE_FLAGS_MAP } from "../../featureFlag";
@@ -27,6 +30,13 @@ export enum RoomStatus {
   DISCONNECTED = "disconnected",
   DISCONNECTING = "disconnecting",
   AGENT_JOINED = "agent_joined",
+  /**
+   * LiveKit is transparently re-establishing a dropped connection. Deliberately
+   * NOT a loading or error state: the session is intact and the learner keeps
+   * the live call UI, with a small pill saying what's happening. It matters
+   * because data-channel packets (supervisor hints) are dropped while it lasts.
+   */
+  RECONNECTING = "reconnecting",
 }
 
 // Visual 3-2-1 countdown shown the moment this component mounts, matching the
@@ -43,6 +53,18 @@ export interface SimulationInterfaceProps {
   roomData: any;
   events: SimulationEventType[];
   detectedEventIds?: string[];
+  supervisorNotes?: SupervisorNoteType[];
+  supervisorNotesEnabled?: boolean;
+  /**
+   * EXPERIMENTAL. This roleplay is allowed to show the AI actor's video over
+   * its call card. Permission, not a promise: the agent has its own global
+   * kill-switch and falls back to an audio-only session on any avatar failure,
+   * so ActorVideo renders nothing until a track genuinely arrives. Default
+   * false, which is every roleplay that has not opted in.
+   */
+  videoActorEnabled?: boolean;
+  liveTabEnabled?: boolean;
+  sidebarExtraTabs?: SessionSidebarExtraTab[];
   isFocusMode: boolean;
   isMuted: boolean;
   isPaused?: boolean;
@@ -51,6 +73,20 @@ export interface SimulationInterfaceProps {
   checklistItems?: ChecklistItem[];
   isMicrophoneGranted: boolean;
   onEnableMicrophone: () => void;
+  /**
+   * A connection attempt genuinely failed (message from the failing connect).
+   * Non-null means: stop pretending to connect and say so — see
+   * renderConnectionFailedContent.
+   */
+  connectionError?: string | null;
+  /** The room connected but no agent participant ever joined within the cap. */
+  agentJoinTimedOut?: boolean;
+  /** Start the whole connection attempt over. */
+  onRetryConnection?: () => void;
+  /** Leave the simulation entirely (back to the learner's own pages). */
+  onExitSimulation?: () => void;
+  /** Supervisor hints whose sequence numbers prove they never arrived. */
+  missedSupervisorNoteCount?: number;
   agentTurnStatus?: AgentTurnStatus;
   score?: number;
   stateNames?: StateInstruction[];
@@ -65,6 +101,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   roomData,
   events,
   detectedEventIds,
+  supervisorNotes = [],
+  supervisorNotesEnabled = false,
+  videoActorEnabled = false,
+  liveTabEnabled = true,
+  sidebarExtraTabs,
   isFocusMode,
   isMuted,
   isPaused = false,
@@ -73,6 +114,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   checklistItems = [],
   isMicrophoneGranted,
   onEnableMicrophone,
+  connectionError = null,
+  agentJoinTimedOut = false,
+  onRetryConnection,
+  onExitSimulation,
+  missedSupervisorNoteCount = 0,
   agentTurnStatus,
   score = 0,
   stateNames = [],
@@ -105,6 +151,21 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   }, []);
 
   const isCountingDown = countdownStep !== null;
+
+  // Once the call has actually been live, a reconnect must not throw the
+  // learner back to a loading screen — so remember that it happened. Before
+  // the agent ever joined there is nothing to preserve, and the connecting
+  // copy is still the honest thing to show.
+  const [hasBeenLive, setHasBeenLive] = useState(false);
+  useEffect(() => {
+    if (roomStatus === RoomStatus.AGENT_JOINED) setHasBeenLive(true);
+  }, [roomStatus]);
+
+  const isReconnecting = roomStatus === RoomStatus.RECONNECTING;
+  // Two genuinely different failures, both of which used to render as
+  // "Connecting…" forever. Kept separate because the fix a learner should try
+  // differs: a failed connect is usually their network, a no-show agent is us.
+  const hasConnectionFailure = !!connectionError || agentJoinTimedOut;
 
   // Debounce remote speaking to avoid flickering on natural pauses
   const [debouncedRemoteSpeaking, setDebouncedRemoteSpeaking] = useState(false);
@@ -178,7 +239,13 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     (showSessionInfo ||
       hasStateNames ||
       (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
-      (checklistMode === ChecklistMode.OFF && events?.length > 0));
+      (checklistMode === ChecklistMode.OFF && events?.length > 0 && liveTabEnabled) ||
+      // The Supervisor tab earns the sidebar on its own: it shows from the
+      // start of the session, before any note has arrived.
+      supervisorNotesEnabled === true ||
+      // An extra tab earns the sidebar too: a preview whose only sidebar
+      // content is the monologue should still get somewhere to put it.
+      (sidebarExtraTabs?.length ?? 0) > 0);
 
   const renderConnectedContent = () => (
     <>
@@ -208,6 +275,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               checklistItems={checklistItems}
               detectedEventIds={detectedEventIds}
               events={events}
+              supervisorNotes={supervisorNotes}
+              supervisorNotesEnabled={supervisorNotesEnabled}
+              liveTabEnabled={liveTabEnabled}
+              extraTabs={sidebarExtraTabs}
               translations={translations}
             />
           </div>
@@ -226,6 +297,13 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
             turnIndicatorTranslations={translations?.turnIndicator}
           />
+          {/* Mounted only for a roleplay that opted in, so the track
+              subscription inside it never runs for anyone else. Absolutely
+              positioned over the card above (z-10) and under the self-view
+              below (z-20), and it renders null until a track actually
+              publishes — so an audio-only fallback simply leaves the card
+              showing, with nothing for the learner to notice. */}
+          {videoActorEnabled && <ActorVideo />}
           {/* Learner's own self-view: a small inlaid picture-in-picture bubble
               over the AI card, like a WhatsApp/Zoom video call, rather than an
               equal-size card of its own. */}
@@ -298,6 +376,109 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     </div>
   );
 
+  /**
+   * The honest failure state. Replaces the old behaviour where DISCONNECTED
+   * was routed through renderLoadingContent, so a dead LiveKit server produced
+   * the exact same "Connecting to session… allow microphone access" copy as a
+   * healthy connect in progress — telling the learner to fix something that
+   * was never the problem, forever.
+   *
+   * Deliberately distinct from renderPendingStartContent (the microphone
+   * prompt, which is correct and still owns the permission case): this one is
+   * role="alert", apologises, says which of the two things failed, and offers
+   * both a retry and a way out of the page. Never a dead end.
+   */
+  const renderConnectionFailedContent = () => {
+    const isAgentAbsent = agentJoinTimedOut && !connectionError;
+    const title = isAgentAbsent
+      ? (translations?.agentNotJoinedTitle ?? "Your practice partner didn't join")
+      : (translations?.connectionFailedTitle ?? "We couldn't connect you to this session");
+    const message = isAgentAbsent
+      ? (translations?.agentNotJoinedMessage ??
+        "Sorry — we reached the session but no one picked up on the other side. Trying again usually sorts it.")
+      : (translations?.connectionFailedMessage ??
+        "Sorry — something went wrong setting up this roleplay. Check your internet connection and try again.");
+
+    return (
+      <div
+        data-testid="simulation-interface-connection-error"
+        data-failure-kind={isAgentAbsent ? "agent-absent" : "connect-failed"}
+        role="alert"
+        className="flex flex-col items-center text-center font-['IBM_Plex_Serif'] gap-4 max-w-[440px] px-4"
+      >
+        <p className="text-[20px] font-medium italic text-white">{title}</p>
+        <p className="text-[13px] text-[#B6B5B9] font-['Roboto'] leading-relaxed">{message}</p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {onRetryConnection && (
+            <button
+              type="button"
+              data-testid="simulation-retry-connection"
+              onClick={onRetryConnection}
+              className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors"
+            >
+              {translations?.retryConnection ?? "Try again"}
+            </button>
+          )}
+          {onExitSimulation && (
+            <button
+              type="button"
+              data-testid="simulation-exit-session"
+              onClick={onExitSimulation}
+              className="px-6 py-3 border border-[#3D4045] hover:bg-[#282B31] text-white font-medium rounded-lg transition-colors"
+            >
+              {translations?.exitSimulation ?? "Leave this session"}
+            </button>
+          )}
+        </div>
+        {/* The underlying message, kept small: useless to most learners but the
+            one thing that makes a bug report actionable. */}
+        {!!connectionError && (
+          <p
+            data-testid="simulation-connection-error-detail"
+            className="text-[11px] text-[#8A8A8F] font-['Roboto'] break-words"
+          >
+            {connectionError}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  /**
+   * Non-blocking status pills over the live call. A transient reconnect is not
+   * an error and must not take the session UI away — but it must not be
+   * invisible either, since supervisor hints published while it lasts are lost.
+   */
+  const renderStatusPills = () => {
+    if (!isReconnecting && missedSupervisorNoteCount <= 0) return null;
+    return (
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none">
+        {isReconnecting && (
+          <div
+            data-testid="simulation-reconnecting-pill"
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-full bg-[#282B31] px-3 py-1 text-[12px] font-medium text-white shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+          >
+            <span aria-hidden className="h-2 w-2 rounded-full bg-[#E8B93C] animate-pulse" />
+            {translations?.reconnecting ?? "Reconnecting…"}
+          </div>
+        )}
+        {missedSupervisorNoteCount > 0 && (
+          <div
+            data-testid="simulation-missed-hints-pill"
+            role="status"
+            aria-live="polite"
+            className="rounded-full bg-[#282B31] px-3 py-1 text-[11px] text-[#B6B5B9] shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+          >
+            {translations?.missedSupervisorHints ??
+              "Some supervisor hints may not have reached you"}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Fixed-length overlay, independent of connection progress: it always runs
   // the full 3 seconds it started with, whatever else is happening
   // underneath (mic prompt, connecting, or the agent already having joined).
@@ -327,6 +508,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   );
 
   const renderContent = () => {
+    // Ahead of the countdown on purpose: "3… 2… 1… your simulation is about to
+    // begin" over an attempt that has already failed is the same lie the
+    // loading state used to tell, just prettier.
+    if (hasConnectionFailure) return renderConnectionFailedContent();
     if (isCountingDown) return renderCountdownContent();
     if (!isMicrophoneGranted) return renderPendingStartContent();
 
@@ -337,6 +522,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     switch (roomStatus) {
       case RoomStatus.AGENT_JOINED:
         return renderConnectedContent();
+      // A blip mid-call keeps the call on screen (with the pill above it); a
+      // blip before the agent ever arrived has no call to keep.
+      case RoomStatus.RECONNECTING:
+        return hasBeenLive ? renderConnectedContent() : renderLoadingContent();
       case RoomStatus.CONNECTED:
       case RoomStatus.CONNECTING:
       case RoomStatus.DISCONNECTING:
@@ -353,6 +542,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="w-full flex justify-center items-center flex-1 relative"
     >
+      {renderStatusPills()}
       {renderContent()}
     </motion.div>
   );

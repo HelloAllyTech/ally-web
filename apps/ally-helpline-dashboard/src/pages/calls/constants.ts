@@ -36,12 +36,21 @@ export const tableHeaders = [
   },
 ];
 
+/**
+ * Session-rating tints, 1 (worst) to 5 (best).
+ *
+ * A diverging scale, so the ends have to stay distinguishable by hue and not
+ * only by lightness — someone scanning a column of these reads the colour
+ * before the number. Warm alarm at the bad end, sage at the good end, and the
+ * neutral cream at 3 where the scale crosses over. Each `text` is the shade
+ * that passes on its own `bg`; don't pair one row's text with another's tint.
+ */
 export const tagColors = {
-  1: { bg: "#FFCDD2", text: "#5C0A0A" },
-  2: { bg: "#FFE0B2", text: "#662400" },
-  3: { bg: "#E0E0E0", text: "#333333" },
-  4: { bg: "#B9EFC880", text: "#1B5E20" },
-  5: { bg: "#D0F0C080", text: "#174F1B" },
+  1: { bg: "#F3DDD9", text: "#7A2E25" },
+  2: { bg: "#F3E6C9", text: "#6B4F22" },
+  3: { bg: "#E3DBCE", text: "#29261F" },
+  4: { bg: "#DFE7DD", text: "#3B5240" },
+  5: { bg: "#CFDCCD", text: "#2F4434" },
 };
 
 export const CALL_LOGS_PAGINATION_LIMIT = 25;
@@ -49,9 +58,8 @@ export const CALL_LOGS_PAGINATION_LIMIT = 25;
 export const tabStyles = {
   textTransform: "none",
   fontWeight: 500,
-  color: "#49454F",
-  fontFamily: "IBM_Plex_Serif",
-  font: "IBM Plex Serif",
+  color: "#3d3a34",
+  fontFamily: "var(--font-primary)",
 };
 
 export const defaultDeleteDialogData = {

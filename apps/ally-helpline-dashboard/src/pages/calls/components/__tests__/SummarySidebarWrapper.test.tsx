@@ -20,6 +20,7 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   DataPolicy: () => <svg data-testid="data-policy-icon" />,
@@ -89,6 +90,47 @@ describe("SummarySidebarWrapper", () => {
 
     await userEvent.click(screen.getByText("Close Drawer"));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides the tab strip when there is only one tab", () => {
+    // The roleplay drawer is down to a single Annotated Transcript tab, whose
+    // own content already renders that heading — a one-item strip would just
+    // repeat it, and there is nothing to switch to.
+    render(
+      <SummarySidebarWrapper
+        title="Test Sidebar"
+        tabList={[mockTabList[0]]}
+        onSidebarClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Content One")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Tab One/i })).not.toBeInTheDocument();
+  });
+
+  it("resyncs the selected tab when tabList shrinks after data loads, instead of showing a blank panel", () => {
+    // Mirrors real usage: before useGetSimulationSummaryQuery resolves, both
+    // tabs default on and selectedTab initializes to tabList[0] (Debrief).
+    // Once real scenario metadata loads and reveals Debrief is off, the
+    // parent re-renders this component with a shrunk tabList.
+    const { rerender } = render(
+      <SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} onSidebarClose={vi.fn()} />,
+    );
+
+    expect(screen.getByText("Content One")).toBeInTheDocument();
+
+    rerender(
+      <SummarySidebarWrapper
+        title="Test Sidebar"
+        tabList={[mockTabList[1]]}
+        onSidebarClose={vi.fn()}
+      />,
+    );
+
+    // selectedTab must resync to the surviving tab rather than staying
+    // pinned to the now-removed id, which would render nothing.
+    expect(screen.getByText("Content Two")).toBeInTheDocument();
+    expect(screen.queryByText("Content One")).not.toBeInTheDocument();
   });
 
   it("renders children content", () => {

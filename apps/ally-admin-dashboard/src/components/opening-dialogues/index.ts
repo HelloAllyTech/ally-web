@@ -1,1 +1,2 @@
-export { OpeningDialoguesPanel, OPENING_DIALOGUE_LINE_SLOTS } from "./OpeningDialoguesPanel";
+export { OpeningDialoguesPanel } from "./OpeningDialoguesPanel";
+export { OPENING_DIALOGUE_LINE_SLOTS } from "../linguistic-style-samples/scenarioLanguageUtils";

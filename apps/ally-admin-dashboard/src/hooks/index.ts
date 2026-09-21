@@ -1,6 +1,9 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
+import { useBuilderSocket } from "./useBuilderSocket";
+import { useBuilderStream } from "./useBuilderStream";
+import { useCanCurateCharacterCorpus } from "./useCanCurateCharacterCorpus";
+import { useCanViewComponentLibrary } from "./useCanViewComponentLibrary";
 import { useClickOutside } from "./useClickOutside";
-import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
 import { useIsPlaceholderUsed } from "./useIsPlaceholderUsed";
@@ -11,12 +14,11 @@ import { useScenarioTranslationsSocket } from "./useScenarioTranslationsSocket";
 import { useSimulationCases } from "./useSimulationCases";
 import { useSimulationPathways } from "./useSimulationPathways";
 import { useSimulations } from "./useSimulations";
-import { useSpecAutosave } from "./useSpecAutosave";
 import { useTracks } from "./useTracks";
 import { useTrackTranslationsSocket } from "./useTrackTranslationsSocket";
 import { useTranscriptDisclaimer } from "./useTranscriptDisclaimer";
-import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
+import { useVoicePreview } from "./useVoicePreview";
 
 export {
   useAllySocket,
@@ -33,10 +35,12 @@ export {
   useScenarioReportsSocket,
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
-  useCopilotStream,
+  useVoicePreview,
+  useBuilderStream,
+  useBuilderSocket,
   useTranscriptDisclaimer,
-  useTryRoleplayLive,
-  useSpecAutosave,
   useTracks,
   useTrackTranslationsSocket,
+  useCanCurateCharacterCorpus,
+  useCanViewComponentLibrary,
 };

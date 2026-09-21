@@ -4,8 +4,10 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import { TrackFormValues } from "@types";
 
+import { QuestionPath } from "../../../trackFormUtils";
+
 interface TrueFalseEditorProps {
-  questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
+  questionPath: QuestionPath;
 }
 
 export const TrueFalseEditor: FC<TrueFalseEditorProps> = ({ questionPath }) => {

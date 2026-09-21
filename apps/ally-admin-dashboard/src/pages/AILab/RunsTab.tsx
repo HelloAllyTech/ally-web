@@ -17,6 +17,7 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { LabRun } from "@types";
 
+import { AiLabErrorState } from "./AiLabErrorState";
 import { AssignRunDrawer } from "./AssignRunDrawer";
 import { AutoEvalDrawer } from "./AutoEvalDrawer";
 import { BulkAssignEvaluatorsDrawer } from "./BulkAssignEvaluatorsDrawer";
@@ -61,7 +62,7 @@ export const RunsTab: React.FC = () => {
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
   const [pollInterval, setPollInterval] = useState(0);
-  const { data, isLoading, refetch } = useGetLabRunsQuery(
+  const { data, isLoading, isError, refetch } = useGetLabRunsQuery(
     { search: search || undefined, limit: RUNS_PAGE_SIZE, offset },
     { pollingInterval: pollInterval },
   );
@@ -192,6 +193,8 @@ export const RunsTab: React.FC = () => {
       <div className="mt-5">
         {isLoading ? (
           <p className="text-typography-600 py-8 text-center">{en.common.loading}</p>
+        ) : isError ? (
+          <AiLabErrorState message={en.aiLab.runs.loadFailed} onRetry={refetch} />
         ) : runs.length === 0 ? (
           <EmptyState
             title={en.aiLab.runs.empty}

@@ -3,6 +3,7 @@ import { BugHuntEventStage } from "@types";
 /** Short, scannable label per timeline stage — used by both the live run card and the run-detail timeline. */
 export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.SKIPPED_DISABLED]: "Skipped — off",
+  [BugHuntEventStage.SKIPPED_QUIET]: "Skipped — quiet night",
   [BugHuntEventStage.FINDER_RESULT]: "Found",
   [BugHuntEventStage.VERIFY]: "Verified",
   [BugHuntEventStage.FIX_ATTEMPT]: "Fix attempt",
@@ -21,4 +22,9 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.RELEASE_FAILED]: "Release failed",
   [BugHuntEventStage.CANCELLED]: "Fix session cancelled",
   [BugHuntEventStage.DESCRIPTION_EDITED]: "Description rewritten",
+  [BugHuntEventStage.STAGE_CHANGED]: "Stage set by hand",
+  [BugHuntEventStage.DECISION_RECORDED]: "Declined",
+  [BugHuntEventStage.REGRESSED]: "Came back",
+  [BugHuntEventStage.RECURRENCE_SUPPRESSED]: "Found again",
+  [BugHuntEventStage.REVERSED]: "Dismissal reversed",
 };

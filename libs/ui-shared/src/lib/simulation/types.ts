@@ -73,6 +73,27 @@ export interface SimulationTranslations {
   remindersTab?: string;
   descriptionTab?: string;
   noRemindersYet?: string;
+  /** Live supervisor notes tab. Optional so existing consumers (admin
+   * previews) compile without providing them. Note bodies are NOT translated
+   * here — they arrive from the agent already written in the session
+   * language. */
+  supervisorTab?: string;
+  supervisorEmptyState?: string;
+  /** AI disclosure badge shown once at the top of the Supervisor panel, so
+   * the learner never reads "Supervisor" as a person listening in. */
+  supervisorAiLabel?: string;
+  supervisorAiTooltip?: string;
+  /** Connection-failure and reconnect copy. Optional so existing consumers
+   * (admin previews) compile without providing them; each has an English
+   * fallback at the render site. */
+  connectionFailedTitle?: string;
+  connectionFailedMessage?: string;
+  agentNotJoinedTitle?: string;
+  agentNotJoinedMessage?: string;
+  retryConnection?: string;
+  exitSimulation?: string;
+  reconnecting?: string;
+  missedSupervisorHints?: string;
   turnIndicator: TurnIndicatorTranslations;
 }
 
@@ -86,8 +107,39 @@ export interface SimulationEventType {
 export interface SimulationEventsProps {
   events: SimulationEventType[];
   /** Suppress the "AI Feedback" header bar (redundant when rendered under a
-   * tab already labeled "Live"). */
+   * tab already labeled "Live events"). */
   hideHeader?: boolean;
+}
+
+/**
+ * One live supervisor note. `seq` is assigned per session by the agent and is
+ * the note's identity (the client de-duplicates on it).
+ */
+export interface SupervisorNoteType {
+  note: string;
+  seq: number;
+  turnIndex?: number;
+  timestamp?: string;
+}
+
+export interface SupervisorNotesProps {
+  notes: SupervisorNoteType[];
+  translations?: Pick<
+    SimulationTranslations,
+    "supervisorEmptyState" | "supervisorAiLabel" | "supervisorAiTooltip"
+  >;
+}
+
+/**
+ * A tab the host application adds to the session sidebar, after the built-in
+ * ones. Opt-in by construction: an app that passes nothing gets exactly the
+ * tabs it always had, which is what keeps admin-only surfaces — the client's
+ * internal monologue, say — out of a learner's session.
+ */
+export interface SessionSidebarExtraTab {
+  id: string;
+  label: string;
+  content: ReactNode;
 }
 
 export interface SessionSidebarProps {
@@ -104,6 +156,18 @@ export interface SessionSidebarProps {
   checklistItems: ChecklistItem[];
   detectedEventIds?: string[];
   events: SimulationEventType[];
+  /** Live supervisor notes, in the order the learner received them. */
+  supervisorNotes?: SupervisorNoteType[];
+  /** Whether this roleplay has live supervisor notes turned on. Opt-in, so the
+   * Supervisor tab appears only for an explicit true — and then it appears even
+   * with zero notes, because its empty state is the point (it tells the learner
+   * someone is watching). */
+  supervisorNotesEnabled?: boolean;
+  /** Whether this roleplay has the Live events tab turned on. Opt-out,
+   * so the tab appears unless explicitly disabled with `false`. */
+  liveTabEnabled?: boolean;
+  /** Host-supplied tabs, appended after the built-in ones. */
+  extraTabs?: SessionSidebarExtraTab[];
   translations?: SimulationTranslations;
 }
 
@@ -151,6 +215,8 @@ export interface TriggerWarning {
 }
 
 export interface SimulationPageProps {
+  /** Host-supplied sidebar tabs, appended after the built-in ones. */
+  sidebarExtraTabs?: SessionSidebarExtraTab[];
   room: any; // LiveKit Room instance; typed as any to avoid hard dependency for consumers
   roomData: any;
   sessionId?: string;
@@ -158,9 +224,21 @@ export interface SimulationPageProps {
   startTime: string;
   events: SimulationEventType[];
   detectedEventIds?: string[];
+  /** Live supervisor notes received so far this session. */
+  supervisorNotes?: SupervisorNoteType[];
   score?: number;
   roomStatus: RoomStatus;
   isPreview?: boolean;
+  /**
+   * Connection/agent failure state, forwarded straight to SimulationInterface.
+   * All optional: a consumer that doesn't pass them (the admin preview) simply
+   * never shows the failure UI, exactly as before.
+   */
+  connectionError?: string | null;
+  agentJoinTimedOut?: boolean;
+  onRetryConnection?: () => void;
+  onExitSimulation?: () => void;
+  missedSupervisorNoteCount?: number;
   onEndSimulation: () => Promise<void> | void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;

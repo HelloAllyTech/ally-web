@@ -183,7 +183,9 @@ vi.mock("../utils", () => ({
   getModeChipConfig: vi.fn((mode: string | undefined) => ({
     label: mode === "DICTATION" ? "Dictation" : "Scribe",
     outerDivClassName:
-      mode === "DICTATION" ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#E8EAF6] text-[#3949AB]",
+      mode === "DICTATION"
+        ? "bg-status-ochreBg text-status-ochreFg"
+        : "bg-status-mauveBg text-status-mauveFg",
   })),
 }));
 
@@ -686,6 +688,32 @@ describe("AdminLogsTable", () => {
   });
 
   // -------------------------------------------------------------------------
+  describe("Call tags query permission gating", () => {
+    // Roleplay/simulation-only admins hold VIEW_ADMIN_SCENARIO_SESSION but not
+    // VIEW_CONSOLIDATED_LOGS, and the tags endpoint is call-log-gated — fetching
+    // it unconditionally on the Organization Logs simulation tab 403s.
+    it("skips the call tags query when viewing simulation logs", async () => {
+      renderComponent(SessionType.SIMULATION);
+      await waitFor(() => {
+        expect(vi.mocked(useGetCallTagsQuery)).toHaveBeenCalledWith(
+          { offset: 0 },
+          expect.objectContaining({ skip: true }),
+        );
+      });
+    });
+
+    it("does not skip the call tags query when viewing call logs", async () => {
+      renderComponent(SessionType.CALL);
+      await waitFor(() => {
+        expect(vi.mocked(useGetCallTagsQuery)).toHaveBeenCalledWith(
+          { offset: 0 },
+          expect.objectContaining({ skip: false }),
+        );
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   describe("Delete functionality", () => {
     beforeEach(() => {
       mockUseGetAdminCallLogsQuery.mockReturnValue({
@@ -1048,6 +1076,44 @@ describe("AdminLogsTable", () => {
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalled();
+      });
+    });
+
+    // A background refetch (refetchOnFocus when the counsellor tabs back in, or
+    // the invalidation after a custom-field save) can be rejected while RTK
+    // Query still holds the last good page: isError true, isLoading false,
+    // data intact. Blanking the table there loses rows that are on screen and
+    // correct, and only a full reload brings them back.
+    it("keeps already-loaded rows when a background refetch fails", async () => {
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+        error: { status: 401 },
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+      });
+      expect(screen.queryByText("Unable to load call logs")).not.toBeInTheDocument();
+    });
+
+    it("shows the error fallback when the fetch fails with nothing cached", async () => {
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+        error: { status: 500 },
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByText("Unable to load call logs")).toBeInTheDocument();
       });
     });
 

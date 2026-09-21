@@ -224,7 +224,10 @@ describe("AnalyticsAgentTab", () => {
     expect(secondCall.history).toHaveLength(1);
     expect(secondCall.history[0].question).toBe("How many sessions last week?");
     expect(secondCall.history[0].sql).toContain("scenario_sessions");
-  });
+  }, // Two full userEvent.type()+click+waitFor cycles — roughly double its
+  // single-ask siblings' work, which is what tips it over the default
+  // 5000ms budget under the full-suite's parallel load.
+  15000);
 
   it("does not send a failed turn as context", async () => {
     // Replaying a failure would teach the planner to repeat it.

@@ -68,10 +68,25 @@ vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid" />,
 }));
 
-// Mock react-redux to avoid needing a Provider
+// Mock react-redux to avoid needing a Provider. Mutable so a test can drive the
+// permission gate on CustomFieldDefinitionsSection's write controls; reset to the
+// permitted default in beforeEach.
+const PERMITTED = ["manage:custom-field:definitions"];
+let mockPermissions: string[] = [...PERMITTED];
+// One existing definition, so the row-level Edit/Delete controls have something
+// to render against. Empty by default to preserve the original fixture.
+const ONE_DEFINITION = [
+  { id: "cf-1", name: "Referral source", fieldType: "TEXT", fillMode: "MANUAL" },
+];
+let mockDefinitions: any[] = [];
+// Role is no longer read by the write-control gate; kept mutable so a test can
+// prove that — a PLATFORM_ADMIN is admitted on its permission alone.
+const DEFAULT_USER = { role: "SUPER_ADMIN" };
+let mockUser: any = { ...DEFAULT_USER };
+
 vi.mock("react-redux", () => ({
   useSelector: (selector: (state: any) => any) =>
-    selector({ user: { user: { role: "SUPER_ADMIN" } } }),
+    selector({ user: { user: mockUser, permissions: mockPermissions } }),
 }));
 
 // Mock @store (imported by CustomFieldDefinitionsSection)
@@ -83,6 +98,8 @@ vi.mock("@constants", () => ({
   SUPER_ADMIN_ROLES: ["SUPER_ADMIN", "SUPER_DUPER_ADMIN"],
   isSuperAdminRole: (role?: string | null) =>
     role === "SUPER_ADMIN" || role === "SUPER_DUPER_ADMIN",
+  // CustomFieldDefinitionsSection gates its write controls on this.
+  Permissions: { MANAGE_CUSTOM_FIELD_DEFINITIONS: "manage:custom-field:definitions" },
   en: {
     common: {
       cancel: "Cancel",
@@ -209,7 +226,7 @@ vi.mock("@api", () => {
     useUpdateScribeNoteCreationEnabledMutation: () => updateScribeNoteCreationEnabledResult,
     useGetScribeVoiceNoteEnabledQuery: () => scribeVoiceNoteEnabledResult,
     useUpdateScribeVoiceNoteEnabledMutation: () => updateScribeVoiceNoteEnabledResult,
-    useGetCustomFieldDefinitionsQuery: () => ({ data: [], isLoading: false }),
+    useGetCustomFieldDefinitionsQuery: () => ({ data: mockDefinitions, isLoading: false }),
     useCreateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
     useUpdateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
     useDeleteCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
@@ -221,6 +238,9 @@ describe("ScribeSettings", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPermissions = [...PERMITTED];
+    mockDefinitions = [];
+    mockUser = { ...DEFAULT_USER };
   });
 
   it("renders the component with title", () => {
@@ -549,6 +569,65 @@ describe("ScribeSettings", () => {
           expect.objectContaining({ tenantId: mockTenantId }),
         );
       });
+    });
+  });
+
+  describe("custom field definitions write controls", () => {
+    // Regression: these controls used to be gated on `isSuperAdminRole(user?.role)`,
+    // whose list is only [SUPER_ADMIN, SUPER_DUPER_ADMIN] — the two tiers the
+    // PLATFORM_ADMIN collapse retired. PLATFORM_ADMIN holds
+    // manage:custom-field:definitions (the permission ally-be enforces on all
+    // three mutations) and was still shown no Add / Edit / Delete.
+    it("shows Add for an account holding MANAGE_CUSTOM_FIELD_DEFINITIONS", () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      expect(screen.getByText("+ Add custom field")).toBeInTheDocument();
+    });
+
+    it("shows the controls for a PLATFORM_ADMIN-only account", () => {
+      // The exact account the old role gate turned away: minted by the Ally
+      // admins tab, so it holds PLATFORM_ADMIN and nothing legacy. Migrated
+      // admins kept the controls only because the collapse migration left their
+      // old user_groups rows in place.
+      mockUser = { role: "PLATFORM_ADMIN" };
+      mockDefinitions = ONE_DEFINITION;
+
+      render(<ScribeSettings tenantId={mockTenantId} />);
+
+      expect(screen.getByText("+ Add custom field")).toBeInTheDocument();
+      expect(screen.getByText("Edit")).toBeInTheDocument();
+      expect(screen.getByText("Delete")).toBeInTheDocument();
+    });
+
+    it("hides the controls without the permission, whatever the role says", () => {
+      // A super-admin role name is no longer sufficient — this is the direction
+      // the old gate got wrong permissively.
+      mockPermissions = [];
+      mockDefinitions = ONE_DEFINITION;
+
+      render(<ScribeSettings tenantId={mockTenantId} />);
+
+      expect(screen.queryByText("+ Add custom field")).not.toBeInTheDocument();
+      expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+      expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+    });
+
+    it("hides the controls for a role that can reach the page but not manage fields", () => {
+      // MULTI_TENANT_ADMIN reaches Organization Detail via view:users but has no
+      // manage:custom-field:definitions grant. Unchanged by the fix.
+      mockUser = { role: "MULTI_TENANT_ADMIN" };
+      mockPermissions = ["view:users"];
+
+      render(<ScribeSettings tenantId={mockTenantId} />);
+
+      expect(screen.queryByText("+ Add custom field")).not.toBeInTheDocument();
+    });
+
+    it("fails closed while the permission list is still undefined", () => {
+      mockPermissions = undefined as any;
+
+      render(<ScribeSettings tenantId={mockTenantId} />);
+
+      expect(screen.queryByText("+ Add custom field")).not.toBeInTheDocument();
     });
   });
 });

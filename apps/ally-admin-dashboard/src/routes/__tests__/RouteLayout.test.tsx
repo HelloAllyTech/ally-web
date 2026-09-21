@@ -37,10 +37,12 @@ vi.mock("@pages", () => ({
   EventManagement: () => <div>EventManagementPage</div>,
   CharacterLibrary: () => <div>CharacterLibraryPage</div>,
   CharacterInterview: () => <div>CharacterInterviewPage</div>,
+  ComponentLibrary: () => <div>ComponentLibraryPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   SttConfigs: () => <div>SttConfigsPage</div>,
   LlmConfigs: () => <div>LlmConfigsPage</div>,
   LlmModelCatalog: () => <div>LlmModelCatalogPage</div>,
+  AiTasks: () => <div>AiTasksPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
   PromptManagement: () => <div>PromptManagementPage</div>,
   UserBadges: () => <div>UserBadgesPage</div>,
@@ -51,11 +53,9 @@ vi.mock("@pages", () => ({
   Competencies: () => <div>CompetenciesPage</div>,
   RoleplaySessionLogs: () => <div>RoleplaySessionLogsPage</div>,
   RoleplaySessionLogDetail: () => <div>RoleplaySessionLogDetailPage</div>,
-  RoleplayStudioList: () => <div>RoleplayStudioListPage</div>,
-  RoleplayStudioWorkspace: () => <div>RoleplayStudioWorkspacePage</div>,
-  RoleplayLivePreview: () => <div>RoleplayLivePreviewPage</div>,
   Settings: () => <div>SettingsPage</div>,
   Logs: () => <div>LogsPage</div>,
+  MobileReleases: () => <div>MobileReleasesPage</div>,
   WhatsAppBot: () => <div>WhatsAppBotPage</div>,
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
@@ -65,6 +65,12 @@ vi.mock("@pages", () => ({
   EvaluateRecords: () => <div>EvaluateRecordsPage</div>,
   EvaluateRecordDetail: () => <div>EvaluateRecordDetailPage</div>,
   BugHunter: () => <div>BugHunterPage</div>,
+  Builder: () => <div>BuilderPage</div>,
+  BuilderSession: () => <div>BuilderSessionPage</div>,
+  BuilderSettings: () => <div>BuilderSettingsPage</div>,
+  BuilderPipeline: () => <div>BuilderPipelinePage</div>,
+  BuilderScoreboard: () => <div>BuilderScoreboardPage</div>,
+  BuilderKnowledge: () => <div>BuilderKnowledgePage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -88,6 +94,51 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
     render(<RouteLayout />);
     expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderPage")).toBeInTheDocument();
+  });
+
+  // The session route is a separate assertion from the list route because the
+  // two differ only by a path param — a mistyped param pattern would leave the
+  // list route passing while every session link 404s.
+  it("renders Builder session route with id", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SESSION("abc-123"));
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderSessionPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder settings route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SETTINGS);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderSettingsPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder pipeline route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_PIPELINE);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderPipelinePage")).toBeInTheDocument();
+  });
+
+  it("renders Builder scoreboard route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_SCOREBOARD);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderScoreboardPage")).toBeInTheDocument();
+  });
+
+  it("renders Builder knowledge route", () => {
+    window.history.pushState({}, "", ROUTES.BUILDER_KNOWLEDGE);
+    render(<RouteLayout />);
+    expect(screen.getByText("BuilderKnowledgePage")).toBeInTheDocument();
+  });
+
+  it("renders Component Library route", () => {
+    window.history.pushState({}, "", ROUTES.COMPONENT_LIBRARY);
+    render(<RouteLayout />);
+    expect(screen.getByText("ComponentLibraryPage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {

@@ -132,6 +132,7 @@ vi.mock("@constants", async importOriginal => {
   };
 });
 
+import { en } from "@constants";
 import { RoomStatus } from "@types";
 
 import { LiveSimulationPreview } from "../LiveSimulationPreview";
@@ -777,6 +778,35 @@ describe("LiveSimulationPreview", () => {
 
       // Should not navigate on initial render
       expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Internal monologue", () => {
+    const monologueTab = () =>
+      mockSimulationPageProps.mock.calls
+        .at(-1)?.[0]
+        ?.sidebarExtraTabs?.find((tab: any) => tab.id === "internal-monologue");
+
+    it("hands the monologue to the session sidebar as a tab", () => {
+      renderComponent();
+
+      expect(monologueTab()).toBeTruthy();
+      expect(monologueTab().label).toBe(en.internalMonologue.title);
+    });
+
+    it("renders the live panel as that tab's content", () => {
+      renderComponent();
+
+      render(monologueTab().content);
+
+      // Live mode: it is waiting on the room, not showing a stored run.
+      expect(screen.getByText(en.internalMonologue.waiting)).toBeInTheDocument();
+    });
+
+    it("passes the room through so the panel can subscribe", () => {
+      renderComponent();
+
+      expect(monologueTab().content.props.room).toBe(mockRoom);
     });
   });
 });

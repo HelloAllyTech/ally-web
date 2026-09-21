@@ -6,8 +6,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { useDispatchPreviewAgentMutation, useEndScenarioPreviewMutation } from "@api";
-import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
+import {
+  LIVEKIT_CONFIG,
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  SUPERVISOR_TOPIC,
+  SUPERVISOR_NOTE_EVENT_TYPE,
+  EVENT_FEED_TOPICS,
+} from "@constants";
+import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent, SupervisorNotePayload } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
 // Tiny delay before connect to avoid React 18 StrictMode mount/unmount/mount races
@@ -20,7 +27,7 @@ const STRICT_MODE_GUARD_MS = 100;
 const AGENT_SILENT_GRACE_MS = 1500;
 
 /**
- * Optional behavior overrides so non-simulation flows (e.g. Roleplay Studio
+ * Optional behavior overrides so non-simulation flows (e.g. preview
  * live preview) can reuse this hook. Every field defaults to the original
  * simulation-preview behavior, so existing call sites are unchanged.
  */
@@ -57,6 +64,7 @@ export const useLiveKitRoom = (
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
+  const [supervisorNotes, setSupervisorNotes] = useState<SupervisorNotePayload[]>([]);
   const [score, setScore] = useState<number>(0);
   const [startTime, setStartTime] = useState(null);
 
@@ -72,25 +80,49 @@ export const useLiveKitRoom = (
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
   useEffect(() => {
-    return () => autoTerminationAudio.current?.pause();
+    const audio = autoTerminationAudio.current;
+    return () => audio?.pause();
   }, []);
 
-  const getLiveKitUrl = (): string => {
-    const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
-    if (!url) {
-      throw new Error("LiveKit URL not found in room data or environment variables");
-    }
-    return url;
-  };
+  const onDataReceived = useCallback(
+    (payload: any, _participant?: any, _kind?: any, topic?: string) => {
+      // Live supervisor notes ride their own topic and must be claimed before
+      // the fall-through below, which adds any packet to `events` and folds its
+      // score in — a note landing there would corrupt the preview's score.
+      if (topic === SUPERVISOR_TOPIC) {
+        const notePayload = decodeUint8ToJson(payload) as SupervisorNotePayload & {
+          type?: string;
+        };
+        if (notePayload?.type !== SUPERVISOR_NOTE_EVENT_TYPE || !notePayload?.note) return;
+        setSupervisorNotes(prev =>
+          prev.some(existing => existing.seq === notePayload.seq)
+            ? prev
+            : [
+                ...prev,
+                {
+                  note: notePayload.note,
+                  seq: notePayload.seq,
+                  turn_index: notePayload.turn_index,
+                  timestamp: notePayload.timestamp,
+                },
+              ],
+        );
+        return;
+      }
 
-  const onDataReceived = useCallback((payload: any) => {
-    const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-    setEvents(prev => [...prev, eventObj]);
-    setScore(prev => prev + (eventObj?.data?.score ?? 0));
-    setDetectedEventIds(prevIds => {
-      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
-    });
-  }, []);
+      // Everything below folds the packet into the scored event feed, so only
+      // topics that genuinely belong to that feed may reach it.
+      if (!EVENT_FEED_TOPICS.includes(topic)) return;
+
+      const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+      setEvents(prev => [...prev, eventObj]);
+      setScore(prev => prev + (eventObj?.data?.score ?? 0));
+      setDetectedEventIds(prevIds => {
+        return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+      });
+    },
+    [],
+  );
 
   const transitionToAgentJoined = useCallback(() => {
     if (agentJoinedRef.current) return;
@@ -132,7 +164,7 @@ export const useLiveKitRoom = (
       },
       endSessionButtonRef.current ? 0 : 1000,
     );
-  }, []);
+  }, [handleDisconnect, endSessionButtonRef]);
 
   const cleanupRoom = useCallback(() => {
     try {
@@ -171,31 +203,25 @@ export const useLiveKitRoom = (
     onActiveSpeakersChanged,
   ]);
 
-  useEffect(() => {
-    // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
-    // is left in place until the agent emits audio (or the silent-grace fallback).
-    // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
-    const connectionTimeout = setTimeout(() => {
-      connectToRoom();
-    }, STRICT_MODE_GUARD_MS);
-
-    return () => {
-      clearTimeout(connectionTimeout);
-      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
-    };
-  }, [id, cleanupRoom]);
-
-  const connectToRoom = async () => {
+  const { fallbackRoute, isPreviewRoom, dispatchAgent } = config;
+  const connectToRoom = useCallback(async () => {
     try {
       if (!id || !roomData) {
-        navigate(config.fallbackRoute ?? ROUTES.SIMULATION_STUDIO);
+        navigate(fallbackRoute ?? ROUTES.SIMULATION_STUDIO);
         return;
       }
 
       if (!isConnected && !isConnecting) {
         setRoomStatus(RoomStatus.CONNECTING);
         setError(null);
+
+        const getLiveKitUrl = (): string => {
+          const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
+          if (!url) {
+            throw new Error("LiveKit URL not found in room data or environment variables");
+          }
+          return url;
+        };
 
         const token = roomData?.accessToken;
         const livekitUrl = getLiveKitUrl();
@@ -222,13 +248,13 @@ export const useLiveKitRoom = (
 
         await room.localParticipant.setMicrophoneEnabled(true);
 
-        const isPreviewRoom =
-          id && typeof id === "string" && (config.isPreviewRoom?.(id) ?? id.startsWith("preview-"));
-        const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreviewRoom;
+        const isPreview =
+          id && typeof id === "string" && (isPreviewRoom?.(id) ?? id.startsWith("preview-"));
+        const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreview;
         if (shouldDispatch) {
           try {
             logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
-            if (config.dispatchAgent) await config.dispatchAgent(id);
+            if (dispatchAgent) await dispatchAgent(id);
             else await dispatchPreviewAgent({ roomName: id }).unwrap();
             logger.info(`[LiveKit] Agent dispatch request sent successfully`);
           } catch (dispatchError) {
@@ -236,7 +262,7 @@ export const useLiveKitRoom = (
               `Direct agent dispatch failed: ${dispatchError}. If running locally, ensure ally-be has ALLOW_DIRECT_AGENT_DISPATCH or NODE_ENV=development.`,
             );
           }
-        } else if (isPreviewRoom) {
+        } else if (isPreview) {
           logger.info(
             `[LiveKit] Skipping direct agent dispatch for preview room: ${id}. Agent should join via webhook.`,
           );
@@ -250,7 +276,62 @@ export const useLiveKitRoom = (
       setRoomStatus(RoomStatus.DISCONNECTED);
       setError(error instanceof Error ? error.message : "Failed to connect to room");
     }
-  };
+  }, [
+    id,
+    roomData,
+    navigate,
+    fallbackRoute,
+    isConnected,
+    isConnecting,
+    room,
+    onDataReceived,
+    onRoomDisconnect,
+    onRemoteParticipantConnected,
+    onActiveSpeakersChanged,
+    isPreviewRoom,
+    dispatchAgent,
+    dispatchPreviewAgent,
+  ]);
+
+  // The connect effect below is scoped to the ROOM, and these refs are what keep
+  // it that way.
+  //
+  // It briefly depended on [id, cleanupRoom, connectToRoom]. Both of those
+  // change identity constantly: `connectToRoom` lists `isConnecting` and
+  // `isConnected` — which it sets itself, on the line before it awaits
+  // `room.connect()` — and `cleanupRoom` reaches `handleDisconnect`, which call
+  // sites pass as an inline arrow. So the effect re-ran on almost every render,
+  // and its cleanup calls `room.disconnect()`. That aborted the in-flight
+  // connect every time: in production the agent joined each preview room within
+  // ~5s and the human never joined at all, so the worker declared an orphaned
+  // session at 30s while the page sat on "Connecting to session…" forever.
+  //
+  // Refs rather than a hand-trimmed dependency array, deliberately. Dropping a
+  // dep silences `react-hooks/exhaustive-deps` only until the next sweep puts it
+  // back, which is precisely how this regressed. A ref is stable, so the lint
+  // rule and the effect's intended lifetime agree instead of fighting — and the
+  // timeout always calls the freshest closure.
+  const connectToRoomRef = useRef(connectToRoom);
+  const cleanupRoomRef = useRef(cleanupRoom);
+  useEffect(() => {
+    connectToRoomRef.current = connectToRoom;
+    cleanupRoomRef.current = cleanupRoom;
+  });
+
+  useEffect(() => {
+    // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
+    // is left in place until the agent emits audio (or the silent-grace fallback).
+    // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
+    const connectionTimeout = setTimeout(() => {
+      connectToRoomRef.current();
+    }, STRICT_MODE_GUARD_MS);
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoomRef.current();
+    };
+  }, [id]);
 
   const handleRetryConnection = () => {
     setError(null);
@@ -267,11 +348,15 @@ export const useLiveKitRoom = (
     room.disconnect();
   };
 
-  useEffect(() => {
-    return () => {
-      cleanupRoom();
-    };
-  }, [cleanupRoom]);
+  // A second unmount-cleanup effect used to live here, keyed on [cleanupRoom].
+  // It was the same defect as the connect effect above and had the same effect
+  // on production: `cleanupRoom` changes identity on nearly every render, so its
+  // teardown — `room.disconnect()` — ran on nearly every render.
+  //
+  // Deleted rather than given a ref of its own, because it was only ever
+  // guarding unmount, and the connect effect's own cleanup already covers that:
+  // React runs every effect's cleanup when the component unmounts. Keeping both
+  // would just disconnect the same room twice.
 
   useEffect(() => {
     if (roomStatus !== RoomStatus.CONNECTED) return () => {};
@@ -294,5 +379,6 @@ export const useLiveKitRoom = (
     startTime,
     roomData,
     detectedEventIds,
+    supervisorNotes,
   };
 };

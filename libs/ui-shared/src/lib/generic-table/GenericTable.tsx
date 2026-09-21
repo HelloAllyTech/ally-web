@@ -226,12 +226,12 @@ export const GenericTable = forwardRef(
           className="font-['IBM_Plex_Serif'] z-50"
         >
           <span aria-hidden className="block h-0 w-0" />
-          <PopoverContent className="border border-[#E0E0E0] mt-[2px]">
+          <PopoverContent className="border border-[#e3dbce] mt-[2px]">
             <div>
               {filterableColumns.map(col => (
                 <div
                   key={col.key as string}
-                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#f0eee7] text-[#6e6656]"
                   onClick={e => handleSelectColumn(col, e)}
                 >
                   <div>{col.header}</div>
@@ -303,8 +303,10 @@ export const GenericTable = forwardRef(
         </table>
         {handleLoadMore && (
           <div
-            onClick={handleLoadMore}
-            className="flex cursor-pointer mt-4 text-center items-center pb-[60px]"
+            onClick={isLoading ? undefined : handleLoadMore}
+            className={`flex mt-4 text-center items-center pb-[60px] ${
+              isLoading ? "cursor-not-allowed" : "cursor-pointer"
+            }`}
           >
             <Plus size={20} />
             <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">{loadMoreLabel}</span>

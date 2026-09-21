@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { pageRange } from "../utils/paging";
+import { LIST_MAX_LOADED, loadMoreState, pageRange } from "../utils/paging";
 
 describe("pageRange", () => {
   it("describes the first page of a multi-page list", () => {
@@ -63,5 +63,28 @@ describe("pageRange", () => {
 
   it("never lets prevOffset go negative", () => {
     expect(pageRange(20, 50, 184).prevOffset).toBe(0);
+  });
+});
+
+describe("loadMoreState", () => {
+  it("offers more while rows remain", () => {
+    expect(loadMoreState(50, 159)).toEqual({ canLoadMore: true, atCeiling: false });
+  });
+
+  it("stops when everything is loaded", () => {
+    expect(loadMoreState(159, 159)).toEqual({ canLoadMore: false, atCeiling: false });
+  });
+
+  it("reports the ceiling rather than silently stalling", () => {
+    // The server clamps an over-large limit without erroring, so without this the button would
+    // keep fetching the same 500 rows and look broken.
+    expect(loadMoreState(LIST_MAX_LOADED, 900)).toEqual({ canLoadMore: false, atCeiling: true });
+  });
+
+  it("is not 'at ceiling' when the ceiling happens to equal the total", () => {
+    expect(loadMoreState(LIST_MAX_LOADED, LIST_MAX_LOADED)).toEqual({
+      canLoadMore: false,
+      atCeiling: false,
+    });
   });
 });

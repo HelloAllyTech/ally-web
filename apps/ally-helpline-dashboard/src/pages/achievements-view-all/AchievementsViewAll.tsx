@@ -18,6 +18,7 @@ const getBadgeTypeLabels = (t: TFunction): Record<BadgeCategory, string> => ({
   [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.momentum"),
   [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.contribution"),
   [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.resonance"),
+  [BadgeCategory.XP_LEVEL]: t("achievements.badgeTypes.ascent"),
 });
 
 const getFilterOptions = (t: TFunction) => [
@@ -30,11 +31,12 @@ const getBadgeTypeTooltipLabels = (t: TFunction): Record<BadgeCategory, string> 
   [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.tooltip.momentum"),
   [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.tooltip.contribution"),
   [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.tooltip.resonance"),
+  [BadgeCategory.XP_LEVEL]: t("achievements.badgeTypes.tooltip.ascent"),
 });
 
 const BadgeCardSkeleton: FC = () => {
   return (
-    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-[#D2D2D2] rounded-xl animate-pulse">
+    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-[#d6cdbe] rounded-xl animate-pulse">
       <div className="w-12 h-12 sm:w-[60px] sm:h-[60px] rounded-lg bg-neutral-200 flex-shrink-0" />
       <div className="flex flex-col gap-2 flex-1">
         <div className="h-4 w-20 sm:w-24 bg-neutral-200 rounded" />
@@ -128,7 +130,7 @@ export const AchievementsViewAll: FC = () => {
             </button>
           )}
           <h1
-            className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
+            className="text-[#29261f] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
             data-testid="achievements-view-all-title"
           >
             {t("achievements.title")}
@@ -145,7 +147,7 @@ export const AchievementsViewAll: FC = () => {
                   style={{
                     fontWeight: 400,
                     fontSize: "13px",
-                    color: "#F5EFF7",
+                    color: "#ede4e8",
                   }}
                 >
                   {t("achievements.badgesTooltip")}
@@ -156,7 +158,7 @@ export const AchievementsViewAll: FC = () => {
             >
               <button
                 type="button"
-                className="inline-flex cursor-pointer border-0 bg-transparent p-0"
+                className="-m-1 inline-flex cursor-pointer border-0 bg-transparent p-1"
               >
                 <Info className="w-5 h-5" />
               </button>
@@ -182,7 +184,7 @@ export const AchievementsViewAll: FC = () => {
           style={{
             fontWeight: 600,
             fontSize: "13px",
-            color: "#F5EFF7",
+            color: "#ede4e8",
           }}
         >
           {`${getBadgeTypeLabels(t)[category]} ${t("achievements.badgeTypes.suffix")}`}
@@ -191,7 +193,7 @@ export const AchievementsViewAll: FC = () => {
           style={{
             fontWeight: 400,
             fontSize: "13px",
-            color: "#F5EFF7",
+            color: "#ede4e8",
             lineHeight: "1.4",
           }}
         >
@@ -206,11 +208,14 @@ export const AchievementsViewAll: FC = () => {
           {getBadgeTypeLabels(t)[category]}
         </div>
         <Tooltip label={tooltipContent} align="top" autoAlign>
-          <button type="button" className="inline-flex cursor-pointer border-0 bg-transparent p-0">
+          <button
+            type="button"
+            className="-m-1 inline-flex cursor-pointer border-0 bg-transparent p-1"
+          >
             <Info className="w-5 h-5" />
           </button>
         </Tooltip>
-        <div className="border-t-[0.5px] ml-2 border-[#D2D2D2] w-full" />
+        <div className="border-t-[0.5px] ml-2 border-[#d6cdbe] w-full" />
       </div>
     );
   };

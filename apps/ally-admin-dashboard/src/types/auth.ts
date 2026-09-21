@@ -280,6 +280,72 @@ export interface AnalyticsOverviewResponse {
   usersByRole: UsersByRolePoint[];
 }
 
+/* -------------------------------------------------------------------------- */
+/* XP growth — GET /v1/analytics/xp-growth                                    */
+/* -------------------------------------------------------------------------- */
+
+/** One bucket of the platform XP series. */
+export interface XpGrowthPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  /** XP awarded in this bucket — the change, which is the part that can fall. */
+  xpEarned: number;
+  /**
+   * Lifetime platform XP as at the end of this bucket. Monotonic, and a true
+   * lifetime figure on a narrowed window too: the server opens the curve at
+   * `summary.baselineXp` rather than restarting it at zero.
+   */
+  cumulativeXp: number;
+  /** Distinct learners who earned any XP in this bucket. */
+  earners: number;
+}
+
+export interface XpGrowthResponse {
+  window: AnalyticsWindow;
+  points: XpGrowthPoint[];
+  summary: {
+    /** XP earned before the window — the cumulative curve's opening value. */
+    baselineXp: number;
+    xpEarnedInWindow: number;
+    /** `baselineXp + xpEarnedInWindow`; includes the still-accruing bucket. */
+    cumulativeXp: number;
+    /** Distinct learners over the WHOLE window — never the sum of the buckets. */
+    earners: number;
+  };
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* XP goals — GET /v1/analytics/xp-goals                                      */
+/* -------------------------------------------------------------------------- */
+
+export type XpGoalGrain = "month" | "quarter" | "year";
+
+/** One period's actual XP earned against its goal, if one has been set. */
+export interface GoalsXpPoint {
+  /** Period start (yyyy-mm-dd). */
+  periodStart: string;
+  /** e.g. "Jan 2026", "Q1 2026", "2026". */
+  periodLabel: string;
+  actualXp: number;
+  /** Target for this period, or null when no goal row exists for it — never a fabricated 0. */
+  goalXp: number | null;
+  hasGoal: boolean;
+  /** True for the period containing today — still accruing. */
+  inProgress: boolean;
+  /** True for a period after today's — nothing has happened yet, so actualXp is a true zero. */
+  upcoming: boolean;
+}
+
+export interface GoalsXpResponse {
+  grain: XpGoalGrain;
+  points: GoalsXpPoint[];
+  /** Always platform-wide (tenantId null) — Goals has no tenant filter. */
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Leadership highlights — mirrors the backend AnalyticsHighlightsResponseDto
 // from GET /api/v1/analytics/highlights. Only the metrics NOT already served by
 // /overview or /scribe/overview live here; the tab composes all three.
@@ -738,6 +804,137 @@ export interface RoleplayCostResponse {
   computedAt: string;
 }
 
+// Bug Hunter + Builder AI cost — mirrors CodingAgentCostResponseDto from
+// GET /api/v1/analytics/coding-agent-cost. NOT `llm_usage.service` (both
+// features write `service: 'llm'`) — the discriminator is `task`. Every
+// figure is an estimate priced at read time.
+export type CodingAgent = "bug-hunter" | "builder";
+
+export interface CodingAgentCostAmount {
+  "bug-hunter": number;
+  builder: number;
+}
+
+export interface CodingAgentCostPoint {
+  bucket: string;
+  costUsd: CodingAgentCostAmount;
+  calls: CodingAgentCostAmount;
+}
+
+export interface CodingAgentModelBreakdown {
+  agent: CodingAgent;
+  model: string;
+  costUsd: number;
+  calls: number;
+  /** False when this model has no pricing entry — its calls contribute $0. */
+  priced: boolean;
+}
+
+export interface CodingAgentCostResponse {
+  range: AnalyticsRange;
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  agentLabels: Record<string, string>;
+  points: CodingAgentCostPoint[];
+  modelBreakdown: CodingAgentModelBreakdown[];
+  totalCostUsd: CodingAgentCostAmount;
+  unpricedCalls: number;
+  /** Must be surfaced: these are estimates, not billed amounts. */
+  estimateNote: string;
+  computedAt: string;
+}
+
+// Average cost per COMPLETED Bug Hunter fix session, by engine — mirrors
+// FixSessionEngineCostResponseDto from GET
+// /api/v1/analytics/fix-session-engine-cost. The direct Claude-vs-Gemini
+// comparison CodingAgentCostResponse's per-model TOTAL can't give: the two
+// engines have run a very different number of times, so whichever ran less
+// often would always show the smaller total regardless of which is actually
+// cheaper per fix.
+export interface FixSessionEngineCost {
+  /** "claude-code" or "gemini" — whatever the run itself reported. */
+  engine: string;
+  /** Mean totalTokenCostUsd across this engine's completed fix sessions. */
+  avgCostUsd: number;
+  /** How many completed fix sessions the average is over — read this alongside avgCostUsd. */
+  sessionCount: number;
+}
+
+export interface FixSessionEngineCostResponse {
+  byEngine: FixSessionEngineCost[];
+  window: AnalyticsWindow;
+  computedAt: string;
+}
+
+// Bug Hunter's five headline performance trends, by calendar week — mirrors
+// BugAgentPerformanceResponseDto from GET /api/v1/analytics/bug-agent-performance.
+// Every rate is null (not 0) when its denominator was zero that week — a rate
+// over nothing is unmeasured, not zero.
+export interface BugAgentPerformancePrecisionWeek {
+  week: string;
+  accuracy: number | null;
+  reversalRate: number | null;
+  filed: number;
+  judged: number;
+}
+
+export interface BugAgentPerformanceSourceAccuracy {
+  source: string;
+  accuracy: number | null;
+  filed: number;
+  judged: number;
+}
+
+export interface BugAgentPerformanceThroughputWeek {
+  week: string;
+  approvedToMergedRate: number | null;
+  escalationRate: number | null;
+  fallbackRate: number | null;
+  approved: number;
+  merged: number;
+  fixSessionRuns: number;
+  escalations: number;
+  fallbacks: number;
+}
+
+export interface BugAgentPerformanceSpeedWeek {
+  week: string;
+  filedToDecidedMedianHours: number | null;
+  filedToMergedMedianHours: number | null;
+  mergedToReleasedMedianHours: number | null;
+  queueToStartMedianHours: number | null;
+}
+
+export interface BugAgentPerformanceCostWeek {
+  week: string;
+  totalUsd: number;
+  costPerMergedFixUsd: number | null;
+  merged: number;
+}
+
+export interface BugAgentPerformanceReliabilityWeek {
+  week: string;
+  completionRate: number | null;
+  fallbackRate: number | null;
+  regressionRate: number | null;
+  runs: number;
+  completed: number;
+  failed: number;
+}
+
+export interface BugAgentPerformanceResponse {
+  precision: {
+    weekly: BugAgentPerformancePrecisionWeek[];
+    bySource: BugAgentPerformanceSourceAccuracy[];
+  };
+  throughput: BugAgentPerformanceThroughputWeek[];
+  speed: BugAgentPerformanceSpeedWeek[];
+  cost: BugAgentPerformanceCostWeek[];
+  reliability: BugAgentPerformanceReliabilityWeek[];
+  window: AnalyticsWindow;
+  computedAt: string;
+}
+
 // Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
 // from GET /api/v1/analytics/quality-sentiment.
 //
@@ -793,6 +990,79 @@ export interface QualityIndexCoverage {
   measuredAt: string | null;
 }
 
+/**
+ * Corpus retrieval quality — mirrors RagQualityResponseDto.
+ *
+ * COUNTS, not rates, by design. A corpus can legitimately see a handful of retrievals a day,
+ * and a percentage over six judged rows reads as authoritative when it is noise, so the server
+ * sends counts and `coverage.belowReportingFloor` says when a surface must not divide them.
+ */
+export interface RagCoverage {
+  retrievals: number;
+  /** Judged under the pinned (model, rubric) pair. Every count below is over THIS. */
+  judged: number;
+  passages: number;
+  judgedPassages: number;
+  /** True when the judged sample is too small for a percentage to mean anything. */
+  belowReportingFloor: boolean;
+}
+
+export interface RagLabelCount {
+  label: string;
+  count: number;
+}
+
+export interface RagConsumerBreakdown {
+  consumer: string;
+  retrievals: number;
+  judged: number;
+  /** Returned nothing at all — a corpus gap and a tight floor look identical here. */
+  emptyRetrievals: number;
+}
+
+/** One candidate floor: what it keeps, and what raising the floor to it would discard. */
+export interface RagFloorPoint {
+  floor: number;
+  kept: number;
+  relevant: number;
+  tangential: number;
+  irrelevant: number;
+  /** Relevant passages scoring BELOW this floor — the cost of tightening. */
+  relevantLost: number;
+}
+
+export interface RagGap {
+  /** Null when withheld: the WhatsApp bot's queries are health workers' own questions. */
+  query: string | null;
+  querySensitive: boolean;
+  sufficiency: string;
+  /** What the judge would have needed. The only thing that names a corpus hole. */
+  missing: string | null;
+  consumer: string;
+  returnedCount: number;
+  minSimilarity: number;
+  occurredAt: string;
+}
+
+export interface RagJudgeVersion {
+  judgeModel: string;
+  judgePromptVersion: string;
+  judgments: number;
+}
+
+export interface RagQualityResponse {
+  window: AnalyticsWindow;
+  coverage: RagCoverage;
+  sufficiency: RagLabelCount[];
+  relevance: RagLabelCount[];
+  superficialMatches: number;
+  byConsumer: RagConsumerBreakdown[];
+  floorCurve: RagFloorPoint[];
+  gaps: RagGap[];
+  /** More than one pair means the window mixes two judges and is not comparable. */
+  judgeVersions: RagJudgeVersion[];
+}
+
 export interface QualitySentimentResponse {
   range: AnalyticsRange;
   bucket: AnalyticsBucket;
@@ -833,18 +1103,84 @@ export interface ChartPreferencesResponse {
   preferences: ChartPreference[];
 }
 
-// Coin-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
+// Weekly changed-line volume across the Ally repos — mirrors
+// ShipVolumeResponseDto from GET /api/v1/analytics/ship-volume. An OUTPUT
+// measure: churn says how much code moved, never whether the right thing moved.
+// Weeks are SUNDAY-anchored, because that is how GitHub buckets the underlying
+// statistics. No tenant — this measures our own engineering, not customer data.
+export interface ShipVolumeTotals {
+  added: number;
+  /** Positive count (GitHub reports deletions negative; the API flips them). */
+  deleted: number;
+  /** added + deleted — the plotted quantity. Churn, not net. */
+  churn: number;
+}
+
+export interface ShipVolumeRepo extends ShipVolumeTotals {
+  /** Repository name without the org, e.g. `ally-be`. */
+  repo: string;
+}
+
+export interface ShipVolumeWeek extends ShipVolumeTotals {
+  /** The Sunday the week starts (yyyy-mm-dd, UTC). */
+  weekStart: string;
+  /** Repos that changed this week, in the response's repo order. */
+  repos: ShipVolumeRepo[];
+  /** True for the week in progress: its bar can only grow. */
+  partial: boolean;
+}
+
+export interface ShipVolumeUnavailableRepo {
+  repo: string;
+  /**
+   * `computing` — GitHub is rebuilding this repo's statistics after a push and
+   * answered 202. `unreachable` — the request failed. `not_configured` — no
+   * GitHub token in this environment.
+   */
+  reason: "computing" | "unreachable" | "not_configured";
+  /**
+   * True when this repo's numbers on the axis came from the last cached
+   * response, so the chart is complete but that slice may be behind. False
+   * means the repo is missing from every bar.
+   */
+  servedFromCache: boolean;
+}
+
+export interface ShipVolumeResponse {
+  /** Oldest first, gap-free: a week nobody pushed in is a zero, not a gap. */
+  weeks: ShipVolumeWeek[];
+  /** Every repo band, ranked by churn across the whole window. */
+  repos: string[];
+  /** The Sunday of the current, incomplete week. */
+  currentWeekStart: string;
+  weeksRequested: number;
+  plotted: ShipVolumeTotals;
+  /**
+   * Repos whose statistics could not be read. MUST be surfaced: churn is a sum
+   * across repos, so a missing one silently shortens every bar.
+   */
+  unavailableRepos: ShipVolumeUnavailableRepo[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+export interface ShipVolumeQuery {
+  /** 12 | 26 | 52. Defaults to 12 server-side. */
+  weeks?: number;
+}
+
+// Vote-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
 // from GET /api/v1/analytics/roadmap-delivery. All-time and month-grained; takes
 // no window and no tenant (the roadmap tables carry no tenant — it is Ally's own
-// backlog). Coins are the board's `priorityScore`: every voter, every period.
+// backlog). Votes are the board's `priorityScore`: every voter, every period.
 export interface RoadmapDeliveryTotals {
   opportunities: number;
   ideaOpportunities: number;
   bugOpportunities: number;
-  /** Σ priorityScore — ideaCoins + bugCoins, sent so both cannot disagree. */
-  coins: number;
-  ideaCoins: number;
-  bugCoins: number;
+  /** Σ priorityScore — ideaVotes + bugVotes, sent so both cannot disagree. */
+  votes: number;
+  ideaVotes: number;
+  bugVotes: number;
 }
 
 export interface RoadmapDeliveryOwner extends RoadmapDeliveryTotals {
@@ -864,7 +1200,7 @@ export interface RoadmapDeliveryMonth extends RoadmapDeliveryTotals {
 export interface RoadmapDeliveryResponse {
   /** Oldest first, gap-free; empty when nothing released carries a date. */
   months: RoadmapDeliveryMonth[];
-  /** Every owner band, ranked by all-time coins, context bands last. */
+  /** Every owner band, ranked by all-time votes, context bands last. */
   owners: string[];
   /** Reserved `owner` value for released work with no owner. */
   unassignedOwnerLabel: string;
@@ -1035,6 +1371,38 @@ export interface VoiceLatencyPoint {
    * instrumented.
    */
   avgCacheHitRatePct: number | null;
+
+  // What the learner heard first. avgMs/p50Ms/p95Ms measure time to the agent's
+  // FIRST audio, which is a thinking-filler or interim reply when one played —
+  // so these counts are what keeps "we got faster" apart from "we masked more".
+  /** Turns whose first audio was a thinking-filler. */
+  firstAudioFillerTurns: number;
+  /** Turns whose first audio was a predictive interim reply. */
+  firstAudioInterimTurns: number;
+  /** Turns whose first audio was the real reply (nothing masked it). */
+  firstAudioReplyTurns: number;
+  /**
+   * Turns with no provenance recorded: every 'transcript' row, and live rows
+   * predating the instrumentation. Charted as its own band rather than folded
+   * into 'reply' — those turns may have been masked and there is no way to tell.
+   */
+  firstAudioUnknownTurns: number;
+  /** Mean time-to-first-voice (ms) for filler-first turns; null if none. */
+  avgFirstAudioFillerMs: number | null;
+  /** Mean time-to-first-voice (ms) for interim-first turns; null if none. */
+  avgFirstAudioInterimMs: number | null;
+  /** Mean time-to-first-voice (ms) for reply-first turns; null if none. */
+  avgFirstAudioReplyMs: number | null;
+  /**
+   * Mean time to the REAL reply (ms) — the unmasked pipeline number, which does
+   * not move when filler coverage does. Instrumented turns only, so null for
+   * 'transcript' buckets and windows predating the instrumentation.
+   */
+  avgReplyLatencyMs: number | null;
+  /** Median (p50) time to the real reply (ms). Null as above. */
+  p50ReplyLatencyMs: number | null;
+  /** p95 time to the real reply (ms). Null as above. */
+  p95ReplyLatencyMs: number | null;
 }
 
 /** One language's live-pipeline latency over the whole window (no time bucketing). */
@@ -1104,6 +1472,26 @@ export interface VoiceLatencySessionsSummary extends VoiceLatencySessionStages {
   sessionCount: number;
   turnCount: number;
   window: AnalyticsWindow;
+}
+
+// VoiceLatencyByScenarioRowDto from GET /api/v1/analytics/voice-latency/by-scenario.
+// "Which simulations are slow right now" (one row per simulation, worst-first),
+// distinct from VoiceLatencySessionRow ("this simulation's worst sessions").
+// Each row is that simulation's single MOST RECENT session, not a
+// whole-window average — see the backend repository method's doc-comment.
+export interface VoiceLatencyByScenarioRow extends VoiceLatencySessionStages {
+  scenarioId: number;
+  scenarioTitle: string;
+  /** When this simulation's most recent session started. */
+  occurredAt: string | null;
+  turnCount: number;
+}
+
+export interface VoiceLatencyByScenarioResponse {
+  rows: VoiceLatencyByScenarioRow[];
+  window: AnalyticsWindow;
+  /** True if the ranking's tail was cut by the backend's defensive cap. */
+  truncated: boolean;
 }
 
 // AgentJoinReliabilityResponseDto from GET /api/v1/analytics/agent-join-reliability.
@@ -1557,6 +1945,55 @@ export interface WeakMetricsResponse {
     scenarios: Array<{ id: number; title: string | null }>;
   };
 }
+
+// ---------------------------------------------------------------------------
+// Thinking-filler quality — FillerQualityPointDto[] from
+// GET /v1/analytics/filler-quality.
+//
+// Read the denominator before reading anything else: every `Per100` field is
+// per 100 PLAYED FILLERS, not per session and not per turn. A session that
+// played forty fillers and one that played two are not comparable units, and
+// a turn can play two fillers when a continuation fires.
+//
+// Rates only, no scalar quality score — the judge emits labelled findings and
+// these rates are computed in SQL at read time, so a weighting change never
+// means re-judging the corpus.
+// ---------------------------------------------------------------------------
+
+export interface FillerQualityPoint {
+  /** Bucket start date, ISO yyyy-mm-dd. */
+  bucket: string;
+  /** Played fillers judged in this bucket — the denominator for every rate. */
+  fillersJudged: number;
+  /**
+   * "Did it sound like this character." Excludes findings conditioned out
+   * because the scenario configured no character voice; those are
+   * `unconfiguredStylePer100`.
+   */
+  characterFitPer100: number | null;
+  /** "Did it fit what the learner just said." */
+  contextFitPer100: number | null;
+  /**
+   * The filler committed to something the real reply — generated separately
+   * and afterwards — could then contradict.
+   */
+  safetyPer100: number | null;
+  /**
+   * Findings set aside because the character had no configured style. A
+   * CONFIGURATION gap, not a model failure: counting these in the rates above
+   * would make a push to configure more scenarios read as a regression.
+   */
+  unconfiguredStylePer100: number | null;
+  /** Share of played fillers that repeated a recent phrase. */
+  repeatedPct: number | null;
+  /**
+   * Distinct phrases over total played. A session can mask every gap perfectly
+   * and still sound like a soundboard; only this shows it.
+   */
+  distinctPhraseRatio: number | null;
+}
+
+export type FillerQualityResponse = FillerQualityPoint[];
 
 export interface LanguageQualityResponse {
   judgeModel: string | null;

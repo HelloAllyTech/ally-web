@@ -46,7 +46,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     try {
       result = await baseQuery(args, store, extraOptions);
     } catch (error) {
-      toast.error(`${en.error.apiRequestFailed}: ${error}`);
+      // The raw error (often a bare "TypeError: Failed to fetch") used to be
+      // interpolated straight into the toast — a technical string with no
+      // action the user can take. Keep the detail in the console for
+      // debugging; show only the curated message.
+      // eslint-disable-next-line no-console
+      console.error(en.error.apiRequestFailed, error);
+      toast.error(en.error.apiRequestFailed);
       throw error;
     }
 
@@ -79,19 +85,34 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         try {
           result = await baseQuery(args, store, extraOptions);
         } catch (error) {
-          toast.error(`${en.error.tokenRefreshFailed}: ${error}`);
+          // eslint-disable-next-line no-console
+          console.error(en.error.tokenRefreshFailed, error);
+          toast.error(en.error.tokenRefreshFailed);
           throw error;
         }
       } catch (error) {
-        toast.error(`${en.error.tokenRefreshFailed}: ${error}`);
+        // eslint-disable-next-line no-console
+        console.error(en.error.tokenRefreshFailed, error);
+        toast.error(en.error.tokenRefreshFailed);
         handleLogout();
         return result;
       }
+    } else if (result.error && result.error.status === 403) {
+      // Previously fell straight through with no handling at all — every
+      // caller had to remember to check `isError` on its own to learn a
+      // request was forbidden, which is exactly what let AI Lab's list tabs
+      // render "forbidden" identically to "genuinely empty" (see
+      // AiLabErrorState / the AI Lab tabs). One consistent toast here means
+      // every endpoint gets a permission message even when the calling
+      // component only checks `isError`.
+      toast.error(en.error.forbidden);
     }
 
     return result;
   } catch (error) {
-    toast.error(`${en.error.apiRequestFailed}: ${error}`);
+    // eslint-disable-next-line no-console
+    console.error(en.error.apiRequestFailed, error);
+    toast.error(en.error.apiRequestFailed);
     return { error: { status: "FETCH_ERROR", error: String(error) } };
   }
 };
@@ -117,11 +138,13 @@ export const baseAPI = createApi({
     TAG_TYPES.FILLER_TAGS,
     TAG_TYPES.COMPETENCIES,
     TAG_TYPES.COMPETENCY_BEHAVIOURS,
+    TAG_TYPES.COMPETENCY_CLUSTERS,
     TAG_TYPES.AGENT_TEST_CASES,
     TAG_TYPES.ADMIN_TENANTS,
     TAG_TYPES.CUSTOM_FIELD_TYPES,
     TAG_TYPES.CUSTOM_FIELDS_ENABLED,
     TAG_TYPES.CHARACTER_LIBRARY_ENABLED,
+    TAG_TYPES.PROGRESS_DASHBOARD_ENABLED,
     TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED,
     TAG_TYPES.I18N_TRANSLATIONS,
     TAG_TYPES.SETTINGS,
@@ -130,10 +153,6 @@ export const baseAPI = createApi({
     TAG_TYPES.COHORTS,
     TAG_TYPES.COHORT_MEMBERS,
     TAG_TYPES.COHORT_RESTRICTIONS,
-    TAG_TYPES.ROLEPLAY_SPECS,
-    TAG_TYPES.ROLEPLAY_SPEC_VERSIONS,
-    TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS,
-    TAG_TYPES.ROLEPLAY_TEST_REPORTS,
     TAG_TYPES.COMFORT_AUDIO_LIBRARY,
     TAG_TYPES.WHATSAPP_BOT_DOCUMENTS,
     TAG_TYPES.WHATSAPP_BOT_DOCUMENT_CHUNKS,
@@ -143,18 +162,23 @@ export const baseAPI = createApi({
     TAG_TYPES.WHATSAPP_BOT_CONVERSATIONS,
     TAG_TYPES.WHATSAPP_BOT_UNANSWERED,
     TAG_TYPES.WHATSAPP_BOT_ANALYTICS,
+    TAG_TYPES.WHATSAPP_BOT_PHONE_MAPPINGS,
     TAG_TYPES.TRACKS_V2,
+    TAG_TYPES.COMPONENT_LIBRARY,
     TAG_TYPES.BLOGS,
     TAG_TYPES.IMAGE_LIBRARY,
     TAG_TYPES.SUPER_DUPER_ADMINS,
     TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES,
-    TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+    TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
     TAG_TYPES.PRODUCT_ROADMAP_FACETS,
     TAG_TYPES.PRODUCT_ROADMAP_GOALS,
+    TAG_TYPES.PRODUCT_ROADMAP_STRATEGY_GOALS,
+    TAG_TYPES.PRODUCT_ROADMAP_RANK_WEIGHTS,
+    TAG_TYPES.PRODUCT_ROADMAP_GOAL_IMPACT,
     TAG_TYPES.PRODUCT_ROADMAP_OWNERS,
     TAG_TYPES.PRODUCT_ROADMAP_COMMENTS,
+    TAG_TYPES.PRODUCT_ROADMAP_VOTERS,
     TAG_TYPES.PRODUCT_ROADMAP_INTERVIEWS,
-    TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES,
     TAG_TYPES.PRODUCT_ROADMAP_SAVED_VIEWS,
     TAG_TYPES.PRODUCT_ROADMAP_VIEW_ORDER,
     TAG_TYPES.AI_LAB_SKILLS,
@@ -168,8 +192,17 @@ export const baseAPI = createApi({
     TAG_TYPES.ANALYTICS_SUGGESTIONS,
     TAG_TYPES.ANALYTICS_CHART_PREFERENCES,
     TAG_TYPES.BUG_HUNTER_SETTINGS,
+    TAG_TYPES.BUG_HUNTER_MODEL_SETTINGS,
     TAG_TYPES.BUG_HUNTER_RUNS,
     TAG_TYPES.BUG_HUNTER_FINDINGS,
+    TAG_TYPES.UX_SIGNAL_SCANS,
+    TAG_TYPES.BUILDER_SESSIONS,
+    TAG_TYPES.BUILDER_SESSION,
+    TAG_TYPES.BUILDER_PRD_VERSIONS,
+    TAG_TYPES.BUILDER_SETTINGS,
+    TAG_TYPES.BUILDER_NOTIFICATIONS,
+    TAG_TYPES.BUILDER_LESSONS,
+    TAG_TYPES.BUILDER_EXEMPLARS,
     // These four were used in providesTags/invalidatesTags but never declared
     // here, so RTK Query silently ignored them and the invalidation never
     // fired — saving a voice or a config left the list showing stale data
@@ -184,6 +217,8 @@ export const baseAPI = createApi({
     TAG_TYPES.FEATURE_TOGGLE_REGISTRY,
     TAG_TYPES.USER_FEATURE_TOGGLES,
     TAG_TYPES.PLATFORM_ADMINS,
+    TAG_TYPES.MOBILE_RELEASE_RUNS,
+    TAG_TYPES.MIN_APP_VERSION,
   ],
   endpoints: () => ({}),
 });

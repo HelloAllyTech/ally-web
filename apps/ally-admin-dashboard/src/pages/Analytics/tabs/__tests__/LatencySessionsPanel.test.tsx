@@ -43,6 +43,13 @@ vi.mock("../../chartKit", () => ({
       {children}
     </section>
   ),
+  ScrollableChart: ({ children }: any) => <div>{children}</div>,
+  lineOpts: (opts: any) => opts,
+  single: (label: string) => ({ [label]: "#000000" }),
+}));
+
+vi.mock("@carbon/charts-react", () => ({
+  LineChart: ({ data }: any) => <div data-testid="latency-trend-chart">{data.length}</div>,
 }));
 
 import { useLatencySessions } from "../useLatencySessions";
@@ -111,6 +118,34 @@ describe("LatencySessionsPanel", () => {
     render(<LatencySessionsPanel query={{}} language="" />);
 
     expect(screen.getByText("No sessions found")).toBeInTheDocument();
+  });
+
+  it("renders the latency trend chart above the table when sessions have a start time", () => {
+    vi.mocked(useLatencySessions).mockReturnValue(
+      makeState({ scenarioId: 7, rows: [baseRow], total: 1, rangeStart: 1, rangeEnd: 1 }) as any,
+    );
+
+    render(<LatencySessionsPanel query={{}} language="" />);
+
+    // p50 + avg + p95, one point each, from the single session.
+    expect(screen.getByTestId("latency-trend-chart")).toHaveTextContent("3");
+  });
+
+  it("skips the chart rather than the table when no session has a usable start time", () => {
+    vi.mocked(useLatencySessions).mockReturnValue(
+      makeState({
+        scenarioId: 7,
+        rows: [{ ...baseRow, occurredAt: null }],
+        total: 1,
+        rangeStart: 1,
+        rangeEnd: 1,
+      }) as any,
+    );
+
+    render(<LatencySessionsPanel query={{}} language="" />);
+
+    expect(screen.queryByTestId("latency-trend-chart")).not.toBeInTheDocument();
+    expect(screen.getByText("sess-123")).toBeInTheDocument();
   });
 
   it("renders session rows and the pagination footer", () => {

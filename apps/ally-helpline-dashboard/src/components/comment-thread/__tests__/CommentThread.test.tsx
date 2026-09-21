@@ -12,6 +12,7 @@ const stableApiResponse = { data: [], total: 0 };
 
 // Mock all icons used in constants
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   AccountCircle: ({ className }: any) => <div data-testid="account-circle" className={className} />,
@@ -275,6 +276,11 @@ describe("CommentThread Component", () => {
         />,
       );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
+    });
+
+    it("should render CommentThread component without crashing", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      expect(screen.getByText("Comment Thread")).toBeInTheDocument();
     });
   });
 

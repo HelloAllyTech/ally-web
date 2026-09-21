@@ -8,6 +8,14 @@ export interface RadioButtonGroupProps {
   options: Array<{ value: string; label: string }>;
   formMethods: UseFormReturn<any>;
   isMandatory?: boolean;
+  /** Auto-selected when the field is unset. Falls back to `options[0]`. */
+  defaultValue?: string;
+  /**
+   * Fires only from a real user click (see `handleChange`) — never from the
+   * unset-value default below, and never from a `formMethods.reset(...)`
+   * hydration, since neither of those goes through this handler.
+   */
+  onChange?: (value: string) => void;
 }
 
 export const RadioButtonGroup: FC<RadioButtonGroupProps> = ({
@@ -16,19 +24,22 @@ export const RadioButtonGroup: FC<RadioButtonGroupProps> = ({
   options,
   formMethods,
   isMandatory,
+  defaultValue,
+  onChange,
 }) => {
   const { watch, setValue } = formMethods;
   const selectedValue = watch(id);
 
   const handleChange = (value: string) => {
     setValue(id, value);
+    onChange?.(value);
   };
 
   useEffect(() => {
     if (options.length > 0 && (selectedValue === undefined || selectedValue === "")) {
-      setValue(id, options[0].value);
+      setValue(id, defaultValue ?? options[0].value);
     }
-  }, [id, options, selectedValue, setValue]);
+  }, [id, options, selectedValue, setValue, defaultValue]);
 
   return (
     <div className="flex flex-col gap-3 w-full">

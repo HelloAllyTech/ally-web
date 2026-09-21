@@ -15,6 +15,8 @@ import {
   CharacterInterviewStructuredAnswer,
 } from "@types";
 
+import { useIsVoiceQuestion, VoiceQuestionOptions } from "./VoiceQuestionOptions";
+
 /** What the composer sends back for an answered card. */
 export interface CharacterInterviewAnswerPayload {
   message: string;
@@ -28,13 +30,17 @@ interface QuestionCardProps {
   answeredWith?: string;
   /** On resume: a structured multi-select/dropdown answer (locks the card). */
   answeredAnswer?: CharacterInterviewStructuredAnswer;
-  onAnswer: (payload: CharacterInterviewAnswerPayload) => void;
+  /**
+   * Sends the answer. May resolve `false` to say the interview never received
+   * it (the turn was refused), which unlocks the card again.
+   */
+  onAnswer: (payload: CharacterInterviewAnswerPayload) => void | Promise<boolean | void>;
   disabled?: boolean;
 }
 
 /**
  * Structured `question` SSE events render as an answer card (same pattern as
- * the Roleplay Studio copilot's QuestionCard, adapted to the interview
+ * the retired Roleplay Studio copilot's QuestionCard, adapted to the interview
  * agent's own event/answer types). Single-select and free-text answer
  * inline; multi-select and dropdown collect a set then Confirm. "None of
  * these" and an "add your own" entry are offered when the question allows
@@ -49,6 +55,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 }) => {
   const strings = en.characterInterview;
   const options = useMemo(() => question.options ?? [], [question.options]);
+  const isVoiceQuestion = useIsVoiceQuestion(options);
   const labelFor = (id: string) => options.find(o => o.id === id)?.label ?? id;
 
   const isSelect =
@@ -80,17 +87,28 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const lock = (summary: string) => setLockedSummary(summary || strings.noneOfThese);
 
+  /**
+   * Lock the card, then send. A card locks optimistically so the same answer
+   * can't be clicked twice, but a turn the server refused outright leaves
+   * nothing behind — so the lock comes back off and the question can simply be
+   * answered again, rather than sitting frozen on a reply nobody received.
+   */
+  const submit = (summary: string, payload: CharacterInterviewAnswerPayload) => {
+    lock(summary);
+    void Promise.resolve(onAnswer(payload)).then(delivered => {
+      if (delivered === false) setLockedSummary(null);
+    });
+  };
+
   const submitFreeText = () => {
     const trimmed = freeText.trim();
     if (!trimmed || answered || disabled) return;
-    lock(trimmed);
-    onAnswer({ message: trimmed, questionId: question.id });
+    submit(trimmed, { message: trimmed, questionId: question.id });
   };
 
   const submitSingle = (option: CharacterInterviewQuestionOption) => {
     if (answered || disabled) return;
-    lock(option.label);
-    onAnswer({
+    submit(option.label, {
       message: option.label,
       questionId: question.id,
       answer: { selectedOptionIds: [option.id] },
@@ -100,8 +118,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const submitSingleCustom = () => {
     const trimmed = customDraft.trim();
     if (!trimmed || answered || disabled) return;
-    lock(trimmed);
-    onAnswer({
+    submit(trimmed, {
       message: trimmed,
       questionId: question.id,
       answer: { customValues: [trimmed] },
@@ -110,12 +127,17 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const submitNone = () => {
     if (answered || disabled) return;
-    lock(strings.noneOfThese);
-    onAnswer({
+    submit(strings.noneOfThese, {
       message: strings.noneOfThese,
       questionId: question.id,
       answer: { none: true },
     });
+  };
+
+  /** A character holds one voiceId, so picking a voice replaces the pick. */
+  const selectOnly = (id: string) => {
+    setNoneSelected(false);
+    setSelected(prev => (prev[0] === id ? [] : [id]));
   };
 
   const toggleOption = (id: string, checked: boolean) => {
@@ -143,8 +165,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     }
     const labels = [...selected.map(labelFor), ...customValues];
     const message = labels.join(", ");
-    lock(message);
-    onAnswer({
+    submit(message, {
       message,
       questionId: question.id,
       answer: {
@@ -222,6 +243,52 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       );
     }
 
+    /**
+     * Voices, whichever kind the agent chose to ask with.
+     *
+     * Keyed on the options being voices rather than on `question.kind`: the
+     * interviewer prompt says to use `dropdown` for voices, but with a
+     * shortlist of four the live agent asks as `singleSelect` — so gating on
+     * the kind meant the real voice question got no play buttons at all. The
+     * agent picks the widget; what matters is that these are voices.
+     */
+    if (isVoiceQuestion) {
+      // singleSelect answers on click, matching that kind's contract
+      // everywhere else in this card; the confirm kinds collect then submit.
+      const answersOnClick = question.kind === "singleSelect";
+      return (
+        <div className="mt-3 flex flex-col gap-2">
+          <VoiceQuestionOptions
+            options={options}
+            selected={answersOnClick ? [] : selected}
+            onSelect={id => {
+              const option = options.find(o => o.id === id);
+              if (answersOnClick) {
+                if (option) submitSingle(option);
+                return;
+              }
+              selectOnly(id);
+            }}
+            disabled={disabled}
+          />
+          {answersOnClick ? (
+            question.allowNone && (
+              <div>
+                <Button kind="ghost" size="sm" disabled={disabled} onClick={submitNone}>
+                  {strings.noneOfThese}
+                </Button>
+              </div>
+            )
+          ) : (
+            <>
+              {renderNoneOption()}
+              {renderConfirmRow()}
+            </>
+          )}
+        </div>
+      );
+    }
+
     // Single select — click a chip to answer immediately.
     if (question.kind === "singleSelect") {
       return (
@@ -275,6 +342,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           {customValues.length > 0 && (
             <p className="text-xs text-typography-600">{customValues.join(", ")}</p>
           )}
+          {renderNoneOption()}
           {renderConfirmRow()}
         </div>
       );
@@ -309,26 +377,38 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             }}
           />
         ))}
-        {question.allowNone && (
-          <Checkbox
-            id={`interview-none-${question.id}`}
-            labelText={strings.noneOfThese}
-            checked={noneSelected}
-            disabled={disabled}
-            onChange={(_event: unknown, { checked }: { checked: boolean }) => {
-              setNoneSelected(checked);
-              if (checked) {
-                setSelected([]);
-                setCustomValues([]);
-              }
-            }}
-          />
-        )}
+        {renderNoneOption()}
         {question.allowCustom && renderCustomEntry(addCustomValue)}
         {renderConfirmRow()}
       </div>
     );
   };
+
+  /**
+   * "None of these" for the confirm-then-submit kinds.
+   *
+   * The multi-select branch had one and the dropdown branch did not — so on the
+   * voice question, which the interviewer sets `allowNone` on precisely so a
+   * character can be saved without a voice, that answer was unreachable.
+   */
+  function renderNoneOption() {
+    if (!question.allowNone) return null;
+    return (
+      <Checkbox
+        id={`interview-none-${question.id}`}
+        labelText={strings.noneOfThese}
+        checked={noneSelected}
+        disabled={disabled}
+        onChange={(_event: unknown, { checked }: { checked: boolean }) => {
+          setNoneSelected(checked);
+          if (checked) {
+            setSelected([]);
+            setCustomValues([]);
+          }
+        }}
+      />
+    );
+  }
 
   function renderConfirmRow() {
     return (

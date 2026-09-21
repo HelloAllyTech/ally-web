@@ -88,7 +88,7 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
 
             {(replyCount ?? 0) > 0 && (
               <>
-                <div className="w-[3px] h-[3px] bg-[#D2D2D2] rounded-full"></div>
+                <div className="w-[3px] h-[3px] bg-[#d6cdbe] rounded-full"></div>
                 <div className="font-primary text-xs sm:text-sm text-typography-800">
                   {replyCount}{" "}
                   {replyCount !== 1 ? t("review.feedCard.replies") : t("review.feedCard.reply")}

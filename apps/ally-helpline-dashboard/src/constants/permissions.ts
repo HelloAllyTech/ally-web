@@ -50,6 +50,11 @@ export enum Permissions {
   // Counsellor
   COUNSELOR_ACCESS = "counselor:access",
 
+  // Evaluation. Held only by the EVALUATOR role, which is layered on top of a
+  // normal app role — so this is the gate for the extra evaluation questions,
+  // and never for anything the account could not otherwise reach.
+  EVALUATOR_ACCESS = "evaluator:access",
+
   // Character Library (tenant-admin view+create only; edit/delete are
   // platform-admin-only and not exposed in this app — see the migration that
   // grants the ADMIN group view/create: 1905000000000-AddTenantScopedCharacterLibrary).

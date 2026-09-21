@@ -3,7 +3,9 @@ import { useLayoutEffect, useState, RefObject, useCallback } from "react";
 type Position = { top: number; left: number; width?: number } | null;
 
 export function useCreatePortal(
-  triggerRef: RefObject<HTMLDivElement>,
+  // Only ever read via getBoundingClientRect, so any element works — callers
+  // pass a <button> trigger as well as a <div>.
+  triggerRef: RefObject<HTMLElement>,
   openDropdown: boolean,
   options?: {
     dropdownWidth?: number;
@@ -95,7 +97,7 @@ export function useCreatePortal(
   ]);
 
   useLayoutEffect(() => {
-    if (!openDropdown) return;
+    if (!openDropdown) return undefined;
 
     updateDropdownPosition();
 

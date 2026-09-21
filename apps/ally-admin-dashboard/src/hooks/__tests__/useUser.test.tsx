@@ -4,7 +4,13 @@ import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { baseAPI } from "@api";
-import { LOCAL_STORAGE_KEYS, Permissions, SIDEBAR_ITEMS, UserRole } from "@constants";
+import {
+  FeatureToggleKey,
+  LOCAL_STORAGE_KEYS,
+  Permissions,
+  SIDEBAR_ITEMS,
+  UserRole,
+} from "@constants";
 import userSlice from "@reducer/userReducer";
 import { UserAvailabilityStatus } from "@types";
 
@@ -117,7 +123,10 @@ describe("useUser", () => {
           user: null,
           userStatus: UserAvailabilityStatus.OFFLINE,
           permissions: [],
-          features: [],
+          // Simulation Studio needs this alongside EDIT_SCENARIO, and the
+          // backfill migration switches it on for every platform admin — so
+          // "on" is the realistic default for a nav-structure fixture.
+          features: [FeatureToggleKey.CONTENT_MANAGEMENT],
           availableChatTypes: [],
           ...initialState,
         },
@@ -924,6 +933,60 @@ describe("useUser", () => {
       });
 
       expect(newResult.current.filteredNavigationItems.length).toBeGreaterThan(firstLength);
+    });
+  });
+
+  describe("canReorder", () => {
+    // Regression: this gate used to be `isSuperAdminRole(user?.role)`, whose
+    // list is only [SUPER_ADMIN, SUPER_DUPER_ADMIN]. PLATFORM_ADMIN — the role
+    // that replaced those tiers, and which inherited both preference
+    // permissions from SUPER_DUPER_ADMIN in the collapse migration — was
+    // refused a feature the backend grants it.
+    const renderWith = (state: Partial<any>) => {
+      const customStore = createMockStore(state);
+      return renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={customStore}>{children}</Provider>,
+      });
+    };
+
+    it("allows reordering when the user holds EDIT_USER_PREFERENCES", () => {
+      const { result } = renderWith({
+        user: { role: UserRole.PLATFORM_ADMIN, roles: [UserRole.PLATFORM_ADMIN] },
+        permissions: [Permissions.EDIT_USER_PREFERENCES],
+      });
+
+      expect(result.current.canReorder).toBe(true);
+    });
+
+    it("allows a PLATFORM_ADMIN that no super-admin role gate would accept", () => {
+      // The exact account the old isSuperAdminRole gate turned away: minted by
+      // the Ally admins tab, so it holds PLATFORM_ADMIN and nothing legacy.
+      // Migrated admins kept the drag handle only because the collapse
+      // migration left their old user_groups rows in place.
+      const { result } = renderWith({
+        user: { role: UserRole.PLATFORM_ADMIN, roles: [UserRole.ADMIN, UserRole.PLATFORM_ADMIN] },
+        permissions: [Permissions.EDIT_USER_PREFERENCES],
+      });
+
+      expect(result.current.canReorder).toBe(true);
+    });
+
+    it("denies reordering without the permission, whatever the role says", () => {
+      const { result } = renderWith({
+        user: { role: UserRole.MULTI_TENANT_ADMIN, roles: [UserRole.MULTI_TENANT_ADMIN] },
+        permissions: [Permissions.EDIT_SCENARIO],
+      });
+
+      expect(result.current.canReorder).toBe(false);
+    });
+
+    it("fails closed while the permission list is still empty", () => {
+      const { result } = renderWith({
+        user: { role: UserRole.SUPER_ADMIN, roles: [UserRole.SUPER_ADMIN] },
+        permissions: [],
+      });
+
+      expect(result.current.canReorder).toBe(false);
     });
   });
 });

@@ -23,6 +23,8 @@ const defaultProps: ScenarioCardProps = {
   onClick: mockOnClick,
   title: "Test Scenario",
   isComingSoon: false,
+  isPathway: false, // Default to false for standalone scenarios
+  simulationCount: 2, // New prop for simulation count
 };
 
 const renderComponent = (props: Partial<ScenarioCardProps> = {}) => {
@@ -102,7 +104,7 @@ describe("ScenarioCard", () => {
   it("should not render the completed badge on a pathway/case/course card", () => {
     // totalScenarios present ⇒ the card is a multi-item one, which shows its
     // own progress ring instead.
-    renderComponent({ attemptCount: 2, totalScenarios: 5, completedScenarios: 5 });
+    renderComponent({ isPathway: true, isComingSoon: false, attemptCount: 2, totalScenarios: 5, completedScenarios: 5 });
     expect(screen.queryByText(/Completed ·/)).not.toBeInTheDocument();
   });
 
@@ -233,13 +235,8 @@ describe("ScenarioCard", () => {
     expect(screen.queryByText("Test Scenario")).not.toBeInTheDocument();
   });
 
-  it("should update description when props change", () => {
-    const { rerender } = renderComponent();
-    expect(screen.getByText(defaultProps.description)).toBeInTheDocument();
-
-    const newDescription = "New description text";
-    rerender(<ScenarioCard {...defaultProps} description={newDescription} />);
-    expect(screen.getByText(newDescription)).toBeInTheDocument();
-    expect(screen.queryByText(defaultProps.description)).not.toBeInTheDocument();
+  it("should display the correct number of simulations for a pathway", () => {
+    renderComponent({ isPathway: true, totalScenarios: 6, simulationCount: 2 });
+    expect(screen.getByText(/\b2 Simulations\b/i)).toBeInTheDocument();
   });
 });

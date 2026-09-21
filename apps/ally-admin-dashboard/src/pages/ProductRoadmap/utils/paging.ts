@@ -37,3 +37,24 @@ export const pageRange = (offset: number, pageSize: number, total: number): Road
     nextOffset: canNext ? offset + pageSize : offset,
   };
 };
+
+/**
+ * Mirrors ROADMAP_LIST_DEFAULTS.MAX_LIMIT in ally-be.
+ *
+ * The list view's "Load more" grows `limit` instead of walking `offset`, and the server CLAMPS an
+ * over-large limit silently rather than rejecting it — so past this number the button would keep
+ * returning the same rows and look broken. The client knows the ceiling so it can say "this is as
+ * far as one view loads" instead. Change both together.
+ */
+export const LIST_MAX_LOADED = 500;
+
+/** Whether more rows can still be loaded, and if not, whether the ceiling is the reason. */
+export const loadMoreState = (
+  loaded: number,
+  total: number,
+): { canLoadMore: boolean; atCeiling: boolean } => ({
+  canLoadMore: loaded < total && loaded < LIST_MAX_LOADED,
+  // Distinguished from "everything is loaded" so the UI can explain a stall rather than just
+  // hiding the button and leaving rows the user can see a count for but cannot reach.
+  atCeiling: loaded >= LIST_MAX_LOADED && loaded < total,
+});

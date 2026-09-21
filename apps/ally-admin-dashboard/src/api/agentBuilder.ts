@@ -14,7 +14,9 @@ export type AgentBuilderField =
   | "opening_statements"
   | "reminders"
   | "linguistic_style_samples"
-  | "allowed_filler_words";
+  | "allowed_filler_words"
+  | "spoken_languages"
+  | "language_voices";
 
 export interface GenerateAgentBuilderFieldRequest {
   field: AgentBuilderField;
@@ -22,8 +24,41 @@ export interface GenerateAgentBuilderFieldRequest {
   competency?: string;
   agentTestCases?: string;
   numKnowledgeSources?: number;
+  /**
+   * Language to generate in — only read by the language-scoped fields. A
+   * `languages.id` as a string, taken from the `spoken_languages` result.
+   */
+  languageId?: string;
+  /** `language_voices` only: the languages to cast a voice for. */
+  languageIds?: string[];
+  /** `language_voices` only: the generated persona, so the cast matches it. */
+  personaGender?: string;
+  personaAge?: number;
   model?: string;
   provider?: "openai" | "anthropic";
+}
+
+/**
+ * One cast voice from the `language_voices` field. The server has already
+ * checked the id belongs to that language's own voices, so it can be written
+ * straight into the `languageVoices` mapping.
+ */
+export interface AgentBuilderVoicePick {
+  languageId: string;
+  languageLabel: string;
+  voiceId: string;
+  voiceName: string;
+  /** The voice's recorded gender; empty when nobody recorded one. */
+  voiceGender: string;
+}
+
+/** One language the `spoken_languages` field says the client speaks. */
+export interface AgentBuilderSpokenLanguage {
+  /** `languages.id` as a string — the key every per-language form field uses. */
+  languageId: string;
+  label: string;
+  /** BCP-47 locale, for display only. */
+  code: string;
 }
 
 /** Persona demographics returned by the `persona` field generator. */
@@ -62,7 +97,10 @@ export interface AgentBuilderState {
  *  - persona → AgentBuilderPersona
  *  - knowledge_sources → AgentBuilderKnowledgeSource[]
  *  - states → AgentBuilderState[]
- *  - linguistic_style_samples / allowed_filler_words → string[] (English only)
+ *  - linguistic_style_samples / allowed_filler_words → string[], written in
+ *    the requested `languageId`
+ *  - spoken_languages → AgentBuilderSpokenLanguage[]
+ *  - language_voices → AgentBuilderVoicePick[]
  */
 export interface GenerateAgentBuilderFieldResponse {
   field: AgentBuilderField;
@@ -74,8 +112,9 @@ const agentBuilderAPI = baseAPI.injectEndpoints({
     /**
      * Agent Builder Copilot: generate ONE Basic Settings field from the wizard's
      * actor brief + competency + agent test cases. The wizard fires one of
-     * these per target field concurrently; each returned trigger exposes
-     * `.abort()` so the whole batch can be cancelled.
+     * these per target field concurrently — and, for the language-scoped
+     * fields, once per language the client speaks; each returned trigger
+     * exposes `.abort()` so the whole batch can be cancelled.
      */
     generateAgentBuilderField: builder.mutation<
       GenerateAgentBuilderFieldResponse,

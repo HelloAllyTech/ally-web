@@ -17,8 +17,27 @@ export interface LiveKitEvent {
   timestamp: string;
 }
 
+/**
+ * One live supervisor note, as published by ally-ai-learn on the "supervisor"
+ * data-channel topic. `seq` is 1-based per session and is what the client
+ * de-duplicates on, since LiveKit can redeliver a reliable packet.
+ */
+export interface SupervisorNote {
+  note: string;
+  seq: number;
+  turn_index?: number;
+  timestamp?: string;
+}
+
 export interface UseLiveKitRoomReturn {
   error: string | null;
+  /** The room connected but no agent participant ever joined within the cap. */
+  agentJoinTimedOut: boolean;
+  /**
+   * How many supervisor hints the `seq` numbers prove never arrived (a gap,
+   * e.g. seq 5 then seq 8). Distinct from de-dup, which handles a redelivery.
+   */
+  missedSupervisorNoteCount: number;
   events: LiveKitEvent[];
   handleRetryConnection: () => void;
   room: Room;
@@ -28,4 +47,5 @@ export interface UseLiveKitRoomReturn {
   roomData: any;
   detectedEventIds: string[];
   agentTurnStatus: AgentTurnStatus;
+  supervisorNotes: SupervisorNote[];
 }

@@ -19,6 +19,13 @@ vi.mock("@api", () => ({
   useGetPermissionsQuery: vi.fn(),
   useGetUserPreferencesQuery: vi.fn(),
   useGetCharacterLibraryEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
+  // Feature-gated tabs can be the landing tab, so this screen fetches the
+  // per-user toggles. Default to content_management on, matching the backfill
+  // every platform admin gets.
+  useGetFeatureTogglesQuery: vi.fn(() => ({
+    data: ["content_management"],
+    isLoading: false,
+  })),
   baseAPI: {
     reducerPath: "baseAPI",
     reducer: vi.fn(),

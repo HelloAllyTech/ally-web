@@ -106,6 +106,7 @@ import PauseIcon from "./pause-icon.svg?react";
 import PencilIcon from "./pencil.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import PlayIcon from "./play-icon.svg?react";
+import ProgressLadderIcon from "./progress-ladder.svg?react";
 import RedirectIcon from "./redirect-icon.svg?react";
 import ReferralsProvided from "./referrals-provided.svg?react";
 import Refresh from "./refresh.svg?react";
@@ -261,6 +262,7 @@ export {
   StarIcon,
   StarYellowIcon,
   StartSession,
+  ProgressLadderIcon,
   StatsIcon,
   StopIcon,
   SubjectiveObservations,

@@ -36,7 +36,7 @@ const COALESCE_MS = 250;
 
 /**
  * Past this much downtime, replaying nothing and refetching everything is the honest choice: the
- * deltas we missed are gone, and a board showing stale coins is worse than a brief loading state.
+ * deltas we missed are gone, and a board showing stale votes is worse than a brief loading state.
  */
 const STALE_AFTER_SECONDS = 30;
 
@@ -53,12 +53,12 @@ interface UseProductRoadmapRealtimeOptions {
  * Live board updates.
  *
  * WHY TAG INVALIDATION RATHER THAN PATCHING THE CACHE FROM THE PAYLOAD: the list is server-sorted
- * and server-filtered. A coin change can move a row across a `sortBy=priority` boundary or out of a
+ * and server-filtered. A vote change can move a row across a `sortBy=priority` boundary or out of a
  * `priorityMin` filter entirely, and no client-side patch can know that without re-running the
  * query. The standalone app's answer was a 400ms-debounced reload of twelve tables; this is the
  * same idea, scoped to the tags that actually changed.
  *
- * OWN-ECHO SUPPRESSION IS THE LOAD-BEARING PART. Every coin click optimistically patches the cache
+ * OWN-ECHO SUPPRESSION IS THE LOAD-BEARING PART. Every vote click optimistically patches the cache
  * and then round-trips. Without dropping events whose `actorId` is us, the broadcast from our own
  * write invalidates the list mid-interaction and refetches over the optimistic patch — the number
  * visibly snaps back to its old value while the user is still clicking. The backend sends actorId
@@ -129,8 +129,8 @@ export const useProductRoadmapRealtime = ({
         invalidate([
           TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES,
           TAG_TYPES.PRODUCT_ROADMAP_FACETS,
-          // Deleting returns coins to their owners, so the caller's own budget may have changed.
-          TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+          // Deleting returns votes to their owners, so the caller's own budget may have changed.
+          TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
         ]);
       },
 
@@ -151,7 +151,7 @@ export const useProductRoadmapRealtime = ({
         // 'board' is the ONE reason that IS echo-suppressed, and it has to be: a month-board drag
         // is fully known to the client that performed it, which already applied the exact patch
         // optimistically. Without this the card animates into its new lane, our own broadcast
-        // comes back, the board refetches and the card visibly jumps — the same failure the coin
+        // comes back, the board refetches and the card visibly jumps — the same failure the vote
         // input had before actorId existed. Other people's boards still refresh, since the
         // suppression is per-actor.
         if (event?.reason === "board" && isOwnEcho(event)) return;
@@ -160,7 +160,7 @@ export const useProductRoadmapRealtime = ({
           TAG_TYPES.PRODUCT_ROADMAP_FACETS,
           TAG_TYPES.PRODUCT_ROADMAP_GOALS,
           TAG_TYPES.PRODUCT_ROADMAP_OWNERS,
-          TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+          TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
         ]);
       },
     }),
@@ -187,7 +187,7 @@ export const useProductRoadmapRealtime = ({
       invalidate([
         TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES,
         TAG_TYPES.PRODUCT_ROADMAP_FACETS,
-        TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+        TAG_TYPES.PRODUCT_ROADMAP_VOTE_BUDGET,
         TAG_TYPES.PRODUCT_ROADMAP_COMMENTS,
       ]);
     },

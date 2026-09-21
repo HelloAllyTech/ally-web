@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { Languages, Plus, Settings, WarningAlt } from "@assets";
-import { TrackItemType, TrackSectionFormValue } from "@types";
+import { CompletionCriteria, TrackItemContent, TrackItemType, TrackSectionFormValue } from "@types";
 
 import { SectionNode } from "./SectionNode";
 import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./types";
@@ -32,6 +32,13 @@ interface TrackOutlineRailProps {
   onSelectItem: (sectionIndex: number, itemIndex: number) => void;
   onAddSection: () => void;
   onAddItem: (sectionIndex: number, type: TrackItemType) => void;
+  onAddItemFromTemplate: (
+    sectionIndex: number,
+    type: TrackItemType,
+    content: TrackItemContent,
+    completionCriteria: CompletionCriteria | null,
+    title: string,
+  ) => void;
   onDeleteSection: (sectionIndex: number) => void;
   onReorderSections: (from: number, to: number) => void;
   onReorderItems: (sectionIndex: number, from: number, to: number) => void;
@@ -48,6 +55,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
   onSelectItem,
   onAddSection,
   onAddItem,
+  onAddItemFromTemplate,
   onDeleteSection,
   onReorderSections,
   onReorderItems,
@@ -119,6 +127,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
               errorKeys={errorKeys}
               onSelectItem={onSelectItem}
               onAddItem={onAddItem}
+              onAddItemFromTemplate={onAddItemFromTemplate}
               onDeleteSection={onDeleteSection}
               onReorderItems={onReorderItems}
             />

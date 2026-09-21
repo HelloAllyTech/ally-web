@@ -267,6 +267,14 @@ export interface ListToolbarProps {
   addFilterCta?: AddFilterCtaProps;
   action?: ActionProps;
   secondaryAction?: ActionProps;
+  /**
+   * A third button, rendered leftmost of the group.
+   *
+   * Exists for an action that is neither creating the thing this list holds nor a variant of
+   * creating it — opening a shared resource the whole list draws on, say. Optional, so the 32
+   * toolbars that pass two actions are untouched.
+   */
+  tertiaryAction?: ActionProps;
   className?: string;
   addFilterButtonRef?: React.RefObject<HTMLButtonElement>;
 }

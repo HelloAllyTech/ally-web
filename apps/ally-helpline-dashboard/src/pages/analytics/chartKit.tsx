@@ -17,7 +17,7 @@ export const CHART_HEIGHT = "300px";
 
 /** Central Carbon-palette hexes. Reuse these instead of inline hex literals. */
 export const PALETTE = {
-  blue: "#264D8E",
+  blue: "#264d8e",
   cyan: "#33b1ff",
   teal: "#08bdba",
   green: "#42be65",
@@ -27,7 +27,7 @@ export const PALETTE = {
   red: "#fa4d56",
   orange: "#ff832b",
   gold: "#d2a106",
-  gray: "#8d8d8d",
+  gray: "#928b7c",
 };
 
 type ColorScale = Record<string, string>;
@@ -205,7 +205,7 @@ export const ChartCard = ({
       </div>
     ) : empty ? (
       <div
-        className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500"
+        className="flex items-center justify-center rounded border border-dashed border-[#e3dbce] text-sm text-typography-500"
         style={{ height }}
       >
         {emptyText}

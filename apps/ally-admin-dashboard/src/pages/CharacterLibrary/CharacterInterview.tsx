@@ -10,13 +10,16 @@ import {
 } from "@api";
 import { ArrowDown } from "@assets";
 import { ActionConfirmationPopup, CharacterSidePanel } from "@components";
+import { CharacterCorpusPanel } from "@components/character-corpus";
 import {
   CharacterInterviewAnswerPayload,
   ChatComposer,
   ChatMessage,
+  VoiceShortlistStrip,
 } from "@components/character-interview";
 import { ButtonVariant } from "@components/types";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { useCanCurateCharacterCorpus } from "@hooks";
 import { useCharacterInterviewStream } from "@hooks/useCharacterInterviewStream";
 import { CharacterData } from "@types";
 import { logger } from "@utils";
@@ -55,6 +58,8 @@ export const CharacterInterview: React.FC = () => {
   const [draftCharacter, setDraftCharacter] = useState<CharacterData | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [corpusOpen, setCorpusOpen] = useState(false);
+  const canCurateCorpus = useCanCurateCharacterCorpus();
   // Set true only for a brand-new session (never on resume) so the next
   // render's effect can fire the hidden kickoff message with a `sendMessage`
   // closure that actually sees the new `sessionId` — calling sendMessage
@@ -141,8 +146,10 @@ export const CharacterInterview: React.FC = () => {
   }, [messages]);
 
   const handleSend = (text: string) => void sendMessage(text);
+  // Returns the send's outcome, not void: a refused turn resolves `false` and
+  // the card unlocks so the answer can be given again.
   const handleAnswerQuestion = (payload: CharacterInterviewAnswerPayload) =>
-    void sendMessage(payload.message, { questionId: payload.questionId, answer: payload.answer });
+    sendMessage(payload.message, { questionId: payload.questionId, answer: payload.answer });
 
   const hasProgress = messages.length > 0 && !draftCharacter;
 
@@ -178,13 +185,40 @@ export const CharacterInterview: React.FC = () => {
   return (
     <div className="py-[2px] font-primary h-[calc(100vh-40px)] flex flex-col">
       <div className="flex items-center gap-2 pb-6 shrink-0">
-        <span className="text-typography-800 cursor-pointer shrink-0" onClick={handleBack}>
+        <span
+          className="flex items-center gap-2 text-typography-800 cursor-pointer shrink-0"
+          onClick={handleBack}
+          onKeyUp={e => e.key === "Enter" && handleBack()}
+          role="button"
+          tabIndex={0}
+        >
           {en.simulation.characters}
-        </span>
-        <span className="-rotate-90 shrink-0">
-          <ArrowDown />
+          <span className="-rotate-90 shrink-0">
+            <ArrowDown />
+          </span>
         </span>
         <h1 className="text-2xl text-typography-900 font-secondary">{strings.title}</h1>
+
+        {/*
+          Curating the corpus lives HERE, next to the interview it grounds, rather than on a
+          settings page — a curator finds out the material is thin by watching a draft come
+          out thin, and this is where they are when that happens.
+
+          Gated on the knowledge-base permissions the corpus endpoints already enforce, so
+          trainers running interviews never see it. Not a new permission: a UI-only gate would
+          be decoration, and a new one would need grants cloned into every future role
+          migration for a panel that has an exact existing analogue.
+        */}
+        {canCurateCorpus && (
+          <button
+            type="button"
+            onClick={() => setCorpusOpen(true)}
+            data-testid="character-corpus-trigger"
+            className="ml-auto shrink-0 text-sm text-primary-600"
+          >
+            {en.characterCorpus.trigger}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto">
@@ -225,6 +259,10 @@ export const CharacterInterview: React.FC = () => {
         </div>
 
         <div className="shrink-0 pt-1">
+          {/* Keeps the agent's voice shortlists playable after their cards
+              lock, and for an admin who answers by typing and never gets a
+              card at all. */}
+          <VoiceShortlistStrip messages={messages} />
           <ChatComposer
             onSend={handleSend}
             onStop={stop}
@@ -233,6 +271,8 @@ export const CharacterInterview: React.FC = () => {
           />
         </div>
       </div>
+
+      <CharacterCorpusPanel isOpen={corpusOpen} onClose={() => setCorpusOpen(false)} />
 
       <CharacterSidePanel
         selectedCharacter={draftCharacter}

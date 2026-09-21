@@ -509,14 +509,14 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   // Falls back to the static constant while the request is in flight / on error.
   const { data: llmModels } = useGetLlmModelsQuery();
 
-  // Per-prompt overrides only route to OpenAI/Gemini in every runtime today
-  // (Anthropic is autofill/copilot-only, not a per-prompt path), so the picker
-  // is scoped to those providers. Widen here once a runtime consumes Anthropic
-  // via a prompt-management prompt.
+  // Providers offered, in display order. Which of them actually appear is
+  // decided by eligibility below — Anthropic shows up only for a prompt whose
+  // declared runtimes can all execute it.
   const modelGroups = useMemo(() => {
     const PROVIDER_ORDER: { provider: LlmProviderName; label: string }[] = [
       { provider: "openai", label: "OpenAI" },
       { provider: "gemini", label: "Gemini" },
+      { provider: "anthropic", label: "Anthropic" },
     ];
     if (!llmModels?.length) {
       return PROMPT_LLM_MODEL_OPTIONS.map(group => ({
@@ -525,22 +525,29 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         models: group.models.map(m => ({ ...m, supportsTemperature: true })),
       }));
     }
-    // A prompt carries no declaration of which runtime consumes it — the voice
-    // agent, ally-ai and ally-be all read prompts — so the picker cannot know
-    // where a model will be asked to run. It therefore offers only models EVERY
-    // runtime can execute.
+    // Which models this prompt can actually run.
     //
-    // This matters concretely: ai-learn's factory raises
-    // `Unsupported LLM provider` for Anthropic, so offering a Claude model for
-    // a main-agent prompt would fail the session outright. Ollama and vLLM are
-    // the mirror case — only the voice agent can reach them.
+    // When the prompt DECLARES its runtimes (`runtimes` on the row, from its
+    // .meta.json sidecar), offer every model all of those runtimes can
+    // execute. Builder's interviewer prompt is read by ally-be alone, which
+    // runs Anthropic perfectly well.
     //
-    // Derived from each model's `runtimes` rather than a fixed provider list,
-    // so it widens by itself once a provider gains a branch in the remaining
-    // runtimes. Per-prompt runtime metadata would let this narrow to exactly
-    // the consuming runtime; see the LLM-config ADR.
-    const runtimeCount = new Set(llmModels.flatMap(m => m.runtimes)).size;
-    const eligible = llmModels.filter(m => new Set(m.runtimes).size === runtimeCount);
+    // When it does not, fall back to the old rule: models EVERY runtime can
+    // execute. That is the only safe answer without a declaration, because a
+    // prompt might be read anywhere — ai-learn's factory raises
+    // `Unsupported LLM provider` for Anthropic, so offering Claude for a
+    // main-agent prompt would fail the session outright, and Ollama/vLLM are
+    // the mirror case.
+    //
+    // The undeclared branch is what every existing prompt gets, so this
+    // widens only where someone has said it is safe to.
+    const declared = selectedPrompt?.runtimes?.length ? selectedPrompt.runtimes : null;
+    const eligible = declared
+      ? llmModels.filter(m => declared.every(r => m.runtimes.includes(r as never)))
+      : (() => {
+          const runtimeCount = new Set(llmModels.flatMap(m => m.runtimes)).size;
+          return llmModels.filter(m => new Set(m.runtimes).size === runtimeCount);
+        })();
 
     return PROVIDER_ORDER.map(({ provider, label }) => ({
       provider,
@@ -553,7 +560,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
           supportsTemperature: m.supportsTemperature,
         })),
     })).filter(group => group.models.length > 0);
-  }, [llmModels]);
+  }, [llmModels, selectedPrompt?.runtimes]);
 
   // Flat lookups for the selected model: its provider and whether it accepts a
   // custom temperature (reasoning models like gpt-5 don't).

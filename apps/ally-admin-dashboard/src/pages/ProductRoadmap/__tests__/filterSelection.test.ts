@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   RoadmapFacets,
+  RoadmapOpportunityEffort,
   RoadmapOpportunitySource,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
@@ -50,9 +51,9 @@ describe("toFacetSelection / fromFacetSelection", () => {
     // The popover speaks string[] for every section, so ids leave as "7" and must come back as 7 —
     // the API's @IsInt rejects the string.
     expect(toFacetSelection(state({ createdBy: [7, 9] })).createdBy).toEqual(["7", "9"]);
-    expect(fromFacetSelection({ ...toFacetSelection(state({ createdBy: [7] })) }).createdBy).toEqual(
-      [7],
-    );
+    expect(
+      fromFacetSelection({ ...toFacetSelection(state({ createdBy: [7] })) }).createdBy,
+    ).toEqual([7]);
   });
 
   it("drops a non-numeric creator id rather than sending NaN", () => {
@@ -96,9 +97,19 @@ describe("mergeFacetSelection", () => {
 });
 
 describe("buildFacetSections", () => {
+  // No "type" facet: bugs left the board for Bug Hunter, so every listed row is
+  // an idea and a Bug/Idea filter would offer one no-op option and one that
+  // always empties the table.
   it("always offers the three enum-backed facets", () => {
     const ids = buildFacetSections([], undefined).map(section => section.id);
-    expect(ids).toEqual(["type", "stage", "source"]);
+    expect(ids).toEqual(["stage", "source", "effort"]);
+  });
+
+  it("omits the stage section for a view whose stage set is its definition", () => {
+    // The Queue: offering stage there would let a reader edit the tab into
+    // something that is no longer a queue.
+    const ids = buildFacetSections([], undefined, { omitStage: true }).map(s => s.id);
+    expect(ids).toEqual(["source", "effort"]);
   });
 
   it("adds the data-driven facets once their options exist", () => {
@@ -108,9 +119,9 @@ describe("buildFacetSections", () => {
     );
 
     expect(sections.map(s => s.id)).toEqual([
-      "type",
       "stage",
       "source",
+      "effort",
       "productGoal",
       "owner",
       "createdBy",
@@ -123,6 +134,20 @@ describe("buildFacetSections", () => {
       label: "In development",
       value: RoadmapOpportunityStage.UNDER_DEVELOPMENT,
     });
+  });
+
+  it("offers a trailing 'Not sized' option alongside the real effort sizes", () => {
+    // The absence of a size, not one more size on the scale — see ROADMAP_EFFORT_UNSIZED.
+    const effort = buildFacetSections([], undefined).find(s => s.id === "effort");
+    expect(effort?.options.map(o => o.value)).toEqual([
+      RoadmapOpportunityEffort.S,
+      RoadmapOpportunityEffort.M,
+      RoadmapOpportunityEffort.L,
+      RoadmapOpportunityEffort.XL,
+      RoadmapOpportunityEffort.XXL,
+      "unsized",
+    ]);
+    expect(effort?.options.at(-1)).toEqual({ label: "Not sized", value: "unsized" });
   });
 
   it("falls back to a creator's email when they have no name", () => {
@@ -144,6 +169,13 @@ describe("describeActiveFacets", () => {
     expect(countActiveFacets(state())).toBe(0);
   });
 
+  it("names the 'Not sized' sentinel rather than its wire value", () => {
+    const chips = describeActiveFacets(
+      state({ effortFilter: [RoadmapOpportunityEffort.S, "unsized"] }),
+    );
+    expect(chips).toEqual([{ id: "effort", label: "Effort", values: ["S", "Not sized"] }]);
+  });
+
   it("names a stage by its label rather than its wire value", () => {
     const chips = describeActiveFacets(
       state({ stageFilter: [RoadmapOpportunityStage.UNDER_DEVELOPMENT] }),
@@ -158,6 +190,20 @@ describe("describeActiveFacets", () => {
     expect(chips).toEqual([
       { id: "createdBy", label: "Filed by", values: ["Sandeep Malhotra", "404"] },
     ]);
+  });
+
+  it("suppresses the stage chip and its count under omitStage, leaving the rest", () => {
+    // The Queue pins three stages; without the lock the bar would render a permanent
+    // "Stage: New, Prioritised, In development" chip whose clear button breaks the view.
+    const applied = state({
+      stageFilter: [RoadmapOpportunityStage.NEW, RoadmapOpportunityStage.PRIORITISED],
+      ownerFilter: ["Ajey Gore"],
+    });
+    expect(describeActiveFacets(applied, facets, { omitStage: true }).map(c => c.id)).toEqual([
+      "owner",
+    ]);
+    expect(countActiveFacets(applied, { omitStage: true })).toBe(1);
+    expect(countActiveFacets(applied)).toBe(2);
   });
 
   it("counts groups rather than values", () => {

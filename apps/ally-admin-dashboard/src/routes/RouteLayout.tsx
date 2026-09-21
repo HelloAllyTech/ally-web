@@ -2,15 +2,7 @@ import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import {
-  Permissions,
-  ROLEPLAY_STUDIO_ALLOWED_EMAILS,
-  ROUTES,
-  SUPER_ADMIN_ROLES,
-  SUPER_DUPER_ADMIN_ROLES,
-  FeatureToggleKey,
-  OrgToggle,
-} from "@constants";
+import { Permissions, ROUTES, FeatureToggleKey, OrgToggle } from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -22,11 +14,13 @@ import {
   EventManagement,
   CharacterLibrary,
   CharacterInterview,
+  ComponentLibrary,
   CreatePath,
   CreateTrack,
   CreateCase,
   ScenarioVoices,
   SttConfigs,
+  AiTasks,
   LlmModelCatalog,
   ScenarioLanguages,
   LanguageGlossary,
@@ -40,14 +34,18 @@ import {
   ProductRoadmap,
   Settings,
   Logs,
+  MobileReleases,
   BugHunter,
+  Builder,
+  BuilderKnowledge,
+  BuilderPipeline,
+  BuilderScoreboard,
+  BuilderSession,
+  BuilderSettings,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
   RoleplaySessionLogDetail,
-  RoleplayLivePreview,
-  RoleplayStudioList,
-  RoleplayStudioWorkspace,
   Terms,
   Privacy,
   EvaluateLogin,
@@ -119,7 +117,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SIMULATION_STUDIO}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <SimulationStudio />
             </PrivateLayout>
           }
@@ -143,7 +144,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_SIMULATION}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateSimulation />
             </PrivateLayout>
           }
@@ -159,7 +163,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_SIMULATION(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_SCENARIO]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateSimulation />
             </PrivateLayout>
           }
@@ -187,10 +194,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_BADGES}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.USER_BADGES}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.USER_BADGES}>
               <UserBadges />
             </PrivateLayout>
           }
@@ -198,12 +202,11 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
-            /* Platform admins get here on the role/feature-toggle path. A
+            /* Platform admins get here on the feature-toggle path. A
                tenant's own ADMINs get here on the org-toggle path, and see
                only the characters their org created. */
             <PrivateLayout
               requiredPermissions={[Permissions.VIEW_CHARACTER_LIBRARY]}
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
               requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
               requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
             >
@@ -216,7 +219,6 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout
               requiredPermissions={[Permissions.CREATE_CHARACTER_LIBRARY]}
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
               requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
               requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
             >
@@ -235,10 +237,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_STT_CONFIGS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_STT_CONFIGS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_STT_CONFIGS}>
               <SttConfigs />
             </PrivateLayout>
           }
@@ -246,21 +245,23 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_LLM_MODEL_CATALOG}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG}>
               <LlmModelCatalog />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.AI_TASKS}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.AI_TASKS}>
+              <AiTasks />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}>
               <ScenarioLanguages />
             </PrivateLayout>
           }
@@ -270,10 +271,7 @@ export const RouteLayout: React.FC = () => {
           // narrowing it here would dead-end a plain super-admin.
           path={ROUTES.MANAGE_LANGUAGE_GLOSSARY(":id")}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}>
               <LanguageGlossary />
             </PrivateLayout>
           }
@@ -289,7 +287,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_PATH}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreatePath />
             </PrivateLayout>
           }
@@ -297,7 +298,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_PATH(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreatePath />
             </PrivateLayout>
           }
@@ -305,7 +309,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CREATE_TRACK}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateTrack />
             </PrivateLayout>
           }
@@ -313,15 +320,32 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_TRACK(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateTrack />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.COMPONENT_LIBRARY}
+          element={
+            <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_ADMIN_TRACK]}
+              requiredFeature={FeatureToggleKey.COMPONENT_LIBRARY}
+            >
+              <ComponentLibrary />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.CREATE_CASE}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateCase />
             </PrivateLayout>
           }
@@ -329,7 +353,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.EDIT_CASE(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_EVENT]}
+              requiredFeature={FeatureToggleKey.CONTENT_MANAGEMENT}
+            >
               <CreateCase />
             </PrivateLayout>
           }
@@ -337,10 +364,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_GUARDRAILS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_GUARDRAILS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_GUARDRAILS}>
               <GuardrailsManagement />
             </PrivateLayout>
           }
@@ -356,10 +380,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_TOOLTIPS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.MANAGE_TOOLTIPS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.MANAGE_TOOLTIPS}>
               <TooltipManagement />
             </PrivateLayout>
           }
@@ -385,10 +406,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AI_LAB}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.AI_LAB}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.AI_LAB}>
               <AILab />
             </PrivateLayout>
           }
@@ -396,10 +414,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ANALYTICS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.ANALYTICS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.ANALYTICS}>
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
@@ -409,10 +424,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SETTINGS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.SETTINGS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.SETTINGS}>
               <Settings />
             </PrivateLayout>
           }
@@ -420,32 +432,79 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.BUG_HUNTER}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.BUG_HUNTER}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUG_HUNTER}>
               <BugHunter />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <Builder />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SESSION(":sessionId")}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderSession />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SETTINGS}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderSettings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_PIPELINE}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderPipeline />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_SCOREBOARD}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderScoreboard />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUILDER_KNOWLEDGE}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.BUILDER}>
+              <BuilderKnowledge />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.LOGS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.LOGS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.LOGS}>
               <Logs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MOBILE_RELEASES}
+          element={
+            <PrivateLayout requiredFeature={FeatureToggleKey.MOBILE_RELEASES}>
+              <MobileReleases />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.WHATSAPP_BOT}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.WHATSAPP_BOT}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.WHATSAPP_BOT}>
               <WhatsAppBot />
             </PrivateLayout>
           }
@@ -453,10 +512,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AGENT_TEST_CASES}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_DUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.AGENT_TEST_CASES}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.AGENT_TEST_CASES}>
               <AgentTestCases />
             </PrivateLayout>
           }
@@ -464,10 +520,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.COMPETENCIES}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.COMPETENCIES}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.COMPETENCIES}>
               <Competencies />
             </PrivateLayout>
           }
@@ -475,10 +528,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}>
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -486,64 +536,11 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout
-              requiredRole={SUPER_ADMIN_ROLES}
-              requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}
-            >
+            <PrivateLayout requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}>
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }
         />
-        {/* Roleplay Studio v2 — permission + email-allowlist gated rollout */}
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO}
-          element={
-            <PrivateLayout
-              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioList />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_NEW}
-          element={
-            <PrivateLayout
-              requiredPermissions={[Permissions.EDIT_ROLEPLAY_SPEC]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioWorkspace />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_PREVIEW(":id")}
-          element={
-            <PrivateLayout
-              isPreview={true}
-              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayLivePreview />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.ROLEPLAY_STUDIO_SPEC(":specId")}
-          element={
-            <PrivateLayout
-              requiredPermissions={[
-                Permissions.VIEW_ROLEPLAY_SPECS,
-                Permissions.EDIT_ROLEPLAY_SPEC,
-              ]}
-              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
-            >
-              <RoleplayStudioWorkspace />
-            </PrivateLayout>
-          }
-        />
-
         <Route path="/" element={<DefaultRedirect />} />
 
         <Route path="*" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />

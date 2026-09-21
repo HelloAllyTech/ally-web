@@ -29,7 +29,6 @@ show_usage() {
     echo ""
     echo "Commands:"
     echo -e "  ${GREEN}all${NC}           Run all tests in parallel"
-    echo -e "  ${GREEN}web${NC}           Run ally-web tests"
     echo -e "  ${GREEN}helpline${NC}      Run ally-helpline-dashboard tests"
     echo -e "  ${GREEN}admin${NC}         Run ally-admin-dashboard tests"
     echo -e "  ${GREEN}ui-shared${NC}     Run ui-shared library tests"
@@ -39,7 +38,6 @@ show_usage() {
     echo ""
     echo "Examples:"
     echo "  ./test-docker.sh all         # Run all tests"
-    echo "  ./test-docker.sh web         # Run only web tests"
     echo "  ./test-docker.sh coverage    # Generate coverage report"
     echo ""
 }
@@ -110,16 +108,13 @@ run_watch_mode() {
     fi
 
     # Run tests in watch mode
-    docker-compose exec web npx nx test ally-web --watch
+    docker-compose exec admin npx nx run-many --target=test --all --watch
 }
 
 # Main script logic
 case "${1:-help}" in
     all)
         run_all_tests
-        ;;
-    web)
-        run_service_test "web"
         ;;
     helpline)
         run_service_test "helpline"

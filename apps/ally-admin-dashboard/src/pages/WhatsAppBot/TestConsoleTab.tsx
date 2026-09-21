@@ -1,11 +1,21 @@
 import React, { useState } from "react";
 
-import { AutoExpandableTextarea, InlineNotification } from "@ally-ui-mono/ui-shared";
-import { usePreviewWaAskMutation } from "@api";
+import {
+  AutoExpandableTextarea,
+  CarbonDropdown,
+  InlineNotification,
+} from "@ally-ui-mono/ui-shared";
+import { useGetTenantsQuery, usePreviewWaAskMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { WaPreviewResponse } from "@types";
+
+/** The empty id is the "whole corpus" choice — see the dropdown's comment. */
+interface TenantOption {
+  id: string;
+  label: string;
+}
 
 /**
  * Ask a question and see the literal reply, its sources and the retrieval scores.
@@ -20,15 +30,27 @@ import { WaPreviewResponse } from "@types";
  */
 export const TestConsoleTab: React.FC = () => {
   const [question, setQuestion] = useState("");
+  const [tenantId, setTenantId] = useState<string | null>(null);
   const [result, setResult] = useState<WaPreviewResponse | null>(null);
   const [failed, setFailed] = useState(false);
   const [ask, { isLoading }] = usePreviewWaAskMutation();
+  const { data: tenantData } = useGetTenantsQuery({ limit: 200 });
+
+  const tenantOptions: TenantOption[] = [
+    { id: "", label: en.whatsappBot.corpus.previewAsWholeCorpus },
+    ...(tenantData?.data ?? []).map(tenant => ({ id: tenant.id, label: tenant.name })),
+  ];
 
   const handleAsk = async () => {
     if (!question.trim()) return;
     setFailed(false);
     try {
-      setResult(await ask({ question: question.trim() }).unwrap());
+      setResult(
+        await ask({
+          question: question.trim(),
+          ...(tenantId ? { tenantId } : {}),
+        }).unwrap(),
+      );
     } catch {
       setResult(null);
       setFailed(true);
@@ -58,6 +80,21 @@ export const TestConsoleTab: React.FC = () => {
           placeholder={en.whatsappBot.testConsole.questionPlaceholder}
           minHeight={90}
         />
+        {/* Whose corpus to answer from. Defaulting to the whole corpus keeps this a tuning tool
+            — it shows what is indexed — but that is not what any worker receives, so the choice
+            is in front of the admin rather than implied, and the result echoes which one ran. */}
+        <CarbonDropdown
+          id="wa-preview-tenant"
+          titleText={en.whatsappBot.corpus.previewAsLabel}
+          helperText={en.whatsappBot.corpus.previewAsHelp}
+          label={en.whatsappBot.corpus.previewAsWholeCorpus}
+          items={tenantOptions}
+          itemToString={(item: TenantOption | null) => item?.label ?? ""}
+          selectedItem={tenantOptions.find(item => item.id === (tenantId ?? "")) ?? null}
+          onChange={({ selectedItem }: { selectedItem?: TenantOption | null }) =>
+            setTenantId(selectedItem?.id ? selectedItem.id : null)
+          }
+        />
         <div>
           <Button
             variant={ButtonVariant.PRIMARY}
@@ -76,6 +113,16 @@ export const TestConsoleTab: React.FC = () => {
           lowContrast
           hideCloseButton
         />
+      )}
+
+      {/* Stated on the RESULT, not just the form: an admin who changes the dropdown and forgets
+          would otherwise read an unscoped answer as what a customer gets. */}
+      {result && (
+        <p className="text-xs text-typography-500 max-w-3xl">
+          {result.audience.tenantId
+            ? en.whatsappBot.corpus.previewAudienceScoped
+            : en.whatsappBot.corpus.previewAudienceWholeCorpus}
+        </p>
       )}
 
       {!result && !failed && (

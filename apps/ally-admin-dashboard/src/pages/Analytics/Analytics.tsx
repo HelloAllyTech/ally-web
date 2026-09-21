@@ -17,22 +17,26 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { en, isSuperDuperAdminRole, UserRole, FeatureToggleKey } from "@constants";
+import { en, FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
+import { BugAgentPerformance } from "./BugAgentPerformance";
+import { CodingAgentCost } from "./CodingAgentCost";
+import { FixSessionEngineCost } from "./FixSessionEngineCost";
 import { TabControlsSlotProvider } from "./tabControlsSlot";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
+import { GoalsTab } from "./tabs/GoalsTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { ProductManagementTab } from "./tabs/ProductManagementTab";
+import { RetrievalQualityTab } from "./tabs/RetrievalQualityTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
-import { TestingTab } from "./tabs/TestingTab";
 import { WeakPerformingMetricsTab } from "./tabs/WeakPerformingMetricsTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
@@ -61,25 +65,40 @@ interface TabDef {
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
   /**
-   * Optional extra gate, on top of the route's SUPER_ADMIN_ROLES/analytics
-   * feature toggle. Only two tabs need it today (Analytics Agent and
-   * Suggestions), and a tab without it stays visible to everyone who can reach
-   * the page — which is how every other tab here already behaved.
-   *
-   * Dual-gated during the role->toggle migration, same OR pattern as
-   * PrivateLayout's `requiredRole || requiredFeature`: either the legacy
-   * super-duper-admin role or the matching feature toggle unlocks the tab.
+   * Optional extra gate, on top of the route's analytics feature toggle. Only
+   * two tabs need it today (Analytics Agent and Suggestions), and a tab
+   * without it stays visible to everyone who can reach the page — which is
+   * how every other tab here already behaved.
    *
    * A hidden tab, not a disabled one: a reader who can never use it is better
    * served by not knowing it exists than by a tab whose every request 403s.
    */
-  visibleTo?: (ctx: { role?: UserRole | string | null; features: string[] }) => boolean;
+  visibleTo?: (ctx: { features: string[] }) => boolean;
 }
 
 const TABS: TabDef[] = [
-  // First entry = the default landing tab. Highlights is the whole-platform
-  // picture; it absorbed the former separate "Overview" tab, which rendered four
-  // of the same charts from the same data.
+  // First entry = the default landing tab. "Are we on pace against a goal" is
+  // the question leadership opens the page to answer, ahead of the broader
+  // platform-history picture in Highlights below — so it lands first rather
+  // than being one more Highlights sub-tab a reader has to know to click into.
+  //
+  // No page-level pickers: all-time and platform-wide by construction, like
+  // Product management below. Its own grain control (month/quarter/year) lives
+  // on the card, not up here, because "year" makes sense for this chart and
+  // for none of the day/week grains the page-level picker would otherwise
+  // offer.
+  {
+    id: "goals",
+    label: "Goals",
+    uses: { language: false, range: false },
+    render: () => <GoalsTab />,
+  },
+  // Highlights is the whole-platform picture; it absorbed the former separate
+  // "Overview" tab, which rendered four of the same charts from the same data,
+  // and later the "Testing" staging tab, whose twenty charts were distributed
+  // into the Highlights sub-tab that answers the same question as each — so a
+  // metric now lives in exactly one place rather than in a reviewed copy and a
+  // provisional one.
   //
   // It takes no time range: a leadership view of "how is the platform doing" is
   // a question about the whole history, and the reader who wants a narrower read
@@ -102,7 +121,7 @@ const TABS: TabDef[] = [
     // regressions, so segmentation here is part of the metric rather than a
     // convenience.
     id: "weak-metrics",
-    label: "Weak performing metrics",
+    label: "Actor quality metrics",
     uses: { language: true, range: true },
     render: f => <WeakPerformingMetricsTab {...f} />,
   },
@@ -137,12 +156,42 @@ const TABS: TabDef[] = [
     render: f => <GlossaryAdherenceTab {...f} />,
   },
   {
+    // Corpus retrieval quality: does what the agent retrieves actually answer what it asked?
+    //
+    // Sits beside the other judge-backed quality tabs rather than under the knowledge-base
+    // pages, because the question it answers is a quality question, not a curation one — and
+    // because the curator's own surface (the corpus panel's retrieval preview) already covers
+    // "is this one query working". This is the population view.
+    //
+    // Takes the range picker and no language: a corpus document is language-tagged but a
+    // retrieval is not, and offering a language filter that narrowed nothing would be worse
+    // than offering none.
+    id: "retrieval-quality",
+    label: en.ragQuality.tab,
+    uses: { language: false, range: true },
+    render: f => <RetrievalQualityTab {...f} />,
+  },
+  {
     // Labelled for what it measures. It was "Tokens" while its heading said "AI
     // cost" and its axis was USD.
     id: "cost",
     label: "AI cost",
     uses: { language: false, range: true },
-    render: f => <TokenConsumption {...f} />,
+    render: f => (
+      <div className="flex flex-col gap-6">
+        <TokenConsumption {...f} />
+        <CodingAgentCost {...f} />
+        {/* Its own day-window control, not the tab-wide range picker above —
+            see the component's own doc for why. */}
+        <FixSessionEngineCost />
+      </div>
+    ),
+  },
+  {
+    id: "bug-agent-performance",
+    label: "Bug Agent",
+    uses: { language: false, range: true },
+    render: f => <BugAgentPerformance {...f} />,
   },
   {
     id: "scribe",
@@ -153,8 +202,8 @@ const TABS: TabDef[] = [
   {
     // The only tab here that measures OUR OWN work rather than the product's.
     // Everything above reads tenant-scoped learner and session data; this reads
-    // the internal coin-voting roadmap, which carries no tenant. Its own tab
-    // rather than a panel on Highlights, so nobody takes "180 coins shipped" for
+    // the internal vote-based roadmap, which carries no tenant. Its own tab
+    // rather than a panel on Highlights, so nobody takes "180 votes shipped" for
     // a platform metric.
     //
     // No page-level pickers: the roadmap has no language dimension, and its
@@ -162,37 +211,25 @@ const TABS: TabDef[] = [
     // quarter can hold a handful of items, so a range picker would either draw
     // one bar or hide the years before it.
     //
-    // Visible to both super-admin tiers, like every tab except the two below:
-    // the endpoint it calls is gated on SUPER_ADMIN_ROLES, and reading a delivery
-    // chart is not the privilege that filing onto the roadmap is.
+    // Visible to everyone who can reach this page, like every tab except the
+    // two below: the endpoint it calls is gated on the same route-level
+    // feature toggle, and reading a delivery chart is not the privilege that
+    // filing onto the roadmap is.
     id: "product",
     label: "Product management",
     uses: { language: false, range: false },
     render: () => <ProductManagementTab />,
   },
   {
-    // The staging surface for charts that are candidates for the tabs above.
-    // Last in the list because everything on it is provisional, and a panel
-    // still being judged should not be the first thing a reader meets. Visible
-    // to both super-admin tiers, like the rest of this page — the route already
-    // gates on SUPER_ADMIN_ROLES and every endpoint it calls does the same, so a
-    // narrower tab-level gate would only hide charts a reader is allowed to
-    // fetch. Like Highlights it is all-time with per-chart grouping, so a chart
-    // that earns its place can move without rework.
-    id: "testing",
-    label: "Testing",
-    uses: { language: false, range: false },
-    render: f => <TestingTab {...f} />,
-  },
-  {
-    // Ask-anything, in English. Gated on the elevated super-duper-admin tier,
-    // unlike every tab above it.
-    //
-    // The narrower gate is the point: the other tabs answer fixed, reviewed
+    // Ask-anything, in English. Visible to everyone who can reach this page,
+    // like every other tab — this used to sit behind the elevated
+    // super-duper-admin tier (the other tabs answer fixed, reviewed
     // questions, while this one writes its own query across every readable
-    // table at platform scope. ally-be gates the endpoints on the same tier, so
-    // hiding the tab for a plain SUPER_ADMIN keeps the UI honest about what it
-    // could actually fetch rather than offering a control that 403s.
+    // table at platform scope), but the product decision was made to give
+    // every admin tier parity across all analytics surfaces. ally-be's
+    // ALLOWED_TABLES backs every tenant-attributable table with a filtered
+    // view that already excludes test-tenant rows, so widening who can ask a
+    // question does not widen what it can see.
     //
     // No page-level pickers: the reader states the period and the grouping in
     // the question itself, and a range picker that silently re-scoped a typed
@@ -201,17 +238,15 @@ const TABS: TabDef[] = [
     label: "Analytics Agent",
     uses: { language: false, range: false },
     render: () => <AnalyticsAgentTab />,
-    visibleTo: ({ role, features }) =>
-      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
+    visibleTo: ({ features }) => hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
   },
   {
     // "What should we build next?", answered from the platform's own numbers and
-    // reviewed card by card. Last in the list, and on the elevated tier for a
-    // reason the tabs above it do not share: accepting a suggestion WRITES — it
-    // files an opportunity onto the product roadmap. Reading a chart and adding to
-    // the backlog are different privileges, and only SUPER_DUPER_ADMIN holds
-    // edit:admin:product-roadmap, so a plain SUPER_ADMIN seeing this tab would be
-    // offered a decision they cannot make.
+    // reviewed card by card. Visible to everyone who can reach this page, like
+    // every other tab — this used to sit on the elevated tier because accepting
+    // a suggestion WRITES onto the product roadmap, a different privilege from
+    // reading a chart, but the product decision was made to give every admin
+    // tier parity across all analytics surfaces instead.
     //
     // No page-level pickers: the period belongs to a Generate run that already
     // happened and is stamped on every card, so a picker at the top of the page
@@ -220,8 +255,7 @@ const TABS: TabDef[] = [
     label: en.analyticsSuggestions.tabLabel,
     uses: { language: false, range: false },
     render: () => <SuggestionsTab />,
-    visibleTo: ({ role, features }) =>
-      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
+    visibleTo: ({ features }) => hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
   },
 ];
 
@@ -236,14 +270,13 @@ export const Analytics = () => {
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
 
-  // Most tabs are visible to everyone who can reach this page (the route gates
-  // on SUPER_ADMIN_ROLES / the analytics feature toggle); a tab may declare a
-  // narrower gate of its own.
-  const role = useSelector((state: RootState) => state.user.user?.role);
+  // Most tabs are visible to everyone who can reach this page (the route
+  // gates on the analytics feature toggle); a tab may declare a narrower gate
+  // of its own.
   const features = useSelector((state: RootState) => state.user.features);
   const tabs = useMemo(
-    () => TABS.filter(t => !t.visibleTo || t.visibleTo({ role, features })),
-    [role, features],
+    () => TABS.filter(t => !t.visibleTo || t.visibleTo({ features })),
+    [features],
   );
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });

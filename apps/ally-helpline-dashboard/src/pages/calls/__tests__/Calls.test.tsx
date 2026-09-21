@@ -20,6 +20,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { SessionType, UserRole } from "@types";
 
 import { Calls } from "../Calls";
+import { getFormattedSupportedSessionUserGroups, getPermittedSessionLogList } from "../utils";
 
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
@@ -115,15 +116,21 @@ vi.mock("../components", () => ({
       Call Logs Table
     </div>
   ),
-  UserLogsTable: ({ refreshKey, sessionType }: any) => (
-    <div
-      data-testid="user-logs-table"
-      data-refresh-key={refreshKey}
-      data-session-type={sessionType}
-    >
-      User Logs Table
-    </div>
-  ),
+  UserLogsTable: ({ refreshKey, sessionType }: any) => {
+    // Records every render, including ones React discards on a later pass —
+    // UserLogsTable fires getCallLogs/getCallTags as soon as it mounts, so a
+    // single premature render is already a rejected request.
+    mockUserLogsTableRender();
+    return (
+      <div
+        data-testid="user-logs-table"
+        data-refresh-key={refreshKey}
+        data-session-type={sessionType}
+      >
+        User Logs Table
+      </div>
+    );
+  },
   AdminLogsTable: ({ refreshKey, sessionType }: any) => (
     <div
       data-testid="admin-logs-table"
@@ -164,6 +171,9 @@ vi.mock("../components", () => ({
     </div>
   ),
 }));
+
+// Tracks renders of the mocked UserLogsTable (see the "../components" mock)
+const mockUserLogsTableRender = vi.fn();
 
 // Mock utils
 vi.mock("../utils", () => ({
@@ -281,6 +291,48 @@ describe("Calls Component", () => {
 
       expect(screen.queryByTestId("calls-create-note-button")).not.toBeInTheDocument();
       expect(screen.queryByTestId("create-note-drawer")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Log view gating
+   * The table that renders decides which endpoints get called. "My Logs"
+   * fetches /chats/call-logs (VIEW_CALL_LOGS); "Organization Logs" fetches the
+   * consolidated endpoint (VIEW_CONSOLIDATED_LOGS). Rendering the wrong one —
+   * even for the single render before an effect corrects it — sends a request
+   * the API rejects with 401/403.
+   */
+  describe("Log view gating", () => {
+    const orgLogsOnly = [
+      { sessionUserGroup: "org-logs", sessionType: SessionType.CALL, permissionList: [] },
+    ];
+    const myLogsOnly = [
+      { sessionUserGroup: "my-logs", sessionType: SessionType.CALL, permissionList: [] },
+    ];
+
+    it("never renders My Logs for a user permitted only Organization Logs", () => {
+      vi.mocked(getPermittedSessionLogList).mockReturnValue(orgLogsOnly as any);
+      vi.mocked(getFormattedSupportedSessionUserGroups).mockReturnValue([
+        { id: "org-logs", label: "Organization Logs" },
+      ]);
+
+      renderCalls();
+
+      expect(screen.getByTestId("admin-logs-table")).toBeInTheDocument();
+      expect(screen.queryByTestId("user-logs-table")).not.toBeInTheDocument();
+      expect(mockUserLogsTableRender).not.toHaveBeenCalled();
+    });
+
+    it("renders My Logs for a user permitted only their own logs", () => {
+      vi.mocked(getPermittedSessionLogList).mockReturnValue(myLogsOnly as any);
+      vi.mocked(getFormattedSupportedSessionUserGroups).mockReturnValue([
+        { id: "my-logs", label: "My Logs" },
+      ]);
+
+      renderCalls();
+
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
+      expect(screen.queryByTestId("admin-logs-table")).not.toBeInTheDocument();
     });
   });
 

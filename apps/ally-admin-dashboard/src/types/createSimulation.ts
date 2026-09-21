@@ -17,6 +17,9 @@ import { TriggerCondition } from "./triggerConditions";
 export type FormData = {
   title: string;
   competency?: Competency;
+  // Every competency the simulation assesses. `competency` mirrors the
+  // first entry for readers that predate multi-competency selection.
+  competencies?: Competency[];
   category?: string;
   partnerOrgName?: string;
   difficultyLevel: string;
@@ -35,8 +38,10 @@ export type FormData = {
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
+  videoActorEnabled?: boolean;
+  videoActorAvatarId?: string;
+  videoActorProvider?: string;
   historyTrimEnabled?: boolean;
-  turnMaxEndpointingDelay?: number;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   temperature?: number;
@@ -63,12 +68,18 @@ export type FormData = {
   timerMode?: boolean;
   maxTimeValue?: string;
   showScoreMeter?: boolean;
-  enableFeedback?: boolean;
-  /** Post-session tab visibility, gated under `enableFeedback`. See SimulationInput.feedbackTabs. */
+  /**
+   * Post-session tab visibility — one form toggle per tab the learner gets.
+   * See SimulationInput.feedbackTabs. The `enableFeedback` master switch and
+   * the Skills sub-toggle were retired on 2026-08-31.
+   */
   feedbackTabDebrief?: boolean;
-  feedbackTabSkills?: boolean;
   feedbackTabTranscript?: boolean;
   pauseEnabled?: boolean;
+  /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
+  supervisorNotesEnabled?: boolean;
+  /** Learner-facing Live events tab. Opt-out — only an explicit false hides it. */
+  liveTabEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
   remindersEnabled?: boolean;
@@ -224,6 +235,54 @@ export interface ElevenLabsBulkSyncSummary {
  * different (auth, base URL, response shape); this is the one shape they
  * all get mapped to so the picker doesn't care which provider it's showing.
  */
+/**
+ * A face's preview media after we've copied it into our own storage.
+ *
+ * Both keys are optional: a vendor that publishes no preview media yields
+ * neither, and the caller must then leave the roleplay's cover untouched
+ * rather than clearing it.
+ */
+export interface VideoActorCoverMedia {
+  /** Absent when the vendor publishes no still (Beyond Presence publishes none). */
+  coverImageUrl?: string;
+}
+
+/** One video-actor vendor a roleplay can be pointed at. */
+export interface VideoActorProviderEntry {
+  /** Stored on the roleplay as `videoActorProvider`. */
+  value: string;
+  /** What the picker shows, e.g. "Beyond Presence". */
+  label: string;
+}
+
+/**
+ * One selectable face, already normalised by ally-be.
+ *
+ * Deliberately carries no vendor field: Tavus publishes preview media and
+ * Beyond Presence does not, so a picker branches on whether `thumbnailImageUrl`
+ * is present, never on which vendor it is looking at. That keeps vendor
+ * knowledge in the backend, where adding a third one is a single-file change.
+ */
+export interface VideoActorFaceEntry {
+  /** Stored on the roleplay as `videoActorAvatarId`. */
+  value: string;
+  label: string;
+  /**
+   * Which vendor this face belongs to, stored alongside the id as
+   * `videoActorProvider`.
+   *
+   * An opaque token here: the picker writes it back verbatim and never branches
+   * on it, so the author chooses a face and the vendor follows.
+   */
+  provider: string;
+  /** A still, where the vendor publishes one. Absent for Beyond Presence. */
+  thumbnailImageUrl?: string;
+  /** A short talking clip, where the vendor publishes one. Tavus only. */
+  thumbnailVideoUrl?: string;
+  /** Pre-formatted vendor note for the secondary line (e.g. "phoenix-3"). */
+  detail?: string;
+}
+
 export interface TtsCatalogEntry {
   /** What gets written into the voice's config field (e.g. `model`, `voice_name`). */
   value: string;
@@ -329,6 +388,14 @@ export interface FormFieldConfig {
   enhanceType?: string;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
   /**
+   * CUSTOM.RADIO_BUTTONS only: fires when the user picks a different option
+   * (never on initial mount or on `formMethods.reset(...)` hydration — see
+   * RadioButtonGroup's `handleChange`). Lets one field's user-driven change
+   * imperatively drive another's value, e.g. Experience Mode → Live Events
+   * tab (see `syncLiveTabEnabledWithExperienceMode`).
+   */
+  onValueChange?: (value: string, formMethods: UseFormReturn<any>) => void;
+  /**
    * Snake-case placeholder name this field fills in the main-agent prompt
    * (e.g. "tone" for the Tone input). When set, the studio cross-checks
    * the selected prompt's `availableVariables`; if the placeholder isn't
@@ -359,6 +426,14 @@ export interface FormFieldConfig {
    * keeps the field out of other editors' forms.
    */
   requiredPermission?: string;
+  /**
+   * Per-admin feature-toggle key (see `FeatureToggleKey`) that must be granted
+   * for this field to render. Distinct from `requiredPermission`: a permission
+   * comes with the role, whereas a toggle is handed to one admin at a time from
+   * Admin User Management — which is what an experimental authoring surface
+   * wants, so it can be opened to a couple of people rather than a whole tier.
+   */
+  requiredFeature?: string;
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**
@@ -628,6 +703,12 @@ export interface Prompt {
   hasStates?: boolean;
   usesBlocks?: string[];
   /**
+   * Runtimes that read this prompt. Absent means undeclared, and the model
+   * picker then offers only models every runtime can execute — correct, but
+   * narrower than a single-consumer prompt actually needs.
+   */
+  runtimes?: string[];
+  /**
    * Prompt-level LLM provider override ('openai' | 'gemini' | 'anthropic'),
    * sent alongside `model` so runtimes don't infer it from the model name.
    */
@@ -716,4 +797,41 @@ export interface GetPromptsQuery {
   order?: string;
   /** When false, excludes prompts with kind="block" */
   includeBlocks?: boolean;
+}
+
+/**
+ * One row of the AI task registry — an action on the platform that reaches a
+ * model over an API, and the model serving it.
+ *
+ * Read-only and served whole from `GET /v1/llm/tasks`. ally-be owns the list
+ * (`src/llm/constants/ai-task-registry.constants.ts`) and a jest guard fails CI
+ * when a new task label arrives without a row, so this type describes a
+ * contract that is enforced rather than merely agreed.
+ *
+ * `effectiveModel` and `defaultModel` differ only when this deployment's env
+ * overrides the committed default, and `modelSource` says which happened —
+ * "documented" means ally-be could not read that service's env and is repeating
+ * what the registry records.
+ */
+export interface AiTaskRow {
+  id: string;
+  task: string | null;
+  runtime: string;
+  trigger: string;
+  detail: string | null;
+  hotPath: boolean;
+  kind: string;
+  provider: string;
+  defaultModel: string;
+  effectiveModel: string;
+  modelSource: "deployment" | "documented";
+  configuredBy: string;
+  /**
+   * Prompt row whose own provider/model beats `configuredBy`, or null.
+   *
+   * Non-null means `provider` and `defaultModel` on this row are the FALLBACK,
+   * not a fixed fact — an admin who set a model on that prompt row is running
+   * it whatever the registry says.
+   */
+  promptOverride: string | null;
 }

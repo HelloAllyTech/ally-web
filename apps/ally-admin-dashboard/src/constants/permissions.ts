@@ -25,9 +25,6 @@ export enum Permissions {
   EDIT_I18N_TRANSLATIONS = "edit:admin:i18n-translations",
   VIEW_TOOLTIPS = "view:admin:tooltips",
   EDIT_TOOLTIPS = "edit:admin:tooltips",
-  VIEW_ROLEPLAY_SPECS = "view:roleplay-specs",
-  EDIT_ROLEPLAY_SPEC = "edit:roleplay-spec",
-  EDIT_ROLEPLAY_COPILOT = "edit:roleplay-copilot",
   VIEW_BLOGS = "view:blogs",
   EDIT_BLOG = "edit:blog",
   DELETE_BLOG = "delete:blog",
@@ -39,6 +36,40 @@ export enum Permissions {
   VOTE_PRODUCT_ROADMAP = "vote:admin:product-roadmap",
   EDIT_PRODUCT_ROADMAP = "edit:admin:product-roadmap",
   DELETE_AI_LAB = "delete:admin:ai-lab",
+  // Builder. Two tiers, not three: VIEW is read-only (catching up on a build),
+  // EDIT covers the interview, PRD edits and starting or stopping a build.
+  // No delete — a session is cancelled, never removed, because its PRs outlive it.
+  VIEW_BUILDER = "view:admin:builder",
+  EDIT_BUILDER = "edit:admin:builder",
+  // Per-user preferences (e.g. the saved admin sidebar order). Held by every
+  // platform-tier group — PLATFORM_ADMIN inherited both from SUPER_DUPER_ADMIN
+  // in the role-collapse migration — but NOT by a plain tenant ADMIN or a
+  // MULTI_TENANT_ADMIN, which is why the preferences calls in useUser's
+  // checkAuth are treated as non-fatal. Gate personalisation UI on this rather
+  // than on a role-tier name: permissions union across a user's groups, so a
+  // dual-role account is judged on what it can actually do.
+  VIEW_USER_PREFERENCES = "view:user:preferences",
+  EDIT_USER_PREFERENCES = "edit:user:preferences",
+  // Guards all three custom-field-definition writes (create / update / delete)
+  // on ally-be's CustomFieldsController. Held by the platform tiers *and* by a
+  // tenant-scoped ADMIN, who gets it for the helpline-side
+  // OrgCustomFieldDefinitionsSection — an ADMIN cannot reach the admin console's
+  // Organization Detail route (no view:users / edit:user), so gating this
+  // console's controls on it does not widen them.
+  MANAGE_CUSTOM_FIELD_DEFINITIONS = "manage:custom-field:definitions",
+  // Track 2.0 ("Courses") admin surface, incl. the Component Library — mirrors
+  // ally-be's PERMISSIONS.VIEW_ADMIN_TRACK(S)/EDIT_ADMIN_TRACK/DELETE_ADMIN_TRACK
+  // (authorization/constants/permissions.constants.ts). Not yet mirrored here
+  // before this feature; CreateTrack's own routes still gate on EDIT_EVENT.
+  VIEW_ADMIN_TRACK = "view:admin:track",
+  // Knowledge corpora (WhatsApp Q&A reference material and the character library). Granted to
+  // SDA only on the backend, not shared with SUPER_ADMIN — the same treatment as AWS logs,
+  // because unreviewed reference material reaches every answer that touches it.
+  VIEW_KNOWLEDGE_BASE = "view:knowledge-base",
+  EDIT_KNOWLEDGE_BASE = "edit:knowledge-base",
+  UPLOAD_KNOWLEDGE_BASE = "upload:knowledge-base",
+  EDIT_ADMIN_TRACK = "edit:admin:track",
+  DELETE_ADMIN_TRACK = "delete:admin:track",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -50,6 +81,7 @@ export const SIDEBAR_ITEMS = {
   STT_CONFIGS: "stt-configs",
   LLM_CONFIGS: "llm-configs",
   LLM_MODEL_CATALOG: "llm-model-catalog",
+  AI_TASKS: "ai-tasks",
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",
   USER_BADGES: "user-badges",
@@ -61,27 +93,16 @@ export const SIDEBAR_ITEMS = {
   PRODUCT_ROADMAP: "product-roadmap",
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
-  ROLEPLAY_STUDIO: "roleplay-studio",
   BLOG: "blog",
   AI_LAB: "ai-lab",
   SETTINGS: "settings",
   LOGS: "logs",
+  MOBILE_RELEASES: "mobile-releases",
   WHATSAPP_BOT: "whatsapp-bot",
   BUG_HUNTER: "bug-hunter",
+  BUILDER: "builder",
+  COMPONENT_LIBRARY: "component-library",
 };
-
-/**
- * Temporary rollout allowlist for the Roleplay Studio v2. The studio is gated
- * by BOTH the roleplay permissions above AND this email allowlist (compared
- * case-insensitively) until it is opened up more broadly. Applied to the
- * sidebar entry (deriveNavigationItems) and to the routes (PrivateLayout's
- * `allowedEmails` prop).
- */
-export const ROLEPLAY_STUDIO_ALLOWED_EMAILS = [
-  "admin@example.com",
-  "sandeep.malhotra@helloally.ai",
-  "gopikrishnan.sasikumar@helloally.ai",
-];
 
 /**
  * Canonicalize an email for allowlist matching: lower-case, trim, and drop any
@@ -99,14 +120,4 @@ export const normalizeEmailForAllowlist = (raw?: string | null): string => {
   const plus = local.indexOf("+");
   const baseLocal = plus === -1 ? local : local.slice(0, plus);
   return `${baseLocal}${domain}`;
-};
-
-/**
- * Membership test against ROLEPLAY_STUDIO_ALLOWED_EMAILS. Case-insensitive and
- * `+tag`-tolerant: any sub-address of an allowlisted email matches too.
- */
-export const isRoleplayStudioEmailAllowed = (email?: string | null): boolean => {
-  const normalized = normalizeEmailForAllowlist(email);
-  if (!normalized) return false;
-  return ROLEPLAY_STUDIO_ALLOWED_EMAILS.map(normalizeEmailForAllowlist).includes(normalized);
 };

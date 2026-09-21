@@ -1,7 +1,9 @@
+import { createNextState } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
 
 import { SimulationStatus } from "@types";
 import {
+  ArticleContent,
   McqSingleQuestion,
   QuizContent,
   TrackDetail,
@@ -218,5 +220,91 @@ describe("game components", () => {
   it("never sends a completion rule — games do not gate", () => {
     const [item] = serializeTrackForm(gameForm("")).sections[0].items;
     expect(item.completionCriteria).toBeUndefined();
+  });
+});
+
+describe("deserializeTrack on a cached (frozen) server response", () => {
+  /**
+   * What `CreateTrack` actually hands `deserializeTrack`: the GET /tracks/:id
+   * body as it comes back out of the RTK Query cache. Every RTK reducer runs
+   * the response through Immer, which deep-freezes whatever it stores — so the
+   * whole `TrackDetail` tree, `item.content` included, is frozen, and writing
+   * to any part of it throws a TypeError in strict mode (i.e. in every module
+   * here), taking the page down to the ErrorBoundary.
+   */
+  const asCachedResponse = (detail: TrackDetail): TrackDetail =>
+    createNextState({ data: null as TrackDetail | null }, draft => {
+      draft.data = detail;
+    }).data as TrackDetail;
+
+  const articleTrack = (content: ArticleContent): TrackDetail => ({
+    id: "track-1",
+    title: "Onboarding",
+    description: "d",
+    coverImageUrl: "https://example.com/c.png",
+    status: SimulationStatus.DRAFT,
+    isGlobal: false,
+    totalItems: 1,
+    sections: [
+      {
+        id: "section-1",
+        title: "Getting started",
+        description: "",
+        order: 1,
+        items: [
+          {
+            id: "item-1",
+            type: TrackItemType.ARTICLE,
+            order: 1,
+            title: "Read this first",
+            content,
+          },
+        ],
+      },
+    ],
+  });
+
+  it("opens a course whose article predates inline questions", () => {
+    const detail = asCachedResponse(articleTrack({ html: "<p>Read me</p>" }));
+
+    const form = deserializeTrack(detail);
+
+    expect(form.sections[0].items[0].article).toEqual({
+      html: "<p>Read me</p>",
+      questions: [],
+    });
+  });
+
+  it("opens a course whose article already carries questions", () => {
+    const question: McqSingleQuestion = {
+      id: "q1",
+      type: "mcq_single",
+      prompt: "Pick one",
+      options: [
+        { id: "o1", text: "Right" },
+        { id: "o2", text: "Wrong" },
+      ],
+      correctOptionIds: ["o1"],
+    };
+    const detail = asCachedResponse(
+      articleTrack({
+        html: '<p>Read me</p><div data-ally-question="q1"></div>',
+        imageUrls: ["https://example.com/i.png"],
+        questions: [question],
+      }),
+    );
+
+    const form = deserializeTrack(detail);
+
+    expect(form.sections[0].items[0].article?.questions).toEqual([question]);
+    expect(form.sections[0].items[0].article?.imageUrls).toEqual(["https://example.com/i.png"]);
+  });
+
+  it("never writes back into the cached response", () => {
+    const detail = articleTrack({ html: "<p>Read me</p>" });
+
+    deserializeTrack(detail);
+
+    expect(detail.sections[0].items[0].content).toEqual({ html: "<p>Read me</p>" });
   });
 });

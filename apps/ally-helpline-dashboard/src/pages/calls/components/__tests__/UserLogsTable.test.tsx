@@ -163,7 +163,9 @@ vi.mock("../utils", () => ({
   getModeChipConfig: vi.fn((mode: string | undefined) => ({
     label: mode === "DICTATION" ? "Dictation" : "Scribe",
     outerDivClassName:
-      mode === "DICTATION" ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#E8EAF6] text-[#3949AB]",
+      mode === "DICTATION"
+        ? "bg-status-ochreBg text-status-ochreFg"
+        : "bg-status-mauveBg text-status-mauveFg",
   })),
 }));
 
@@ -178,6 +180,8 @@ vi.mock("react-router-dom", async () => {
 vi.mock("@reducer", () => ({
   updateFilters: vi.fn(filters => ({ type: "UPDATE_FILTERS", payload: filters })),
 }));
+
+vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 
 vi.mock("../constants", () => ({
   CALL_LOGS_PAGINATION_LIMIT: 25,
@@ -923,6 +927,61 @@ describe("UserLogsTable", () => {
 
   // -------------------------------------------------------------------------
   describe("Error handling", () => {
+    // See AdminLogsTable: a rejected background refetch leaves isError true,
+    // isLoading false and the last good page still cached. The counsellor must
+    // keep the rows they can already see.
+    it("keeps already-loaded rows when a background refetch fails", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        error: { data: { message: "Fetch failed" } },
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+      });
+      expect(screen.queryByText("Unable to load call logs")).not.toBeInTheDocument();
+    });
+
+    // Keeping the rows makes the toast the only signal that the list the
+    // counsellor is looking at may now be stale, so it has to fire.
+    it("still tells the counsellor the refresh failed", async () => {
+      const { toast } = await import("sonner");
+
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        isError: true,
+        error: { data: { message: "Fetch failed" } },
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("Fetch failed"));
+      });
+    });
+
+    it("shows the error fallback when the fetch fails with nothing cached", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByText("Unable to load call logs")).toBeInTheDocument();
+      });
+    });
+
     it("handles call log without details gracefully (empty display row)", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [{ ...SCRIBE_CALL_LOG, id: 3, details: null }] },

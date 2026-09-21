@@ -23,7 +23,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
+    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#eae7de]">
       <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads, t)}</span>
       <div className="flex items-center gap-2 text-typography-800">
         <Button
@@ -64,7 +64,7 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="#E0E0E0"
+            stroke="#e3dbce"
             strokeWidth={strokeWidth}
           />
           <circle
@@ -169,7 +169,7 @@ const UploadProgressDialog: FC = () => {
 
   return (
     <div className="fixed bottom-0 right-6 z-40 font-primary">
-      <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
+      <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#e3dbce] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={uploads}
           expanded={expanded}

@@ -10,12 +10,16 @@ import {
   CaseTrackDetails,
   TrackOverview,
   TrackPlayer,
+  TrackProgress,
   SuspendedUser,
   ImpersonateHandler,
   Terms,
   Privacy,
   Blog,
   BlogPost,
+  Changelog,
+  Sjt1,
+  SjtEdit,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -25,12 +29,7 @@ import PublicLayout from "./PublicRouteLayout";
 
 const RouteLayout = () => {
   return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
+    <BrowserRouter>
       {/* Fires $pageview to PostHog on every route transition */}
       <PageviewTracker />
       <Routes>
@@ -46,6 +45,11 @@ const RouteLayout = () => {
           {/* Blog — public, accessible whether or not signed in */}
           <Route path={ROUTES.BLOG} element={<Blog />} />
           <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
+          <Route path={ROUTES.CHANGELOG} element={<Changelog />} />
+          {/* Standalone situational-judgement self-check — no nav, no sign-in */}
+          <Route path={ROUTES.SJT1} element={<Sjt1 />} />
+          {/* Same page, every line editable in place — see SjtEdit */}
+          <Route path={ROUTES.SJT1_EDIT} element={<SjtEdit />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}
@@ -57,6 +61,7 @@ const RouteLayout = () => {
           {/* Track 2.0 (multi-component learning tracks) */}
           <Route path={ROUTES.TRACK} element={<TrackOverview />} />
           <Route path={ROUTES.TRACK_ITEM} element={<TrackPlayer />} />
+          <Route path={ROUTES.TRACK_PROGRESS} element={<TrackProgress />} />
         </Route>
 
         {/* Private Routes */}

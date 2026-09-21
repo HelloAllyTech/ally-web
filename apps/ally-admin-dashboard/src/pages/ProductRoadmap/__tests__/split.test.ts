@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { largestRemainderPreview } from "../utils/split";
+import { isReshapeableStage, reshapeBlockedReason } from "../utils/stages";
 
 /**
  * The split preview must agree with ally-be's largest-remainder util, because it is what an admin
  * reads before committing an irreversible redistribution of everyone's votes. A preview that
- * implied coins were created or lost would undermine the one guarantee the split makes.
+ * implied votes were created or lost would undermine the one guarantee the split makes.
  *
  * These cases mirror src/product-roadmap/service/test/largest-remainder.util.spec.ts.
  */
@@ -35,7 +36,7 @@ describe("largestRemainderPreview", () => {
   });
 
   it("conserves the total across 300 randomised previews", () => {
-    // The invariant that matters: the preview must never imply coins appear or vanish.
+    // The invariant that matters: the preview must never imply votes appear or vanish.
     for (let seed = 0; seed < 300; seed++) {
       const rand = (n: number, salt: number) => ((seed * 9301 + salt * 49297) % 233280) % n;
       const total = rand(201, 1); // scores can exceed 100 once many people have voted
@@ -47,5 +48,26 @@ describe("largestRemainderPreview", () => {
       expect(shares).toHaveLength(partCount);
       expect(shares.every(s => s >= 0 && Number.isInteger(s))).toBe(true);
     }
+  });
+});
+
+describe("reshapeable stages", () => {
+  it("blocks released and archived, allows everything else", () => {
+    // Mirrors ROADMAP_UNRESHAPEABLE_STAGES in ally-be. If these two lists ever disagree, the
+    // board offers a button the server answers with a 409.
+    expect(isReshapeableStage("new")).toBe(true);
+    expect(isReshapeableStage("prioritised")).toBe(true);
+    expect(isReshapeableStage("under_development")).toBe(true);
+    expect(isReshapeableStage("released")).toBe(false);
+    expect(isReshapeableStage("archived")).toBe(false);
+  });
+
+  it("treats an unknown stage as reshapeable, leaving the server to refuse it", () => {
+    expect(isReshapeableStage("some_future_stage")).toBe(true);
+  });
+
+  it("names the stage the reader is looking at", () => {
+    expect(reshapeBlockedReason("released")).toContain("released");
+    expect(reshapeBlockedReason("archived")).toContain("archived");
   });
 });

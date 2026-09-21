@@ -2,23 +2,33 @@ import { useMemo, useState } from "react";
 
 import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import { useGetAnalyticsHighlightsQuery, useGetAnalyticsOverviewQuery } from "@api";
+import {
+  useGetActivationQuery,
+  useGetAnalyticsHighlightsQuery,
+  useGetAnalyticsOverviewQuery,
+  useGetCompletionRateQuery,
+  useGetLearnerKpisQuery,
+  useGetXpGrowthQuery,
+} from "@api";
 import { AnalyticsBucket } from "@types";
 
 import {
   AnalyticsTabFilters,
   PLATFORM_WIDE_NOTE,
   asOf,
+  asOfStamp,
   isUnscoped,
   windowLabel,
 } from "../analyticsFilters";
 import {
   DEFAULT_GROUPING,
+  GROUPING_LABEL,
   bucketTitle,
   groupingNote,
   inProgressCaption,
   isInProgress,
   useChartGrouping,
+  useGrainQueries,
   withoutInProgress,
 } from "../analyticsGrouping";
 import { CertificationCard } from "../CertificationCard";
@@ -36,13 +46,14 @@ import {
   stackedBarOpts,
   timeBarOpts,
 } from "../chartKit";
-import { CONTEXT } from "../chartScales";
+import { CONTEXT, PALETTE } from "../chartScales";
 import { CohortRetentionCard } from "../CohortRetentionCard";
 import { FunnelBars } from "../FunnelBars";
 import {
   CSAT_SCALE,
   COST_PER_SIM_SCALE,
   CUMULATIVE_USERS_SCALE,
+  CUMULATIVE_XP_SCALE,
   NEW_USERS_SCALE,
   PLAY_TIME_SCALE,
   PRACTICE_SCALE,
@@ -54,6 +65,7 @@ import {
   buildCostPerSimSeries,
   buildCsatTrendSeries,
   buildCumulativeUsersSeries,
+  buildCumulativeXpSeries,
   buildNewUsersSeries,
   buildPlayTimeSeries,
   buildPracticeMinutesSeries,
@@ -70,6 +82,17 @@ import {
   totalUnpricedCalls,
 } from "../highlightsChart";
 import { RoleplayVolumeCard } from "../RoleplayVolumeCard";
+import {
+  COMPLETION_SCALE,
+  PCT_DOMAIN,
+  PRACTISING_SCALE,
+  allRatesMissing,
+  buildCompletionRateSeries,
+  buildPractisingLearnersSeries,
+  formatCount,
+  formatPct,
+  practisingTakeaway,
+} from "../testingChart";
 import { UsageLevelCard } from "../UsageLevelCard";
 
 const SubHeading = ({ children }: { children: string }) => (
@@ -101,7 +124,10 @@ type ChartId =
   | "playTime"
   | "csat"
   | "costPerSim"
-  | "totalCost";
+  | "totalCost"
+  | "wpl"
+  | "completion"
+  | "xp";
 
 /**
  * Which endpoint feeds each chart.
@@ -113,13 +139,25 @@ type ChartId =
 const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
 const HIGHLIGHTS_CHARTS = ["practice", "playTime", "csat", "costPerSim", "totalCost"] as const;
 
-const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS];
+const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion", "xp"];
 
-/** Every chart opens on the same grain, so the first paint is two requests. */
-const DEFAULT_GROUPINGS = Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_GROUPING])) as Record<
-  ChartId,
-  AnalyticsBucket
->;
+/** A weekly-or-coarser metric: a daily north star is noise, a yearly one hides it. */
+const WPL_GRAINS: AnalyticsBucket[] = ["week", "month"];
+
+/**
+ * Every chart opens on the same grain, so the first paint is two requests.
+ *
+ * The north star is the one exception: "practising learners this week" is the
+ * metric by definition, not a monthly figure read at a finer grain, so it opens
+ * on week.
+ */
+const DEFAULT_GROUPINGS = {
+  ...(Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_GROUPING])) as Record<
+    ChartId,
+    AnalyticsBucket
+  >),
+  wpl: "week" as AnalyticsBucket,
+};
 
 /**
  * Platform — the whole-platform picture, the first sub-tab of Highlights.
@@ -214,6 +252,32 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     ),
   };
 
+  // The north-star pair. Each is fed by an endpoint of its own and read at ONE
+  // grain — the chart's — because the tiles beside them are grain-dependent too
+  // ("practising learners in the latest full week" is a different number at a
+  // monthly grain), so pinning a base grain here would only fetch a response
+  // nothing displays.
+  const activationQ = useGrainQueries(useGetActivationQuery, query, new Set([groupingFor("wpl")]));
+  const completionQ = useGrainQueries(
+    useGetCompletionRateQuery,
+    query,
+    new Set([groupingFor("completion")]),
+  );
+  const activation = activationQ[groupingFor("wpl")];
+  const completion = completionQ[groupingFor("completion")];
+
+  // Cumulative platform XP. Its own endpoint (the append-only xp_events ledger)
+  // and read at ONE grain — the chart's — because nothing else on this tab reads
+  // from it, so pinning a base grain would only fetch a response nothing shows.
+  const xpQ = useGrainQueries(useGetXpGrowthQuery, query, new Set([groupingFor("xp")]));
+  const xpGrowthQ = xpQ[groupingFor("xp")];
+
+  // LEARNER-role-scoped counterparts of the overview KPIs above, which count
+  // every account regardless of role. All-time: a lifetime headcount has no
+  // window to narrow.
+  const tenantOnly = useMemo(() => ({ tenantId: query.tenantId }), [query.tenantId]);
+  const learnerKpis = useGetLearnerKpisQuery(tenantOnly);
+
   // The base response. KPIs and the panels with no time axis read from here, so
   // they do not blink out when the last chart on this grain is switched away.
   const highlights = hQ[DEFAULT_GROUPING];
@@ -239,11 +303,12 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
    * render would remount the picker (and unmount the chart's sibling subtree)
    * every time any state on this tab changed.
    */
-  const picker = (chart: ChartId) => (
+  const picker = (chart: ChartId, options?: AnalyticsBucket[]) => (
     <GroupingPicker
       id={`highlights-grouping-${chart}`}
       value={groupingFor(chart)}
       onChange={grouping => setGrouping(chart, grouping)}
+      options={options}
     />
   );
 
@@ -284,6 +349,9 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     csat: groupingFor("csat"),
     costPerSim: groupingFor("costPerSim"),
     totalCost: groupingFor("totalCost"),
+    wpl: groupingFor("wpl"),
+    completion: groupingFor("completion"),
+    xp: groupingFor("xp"),
   };
 
   /* ----------------------------- plotted series ---------------------------- */
@@ -357,6 +425,20 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   );
   const unpriced = useMemo(() => totalUnpricedCalls(costPoints), [costPoints]);
 
+  const xpPoints = xpGrowthQ.data?.points ?? [];
+  const xpInProgress = xpGrowthQ.data?.window.inProgressBucket;
+  const cumulativeXp = useMemo(
+    () => buildCumulativeXpSeries(withoutInProgress(xpPoints, p => p.bucket, xpInProgress)),
+    [xpPoints, xpInProgress],
+  );
+  // The change behind the curve, for the card's takeaway. Read from the last
+  // COMPLETE period — the accruing one can only rise, so quoting it would
+  // understate the figure by however much of the period is left to run.
+  const latestCompleteXp = useMemo(() => {
+    const complete = withoutInProgress(xpPoints, p => p.bucket, xpInProgress);
+    return complete.length > 0 ? complete[complete.length - 1] : undefined;
+  }, [xpPoints, xpInProgress]);
+
   const totalCostPoints = totalCostQ.data?.costPerSim ?? [];
   const totalCostInProgress = totalCostQ.data?.window.inProgressBucket;
   const totalCost = useMemo(
@@ -421,6 +503,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(overviewSummary?.totalUsers),
       spark: kpiSparks.cumulative,
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Active users",
@@ -428,6 +512,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         "Distinct people who have started at least one simulation — started, not necessarily finished.",
       value: formatKpi(overviewSummary?.activeUsers),
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Active orgs",
@@ -435,6 +521,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         "Organisations with at least one completed simulation. An org that only browsed does not count.",
       value: formatKpi(summary?.activeOrgs),
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Completed sims",
@@ -443,6 +531,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.completedSimulations),
       spark: kpiSparks.sims,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Practice minutes",
@@ -451,6 +541,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.practiceMinutes),
       spark: kpiSparks.practice,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Avg quality score",
@@ -468,6 +560,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       nUnit: "evaluated sessions",
       minN: MIN_N_FOR_SCORE,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "Avg rating",
@@ -478,6 +572,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       minN: MIN_N_FOR_SCORE,
       spark: kpiSparks.csat,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
     {
       label: "AI cost / sim",
@@ -490,8 +586,45 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       value: formatKpi(summary?.costPerCompletedSimUsd, { prefix: "$", decimals: 2 }),
       spark: kpiSparks.costPerSim,
       loading: highlightsLoading,
+      error: highlights.isError,
+      onRetry: highlights.refetch,
     },
   ];
+
+  /* ---------------------- north star & learner counts ---------------------- */
+
+  const a = activation.data;
+  const wplInProgress = a?.window.inProgressBucket;
+  const wplPoints = useMemo(
+    () => withoutInProgress(a?.practisingLearners ?? [], p => p.bucket, wplInProgress),
+    [a, wplInProgress],
+  );
+  const wplSeries = useMemo(() => buildPractisingLearnersSeries(wplPoints), [wplPoints]);
+
+  const completionData = completion.data;
+  const completionInProgress = completionData?.window.inProgressBucket;
+  const completionPoints = useMemo(
+    () => withoutInProgress(completionData?.points ?? [], p => p.bucket, completionInProgress),
+    [completionData, completionInProgress],
+  );
+  const completionSeries = useMemo(
+    () => buildCompletionRateSeries(completionPoints),
+    [completionPoints],
+  );
+
+  // Monthly signups double as the "new learners" trend: an all-time endpoint has
+  // no window to bucket by grain, so this one series is month-grained by
+  // construction and carries no picker.
+  const lk = learnerKpis.data;
+  const learnerSignupSeries = useMemo(
+    () =>
+      (lk?.signupsByMonth ?? []).map(p => ({
+        group: "New learners",
+        key: p.month,
+        value: p.newLearners,
+      })),
+    [lk],
+  );
 
   /* ------------------------------ options --------------------------------- */
   //
@@ -517,6 +650,16 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         legend: false,
       }),
     [grain.cumulative],
+  );
+  const xpOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "XP",
+        bottomTitle: bucketTitle(grain.xp),
+        colorScale: CUMULATIVE_XP_SCALE,
+        legend: false,
+      }),
+    [grain.xp],
   );
   const retentionOpts = useMemo(
     () =>
@@ -619,6 +762,46 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       }),
     [grain.totalCost],
   );
+  const wplOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Learners",
+        bottomTitle: bucketTitle(grain.wpl),
+        colorScale: PRACTISING_SCALE,
+        legend: false,
+      }),
+    [grain.wpl],
+  );
+  const completionOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Completed of started (%)",
+        bottomTitle: bucketTitle(grain.completion),
+        colorScale: COMPLETION_SCALE,
+        legend: false,
+        domain: PCT_DOMAIN,
+      }),
+    [grain.completion],
+  );
+  const completionZoomedOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Completed of started (%)",
+        bottomTitle: bucketTitle(grain.completion),
+        colorScale: COMPLETION_SCALE,
+        legend: false,
+      }),
+    [grain.completion],
+  );
+  const learnerSignupOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "New learners",
+        legend: false,
+        colorScale: { "New learners": PALETTE.blue },
+      }),
+    [],
+  );
 
   /* --------------------------- detail tables ------------------------------ */
 
@@ -668,6 +851,96 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         {kpis.map(kpi => (
           <KpiTile key={kpi.label} {...kpi} />
         ))}
+      </div>
+
+      {/* ---------------------------- North star -------------------------- */}
+      {/* The headline pair, above growth: how many people reached value in the
+          last completed period, and how much friction stood between launching a
+          session and finishing one. Everything below is an explanation of these
+          two. */}
+      <SubHeading>North star</SubHeading>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <KpiTile
+          label="Practising learners"
+          description={`Distinct learners who completed a scored session in the latest full ${bucketTitle(
+            grain.wpl,
+          ).toLowerCase()}. The north-star metric: people reaching value, not sessions played.`}
+          value={formatCount(a?.summary.latestPractisingLearners)}
+          loading={busy(activation)}
+          error={activation.isError}
+          onRetry={activation.refetch}
+        />
+        <KpiTile
+          label="Activation rate"
+          description="Share of all learner accounts that have ever completed a simulation. All-time, so it falls when a new org is onboarded and rises as those learners start."
+          value={formatPct(a?.summary.activationRatePct)}
+          n={a?.summary.registeredLearners}
+          nUnit="learner accounts"
+          loading={busy(activation)}
+          error={activation.isError}
+          onRetry={activation.refetch}
+        />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ChartCard
+          title="Practising learners per period"
+          caption={`Distinct learners who completed a scored session. Counts people reaching value rather than sessions played, so it cannot be inflated by a handful of enthusiasts.${inProgressCaption(
+            grain.wpl,
+            wplInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Distinct learners with >=1 completed session, bucketed",
+            window: windowLabel(a?.window),
+            extra: groupingNote(grain.wpl),
+            asOf: asOf(a?.window),
+          })}
+          takeaway={practisingTakeaway(wplPoints)}
+          loading={busy(activation)}
+          error={activation.isError}
+          onRetry={activation.refetch}
+          empty={!busy(activation) && wplSeries.length === 0}
+          controls={picker("wpl", WPL_GRAINS)}
+          onExpand={() => setExpanded("wpl")}
+        >
+          <ScrollableChart data={wplSeries}>
+            <LineChart data={wplSeries} options={wplOpts} />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          title="Session completion rate"
+          caption={`Of the sessions learners launched, the share that reached a scored ending. A leading friction signal — and the caveat behind every efficacy panel on this tab, which can only see the sessions that finished. A period with no launches is a gap, not 0%.${inProgressCaption(
+            grain.completion,
+            completionInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Completed / launched sessions per period",
+            window: windowLabel(completionData?.window),
+            n: completionData?.summary.started,
+            nUnit: "sessions launched",
+            extra: groupingNote(grain.completion),
+            asOf: asOf(completionData?.window),
+          })}
+          takeaway={
+            completionData?.summary.completionRatePct !== null &&
+            completionData?.summary.completionRatePct !== undefined
+              ? `${formatPct(completionData.summary.completionRatePct)} of ${formatCount(
+                  completionData.summary.started,
+                )} launched sessions reached a scored ending`
+              : undefined
+          }
+          loading={busy(completion)}
+          error={completion.isError}
+          onRetry={completion.refetch}
+          empty={!busy(completion) && allRatesMissing(completionPoints)}
+          emptyText="No sessions launched in any period on this axis"
+          controls={picker("completion")}
+          onExpand={() => setExpanded("completion")}
+        >
+          <ScrollableChart data={completionSeries}>
+            <LineChart data={completionSeries} options={completionOpts} />
+          </ScrollableChart>
+        </ChartCard>
       </div>
 
       {/* ------------------------- Growth & reach ------------------------- */}
@@ -785,6 +1058,61 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       </div>
 
       {/* --------------------------- Engagement --------------------------- */}
+      {/* --------------------------- Learner KPIs -------------------------- */}
+      {/* The LEARNER-only cut of the counts above, which include every role.
+          Kept as its own strip rather than folded into the KPI row: a reader
+          comparing "total users" with "total learners" needs to see that they
+          are different populations, not two tiles that disagree. */}
+      <SubHeading>Learner KPIs</SubHeading>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiTile
+            label="Total learners"
+            description="LEARNER-role accounts created, all-time — the KPI strip above counts every role."
+            value={formatCount(lk?.summary.totalLearners)}
+            loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
+          />
+          <KpiTile
+            label="Active learners"
+            description="Distinct learners with >=1 completed session, all-time."
+            value={formatCount(lk?.summary.activeLearners)}
+            loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
+          />
+          <KpiTile
+            label="Completed sessions"
+            description="Completed sessions attributed to learners, all-time."
+            value={formatCount(lk?.summary.totalCompletedSessions)}
+            loading={learnerKpis.isLoading && !lk}
+            error={learnerKpis.isError}
+            onRetry={learnerKpis.refetch}
+          />
+        </div>
+
+        <ChartCard
+          title="New learners per month"
+          caption="LEARNER-role signups, all-time and month-grained — the LEARNER-only cut of the new-users trend above, which counts every role."
+          source={buildSource({
+            derivation: "LEARNER-role users.createdAt, grouped by month",
+            window: "All time",
+            n: lk?.summary.totalLearners,
+            nUnit: "learner accounts",
+            asOf: asOfStamp(lk?.computedAt),
+          })}
+          loading={learnerKpis.isLoading && !lk}
+          error={learnerKpis.isError}
+          onRetry={learnerKpis.refetch}
+          empty={!learnerKpis.isLoading && learnerSignupSeries.length === 0}
+        >
+          <ScrollableChart data={learnerSignupSeries}>
+            <LineChart data={learnerSignupSeries} options={learnerSignupOpts} />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       <SubHeading>Engagement</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ChartCard
@@ -866,6 +1194,58 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         >
           <ScrollableChart data={sims}>
             <SimpleBarChart data={sims} options={simsOpts} />
+          </ScrollableChart>
+        </ChartCard>
+
+        {/* Sits in Engagement rather than in Growth & reach on purpose: this is
+            a measure of what learners DID, not of how many of them there are.
+            Its own endpoint (the xp_events ledger), so it survives an overview
+            failure and re-graining it costs one request. */}
+        <ChartCard
+          title="Cumulative XP awarded"
+          caption={`Running total of every XP award across the platform, excluding test organisations. A lifetime total can only rise, so the shape — where it steepens and where it flattens — is the whole signal; the level is not one. Awards are dated to the day they were EARNED, so history seeded at the Progress launch sits where it happened rather than on the launch date.${inProgressCaption(
+            grain.xp,
+            xpInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Running total of xp_events.xp, by awardedOn",
+            window: windowLabel(xpGrowthQ.data?.window),
+            n: xpGrowthQ.data?.summary.earners,
+            nUnit: "learners earning",
+            extra: groupingNote(grain.xp),
+            asOf: asOf(xpGrowthQ.data?.window),
+          })}
+          takeaway={
+            latestCompleteXp
+              ? `${formatCount(xpGrowthQ.data?.summary.cumulativeXp)} XP all time · ` +
+                `${formatCount(latestCompleteXp.xpEarned)} earned by ` +
+                `${formatCount(latestCompleteXp.earners)} learners in the latest full ` +
+                `${GROUPING_LABEL[grain.xp].toLowerCase()}`
+              : undefined
+          }
+          loading={busy(xpGrowthQ)}
+          error={xpGrowthQ.isError}
+          onRetry={xpGrowthQ.refetch}
+          empty={!busy(xpGrowthQ) && cumulativeXp.length === 0}
+          emptyText={
+            // Two different reasons the plot can be empty, and only one of them
+            // is "no XP". At a coarse grain on a young platform EVERY bucket on
+            // the axis can be the accruing one — read yearly over ten months of
+            // history, there is exactly one bucket and it is not finished — so
+            // the series is empty while the ledger is not. Saying "no XP has
+            // been awarded" there would be flatly false, and false in the
+            // direction that makes the product look worse than it is.
+            xpPoints.length > 0
+              ? `Every period on this axis is still accruing, so there is no completed ${GROUPING_LABEL[
+                  grain.xp
+                ].toLowerCase()} to plot yet. Group by a finer period, or expand for the provisional figures.`
+              : "No XP has been awarded in any period on this axis"
+          }
+          controls={picker("xp")}
+          onExpand={() => setExpanded("xp")}
+        >
+          <ScrollableChart data={cumulativeXp}>
+            <LineChart data={cumulativeXp} options={xpOpts} />
           </ScrollableChart>
         </ChartCard>
       </div>
@@ -1137,6 +1517,44 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         />
       )}
 
+      {expanded === "xp" && (
+        <ChartDetailModal
+          open
+          onClose={() => setExpanded(null)}
+          title="Cumulative XP awarded"
+          caption="The table carries the per-period XP and the learners who earned it — the change behind a line that can only rise, and the way to tell whether it steepened because more learners practised or because the same ones earned more."
+          source={buildSource({
+            derivation: "Running total of xp_events.xp, by awardedOn",
+            window: windowLabel(xpGrowthQ.data?.window),
+            n: xpGrowthQ.data?.summary.earners,
+            nUnit: "learners earning",
+            extra: groupingNote(grain.xp),
+          })}
+          table={{
+            columns: [bucketTitle(grain.xp), "XP earned", "Learners earning", "Cumulative XP"],
+            rows: xpPoints.map(p => [
+              rowKey(p.bucket, xpInProgress),
+              p.xpEarned,
+              p.earners,
+              p.cumulativeXp,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(xpGrowthQ.data?.window),
+            grain.xp,
+            xpInProgress,
+            `Opening balance before the window: ${formatCount(
+              xpGrowthQ.data?.summary.baselineXp,
+            )} XP`,
+          )}
+          render={({ height }) => (
+            <ScrollableChart data={cumulativeXp}>
+              <LineChart data={cumulativeXp} options={{ ...xpOpts, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
       {expanded === "retention" && (
         <ChartDetailModal
           open
@@ -1375,6 +1793,78 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
               <SimpleBarChart data={totalCost} options={{ ...totalCostOpts, height }} />
             </ScrollableChart>
           )}
+        />
+      )}
+
+      {expanded === "wpl" && (
+        <ChartDetailModal
+          open
+          onClose={() => setExpanded(null)}
+          title="Practising learners per period"
+          caption="Distinct learners who completed a scored session."
+          source={buildSource({
+            derivation: "Distinct learners with >=1 completed session",
+            window: windowLabel(a?.window),
+            extra: groupingNote(grain.wpl),
+            asOf: asOf(a?.window),
+          })}
+          render={({ height }) => <LineChart data={wplSeries} options={{ ...wplOpts, height }} />}
+          table={{
+            columns: [bucketTitle(grain.wpl), "Learners", "Sessions"],
+            rows: (a?.practisingLearners ?? []).map(p => [
+              rowKey(p.bucket, wplInProgress),
+              p.learners,
+              p.sessions,
+            ]),
+          }}
+          exportContext={exportLines(windowLabel(a?.window), grain.wpl, wplInProgress)}
+          exportFilename="practising-learners"
+        />
+      )}
+
+      {expanded === "completion" && (
+        <ChartDetailModal
+          open
+          onClose={() => setExpanded(null)}
+          title="Session completion rate"
+          caption="Completed of launched sessions. A period with no launches has no rate — the cell is blank, not zero."
+          source={buildSource({
+            derivation: "Completed / launched sessions per period",
+            window: windowLabel(completionData?.window),
+            extra: groupingNote(grain.completion),
+            asOf: asOf(completionData?.window),
+          })}
+          zoomable
+          zoomNote="Axis zoomed to the data range — magnifies small changes; the tile shows the full 0–100% scale."
+          render={({ height, zoomed }) => (
+            <LineChart
+              data={completionSeries}
+              options={{ ...(zoomed ? completionZoomedOpts : completionOpts), height }}
+            />
+          )}
+          table={{
+            columns: [
+              bucketTitle(grain.completion),
+              "Launched",
+              "Completed",
+              "Abandoned",
+              "Rate %",
+            ],
+            rows: (completionData?.points ?? []).map(p => [
+              rowKey(p.bucket, completionInProgress),
+              p.started,
+              p.completed,
+              p.abandoned,
+              p.completionRatePct,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(completionData?.window),
+            grain.completion,
+            completionInProgress,
+            "A blank rate means no sessions launched in that period — undefined, not 0%",
+          )}
+          exportFilename="session-completion-rate"
         />
       )}
     </div>

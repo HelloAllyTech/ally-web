@@ -52,6 +52,13 @@ export interface FieldAutosave {
 
 const DEFAULT_DELAY_MS = 800;
 
+// Ceiling for the retry backoff. Retries never stop — the status label promises
+// they won't — but a form left open through an outage must not sit there making
+// a request every delayMs for as long as the tab is up. Backing off to a request
+// every 30s keeps the promise honest while taking the load off a service that is
+// already failing.
+const MAX_RETRY_DELAY_MS = 30_000;
+
 const isEmpty = (pending: PendingEdits) =>
   Object.values(pending).every(channel => Object.keys(channel).length === 0);
 
@@ -87,6 +94,9 @@ export function useFieldAutosave({
   // Set when edits arrive during an in-flight write, so we write again rather
   // than leaving them to sit until the next keystroke.
   const rerunRef = useRef(false);
+  // Consecutive failed writes, for the retry backoff. Cleared the moment one
+  // lands, so a single blip doesn't slow down the writes that follow it.
+  const retriesRef = useRef(0);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isDirty, setIsDirty] = useState(false);
 
@@ -97,6 +107,8 @@ export function useFieldAutosave({
   onPersistRef.current = onPersist;
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
+  const delayMsRef = useRef(delayMs);
+  delayMsRef.current = delayMs;
 
   const hasPendingEdits = useCallback(() => !isEmpty(pendingRef.current), []);
   const getPending = useCallback(() => clone(pendingRef.current), []);
@@ -107,6 +119,22 @@ export function useFieldAutosave({
       timerRef.current = null;
     }
   };
+
+  // write() is declared below and never changes identity; the ref is only here
+  // so the shared scheduler can reach it.
+  const writeRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
+  // Touches only refs, so [] keeps it stable and write()/edit() can depend on it
+  // without churning their own identities.
+  const scheduleWrite = useCallback((waitMs: number) => {
+    clearTimer();
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      // Swallow here: the rejection is reflected in saveState, and an unhandled
+      // rejection from a timer would surface as a console error.
+      void writeRef.current().catch(() => {});
+    }, waitMs);
+  }, []);
 
   const write = useCallback(async (): Promise<void> => {
     if (isEmpty(pendingRef.current)) return;
@@ -120,10 +148,12 @@ export function useFieldAutosave({
 
     const sent = clone(pendingRef.current);
     setSaveState("saving");
+    let succeeded = false;
 
     const request = (async () => {
       try {
         await onPersistRef.current(sent);
+        succeeded = true;
         // Drop only what was actually written, and only if it hasn't been
         // re-edited since — otherwise a keystroke that landed mid-request would
         // be marked saved without ever having been sent.
@@ -135,12 +165,24 @@ export function useFieldAutosave({
           }
           if (Object.keys(current).length === 0) delete pendingRef.current[channel];
         }
+        retriesRef.current = 0;
         setIsDirty(!isEmpty(pendingRef.current));
         setSaveState(isEmpty(pendingRef.current) ? "saved" : "saving");
       } catch {
         // Keep the edits pending so the next flush retries them, and let the
-        // caller surface the failure rather than pretending it saved.
+        // caller surface the failure rather than pretending it saved. The
+        // status label promises "we'll keep trying", so that has to be true
+        // even when nothing edits the form again afterwards — dictated fields
+        // are filled and flushed once, with no further keystrokes to trigger
+        // a retry naturally.
         setSaveState("error");
+        if (enabledRef.current) {
+          // Exponential backoff, capped. The first retry still comes after the
+          // normal delay so a one-off failure recovers as quickly as it used to;
+          // it's only a sustained outage that slows down.
+          scheduleWrite(Math.min(delayMsRef.current * 2 ** retriesRef.current, MAX_RETRY_DELAY_MS));
+          retriesRef.current += 1;
+        }
         throw new Error("autosave failed");
       }
     })();
@@ -154,12 +196,19 @@ export function useFieldAutosave({
     } finally {
       if (rerunRef.current) {
         rerunRef.current = false;
-        if (!isEmpty(pendingRef.current)) void write();
+        // Only chase the queued edits straight away if this write landed. After
+        // a failure the backoff timer already owns the retry, and re-running
+        // here would step around it and hammer the endpoint at full speed.
+        if (succeeded && !isEmpty(pendingRef.current)) void write().catch(() => {});
       }
     }
-  }, []);
+  }, [scheduleWrite]);
+
+  writeRef.current = write;
 
   const flush = useCallback(async () => {
+    // An explicit Save is the counsellor's escape hatch from a long backoff:
+    // it drops the pending timer and tries right now.
     clearTimer();
     await write();
   }, [write]);
@@ -175,21 +224,21 @@ export function useFieldAutosave({
       setSaveState(prev => (prev === "saved" ? "idle" : prev));
 
       if (!enabledRef.current) return;
-      clearTimer();
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        // Swallow here: the rejection is reflected in saveState, and an
-        // unhandled rejection from a timer would surface as a console error.
-        void write().catch(() => {});
-      }, delayMs);
+      // Mid-backoff, the scheduled retry already covers this edit — it sends
+      // whatever is pending when it fires. Rescheduling it at the base delay on
+      // every keystroke would undo the backoff entirely, which is the one case
+      // where a user typing through an outage hammers hardest.
+      if (retriesRef.current > 0 && timerRef.current) return;
+      scheduleWrite(delayMs);
     },
-    [delayMs, write],
+    [delayMs, scheduleWrite],
   );
 
   const reset = useCallback(() => {
     clearTimer();
     pendingRef.current = {};
     rerunRef.current = false;
+    retriesRef.current = 0;
     setIsDirty(false);
     setSaveState("idle");
   }, []);
@@ -200,9 +249,19 @@ export function useFieldAutosave({
   useEffect(
     () => () => {
       clearTimer();
-      if (!isEmpty(pendingRef.current) && enabledRef.current) {
-        void onPersistRef.current(clone(pendingRef.current)).catch(() => {});
+      if (isEmpty(pendingRef.current) || !enabledRef.current) return;
+
+      if (inFlightRef.current) {
+        // A save from an earlier keystroke is already in flight. Firing a
+        // second one here would overlap it, and the two could land out of
+        // order and clobber this newer edit. Mark it for rerun instead —
+        // write()'s own completion handler resends whatever's still pending
+        // once the in-flight request settles.
+        rerunRef.current = true;
+        return;
       }
+
+      void onPersistRef.current(clone(pendingRef.current)).catch(() => {});
     },
     [],
   );

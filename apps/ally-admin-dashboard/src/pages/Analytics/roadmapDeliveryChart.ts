@@ -52,9 +52,9 @@ export const ROADMAP_TYPE_FILTERS: {
 export const typeFilterMeta = (key: RoadmapTypeFilter) =>
   ROADMAP_TYPE_FILTERS.find(f => f.key === key) ?? ROADMAP_TYPE_FILTERS[0];
 
-/** Coins and item count under one type filter — the pair every view needs. */
+/** Votes and item count under one type filter — the pair every view needs. */
 export interface RoadmapMeasure {
-  coins: number;
+  votes: number;
   opportunities: number;
 }
 
@@ -64,12 +64,12 @@ export const measureOf = (
   filter: RoadmapTypeFilter,
 ): RoadmapMeasure => {
   if (filter === "idea") {
-    return { coins: totals.ideaCoins, opportunities: totals.ideaOpportunities };
+    return { votes: totals.ideaVotes, opportunities: totals.ideaOpportunities };
   }
   if (filter === "bug") {
-    return { coins: totals.bugCoins, opportunities: totals.bugOpportunities };
+    return { votes: totals.bugVotes, opportunities: totals.bugOpportunities };
   }
-  return { coins: totals.coins, opportunities: totals.opportunities };
+  return { votes: totals.votes, opportunities: totals.opportunities };
 };
 
 /** One month as the chart and table render it. */
@@ -80,8 +80,8 @@ export interface RoadmapDeliveryMonthView extends RoadmapMeasure {
   label: string;
   /** "Aug 2026" — never marked. For the table and the footnote, which have room. */
   plainLabel: string;
-  /** Coins per owner band, keyed on the band name. Omitted bands are zero. */
-  coinsByOwner: Record<string, number>;
+  /** Votes per owner band, keyed on the band name. Omitted bands are zero. */
+  votesByOwner: Record<string, number>;
   /** Released items per owner band, for the table behind the chart. */
   releasesByOwner: Record<string, number>;
   /** True for the current, unfinished month. */
@@ -132,11 +132,11 @@ export const buildRoadmapDeliveryMonths = (
   if (!data) return [];
 
   return data.months.map(m => {
-    const coinsByOwner: Record<string, number> = {};
+    const votesByOwner: Record<string, number> = {};
     const releasesByOwner: Record<string, number> = {};
     for (const owner of m.owners) {
       const measure = measureOf(owner, filter);
-      coinsByOwner[owner.owner] = measure.coins;
+      votesByOwner[owner.owner] = measure.votes;
       releasesByOwner[owner.owner] = measure.opportunities;
     }
 
@@ -147,7 +147,7 @@ export const buildRoadmapDeliveryMonths = (
       label: m.partial ? `${plainLabel}${PARTIAL_SUFFIX}` : plainLabel,
       plainLabel,
       ...measureOf(m, filter),
-      coinsByOwner,
+      votesByOwner,
       releasesByOwner,
       partial: m.partial,
     };
@@ -155,7 +155,7 @@ export const buildRoadmapDeliveryMonths = (
 };
 
 /**
- * Owner bands that have any coins under the current filter.
+ * Owner bands that have any votes under the current filter.
  *
  * Filtering to bugs can empty an owner entirely, and a legend entry for a band
  * with nothing in it is a colour the reader hunts for and never finds. The ORDER
@@ -167,7 +167,7 @@ export const visibleOwners = (
   months: RoadmapDeliveryMonthView[],
 ): string[] => {
   if (!data) return [];
-  return data.owners.filter(owner => months.some(m => (m.coinsByOwner[owner] ?? 0) > 0));
+  return data.owners.filter(owner => months.some(m => (m.votesByOwner[owner] ?? 0) > 0));
 };
 
 /**
@@ -188,7 +188,7 @@ export const buildRoadmapDeliverySeries = (
   owners: string[],
 ): { group: string; key: string; value: number }[] =>
   owners.flatMap(owner =>
-    months.map(m => ({ group: owner, key: m.label, value: m.coinsByOwner[owner] ?? 0 })),
+    months.map(m => ({ group: owner, key: m.label, value: m.votesByOwner[owner] ?? 0 })),
   );
 
 /**
@@ -221,12 +221,12 @@ export const buildRoadmapDeliveryScale = (
 
 /** Months with anything on them — what the chart can actually draw. */
 export const plottedMonths = (months: RoadmapDeliveryMonthView[]): RoadmapDeliveryMonthView[] =>
-  months.filter(m => m.coins > 0);
+  months.filter(m => m.votes > 0);
 
 /**
- * The one-sentence finding: who carried the coins that shipped.
+ * The one-sentence finding: who carried the votes that shipped.
  *
- * Deliberately NOT a month-on-month delta. A release log is lumpy — one 90-coin
+ * Deliberately NOT a month-on-month delta. A release log is lumpy — one 90-vote
  * item landing in April and not in March is a scheduling fact, not a trend — so a
  * "↓ 62% vs last month" would be a comparison the data cannot support. The
  * concentration across owners is the thing the chart is built to show and needs no
@@ -237,24 +237,24 @@ export const roadmapDeliveryTakeaway = (
   months: RoadmapDeliveryMonthView[],
   owners: string[],
 ): string | null => {
-  const total = months.reduce((sum, m) => sum + m.coins, 0);
+  const total = months.reduce((sum, m) => sum + m.votes, 0);
   if (total === 0 || owners.length === 0) return null;
 
   const byOwner = owners
     .map(owner => ({
       owner,
-      coins: months.reduce((sum, m) => sum + (m.coinsByOwner[owner] ?? 0), 0),
+      votes: months.reduce((sum, m) => sum + (m.votesByOwner[owner] ?? 0), 0),
     }))
-    .sort((a, b) => b.coins - a.coins);
+    .sort((a, b) => b.votes - a.votes);
 
   const top = byOwner[0];
-  const head = `${total.toLocaleString()} coins shipped across ${months.length} ${
+  const head = `${total.toLocaleString()} votes shipped across ${months.length} ${
     months.length === 1 ? "month" : "months"
   }`;
-  if (byOwner.length < 2 || top.coins === 0) return head;
+  if (byOwner.length < 2 || top.votes === 0) return head;
 
-  const share = Math.round((top.coins / total) * 100);
-  return `${head} — ${top.owner} carried ${share}% of them (${top.coins.toLocaleString()} coins)`;
+  const share = Math.round((top.votes / total) * 100);
+  return `${head} — ${top.owner} carried ${share}% of them (${top.votes.toLocaleString()} votes)`;
 };
 
 /**
@@ -279,7 +279,7 @@ export const undatedNote = (
   return (
     `${plotted.opportunities.toLocaleString()} of ${total.toLocaleString()} released ` +
     `items are plotted. The other ${undated.opportunities.toLocaleString()} ` +
-    `(${undated.coins.toLocaleString()} coins) carry no release date — it is only ` +
+    `(${undated.votes.toLocaleString()} votes) carry no release date — it is only ` +
     `stamped when an item moves into Released, so older work has none — and they are ` +
     `left off rather than given a stand-in month.`
   );
@@ -303,7 +303,7 @@ export const roadmapDeliveryEmptyText = (
   if (undated.opportunities > 0) {
     return (
       `Nothing can be placed on a month axis: all ${undated.opportunities.toLocaleString()} ` +
-      `released items (${undated.coins.toLocaleString()} coins) carry no release date. ` +
+      `released items (${undated.votes.toLocaleString()} votes) carry no release date. ` +
       `The date is stamped when an item moves into Released, so items released before ` +
       `that was tracked have none.`
     );
@@ -312,10 +312,10 @@ export const roadmapDeliveryEmptyText = (
 };
 
 /**
- * The table behind the chart: coins AND release counts, and every month the axis
+ * The table behind the chart: votes AND release counts, and every month the axis
  * carries.
  *
- * The count is what makes a coin total readable — "180 coins" is one blocker or
+ * The count is what makes a vote total readable — "180 votes" is one blocker or
  * twelve small wins, and those are different months. The in-progress month is
  * here too, flagged, so it is somewhere the reader can see rather than being a
  * bar they misread as a fall.
@@ -324,14 +324,14 @@ export const buildRoadmapDeliveryTable = (
   months: RoadmapDeliveryMonthView[],
   owners: string[],
 ): { columns: string[]; rows: (string | number | null)[][] } => ({
-  columns: ["Month", "Coins", "Released", ...owners.map(o => `${o} (coins)`)],
+  columns: ["Month", "Votes", "Released", ...owners.map(o => `${o} (votes)`)],
   // Spelled out here rather than reusing the axis marker: a table cell and a CSV
   // have room for words, and "Aug 2026 *" in an exported file is an asterisk with
   // no footnote to point at.
   rows: months.map(m => [
     m.partial ? `${m.plainLabel} (in progress)` : m.plainLabel,
-    m.coins,
+    m.votes,
     m.opportunities,
-    ...owners.map(o => m.coinsByOwner[o] ?? 0),
+    ...owners.map(o => m.votesByOwner[o] ?? 0),
   ]),
 });

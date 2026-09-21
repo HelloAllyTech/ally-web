@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   StartAnnotationItemPayload,
   TrackItemCompletionResult,
 } from "@types";
+import { clearItemProgress, loadItemProgress, saveItemProgress } from "@utils";
 
 import { AnnotationResultPanel } from "./AnnotationResultPanel";
 
@@ -49,6 +50,21 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
   const [marks, setMarks] = useState<AnnotationMarkInput[]>([]);
   const [armedLabelId, setArmedLabelId] = useState<string | null>(null);
   const [result, setResult] = useState<AnnotationAttemptResult | null>(lastResult);
+
+  // Resume an in-progress attempt snapshotted before a forced reload (e.g. a
+  // session-expiry redirect) rather than starting from a blank artifact —
+  // only meaningful while there's no server-graded result to show instead.
+  useEffect(() => {
+    if (lastResult) return;
+    const saved = loadItemProgress<AnnotationMarkInput[]>("annotation", itemId);
+    if (saved?.length) setMarks(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (result) return;
+    saveItemProgress("annotation", itemId, marks);
+  }, [marks, result, itemId]);
 
   const [submitAnnotation, { isLoading: isSubmitting }] = useSubmitAnnotationAttemptMutation();
 
@@ -86,6 +102,9 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
     if (!marks.length || isSubmitting) return;
     try {
       const response = await submitAnnotation({ itemId, marks }).unwrap();
+      // Graded — the local snapshot would otherwise resurrect a finished
+      // attempt's marks on a later visit.
+      clearItemProgress("annotation", itemId);
       setResult(response);
       setArmedLabelId(null);
       if (response.itemCompleted) onCompleted(response);

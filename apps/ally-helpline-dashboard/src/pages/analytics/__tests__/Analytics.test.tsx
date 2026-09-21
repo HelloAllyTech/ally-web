@@ -36,6 +36,8 @@ vi.mock("@api", () => ({
 
 // Mock the user hook — permissions gate the Organization Metrics content.
 vi.mock("@hooks", () => ({
+  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
+  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
   useUser: () => ({ permissions: mockPermissions }),
 }));
 
@@ -56,6 +58,7 @@ vi.mock("../OrganizationMetrics", () => ({
 
 // Mock the NoAnalytics asset
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   NoAnalytics: () => <div data-testid="no-analytics">No Analytics Available</div>,

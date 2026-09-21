@@ -30,6 +30,7 @@ vi.mock("@components", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ProgressLadderIcon: () => <svg data-testid="progress-ladder-icon" />,
   CharacterLibraryIcon: (props: any) => <svg {...props} data-testid="character-library-icon" />,
   ManageAccount: () => <svg data-testid="manage-account-icon" />,
   NoNetwork: ({ stroke, ...props }: any) => (
@@ -222,7 +223,7 @@ describe("ErrorScreen Component", () => {
 
       const icon = screen.getByTestId("no-network-icon");
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveAttribute("data-stroke", "#fff");
+      expect(icon).toHaveAttribute("data-stroke", "#faf9f5");
     });
 
     it("should render InDoubt icon for something went wrong error", () => {
@@ -230,7 +231,7 @@ describe("ErrorScreen Component", () => {
 
       const icon = screen.getByTestId("in-doubt-icon");
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveAttribute("data-stroke", "#fff");
+      expect(icon).toHaveAttribute("data-stroke", "#faf9f5");
     });
   });
 

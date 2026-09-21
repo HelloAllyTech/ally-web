@@ -92,8 +92,8 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
 export const TOOLTIP_LIGHT_PROPS = {
   tooltip: {
     sx: {
-      backgroundColor: "#FFFFFF",
-      color: "#1D1B20",
+      backgroundColor: "#faf9f5",
+      color: "#29261f",
       fontSize: "12px",
       maxWidth: "400px",
       zIndex: 1000,
@@ -104,7 +104,7 @@ export const TOOLTIP_LIGHT_PROPS = {
 export const TOOLTIP_DARK_PROPS = {
   tooltip: {
     sx: {
-      backgroundColor: "#1C1B1F",
+      backgroundColor: "#29261f",
       color: "white",
       fontSize: "12px",
       maxWidth: "400px",
@@ -120,6 +120,8 @@ export enum LoginSection {
 
 export const TAG_TYPES = {
   CALL_SUMMARY: "CallSummary",
+  NOTIFICATIONS: "Notifications",
+  UNREAD_NOTIFICATION_COUNT: "UnreadNotificationCount",
   CALL_LOGS: "CallLogs",
   SIMULATION_LOGS: "SimulationLogs",
   SCENARIOS: "Scenarios",
@@ -127,6 +129,7 @@ export const TAG_TYPES = {
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   SCENARIO_CASE_DETAILS: "ScenarioCaseDetails",
   PRACTICE_STREAK: "PracticeStreak",
+  PROGRESS: "Progress",
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
   REVIEW: "Review",
@@ -162,6 +165,8 @@ export const TAG_TYPES = {
   LEARN_TRACK_NEXT: "LearnTrackNext",
   // Character Library (own-tenant list)
   CHARACTER_LIBRARY: "CharacterLibrary",
+  // The per-user preferences blob (default language, org-metrics layout, ...)
+  USER_PREFERENCES: "UserPreferences",
 };
 
 export const SORT_ORDER = {

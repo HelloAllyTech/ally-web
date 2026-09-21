@@ -40,6 +40,14 @@ export enum TrackGameKey {
 export interface ArticleContent {
   html: string;
   imageUrls?: string[];
+  /**
+   * Single-select MCQs the learner answers in place. Where each one sits is
+   * anchored in `html` by an empty `<div data-ally-question="<id>"></div>`
+   * placeholder — the question, its options and its answer key live here and
+   * never in the body, so the key is not something the rich-text sanitizer or
+   * the learner's payload ever carries.
+   */
+  questions?: McqSingleQuestion[];
 }
 
 export type VideoSource = "s3" | "youtube" | "vimeo" | "loom";
@@ -48,6 +56,21 @@ export interface VideoContent {
   source: VideoSource;
   url: string;
   durationSeconds?: number;
+  /** Quiz questions that hard-pause playback at a specific timestamp. `s3` sources only. */
+  interjections?: VideoInterjection[];
+}
+
+/**
+ * A quiz question that hard-pauses playback at `timestampSeconds` until the
+ * learner answers it. Only authored/played for `source: "s3"` videos — an
+ * embed player (YouTube/Vimeo/Loom) has no reliable way to pause and overlay
+ * content. `open_ended` is excluded from `QuizQuestion` here since it is
+ * LLM-graded and doesn't fit a synchronous hard-pause.
+ */
+export interface VideoInterjection {
+  id: string;
+  timestampSeconds: number;
+  question: QuizQuestion;
 }
 
 export interface JournalPromptDef {
@@ -248,6 +271,55 @@ export interface CompletionCriteria {
 export interface AnnotationFormValue extends AnnotationContent {
   /** The raw pasted artifact. Not persisted — units are the source of truth. */
   sourceText: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Component Library — global, cross-tenant templates for a single track item */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A saved, pre-configured Track/Course item, reusable as the starting point
+ * for a new item. Restricted in practice to JOURNAL | QUIZ | ARTICLE | VIDEO |
+ * ANNOTATED_ARTIFACT — Roleplay/Case reference an external entity rather than
+ * carrying inline content, and a Game has nothing worth templating. Inserting
+ * a template copies its content into a brand-new item with no live link back:
+ * editing one never touches the other.
+ */
+export interface TrackComponentTemplate {
+  id: string;
+  type: TrackItemType;
+  title: string;
+  content: TrackItemContent;
+  completionCriteria: CompletionCriteria | null;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetComponentTemplatesQueryParams {
+  type?: TrackItemType;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetComponentTemplatesResponse {
+  items: TrackComponentTemplate[];
+  total: number;
+}
+
+export interface CreateComponentTemplateInput {
+  type: TrackItemType;
+  title: string;
+  content: TrackItemContent;
+  completionCriteria?: CompletionCriteria;
+}
+
+export interface UpdateComponentTemplateInput {
+  title?: string;
+  content?: TrackItemContent;
+  completionCriteria?: CompletionCriteria;
 }
 
 /* -------------------------------------------------------------------------- */

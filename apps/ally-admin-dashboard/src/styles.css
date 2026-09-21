@@ -127,3 +127,36 @@
     -webkit-backface-visibility: hidden !important;
   }
 }
+
+/*
+ * Builder — feed and card entrance.
+ *
+ * A single shared keyframe rather than per-component animations so every
+ * arriving row moves the same way; the stagger that sequences them lives in
+ * pages/Builder/builderMotion.ts. Guarded by prefers-reduced-motion at the
+ * call site (staggerDelayMs / prefersReducedMotion) AND here, so a component
+ * that forgets the guard still respects the setting.
+ */
+@keyframes builderFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes builderFadeIn {
+    from {
+      opacity: 1;
+      transform: none;
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

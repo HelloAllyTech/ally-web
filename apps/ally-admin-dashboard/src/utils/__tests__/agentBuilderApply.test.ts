@@ -115,6 +115,20 @@ describe("applyAgentBuilderField — backstory", () => {
   });
 });
 
+describe("applyAgentBuilderField — spoken_languages", () => {
+  it("writes nothing — the wizard consumes the language list itself", () => {
+    const { form, setValue } = makeForm();
+    expect(
+      applyAgentBuilderField(
+        "spoken_languages",
+        [{ languageId: "1", label: "English", code: "en" }],
+        form,
+      ),
+    ).toBeNull();
+    expect(setValue).not.toHaveBeenCalled();
+  });
+});
+
 describe("applyAgentBuilderField — opening_statements / reminders", () => {
   it("joins non-empty lines back into a newline blob for openingStatements", () => {
     const { form, setValue } = makeForm();
@@ -151,7 +165,83 @@ describe("applyAgentBuilderField — opening_statements / reminders", () => {
   });
 });
 
+describe("applyAgentBuilderField — opening_statements per language", () => {
+  it("writes the primary language's lines to openingStatements", () => {
+    const { form, setValue } = makeForm();
+    const label = applyAgentBuilderField("opening_statements", "Hi there.\nI wasn't sure.", form, {
+      languageId: "1",
+      primaryLanguageId: "1",
+    });
+
+    expect(label).toBe("Opening Dialogues");
+    expect(setValue).toHaveBeenCalledWith(
+      FORM_FIELD_IDS.OPENING_STATEMENTS,
+      "Hi there.\nI wasn't sure.",
+      expect.anything(),
+    );
+  });
+
+  it("routes a non-primary language into translationOpeningStatements, preserving other languages", () => {
+    const { form, setValue } = makeForm({
+      translationOpeningStatements: { "2": ["നമസ്കാരം"] },
+    });
+    applyAgentBuilderField("opening_statements", "नमस्ते.\nमुझे नहीं पता था.", form, {
+      languageId: "4",
+      primaryLanguageId: "1",
+    });
+
+    const [key, value] = setValue.mock.calls[0];
+    expect(key).toBe("translationOpeningStatements");
+    expect(value).toEqual({
+      "2": ["നമസ്കാരം"],
+      "4": ["नमस्ते.", "मुझे नहीं पता था."],
+    });
+    // The primary blob is left alone when generating a non-primary language.
+    expect(setValue).toHaveBeenCalledTimes(1);
+  });
+
+  it("caps lines to the panel's line slots", () => {
+    const { form, setValue } = makeForm();
+    applyAgentBuilderField("opening_statements", "a\nb\nc\nd\ne\nf\ng", form, {
+      languageId: "4",
+      primaryLanguageId: "1",
+    });
+
+    const [, value] = setValue.mock.calls[0];
+    expect(value).toEqual({ "4": ["a", "b", "c", "d", "e"] });
+  });
+
+  it("still writes openingStatements when no language is given (single-language callers)", () => {
+    const { form, setValue } = makeForm();
+    applyAgentBuilderField("opening_statements", "Hi there.", form);
+
+    expect(setValue).toHaveBeenCalledWith(
+      FORM_FIELD_IDS.OPENING_STATEMENTS,
+      "Hi there.",
+      expect.anything(),
+    );
+  });
+});
+
 describe("applyAgentBuilderField — linguistic_style_samples / allowed_filler_words", () => {
+  it("keys samples and fillers under the generated language", () => {
+    const { form, setValue } = makeForm({
+      linguisticStyleSamples: { "1": ["I guess so."] },
+      allowedFillerWords: { "1": ["um"] },
+    });
+
+    applyAgentBuilderField("linguistic_style_samples", ["मुझे नहीं पता."], form, {
+      languageId: "4",
+    });
+    applyAgentBuilderField("allowed_filler_words", ["मतलब", "हाँ तो"], form, { languageId: "4" });
+
+    expect(setValue.mock.calls[0][1]).toEqual({
+      "1": ["I guess so."],
+      "4": ["मुझे नहीं पता."],
+    });
+    expect(setValue.mock.calls[1][1]).toEqual({ "1": ["um"], "4": ["मतलब", "हाँ तो"] });
+  });
+
   it("keys new samples under the default (English) language, preserving other languages", () => {
     const { form, setValue } = makeForm({
       linguisticStyleSamples: { "2": ["Existing Malayalam sample"] },
@@ -173,11 +263,7 @@ describe("applyAgentBuilderField — linguistic_style_samples / allowed_filler_w
 
   it("dedupes and keys new fillers under the default (English) language", () => {
     const { form, setValue } = makeForm({ allowedFillerWords: { "3": ["eh"] } });
-    const label = applyAgentBuilderField(
-      "allowed_filler_words",
-      ["um", "you know", "um"],
-      form,
-    );
+    const label = applyAgentBuilderField("allowed_filler_words", ["um", "you know", "um"], form);
 
     expect(label).toBe("Allowed Filler Words");
     const [key, value] = setValue.mock.calls[0];

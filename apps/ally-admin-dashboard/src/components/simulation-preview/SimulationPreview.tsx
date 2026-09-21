@@ -83,6 +83,16 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         experienceMode: scenario?.metadata?.experienceMode,
         checklistType: scenario?.metadata?.checklistType,
         showScoreMeter: scenario?.metadata?.showScoreMeter,
+        // So an author previewing a roleplay sees the Supervisor tab exactly as
+        // the learner will. Opt-in, same as the learner path.
+        supervisorNotesEnabled: scenario?.metadata?.supervisorNotesEnabled === true,
+        // So an author previewing a roleplay sees the video actor exactly as
+        // the learner will — including its absence when the platform-level
+        // switch is off. Opt-in, same as the learner path.
+        videoActorEnabled: scenario?.metadata?.videoActorEnabled === true,
+        // Opt-out, unlike supervisorNotesEnabled above: only an explicit false
+        // hides the Live tab, so the preview matches the learner's default.
+        liveTabEnabled: scenario?.metadata?.liveTabEnabled !== false,
         stateNames: stateNames || [],
         difficultyLevel: scenario?.difficultyLevel || "",
         useDirectAgentDispatch: useDirectAgentDispatch ?? false,

@@ -395,7 +395,7 @@ export const OrgScribeSettings: FC = () => {
         type="checkbox"
         onChange={() => handleChildToggle(parentId, field.id, !field.visible)}
         checked={field.visible}
-        className="w-4 h-4 border border-[#D2D2D2] rounded cursor-pointer"
+        className="w-4 h-4 border border-[#d6cdbe] rounded cursor-pointer"
       />
       <span className="text-base leading-relaxed text-typography-900 font-normal">
         {field.label}

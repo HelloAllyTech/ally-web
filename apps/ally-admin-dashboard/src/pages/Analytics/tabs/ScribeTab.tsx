@@ -156,6 +156,8 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       comparisonLabel: basis,
       deltaDecimals: 0,
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Summary success rate",
@@ -166,11 +168,15 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       comparisonLabel: basis,
       deltaSuffix: "pp",
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Processing",
       value: formatKpi(overviewSummary?.processing),
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "Failed",
@@ -181,11 +187,15 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       // More failures is worse, so the arrow and colour must invert.
       higherIsBetter: false,
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
     {
       label: "No audio",
       value: formatKpi(overviewSummary?.noAudio),
       loading: overviewLoading,
+      error: overview.isError,
+      onRetry: overview.refetch,
     },
   ];
 
@@ -275,11 +285,15 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       nUnit: "resolved sessions",
       higherIsBetter: false,
       loading: failuresLoading,
+      error: failures.isError,
+      onRetry: failures.refetch,
     },
     {
       label: "Total failed",
       value: formatKpi(failuresSummary?.totalFailed),
       loading: failuresLoading,
+      error: failures.isError,
+      onRetry: failures.refetch,
     },
     {
       label: "Retryable share",
@@ -287,6 +301,8 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       n: failuresSummary?.totalFailed,
       nUnit: "failures",
       loading: failuresLoading,
+      error: failures.isError,
+      onRetry: failures.refetch,
     },
     {
       label: "Timeout share",
@@ -294,6 +310,8 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
       n: failuresSummary?.totalFailed,
       nUnit: "failures",
       loading: failuresLoading,
+      error: failures.isError,
+      onRetry: failures.refetch,
     },
   ];
 

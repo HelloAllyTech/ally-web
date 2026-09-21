@@ -32,15 +32,15 @@ const asOfStamp = (computedAt?: string): string | undefined => {
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
-const TITLE = "Coins shipped per month, by owner";
+const TITLE = "Votes shipped per month, by owner";
 
 /**
- * Coin-weighted delivery out of the internal product roadmap.
+ * Vote-weighted delivery out of the internal product roadmap.
  *
  * The sentence the reader should be able to say after looking: "we shipped 180
- * coins' worth of demand in June, and most of it was Ajey's." That is a different
- * question from "how many things shipped", which weighs a 3-coin nicety like a
- * 90-coin blocker — the coin weighting is what makes a bar a measure of demand
+ * votes' worth of demand in June, and most of it was Ajey's." That is a different
+ * question from "how many things shipped", which weighs a 3-vote nicety like a
+ * 90-vote blocker — the vote weighting is what makes a bar a measure of demand
  * satisfied rather than of throughput.
  *
  * Owns its own query: all-time and month-grained by construction, taking neither
@@ -71,7 +71,7 @@ export const RoadmapDeliveryCard = () => {
   const opts = useMemo(
     () =>
       stackedBarOpts({
-        leftTitle: "Coins",
+        leftTitle: "Votes",
         bottomTitle: "Release month",
         colorScale: scale,
         height: "340px",
@@ -80,16 +80,16 @@ export const RoadmapDeliveryCard = () => {
   );
 
   const caption =
-    `Every opportunity released in a month, weighted by its COINS — the sum of every ` +
+    `Every opportunity released in a month, weighted by its VOTES — the sum of every ` +
     `voter's allocation over every period, the same priority score the roadmap board ` +
-    `shows. Coins are counted whole, not just the ones cast in the release month: an ` +
+    `shows. Votes are counted whole, not just the ones cast in the release month: an ` +
     `item accrues backing while it waits, and shipping it satisfies all of it. Counting ` +
     `${meta.description}, bucketed on the date the item moved into Released. All-time and ` +
     `monthly — not affected by any date range.`;
 
   const source = buildSource({
     derivation:
-      "SUM(roadmap_allocations.coins) per released roadmap_opportunity, bucketed on releasedAt by month and split by owner",
+      "SUM(roadmap_allocations.votes) per released roadmap_opportunity, bucketed on releasedAt by month and split by owner",
     window: "All time",
     n: totals?.opportunities,
     nUnit: "released items plotted",
@@ -155,7 +155,7 @@ export const RoadmapDeliveryCard = () => {
             {data && owners.includes(data.otherOwnerLabel) && (
               <span>
                 &quot;{data.otherOwnerLabel}&quot; rolls up everyone past the top {data.maxOwners}{" "}
-                by all-time coins — past about eight bands a stack stops being readable. Membership
+                by all-time votes — past about eight bands a stack stops being readable. Membership
                 is fixed on all-time totals, so it does not change as you switch what is counted.
               </span>
             )}
@@ -168,13 +168,13 @@ export const RoadmapDeliveryCard = () => {
           open={expanded}
           onClose={() => setExpanded(false)}
           title={TITLE}
-          caption="Release counts beside the coin totals, which the chart cannot show: 180 coins is one blocker or twelve small wins, and those are different months."
+          caption="Release counts beside the vote totals, which the chart cannot show: 180 votes is one blocker or twelve small wins, and those are different months."
           source={source}
           table={table}
           exportContext={[
             "Window: all time, monthly, bucketed on releasedAt",
             `Counting ${meta.description}`,
-            "Coins = SUM of every voter's allocation over every period (the board's priority score)",
+            "Votes = SUM of every voter's allocation over every period (the board's priority score)",
             ...(inProgress ? [`${inProgress.plainLabel} is still in progress`] : []),
             ...(missing ? [missing] : []),
           ]}

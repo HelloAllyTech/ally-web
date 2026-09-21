@@ -162,6 +162,77 @@ describe("useStartSimulation", () => {
     expect(mockOnError).toHaveBeenCalledWith(mockError);
   });
 
+  it("should show the roleplay v2 rollout gate message verbatim, not the generic 403 text", async () => {
+    const mockError = {
+      data: { statusCode: 403, message: "Roleplay v2 is not currently enabled." },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
+
+    const { result } = renderHook(
+      () => useStartSimulation({ onError: mockOnError }),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.startSimulation({
+        params: { scenarioId: 1, languageId: 1 },
+      });
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("Roleplay v2 is not currently enabled.");
+  });
+
+  it("should show the roleplay v2 allowlist gate message verbatim, not the generic 403 text", async () => {
+    const mockError = {
+      data: {
+        statusCode: 403,
+        message: "Roleplay v2 is not available for this account yet.",
+      },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
+
+    const { result } = renderHook(
+      () => useStartSimulation({ onError: mockOnError }),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.startSimulation({
+        params: { scenarioId: 1, languageId: 1 },
+      });
+    });
+
+    expect(toast.error).toHaveBeenCalledWith(
+      "Roleplay v2 is not available for this account yet.",
+    );
+  });
+
+  it("should fall back to the generic 403 message for an unrecognized backend message", async () => {
+    // Defense in depth: only the two known, curated gate strings are trusted
+    // verbatim. An unrelated 403 (e.g. a permission guard) must not leak its
+    // raw backend text to the learner.
+    const mockError = {
+      data: { statusCode: 403, message: "Some unrelated backend error text" },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
+
+    const { result } = renderHook(
+      () => useStartSimulation({ onError: mockOnError }),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.startSimulation({
+        params: { scenarioId: 1, languageId: 1 },
+      });
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("You are not authorized to start this simulation");
+  });
+
   it("should handle 400 error and end previous simulation", async () => {
     const mockError = {
       data: { statusCode: 400, entityId: "old-session-123" },
@@ -419,5 +490,37 @@ describe("useStartSimulation", () => {
 
     const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
     expect(storedData.reminders).toEqual([]);
+  });
+
+  describe("supervisorNotesEnabled", () => {
+    const startWithScenario = async (scenario: Record<string, unknown>) => {
+      mockStartSimulationMutation.mockResolvedValue({
+        data: {
+          scenarioSession: { id: "session-123", startedAt: "2024-01-01T00:00:00Z" },
+          scenario: { id: "scenario-123", title: "Test Scenario", ...scenario },
+          accessToken: { token: "token-123", serverUrl: "https://server.example.com" },
+        },
+        error: null,
+      });
+
+      const { result } = renderHook(() => useStartSimulation(), { wrapper });
+      await act(async () => {
+        await result.current.startSimulation({ params: { scenarioId: 1, languageId: 1 } });
+      });
+      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    };
+
+    it("carries the flag through to room data when the roleplay enables it", async () => {
+      const storedData = await startWithScenario({ supervisorNotesEnabled: true });
+      expect(storedData.supervisorNotesEnabled).toBe(true);
+    });
+
+    it.each([[false], [undefined]])(
+      "stores false when the scenario sends %p, since the tab is opt-in",
+      async value => {
+        const storedData = await startWithScenario({ supervisorNotesEnabled: value });
+        expect(storedData.supervisorNotesEnabled).toBe(false);
+      },
+    );
   });
 });

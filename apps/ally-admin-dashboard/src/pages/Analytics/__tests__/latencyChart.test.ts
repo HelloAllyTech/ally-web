@@ -1,18 +1,32 @@
 import { describe, expect, it } from "vitest";
 
-import { StartLatencyPoint, VoiceLatencyByLanguageRow, VoiceLatencyPoint } from "@types";
+import {
+  StartLatencyPoint,
+  VoiceLatencyByLanguageRow,
+  VoiceLatencyByScenarioRow,
+  VoiceLatencyPoint,
+  VoiceLatencySessionRow,
+} from "@types";
 
 import {
   CACHE_HIT_RATE_GROUP,
+  FIRST_AUDIO_GROUPS,
   LATENCY_GROUPS,
   START_LATENCY_GROUPS,
   START_TOTAL_GROUPS,
+  buildFirstAudioLatencySeries,
+  buildFirstAudioMixSeries,
   buildLlmTtftSeries,
   buildPromptCacheHitRateSeries,
+  buildReplyLatencySeries,
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
+  buildVoiceLatencyByScenarioBars,
   buildVoiceLatencySeries,
+  buildVoiceLatencySessionSeries,
+  countFirstAudioTurns,
+  countMaskedTurns,
   countStartLatencySessions,
   countVoiceLatencyTurns,
   latencyBucketTitle,
@@ -29,6 +43,38 @@ const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   p50LlmTtftMs: null,
   p95LlmTtftMs: null,
   avgCacheHitRatePct: null,
+  firstAudioFillerTurns: 0,
+  firstAudioInterimTurns: 0,
+  firstAudioReplyTurns: 0,
+  firstAudioUnknownTurns: 0,
+  avgFirstAudioFillerMs: null,
+  avgFirstAudioInterimMs: null,
+  avgFirstAudioReplyMs: null,
+  avgReplyLatencyMs: null,
+  p50ReplyLatencyMs: null,
+  p95ReplyLatencyMs: null,
+  ...over,
+});
+
+const sessionRow = (over: Partial<VoiceLatencySessionRow>): VoiceLatencySessionRow => ({
+  scenarioSessionId: "sess-1",
+  occurredAt: "2024-06-10T14:32:00Z",
+  turnCount: 1,
+  avgResponseLatencyMs: 0,
+  p50ResponseLatencyMs: 0,
+  p95ResponseLatencyMs: 0,
+  avgEouDelayMs: null,
+  avgSttFinalizeMs: null,
+  avgLlmTtftMs: null,
+  avgTtsTtfbMs: null,
+  avgOrchestrationMs: null,
+  avgLlmResponseMs: null,
+  avgBranchingMs: null,
+  avgKnowledgeRetrievalMs: null,
+  avgProcessEventsMs: null,
+  avgBehaviorsMs: null,
+  interruptedTurns: 0,
+  llmTimedOutTurns: 0,
   ...over,
 });
 
@@ -82,6 +128,63 @@ describe("buildVoiceLatencySeries", () => {
 
   it("omits buckets with no turns rather than plotting a zero latency", () => {
     expect(buildVoiceLatencySeries([], "pipeline")).toEqual([]);
+  });
+});
+
+describe("buildVoiceLatencySessionSeries", () => {
+  // The builder formats `occurredAt` in the local timezone (same as the rest
+  // of this app's date display), so the expected label is derived the same
+  // way rather than hardcoded — a hardcoded "14:32" would only pass in UTC.
+  const label = (iso: string) =>
+    new Date(iso).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+  it("plots p50, average AND p95 per session, keyed by its start time", () => {
+    const occurredAt = "2024-06-10T14:32:00Z";
+    const series = buildVoiceLatencySessionSeries([
+      sessionRow({
+        occurredAt,
+        avgResponseLatencyMs: 4858,
+        p50ResponseLatencyMs: 3200,
+        p95ResponseLatencyMs: 8046,
+      }),
+    ]);
+
+    expect(series).toEqual([
+      { group: LATENCY_GROUPS.p50, key: label(occurredAt), value: 3.2 },
+      { group: LATENCY_GROUPS.avg, key: label(occurredAt), value: 4.858 },
+      { group: LATENCY_GROUPS.p95, key: label(occurredAt), value: 8.046 },
+    ]);
+  });
+
+  it("skips a session with no start time — there is no honest x-position for it", () => {
+    const series = buildVoiceLatencySessionSeries([sessionRow({ occurredAt: null })]);
+
+    expect(series).toEqual([]);
+  });
+
+  it("omits a null stat rather than plotting it as zero latency", () => {
+    const occurredAt = "2024-06-10T14:32:00Z";
+    const series = buildVoiceLatencySessionSeries([
+      sessionRow({
+        occurredAt,
+        avgResponseLatencyMs: null,
+        p50ResponseLatencyMs: 1000,
+        p95ResponseLatencyMs: null,
+      }),
+    ]);
+
+    expect(series).toEqual([{ group: LATENCY_GROUPS.p50, key: label(occurredAt), value: 1 }]);
+  });
+
+  it("returns an empty series for no rows", () => {
+    expect(buildVoiceLatencySessionSeries([])).toEqual([]);
   });
 });
 
@@ -227,6 +330,94 @@ describe("buildVoiceLatencyByLanguageBars", () => {
   });
 });
 
+describe("buildVoiceLatencyByScenarioBars", () => {
+  const scenarioRow = (over: Partial<VoiceLatencyByScenarioRow>): VoiceLatencyByScenarioRow => ({
+    scenarioId: 1,
+    scenarioTitle: "Scenario",
+    occurredAt: "2026-08-20T09:15:00.000Z",
+    turnCount: 1,
+    avgResponseLatencyMs: 0,
+    p50ResponseLatencyMs: 0,
+    p95ResponseLatencyMs: 0,
+    avgEouDelayMs: null,
+    avgSttFinalizeMs: null,
+    avgLlmTtftMs: null,
+    avgTtsTtfbMs: null,
+    avgOrchestrationMs: null,
+    avgLlmResponseMs: null,
+    avgBranchingMs: null,
+    avgKnowledgeRetrievalMs: null,
+    avgProcessEventsMs: null,
+    avgBehaviorsMs: null,
+    interruptedTurns: 0,
+    llmTimedOutTurns: 0,
+    ...over,
+  });
+
+  it("ranks worst-first, independently per metric", () => {
+    const { avgResponseLatency, avgLlmTtft } = buildVoiceLatencyByScenarioBars([
+      scenarioRow({
+        scenarioId: 1,
+        scenarioTitle: "Fast overall, slow TTFT",
+        avgResponseLatencyMs: 900,
+        avgLlmTtftMs: 3000,
+      }),
+      scenarioRow({
+        scenarioId: 2,
+        scenarioTitle: "Slow overall, fast TTFT",
+        avgResponseLatencyMs: 1200,
+        avgLlmTtftMs: 200,
+      }),
+    ]);
+
+    // Response latency ranks scenario 2 first...
+    expect(avgResponseLatency).toEqual([
+      { group: "Slow overall, fast TTFT", value: 1.2 },
+      { group: "Fast overall, slow TTFT", value: 0.9 },
+    ]);
+    // ...but LLM TTFT ranks scenario 1 first — the two charts must not share one order.
+    expect(avgLlmTtft).toEqual([
+      { group: "Fast overall, slow TTFT", value: 3 },
+      { group: "Slow overall, fast TTFT", value: 0.2 },
+    ]);
+  });
+
+  it("truncates to topN but reports the true total", () => {
+    const rows = Array.from({ length: 15 }, (_, i) =>
+      scenarioRow({ scenarioId: i, scenarioTitle: `Scenario ${i}`, avgResponseLatencyMs: i * 100 }),
+    );
+
+    const { avgResponseLatency, totalScenarios } = buildVoiceLatencyByScenarioBars(rows, 10);
+
+    expect(avgResponseLatency).toHaveLength(10);
+    expect(totalScenarios).toBe(15);
+    // Worst (highest) response latency leads.
+    expect(avgResponseLatency[0].group).toBe("Scenario 14");
+  });
+
+  it("drops a scenario from one metric's chart without dropping it from the other", () => {
+    const { avgResponseLatency, avgLlmTtft } = buildVoiceLatencyByScenarioBars([
+      scenarioRow({
+        scenarioId: 1,
+        scenarioTitle: "No TTFT data",
+        avgResponseLatencyMs: 900,
+        avgLlmTtftMs: null,
+      }),
+    ]);
+
+    expect(avgResponseLatency).toEqual([{ group: "No TTFT data", value: 0.9 }]);
+    expect(avgLlmTtft).toEqual([]);
+  });
+
+  it("returns empty bars for no rows", () => {
+    expect(buildVoiceLatencyByScenarioBars([])).toEqual({
+      avgResponseLatency: [],
+      avgLlmTtft: [],
+      totalScenarios: 0,
+    });
+  });
+});
+
 describe("start latency splits parts from wholes", () => {
   const points = [
     startPoint({
@@ -280,5 +471,91 @@ describe("latencyBucketTitle", () => {
     expect(latencyBucketTitle("month")).toBe("Month");
     expect(latencyBucketTitle("week")).toBe("Week");
     expect(latencyBucketTitle(undefined)).toBe("Week");
+  });
+});
+
+describe("first-audio split", () => {
+  const mixed = point({
+    source: "pipeline",
+    turns: 20,
+    firstAudioFillerTurns: 10,
+    firstAudioInterimTurns: 4,
+    firstAudioReplyTurns: 4,
+    firstAudioUnknownTurns: 2,
+  });
+
+  it("states shares out of the bucket's own turns, unrecorded ones included", () => {
+    const series = buildFirstAudioMixSeries([mixed]);
+    const byGroup = Object.fromEntries(series.map(d => [d.group, d.value]));
+
+    expect(byGroup[FIRST_AUDIO_GROUPS.filler]).toBe(50);
+    expect(byGroup[FIRST_AUDIO_GROUPS.interim]).toBe(20);
+    expect(byGroup[FIRST_AUDIO_GROUPS.reply]).toBe(20);
+    // Unrecorded turns are their own band, NOT folded into "the reply itself" —
+    // they may have been masked and there is no way to tell.
+    expect(byGroup[FIRST_AUDIO_GROUPS.unknown]).toBe(10);
+    expect(series.reduce((sum, d) => sum + d.value, 0)).toBe(100);
+  });
+
+  it("stacks the unrecorded band last so the real bands share a baseline", () => {
+    const groupsInOrder = Array.from(new Set(buildFirstAudioMixSeries([mixed]).map(d => d.group)));
+
+    expect(groupsInOrder).toEqual([
+      FIRST_AUDIO_GROUPS.reply,
+      FIRST_AUDIO_GROUPS.interim,
+      FIRST_AUDIO_GROUPS.filler,
+      FIRST_AUDIO_GROUPS.unknown,
+    ]);
+  });
+
+  it("omits a bucket with no turns rather than drawing an empty 100% stack", () => {
+    expect(buildFirstAudioMixSeries([point({ turns: 0 })])).toEqual([]);
+  });
+
+  it("ignores transcript rows, which carry no provenance at all", () => {
+    const transcript = point({ source: "transcript", turns: 5, firstAudioUnknownTurns: 5 });
+
+    expect(buildFirstAudioMixSeries([transcript])).toEqual([]);
+    expect(buildFirstAudioLatencySeries([transcript])).toEqual([]);
+    expect(buildReplyLatencySeries([transcript])).toEqual([]);
+  });
+
+  it("plots a mean per source in seconds, omitting sources with no turns", () => {
+    const series = buildFirstAudioLatencySeries([
+      point({ avgFirstAudioFillerMs: 420, avgFirstAudioReplyMs: 3800 }),
+    ]);
+
+    expect(series).toEqual([
+      { group: FIRST_AUDIO_GROUPS.filler, key: "2024-06-10", value: 0.42 },
+      // No interim series: a bucket with no interim turns is a gap, not a 0s wait.
+      { group: FIRST_AUDIO_GROUPS.reply, key: "2024-06-10", value: 3.8 },
+    ]);
+  });
+
+  it("counts only instrumented turns as the n for the split charts", () => {
+    // The 2 unrecorded turns are in the tab's other charts but cannot appear in
+    // these, so quoting them as covered would overstate the sample.
+    expect(countFirstAudioTurns([mixed])).toBe(18);
+    expect(countMaskedTurns([mixed])).toBe(14);
+  });
+});
+
+describe("buildReplyLatencySeries", () => {
+  it("plots the unmasked reply time as p50/avg/p95 in seconds", () => {
+    const series = buildReplyLatencySeries([
+      point({ avgReplyLatencyMs: 3900, p50ReplyLatencyMs: 3400, p95ReplyLatencyMs: 7100 }),
+    ]);
+
+    expect(series).toEqual([
+      { group: LATENCY_GROUPS.p50, key: "2024-06-10", value: 3.4 },
+      { group: LATENCY_GROUPS.avg, key: "2024-06-10", value: 3.9 },
+      { group: LATENCY_GROUPS.p95, key: "2024-06-10", value: 7.1 },
+    ]);
+  });
+
+  it("leaves a gap for buckets predating the instrumentation instead of plotting 0", () => {
+    // Null here means "we cannot say", and a 0s reply would be a lie the
+    // reader has no way to spot.
+    expect(buildReplyLatencySeries([point({ avgReplyLatencyMs: null })])).toEqual([]);
   });
 });

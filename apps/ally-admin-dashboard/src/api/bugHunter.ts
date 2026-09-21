@@ -1,8 +1,13 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   BugFinding,
+  BugFindingDecisionReason,
   BugFindingDetail,
+  BugFindingRef,
+  BugFindingStage,
+  BugHunterMetrics,
   BugHunterMode,
+  BugHunterModelSettings,
   BugHunterNotification,
   ListBugHunterNotificationsResponse,
   BugHunterSettings,
@@ -36,6 +41,26 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.BUG_HUNTER_SETTINGS],
+    }),
+
+    getBugHunterModelSettings: builder.query<BugHunterModelSettings, void>({
+      query: () => ({
+        url: ApiEndpoints.BUG_HUNTER.MODEL_SETTINGS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.BUG_HUNTER_MODEL_SETTINGS],
+    }),
+
+    updateBugHunterModelSettings: builder.mutation<
+      BugHunterModelSettings,
+      { defaultModel?: string; escalationModel?: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.BUG_HUNTER.MODEL_SETTINGS,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.BUG_HUNTER_MODEL_SETTINGS],
     }),
 
     /**
@@ -100,15 +125,80 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       ],
     }),
 
-    rejectBugFinding: builder.mutation<BugFindingDetail, string>({
-      query: id => ({
+    /**
+     * Decline a bug, with a reason.
+     *
+     * `reason` is required by the backend, not merely validated there: it is
+     * read back into the next sweep's prompt as a known non-bug, and it is the
+     * denominator of the accuracy figure on the Performance section. A
+     * rejection without one used to record who and when and nothing about what
+     * they concluded, which is why the same non-bug came back every night.
+     */
+    rejectBugFinding: builder.mutation<
+      BugFindingDetail,
+      { id: string; reason: BugFindingDecisionReason; note?: string }
+    >({
+      query: ({ id, reason, note }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_REJECT(id),
+        method: HttpMethod.POST,
+        body: { reason, ...(note?.trim() ? { note: note.trim() } : {}) },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+      ],
+    }),
+
+    /**
+     * Merge a fix's open, green PR without leaving the tab.
+     *
+     * On ally-be, ally-web and ally-ai the agent cannot merge its own work —
+     * master wants an approving review and the bot has push access — so every
+     * fix there ends at a green PR. 89 of the 122 bot PRs merged so far were
+     * clicked through by hand on GitHub, nearly all within the hour: the
+     * judgement was never the bottleneck, the trip was.
+     *
+     * The backend refuses a PR that is red, still running, or has no checks,
+     * and passes GitHub's own refusal through — so a failure here is worth
+     * showing verbatim rather than replacing with a generic line.
+     */
+    mergeBugFinding: builder.mutation<BugFinding, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_MERGE(id),
         method: HttpMethod.POST,
       }),
       invalidatesTags: (_result, _error, id) => [
         { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
         { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
       ],
+    }),
+
+    /**
+     * How often Bug Hunter is right, how fast, and what a landed fix costs.
+     *
+     * Computed server-side over every row in the window, which is the whole
+     * reason it is an endpoint: `scorecard.ts` deliberately refuses to derive
+     * a finding-level funnel from `GET /runs`, because run totals and finding
+     * statuses have different denominators there. This has one.
+     */
+    getBugHunterMetrics: builder.query<BugHunterMetrics, { days?: number } | void>({
+      query: arg => {
+        // `arg` is `void` when the hook is called with no argument, and
+        // narrowing it before the property read is what keeps that call legal
+        // — the backend defaults the window itself, so omitting `days` is a
+        // real usage rather than a mistake.
+        const days = arg && typeof arg === "object" ? arg.days : undefined;
+        return {
+          url: ApiEndpoints.BUG_HUNTER.METRICS,
+          method: HttpMethod.GET,
+          params: days ? { days } : undefined,
+        };
+      },
+      // Shares the findings list's tag so triaging a bug refreshes the
+      // accuracy figures it just moved — the two are the same data read two
+      // ways, and a panel that disagreed with the table above it would read
+      // as a defect.
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
     }),
 
     /**
@@ -217,6 +307,42 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       ],
     }),
 
+    /**
+     * Resolve a roadmap opportunity id to the bug it became, for the roadmap's
+     * deep-link redirect. See ally-be's `getFindingByReportedBug`.
+     */
+    getBugFindingByReportedBug: builder.query<BugFindingRef, string>({
+      query: opportunityId => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_BY_REPORTED_BUG(opportunityId),
+      }),
+    }),
+
+    /**
+     * Pin the coarse roadmap stage by hand, or (with `stage: null`) hand it back
+     * to being derived from the pipeline status.
+     *
+     * For the bug fixed OUTSIDE Bug Hunter — a hand-written PR, a config change,
+     * a fix that rode along with unrelated work — where the pipeline never moved
+     * and the status therefore still reads NEW. Pinning sticks: later transitions
+     * no longer move the stage.
+     */
+    setBugFindingStage: builder.mutation<BugFinding, { id: string; stage: BugFindingStage | null }>(
+      {
+        query: ({ id, stage }) => ({
+          url: ApiEndpoints.BUG_HUNTER.FINDING_STAGE(id),
+          method: HttpMethod.PATCH,
+          body: { stage },
+        }),
+        invalidatesTags: (_result, _error, { id }) => [
+          { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },
+          // The stage renders in the table row as well as the drawer, so the list
+          // cache has to go too — a row still reading "New" behind a drawer saying
+          // "Released" is exactly the kind of disagreement that reads as a bug.
+          { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+        ],
+      },
+    ),
+
     answerBugFinding: builder.mutation<BugFindingDetail, { id: string; answer: string }>({
       query: ({ id, answer }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_ANSWER(id),
@@ -234,6 +360,8 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
 export const {
   useGetBugHunterSettingsQuery,
   useUpdateBugHunterSettingsMutation,
+  useGetBugHunterModelSettingsQuery,
+  useUpdateBugHunterModelSettingsMutation,
   useGetBugHuntRunsQuery,
   useTriggerBugHuntSweepMutation,
   useGetBugHuntRunQuery,
@@ -243,9 +371,13 @@ export const {
   useRejectBugFindingMutation,
   useAnswerBugFindingMutation,
   useEditBugFindingDescriptionMutation,
+  useSetBugFindingStageMutation,
+  useGetBugFindingByReportedBugQuery,
   useStartBugFixSessionMutation,
   useCancelBugFixSessionMutation,
+  useMergeBugFindingMutation,
   useReleaseBugFindingMutation,
+  useGetBugHunterMetricsQuery,
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,
   useMarkAllBugHunterNotificationsReadMutation,

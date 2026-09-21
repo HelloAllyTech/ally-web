@@ -20,7 +20,7 @@ interface InterviewsTabProps {
 /**
  * User interviews — the qualitative half of the board.
  *
- * Coins tell you WHAT people want prioritised; these notes tell you WHY. The source kept them
+ * Votes tell you WHAT people want prioritised; these notes tell you WHY. The source kept them
  * as a sibling top-level tab for that reason, and this keeps the same shape.
  *
  * Authorship rules mirror the backend: the author OR a manager may edit and delete. Unlike

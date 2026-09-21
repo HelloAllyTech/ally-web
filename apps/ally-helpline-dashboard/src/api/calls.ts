@@ -24,9 +24,36 @@ import {
   GenerateNoteFromAudioInput,
   GenerateNoteFromAudioResponse,
   SaveNoteTranscriptInput,
+  CallLog,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
+
+/**
+ * The tag every query that renders *a page of call logs* carries, and the only
+ * one a writer should invalidate when the page's membership changes — a note
+ * created, a session archived. Row-level edits carry the row's own id instead.
+ */
+export const CALL_LOGS_LIST_TAG = { type: TAG_TYPES.CALL_LOGS, id: "LIST" } as const;
+
+/**
+ * `CallLogs` used to be a single coarse tag: the list provided it, five writers
+ * invalidated it, and so every scribe-note autosave — one per 800ms debounce —
+ * re-read the whole 25-row page and made ally-be decrypt all 25 `CallDetails`
+ * again. Production saw 325 of those requests in under four hours, arriving in
+ * runs of ~45 at a constant page size: one counsellor writing up one note.
+ *
+ * Tagging each row separately means a writer can name the row it touched, and
+ * the queries that merely happened to share the coarse tag (counsellor names,
+ * the tag vocabulary) stop refetching along with it. It does NOT by itself stop
+ * the list refetching when the edited row is on screen — that one is fixed by
+ * patching the cached row instead of invalidating it, see
+ * `patchCachedCallLogRow`.
+ */
+const callLogListTags = (result?: GetCallLogsResponse) => [
+  CALL_LOGS_LIST_TAG,
+  ...(result?.data ?? []).map(({ id }) => ({ type: TAG_TYPES.CALL_LOGS, id })),
+];
 
 const callsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -41,7 +68,7 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_CALL_LOGS,
         params,
       }),
-      providesTags: ["CallLogs", TAG_TYPES.CALL_LOGS],
+      providesTags: result => callLogListTags(result),
     }),
 
     /**
@@ -55,7 +82,7 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_ADMIN_CALL_LOGS,
         params,
       }),
-      providesTags: ["CallLogs"],
+      providesTags: result => callLogListTags(result),
     }),
 
     /**
@@ -69,7 +96,10 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_COUNSELLORS,
         params,
       }),
-      providesTags: ["CallLogs"],
+      // Not a call log, but it is refreshed by the same events that change the
+      // list's membership, so it keeps the LIST tag — and only that, so a
+      // row-level edit no longer drags it along.
+      providesTags: [CALL_LOGS_LIST_TAG],
     }),
 
     /**
@@ -83,7 +113,9 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_CALL_TAGS,
         params,
       }),
-      providesTags: ["CallLogs"],
+      // As with counsellor names: the tag vocabulary tracks the list as a
+      // whole, never one row.
+      providesTags: [CALL_LOGS_LIST_TAG],
     }),
 
     /**
@@ -119,7 +151,8 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.CREATE_NOTE,
         method: HttpMethod.POST,
       }),
-      invalidatesTags: ["CallLogs", TAG_TYPES.CALL_LOGS],
+      // A brand new row: the page's membership changed, so it has to be re-read.
+      invalidatesTags: [CALL_LOGS_LIST_TAG],
     }),
 
     /**
@@ -228,10 +261,87 @@ const callsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { archive: archive },
       }),
-      invalidatesTags: ["CallLogs", "CallSummary"],
+      // Archiving moves the row out of (or back into) the list the counsellor is
+      // looking at, which no in-place patch can express — re-read the page.
+      invalidatesTags: [CALL_LOGS_LIST_TAG, TAG_TYPES.CALL_SUMMARY],
     }),
   }),
 });
+
+/**
+ * The endpoints whose cache entries hold call-log rows. Both return the same
+ * `{ data: CallLog[], count }` shape, so one patch covers the counsellor's own
+ * list and the admin console's.
+ */
+type CallLogListEndpoint = "getCallLogs" | "getAdminCallLogs";
+
+/**
+ * The slice of RTK Query's mutation lifecycle API that `patchCachedCallLogRow`
+ * needs. Declared structurally so callers can pass the `onQueryStarted` second
+ * argument straight through.
+ */
+interface CacheApi {
+  dispatch: (action: any) => any;
+  getState: () => any;
+}
+
+/**
+ * Apply an edit to one call-log row in every cached list that holds it, instead
+ * of invalidating the list and making the server re-read — and re-decrypt —
+ * every other row on the page.
+ *
+ * Use it for a write whose effect on the list is knowable from the write
+ * itself: a summary save, a rename, a custom-field value. A write that changes
+ * which rows belong on the page (create, archive) can't be expressed this way
+ * and should invalidate `CALL_LOGS_LIST_TAG` instead.
+ *
+ * Call it *after* `queryFulfilled` — pessimistically. An optimistic patch would
+ * have to be rolled back on failure, and the counsellor is already looking at
+ * their own typing in the form; the list behind it is worth a few hundred
+ * milliseconds of lag to keep honest.
+ *
+ * Rows the cache doesn't hold are skipped silently: `selectInvalidatedBy` only
+ * returns entries that actually provide the row's tag, so a page the row isn't
+ * on is never touched.
+ */
+export const patchCachedCallLogRow = (
+  { dispatch, getState }: CacheApi,
+  chatId: number,
+  update: (row: CallLog) => void,
+) => {
+  const entries = baseAPI.util.selectInvalidatedBy(getState(), [
+    { type: TAG_TYPES.CALL_LOGS, id: chatId },
+  ]);
+
+  entries.forEach(({ endpointName, originalArgs }) => {
+    if (endpointName !== "getCallLogs" && endpointName !== "getAdminCallLogs") return;
+    const patchRow = (draft: GetCallLogsResponse) => {
+      const row = draft.data?.find(candidate => candidate.id === chatId);
+      if (row) update(row);
+    };
+    dispatch(
+      callsAPI.util.updateQueryData(
+        endpointName as CallLogListEndpoint,
+        originalArgs as GetCallLogsInput,
+        patchRow,
+      ),
+    );
+  });
+};
+
+/**
+ * Upsert changed custom-field values into a row's denormalized copy, by
+ * `fieldDefinitionId`. Mirrors what the backend stores, so the table cell shows
+ * the saved value without a re-read.
+ */
+export const mergeRowCustomFieldValues = (
+  existing: CallLog["customFieldValues"],
+  changed: NonNullable<CallLog["customFieldValues"]>,
+) => {
+  const byField = new Map((existing ?? []).map(value => [value.fieldDefinitionId, value]));
+  changed.forEach(value => byField.set(value.fieldDefinitionId, value));
+  return Array.from(byField.values());
+};
 
 export const {
   useGetCallLogsQuery,

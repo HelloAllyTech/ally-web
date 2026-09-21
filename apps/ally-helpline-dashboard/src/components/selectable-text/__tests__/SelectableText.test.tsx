@@ -433,7 +433,7 @@ describe("SelectableText Component", () => {
         />,
       );
       const span = container.querySelector("span");
-      expect(span).toHaveClass("bg-[#E1F1FE]");
+      expect(span).toHaveClass("bg-[#eae7de]");
     });
 
     it("should have cursor-pointer for segments with comments (not part of new selection)", () => {

@@ -88,7 +88,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
       <div
         onClick={handleTextClick}
         className={`
-          h-full overflow-hidden max-w-[calc(100%-20px)]
+          max-w-[calc(100%-20px)]
           ${disabled ? "cursor-not-allowed" : "cursor-pointer hover:bg-background-secondary"}
           ${isPlaceholder ? "text-typography-600" : ""}
         `}
@@ -96,7 +96,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
         {String(textToShow)
           .split("\n")
           .map((line, index) => (
-            <span className="overflow-hidden text-wrap whitespace-nowrap" key={index}>
+            <span className="break-words" key={index}>
               {line}
               <br />
             </span>

@@ -88,6 +88,14 @@ export interface NotionTableProps {
   infiniteScroll?: InfiniteScrollConfig;
   autoHeight?: boolean;
   editIndex?: number;
+  /**
+   * How a row reaches `onRowClick`. "hover" (default) keeps the existing
+   * dock-to-right icon that only appears on hover over `editIndex`. "row"
+   * makes the whole row a click target instead — pick this only for a table
+   * whose cells are read-only (`disabled: true`), since a click anywhere
+   * would otherwise fight with inline cell editing.
+   */
+  rowClickTrigger?: "hover" | "row";
   hasResizer?: boolean;
   hideSelectionColumn?: boolean;
   fillWidth?: boolean;

@@ -29,6 +29,13 @@ vi.mock("../SimulationEvents", () => ({
 vi.mock("../../rich-text-renderer", () => ({
   RichTextRenderer: ({ content }: any) => <div data-testid="rich-text-renderer">{content}</div>,
 }));
+vi.mock("../../../primitives", () => ({
+  Tooltip: ({ children, label }: any) => (
+    <div data-testid="tooltip" title={label}>
+      {children}
+    </div>
+  ),
+}));
 
 const baseProps = {
   stateNames: [],
@@ -106,6 +113,7 @@ describe("SessionSidebar", () => {
     expect(screen.queryByTestId("session-sidebar-tab-description")).not.toBeInTheDocument();
     expect(screen.queryByTestId("session-sidebar-tab-checklist")).not.toBeInTheDocument();
     expect(screen.queryByTestId("session-sidebar-tab-live")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("session-sidebar-tab-supervisor")).not.toBeInTheDocument();
   });
 
   it("switches tabs on click and passes hideHeader to Checklist/Live panes", () => {
@@ -138,5 +146,214 @@ describe("SessionSidebar", () => {
 
     expect(screen.getByTestId("session-sidebar-tab-checklist")).toBeInTheDocument();
     expect(screen.queryByTestId("session-sidebar-tab-live")).not.toBeInTheDocument();
+  });
+
+  describe("Host-supplied extra tabs", () => {
+    // The admin Studio hangs the client's internal monologue here. It is
+    // opt-in from the host precisely so a learner's session can never render
+    // it — nothing in this library should be able to turn it on.
+    const extraTabs = [
+      { id: "internal-monologue", label: "Internal monologue", content: <p>the client thinks</p> },
+    ];
+
+    it("adds nothing when the host passes none", () => {
+      const { container } = render(<SessionSidebar {...baseProps} />);
+
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it("earns the sidebar on its own", () => {
+      render(<SessionSidebar {...baseProps} extraTabs={extraTabs} />);
+
+      expect(screen.getByRole("tab", { name: "Internal monologue" })).toBeInTheDocument();
+    });
+
+    it("renders its content when selected", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          events={[{ score: 1, emoji: "x", message: "m", timestamp: "t" }]}
+          extraTabs={extraTabs}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("tab", { name: "Internal monologue" }));
+
+      expect(screen.getByText("the client thinks")).toBeInTheDocument();
+    });
+
+    it("comes last, so it never steals the tab a learner lands on", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          events={[{ score: 1, emoji: "x", message: "m", timestamp: "t" }]}
+          extraTabs={extraTabs}
+        />,
+      );
+
+      // Live events was the default tab before; adding a tab must not move it.
+      expect(screen.getByTestId("simulation-events")).toBeInTheDocument();
+      expect(screen.queryByText("the client thinks")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Supervisor tab (live coaching notes)", () => {
+    it("is absent when the roleplay has live notes switched off", () => {
+      // Opt-in: notes arriving without the flag must not conjure a tab.
+      render(
+        <SessionSidebar
+          {...baseProps}
+          reminders={["Stay calm"]}
+          supervisorNotes={[{ note: "Slow down.", seq: 1 }]}
+        />,
+      );
+
+      expect(screen.queryByTestId("session-sidebar-tab-supervisor")).not.toBeInTheDocument();
+    });
+
+    it("shows with a calm empty state before any note arrives", () => {
+      // The tab appears from the start of the session: its empty state is what
+      // tells the learner a supervisor is watching at all.
+      render(<SessionSidebar {...baseProps} supervisorNotesEnabled />);
+
+      expect(screen.getByTestId("session-sidebar-tab-supervisor")).toBeInTheDocument();
+      expect(screen.getByTestId("supervisor-notes-empty")).toBeInTheDocument();
+      expect(screen.queryByTestId("supervisor-notes")).not.toBeInTheDocument();
+    });
+
+    it("discloses the supervisor is AI, with default copy, whether or not notes have arrived yet", () => {
+      // The tab is named "Supervisor" and reads as a person unless something
+      // says otherwise — the badge is permanent, not a one-time toast.
+      const { rerender } = render(<SessionSidebar {...baseProps} supervisorNotesEnabled />);
+
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-generated");
+      expect(screen.getByTestId("tooltip")).toHaveAttribute(
+        "title",
+        "Ally is an AI supervisor. It's listening live and sending these notes automatically — not a person.",
+      );
+
+      rerender(
+        <SessionSidebar
+          {...baseProps}
+          supervisorNotesEnabled
+          supervisorNotes={[{ note: "Slow down.", seq: 1 }]}
+        />,
+      );
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-generated");
+    });
+
+    it("uses the translated tab label, empty state and AI disclosure when provided", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          supervisorNotesEnabled
+          translations={
+            {
+              supervisorTab: "மேற்பார்வையாளர்",
+              supervisorEmptyState: "காத்திருக்கிறது",
+              supervisorAiLabel: "AI-உருவாக்கியது",
+              supervisorAiTooltip: "இது ஒரு AI.",
+            } as any
+          }
+        />,
+      );
+
+      expect(screen.getByTestId("session-sidebar-tab-supervisor")).toHaveTextContent(
+        "மேற்பார்வையாளர்",
+      );
+      expect(screen.getByTestId("supervisor-notes-empty")).toHaveTextContent("காத்திருக்கிறது");
+      expect(screen.getByTestId("supervisor-ai-disclosure")).toHaveTextContent("AI-உருவாக்கியது");
+      expect(screen.getByTestId("tooltip")).toHaveAttribute("title", "இது ஒரு AI.");
+    });
+
+    it("renders notes in order once they arrive", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          supervisorNotesEnabled
+          supervisorNotes={[
+            { note: "Stay with the fear.", seq: 1 },
+            { note: "Ask what evenings are like.", seq: 2 },
+          ]}
+        />,
+      );
+
+      expect(screen.getByTestId("supervisor-note-0")).toHaveTextContent("Stay with the fear.");
+      expect(screen.getByTestId("supervisor-note-1")).toHaveTextContent(
+        "Ask what evenings are like.",
+      );
+    });
+
+    it("badges unread notes only while another tab is active", () => {
+      // Badge-only is the whole notification mechanism — the learner is
+      // mid-conversation and decides when to look.
+      const { rerender } = render(
+        <SessionSidebar
+          {...baseProps}
+          reminders={["Stay calm"]}
+          supervisorNotesEnabled
+          supervisorNotes={[]}
+        />,
+      );
+
+      // Reminders is tab[0], so Supervisor starts inactive.
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
+
+      rerender(
+        <SessionSidebar
+          {...baseProps}
+          reminders={["Stay calm"]}
+          supervisorNotesEnabled
+          supervisorNotes={[{ note: "Slow down.", seq: 1 }]}
+        />,
+      );
+      expect(screen.getByTestId("session-sidebar-supervisor-badge")).toHaveTextContent("1");
+
+      // Opening the tab clears it, and it stays clear.
+      fireEvent.click(screen.getByTestId("session-sidebar-tab-supervisor"));
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
+
+      rerender(
+        <SessionSidebar
+          {...baseProps}
+          reminders={["Stay calm"]}
+          supervisorNotesEnabled
+          supervisorNotes={[
+            { note: "Slow down.", seq: 1 },
+            { note: "She named a fear.", seq: 2 },
+          ]}
+        />,
+      );
+      // Still on the Supervisor tab, so a new note is read as it lands.
+      expect(screen.queryByTestId("session-sidebar-supervisor-badge")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId("session-sidebar-tab-reminders"));
+      rerender(
+        <SessionSidebar
+          {...baseProps}
+          reminders={["Stay calm"]}
+          supervisorNotesEnabled
+          supervisorNotes={[
+            { note: "Slow down.", seq: 1 },
+            { note: "She named a fear.", seq: 2 },
+            { note: "Let that sit.", seq: 3 },
+          ]}
+        />,
+      );
+      expect(screen.getByTestId("session-sidebar-supervisor-badge")).toHaveTextContent("1");
+    });
+
+    it("coexists with the Live events tab", () => {
+      render(
+        <SessionSidebar
+          {...baseProps}
+          events={[{ score: 1, emoji: "🎯", message: "Nice", timestamp: new Date().toISOString() }]}
+          supervisorNotesEnabled
+        />,
+      );
+
+      expect(screen.getByTestId("session-sidebar-tab-live")).toBeInTheDocument();
+      expect(screen.getByTestId("session-sidebar-tab-supervisor")).toBeInTheDocument();
+    });
   });
 });

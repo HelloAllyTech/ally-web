@@ -132,6 +132,18 @@ export const useStartSimulation = (
             timerMode: scenario?.timerMode,
             showScoreMeter: scenario?.showScoreMeter,
             pauseEnabled: scenario?.pauseEnabled,
+            // Opt-in per roleplay — drives the Supervisor tab in the session
+            // sidebar. The agent gates note generation independently, so this
+            // only controls whether the learner has somewhere to read them.
+            supervisorNotesEnabled: scenario?.supervisorNotesEnabled === true,
+            // Opt-in per roleplay, same shape. The agent decides separately
+            // whether to publish video (its own global kill-switch), and the
+            // interface only swaps in a video surface once a track actually
+            // arrives — so this being true never degrades the audio-only view.
+            videoActorEnabled: scenario?.videoActorEnabled === true,
+            // Opt-out per roleplay, unlike supervisorNotesEnabled above: only an
+            // explicit false hides the learner-facing Live tab.
+            liveTabEnabled: scenario?.liveTabEnabled !== false,
             stateNames: scenario?.stateNames || [],
             difficultyLevel: scenario?.difficultyLevel,
           }),
@@ -157,7 +169,23 @@ export const useStartSimulation = (
         };
 
         if (errorData.data?.statusCode === 403) {
-          toast.error("You are not authorized to start this simulation");
+          // The roleplay v2 gate throws two distinct, useful messages —
+          // "not currently enabled" (rollout not live yet) vs. "not
+          // available for this account yet" (allowlist) — collapsing both
+          // into one generic string left the learner with no way to tell a
+          // platform-wide rollout state from an account-specific one. Only
+          // the two known, curated gate strings are shown verbatim; any
+          // other 403 still gets the safe generic message.
+          const knownGateMessages = [
+            "Roleplay v2 is not currently enabled.",
+            "Roleplay v2 is not available for this account yet.",
+          ];
+          const backendMessage = errorData.data?.message;
+          toast.error(
+            backendMessage && knownGateMessages.includes(backendMessage)
+              ? backendMessage
+              : "You are not authorized to start this simulation",
+          );
         } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
           // End previous simulation and retry
           await endSimulation({ sessionId: errorData?.data?.entityId });

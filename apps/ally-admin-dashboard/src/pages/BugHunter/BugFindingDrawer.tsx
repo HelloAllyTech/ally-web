@@ -9,6 +9,7 @@ import {
   useCancelBugFixSessionMutation,
   useEditBugFindingDescriptionMutation,
   useGetBugFindingQuery,
+  useMergeBugFindingMutation,
   useRejectBugFindingMutation,
   useReleaseBugFindingMutation,
   useStartBugFixSessionMutation,
@@ -21,20 +22,38 @@ import {
   BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES,
   BUG_FINDING_DESCRIPTION_MAX_LENGTH,
   BUG_FINDING_FIX_SESSION_START_STATUSES,
+  BUG_FINDING_LOW_CONFIDENCE_THRESHOLD,
+  BugFindingDecisionReason,
   BugFindingStatus,
+  BugHuntEventStage,
 } from "@types";
-import { formatDate } from "@utils";
+import { formatDateTime, formatTimestamp } from "@utils";
 
 import { BrailleSpinner } from "./BrailleSpinner";
-import { BUG_FINDING_SEVERITY_LABELS, BUG_FINDING_SOURCE_LABELS } from "./bugFindingLabels";
+import {
+  BUG_FINDING_DECISION_REASON_LABELS,
+  BUG_FINDING_SEVERITY_LABELS,
+  BUG_FINDING_SOURCE_LABELS,
+  engineModelLabel,
+} from "./bugFindingLabels";
+import { BugFindingStageEditor } from "./BugFindingStageEditor";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
+import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 import { PipelineRail } from "./PipelineRail";
 import { stageFromFindingStatus } from "./pipelineStage";
+import { ReportedBugPanel } from "./ReportedBugPanel";
 
 interface BugFindingDrawerProps {
   id: string;
   onClose: () => void;
+  /**
+   * False for a SUPER_ADMIN, who can read the bug table but not act on it —
+   * resolved once by the tab root (`BugHunter.tsx`) and threaded down, so
+   * there is exactly one copy of that rule. See `BugHunter.tsx`'s `canTriage`
+   * doc for why the tiers differ.
+   */
+  canTriage: boolean;
 }
 
 /** Statuses where something is in flight and the drawer should poll rather than sit stale. */
@@ -76,7 +95,7 @@ const railVariantForStatus = (status: BugFindingStatus): "error" | "waiting" | u
  * a human decision, made after the fix is visibly merged. See ally-be's
  * BugFixSessionService for the full reasoning.
  */
-export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => {
+export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTriage }) => {
   // A dispatched session or release is reconciled server-side minutes later,
   // and there is no push channel for a single finding — the SSE stream is
   // per-run, and a release outlives its run entirely. So the drawer polls, but
@@ -93,13 +112,17 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const [answer, { isLoading: isAnswering }] = useAnswerBugFindingMutation();
   const [startFixSession, { isLoading: isStartingSession }] = useStartBugFixSessionMutation();
   const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
+  const [merge, { isLoading: isMerging }] = useMergeBugFindingMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
   const [editDescription, { isLoading: isSavingDescription }] =
     useEditBugFindingDescriptionMutation();
 
   const [confirmAction, setConfirmAction] = useState<
-    "approve" | "reject" | "fixSession" | "stopFixSession" | "release" | null
+    "approve" | "reject" | "fixSession" | "stopFixSession" | "merge" | "release" | null
   >(null);
+  /** The decline reason and note, held here so cancelling the dialog does not lose a typed note. */
+  const [declineReason, setDeclineReason] = useState<BugFindingDecisionReason | null>(null);
+  const [declineNote, setDeclineNote] = useState("");
   const [answerText, setAnswerText] = useState("");
   // `null` is not editing. A string is the draft, which starts as the current
   // description rather than empty: this is a rewrite of an existing brief, and
@@ -136,6 +159,15 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
   const steps = finding?.steps ?? [];
   const events = finding?.events ?? [];
 
+  // A plain fix-session FAILED carries no reason field of its own — unlike
+  // RELEASE_FAILED, which has a dedicated banner reading `releaseTag`, the
+  // failure text only ever lands as an ERROR-stage timeline event (see
+  // ally-be's BugFixSessionService). Events are returned oldest-first, so the
+  // last ERROR entry is the one that actually explains this state.
+  const latestFailureReason = [...events]
+    .reverse()
+    .find(event => event.stage === BugHuntEventStage.ERROR)?.summary;
+
   const inFlight = finding
     ? IN_FLIGHT_STATUSES.includes(finding.status) ||
       // A coordinating parent's own status doesn't change between steps, but
@@ -146,23 +178,28 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
     setPollingInterval(inFlight ? 15_000 : 0);
   }, [inFlight]);
 
+  // `canTriage` gates every mutating control in this drawer: false for a
+  // SUPER_ADMIN, who can read a bug's whole history here but not act on it —
+  // see BugHunter.tsx's doc on why the tiers differ.
   const canStartSession = finding
-    ? BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
+    ? canTriage && BUG_FINDING_FIX_SESSION_START_STATUSES.includes(finding.status)
     : false;
 
   // Mirrors the backend's own gate (QUEUED or FIXING) so a stale click never
   // makes a round trip just to be told 403 — the same reasoning as
   // `canStartSession` above.
   const canStopSession = finding
-    ? finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING
+    ? canTriage &&
+      (finding.status === BugFindingStatus.QUEUED || finding.status === BugFindingStatus.FIXING)
     : false;
 
   // The description is the fix agent's whole brief (see ally-be's
   // `buildFixSessionPrompt`), so the edit is offered exactly where "Put me on
   // it" is and nowhere else — mirroring the backend's own gate so a stale
-  // click never makes a round trip just to be told 403.
+  // click never makes a round trip just to be told 403. `canTriage` narrows it
+  // further for a SUPER_ADMIN, who can read this drawer but not act in it.
   const canEditDescription = finding
-    ? BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES.includes(finding.status)
+    ? canTriage && BUG_FINDING_DESCRIPTION_EDITABLE_STATUSES.includes(finding.status)
     : false;
 
   const draftTooLong = (descriptionDraft?.trim().length ?? 0) > BUG_FINDING_DESCRIPTION_MAX_LENGTH;
@@ -194,13 +231,41 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
   const handleDecision = async () => {
     if (!confirmAction) return;
+    // Guarded rather than assumed: the confirm button is disabled without a
+    // reason, but the dialog can also be submitted by keyboard.
+    if (confirmAction === "reject" && !canSubmitDecline(declineReason, declineNote)) {
+      toast.error(en.bugHunter.declineReasonRequired);
+      return;
+    }
     try {
       if (confirmAction === "approve") await approve(id).unwrap();
-      else await reject(id).unwrap();
+      else {
+        await reject({
+          id,
+          reason: declineReason as BugFindingDecisionReason,
+          note: declineNote,
+        }).unwrap();
+      }
+      setDeclineReason(null);
+      setDeclineNote("");
     } catch {
       toast.error(en.bugHunter.drawerDecisionFailed);
     } finally {
       setConfirmAction(null);
+    }
+  };
+
+  const handleMerge = async () => {
+    try {
+      await merge(id).unwrap();
+      setConfirmAction(null);
+    } catch (error) {
+      // GitHub's own refusal is the useful one — "At least 1 approving review
+      // is required", "Base branch was modified" — and each names the admin's
+      // next move, which a generic line would hide. The dialog stays open.
+      toast.error(
+        (error as { data?: { message?: string } })?.data?.message ?? en.bugHunter.drawerMergeFailed,
+      );
     }
   };
 
@@ -278,6 +343,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 · {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
               </span>
             )}
+            {engineModelLabel(finding.engine, finding.model) && (
+              <span className="text-xs text-typography-600">
+                · {engineModelLabel(finding.engine, finding.model)}
+              </span>
+            )}
 
             {/* Pushed to the end of the row rather than given a place among the
                 actions below: this is about the bug's address, not about its
@@ -296,6 +366,20 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
           <PipelineRail
             stage={stageFromFindingStatus(finding.status)}
             variant={railVariantForStatus(finding.status)}
+          />
+
+          {/* The coarse roadmap ladder, below the pipeline rail rather than
+              beside the status badge above: the rail is the fine-grained
+              picture, this is the one-word summary of it, and the two belong
+              together. Bugs are no longer on the roadmap board, so this is the
+              only screen that shows a bug's stage at all. */}
+          <BugFindingStageEditor
+            id={finding.id}
+            stage={finding.stage}
+            isAuto={finding.stageIsAuto}
+            pinnedByName={finding.stageOverriddenByName}
+            pinnedAt={finding.stageOverriddenAt}
+            canEdit={canTriage}
           />
 
           {finding.source === "reported_bug" && finding.status === BugFindingStatus.NEW && (
@@ -381,7 +465,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                     String(finding.descriptionEditedBy ?? "—"),
                   )}
                   {finding.descriptionEditedAt
-                    ? ` · ${formatDate(finding.descriptionEditedAt)}`
+                    ? ` · ${formatDateTime(finding.descriptionEditedAt)}`
                     : ""}
                 </p>
                 <button
@@ -407,6 +491,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             )}
           </div>
 
+          {/* Placed with the evidence, not with the brief. The reporter's own
+              sentence is the brief; this is the silently-captured circumstance
+              around it, which is evidence in exactly the sense a failing test's
+              output is. */}
+          {finding.report && <ReportedBugPanel report={finding.report} />}
+
           {finding.evidence && (
             <div>
               <h3 className="text-xs font-semibold text-typography-700 mb-1">
@@ -415,6 +505,105 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               <pre className="text-xs bg-neutral-50 border border-border-light rounded p-2 whitespace-pre-wrap overflow-x-auto">
                 {finding.evidence}
               </pre>
+            </div>
+          )}
+
+          {/* ── How sure the checkers were, and what happened to it before ──
+              Placed under the evidence because it IS evidence about the
+              finding rather than an action on it: the reader's next question
+              after "what is the bug" is "how confident should I be", and until
+              now the answer was nowhere on the page. */}
+          {/* `!finding.proven` belongs in this condition, not only in the
+              branch below it: an unproven finding with no score means nobody
+              verified this one, which is exactly the case a reader must be
+              able to tell apart from a verified-and-confident finding. Left
+              out of the outer test, that branch could never render at all. */}
+          {(finding.confidence != null ||
+            !finding.proven ||
+            finding.decisionReason ||
+            finding.regressed ||
+            finding.regressionOf ||
+            finding.rediscoveredCount > 0) && (
+            <div className="border border-border-light rounded p-3 flex flex-col gap-2">
+              {finding.confidence != null && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-typography-700">
+                    {en.bugHunter.drawerConfidenceLabel}:
+                  </span>
+                  <span
+                    className={`text-xs font-medium tabular-nums ${
+                      finding.confidence < BUG_FINDING_LOW_CONFIDENCE_THRESHOLD
+                        ? "text-amber-700"
+                        : "text-typography-900"
+                    }`}
+                  >
+                    {Math.round(finding.confidence * 100)}%
+                  </span>
+                  <Tooltip label={en.bugHunter.drawerConfidenceTooltip} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                  {finding.confidence < BUG_FINDING_LOW_CONFIDENCE_THRESHOLD && (
+                    <span className="text-[11px] text-amber-700">
+                      {en.bugHunter.findingLowConfidenceTooltip}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* An unproven finding with no score is a different fact from a
+                  proven one with no score, and neither is "0% confident". */}
+              {finding.confidence == null && !finding.proven && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-typography-600">
+                    {en.bugHunter.drawerConfidenceUnscored}
+                  </span>
+                  <Tooltip label={en.bugHunter.drawerConfidenceUnscoredTooltip} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
+
+              {finding.decisionReason && (
+                <div>
+                  <p className="text-xs text-typography-900">
+                    {en.bugHunter.drawerDeclinedAs.replace(
+                      "{reason}",
+                      BUG_FINDING_DECISION_REASON_LABELS[finding.decisionReason],
+                    )}
+                  </p>
+                  {finding.decisionNote && (
+                    <p className="text-xs text-typography-600 mt-0.5 whitespace-pre-wrap">
+                      {finding.decisionNote}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {finding.rediscoveredCount > 0 && (
+                <p className="text-xs text-typography-600">
+                  {en.bugHunter.drawerRediscovered.replace(
+                    "{count}",
+                    String(finding.rediscoveredCount),
+                  )}
+                </p>
+              )}
+
+              {finding.regressionOf && (
+                <a
+                  href={`?bug=${finding.regressionOf}`}
+                  className="text-xs text-primary-600 underline w-fit"
+                >
+                  {en.bugHunter.drawerRegressionOfLink}
+                </a>
+              )}
+
+              {finding.regressed && (
+                <p className="text-xs text-amber-700">{en.bugHunter.findingRegressedTooltip}</p>
+              )}
             </div>
           )}
 
@@ -501,6 +690,14 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               {en.bugHunter.drawerReleaseFailedNotice.replace("{tag}", finding.releaseTag ?? "—")}
             </p>
           )}
+          {/* A plain fix-session failure used to surface only as buried
+              timeline text — promoted to the same dedicated-banner treatment
+              RELEASE_FAILED gets, since both are "this needs a look" states. */}
+          {finding.status === BugFindingStatus.FAILED && (
+            <p className="text-sm text-destructive-700 bg-destructive-50 border border-destructive-200 rounded p-3">
+              {latestFailureReason || en.bugHunter.drawerFixSessionFailedNotice}
+            </p>
+          )}
           {finding.status === BugFindingStatus.QUEUED && (
             <p className="text-sm text-typography-600">{en.bugHunter.drawerFixSessionQueued}</p>
           )}
@@ -532,7 +729,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
 
           {/* ── The two on-demand actions ──────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2">
-            {finding.status === BugFindingStatus.PENDING_APPROVAL && (
+            {canTriage && finding.status === BugFindingStatus.PENDING_APPROVAL && (
               <>
                 <Button
                   size="sm"
@@ -596,7 +793,30 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
               </>
             )}
 
-            {finding.releasable && (
+            {/* The merge Bug Hunter cannot do itself on a protected repo.
+                Offered from PR_OPENED only: before that there is nothing to
+                merge, and after it the fix is already on master. The backend
+                re-checks the PR's own CI and refuses a red one, so this button
+                is a shortcut past a trip to GitHub, not past a gate. */}
+            {canTriage && finding.status === BugFindingStatus.PR_OPENED && finding.prUrl && (
+              <>
+                <Button
+                  size="sm"
+                  kind="primary"
+                  disabled={isMerging || isDraftingDescription}
+                  onClick={() => setConfirmAction("merge")}
+                >
+                  {en.bugHunter.drawerMerge}
+                </Button>
+                <Tooltip label={en.bugHunter.drawerMergeTooltip} align="top">
+                  <button type="button" className="cursor-pointer inline-flex items-center">
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </>
+            )}
+
+            {canTriage && finding.releasable && (
               <>
                 <Button
                   size="sm"
@@ -635,21 +855,21 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
           {finding.releasedBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerReleasedBy.replace("{userId}", String(finding.releasedBy))}
-              {finding.releasedAt ? ` · ${formatDate(finding.releasedAt)}` : ""}
+              {finding.releasedAt ? ` · ${formatDateTime(finding.releasedAt)}` : ""}
             </p>
           )}
 
           {finding.decidedBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerDecidedBy.replace("{userId}", String(finding.decidedBy))}
-              {finding.decidedAt ? ` · ${formatDate(finding.decidedAt)}` : ""}
+              {finding.decidedAt ? ` · ${formatDateTime(finding.decidedAt)}` : ""}
             </p>
           )}
 
           {finding.cancelledBy != null && (
             <p className="text-xs text-typography-500">
               {en.bugHunter.drawerCancelledBy.replace("{userId}", String(finding.cancelledBy))}
-              {finding.cancelledAt ? ` · ${formatDate(finding.cancelledAt)}` : ""}
+              {finding.cancelledAt ? ` · ${formatDateTime(finding.cancelledAt)}` : ""}
             </p>
           )}
 
@@ -677,12 +897,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                         String(finding.escalationAnsweredBy),
                       )}
                       {finding.escalationAnsweredAt
-                        ? ` · ${formatDate(finding.escalationAnsweredAt)}`
+                        ? ` · ${formatDateTime(finding.escalationAnsweredAt)}`
                         : ""}
                     </p>
                   )}
                 </div>
-              ) : finding.status === BugFindingStatus.NEEDS_INPUT ? (
+              ) : finding.status === BugFindingStatus.NEEDS_INPUT && canTriage ? (
                 <div className="flex flex-col gap-2">
                   <TextArea
                     id={`bug-finding-answer-${finding.id}`}
@@ -718,7 +938,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
                 {events.map(event => (
                   <li key={event.id} className="text-sm text-typography-800 flex gap-2">
                     <span className="text-typography-500 whitespace-nowrap tabular-nums">
-                      {formatDate(event.createdAt)}
+                      {formatTimestamp(event.createdAt)}
                     </span>
                     <span className="font-medium text-typography-700 whitespace-nowrap">
                       {BUG_HUNT_EVENT_STAGE_LABELS[event.stage]}
@@ -750,6 +970,34 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose }) => 
             label:
               confirmAction === "approve" ? en.bugHunter.drawerApprove : en.bugHunter.drawerReject,
             onClick: handleDecision,
+            // The reason is what makes a decline teach the next sweep anything,
+            // so the button waits for it rather than the request 400ing.
+            disabled: confirmAction === "reject" && !canSubmitDecline(declineReason, declineNote),
+          }}
+          secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
+        >
+          {confirmAction === "reject" && (
+            <DeclineReasonPicker
+              idPrefix={`drawer-${id}`}
+              reason={declineReason}
+              onReasonChange={setDeclineReason}
+              note={declineNote}
+              onNoteChange={setDeclineNote}
+            />
+          )}
+        </ActionConfirmationPopup>
+      )}
+
+      {confirmAction === "merge" && (
+        <ActionConfirmationPopup
+          isOpen
+          onClose={() => setConfirmAction(null)}
+          title={en.bugHunter.drawerMergeConfirmTitle}
+          description={en.bugHunter.drawerMergeConfirmBody}
+          primaryButton={{
+            label: en.bugHunter.drawerMergeConfirm,
+            onClick: handleMerge,
+            disabled: isMerging,
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
         />

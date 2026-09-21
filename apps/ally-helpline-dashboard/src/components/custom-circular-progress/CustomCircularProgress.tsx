@@ -23,7 +23,7 @@ const CustomCircularProgress: React.FC<{ value: number; size?: number; color?: s
         cx={SIZE / 2}
         cy={SIZE / 2}
         r={RADIUS}
-        stroke="#E0E0E0"
+        stroke="#e3dbce"
         strokeWidth={STROKE_WIDTH}
         fill="none"
       />

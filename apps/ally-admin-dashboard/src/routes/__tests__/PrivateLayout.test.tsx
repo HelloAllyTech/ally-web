@@ -1,13 +1,15 @@
 import React from "react";
 
 import { configureStore } from "@reduxjs/toolkit";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, afterAll, beforeEach, vi } from "vitest";
 
-import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions, UserRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, OrgToggle, Permissions } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
+
+import * as api from "@api";
 
 import { PrivateLayout } from "../PrivateLayout";
 
@@ -16,7 +18,9 @@ vi.mock("@components", async importOriginal => {
   return {
     ...actual,
     Sidebar: () => <div>Sidebar</div>,
-    AccessDenied: () => <div>This page is not accessible</div>,
+    AccessDenied: ({ title }: { title?: string }) => (
+      <div>{title ?? "This page is not accessible"}</div>
+    ),
   };
 });
 
@@ -38,10 +42,26 @@ vi.mock("@store", () => ({
   },
 }));
 
+const refetchSpy = vi.fn();
 vi.mock("@api", () => ({
-  useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
-  useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
-  useGetFeatureTogglesQuery: vi.fn(() => ({ data: [], isLoading: false })),
+  useGetUserQuery: vi.fn(() => ({
+    data: { id: 1 },
+    isLoading: false,
+    isError: false,
+    refetch: refetchSpy,
+  })),
+  useGetPermissionsQuery: vi.fn(() => ({
+    data: [Permissions.EDIT_USER],
+    isLoading: false,
+    isError: false,
+    refetch: refetchSpy,
+  })),
+  useGetFeatureTogglesQuery: vi.fn(() => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+    refetch: refetchSpy,
+  })),
   useGetCharacterLibraryEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
   useGetUserPreferencesQuery: () => ({ data: undefined, isLoading: false }),
   useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
@@ -199,8 +219,8 @@ describe("PrivateLayout", () => {
     expect(screen.getByText("PreviewContent")).toBeInTheDocument();
   });
 
-  describe("requiredFeature dual-gate", () => {
-    it("grants access via requiredFeature alone when requiredRole doesn't match", async () => {
+  describe("requiredFeature", () => {
+    it("grants access when the caller holds the toggle", async () => {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
       const { useGetFeatureTogglesQuery } = await import("@api");
@@ -216,13 +236,7 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  // The fixed mocked user (id: 1) carries no `role`, so this
-                  // never matches "SUPER_DUPER_ADMIN" — access must come from
-                  // the toggle alone.
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
+                  <PrivateLayout requiredFeature="settings">
                     <div>FeatureGrantedContent</div>
                   </PrivateLayout>
                 }
@@ -235,7 +249,7 @@ describe("PrivateLayout", () => {
       expect(screen.getByText("FeatureGrantedContent")).toBeInTheDocument();
     });
 
-    it("denies access when neither requiredRole nor requiredFeature is satisfied", async () => {
+    it("denies access when the caller lacks the toggle", async () => {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
       const { useGetFeatureTogglesQuery } = await import("@api");
@@ -251,10 +265,7 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
-                    requiredFeature="settings"
-                  >
+                  <PrivateLayout requiredFeature="settings">
                     <div>GatedContent</div>
                   </PrivateLayout>
                 }
@@ -278,11 +289,9 @@ describe("PrivateLayout", () => {
               <Route
                 path="/protected"
                 element={
-                  // The mocked user is neither SUPER_DUPER_ADMIN nor a holder
-                  // of the character_library per-user toggle, so only the org
-                  // switch can let them through.
+                  // The mocked user holds no character_library per-user
+                  // toggle, so only the org switch can let them through.
                   <PrivateLayout
-                    requiredRole={UserRole.SUPER_DUPER_ADMIN}
                     requiredFeature="character_library"
                     requiredOrgToggle={OrgToggle.CHARACTER_LIBRARY}
                   >
@@ -381,6 +390,144 @@ describe("PrivateLayout", () => {
       expect(screen.getByText(/this page stopped working/i)).toBeInTheDocument();
       // And the failure is named, not swallowed.
       expect(screen.getByText(/reading 'some'/)).toBeInTheDocument();
+    });
+  });
+
+  describe("when entitlements cannot be read", () => {
+    /**
+     * Withholding the page while access is unknown is correct and is not what these tests
+     * question. What they hold is that the reader is told the truth about WHY.
+     *
+     * A platform admin with 215 permissions was shown "this page isn't turned on for your role
+     * yet" because the API was down for ninety seconds — copy that sends someone to an admin
+     * to fix an account that is fine. It happened twice in one session, once on a slow direct
+     * navigation and once on a backend restart.
+     */
+    const renderGated = () =>
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
+                    <div>GatedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+    beforeEach(() => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+      // clearAllMocks wipes recorded CALLS but keeps implementations, so a
+      // mockReturnValue set in one test leaks into the next. Restore the healthy
+      // default for all three before each case.
+      (api.useGetUserQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: { id: 1 },
+        isLoading: false,
+        isError: false,
+        refetch: refetchSpy,
+      });
+      (api.useGetPermissionsQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: [Permissions.EDIT_USER],
+        isLoading: false,
+        isError: false,
+        refetch: refetchSpy,
+      });
+      (api.useGetFeatureTogglesQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        refetch: refetchSpy,
+      });
+    });
+
+    it("says it is checking, rather than flashing a denial, while loading", () => {
+      (api.useGetPermissionsQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+        refetch: refetchSpy,
+      });
+      renderGated();
+
+      expect(screen.getByTestId("entitlements-loading")).toBeInTheDocument();
+      expect(screen.queryByText("This page is not accessible")).not.toBeInTheDocument();
+      // Still fails CLOSED: the page itself is withheld until the answer is known.
+      expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
+    });
+
+    it("blames the load, not the account, when the fetch fails", () => {
+      (api.useGetFeatureTogglesQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: refetchSpy,
+      });
+      renderGated();
+
+      expect(screen.getByTestId("entitlements-failed")).toBeInTheDocument();
+      expect(screen.getByText("Couldn't check your access")).toBeInTheDocument();
+      expect(screen.queryByText("This page is not accessible")).not.toBeInTheDocument();
+      expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
+    });
+
+    it("offers a retry that refetches instead of making the reader reload", () => {
+      (api.useGetUserQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: refetchSpy,
+      });
+      renderGated();
+
+      fireEvent.click(screen.getByTestId("entitlements-retry"));
+      expect(refetchSpy).toHaveBeenCalled();
+    });
+
+    it("keeps the real denial for a real denial", async () => {
+      // The failure screen must not swallow the case it was carved out of.
+      const utils = await import("@utils");
+      (utils.hasPermissions as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      renderGated();
+
+      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
+      expect(screen.queryByTestId("entitlements-failed")).not.toBeInTheDocument();
+      (utils.hasPermissions as ReturnType<typeof vi.fn>).mockReturnValue(true);
+    });
+
+    it("does not block an ungated route when an entitlement endpoint blips", () => {
+      // A route that gates on nothing is reachable regardless, so a failure on an endpoint it
+      // never consults must not hold it back.
+      (api.useGetFeatureTogglesQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        refetch: refetchSpy,
+      });
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/open"]}>
+            <Routes>
+              <Route
+                path="/open"
+                element={
+                  <PrivateLayout>
+                    <div>OpenContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+      expect(screen.getByText("OpenContent")).toBeInTheDocument();
+      expect(screen.queryByTestId("entitlements-failed")).not.toBeInTheDocument();
     });
   });
 });

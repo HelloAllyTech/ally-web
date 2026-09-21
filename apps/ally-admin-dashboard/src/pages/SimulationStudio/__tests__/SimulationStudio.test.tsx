@@ -12,12 +12,14 @@ const {
   mockUseSimulationCases,
   mockUseTracks,
   mockUseUser,
+  mockFeatures,
 } = vi.hoisted(() => ({
   mockUseSimulations: vi.fn(),
   mockUseSimulationPathways: vi.fn(),
   mockUseSimulationCases: vi.fn(),
   mockUseTracks: vi.fn(),
   mockUseUser: vi.fn(),
+  mockFeatures: vi.fn<[], string[]>(),
 }));
 
 // Mock the custom hooks
@@ -27,6 +29,14 @@ vi.mock("@hooks", () => ({
   useSimulationCases: mockUseSimulationCases,
   useTracks: mockUseTracks,
   useUser: mockUseUser,
+}));
+
+// The content gate reads `state.user.features` off the store. Mocking
+// useSelector rather than wrapping in a real Provider keeps this suite free of
+// the store barrel, which pulls in every API slice.
+vi.mock("react-redux", () => ({
+  useSelector: (selector: (state: { user: { features: string[] } }) => unknown) =>
+    selector({ user: { features: mockFeatures() } }),
 }));
 
 // Mock components
@@ -505,6 +515,7 @@ describe("SimulationStudio", () => {
     mockUseSimulationCases.mockReturnValue(defaultCasesHookReturn);
     mockUseTracks.mockReturnValue(defaultTracksHookReturn);
     mockUseUser.mockReturnValue(defaultUserHookReturn);
+    mockFeatures.mockReturnValue(["content_management"]);
   });
 
   const renderComponent = (initialEntries = ["/"]) => {
@@ -1289,58 +1300,56 @@ describe("SimulationStudio", () => {
     });
   });
 
-  describe("Role-based access", () => {
-    it("hides tracks and cases tabs for non-super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "ADMIN" },
-      });
-
-      renderComponent();
-
-      expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
-      expect(screen.queryByTestId("tab-tracks")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("tab-cases")).not.toBeInTheDocument();
-    });
-
-    it("hides restricted create options for non-super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "ADMIN" },
-      });
-
-      renderComponent();
-
-      const createButton = screen.getByText("Create");
-      fireEvent.click(createButton);
-
-      expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.queryByText("New track")).not.toBeInTheDocument();
-      expect(screen.queryByText("New Case")).not.toBeInTheDocument();
-    });
-
-    it("shows all tabs and options for super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "SUPER_ADMIN" },
-      });
-
+  // Gating moved off the collapsed `user.role` (which only ever accepted the
+  // retired SUPER_ADMIN/SUPER_DUPER_ADMIN names, so a PLATFORM_ADMIN was
+  // locked out of its own content) and onto the `content_management` toggle.
+  describe("Content-management gating", () => {
+    it("shows all four content tabs — one key covers them, so none is filtered", () => {
       renderComponent();
 
       expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
       expect(screen.getByTestId("tab-tracks")).toBeInTheDocument();
       expect(screen.getByTestId("tab-cases")).toBeInTheDocument();
+    });
 
-      const createButton = screen.getByText("Create");
-      fireEvent.click(createButton);
+    it("renders the tabs for a PLATFORM_ADMIN holding the toggle", () => {
+      // The exact account the old isSuperAdminRole gate turned away.
+      mockUseUser.mockReturnValue({ user: { role: "PLATFORM_ADMIN" } });
+
+      renderComponent();
+
+      expect(screen.getByTestId("tab-tracks")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-cases")).toBeInTheDocument();
+    });
+
+    it("shows the Case and Course create options with the toggle on", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Create"));
 
       expect(screen.getByText("New simulation")).toBeInTheDocument();
       expect(screen.getByText("New Case")).toBeInTheDocument();
-      // "New track" is hidden unconditionally now, not role-gated — a super
-      // admin doesn't get it back.
+      // "New track" is hidden unconditionally — the legacy screen is being
+      // wound down, so no toggle brings it back.
       expect(screen.queryByText("New track")).not.toBeInTheDocument();
     });
 
-    it("hides management buttons for non-creators with ADMIN role", () => {
+    it("hides the Case and Course create options without the toggle", () => {
+      mockFeatures.mockReturnValue([]);
+
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Create"));
+
+      expect(screen.getByText("New simulation")).toBeInTheDocument();
+      expect(screen.queryByText("New Case")).not.toBeInTheDocument();
+      expect(screen.queryByText("New track")).not.toBeInTheDocument();
+    });
+
+    it("hides management buttons for non-creators without the toggle", () => {
+      mockFeatures.mockReturnValue([]);
       mockUseUser.mockReturnValue({
-        user: { role: "ADMIN", name: "Other User", userId: 999 },
+        user: { role: "PLATFORM_ADMIN", name: "Other User", userId: 999 },
       });
 
       renderComponent();

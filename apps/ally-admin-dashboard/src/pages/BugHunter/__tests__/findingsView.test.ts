@@ -9,6 +9,8 @@ import {
   FindingsFilters,
   hasActiveFilters,
   reposInWindow,
+  updatedAt,
+  wasTouchedSinceDiscovery,
 } from "../findingsView";
 
 const finding = (overrides: Partial<BugFinding> & { id: string }): BugFinding =>
@@ -89,10 +91,34 @@ describe("filtering", () => {
 
     const filters: FindingsFilters = {
       ...EMPTY_FILTERS,
-      repo: "ally-web",
-      severity: BugFindingSeverity.HIGH,
+      repos: ["ally-web"],
+      severities: [BugFindingSeverity.HIGH],
     };
     expect(view(findings, { filters }).rows.map(r => r.finding.id)).toEqual(["match"]);
+  });
+
+  it("treats several values in one facet as OR, and two facets as AND", () => {
+    const findings = [
+      finding({ id: "be-high", repo: "ally-be", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "web-high", repo: "ally-web", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "ai-high", repo: "ally-ai", severity: BugFindingSeverity.HIGH }),
+      finding({ id: "be-low", repo: "ally-be", severity: BugFindingSeverity.LOW }),
+    ];
+
+    const filters: FindingsFilters = {
+      ...EMPTY_FILTERS,
+      repos: ["ally-be", "ally-web"],
+      severities: [BugFindingSeverity.HIGH],
+    };
+    expect(view(findings, { filters }).rows.map(r => r.finding.id).sort()).toEqual([
+      "be-high",
+      "web-high",
+    ]);
+  });
+
+  it("treats an empty facet as no opinion rather than as matching nothing", () => {
+    const findings = [finding({ id: "a" }), finding({ id: "b" })];
+    expect(view(findings, { filters: { ...EMPTY_FILTERS, repos: [] } }).rows).toHaveLength(2);
   });
 
   it("knows when no filter is set, so the table can hide its own clear button", () => {
@@ -218,5 +244,63 @@ describe("reposInWindow", () => {
     // A facet that offers a value matching nothing is a dead end the reader has
     // to discover by trying it.
     expect(reposInWindow(findings)).toEqual(["ally-be", "ally-web"]);
+  });
+});
+
+/**
+ * "Has anything happened to this bug lately", which is a different question
+ * from "how long has it been on the list" — and the two come apart hardest on
+ * exactly the bug an admin goes looking for: one their team filed weeks ago
+ * that last night's sweep re-read.
+ */
+describe("wasTouchedSinceDiscovery", () => {
+  it("is true for a bug re-read long after it was filed", () => {
+    expect(
+      wasTouchedSinceDiscovery(
+        finding({
+          id: "a",
+          createdAt: "2026-07-01T00:00:00.000Z",
+          updatedAt: "2026-08-22T03:45:00.000Z",
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("is false within the minute of slack a single sweep needs", () => {
+    // Inserted, then PATCHed to pending_approval seconds later, all inside one
+    // sweep. A strict `>` would call every row touched and the column would
+    // repeat Age down the whole table.
+    expect(
+      wasTouchedSinceDiscovery(
+        finding({
+          id: "a",
+          createdAt: "2026-08-22T03:45:00.000Z",
+          updatedAt: "2026-08-22T03:45:12.000Z",
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("is false for a bug nothing has happened to", () => {
+    expect(
+      wasTouchedSinceDiscovery(
+        finding({
+          id: "a",
+          createdAt: "2026-08-22T03:45:00.000Z",
+          updatedAt: "2026-08-22T03:45:00.000Z",
+        }),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("updatedAt", () => {
+  it("falls back to the discovery date rather than returning NaN", () => {
+    // NaN would sort the row to an arbitrary place in the table instead of to
+    // one end — a defect nobody reads as a date-parsing problem.
+    const created = "2026-08-17T00:00:00.000Z";
+    expect(
+      updatedAt(finding({ id: "a", createdAt: created, updatedAt: "not a date" })),
+    ).toBe(new Date(created).getTime());
   });
 });

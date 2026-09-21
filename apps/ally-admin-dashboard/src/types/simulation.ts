@@ -20,6 +20,17 @@ export interface LiveKitEvent {
   timestamp: string;
 }
 
+/**
+ * One live supervisor note, as published by ally-ai-learn on the "supervisor"
+ * data-channel topic. `seq` is 1-based per session and is the note's identity.
+ */
+export interface SupervisorNotePayload {
+  note: string;
+  seq: number;
+  turn_index?: number;
+  timestamp?: string;
+}
+
 export interface UseLiveKitRoomReturn {
   error: string | null;
   events: LiveKitEvent[];
@@ -31,6 +42,7 @@ export interface UseLiveKitRoomReturn {
   startTime: Date;
   roomData: any;
   detectedEventIds: string[];
+  supervisorNotes: SupervisorNotePayload[];
 }
 
 export interface stateInstruction {
@@ -105,21 +117,25 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   /**
-   * Which post-session tabs this roleplay shows its learners, gated under
-   * `enableFeedback` (the master switch — false there means everything off
-   * regardless of these). Always sent with all three keys present: the
-   * backend resolver treats an absent `feedbackTabs` object as all-on and
-   * each key as on unless explicitly `false`, so a partial object could be
-   * misread as "off" for the omitted keys.
+   * Which post-session tabs this roleplay shows its learners — the debrief
+   * note and the annotated transcript, and nothing else. Always sent with
+   * both keys present: the backend resolver reads an absent object, and an
+   * absent key within one, as ON, which is right for a legacy roleplay but
+   * wrong for a deliberate save.
+   *
+   * Both false is the wholesale opt-out; there is no master switch above
+   * these two any more (`enableFeedback`, retired 2026-08-31).
    */
-  feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
+  feedbackTabs?: { debrief: boolean; transcript: boolean };
   fillerEnabled?: boolean;
   languageGlossaryEnabled?: boolean;
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
+  videoActorEnabled?: boolean;
+  videoActorAvatarId?: string;
+  videoActorProvider?: string;
   historyTrimEnabled?: boolean;
-  turnMaxEndpointingDelay?: number;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   currentState?: boolean;
@@ -224,10 +240,13 @@ export interface GetSimulationByIdResponse {
     summaryChecklistEnabled?: boolean;
     timerMode?: boolean;
     showScoreMeter?: boolean;
-    enableFeedback?: boolean;
-    /** See SimulationInput.feedbackTabs — absent object or absent key both read as on. */
-    feedbackTabs?: { debrief: boolean; skills: boolean; transcript: boolean };
+    /** See SimulationInput.feedbackTabs — each tab defaults on when unset. */
+    feedbackTabs?: { debrief: boolean; transcript: boolean };
     pauseEnabled?: boolean;
+    /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
+    supervisorNotesEnabled?: boolean;
+    /** Learner-facing Live events tab. Opt-out — only an explicit false hides it. */
+    liveTabEnabled?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
     fillerEnabled?: boolean;
@@ -235,8 +254,10 @@ export interface GetSimulationByIdResponse {
     comfortAudioEnabled?: boolean;
     comfortAudioUrl?: string;
     comfortAudioVolume?: number;
+    videoActorEnabled?: boolean;
+    videoActorAvatarId?: string;
+    videoActorProvider?: string;
     historyTrimEnabled?: boolean;
-    turnMaxEndpointingDelay?: number;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
     currentState?: boolean;
@@ -273,6 +294,9 @@ export interface GetSimulationByIdResponse {
   translationReminders?: Record<string, string[]>;
   remindersPrimaryLanguageId?: number | null;
   competency?: Competency;
+  // Every competency the simulation assesses. `competency` mirrors the
+  // first entry for readers that predate multi-competency selection.
+  competencies?: Competency[];
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
     eventId: string;
@@ -316,8 +340,10 @@ export interface StartSimulationResponse {
       checklistType?: string;
       summaryChecklistEnabled?: boolean;
       showScoreMeter?: boolean;
-      enableFeedback?: boolean;
       pauseEnabled?: boolean;
+      supervisorNotesEnabled?: boolean;
+      videoActorEnabled?: boolean;
+      liveTabEnabled?: boolean;
       currentState?: boolean;
       stateNames?: stateInstruction[];
     };
@@ -526,9 +552,15 @@ export interface CharacterData {
   coverImageUrl?: string;
   coverVideoUrl?: string;
   characterProfileText?: string;
-  voiceId?: string;
-  languageCharacteristics?: string;
-  linguisticStyleSamples?: string[];
+  /**
+   * Voice per language, keyed by `languages.id`. A character used to hold a
+   * single `voiceId`, which a simulation (one voice PER language) could only
+   * receive into one slot — and the applying code keyed it under English by
+   * convention, so a Marathi voice became a simulation's English voice.
+   */
+  voices?: Record<string, string>;
+  languageCharacteristics?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   knowledgeSources?: CharacterKnowledgeSource[];
   createdAt?: string;
   updatedAt?: string;
@@ -617,6 +649,41 @@ export interface Competency {
   // are private to their owner and never shown in the superadmin Competencies
   // tab — only in the owner's simulation-builder dropdown.
   isCustom?: boolean;
+  // Clusters this competency belongs to. Many-to-many: an admin curating
+  // frameworks decides how they overlap. Never populated for a custom
+  // competency, which is private to its owner.
+  clusters?: CompetencyClusterRef[];
+}
+
+export interface CompetencyClusterRef {
+  id: string;
+  name: string;
+}
+
+/**
+ * A named grouping of competencies — typically a framework the customer
+ * already trains against. Selecting a cluster in the simulation builder
+ * selects every competency under it; the simulation stores the expanded competency ids, not
+ * the cluster, so re-clustering later never changes a published simulation.
+ */
+export interface CompetencyCluster extends CompetencyClusterRef {
+  competencyIds: string[];
+}
+
+export interface CompetencyClustersResponse {
+  data: CompetencyCluster[];
+  count: number;
+}
+
+export interface CreateCompetencyClusterRequest {
+  name: string;
+  competencyIds?: string[];
+}
+
+export interface UpdateCompetencyClusterRequest {
+  id: string;
+  // Omitting competencyIds leaves the cluster's membership alone.
+  data: { name?: string; competencyIds?: string[] };
 }
 
 export interface CompetenciesResponse {
@@ -634,11 +701,16 @@ export interface CreateCompetencyRequest {
   // Omitted for custom competencies — the backend generates the name.
   name?: string;
   isCustom?: boolean;
+  // Clusters by NAME: an unknown name creates the cluster, so the editor can
+  // add one by typing it. Ignored for custom competencies.
+  clusterNames?: string[];
 }
 
 export interface UpdateCompetencyRequest {
   id: string;
-  data: { name: string };
+  // clusterNames replaces the competency's clusters; omit the key to leave
+  // clustering untouched, send [] to remove it from all of them.
+  data: { name: string; clusterNames?: string[] };
 }
 
 export interface CompetencyBehavioursResponse {

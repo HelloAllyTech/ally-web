@@ -312,12 +312,12 @@ describe("Cell", () => {
       });
     });
 
-    it("respects disabled state for dropdown", () => {
+    it("renders the resolved label as plain text instead of a dropdown when disabled", () => {
       const disabledValue = { value: "opt1", disabled: true };
       render(<Cell {...defaultProps} value={disabledValue} column={dropdownColumn} />);
 
-      const select = screen.getByTestId("dropdown-select");
-      expect(select).toBeDisabled();
+      expect(screen.queryByTestId("text-dropdown")).not.toBeInTheDocument();
+      expect(screen.getByText("Option 1")).toBeInTheDocument();
     });
   });
 
@@ -437,19 +437,39 @@ describe("Cell", () => {
       });
     });
 
-    it("respects disabled state for number input", () => {
-      const disabledValue = { value: 42, disabled: true };
-      render(<Cell {...defaultProps} value={disabledValue} column={numberColumn} />);
-
-      const input = screen.getByTestId("number-input-field");
-      expect(input).toBeDisabled();
-    });
-
     it("handles zero value", () => {
       render(<Cell {...defaultProps} value={0} column={numberColumn} />);
 
       const input = screen.getByTestId("number-input-field");
       expect(input).toHaveValue(0);
+    });
+
+    it("renders the value as plain text instead of a disabled input when disabled", () => {
+      const disabledValue = { value: 42, disabled: true };
+      render(<Cell {...defaultProps} value={disabledValue} column={numberColumn} />);
+
+      expect(screen.queryByTestId("number-input")).not.toBeInTheDocument();
+      expect(screen.getByText("42")).toBeInTheDocument();
+    });
+
+    // An unset cell is still the {value, disabled, rowId} wrapper. Reading it as
+    // a bare value put the wrapper itself into the plain-text branch, and React
+    // threw "Objects are not valid as a React child" — one event with no
+    // occurrence interval took the whole Events page down.
+    it("renders a placeholder, not the cell wrapper, when a disabled value is unset", () => {
+      const unsetValue = { value: undefined, disabled: true, rowId: "row-1" };
+      render(<Cell {...defaultProps} value={unsetValue} column={numberColumn} />);
+
+      expect(screen.getByText("--")).toBeInTheDocument();
+    });
+
+    it("keeps an unset editable cell empty rather than showing the cell wrapper", () => {
+      const unsetValue = { value: undefined, disabled: false, rowId: "row-1" };
+      render(<Cell {...defaultProps} value={unsetValue} column={numberColumn} />);
+
+      // The mocked input falls back to 0 for an empty value; what matters is
+      // that the wrapper object never reaches it.
+      expect(screen.getByTestId("number-input-field")).toHaveValue(0);
     });
   });
 
@@ -613,7 +633,7 @@ describe("Cell", () => {
 
       const span = screen.getByText("Short text");
       expect(span).toBeInTheDocument();
-      expect(span).toHaveClass("line-clamp-2");
+      expect(span).toHaveClass("line-clamp-4");
     });
 
     it("handles undefined value", () => {

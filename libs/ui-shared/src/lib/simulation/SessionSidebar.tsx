@@ -1,11 +1,12 @@
 "use client";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { motion } from "framer-motion";
 
 import { SessionChecklist } from "./SessionChecklist";
 import { SessionProgress } from "./SessionProgress";
 import { SimulationEvents } from "./SimulationEvents";
+import { SupervisorNotes } from "./SupervisorNotes";
 import { ChecklistMode, SessionSidebarProps } from "./types";
 import { RichTextRenderer } from "../rich-text-renderer";
 
@@ -14,6 +15,7 @@ enum SidebarTab {
   DESCRIPTION = "description",
   CHECKLIST = "checklist",
   LIVE = "live",
+  SUPERVISOR = "supervisor",
 }
 
 /**
@@ -37,12 +39,19 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
   checklistItems,
   detectedEventIds,
   events,
+  supervisorNotes = [],
+  supervisorNotesEnabled = false,
+  liveTabEnabled = true,
+  extraTabs = [],
   translations,
 }) => {
   const showReminders = reminders.length > 0;
   const showDescription = !!description;
   const showChecklist = checklistMode !== ChecklistMode.OFF && checklistItems.length > 0;
-  const showLive = checklistMode === ChecklistMode.OFF && events?.length > 0;
+  const showLive = checklistMode === ChecklistMode.OFF && events?.length > 0 && liveTabEnabled;
+  // Unlike the other tabs, this one shows before it has content: its empty
+  // state is what tells the learner the supervisor is there at all.
+  const showSupervisor = supervisorNotesEnabled === true;
   const showStepper = stateNames.length > 0;
 
   const tabs = useMemo(
@@ -57,14 +66,38 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
           label: translations?.descriptionTab ?? "Description",
         },
         showChecklist && { id: SidebarTab.CHECKLIST, label: "Checklist" },
-        showLive && { id: SidebarTab.LIVE, label: "Live" },
-      ].filter(Boolean) as { id: SidebarTab; label: string }[],
-    [showReminders, showDescription, showChecklist, showLive, translations],
+        showLive && { id: SidebarTab.LIVE, label: "Live events" },
+        showSupervisor && {
+          id: SidebarTab.SUPERVISOR,
+          label: translations?.supervisorTab ?? "Supervisor",
+        },
+        // Host tabs last, so adding one never moves the tab a learner lands on.
+        ...extraTabs.map(({ id, label }) => ({ id, label })),
+      ].filter(Boolean) as { id: string; label: string }[],
+    [
+      showReminders,
+      showDescription,
+      showChecklist,
+      showLive,
+      showSupervisor,
+      extraTabs,
+      translations,
+    ],
   );
 
-  const [selectedTab, setSelectedTab] = useState<SidebarTab | null>(null);
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const activeTab =
     selectedTab && tabs.some(t => t.id === selectedTab) ? selectedTab : (tabs[0]?.id ?? null);
+
+  // Unread count for the Supervisor tab. A badge is the whole notification
+  // mechanism — no toast, no sound: the learner is mid-conversation and gets to
+  // decide when to look. Anything read while the tab is open counts as seen.
+  const [seenNoteCount, setSeenNoteCount] = useState(0);
+  const isSupervisorActive = activeTab === SidebarTab.SUPERVISOR;
+  useEffect(() => {
+    if (isSupervisorActive) setSeenNoteCount(supervisorNotes.length);
+  }, [isSupervisorActive, supervisorNotes.length]);
+  const unreadNotes = Math.max(0, supervisorNotes.length - seenNoteCount);
 
   if (tabs.length === 0 && !showStepper) return null;
 
@@ -95,6 +128,7 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
           <div className="flex gap-2 border-b border-[#3D4045]" role="tablist">
             {tabs.map(tab => {
               const isActive = activeTab === tab.id;
+              const badgeCount = tab.id === SidebarTab.SUPERVISOR && !isActive ? unreadNotes : 0;
               return (
                 <button
                   key={tab.id}
@@ -108,6 +142,15 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
                   }`}
                 >
                   {tab.label}
+                  {badgeCount > 0 && (
+                    <span
+                      data-testid="session-sidebar-supervisor-badge"
+                      aria-label={`${badgeCount} unread`}
+                      className="ml-1.5 inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-primary-500 px-1 text-[11px] font-semibold text-white align-middle"
+                    >
+                      {badgeCount}
+                    </span>
+                  )}
                   {isActive && (
                     <span
                       aria-hidden
@@ -151,6 +194,16 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
               />
             )}
             {activeTab === SidebarTab.LIVE && <SimulationEvents events={events} hideHeader />}
+            {activeTab === SidebarTab.SUPERVISOR && (
+              <SupervisorNotes notes={supervisorNotes} translations={translations} />
+            )}
+            {extraTabs.map(tab =>
+              activeTab === tab.id ? (
+                <div key={tab.id} data-testid={`session-sidebar-${tab.id}`} className="h-full">
+                  {tab.content}
+                </div>
+              ) : null,
+            )}
           </div>
         </>
       )}

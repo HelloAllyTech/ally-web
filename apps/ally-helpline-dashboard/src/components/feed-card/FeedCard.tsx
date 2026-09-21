@@ -151,7 +151,7 @@ const FeedCard: FC<FeedCardProps> = ({
   };
 
   const divider = () => {
-    return <div className="w-full h-[0.5px] bg-[#D2D2D2]" />;
+    return <div className="w-full h-[0.5px] bg-[#d6cdbe]" />;
   };
 
   const userImage = useMemo(() => {
@@ -176,7 +176,7 @@ const FeedCard: FC<FeedCardProps> = ({
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-primary font-medium text-sm sm:text-base leading-[1.4] text-[#1A1A1A]">
+            <span className="font-primary font-medium text-sm sm:text-base leading-[1.4] text-[#29261f]">
               {user?.name ?? ""}
             </span>
             <div className="flex items-center gap-1">
@@ -185,7 +185,7 @@ const FeedCard: FC<FeedCardProps> = ({
               </span>
               {isEdited && (
                 <>
-                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-[#D1D5DB]">
+                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-[#d6cdbe]">
                     •
                   </span>
                   <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-gray-500">
@@ -230,8 +230,8 @@ const FeedCard: FC<FeedCardProps> = ({
       <div
         className="h-4 w-fit flex flex-col rounded-[2px] items-center justify-center px-1 py-[1.5px] text-[10px]"
         style={{
-          backgroundColor: badgeBgColor ?? "#EDE7F6",
-          color: badgeTextColor ?? "#7E57C2",
+          backgroundColor: badgeBgColor ?? "#ede4e8",
+          color: badgeTextColor ?? "#5a3f50",
         }}
       >
         {badgeText}
@@ -242,7 +242,7 @@ const FeedCard: FC<FeedCardProps> = ({
   const scenarioSection = () => {
     return (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A] line-clamp-3">
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#29261f] line-clamp-3">
           {note}
         </div>
         {!isScribeReview && (
@@ -259,7 +259,11 @@ const FeedCard: FC<FeedCardProps> = ({
           </div>
         )}
 
-        <div className="border-[0.5px] rounded-[12px] overflow-hidden">
+        <div
+          className="border-[0.5px] rounded-[12px] overflow-hidden cursor-pointer"
+          onClick={onReviewTranscript}
+          data-testid="scenario-section-container"
+        >
           <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4">
             <div
               className={`flex-shrink-0 w-full sm:w-[200px] rounded-[4px] overflow-hidden ${isScribeReview ? "h-[95px] sm:h-[85px]" : "h-[120px] sm:h-[110px]"}`}
@@ -285,11 +289,11 @@ const FeedCard: FC<FeedCardProps> = ({
               <div
                 ref={titleMeasureRef}
                 aria-hidden
-                className="font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#1A1A1A] line-clamp-1 absolute left-0 right-0 top-0 opacity-0 pointer-events-none select-none"
+                className="font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#29261f] line-clamp-1 absolute left-0 right-0 top-0 opacity-0 pointer-events-none select-none"
               >
                 {scenario?.title}
               </div>
-              <div className="overflow-hidden font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#1A1A1A] py-1 sm:py-2 line-clamp-2">
+              <div className="overflow-hidden font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#29261f] py-1 sm:py-2 line-clamp-2">
                 {isScribeReview ? scribeSummaryName : scenario?.title}
               </div>
               {/* Hidden: measure if description overflows 1 or 2 lines */}

@@ -32,6 +32,8 @@ import {
   triggerWarningsRequest,
   createTriggerResponse,
   ScenarioLanguage,
+  PreviewMonologueRun,
+  PreviewMonologueRunSummary,
   triggerWarning,
   GetLanguagesQuery,
   Language,
@@ -63,6 +65,10 @@ import {
   UpdateCompetencyRequest,
   CompetencyBehavioursResponse,
   SetCompetencyBehavioursRequest,
+  CompetencyClustersResponse,
+  CompetencyCluster,
+  CreateCompetencyClusterRequest,
+  UpdateCompetencyClusterRequest,
   AgentTestCase,
   AgentTestCasesResponse,
   CreateAgentTestCaseRequest,
@@ -79,12 +85,16 @@ import {
   LlmConfig,
   LlmConfigPayload,
   LlmPreviewResult,
+  AiTaskRow,
   LlmCatalogModel,
   LlmCatalogModelPayload,
   ElevenLabsVoiceSyncResult,
   ElevenLabsVoiceLookupResult,
   ElevenLabsBulkSyncSummary,
   TtsCatalogEntry,
+  VideoActorCoverMedia,
+  VideoActorFaceEntry,
+  VideoActorProviderEntry,
   TtsCatalogParams,
 } from "@types";
 
@@ -422,6 +432,21 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * The AI task registry: every platform action that calls a model, and which
+     * model serves it.
+     *
+     * No tag and no invalidation — the list is derived from ally-be's code and
+     * cannot change while the app is open, so there is nothing for a mutation
+     * here to invalidate.
+     */
+    getAiTasks: builder.query<AiTaskRow[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.AI_TASKS,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
      * Pull an ElevenLabs voice's creation type so v3 compatibility is visible.
      * Invalidates the voices list because it writes voice_type onto the row.
      */
@@ -468,6 +493,55 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.TTS_CATALOG,
         method: HttpMethod.GET,
         params,
+      }),
+    }),
+
+    /**
+     * Video-actor vendors a roleplay can be pointed at.
+     *
+     * Served by ally-be rather than hardcoded here so adding a vendor never
+     * touches this app.
+     */
+    getVideoActorProviders: builder.query<VideoActorProviderEntry[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_PROVIDERS,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * Selectable faces for one vendor, already normalised by ally-be.
+     *
+     * `thumbnailImageUrl`/`thumbnailVideoUrl` are present only where the vendor
+     * publishes preview media, so render on their presence — never on the
+     * provider. Listing is unmetered at both vendors, and the default cache is
+     * enough since one provider's roster is stable within a session.
+     */
+    getVideoActorFaces: builder.query<VideoActorFaceEntry[], string>({
+      query: provider => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_FACES,
+        method: HttpMethod.GET,
+        params: { provider },
+      }),
+    }),
+
+    /**
+     * Copy a face's preview media into our storage and get back OUR urls.
+     *
+     * Not the vendor's: a cover image is long-lived learner-facing content and
+     * vendor CDN paths are account-scoped, so a roleplay card must not depend
+     * on one. Either key comes back absent when the vendor publishes no such
+     * asset — Beyond Presence publishes none, so bey yields nothing and the
+     * caller leaves the cover alone.
+     */
+    importVideoActorFaceCover: builder.mutation<
+      VideoActorCoverMedia,
+      { provider: string; faceId: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.VIDEO_ACTOR_FACE_COVER,
+        method: HttpMethod.POST,
+        body,
       }),
     }),
 
@@ -599,6 +673,28 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_LANGUAGES,
         method: HttpMethod.GET,
         params: params, // This will pass through any params you provide
+      }),
+    }),
+
+    /**
+     * Internal-monologue runs recorded for this scenario's previews, newest
+     * first, without their turns. Previews are ephemeral everywhere else in
+     * the platform, so this is the only way to read one back after it ended.
+     */
+    getPreviewMonologues: builder.query<PreviewMonologueRunSummary[], { scenarioId: number }>({
+      query: ({ scenarioId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_MONOLOGUES(scenarioId),
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * One recorded run, with its turns.
+     */
+    getPreviewMonologueRun: builder.query<PreviewMonologueRun, { runId: string }>({
+      query: ({ runId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_MONOLOGUE_RUN(runId),
+        method: HttpMethod.GET,
       }),
     }),
 
@@ -1348,7 +1444,9 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      // Clustering is edited from the competency form, so a save here can
+      // create a cluster or change its membership.
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1360,7 +1458,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1371,7 +1469,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BY_ID(id),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+      invalidatesTags: [TAG_TYPES.COMPETENCIES, TAG_TYPES.COMPETENCY_CLUSTERS],
     }),
 
     /**
@@ -1398,6 +1496,47 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         body: data,
       }),
       invalidatesTags: [TAG_TYPES.COMPETENCY_BEHAVIOURS],
+    }),
+
+    /**
+     * Competency clusters, each carrying its member competency ids so the
+     * builder can expand a cluster without a second round-trip.
+     */
+    getCompetencyClusters: builder.query<CompetencyClustersResponse, { name?: string } | void>({
+      query: (arg = {}) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTERS,
+        method: HttpMethod.GET,
+        params: arg && "name" in arg && arg.name ? { name: arg.name } : undefined,
+      }),
+      providesTags: [TAG_TYPES.COMPETENCY_CLUSTERS],
+    }),
+
+    createCompetencyCluster: builder.mutation<CompetencyCluster, CreateCompetencyClusterRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTERS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // A cluster change moves competencies between groups, so the competency
+      // list (which carries each row's clusters) is stale too.
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
+    }),
+
+    updateCompetencyCluster: builder.mutation<CompetencyCluster, UpdateCompetencyClusterRequest>({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTER_BY_ID(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
+    }),
+
+    deleteCompetencyCluster: builder.mutation<void, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_CLUSTER_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCY_CLUSTERS, TAG_TYPES.COMPETENCIES],
     }),
 
     /**
@@ -1499,18 +1638,24 @@ export const {
   useUpdateLlmConfigMutation,
   useDeleteLlmConfigMutation,
   usePreviewLlmConfigMutation,
+  useGetAiTasksQuery,
   useGetLlmModelCatalogQuery,
   usePreviewLlmModelMutation,
   useSyncElevenLabsVoiceMutation,
   useLazyLookupElevenLabsVoiceQuery,
   useBulkSyncElevenLabsVoicesMutation,
   useGetTtsCatalogQuery,
+  useGetVideoActorProvidersQuery,
+  useGetVideoActorFacesQuery,
+  useImportVideoActorFaceCoverMutation,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,
+  useGetPreviewMonologuesQuery,
+  useLazyGetPreviewMonologueRunQuery,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
@@ -1579,6 +1724,10 @@ export const {
   useGetCompetencyBehavioursQuery,
   useLazyGetCompetencyBehavioursQuery,
   useSetCompetencyBehavioursMutation,
+  useGetCompetencyClustersQuery,
+  useCreateCompetencyClusterMutation,
+  useUpdateCompetencyClusterMutation,
+  useDeleteCompetencyClusterMutation,
   useGetAgentTestCasesQuery,
   useCreateAgentTestCaseMutation,
   useUpdateAgentTestCaseMutation,

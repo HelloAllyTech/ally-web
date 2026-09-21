@@ -4,9 +4,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { RoadmapCoinBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
+import { RoadmapVoteBudget, RoadmapOpportunity, RoadmapOpportunityType } from "@types";
 
-import { CoinAllocator } from "./CoinAllocator";
 import {
   isConsumerSourced,
   SOURCE_BADGE_STYLE,
@@ -15,16 +14,17 @@ import {
   stageStyle,
   typeLabel,
 } from "./utils/stages";
+import { VoteButton } from "./VoteButton";
 
 interface MonthOpportunityCardProps {
   opportunity: RoadmapOpportunity;
   /** Unfiltered max, so the priority bar keeps a stable scale across filters and lanes. */
   maxScore: number;
-  budget?: RoadmapCoinBudget;
+  budget?: RoadmapVoteBudget;
   canVote: boolean;
   /** False for a viewer without manage rights, and for a card whose month is pinned. */
   canDrag: boolean;
-  onCommitCoins: (opportunityId: string, next: number, previous: number) => void;
+  onSetVotes: (opportunityId: string, next: number, previous: number) => void;
   onOpen: () => void;
 }
 
@@ -46,7 +46,7 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
   budget,
   canVote,
   canDrag,
-  onCommitCoins,
+  onSetVotes,
   onOpen,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -56,7 +56,12 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
 
   const [heading, ...rest] = opportunity.description.split("\n");
   const body = rest.join(" ").trim();
-  const scorePercent = Math.round((opportunity.priorityScore / Math.max(1, maxScore)) * 100);
+  // Clamped like utils/priorityColour.ts's ratio: an unfiltered maxScore fetched before a vote
+  // burst can legitimately be lower than a freshly-boosted score elsewhere on the page.
+  const scorePercent = Math.min(
+    100,
+    Math.round((opportunity.priorityScore / Math.max(1, maxScore)) * 100),
+  );
 
   const card = (
     <div
@@ -102,7 +107,7 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
       {/* Priority bar, same unfiltered scale as the table's, so switching layout doesn't rescale
           every bar and make the same two cards look differently ranked. */}
       <div className="flex items-center gap-2">
-        <div className="bg-background-secondary h-1.5 flex-1">
+        <div className="bg-background-secondary h-1.5 flex-1 overflow-hidden">
           <div className="bg-primary-500 h-full" style={{ width: `${scorePercent}%` }} />
         </div>
         <span className="text-typography-secondary font-mono text-xs tabular-nums">
@@ -111,17 +116,17 @@ export const MonthOpportunityCard: React.FC<MonthOpportunityCardProps> = ({
       </div>
 
       {/* stopPropagation on the wrapper, on BOTH events: click alone is not enough, because
-          dnd-kit's PointerSensor activates on pointerdown — without it, holding the `+` button
-          starts dragging the card instead of adding coins. */}
+          dnd-kit's PointerSensor activates on pointerdown — without it, tapping the vote button
+          starts dragging the card instead of adding a vote. */}
       {budget && (
         <div
           onClick={event => event.stopPropagation()}
           onPointerDown={event => event.stopPropagation()}
         >
-          <CoinAllocator
+          <VoteButton
             opportunity={opportunity}
             budget={budget}
-            onCommit={onCommitCoins}
+            onSetVotes={onSetVotes}
             disabled={!canVote}
           />
         </div>

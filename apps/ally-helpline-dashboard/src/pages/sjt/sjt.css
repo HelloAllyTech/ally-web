@@ -1,0 +1,744 @@
+/* Page-specific layout for the public /SJT1 self-check.
+ *
+ * Every rule is nested under `.sjt`, so nothing here can leak into another
+ * route. What this file no longer owns is the PALETTE. When it was written the
+ * rest of the app was still on IBM Carbon, so it carried a private copy of the
+ * `claude` theme (commit f8918ee5) to get the look it wanted. The app has since
+ * moved onto those same values globally, so the copy became a second source of
+ * truth for one page — the thing most likely to drift.
+ *
+ * The local names below are kept, because ~70 rules in this file read them and
+ * renaming those buys nothing. They are now ALIASES onto the app-wide tokens in
+ * index.css rather than literals. Change a colour there and this page follows.
+ *
+ * The two serif families are global now too, so the route-scoped <link> loader
+ * (useSjtFonts) is gone — every screen already renders in them.
+ */
+.sjt {
+  /* Ink */
+  --ink: rgb(var(--color-secondary-900));
+  --ink-soft: rgb(var(--color-neutral-700));
+  --ink-faint: rgb(var(--color-neutral-600));
+
+  /* Grounds — page sits on the deeper cream, cards lift off it. */
+  --wash: rgb(var(--color-background-tertiary));
+  --card: rgb(var(--color-background-DEFAULT));
+  --card-raised: rgb(var(--color-background-raised));
+
+  /* Hairlines */
+  --line: rgb(var(--color-border-medium));
+  --line-soft: rgb(var(--color-border-DEFAULT));
+
+  /* Clay — the accent, and the "needs attention" tone. */
+  --mark: rgb(var(--color-primary-500));
+  --mark-deep: rgb(var(--color-primary-700));
+  --mark-deepest: rgb(var(--color-primary-800));
+  --mark-wash: rgb(var(--color-primary-50));
+
+  /* Result tones, shared with the session-status chips and the rating scale. */
+  --sage: rgb(var(--color-tone-sage));
+  --ochre: rgb(var(--color-tone-ochre));
+  --alarm: rgb(var(--color-tone-alarm));
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-chip: 8px;
+
+  --display: var(--font-primary);
+  --body: var(--font-secondary);
+
+  background: var(--wash);
+  color: var(--ink);
+  min-height: 100dvh;
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.sjt *,
+.sjt *::before,
+.sjt *::after {
+  box-sizing: border-box;
+}
+/* `:where()` contributes no specificity, so this reset lands at (0,1,0) — the
+ * same weight as .sjt-btn and friends, which come later and therefore win.
+ * Written as a plain `.sjt button` it scores (0,1,1) and outranks them: the
+ * font and colour every button class sets would be silently discarded, and
+ * .sjt-btn's label would inherit --ink onto its own --ink background and
+ * disappear. .sjt-opt and .sjt-rev-head set no font of their own and still
+ * rely on this. */
+.sjt :where(button) {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.sjt :focus-visible {
+  outline: 2.5px solid var(--mark);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sjt-rail {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ink);
+  color: #f5f4ee;
+  padding: 12px 18px 13px;
+}
+.sjt-rail-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+.sjt-ticks {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+.sjt-tick {
+  height: 4px;
+  flex: 1;
+  background: rgba(245, 244, 238, 0.2);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.sjt-tick.done {
+  background: rgba(245, 244, 238, 0.85);
+}
+.sjt-tick.here {
+  background: var(--mark);
+}
+
+.sjt-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 30px 18px 80px;
+}
+
+/* Was monospace. Serif uppercase with wide tracking reads as a label just as
+ * clearly, and keeps the page to two families. */
+.sjt-eyebrow {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.sjt-h1 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(34px, 8.5vw, 52px);
+  line-height: 1.04;
+  letter-spacing: -0.021em;
+  margin: 16px 0 0;
+}
+.sjt-h1 em {
+  font-style: normal;
+  color: var(--mark-deep);
+}
+.sjt-lede {
+  margin: 18px 0 0;
+  font-size: 19.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.sjt-note {
+  margin-top: 30px;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--line);
+  font-size: 15.5px;
+  color: var(--ink-soft);
+}
+
+.sjt-card {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-card);
+  padding: 22px 22px 24px;
+  margin-top: 18px;
+  box-shadow:
+    0 1px 2px rgba(41, 38, 31, 0.04),
+    0 2px 6px rgba(41, 38, 31, 0.03);
+}
+.sjt-setting {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--mark-deep);
+}
+.sjt-scenario {
+  margin: 13px 0 0;
+  font-size: 20px;
+  line-height: 1.5;
+}
+.sjt-instruct {
+  margin: 24px 0 12px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.005em;
+}
+.sjt-instruct span {
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.sjt-opt {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: var(--card-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-control);
+  padding: 14px 15px;
+  margin-bottom: 10px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.sjt-opt:hover {
+  border-color: var(--line);
+  box-shadow: 0 1px 3px rgba(41, 38, 31, 0.05);
+}
+.sjt-opt.picked {
+  border-color: var(--mark);
+  background: var(--mark-wash);
+}
+.sjt-chip {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  border: 1.5px dashed var(--line);
+  color: var(--ink-faint);
+  background: transparent;
+}
+.sjt-opt.picked .sjt-chip {
+  border: 1.5px solid var(--mark-deep);
+  background: var(--mark-deep);
+  color: #fffdfb;
+}
+.sjt-opt-body {
+  flex: 1;
+}
+.sjt-opt-text {
+  font-size: 17px;
+}
+.sjt-opt-rank {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mark-deep);
+}
+
+.sjt-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.sjt-btn {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 16px;
+  background: var(--ink);
+  color: #f5f4ee;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-control);
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+.sjt-btn:hover:not(:disabled) {
+  background: #3d3930;
+}
+.sjt-btn:disabled {
+  background: var(--line);
+  color: rgba(41, 38, 31, 0.4);
+  cursor: not-allowed;
+}
+.sjt-btn.mark {
+  background: var(--mark-deep);
+  color: #fffdfb;
+}
+.sjt-btn.mark:hover:not(:disabled) {
+  background: var(--mark-deepest);
+}
+.sjt-btn-ghost {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 15px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  padding: 6px 0;
+}
+.sjt-btn-ghost:hover {
+  color: var(--ink);
+}
+.sjt-hint {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+}
+
+/* results */
+.sjt-score {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+}
+.sjt-score-num {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 76px;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+}
+.sjt-score-num sub {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--ink-faint);
+  letter-spacing: 0;
+  bottom: 0;
+}
+.sjt-badge {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  padding: 6px 11px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+.sjt-badge.good {
+  color: var(--sage);
+}
+.sjt-badge.mid {
+  color: var(--ochre);
+}
+.sjt-badge.low {
+  color: var(--alarm);
+}
+
+.sjt-dom {
+  padding: 17px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.sjt-dom:first-of-type {
+  border-top: none;
+}
+.sjt-dom-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sjt-dom-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17.5px;
+}
+.sjt-dom-pct {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 13.5px;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.sjt-bar {
+  height: 8px;
+  background: var(--line-soft);
+  border-radius: 999px;
+  margin: 11px 0 9px;
+  overflow: hidden;
+}
+.sjt-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sage);
+}
+.sjt-bar i.mid {
+  background: var(--ochre);
+}
+.sjt-bar i.low {
+  background: var(--alarm);
+}
+.sjt-dom-blurb {
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
+.sjt-rev-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+.sjt-rev-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+}
+.sjt-rev-meta {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+.sjt-ladder {
+  margin-top: 18px;
+}
+.sjt-rung {
+  display: grid;
+  grid-template-columns: 34px 34px 1fr;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line-soft);
+  align-items: start;
+}
+.sjt-rung-lab {
+  display: grid;
+  grid-template-columns: 34px 34px 1fr;
+  gap: 12px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.sjt-mini {
+  width: 34px;
+  height: 27px;
+  border-radius: var(--radius-chip);
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+}
+.sjt-mini.key {
+  background: var(--ink);
+  color: #f5f4ee;
+}
+.sjt-mini.you {
+  border: 1.5px solid var(--line);
+  color: var(--ink-faint);
+}
+.sjt-mini.you.hit {
+  border-color: var(--sage);
+  color: var(--sage);
+}
+.sjt-mini.you.miss {
+  border-color: var(--mark);
+  color: var(--mark-deep);
+}
+/* Both are spans inside one grid cell, so they need `display: block` for the
+ * reasoning to sit under the option text (and for its margin-top to apply at
+ * all) rather than running on from it. */
+.sjt-rung-text {
+  display: block;
+  font-size: 16.5px;
+}
+.sjt-rung-why {
+  display: block;
+  margin-top: 6px;
+  font-size: 15.5px;
+  color: var(--ink-soft);
+}
+
+/* ── /SJT1/edit ───────────────────────────────────────────────────────
+ * The editor's own furniture, deliberately not styled like the page it
+ * edits: the ink bar and its panels read as the tool, everything below
+ * reads as the page a teacher sees. Same two serif families, though — a
+ * sans face here would be the only one on either route, and the editor
+ * shows the real page, so it has to sit in the same key.
+ */
+.sjt-ed-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--ink);
+  color: #f5f4ee;
+  padding: 11px 18px 13px;
+}
+.sjt-ed-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sjt-ed-brand {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-right: 4px;
+}
+.sjt-ed-brand strong {
+  font-weight: 600;
+  opacity: 1;
+}
+.sjt-ed-spacer {
+  flex: 1 1 auto;
+}
+.sjt-ed-label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.sjt-ed-chip {
+  display: inline-block;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.2;
+  color: #f5f4ee;
+  background: rgba(245, 244, 238, 0.1);
+  border: 1px solid rgba(245, 244, 238, 0.22);
+  border-radius: 999px;
+  padding: 6px 12px;
+  text-decoration: none;
+}
+.sjt-ed-chip:hover {
+  background: rgba(245, 244, 238, 0.18);
+}
+.sjt-ed-chip.on {
+  background: var(--mark);
+  border-color: var(--mark);
+  color: #fffdfb;
+}
+.sjt-ed-chip.count {
+  border-style: dashed;
+}
+.sjt-ed-chip.warn {
+  background: rgba(204, 120, 92, 0.2);
+  border-color: var(--mark);
+  cursor: default;
+}
+.sjt-ed-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.sjt-ed-select {
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  padding: 6px 10px;
+  max-width: 100%;
+}
+.sjt-ed-status {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 14.5px;
+  opacity: 0.85;
+}
+.sjt-ed-panel {
+  background: #332f27;
+  color: #f5f4ee;
+  padding: 14px 18px 18px;
+}
+.sjt-ed-panel-empty {
+  font-family: var(--body);
+  font-size: 15px;
+  max-width: 720px;
+  opacity: 0.82;
+}
+.sjt-ed-group {
+  margin-top: 12px;
+}
+.sjt-ed-group-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.sjt-ed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(245, 244, 238, 0.12);
+}
+.sjt-ed-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.sjt-ed-row-name {
+  display: block;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.sjt-ed-row-text {
+  display: block;
+  font-family: var(--body);
+  font-size: 14.5px;
+  opacity: 0.8;
+}
+.sjt-ed-area {
+  width: 100%;
+  margin-top: 10px;
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 10px 12px;
+}
+.sjt-ed-brief {
+  padding-bottom: 0;
+}
+.sjt-ed-brief code {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  background: var(--mark-wash);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.sjt-ed-also {
+  padding-top: 0;
+}
+.sjt-ed-field {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.sjt-ed-field-name {
+  flex: 0 0 38%;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.sjt-ed-field-value {
+  flex: 1;
+}
+.sjt-ed-field-eg {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink-faint);
+}
+
+/* An editable line. Underlined rather than boxed: a box per sentence would
+ * turn the page into a form, which is the thing this route exists not to be.
+ * A text underline rather than a border or shadow, because these spans are
+ * inline and wrap — a box draws edges mid-sentence and around display type.
+ * Clay once a line has been changed, alarm if an edit dropped a placeholder
+ * the line needs. */
+.sjt-ed-t {
+  cursor: text;
+  border-radius: 3px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(41, 38, 31, 0.3);
+  text-underline-offset: 4px;
+}
+.sjt-ed-t:hover {
+  background: rgba(204, 120, 92, 0.1);
+  text-decoration-color: var(--mark);
+}
+.sjt-ed-t:focus {
+  background: var(--card-raised);
+}
+.sjt-ed-t.changed {
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--mark);
+}
+.sjt-ed-t.drift {
+  background: rgba(160, 62, 51, 0.12);
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--alarm);
+}
+/* The rail and the filled buttons sit on ink or clay, so a label being edited
+ * there needs the light treatment to read at all. */
+.sjt-rail .sjt-ed-t,
+.sjt-btn .sjt-ed-t {
+  text-decoration-color: rgba(245, 244, 238, 0.55);
+}
+.sjt-rail .sjt-ed-t:hover,
+.sjt-btn .sjt-ed-t:hover {
+  background: rgba(245, 244, 238, 0.18);
+  text-decoration-color: #f5f4ee;
+}
+/* Two sticky bars would fight: the editor's own toolbar is the one that has to
+ * stay reachable, so the page's progress rail scrolls away under it here. */
+.sjt-editing .sjt-rail {
+  position: static;
+}
+/* A control whose label is being edited keeps its looks and loses its click. */
+.sjt-ed-static {
+  cursor: default;
+}
+.sjt-btn.sjt-ed-static,
+.sjt-btn-ghost.sjt-ed-static {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sjt * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -39,15 +39,29 @@ vi.mock("@containers", () => ({
       </button>
     </div>
   ),
-  SimulationSummary: ({ sessionId, summaryData, retryMaxReached }: any) => (
-    <div data-testid="simulation-summary">
-      <div data-testid="simulation-summary-session-id">{sessionId}</div>
-      <div data-testid="simulation-summary-has-data">{String(!!summaryData)}</div>
-      <div data-testid="simulation-summary-retry-max">{String(retryMaxReached)}</div>
-    </div>
-  ),
   useSimulationSummaryPolling: mockPolling,
 }));
+
+// Stub DebriefTab: this file tests the drawer's tab WIRING, not the debrief
+// itself (DebriefTab.readOnly.test.tsx covers that). The stub echoes back the
+// props the drawer is responsible for passing.
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    DebriefTab: ({ sessionId, summaryData, retryMaxReached, readOnly, onOpenMoment }: any) => (
+      <div
+        data-testid="debrief-tab"
+        data-read-only={String(!!readOnly)}
+        data-has-summary={String(!!summaryData)}
+        data-retry-max={String(retryMaxReached)}
+        data-has-open-moment={String(!!onOpenMoment)}
+      >
+        <div data-testid="debrief-session-id">{sessionId}</div>
+      </div>
+    ),
+  };
+});
 
 // Mock hooks
 vi.mock("@hooks", () => ({
@@ -158,27 +172,43 @@ describe("SimulationSummarySidebar Component", () => {
       expect(screen.getByTestId("sidebar-title")).toBeInTheDocument();
     });
 
-    it("should render tabs correctly", () => {
+    it("should render exactly two tabs: Debrief then Transcript", () => {
       renderComponent();
 
-      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Session Review");
+      // The debrief note is readable from the logs too, for the learner
+      // revisiting a session and for an admin reviewing someone else's.
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Debrief");
       expect(screen.getByTestId("tab-3")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
-      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
-      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
-      expect(screen.queryByTestId("tab-4")).not.toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcript");
+      // Retired, and their ids deliberately not reused so an old assertion
+      // cannot pass by accident: Session Review (1), Ask AI (2), Skills (5).
+      ["tab-1", "tab-2", "tab-5"].forEach(id => {
+        expect(screen.queryByTestId(id)).not.toBeInTheDocument();
+      });
     });
 
-    it("should render simulation summary component in summary tab", () => {
+    it("should show the debrief note READ-ONLY — this drawer is a revisit surface", () => {
+      // Reached from the learner's own session logs and from their org admin's
+      // org logs (both mount this component). Neither gets the reply thread.
       renderComponent();
 
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
-        "test-summary-id",
-      );
+      expect(screen.getByTestId("debrief-tab")).toHaveAttribute("data-read-only", "true");
+      expect(screen.getByTestId("debrief-session-id")).toHaveTextContent("test-summary-id");
+    });
+
+    it("should not wire transcript-focus into the debrief here", () => {
+      // The drawer's tabs are separate scrollers rather than one page, so a
+      // "see this moment" chip would have nowhere to jump to.
+      renderComponent();
+
+      expect(screen.getByTestId("debrief-tab")).toHaveAttribute("data-has-open-moment", "false");
+    });
+
+    it("should not render the old Session Review summary", () => {
+      renderComponent();
+
+      expect(screen.queryByTestId("simulation-summary")).not.toBeInTheDocument();
     });
 
     it("should render simulation transcript tab", () => {
@@ -327,13 +357,11 @@ describe("SimulationSummarySidebar Component", () => {
   });
 
   describe("Summary Content", () => {
-    it("should render simulation summary with polling data from hook", () => {
+    it("should render the annotated transcript for the polled session", () => {
       renderComponent();
 
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
-        "test-summary-id",
-      );
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+      expect(screen.getByTestId("transcript-session-id")).toHaveTextContent("test-summary-id");
     });
   });
 

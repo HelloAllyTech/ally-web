@@ -9,6 +9,12 @@ export interface LanguageOption {
 
 /** Default number of blank sample rows for a brand-new simulation. */
 export const DEFAULT_SAMPLE_COUNT = 5;
+
+/**
+ * Fixed number of opening-dialogue line slots rendered per language tab.
+ * Anything beyond this is dropped, so generators cap to it too.
+ */
+export const OPENING_DIALOGUE_LINE_SLOTS = 5;
 export const ALLOWED_FILLER_WORDS_FIELD = "allowedFillerWords";
 
 /** Upper bound for filler picker (autofill returns up to 14). */

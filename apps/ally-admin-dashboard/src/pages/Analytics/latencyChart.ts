@@ -2,7 +2,9 @@ import {
   AnalyticsBucket,
   StartLatencyPoint,
   VoiceLatencyByLanguageRow,
+  VoiceLatencyByScenarioRow,
   VoiceLatencyPoint,
+  VoiceLatencySessionRow,
 } from "@types";
 
 import { bucketTitle } from "./analyticsGrouping";
@@ -64,6 +66,54 @@ export function buildVoiceLatencySeries(
       { group: LATENCY_GROUPS.avg, key: point.bucket, value: toS(point.avgMs) },
       { group: LATENCY_GROUPS.p95, key: point.bucket, value: toS(point.p95Ms) },
     ]);
+}
+
+/**
+ * "15 Jan 2024, 14:32" for one x-axis tick. Duplicates utils/common.ts's
+ * `formatDateTime` rather than importing it: this file is otherwise
+ * dependency-free chart math, and `@utils` chains into `@constants`/
+ * `@components` — exactly the barrel that has broken narrowly-mocked tests
+ * elsewhere in this app (see CLAUDE.md's module-load-time-work gotcha).
+ */
+const formatSessionTimestamp = (iso: string): string =>
+  new Date(iso).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+/**
+ * Per-session response latency (p50/avg/p95), in seconds, as three lines — the
+ * session-wise counterpart to {@link buildVoiceLatencySeries}: one point per
+ * session, ordered by when it started, instead of one point per time bucket.
+ *
+ * A session with no `occurredAt` is skipped — there is no honest x-position
+ * for a point that didn't happen at a known time. A stat that's null for an
+ * otherwise-placed session is skipped too, same no-fabricated-zero rule as
+ * the bucketed series.
+ */
+export function buildVoiceLatencySessionSeries(rows: VoiceLatencySessionRow[]): LatencyDatum[] {
+  return rows
+    .filter(
+      (row): row is VoiceLatencySessionRow & { occurredAt: string } => row.occurredAt !== null,
+    )
+    .flatMap(row => {
+      const key = formatSessionTimestamp(row.occurredAt);
+      const datums: LatencyDatum[] = [];
+      if (row.p50ResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.p50, key, value: toS(row.p50ResponseLatencyMs) });
+      }
+      if (row.avgResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.avg, key, value: toS(row.avgResponseLatencyMs) });
+      }
+      if (row.p95ResponseLatencyMs != null) {
+        datums.push({ group: LATENCY_GROUPS.p95, key, value: toS(row.p95ResponseLatencyMs) });
+      }
+      return datums;
+    });
 }
 
 /** Total turns behind a source's series — the n the chart is measured over. */
@@ -135,6 +185,163 @@ export function buildPromptCacheHitRateSeries(points: VoiceLatencyPoint[]): Late
     );
 }
 
+/**
+ * What the learner actually heard first on a turn.
+ *
+ * `responseLatencyMs` is time-to-FIRST-AUDIO, and the agent's first audio is a
+ * thinking-filler or a predictive interim reply whenever one played. That is the
+ * honest measure of "how long until someone spoke to me" — but on its own it
+ * makes a turn masked at 400ms indistinguishable from one genuinely answered at
+ * 400ms, so a rise in filler coverage would read as a latency win. These groups
+ * exist to keep those two stories apart.
+ */
+export const FIRST_AUDIO_GROUPS = {
+  filler: "Thinking filler",
+  interim: "Interim reply",
+  reply: "The reply itself",
+  unknown: "Not recorded",
+};
+
+/**
+ * Masking speech and the real reply are different KINDS of first audio, not
+ * degrees of one thing, so they take distinct hues rather than a ramp. "Not
+ * recorded" is the absence of knowledge, not a fourth kind of audio, so it takes
+ * context grey — the same rule the usage-level zero band follows (§8.2).
+ */
+export const FIRST_AUDIO_SCALE: ColorScale = {
+  [FIRST_AUDIO_GROUPS.filler]: PALETTE.teal,
+  [FIRST_AUDIO_GROUPS.interim]: PALETTE.purple,
+  [FIRST_AUDIO_GROUPS.reply]: STAT.avg,
+  [FIRST_AUDIO_GROUPS.unknown]: CONTEXT.faint,
+};
+
+/** Live-pipeline buckets that have at least one turn to state shares over. */
+const firstAudioBuckets = (points: VoiceLatencyPoint[]) =>
+  points
+    .filter(point => point.source === "pipeline")
+    .map(point => ({
+      point,
+      // Denominator is the sum of the four mutually-exclusive counts rather
+      // than `turns`: they partition the bucket by construction, so summing
+      // them cannot produce shares that fail to reach 100%.
+      total:
+        point.firstAudioFillerTurns +
+        point.firstAudioInterimTurns +
+        point.firstAudioReplyTurns +
+        point.firstAudioUnknownTurns,
+    }))
+    .filter(({ total }) => total > 0);
+
+/**
+ * Share of each bucket's turns by what spoke first, as a 100%-stacked bar.
+ *
+ * Emitted group-by-group in stack order (Carbon takes stack order from first
+ * appearance), reading bottom-to-top: the unmasked reply, then the two kinds of
+ * masking speech, then the unrecorded remainder LAST. "Not recorded" sits on top
+ * on purpose — its size is an artefact of when instrumentation landed, and
+ * putting it at the bottom would shift the real bands off a common baseline and
+ * make them impossible to compare across buckets.
+ */
+export function buildFirstAudioMixSeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  const buckets = firstAudioBuckets(points);
+  const share = (count: number, total: number) => Math.round((1000 * count) / total) / 10;
+  return (
+    [
+      [FIRST_AUDIO_GROUPS.reply, (p: VoiceLatencyPoint) => p.firstAudioReplyTurns],
+      [FIRST_AUDIO_GROUPS.interim, (p: VoiceLatencyPoint) => p.firstAudioInterimTurns],
+      [FIRST_AUDIO_GROUPS.filler, (p: VoiceLatencyPoint) => p.firstAudioFillerTurns],
+      [FIRST_AUDIO_GROUPS.unknown, (p: VoiceLatencyPoint) => p.firstAudioUnknownTurns],
+    ] as const
+  ).flatMap(([group, pick]) =>
+    buckets.map(({ point, total }) => ({
+      group,
+      key: point.bucket,
+      value: share(pick(point), total),
+    })),
+  );
+}
+
+/**
+ * Mean time-to-first-voice per bucket, split by what spoke first.
+ *
+ * This is the "why" behind the headline trend: filler-first turns sit near the
+ * filler's own delay, reply-first turns carry the full pipeline. A group is
+ * OMITTED for a bucket with no turns of that kind rather than drawn at 0 —
+ * latency has no meaningful zero, same rule as every other series here.
+ *
+ * Turns with no recorded provenance have no line: there is no per-source mean to
+ * state for them. Their share is on the mix chart, which is where the reader
+ * should look to see how much of the window this chart cannot speak for.
+ */
+export function buildFirstAudioLatencySeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point =>
+      (
+        [
+          [FIRST_AUDIO_GROUPS.filler, point.avgFirstAudioFillerMs],
+          [FIRST_AUDIO_GROUPS.interim, point.avgFirstAudioInterimMs],
+          [FIRST_AUDIO_GROUPS.reply, point.avgFirstAudioReplyMs],
+        ] as const
+      ).flatMap(([group, ms]) =>
+        ms != null ? [{ group, key: point.bucket, value: toS(ms) }] : [],
+      ),
+    );
+}
+
+/**
+ * Time to the REAL reply per bucket (p50/avg/p95) — the unmasked pipeline
+ * number, which does not move when filler coverage does.
+ *
+ * Read against the time-to-first-voice chart above: that one is the learner's
+ * experience, this one is the machine's. Widening the gap between them means
+ * more masking; a rise in THIS one is a genuine regression no amount of filler
+ * coverage can hide.
+ *
+ * Live-pipeline and instrumented turns only — null (not 0) for buckets that
+ * predate the provenance instrumentation, so those buckets are simply absent.
+ */
+export function buildReplyLatencySeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point =>
+      (
+        [
+          [LATENCY_GROUPS.p50, point.p50ReplyLatencyMs],
+          [LATENCY_GROUPS.avg, point.avgReplyLatencyMs],
+          [LATENCY_GROUPS.p95, point.p95ReplyLatencyMs],
+        ] as const
+      ).flatMap(([group, ms]) =>
+        ms != null ? [{ group, key: point.bucket, value: toS(ms) }] : [],
+      ),
+    );
+}
+
+/**
+ * Live turns carrying a recorded first-audio source — the n the split charts are
+ * measured over, which is NOT the same as the tab's live turn count while any
+ * pre-instrumentation data is still inside the window.
+ */
+export function countFirstAudioTurns(points: VoiceLatencyPoint[]): number {
+  return points
+    .filter(point => point.source === "pipeline")
+    .reduce(
+      (sum, point) =>
+        sum +
+        point.firstAudioFillerTurns +
+        point.firstAudioInterimTurns +
+        point.firstAudioReplyTurns,
+      0,
+    );
+}
+
+/** Live turns whose first audio was masking speech (filler or interim). */
+export function countMaskedTurns(points: VoiceLatencyPoint[]): number {
+  return points
+    .filter(point => point.source === "pipeline")
+    .reduce((sum, point) => sum + point.firstAudioFillerTurns + point.firstAudioInterimTurns, 0);
+}
+
 export type LanguageBarDatum = { group: string; value: number };
 
 /**
@@ -173,6 +380,48 @@ export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[
     ),
     turnsByLanguage: Object.fromEntries(sorted.map(r => [r.language, r.turns])),
     totalTurns: sorted.reduce((sum, r) => sum + r.turns, 0),
+  };
+}
+
+/**
+ * Top-N worst simulations, one bar chart per metric, each independently
+ * sorted by ITS OWN metric — not "the top-10-by-response-latency
+ * simulations' TTFT values". A simulation can be fine on overall response
+ * latency but bad specifically on LLM TTFT (or vice versa), and showing one
+ * chart's ranking through the other's lens would hide that.
+ *
+ * `rows` is one row per simulation's single MOST RECENT session (not a
+ * whole-window average — see `VoiceLatencyByScenarioRow`'s doc-comment), so
+ * this ranks by "how slow was the latest session", not "how slow has this
+ * scenario been on average". This function itself doesn't know or care —
+ * it just sorts and slices whatever numbers it's given.
+ *
+ * Truncated to `topN` (unlike {@link buildVoiceLatencyByLanguageBars}, which
+ * shows every language because there are only a handful) — `totalScenarios`
+ * travels alongside so the caller can caption "top N of M", making the
+ * truncation visible rather than silent. Rows with a null metric are
+ * dropped from THAT metric's chart only (a simulation can be missing
+ * avgLlmTtftMs while still having a real avgResponseLatencyMs).
+ */
+export function buildVoiceLatencyByScenarioBars(
+  rows: VoiceLatencyByScenarioRow[],
+  topN = 10,
+): {
+  avgResponseLatency: LanguageBarDatum[];
+  avgLlmTtft: LanguageBarDatum[];
+  totalScenarios: number;
+} {
+  const worstBy = (metric: "avgResponseLatencyMs" | "avgLlmTtftMs"): LanguageBarDatum[] =>
+    [...rows]
+      .filter(r => r[metric] != null)
+      .sort((a, b) => (b[metric] as number) - (a[metric] as number))
+      .slice(0, topN)
+      .map(r => ({ group: r.scenarioTitle, value: toS(r[metric] as number) }));
+
+  return {
+    avgResponseLatency: worstBy("avgResponseLatencyMs"),
+    avgLlmTtft: worstBy("avgLlmTtftMs"),
+    totalScenarios: rows.length,
   };
 }
 

@@ -5,6 +5,7 @@
  * Key Features:
  * - Automatic Bearer token authentication
  * - Token refresh on 401 errors
+ * - Transparent retry of idempotent reads across a transient gateway failure
  * - Centralized logout handling
  * - RTK Query cache management
  */
@@ -15,28 +16,58 @@ import {
   FetchArgs,
   fetchBaseQuery,
   FetchBaseQueryError,
+  retry,
 } from "@reduxjs/toolkit/query/react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES } from "@constants";
 import { RefreshResponse } from "@types";
 
 // Environment variables for API configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 /**
- * Handles user logout by clearing tokens, cache, and redirecting to login
+ * Where to send the learner back to once they sign in again. Captured from
+ * the current URL at the moment logout fires, so a session expiry mid-quiz
+ * or mid-simulation lands them back on the same item instead of the
+ * dashboard home. Never points at the login page itself.
+ */
+export const buildReturnTo = (): string | null => {
+  const { pathname, search } = window.location;
+  if (pathname === ROUTES.LOGIN) return null;
+  return `${pathname}${search}`;
+};
+
+/**
+ * Handles user logout by clearing tokens, cache, and redirecting to login.
+ *
+ * This is a hard `window.location.href` redirect (not a router navigation),
+ * which is a full reload that drops all in-memory React/Redux state — so
+ * every caller reaches this from a place where that state is already
+ * unrecoverable (the refresh token itself was rejected). What it can still
+ * do is tell the learner *why* they landed back on the login screen instead
+ * of silently reloading there, and hand the login page a `returnTo` so a
+ * successful re-login sends them back to what they were doing rather than
+ * the dashboard home. (Component-level state, e.g. a quiz attempt in
+ * progress, needs its own recovery — see the sessionStorage snapshot in
+ * `QuizItemPlayer`/`AnnotationItemPlayer` via `itemProgressStorage`.)
  *
  * @function handleLogout
  * @returns {void}
  */
-const handleLogout = () => {
+export const handleLogout = () => {
   // Clear tokens
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
 
-  // Redirect to login
-  window.location.href = "/login";
+  const params = new URLSearchParams();
+  params.set("sessionExpired", "1");
+  const returnTo = buildReturnTo();
+  if (returnTo) params.set("returnTo", returnTo);
+
+  // Redirect to login. Login.tsx reads `sessionExpired` to toast an
+  // explanation and `returnTo` to navigate there after a successful sign-in.
+  window.location.href = `${ROUTES.LOGIN}?${params.toString()}`;
 };
 
 /**
@@ -65,11 +96,11 @@ export const baseQuery = fetchBaseQuery({
  * @param {any} extraOptions - Additional options for the query
  * @returns {Promise<any>} The query result
  */
-const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
-  args,
-  store,
-  extraOptions,
-) => {
+export const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, store, extraOptions) => {
   try {
     let result;
     try {
@@ -91,7 +122,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       }
 
       try {
-        // Try to refresh the token
         const refreshResult = await baseQuery(
           { url: ApiEndpoints.AUTH.REFRESH, method: HttpMethod.POST, body: { refreshToken } },
           store,
@@ -105,7 +135,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
         const tokens = refreshResult.data as RefreshResponse;
 
-        // Store the new tokens
         localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
 
@@ -131,9 +160,77 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   }
 };
 
+/**
+ * Gateway statuses that mean the request never got a considered answer: the
+ * load balancer had no healthy ally-be to hand it to, or the task it picked
+ * went away mid-request.
+ */
+const RETRYABLE_STATUSES = [502, 503, 504];
+
+/** Requests per call, the first one included. So: one try, then two retries. */
+const MAX_ATTEMPTS = 3;
+
+/**
+ * Was this a failure of delivery rather than an answer we should believe?
+ *
+ * `FETCH_ERROR` is fetch itself rejecting — a reset or refused connection,
+ * where no response ever arrived. It is deliberately NOT extended to
+ * `PARSING_ERROR` or a 4xx: those are answers, and repeating the request will
+ * only produce the same one.
+ */
+const isTransientError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null || !("status" in error)) return false;
+  const { status } = error as FetchBaseQueryError;
+  if (status === "FETCH_ERROR") return true;
+  return typeof status === "number" && RETRYABLE_STATUSES.includes(status);
+};
+
+/**
+ * Only reads get replayed. A `FETCH_ERROR` cannot tell us whether the server
+ * processed the first attempt, so retrying a POST/PATCH/DELETE risks applying
+ * it twice — a duplicated scribe note or a re-toggled archive flag is worse
+ * than the error we are trying to hide. RTK Query calls a plain string arg as
+ * a GET, and `FetchArgs` without a method likewise.
+ */
+const isIdempotent = (args: unknown): boolean => {
+  if (typeof args === "string") return true;
+  if (typeof args !== "object" || args === null) return false;
+  const method = (args as FetchArgs).method?.toUpperCase();
+  return method === undefined || method === HttpMethod.GET;
+};
+
+/**
+ * Absorbs a transient gateway failure instead of handing it to the screen.
+ *
+ * ally-be rolls out several times a working day (six rolling deploys in the 31
+ * hours before the 2026-09-15 report), and an ECS task draining under SIGTERM
+ * drops whatever was in flight on it. Nothing is wrong with the request or the
+ * user — a new task is already healthy — but the counsellor got the full-screen
+ * "Unable to load call logs" wall and a manual Retry button, because
+ * `baseQueryWithReauth` special-cased only 401 and every other failure went
+ * straight through to the component.
+ *
+ * Retrying here rather than in each screen is the point: one place has to know
+ * that a 502 during a rollout is not an answer, and it is cheaper and safer
+ * than expecting every table, drawer and summary panel to work it out. The
+ * cost is up to ~2.5s of extra spinner in the genuinely-broken case (RTK
+ * Query's default jittered exponential backoff: ~0.25-0.85s, then ~0.5-1.7s),
+ * which is the right trade against showing a wall for a blip that clears in
+ * under a second.
+ *
+ * Deliberately NOT a blanket retry: see `isIdempotent` and `isTransientError`.
+ * 401 never reaches here as a retryable case — `baseQueryWithReauth` has
+ * already refreshed and replayed, or logged the user out, by the time it
+ * returns.
+ */
+export const baseQueryWithRetry = retry(baseQueryWithReauth, {
+  retryCondition: (error, args, { attempt }) =>
+    attempt < MAX_ATTEMPTS && isIdempotent(args) && isTransientError(error),
+});
+
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
-  baseQuery: baseQueryWithReauth,
+  baseQuery: baseQueryWithRetry,
   tagTypes: [
     TAG_TYPES.CALL_SUMMARY,
     TAG_TYPES.CALL_LOGS,
@@ -141,6 +238,7 @@ export const baseAPI = createApi({
     TAG_TYPES.SCENARIOS,
     TAG_TYPES.SIMULATION_CREDITS,
     TAG_TYPES.USER,
+    TAG_TYPES.USER_PREFERENCES,
     TAG_TYPES.SCENARIO_PATHWAY_DETAILS,
     TAG_TYPES.SIMULATION_SUMMARY,
     TAG_TYPES.REVIEW,
@@ -154,6 +252,14 @@ export const baseAPI = createApi({
     TAG_TYPES.CUSTOM_FIELD_TYPES,
     TAG_TYPES.CUSTOM_FIELDS_ENABLED,
     TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED,
+    // Was missing while its sibling above was registered, which is exactly the
+    // trap the PRACTICE_STREAK note below describes: organizationSettings.ts
+    // declared providesTags/invalidatesTags for it, RTK Query silently dropped
+    // the unknown tag, and flipping the voice-note toggle never invalidated the
+    // read. The org-settings switch only looked correct because it keeps its own
+    // optimistic local state; a remount inside the 60s cache window showed the
+    // stale value back.
+    TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED,
     TAG_TYPES.ORG_SCENARIOS,
     TAG_TYPES.ORG_SCENARIO_PATHS,
     TAG_TYPES.ORG_CASES,
@@ -168,6 +274,11 @@ export const baseAPI = createApi({
     // not declared on the API, so an unregistered tag makes the invalidation
     // dead code rather than an error.
     TAG_TYPES.PRACTICE_STREAK,
+    // Learner progress (XP/level). Registered here as well as used in providesTags —
+    // RTK Query silently ignores tags that are not declared on the API.
+    TAG_TYPES.PROGRESS,
+    TAG_TYPES.NOTIFICATIONS,
+    TAG_TYPES.UNREAD_NOTIFICATION_COUNT,
   ],
   endpoints: () => ({}),
 });

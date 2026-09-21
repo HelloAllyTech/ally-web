@@ -11,7 +11,7 @@ import {
   ROUTES,
   CALL_PERMISSIONS,
 } from "@constants";
-import { useUser, useAutoActiveCallRedirect } from "@hooks";
+import { useUser, useAutoActiveCallRedirect, useCanViewAnalytics } from "@hooks";
 import {
   Calls,
   Archives,
@@ -26,6 +26,7 @@ import {
   Leaderboard,
   Review,
   AchievementsViewAll,
+  Progress,
   OrganizationSettings,
   CharacterLibrary,
   CharacterInterview,
@@ -35,7 +36,6 @@ import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
 import { SessionType } from "@types";
 import {
-  hasAnalyticsPermission,
   hasCallPermission,
   hasLearnPermission,
   hasPermissions,
@@ -50,6 +50,11 @@ const PrivateRouteLayout: FC = () => {
   const { user, checkAuth, permissions, isAuthenticated } = useUser();
   const navigate = useNavigate();
   useAutoActiveCallRedirect(isAuthenticated);
+
+  // Same gate the Statistics nav tab uses: holding the permission isn't enough,
+  // the tenant has to have something to show — otherwise this would land an
+  // analytics-only user on a page that is empty and has no tab to leave by.
+  const { canView: canViewAnalytics } = useCanViewAnalytics();
 
   const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
   const { data: chatTypes } = useGetChatTypesQuery(undefined, {
@@ -106,7 +111,7 @@ const PrivateRouteLayout: FC = () => {
     if (hasCallPermission(permissions) || hasScribeLogsPermission(permissions))
       return ROUTES.SCRIBE_LOGS;
     if (hasRoleplayLogsPermission(permissions)) return ROUTES.ROLEPLAY_LOGS;
-    if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
+    if (canViewAnalytics) return ROUTES.ANALYTICS;
     if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
     // Fallback: ROUTES.HOME ("/") has no page of its own and only redirects to
     // itself (blank screen). Send unmatched users to Learn, which always
@@ -259,6 +264,18 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS]}
               element={<Review />}
+            />
+          }
+        />
+        {/* Gated on VIEW_USER_RANK, which every learner holds; the real gate is the
+            tenant's PROGRESS_DASHBOARD_ENABLED org toggle, enforced by the API and
+            checked again in the page so a direct URL cannot bypass the nav. */}
+        <Route
+          path={ROUTES.PROGRESS}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_USER_RANK]}
+              element={<Progress />}
             />
           }
         />

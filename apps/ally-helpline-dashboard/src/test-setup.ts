@@ -148,3 +148,7 @@ beforeAll(async () => {
 
 // Mock scrollIntoView for DOM elements
 Element.prototype.scrollIntoView = vi.fn();
+
+// jsdom has no layout, so window.scrollTo is unimplemented and logs a noisy
+// "Not implemented" for any component that scrolls the page on mount.
+window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;

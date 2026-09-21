@@ -237,7 +237,7 @@ const learnAPI = baseAPI.injectEndpoints({
     >({
       query: ({ sessionId, offset, limit, sortBy, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_TRANSCRIPT(sessionId),
-        params: { offset, limit, sortOrder: "ASC", sortBy, includeTags: true, languageCode },
+        params: { offset, limit, sortOrder: "ASC", sortBy, languageCode },
       }),
     }),
     getUpComingSimulation: builder.query<

@@ -9,9 +9,9 @@ import { useUser } from "@hooks";
 // tests mock.
 import { OrgBadgesAccess } from "../../components/organization-settings/OrgBadgesAccess";
 import { OrgCasesAccess } from "../../components/organization-settings/OrgCasesAccess";
+import { OrgCohortsAccess } from "../../components/organization-settings/OrgCohortsAccess";
 import { OrgPathsAccess } from "../../components/organization-settings/OrgPathsAccess";
 import { OrgScribeSettings } from "../../components/organization-settings/OrgScribeSettings";
-import { OrgCohortsAccess } from "../../components/organization-settings/OrgCohortsAccess";
 import { OrgSimulationsAccess } from "../../components/organization-settings/OrgSimulationsAccess";
 import { OrgSimulationSettings } from "../../components/organization-settings/OrgSimulationSettings";
 import { OrgTracksAccess } from "../../components/organization-settings/OrgTracksAccess";

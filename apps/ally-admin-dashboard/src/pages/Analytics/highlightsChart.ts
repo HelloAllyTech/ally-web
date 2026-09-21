@@ -10,6 +10,7 @@ import {
   TrackFunnel,
   UserGrowthPoint,
   UsersByRolePoint,
+  XpGrowthPoint,
 } from "@types";
 
 import { CONTEXT, ColorScale, PALETTE, STAT } from "./chartScales";
@@ -26,6 +27,7 @@ export const HIGHLIGHTS_GROUPS = {
   totalCost: "Total cost",
   newUsers: "New users",
   cumulativeUsers: "Cumulative users",
+  cumulativeXp: "Cumulative XP",
   newActive: "New",
   returningActive: "Returning",
   simulations: "Simulations",
@@ -78,6 +80,25 @@ export const NEW_USERS_SCALE: ColorScale = {
 };
 export const CUMULATIVE_USERS_SCALE: ColorScale = {
   [HIGHLIGHTS_GROUPS.cumulativeUsers]: CONTEXT.line,
+};
+
+/**
+ * Cumulative XP awarded across the platform — the running total.
+ *
+ * The focal series of its card, so it takes a real colour rather than a context
+ * grey: unlike "Cumulative users" (which supports the new-user bars beside it),
+ * this line IS the subject of its chart.
+ */
+export function buildCumulativeXpSeries(points: XpGrowthPoint[]): HighlightsDatum[] {
+  return points.map(p => ({
+    group: HIGHLIGHTS_GROUPS.cumulativeXp,
+    key: p.bucket,
+    value: p.cumulativeXp,
+  }));
+}
+
+export const CUMULATIVE_XP_SCALE: ColorScale = {
+  [HIGHLIGHTS_GROUPS.cumulativeXp]: PALETTE.indigo,
 };
 
 export const ACTIVE_WINDOW_LABEL = {

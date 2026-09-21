@@ -1,13 +1,25 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
-import { Trash } from "@assets";
-import { TRACK_ITEM_TYPE_LABELS } from "@constants";
+import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
+import { useCreateComponentTemplateMutation } from "@api";
+import { Save, Trash } from "@assets";
+import { ActionConfirmationPopup } from "@components";
+import { ButtonVariant } from "@components/types";
+import {
+  en,
+  isComponentLibrarySupportedType,
+  SAVE_AS_TEMPLATE_LABEL,
+  TRACK_ITEM_TYPE_LABELS,
+} from "@constants";
+import { useCanViewComponentLibrary } from "@hooks";
 import { TrackFormValues, TrackItemType } from "@types";
 
+import { serializeItem } from "../../trackFormUtils";
 import { CompletionRuleFields } from "../CompletionRuleFields";
+import { useIsComponentLibraryEditor } from "./componentLibraryEditorContext";
 
 interface ItemEditorFrameProps {
   sectionIndex: number;
@@ -35,8 +47,50 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
   children,
   disabled = false,
 }) => {
-  const { control } = useFormContext<TrackFormValues>();
+  const { control, getValues } = useFormContext<TrackFormValues>();
   const base = `sections.${sectionIndex}.items.${itemIndex}` as const;
+
+  // "Save as template" only makes sense for the 5 Component Library types
+  // (Roleplay/Case reference an external entity, and a Game has nothing worth
+  // templating), only for a user who can actually reach the library, and
+  // never while already editing a template on the Component Library page
+  // itself — that would just create a duplicate of the thing being edited.
+  const isTemplateEditor = useIsComponentLibraryEditor();
+  const canViewComponentLibrary = useCanViewComponentLibrary();
+  const canSaveAsTemplate =
+    !isTemplateEditor && canViewComponentLibrary && isComponentLibrarySupportedType(type);
+  const [createComponentTemplate, { isLoading: isSavingTemplate }] =
+    useCreateComponentTemplateMutation();
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+
+  const closeTemplateDialog = () => {
+    setShowTemplateDialog(false);
+    setTemplateName("");
+  };
+
+  const handleConfirmSaveAsTemplate = async () => {
+    const name = templateName.trim();
+    if (!name) return;
+
+    try {
+      // Read straight from the form rather than props: the item's own title
+      // and the course's save state must stay completely untouched by this,
+      // so nothing here is dispatched back into the track form.
+      const currentItem = getValues(base);
+      const serialized = serializeItem(currentItem, 1);
+      await createComponentTemplate({
+        type: serialized.type,
+        title: name,
+        content: serialized.content!,
+        completionCriteria: serialized.completionCriteria,
+      }).unwrap();
+      toast.success(en.componentLibrary.templateCreatedSuccessfully);
+      closeTemplateDialog();
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.componentLibrary.failedToSaveTemplate);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -44,15 +98,28 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
         <span className="inline-flex items-center rounded-full bg-primary-50 text-primary-600 text-xs font-medium px-3 py-1">
           {TRACK_ITEM_TYPE_LABELS[type]}
         </span>
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={disabled}
-          className="inline-flex items-center gap-1 text-sm text-destructive-500 hover:text-destructive-600 disabled:opacity-50"
-        >
-          <Trash className="w-4 h-4" />
-          Delete
-        </button>
+        <div className="flex items-center gap-3">
+          {canSaveAsTemplate && (
+            <button
+              type="button"
+              onClick={() => setShowTemplateDialog(true)}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {SAVE_AS_TEMPLATE_LABEL}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={disabled}
+            className="inline-flex items-center gap-1 text-sm text-destructive-500 hover:text-destructive-600 disabled:opacity-50"
+          >
+            <Trash className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -99,6 +166,35 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
         type={type}
         disabled={disabled}
       />
+
+      {canSaveAsTemplate && (
+        <ActionConfirmationPopup
+          isOpen={showTemplateDialog}
+          onClose={closeTemplateDialog}
+          title={SAVE_AS_TEMPLATE_LABEL}
+          description={en.componentLibrary.saveAsTemplateDescription}
+          primaryButton={{
+            label: isSavingTemplate ? "Saving..." : en.common.save,
+            onClick: handleConfirmSaveAsTemplate,
+            disabled: !templateName.trim() || isSavingTemplate,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: closeTemplateDialog,
+            variant: ButtonVariant.SECONDARY,
+          }}
+        >
+          <TextInput
+            id="save-as-template-name"
+            labelText={en.componentLibrary.templateNameLabel}
+            hideLabel
+            value={templateName}
+            onChange={event => setTemplateName(event.target.value)}
+            placeholder={en.componentLibrary.templateNamePlaceholder}
+            className="w-full"
+          />
+        </ActionConfirmationPopup>
+      )}
     </div>
   );
 };

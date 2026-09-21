@@ -11,6 +11,15 @@ interface VoiceNotePanelProps {
   /** Elapsed recorded time in milliseconds. */
   durationMs: number;
   isGenerating: boolean;
+  /** True once the drawer has aborted a generate call for taking too long. */
+  hasTimedOut: boolean;
+  /**
+   * True once a generate call has passed the slow-notice mark but is STILL
+   * RUNNING. Not a failure and not a deadline — the request is still going and
+   * will still land; this only changes what the counsellor is told while they
+   * wait, so they can decide whether to keep waiting or bail out.
+   */
+  isSlow: boolean;
   /** Rotating status lines shown while generating (already translated). */
   generatingMessages: string[];
   onPause: () => void;
@@ -35,7 +44,7 @@ const ListeningBars: FC<{ active: boolean }> = ({ active }) => (
     {BAR_HEIGHTS.map((peak, i) => (
       <motion.span
         key={i}
-        className="w-1 rounded-full bg-[#264D8E]"
+        className="w-1 rounded-full bg-[#264d8e]"
         style={{ height: `${peak}%` }}
         animate={active ? { scaleY: [0.4, 1, 0.4] } : { scaleY: 0.4 }}
         transition={
@@ -61,6 +70,8 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   status,
   durationMs,
   isGenerating,
+  hasTimedOut,
+  isSlow,
   generatingMessages,
   onPause,
   onResume,
@@ -87,21 +98,78 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   const isPaused = status === "paused";
   const isStopped = status === "stopped";
 
+  // Checked before isGenerating: the request has just been aborted for
+  // taking too long, but the mutation's own isLoading flag may take a beat
+  // to catch up, and we want the timed-out screen the instant that happens
+  // rather than a flash back to the spinner.
+  if (hasTimedOut) {
+    return (
+      <div
+        className="flex flex-col items-center gap-3 border border-[#e3dbce] bg-[#f0eee7] p-5"
+        data-testid="voice-note-timeout"
+      >
+        <p className="font-primary text-sm text-[#565045] text-center">
+          {t("calls.createNote.voice.timeout")}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onDiscard}
+            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
+            data-testid="voice-note-timeout-back"
+          >
+            {t("calls.createNote.voice.backToForm")}
+          </button>
+          <button
+            type="button"
+            onClick={onGenerate}
+            className={`${ctrlButton} border-[#264d8e] bg-[#264d8e] text-white hover:bg-[#1f3f75]`}
+            data-testid="voice-note-timeout-retry"
+          >
+            {t("calls.createNote.voice.tryAgain")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isGenerating) {
     return (
       <div
-        className="flex flex-col items-center gap-3 border border-[#e0e0e0] bg-[#f4f4f4] p-5"
+        className="flex flex-col items-center gap-3 border border-[#e3dbce] bg-[#f0eee7] p-5"
         data-testid="voice-note-generating"
       >
-        <Loader2 className="h-6 w-6 animate-spin text-[#264D8E]" />
-        <motion.p
-          key={messageIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="font-primary text-sm text-[#525252]"
+        <Loader2 className="h-6 w-6 animate-spin text-[#264d8e]" />
+        {isSlow ? (
+          // Stop cycling the stage messages once we're past the expected
+          // window: rotating "Transcribing… / Extracting…" past a minute reads
+          // as a stuck animation rather than progress. Say plainly that it's
+          // slower than usual and that it's still going — the Cancel button
+          // below is already the way out, so this needs no control of its own.
+          <p
+            className="font-primary text-sm text-[#565045] text-center"
+            data-testid="voice-note-slow"
+          >
+            {t("calls.createNote.voice.stillWorking")}
+          </p>
+        ) : (
+          <motion.p
+            key={messageIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="font-primary text-sm text-[#565045]"
+          >
+            {generatingMessages[messageIndex] ?? t("calls.createNote.voice.generating")}
+          </motion.p>
+        )}
+        <button
+          type="button"
+          onClick={onDiscard}
+          className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
+          data-testid="voice-note-cancel"
         >
-          {generatingMessages[messageIndex] ?? t("calls.createNote.voice.generating")}
-        </motion.p>
+          {t("calls.createNote.voice.cancel")}
+        </button>
       </div>
     );
   }
@@ -109,7 +177,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   if (isRecording || isPaused) {
     return (
       <div
-        className="flex items-center justify-between gap-4 border border-[#e0e0e0] bg-[#f4f4f4] p-4"
+        className="flex items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
         data-testid="voice-note-recording"
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -119,18 +187,18 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
             )}
             <span
               className={`relative inline-flex h-3 w-3 rounded-full ${
-                isRecording ? "bg-[#da1e28]" : "bg-[#8d8d8d]"
+                isRecording ? "bg-[#da1e28]" : "bg-[#928b7c]"
               }`}
             />
           </span>
           <ListeningBars active={isRecording} />
           <div className="flex flex-col min-w-0">
-            <span className="font-primary text-sm text-[#161616]">
+            <span className="font-primary text-sm text-[#29261f]">
               {isRecording
                 ? t("calls.createNote.voice.listening")
                 : t("calls.createNote.voice.paused")}
             </span>
-            <span className="font-primary text-xs tabular-nums text-[#525252]">
+            <span className="font-primary text-xs tabular-nums text-[#565045]">
               {formatDuration(durationMs)}
             </span>
           </div>
@@ -140,7 +208,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
             <button
               type="button"
               onClick={onPause}
-              className={`${ctrlButton} border-[#8d8d8d] text-[#161616] hover:bg-[#e8e8e8]`}
+              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#eae7de]`}
               data-testid="voice-note-pause"
             >
               <Pause className="h-4 w-4" />
@@ -150,7 +218,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
             <button
               type="button"
               onClick={onResume}
-              className={`${ctrlButton} border-[#8d8d8d] text-[#161616] hover:bg-[#e8e8e8]`}
+              className={`${ctrlButton} border-[#928b7c] text-[#29261f] hover:bg-[#eae7de]`}
               data-testid="voice-note-resume"
             >
               <Play className="h-4 w-4" />
@@ -174,16 +242,16 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   if (isStopped) {
     return (
       <div
-        className="flex items-center justify-between gap-4 border border-[#e0e0e0] bg-[#f4f4f4] p-4"
+        className="flex items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
         data-testid="voice-note-ready"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <Mic className="h-5 w-5 shrink-0 text-[#161616]" />
+          <Mic className="h-5 w-5 shrink-0 text-[#29261f]" />
           <div className="flex flex-col min-w-0">
-            <span className="font-primary text-sm text-[#161616]">
+            <span className="font-primary text-sm text-[#29261f]">
               {t("calls.createNote.voice.ready")}
             </span>
-            <span className="font-primary text-xs tabular-nums text-[#525252]">
+            <span className="font-primary text-xs tabular-nums text-[#565045]">
               {formatDuration(durationMs)}
             </span>
           </div>
@@ -192,7 +260,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onDiscard}
-            className={`${ctrlButton} border-[#8d8d8d] text-[#525252] hover:bg-[#e8e8e8]`}
+            className={`${ctrlButton} border-[#928b7c] text-[#565045] hover:bg-[#eae7de]`}
             data-testid="voice-note-discard"
           >
             <Trash2 className="h-4 w-4" />
@@ -201,7 +269,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onGenerate}
-            className={`${ctrlButton} border-[#264D8E] bg-[#264D8E] text-white hover:bg-[#1F3F75]`}
+            className={`${ctrlButton} border-[#264d8e] bg-[#264d8e] text-white hover:bg-[#1f3f75]`}
             data-testid="voice-note-generate"
           >
             <Sparkles className="h-4 w-4" />

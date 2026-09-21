@@ -6,12 +6,22 @@ import { AssignmentStatus, ScenarioPath } from "@types";
 
 import { CasesTab } from "../CasesTab";
 
-const { mockUseGetScenarioCasesQuery } = vi.hoisted(() => ({
-  mockUseGetScenarioCasesQuery: vi.fn(),
-}));
+// The cohort queries back the per-row group-targeting pill. Defaulted to an
+// empty tenant here so these tests keep asserting the tab itself; the pill has
+// its own test in CohortRestrictionCell.test.tsx.
+const { mockUseGetScenarioCasesQuery, mockUseGetCohortsQuery, mockUseGetCohortRestrictionsQuery } = vi.hoisted(
+  () => ({
+    mockUseGetScenarioCasesQuery: vi.fn(),
+    mockUseGetCohortsQuery: vi.fn(() => ({ data: undefined })),
+    mockUseGetCohortRestrictionsQuery: vi.fn(() => ({ data: undefined })),
+  }),
+);
 
 vi.mock("@api", () => ({
   useGetScenarioCasesQuery: mockUseGetScenarioCasesQuery,
+  useGetCohortsQuery: mockUseGetCohortsQuery,
+  useGetCohortRestrictionsQuery: mockUseGetCohortRestrictionsQuery,
+  useSetCohortRestrictionsMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({

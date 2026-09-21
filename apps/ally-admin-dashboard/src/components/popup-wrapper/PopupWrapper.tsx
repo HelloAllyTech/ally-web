@@ -64,7 +64,7 @@ export const PopupWrapper: FC<PopupWrapperProps> = ({
   useEffect(() => {
     if (!isOpen || !anchorElement) {
       setPosition(null);
-      return;
+      return undefined;
     }
 
     updatePosition();
@@ -79,7 +79,7 @@ export const PopupWrapper: FC<PopupWrapperProps> = ({
 
   // Outside click
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -103,7 +103,7 @@ export const PopupWrapper: FC<PopupWrapperProps> = ({
 
   // Escape key close
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE) onClose();

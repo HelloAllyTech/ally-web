@@ -15,5 +15,5 @@
         style="opacity: 1"
       >
       </circle>
-      <path stroke="#fff" strokeLinecap="round" strokeWidth="3" strokeLinejoin="round" d="M8 13l3 3L16 9"  />
+      <path stroke="#faf9f5" strokeLinecap="round" strokeWidth="3" strokeLinejoin="round" d="M8 13l3 3L16 9"  />
     </svg>

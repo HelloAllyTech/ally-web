@@ -21,21 +21,21 @@ import {
 const UNASSIGNED = "Unassigned";
 const OTHER = "Other owners";
 
-const totals = (ideaCoins: number, bugCoins: number, ideas = 1, bugs = 1): RoadmapDeliveryTotals => ({
+const totals = (ideaVotes: number, bugVotes: number, ideas = 1, bugs = 1): RoadmapDeliveryTotals => ({
   opportunities: ideas + bugs,
   ideaOpportunities: ideas,
   bugOpportunities: bugs,
-  coins: ideaCoins + bugCoins,
-  ideaCoins,
-  bugCoins,
+  votes: ideaVotes + bugVotes,
+  ideaVotes,
+  bugVotes,
 });
 
 const month = (
   iso: string,
-  owners: { owner: string; ideaCoins: number; bugCoins: number }[],
+  owners: { owner: string; ideaVotes: number; bugVotes: number }[],
   partial = false,
 ): RoadmapDeliveryMonth => {
-  const ownerRows = owners.map(o => ({ owner: o.owner, ...totals(o.ideaCoins, o.bugCoins) }));
+  const ownerRows = owners.map(o => ({ owner: o.owner, ...totals(o.ideaVotes, o.bugVotes) }));
   const sum = (pick: (t: RoadmapDeliveryTotals) => number) =>
     ownerRows.reduce((acc, o) => acc + pick(o), 0);
   return {
@@ -44,9 +44,9 @@ const month = (
     opportunities: sum(t => t.opportunities),
     ideaOpportunities: sum(t => t.ideaOpportunities),
     bugOpportunities: sum(t => t.bugOpportunities),
-    coins: sum(t => t.coins),
-    ideaCoins: sum(t => t.ideaCoins),
-    bugCoins: sum(t => t.bugCoins),
+    votes: sum(t => t.votes),
+    ideaVotes: sum(t => t.ideaVotes),
+    bugVotes: sum(t => t.bugVotes),
     partial,
   };
 };
@@ -68,9 +68,9 @@ const response = (
       opportunities: sum(t => t.opportunities),
       ideaOpportunities: sum(t => t.ideaOpportunities),
       bugOpportunities: sum(t => t.bugOpportunities),
-      coins: sum(t => t.coins),
-      ideaCoins: sum(t => t.ideaCoins),
-      bugCoins: sum(t => t.bugCoins),
+      votes: sum(t => t.votes),
+      ideaVotes: sum(t => t.ideaVotes),
+      bugVotes: sum(t => t.bugVotes),
     },
     undated,
     currentMonth: "2026-08-01",
@@ -80,21 +80,21 @@ const response = (
 };
 
 describe("measureOf", () => {
-  it("resolves each filter to its own coins and counts", () => {
+  it("resolves each filter to its own votes and counts", () => {
     const t = totals(40, 10, 2, 1);
 
-    expect(measureOf(t, "all")).toEqual({ coins: 50, opportunities: 3 });
-    expect(measureOf(t, "idea")).toEqual({ coins: 40, opportunities: 2 });
-    expect(measureOf(t, "bug")).toEqual({ coins: 10, opportunities: 1 });
+    expect(measureOf(t, "all")).toEqual({ votes: 50, opportunities: 3 });
+    expect(measureOf(t, "idea")).toEqual({ votes: 40, opportunities: 2 });
+    expect(measureOf(t, "bug")).toEqual({ votes: 10, opportunities: 1 });
   });
 });
 
 describe("buildRoadmapDeliveryMonths", () => {
   const data = response(
     [
-      month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 10 }]),
+      month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 10 }]),
       month("2026-07-01", []),
-      month("2026-08-01", [{ owner: "Gopi", ideaCoins: 5, bugCoins: 0 }], true),
+      month("2026-08-01", [{ owner: "Gopi", ideaVotes: 5, bugVotes: 0 }], true),
     ],
     ["Ajey", "Gopi"],
   );
@@ -108,7 +108,7 @@ describe("buildRoadmapDeliveryMonths", () => {
     const months = buildRoadmapDeliveryMonths(data, "all");
 
     expect(months.map(m => m.month)).toEqual(["2026-06-01", "2026-07-01", "2026-08-01"]);
-    expect(months[1]).toMatchObject({ coins: 0, opportunities: 0, coinsByOwner: {} });
+    expect(months[1]).toMatchObject({ votes: 0, opportunities: 0, votesByOwner: {} });
   });
 
   it("marks the in-progress month on the axis label itself", () => {
@@ -135,10 +135,10 @@ describe("buildRoadmapDeliveryMonths", () => {
     expect(months[2].plainLabel).toBe("Aug 2026");
   });
 
-  it("resolves owner coins against the type filter", () => {
-    expect(buildRoadmapDeliveryMonths(data, "all")[0].coinsByOwner).toEqual({ Ajey: 50 });
-    expect(buildRoadmapDeliveryMonths(data, "idea")[0].coinsByOwner).toEqual({ Ajey: 40 });
-    expect(buildRoadmapDeliveryMonths(data, "bug")[0].coinsByOwner).toEqual({ Ajey: 10 });
+  it("resolves owner votes against the type filter", () => {
+    expect(buildRoadmapDeliveryMonths(data, "all")[0].votesByOwner).toEqual({ Ajey: 50 });
+    expect(buildRoadmapDeliveryMonths(data, "idea")[0].votesByOwner).toEqual({ Ajey: 40 });
+    expect(buildRoadmapDeliveryMonths(data, "bug")[0].votesByOwner).toEqual({ Ajey: 10 });
   });
 });
 
@@ -146,8 +146,8 @@ describe("visibleOwners", () => {
   const data = response(
     [
       month("2026-06-01", [
-        { owner: "Ajey", ideaCoins: 40, bugCoins: 10 },
-        { owner: "Gopi", ideaCoins: 20, bugCoins: 0 },
+        { owner: "Ajey", ideaVotes: 40, bugVotes: 10 },
+        { owner: "Gopi", ideaVotes: 20, bugVotes: 0 },
       ]),
     ],
     ["Ajey", "Gopi"],
@@ -170,8 +170,8 @@ describe("buildRoadmapDeliverySeries", () => {
     // Carbon assigns stack order from the order groups first appear in the data.
     const data = response(
       [
-        month("2026-06-01", [{ owner: "Gopi", ideaCoins: 5, bugCoins: 0 }]),
-        month("2026-07-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 0 }]),
+        month("2026-06-01", [{ owner: "Gopi", ideaVotes: 5, bugVotes: 0 }]),
+        month("2026-07-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }]),
       ],
       ["Ajey", "Gopi"],
     );
@@ -185,7 +185,7 @@ describe("buildRoadmapDeliverySeries", () => {
   it("emits an explicit zero for a month an owner shipped nothing in", () => {
     const data = response(
       [
-        month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 0 }]),
+        month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }]),
         month("2026-07-01", []),
       ],
       ["Ajey"],
@@ -231,19 +231,19 @@ describe("buildRoadmapDeliveryScale", () => {
 
 describe("roadmapDeliveryTakeaway", () => {
   it("names the concentration rather than a month-on-month delta", () => {
-    // A release log is lumpy: one 90-coin item landing in April and not in March
+    // A release log is lumpy: one 90-vote item landing in April and not in March
     // is a scheduling fact, not a trend, so no delta is offered.
     const data = response(
       [
-        month("2026-06-01", [{ owner: "Ajey", ideaCoins: 60, bugCoins: 0 }]),
-        month("2026-07-01", [{ owner: "Gopi", ideaCoins: 40, bugCoins: 0 }]),
+        month("2026-06-01", [{ owner: "Ajey", ideaVotes: 60, bugVotes: 0 }]),
+        month("2026-07-01", [{ owner: "Gopi", ideaVotes: 40, bugVotes: 0 }]),
       ],
       ["Ajey", "Gopi"],
     );
     const months = buildRoadmapDeliveryMonths(data, "all");
 
     expect(roadmapDeliveryTakeaway(months, ["Ajey", "Gopi"])).toBe(
-      "100 coins shipped across 2 months — Ajey carried 60% of them (60 coins)",
+      "100 votes shipped across 2 months — Ajey carried 60% of them (60 votes)",
     );
   });
 
@@ -252,12 +252,12 @@ describe("roadmapDeliveryTakeaway", () => {
   });
 
   it("drops the share when there is only one owner", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaCoins: 60, bugCoins: 0 }])], [
+    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 60, bugVotes: 0 }])], [
       "Ajey",
     ]);
     const months = buildRoadmapDeliveryMonths(data, "all");
 
-    expect(roadmapDeliveryTakeaway(months, ["Ajey"])).toBe("60 coins shipped across 1 month");
+    expect(roadmapDeliveryTakeaway(months, ["Ajey"])).toBe("60 votes shipped across 1 month");
   });
 });
 
@@ -266,7 +266,7 @@ describe("undatedNote", () => {
     // THE POINT: without this line the plotted total reads as everything the team
     // has ever shipped.
     const data = response(
-      [month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 10 }])],
+      [month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 10 }])],
       ["Ajey"],
       totals(500, 104, 170, 3),
     );
@@ -274,14 +274,14 @@ describe("undatedNote", () => {
     const note = undatedNote(data, "all");
 
     expect(note).toContain("2 of 175 released items are plotted");
-    expect(note).toContain("The other 173 (604 coins) carry no release date");
+    expect(note).toContain("The other 173 (604 votes) carry no release date");
   });
 
   it("scopes the missing figure to the active filter", () => {
     const data = response([], [], totals(500, 104, 170, 3));
 
     expect(undatedNote(data, "bug")).toContain("3 ");
-    expect(undatedNote(data, "bug")).toContain("104 coins");
+    expect(undatedNote(data, "bug")).toContain("104 votes");
   });
 
   it("says nothing when every release carries a date", () => {
@@ -299,7 +299,7 @@ describe("roadmapDeliveryEmptyText", () => {
       "No opportunity has been released yet.",
     );
     expect(roadmapDeliveryEmptyText(allUndated, [], "all")).toContain(
-      "all 173 released items (604 coins) carry no release date",
+      "all 173 released items (604 votes) carry no release date",
     );
   });
 
@@ -310,7 +310,7 @@ describe("roadmapDeliveryEmptyText", () => {
   });
 
   it("returns undefined while there is something to draw", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 0 }])], [
+    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }])], [
       "Ajey",
     ]);
     const months = buildRoadmapDeliveryMonths(data, "all");
@@ -323,7 +323,7 @@ describe("plottedMonths", () => {
   it("counts only months with something on them", () => {
     const data = response(
       [
-        month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 0 }]),
+        month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }]),
         month("2026-07-01", []),
       ],
       ["Ajey"],
@@ -334,11 +334,11 @@ describe("plottedMonths", () => {
 });
 
 describe("buildRoadmapDeliveryTable", () => {
-  it("puts release counts beside the coin totals and keeps the partial month", () => {
+  it("puts release counts beside the vote totals and keeps the partial month", () => {
     const data = response(
       [
-        month("2026-06-01", [{ owner: "Ajey", ideaCoins: 40, bugCoins: 10 }]),
-        month("2026-08-01", [{ owner: "Ajey", ideaCoins: 5, bugCoins: 0 }], true),
+        month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 10 }]),
+        month("2026-08-01", [{ owner: "Ajey", ideaVotes: 5, bugVotes: 0 }], true),
       ],
       ["Ajey"],
     );
@@ -346,7 +346,7 @@ describe("buildRoadmapDeliveryTable", () => {
 
     const table = buildRoadmapDeliveryTable(months, ["Ajey"]);
 
-    expect(table.columns).toEqual(["Month", "Coins", "Released", "Ajey (coins)"]);
+    expect(table.columns).toEqual(["Month", "Votes", "Released", "Ajey (votes)"]);
     // Spelled out, not the axis asterisk: a CSV has room for words, and a lone
     // "*" in an exported file points at a footnote that did not travel with it.
     expect(table.rows).toEqual([
@@ -359,7 +359,7 @@ describe("buildRoadmapDeliveryTable", () => {
 describe("partialMonth / partialFootnote", () => {
   it("names the open month in prose, since the axis marker cannot", () => {
     const data = response(
-      [month("2026-08-01", [{ owner: "Ajey", ideaCoins: 5, bugCoins: 0 }], true)],
+      [month("2026-08-01", [{ owner: "Ajey", ideaVotes: 5, bugVotes: 0 }], true)],
       ["Ajey"],
     );
     const months = buildRoadmapDeliveryMonths(data, "all");
@@ -374,7 +374,7 @@ describe("partialMonth / partialFootnote", () => {
   });
 
   it("finds no open month when the axis ends in the past", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaCoins: 5, bugCoins: 0 }])], [
+    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 5, bugVotes: 0 }])], [
       "Ajey",
     ]);
 

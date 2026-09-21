@@ -244,8 +244,8 @@
 <body>
   <div class="wrap">
     <div class="panel">
-      <dl class="stat"><dt>Score</dt><dd id="score">0</dd></dl>
-      <dl class="stat"><dt>Best</dt><dd id="best">0</dd></dl>
+      <dl class="stat"><dt id="score-label">Score</dt><dd id="score">0</dd></dl>
+      <dl class="stat"><dt id="best-label">Best</dt><dd id="best">0</dd></dl>
       <div class="panel-spacer"></div>
       <button type="button" class="icon-button" id="restart" aria-label="Start over" title="Start over"></button>
     </div>
@@ -262,13 +262,47 @@
   'use strict';
 
   /* =====================================================================
+     Words
+
+     Everything this page draws in words, baked in English and overridden by
+     the host, which is the side that knows the learner's language: the web
+     app sends these with its `focus` message, the mobile app sets
+     `window.__allyGameStrings` before this document loads. English is the
+     fallback either way, so a host that sends nothing still gets a working
+     game.
+     ===================================================================== */
+
+  var STRINGS = {
+    score: 'Score',
+    best: 'Best',
+    restart: 'Start over',
+    gameOver: 'Game over — {{score}}'
+  };
+
+  if (window.__allyGameStrings) applyStrings(window.__allyGameStrings);
+
+  function applyStrings(next) {
+    for (var key in STRINGS) {
+      if (Object.prototype.hasOwnProperty.call(next, key) && typeof next[key] === 'string') {
+        STRINGS[key] = next[key];
+      }
+    }
+  }
+
+  function fill(template, values) {
+    return template.replace(/\{\{(\w+)\}\}/g, function (whole, name) {
+      return Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : whole;
+    });
+  }
+
+  /* =====================================================================
      Host bridge — identical contract to every other bundle in this family.
 
        game -> host  { source:'ally-game', game, type:'ready' }
        game -> host  { source:'ally-game', game, type:'started' }
        game -> host  { source:'ally-game', game, type:'over', score, highScore }
 
-       host -> game  { source:'ally-game-host', type:'focus' }
+       host -> game  { source:'ally-game-host', type:'focus', strings? }
 
      One file, two hosts: an <iframe> in the web app (post to window.parent)
      and a react-native-webview on mobile (post a JSON string to
@@ -303,6 +337,10 @@
   window.addEventListener('message', function (event) {
     var data = event.data;
     if (!data || data.source !== 'ally-game-host') return;
+    if (data.strings) {
+      applyStrings(data.strings);
+      renderStrings();
+    }
     if (data.type === 'focus') window.focus();
   });
 
@@ -326,10 +364,21 @@
   var SWIPE_MIN_PX = 20;
 
   var boardEl = document.getElementById('board');
+  var scoreLabelEl = document.getElementById('score-label');
+  var bestLabelEl = document.getElementById('best-label');
   var scoreEl = document.getElementById('score');
   var bestEl = document.getElementById('best');
   var statusEl = document.getElementById('status');
   var restartEl = document.getElementById('restart');
+
+  /** Redraw every word this page owns. Called once before the first frame and
+   * again whenever the host's `focus` message brings new strings. */
+  function renderStrings() {
+    scoreLabelEl.textContent = STRINGS.score;
+    bestLabelEl.textContent = STRINGS.best;
+    restartEl.setAttribute('aria-label', STRINGS.restart);
+    restartEl.setAttribute('title', STRINGS.restart);
+  }
 
   var cellSize = 0;
   var segments = [];      // [{col,row}, ...] index 0 is the head
@@ -436,7 +485,7 @@
     running = false;
     best = Math.max(best, score);
     bestEl.textContent = String(best);
-    setStatus('Game over — ' + score, true);
+    setStatus(fill(STRINGS.gameOver, { score: score }), true);
     post('over', { score: score, highScore: best });
 
     if (resetTimer !== null) window.clearTimeout(resetTimer);
@@ -616,6 +665,7 @@
   });
 
   resetGame();
+  renderStrings();
   fit();
 
   // Both, deliberately. ResizeObserver catches a frame resized by its host

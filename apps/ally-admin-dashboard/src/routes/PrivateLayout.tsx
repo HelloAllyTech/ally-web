@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 
+import { InlineLoading } from "@ally-ui-mono/ui-shared";
 import {
   useGetUserQuery,
   useGetPermissionsQuery,
@@ -17,7 +18,7 @@ import {
   ROUTES,
   OrgToggle,
   Permissions,
-  UserRole,
+  en,
   normalizeEmailForAllowlist,
 } from "@constants";
 import { setUser, setPermissions, setFeatures } from "@reducer";
@@ -26,24 +27,19 @@ import { hasPermissions, hasFeature } from "@utils";
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
-  requiredRole?: UserRole | UserRole[];
   /**
    * Feature-toggle key(s) that also grant this route — checked via
-   * `hasFeature`. During the role->toggle migration this is carried
-   * ALONGSIDE `requiredRole` on the same route (see RouteLayout): access is
-   * granted if EITHER the legacy role check or this toggle check passes, a
-   * safety net against an incomplete toggle backfill. A route with only one
-   * of the two props behaves exactly as before (the other check defaults to
-   * pass-through).
+   * `hasFeature`. A route that passes none stays backward compatible
+   * (`hasRequiredFeature` defaults to pass-through).
    */
   requiredFeature?: string | string[];
   /**
-   * Third grant path, alongside `requiredRole` and `requiredFeature`: the
-   * caller's ORG has the feature switched on. Per-user feature toggles only
-   * exist for platform admins, so this is how a tenant's own admins reach a
-   * surface built for Ally staff. Always pair it with `requiredPermissions` —
-   * the org switch says the feature is on for the org, the permission says
-   * this user may use it.
+   * Second grant path, alongside `requiredFeature`: the caller's ORG has the
+   * feature switched on. Per-user feature toggles only exist for platform
+   * admins, so this is how a tenant's own admins reach a surface built for
+   * Ally staff. Always pair it with `requiredPermissions` — the org switch
+   * says the feature is on for the org, the permission says this user may
+   * use it.
    */
   requiredOrgToggle?: OrgToggle;
   isPreview?: boolean;
@@ -59,7 +55,6 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   children,
   isPreview,
   requiredPermissions = [],
-  requiredRole,
   requiredFeature,
   requiredOrgToggle,
   allowedEmails,
@@ -67,9 +62,24 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
 
-  const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
-  const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
-  const { data: features, isLoading: isFeaturesLoading } = useGetFeatureTogglesQuery();
+  const {
+    data: userData,
+    isLoading: isUserLoading,
+    isError: isUserError,
+    refetch: refetchUser,
+  } = useGetUserQuery();
+  const {
+    data: permissions,
+    isLoading: isPermissionsLoading,
+    isError: isPermissionsError,
+    refetch: refetchPermissions,
+  } = useGetPermissionsQuery();
+  const {
+    data: features,
+    isLoading: isFeaturesLoading,
+    isError: isFeaturesError,
+    refetch: refetchFeatures,
+  } = useGetFeatureTogglesQuery();
   // One request per org toggle, skipped entirely on routes that don't ask for
   // one — which is every route but the Character Library today.
   const { data: isCharacterLibraryOrgEnabled, isLoading: isOrgToggleLoading } =
@@ -95,7 +105,6 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   // Check if user has permission to access current route
   let hasPermission = true;
-  let hasRole = true;
   let hasRequiredFeature = true;
   let hasOrgToggle = false;
   let hasAllowedEmail = true;
@@ -104,23 +113,9 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasPermission = hasPermissions(permissions, requiredPermissions);
   }
 
-  // Role gating is independent of permissions: routes can require a specific
-  // role (e.g. SUPER_ADMIN) — or any one of a set of roles (e.g. the super-admin
-  // tier: [SUPER_ADMIN, SUPER_DUPER_ADMIN]) — regardless of the permission set.
-  // Routes that pass no requiredRole stay backward compatible (hasRole stays true).
-  if (!isUserLoading) {
-    hasRole =
-      !requiredRole ||
-      (Array.isArray(requiredRole)
-        ? requiredRole.includes(userData?.role as UserRole)
-        : userData?.role === requiredRole);
-  }
-
   // Feature-toggle gating. `features` defaults to `[]` while still loading or
   // on a genuine fetch error, so `hasFeature` fails CLOSED in both cases — this
-  // must never read as "endpoint doesn't exist, treat as pass". The role check
-  // above is the deliberate escape hatch for that case (both props carried on
-  // the same route during the migration), not a fallback baked in here.
+  // must never read as "endpoint doesn't exist, treat as pass".
   if (!requiredFeature) {
     hasRequiredFeature = true;
   } else if (isFeaturesLoading) {
@@ -133,14 +128,14 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   }
 
   // Org-toggle gating. Fails CLOSED while loading and on a fetch error, same as
-  // the per-user toggles above — the role/feature checks are the escape hatch
-  // for a platform admin, so a slow or failed org read can never be the thing
-  // that grants access.
+  // the per-user toggles above — the feature check is the escape hatch for a
+  // platform admin, so a slow or failed org read can never be the thing that
+  // grants access.
   if (requiredOrgToggle === OrgToggle.CHARACTER_LIBRARY) {
     hasOrgToggle = !isOrgToggleLoading && isCharacterLibraryOrgEnabled === true;
   }
 
-  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
+  // Email allowlist gating for staged rollouts. Case-insensitive and
   // +tag-tolerant (a +tag sub-address matches its base email, via
   // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
   if (!isUserLoading && allowedEmails) {
@@ -150,12 +145,56 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     );
   }
 
-  // Dual-gate: a route carrying both `requiredRole` and `requiredFeature`
-  // passes if EITHER check does — the toggle is additive access, not a
-  // narrowing of the legacy role check, until the legacy prop is removed in a
-  // later cleanup pass.
-  const hasAccess =
-    hasPermission && (hasRole || hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
+  const hasAccess = hasPermission && (hasRequiredFeature || hasOrgToggle) && hasAllowedEmail;
+
+  // Every gate used to read as identical generic copy on AccessDenied. Order
+  // matters here roughly by how "fixable by the viewer" each cause is: an
+  // allowlist miss and a missing permission are both dead ends for this
+  // account specifically, while the feature/org-toggle pair failing together
+  // usually means the surface just isn't turned on yet.
+  const accessDeniedReason = !hasAccess
+    ? !hasPermission
+      ? en.accessDenied.reasonMissingPermission
+      : !hasAllowedEmail
+        ? en.accessDenied.reasonNotAllowlisted
+        : en.accessDenied.reasonMissingRoleOrToggle
+    : undefined;
+
+  /*
+    "Denied" and "we could not find out" are not the same answer, and until now they rendered
+    the identical screen.
+    
+    Failing CLOSED is right and stays: while entitlements are unknown, nothing gates open. What
+    was wrong is what the reader was TOLD. A platform admin holding 215 permissions saw "this
+    page isn't turned on for your role yet" because the API was down for ninety seconds, and
+    the copy sent them to ask an admin for access they already had. It cost this session twice
+    — once on a slow direct navigation, once on a backend restart.
+    
+    So: still no children until the answer is known, but a load says it is loading and a
+    failure says it failed and offers a retry.
+    
+    Only routes that actually GATE on something get the failure screen. A route requiring
+    neither a permission nor a feature is reachable regardless, and a blip on an endpoint it
+    never consults must not block it.
+  */
+  const routeIsGated = requiredPermissions.length > 0 || Boolean(requiredFeature);
+  const entitlementsLoading =
+    routeIsGated &&
+    (isUserLoading ||
+      isPermissionsLoading ||
+      isFeaturesLoading ||
+      (requiredOrgToggle === OrgToggle.CHARACTER_LIBRARY && isOrgToggleLoading));
+  // The org toggle is deliberately absent: it is a SECOND grant path, so its failure leaves
+  // the feature check to answer, and treating it as fatal would block a platform admin whose
+  // own toggle is fine.
+  const entitlementsFailed =
+    routeIsGated && !entitlementsLoading && (isUserError || isPermissionsError || isFeaturesError);
+
+  const retryEntitlements = () => {
+    void refetchUser();
+    void refetchPermissions();
+    void refetchFeatures();
+  };
 
   // The preview routes render bare, with no shell to preserve — but a crash
   // there used to blank the page just the same, so they get the barrier too.
@@ -181,7 +220,40 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
               sidebar, the nav and their way out of it. */}
           <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
             <ErrorBoundary resetKey={pathname}>
-              {hasAccess ? children : <AccessDenied />}
+              {entitlementsLoading ? (
+                <div
+                  className="flex h-full min-h-[500px] items-center justify-center"
+                  data-testid="entitlements-loading"
+                >
+                  <InlineLoading description={en.accessCheck.checking} />
+                </div>
+              ) : entitlementsFailed ? (
+                <div data-testid="entitlements-failed">
+                  <AccessDenied
+                    title={en.accessCheck.failedTitle}
+                    message={en.accessCheck.failedMessage}
+                    nextStep={en.accessCheck.failedNextStep}
+                    showBackButton={false}
+                  />
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={retryEntitlements}
+                      data-testid="entitlements-retry"
+                      className="inline-flex items-center rounded-lg bg-primary-500 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-primary-600"
+                    >
+                      {en.accessCheck.retry}
+                    </button>
+                  </div>
+                </div>
+              ) : hasAccess ? (
+                children
+              ) : (
+                <AccessDenied
+                  reason={accessDeniedReason}
+                  nextStep={en.accessDenied.nextStepContactAdmin}
+                />
+              )}
             </ErrorBoundary>
           </div>
         </main>

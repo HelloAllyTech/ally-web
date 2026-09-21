@@ -6,10 +6,9 @@ import {
   Permissions,
   buildSidebarItemFeatureKeyMap,
   buildSidebarItemOrgToggleMap,
-  isRoleplayStudioEmailAllowed,
+  FeatureToggleKey,
   OrgToggle,
 } from "@constants";
-import { store } from "@store";
 
 import { hasFeature } from "./permissions";
 
@@ -26,11 +25,6 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.SIMULATION_STUDIO,
   },
   {
-    id: SIDEBAR_ITEMS.ROLEPLAY_STUDIO,
-    label: en.roleplayStudio.navLabel,
-    path: ROUTES.ROLEPLAY_STUDIO,
-  },
-  {
     id: SIDEBAR_ITEMS.EVENTS,
     label: en.simulation.events,
     path: ROUTES.MANAGE_EVENTS,
@@ -39,6 +33,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
     label: "Characters",
     path: ROUTES.CHARACTER_LIBRARY,
+  },
+  {
+    id: SIDEBAR_ITEMS.COMPONENT_LIBRARY,
+    label: "Component Library",
+    path: ROUTES.COMPONENT_LIBRARY,
   },
   {
     id: SIDEBAR_ITEMS.SCENARIO_VOICES,
@@ -54,6 +53,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
     label: "Language Model",
     path: ROUTES.MANAGE_LLM_MODEL_CATALOG,
+  },
+  {
+    id: SIDEBAR_ITEMS.AI_TASKS,
+    label: "AI Tasks",
+    path: ROUTES.AI_TASKS,
   },
   {
     id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
@@ -136,9 +140,19 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.LOGS,
   },
   {
+    id: SIDEBAR_ITEMS.MOBILE_RELEASES,
+    label: "Mobile Releases",
+    path: ROUTES.MOBILE_RELEASES,
+  },
+  {
     id: SIDEBAR_ITEMS.BUG_HUNTER,
     label: en.bugHunter.tabLabel,
     path: ROUTES.BUG_HUNTER,
+  },
+  {
+    id: SIDEBAR_ITEMS.BUILDER,
+    label: en.builder.tabLabel,
+    path: ROUTES.BUILDER,
   },
   {
     id: SIDEBAR_ITEMS.WHATSAPP_BOT,
@@ -172,10 +186,10 @@ export const applySavedOrder = (
  * then reordered by the user's saved sidebar order. The first element is the
  * user's "first tab" — used both to render the sidebar and to pick the default
  * landing route after login. Tabs fall into two gating tiers:
- *  - Feature-toggle-gated (Characters, Speech Recognition, Language Model,
- *    Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
- *    WhatsApp Bot, Bug Hunter, Analytics, Competencies, AI Lab, Roleplay
- *    Session Logs, Languages): shown once the user's feature-toggle list is
+ *  - Feature-toggle-gated (Characters, Component Library, Speech Recognition,
+ *    Language Model, Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
+ *    Mobile Releases, WhatsApp Bot, Bug Hunter, Analytics, Competencies,
+ *    AI Lab, Roleplay Session Logs, Languages): shown once the user's feature-toggle list is
  *    loaded and holds the matching key (see `buildSidebarItemFeatureKeyMap`),
  *    independent of permissions. This one map replaces the former
  *    buildSuperDuperAdminOnlyItems() set and the SUPER_ADMIN_ROLES switch
@@ -189,7 +203,6 @@ export const deriveNavigationItems = ({
   permissions,
   features,
   savedOrder,
-  email,
   orgToggles,
 }: {
   // Accepts `string[]` to match how permissions/features are stored in Redux;
@@ -197,12 +210,6 @@ export const deriveNavigationItems = ({
   permissions: string[] | undefined;
   features: string[] | undefined;
   savedOrder: string[] | undefined;
-  /**
-   * Logged-in user's email, used for allowlist-gated items (Roleplay Studio).
-   * Optional for backward compatibility: when omitted, falls back to the user
-   * slice in the store (read lazily at call time to avoid init-order issues).
-   */
-  email?: string;
   /**
    * Org-level (per-tenant) toggles the caller's organisation has switched on.
    * A tab whose per-user feature toggle is absent can still appear via this
@@ -214,7 +221,6 @@ export const deriveNavigationItems = ({
   const navigationItems = buildNavigationItems();
   const featureGatedItems = buildSidebarItemFeatureKeyMap(SIDEBAR_ITEMS);
   const orgGatedItems = buildSidebarItemOrgToggleMap(SIDEBAR_ITEMS);
-  const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const hasPermissions = Boolean(permissions && permissions.length > 0);
 
   const visible = navigationItems.filter(item => {
@@ -242,13 +248,15 @@ export const deriveNavigationItems = ({
       default:
         if (!hasPermissions) return false;
         switch (item.id) {
+          // Deliberately NOT in buildSidebarItemFeatureKeyMap: an entry there
+          // becomes feature-ONLY (the map branch returns before this switch),
+          // which would drop the EDIT_SCENARIO requirement. Content management
+          // needs both — the permission to author, and the toggle to see the
+          // studio at all.
           case SIDEBAR_ITEMS.SIMULATION_STUDIO:
-            return permissions!.includes(Permissions.EDIT_SCENARIO);
-          case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
-            // Rollout gate: permission AND the temporary email allowlist.
             return (
-              permissions!.includes(Permissions.VIEW_ROLEPLAY_SPECS) &&
-              isRoleplayStudioEmailAllowed(resolvedEmail)
+              permissions!.includes(Permissions.EDIT_SCENARIO) &&
+              hasFeature(features, FeatureToggleKey.CONTENT_MANAGEMENT)
             );
           case SIDEBAR_ITEMS.EVENTS:
             return permissions!.includes(Permissions.EDIT_EVENT);
