@@ -7,7 +7,7 @@ import {
   ANALYTICS_PROPS,
   LANGUAGE_CHANGE_SOURCE,
 } from "@constants/analyticsEvents";
-import { LanguageMap } from "@constants/common";
+import { LanguageMap } from "@constants/language";
 import { useAnalytics } from "@hooks";
 
 import i18n from "../../i18n";
