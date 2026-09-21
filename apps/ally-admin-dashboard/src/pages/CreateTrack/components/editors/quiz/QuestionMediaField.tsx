@@ -17,6 +17,7 @@ import {
 } from "@constants";
 import { QuestionMedia, TrackFormValues } from "@types";
 
+import { probeVideo } from "./questionMediaProbe";
 import {
   getQuestionMediaEmbedUrl,
   parseVideoEmbedUrl,
@@ -38,98 +39,6 @@ const ADD_MODE_OPTIONS = [
 ];
 
 const formatMb = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`;
-
-/** Where in the clip to grab the poster frame. Frame zero is very often a
- *  fade-in, a slate or a black frame, which is exactly the uninformative
- *  thumbnail we are trying to avoid. */
-const POSTER_SEEK_SECONDS = 1;
-/** Cap on the captured frame's longest side — a poster is a preview, not a
- *  second copy of the video. */
-const POSTER_MAX_EDGE = 960;
-const POSTER_QUALITY = 0.8;
-
-interface VideoProbe {
-  durationSeconds?: number;
-  /** A JPEG of one frame, or `undefined` if the browser could not decode. */
-  poster?: File;
-}
-
-/**
- * Decodes a video file locally to learn two things before anything is
- * uploaded: how long it is (so an over-long clip is refused instantly rather
- * than after a 50MB round trip) and what one frame of it looks like (so the
- * learner gets a real thumbnail instead of whatever their player paints for
- * a paused-at-zero video).
- *
- * Every failure path resolves rather than rejects. A container the browser
- * cannot decode — some MOV/HEVC recordings — or a cross-origin taint on the
- * canvas should cost the trainer a nicety, not the upload: the server
- * enforces the duration ceiling independently, and a missing poster falls
- * back to the player's own behaviour.
- */
-const probeVideo = (file: File): Promise<VideoProbe> =>
-  new Promise(resolve => {
-    const objectUrl = URL.createObjectURL(file);
-    const probe = document.createElement("video");
-    let settled = false;
-
-    const finish = (result: VideoProbe) => {
-      if (settled) return;
-      settled = true;
-      URL.revokeObjectURL(objectUrl);
-      resolve(result);
-    };
-
-    const duration = () =>
-      Number.isFinite(probe.duration) && probe.duration > 0 ? probe.duration : undefined;
-
-    const capture = () => {
-      try {
-        const scale = Math.min(1, POSTER_MAX_EDGE / Math.max(probe.videoWidth, probe.videoHeight));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(probe.videoWidth * scale);
-        canvas.height = Math.round(probe.videoHeight * scale);
-        const context = canvas.getContext("2d");
-        if (!context || !canvas.width || !canvas.height) {
-          finish({ durationSeconds: duration() });
-          return;
-        }
-        context.drawImage(probe, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(
-          blob =>
-            finish({
-              durationSeconds: duration(),
-              poster: blob
-                ? new File([blob], `${file.name.replace(/\.[^.]+$/, "")}-poster.jpg`, {
-                    type: "image/jpeg",
-                  })
-                : undefined,
-            }),
-          "image/jpeg",
-          POSTER_QUALITY,
-        );
-      } catch {
-        finish({ durationSeconds: duration() });
-      }
-    };
-
-    probe.preload = "auto";
-    probe.muted = true;
-    probe.playsInline = true;
-    probe.onloadeddata = () => {
-      // Seeking past the clip's own length never fires `seeked`, so a clip
-      // shorter than the seek point is captured where it already is.
-      const target = Math.min(POSTER_SEEK_SECONDS, Math.max(0, (duration() ?? 0) - 0.1));
-      if (target > 0) {
-        probe.onseeked = capture;
-        probe.currentTime = target;
-      } else {
-        capture();
-      }
-    };
-    probe.onerror = () => finish({ durationSeconds: undefined });
-    probe.src = objectUrl;
-  });
 
 /**
  * Attaches a picture or short clip to a question, so a trainer can assess what
