@@ -866,6 +866,75 @@ export interface FixSessionEngineCostResponse {
   computedAt: string;
 }
 
+// Bug Hunter's five headline performance trends, by calendar week — mirrors
+// BugAgentPerformanceResponseDto from GET /api/v1/analytics/bug-agent-performance.
+// Every rate is null (not 0) when its denominator was zero that week — a rate
+// over nothing is unmeasured, not zero.
+export interface BugAgentPerformancePrecisionWeek {
+  week: string;
+  accuracy: number | null;
+  reversalRate: number | null;
+  filed: number;
+  judged: number;
+}
+
+export interface BugAgentPerformanceSourceAccuracy {
+  source: string;
+  accuracy: number | null;
+  filed: number;
+  judged: number;
+}
+
+export interface BugAgentPerformanceThroughputWeek {
+  week: string;
+  approvedToMergedRate: number | null;
+  escalationRate: number | null;
+  fallbackRate: number | null;
+  approved: number;
+  merged: number;
+  fixSessionRuns: number;
+  escalations: number;
+  fallbacks: number;
+}
+
+export interface BugAgentPerformanceSpeedWeek {
+  week: string;
+  filedToDecidedMedianHours: number | null;
+  filedToMergedMedianHours: number | null;
+  mergedToReleasedMedianHours: number | null;
+  queueToStartMedianHours: number | null;
+}
+
+export interface BugAgentPerformanceCostWeek {
+  week: string;
+  totalUsd: number;
+  costPerMergedFixUsd: number | null;
+  merged: number;
+}
+
+export interface BugAgentPerformanceReliabilityWeek {
+  week: string;
+  completionRate: number | null;
+  fallbackRate: number | null;
+  regressionRate: number | null;
+  runs: number;
+  completed: number;
+  failed: number;
+}
+
+export interface BugAgentPerformanceResponse {
+  precision: {
+    weekly: BugAgentPerformancePrecisionWeek[];
+    bySource: BugAgentPerformanceSourceAccuracy[];
+  };
+  throughput: BugAgentPerformanceThroughputWeek[];
+  speed: BugAgentPerformanceSpeedWeek[];
+  cost: BugAgentPerformanceCostWeek[];
+  reliability: BugAgentPerformanceReliabilityWeek[];
+  window: AnalyticsWindow;
+  computedAt: string;
+}
+
 // Roleplay quality vs learner sentiment — mirrors QualitySentimentResponseDto
 // from GET /api/v1/analytics/quality-sentiment.
 //

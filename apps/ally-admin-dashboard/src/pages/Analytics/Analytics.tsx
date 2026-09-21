@@ -23,6 +23,7 @@ import { AnalyticsRange } from "@types";
 import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
+import { BugAgentPerformance } from "./BugAgentPerformance";
 import { CodingAgentCost } from "./CodingAgentCost";
 import { FixSessionEngineCost } from "./FixSessionEngineCost";
 import { TabControlsSlotProvider } from "./tabControlsSlot";
@@ -185,6 +186,12 @@ const TABS: TabDef[] = [
         <FixSessionEngineCost />
       </div>
     ),
+  },
+  {
+    id: "bug-agent-performance",
+    label: "Bug Agent",
+    uses: { language: false, range: true },
+    render: f => <BugAgentPerformance {...f} />,
   },
   {
     id: "scribe",
