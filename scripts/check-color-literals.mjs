@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-undef, no-console */
 /**
  * Colour-literal ratchet for the consumer app and the shared UI library.
  *
