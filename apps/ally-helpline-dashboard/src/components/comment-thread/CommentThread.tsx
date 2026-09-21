@@ -86,7 +86,7 @@ const CommentThread = ({
       });
     }
     setHasMore(nextData.length > 0);
-  }, [threadComments]);
+  }, [threadComments, deletedCommentIds, hasMore, id, onCommentChange, setComments, threadsOffset]);
 
   const handleCommentAddition = () => {
     onCommentAddition(comment);
