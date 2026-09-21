@@ -1,6 +1,4 @@
-//! /usr/bin/env node
-/* global process */
-/* eslint-disable no-console */
+#!/usr/bin/env node
 /**
  * Colour-literal ratchet for the consumer app and the shared UI library.
  *
