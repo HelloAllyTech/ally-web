@@ -44,4 +44,44 @@ describe("mapServerMessagesToFeed", () => {
 
     expect(feed).toHaveLength(0);
   });
+
+  it("draws an answer once, on the card it answers", () => {
+    // It used to be drawn twice — as the card's "Answered — …" state and again
+    // as a bubble directly under it — which reads exactly like a click that
+    // double-fired, right next to the answer it was meant to confirm.
+    const feed = mapServerMessagesToFeed([
+      message({
+        id: "a1",
+        content: "How should the generated content be presented?",
+        metadata: {
+          questions: [{ id: "q1", prompt: "How should it be presented?" } as never],
+        },
+      }),
+      message({
+        id: "u1",
+        role: "user",
+        content: "[answers question q1] Fill the form directly",
+        metadata: { questionId: "q1" },
+      }),
+    ]);
+
+    expect(feed.filter(entry => entry.role === "user")).toHaveLength(0);
+    const card = feed.find(entry => entry.question);
+    expect(card?.answeredWith).toBe("Fill the form directly");
+  });
+
+  it("keeps an answer whose question is not in the feed", () => {
+    // "We could not render the card" must never read the same as "the admin
+    // said nothing" — dropping the row on that basis would lose their words.
+    const feed = mapServerMessagesToFeed([
+      message({
+        id: "u1",
+        role: "user",
+        content: "[answers question q9] continue",
+        metadata: { questionId: "q9" },
+      }),
+    ]);
+
+    expect(feed).toEqual([{ id: "srv_u1", role: "user", content: "continue" }]);
+  });
 });

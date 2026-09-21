@@ -6,6 +6,8 @@ import { ArrowDownFilled, TickGreenBackground, CrossRedBackground } from "@asset
 import { CircularProgress } from "@components";
 import { QuizAttemptResult, QuizQuestionResult, SanitizedQuizQuestion } from "@types";
 
+import { QuestionMedia } from "../QuestionMedia";
+
 interface QuizResultsProps {
   result: QuizAttemptResult;
   questions: SanitizedQuizQuestion[];
@@ -54,6 +56,9 @@ const QuestionRow: FC<{
       </button>
       {open && (
         <div className="border-t border-border-light px-3 py-3 text-sm">
+          {/* A learner reviewing a wrong answer needs what they were looking
+              at, not just the words that framed it. */}
+          <QuestionMedia media={question?.media} />
           <div className="mb-1 font-medium text-typography-800">
             {isPending
               ? t("tracks2.quiz.results.pendingGrading")

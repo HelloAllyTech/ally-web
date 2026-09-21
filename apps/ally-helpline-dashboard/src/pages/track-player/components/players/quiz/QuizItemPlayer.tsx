@@ -20,6 +20,7 @@ import {
 } from "@types";
 import { clearItemProgress, loadItemProgress, saveItemProgress } from "@utils";
 
+import { QuestionMedia } from "../QuestionMedia";
 import { QuizAnswerState, initialAnswerState, isAnswered, toAnswerInput } from "./quizAnswerState";
 import { QuizIntro } from "./QuizIntro";
 import { QuizResults } from "./QuizResults";
@@ -288,6 +289,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
               transition={{ duration: 0.2 }}
             >
               <h2 className="mb-4 text-lg font-semibold text-typography-900">{question.prompt}</h2>
+              <QuestionMedia media={question.media} />
               {renderWidget()}
             </motion.div>
           </AnimatePresence>

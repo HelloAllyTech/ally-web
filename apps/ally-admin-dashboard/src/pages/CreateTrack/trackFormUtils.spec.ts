@@ -5,6 +5,7 @@ import { SimulationStatus } from "@types";
 import {
   ArticleContent,
   McqSingleQuestion,
+  QuestionMedia,
   QuizContent,
   TrackDetail,
   TrackFormValues,
@@ -306,5 +307,140 @@ describe("deserializeTrack on a cached (frozen) server response", () => {
     deserializeTrack(detail);
 
     expect(detail.sections[0].items[0].content).toEqual({ html: "<p>Read me</p>" });
+  });
+});
+
+describe("question media", () => {
+  const image: QuestionMedia = {
+    kind: "image",
+    source: "s3",
+    url: "https://bucket.s3.ap-south-1.amazonaws.com/track-media/question_image/1-ankle.png",
+    alt: "A swollen left ankle",
+  };
+
+  /** Puts `media` on the baseline form's single quiz question. */
+  const formWithMedia = (media: QuestionMedia | undefined): TrackFormValues => {
+    const form = buildValidForm();
+    (form.sections[0].items[1].quiz as QuizContent).questions[0].media = media;
+    return form;
+  };
+
+  const messages = (form: TrackFormValues) =>
+    validateTrackForPublish(form).map(error => error.message);
+
+  it("publishes a question with a valid uploaded image", () => {
+    expect(validateTrackForPublish(formWithMedia(image))).toEqual([]);
+  });
+
+  it("publishes a question with an embedded video link", () => {
+    expect(
+      validateTrackForPublish(
+        formWithMedia({
+          kind: "video",
+          source: "youtube",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("blocks publishing when media has no URL", () => {
+    expect(messages(formWithMedia({ ...image, url: "" })).join(" ")).toMatch(/missing its URL/);
+  });
+
+  it("blocks publishing a non-https media URL", () => {
+    expect(messages(formWithMedia({ ...image, url: "javascript:alert(1)" })).join(" ")).toMatch(
+      /https link/,
+    );
+  });
+
+  it("blocks publishing an image that claims a third-party host", () => {
+    expect(
+      messages(
+        formWithMedia({
+          kind: "image",
+          source: "youtube",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }),
+      ).join(" "),
+    ).toMatch(/must be an uploaded file/);
+  });
+
+  it("blocks publishing a video link from an unsupported host", () => {
+    expect(
+      messages(
+        formWithMedia({
+          kind: "video",
+          source: "youtube",
+          url: "https://videos.example.com/clip",
+        }),
+      ).join(" "),
+    ).toMatch(/YouTube, Vimeo or Loom/);
+  });
+
+  // Section 508: an undescribed image is unreachable for a screen-reader
+  // user, which is worst on a question that is asking what they can see.
+  it("blocks publishing an image with no description", () => {
+    expect(messages(formWithMedia({ ...image, alt: undefined })).join(" ")).toMatch(
+      /screen reader/,
+    );
+    expect(messages(formWithMedia({ ...image, alt: "   " })).join(" ")).toMatch(/screen reader/);
+  });
+
+  it("does not demand a description of a video", () => {
+    expect(
+      validateTrackForPublish(
+        formWithMedia({
+          kind: "video",
+          source: "s3",
+          url: "https://cdn.example.com/clip.mp4",
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("blocks publishing an over-long image description", () => {
+    expect(messages(formWithMedia({ ...image, alt: "x".repeat(301) })).join(" ")).toMatch(
+      /300 characters or fewer/,
+    );
+  });
+
+  // Media rides inside the question object, so nothing in the serializer
+  // knows about it — which is exactly why it is worth pinning: an allowlist
+  // creeping into either direction would drop it silently.
+  it("survives a serialize/deserialize round trip", () => {
+    const structure = serializeTrackForm(formWithMedia(image));
+    const detail = {
+      id: "track-1",
+      title: "Onboarding Track",
+      description: "",
+      coverImageUrl: "https://cdn.example.com/cover.png",
+      status: SimulationStatus.DRAFT,
+      isGlobal: false,
+      totalItems: 2,
+      sections: structure.sections.map(section => ({
+        id: section.id ?? "s-0",
+        title: section.title,
+        description: section.description ?? "",
+        order: section.order,
+        items: section.items.map(item => ({
+          id: item.id ?? "generated",
+          type: item.type,
+          order: item.order,
+          title: item.title,
+          description: item.description,
+          scenarioId: item.scenarioId ?? null,
+          caseId: item.caseId ?? null,
+          content: item.content ?? null,
+          completionCriteria: item.completionCriteria ?? null,
+        })),
+      })),
+    } as unknown as TrackDetail;
+
+    const sent = (structure.sections[0].items[1].content as QuizContent).questions[0].media;
+    expect(sent).toEqual(image);
+
+    const rebuilt = deserializeTrack(detail);
+    expect((rebuilt.sections[0].items[1].quiz as QuizContent).questions[0].media).toEqual(image);
   });
 });

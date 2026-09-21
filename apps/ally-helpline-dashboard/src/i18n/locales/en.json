@@ -1666,6 +1666,15 @@
         "attemptsUsed": "Attempt {{used}} of {{max}}"
       }
     },
+    "question": {
+      "media": {
+        "imageFailed": "This image couldn't load. Check your connection and try again.",
+        "viewLarger": "View larger",
+        "close": "Close",
+        "openVideo": "Open the video",
+        "videoTitle": "Question video"
+      }
+    },
     "annotation": {
       "labels": "Labels",
       "instructions": "Pick a label, then tap every line where you see it. Marking a line that isn't part of the answer costs you points, so mark only what you'd defend. You need {{passScore}}% to pass.",

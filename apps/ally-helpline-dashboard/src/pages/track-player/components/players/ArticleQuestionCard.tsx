@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { useSubmitArticleQuestionAnswerMutation } from "@api";
 import { ArticleQuestion, SubmitArticleQuestionAnswerResponse } from "@types";
 
+import { QuestionMedia } from "./QuestionMedia";
+
 interface ArticleQuestionCardProps {
   itemId: string;
   question: ArticleQuestion;
@@ -100,6 +102,7 @@ export const ArticleQuestionCard: FC<ArticleQuestionCardProps> = ({
         {t("tracks2.article.question.title")}
       </p>
       <h3 className="mb-4 text-[1em] font-semibold text-typography-900">{question.prompt}</h3>
+      <QuestionMedia media={question.media} />
 
       <div className="flex flex-col gap-2" role="radiogroup">
         {(question.options ?? []).map(option => {

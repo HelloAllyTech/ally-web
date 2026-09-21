@@ -10,6 +10,7 @@ import {
   MAX_ARTICLE_QUESTIONS,
   MAX_JOURNAL_PROMPTS,
   MAX_MCQ_OPTIONS,
+  MAX_QUESTION_MEDIA_ALT_LENGTH,
   MIN_MCQ_OPTIONS,
   sectionNodeKey,
   TRACK_ITEM_TYPE_LABELS,
@@ -29,6 +30,7 @@ import {
   OpenEndedQuestion,
   OrderingQuestion,
   PublishError,
+  QuestionMedia,
   QuizContent,
   QuizQuestion,
   QuizQuestionType,
@@ -297,6 +299,18 @@ export const getEmbedPlayerUrl = (video: VideoContent): string | null => {
   return parseVideoEmbedUrl(video.url)?.embedUrl ?? null;
 };
 
+/**
+ * Embeddable player URL for a question's media, or `null` when there is
+ * nothing to embed (an image, or an uploaded file that plays natively).
+ * Separate from `getEmbedPlayerUrl` only because `QuestionMedia` carries a
+ * `kind` alongside its source; the parsing is the same one the VIDEO
+ * component uses.
+ */
+export const getQuestionMediaEmbedUrl = (media: QuestionMedia): string | null => {
+  if (media.kind !== "video" || media.source === "s3") return null;
+  return parseVideoEmbedUrl(media.url)?.embedUrl ?? null;
+};
+
 /** Pull img src values out of article HTML (kept in `content.imageUrls`). */
 export const extractImageUrls = (html: string): string[] => {
   if (!html) return [];
@@ -342,10 +356,53 @@ const isBlank = (value?: string | null): boolean => !value || !value.trim();
 /* Publish validation                                                         */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * A question's optional media. The editor already refuses a bad file or an
+ * unparseable link at the point of adding it, so this catches the values that
+ * did not come from the editor — a component-library template authored against
+ * an older shape, or a course imported by API. Mirrors ally-be's
+ * `validateQuestionMedia` so the two cannot disagree about what is publishable.
+ */
+const validateQuestionMedia = (media: QuestionMedia, label: string): string[] => {
+  const errors: string[] = [];
+  if (isBlank(media.url)) {
+    errors.push(`${label}: media is missing its URL`);
+    return errors;
+  }
+  if (!media.url.trim().startsWith("https://")) {
+    errors.push(`${label}: media URL must be an https link`);
+  }
+  if (media.kind === "image" && media.source !== "s3") {
+    errors.push(`${label}: an image must be an uploaded file`);
+  }
+  /**
+   * Section 508 / ADA: an undescribed image is content a screen-reader user
+   * cannot reach at all, and that bites hardest on a question whose whole
+   * point is visual. Enforced here rather than on the server on purpose —
+   * the server stays lenient so an older payload or a saved template still
+   * loads, while the authoring path refuses to ship a new one undescribed.
+   * It is also the string the translator sees, so a blank here is a blank in
+   * every language.
+   */
+  if (media.kind === "image" && isBlank(media.alt)) {
+    errors.push(`${label}: describe the image for learners using a screen reader`);
+  }
+  if (media.kind === "video" && media.source !== "s3" && !parseVideoEmbedUrl(media.url)) {
+    errors.push(`${label}: media link must be a YouTube, Vimeo or Loom link`);
+  }
+  if ((media.alt?.length ?? 0) > MAX_QUESTION_MEDIA_ALT_LENGTH) {
+    errors.push(
+      `${label}: image description must be ${MAX_QUESTION_MEDIA_ALT_LENGTH} characters or fewer`,
+    );
+  }
+  return errors;
+};
+
 const validateQuestion = (question: QuizQuestion, label: string): string[] => {
   const errors: string[] = [];
   const needsPrompt = question.type !== "fill_blank";
   if (needsPrompt && isBlank(question.prompt)) errors.push(`${label}: question text is required`);
+  if (question.media) errors.push(...validateQuestionMedia(question.media, label));
 
   switch (question.type) {
     case "mcq_single":
