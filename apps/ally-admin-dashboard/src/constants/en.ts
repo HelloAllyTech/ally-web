@@ -2657,6 +2657,12 @@ export const en = {
     // are, and only when the window is actually smaller than the table.
     windowNotice:
       "These filters search my {loaded} most recent bugs, of {total} I've tracked in total.",
+    // Named for the fetch it triggers, not vaguely "Show more" — clicking it
+    // asks the server for the next `{count}` bugs rather than revealing rows
+    // already sitting in memory, so the number said is a promise about a
+    // network request.
+    loadMoreAction: "Load {count} more",
+    loadMorePending: "Loading…",
     rowOpenLabel: "Open bug: {title}",
     duplicateTag: "×{count}",
     duplicateTooltip:

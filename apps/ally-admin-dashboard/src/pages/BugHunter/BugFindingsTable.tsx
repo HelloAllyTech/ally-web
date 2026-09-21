@@ -141,6 +141,23 @@ const STALENESS_STYLES = {
 } as const;
 
 /**
+ * How many of the newest bugs load on first render, and how many more each
+ * "Load more" click asks the server for.
+ *
+ * `GET /findings` does real server-side `limit`/`offset` paging with an
+ * honest `count`, but three surfaces — this table, the profile card and the
+ * queue — ask for the identical `{status: "all", limit: 100}` so they share
+ * one RTK Query cache entry rather than each opening its own request (see
+ * `findingsView.ts`'s module doc). Growing this table's own `limit` on demand
+ * is the same trade its `run` scope already makes: one shared request in the
+ * ordinary case, and a second cache entry only once a reader does something —
+ * scoping to a run, or now clicking "Load more" — that specifically calls for
+ * more than the shared window holds.
+ */
+const FINDINGS_BASE_LIMIT = 100;
+const FINDINGS_LOAD_INCREMENT = 100;
+
+/**
  * A checkbox that can render the third state.
  *
  * Same shape as `NotionTable`'s: `indeterminate` is a DOM property with no HTML
@@ -351,6 +368,18 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
 
   const [page, setPage] = useState(0);
 
+  /** How far "Load more" has grown the server-side window. Resets with the run scope, below. */
+  const [limit, setLimit] = useState(FINDINGS_BASE_LIMIT);
+  /**
+   * True only between a "Load more" click and the bigger window landing.
+   *
+   * Distinct from the query's own `isFetching`, which also flips true on the
+   * silent 15-second poll — tying the button's label to that directly would
+   * flash "Loading…" on every poll rather than only when a reader asked for
+   * more.
+   */
+  const [loadingMore, setLoadingMore] = useState(false);
+
   /** Ids the reader has ticked. Kept as ids, not findings, so a poll that refreshes a row keeps it selected. */
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   /**
@@ -393,16 +422,28 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
    * between "the 10 that sweep found" and "the 2 of them I could see".
    */
   const queryArgs = useMemo(
-    () =>
-      run
-        ? { status: "all" as const, limit: 100, runId: run }
-        : { status: "all" as const, limit: 100 },
-    [run],
+    () => (run ? { status: "all" as const, limit, runId: run } : { status: "all" as const, limit }),
+    [run, limit],
   );
 
-  const { data, isLoading, isError, refetch } = useGetBugFindingsQuery(queryArgs, {
+  const { data, isLoading, isFetching, isError, refetch } = useGetBugFindingsQuery(queryArgs, {
     pollingInterval: 15_000,
   });
+
+  // A new scope starts its own window fresh, rather than carrying over
+  // however far a previous "Load more" run had grown it.
+  useEffect(() => {
+    setLimit(FINDINGS_BASE_LIMIT);
+  }, [run]);
+
+  useEffect(() => {
+    if (!isFetching) setLoadingMore(false);
+  }, [isFetching]);
+
+  const handleLoadMore = useCallback(() => {
+    setLoadingMore(true);
+    setLimit(current => current + FINDINGS_LOAD_INCREMENT);
+  }, []);
 
   /**
    * The scoped sweep, for the banner's own words.
@@ -1426,7 +1467,20 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
                   {" · "}
                   {en.bugHunter.windowNotice
                     .replace("{loaded}", String(view.loaded))
-                    .replace("{total}", String(view.total))}
+                    .replace("{total}", String(view.total))}{" "}
+                  <button
+                    type="button"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="font-medium text-primary-700 underline cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {loadingMore
+                      ? en.bugHunter.loadMorePending
+                      : en.bugHunter.loadMoreAction.replace(
+                          "{count}",
+                          String(Math.min(FINDINGS_LOAD_INCREMENT, view.total - view.loaded)),
+                        )}
+                  </button>
                 </span>
               )}
             </p>
