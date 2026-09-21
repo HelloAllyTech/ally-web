@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-undef, no-console */
 /**
  * Colour-literal ratchet for the consumer app and the shared UI library.
  *
@@ -57,7 +58,7 @@ async function walk(dir, out = []) {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       if (!SKIP_DIRS.has(e.name)) await walk(p, out);
-    } else if (EXTS.some((x) => e.name.endsWith(x))) {
+    } else if (EXTS.some(x => e.name.endsWith(x))) {
       out.push(p);
     }
   }
@@ -77,7 +78,7 @@ async function measure() {
 
 const counts = measure();
 
-counts.then((current) => {
+counts.then(current => {
   const total = Object.values(current).reduce((a, b) => a + b, 0);
 
   if (process.argv.includes("--update")) {

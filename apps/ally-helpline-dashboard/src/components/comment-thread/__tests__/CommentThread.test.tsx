@@ -277,6 +277,11 @@ describe("CommentThread Component", () => {
       );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
     });
+
+    it("should render CommentThread component without crashing", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      expect(screen.getByText("Comment Thread")).toBeInTheDocument();
+    });
   });
 
   // --- Comment Input Tests ---

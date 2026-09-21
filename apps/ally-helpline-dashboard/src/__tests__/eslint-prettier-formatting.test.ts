@@ -12,19 +12,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const configPath = path.join(repoRoot, "eslint.config.mjs");
 
 const filesToCheck = [
-  "apps/ally-admin-dashboard/src/pages/AILab/EvaluatorsTab.tsx",
-  "apps/ally-admin-dashboard/src/pages/AILab/SkillsTab.tsx",
-  "apps/ally-admin-dashboard/src/pages/AILab/ValuesTab.tsx",
-  "apps/ally-admin-dashboard/src/pages/AILab/VariablesTab.tsx",
-  "apps/ally-admin-dashboard/src/components/file-upload/FileUpload.tsx",
-  "apps/ally-admin-dashboard/src/constants/en.ts",
-  "apps/ally-admin-dashboard/src/pages/BugHunter/BugFindingDrawer.tsx",
-  "apps/ally-admin-dashboard/src/routes/PrivateLayout.tsx",
-  "apps/ally-helpline-dashboard/src/components/error-boundary/ErrorBoundary.tsx",
-  "apps/ally-helpline-dashboard/src/hooks/useLiveKitRoom.ts",
-  "apps/ally-helpline-dashboard/src/pages/calls/components/SimulationSummarySidebar.tsx",
-  "apps/ally-helpline-dashboard/src/components/debrief-tab/ReplyBubble.tsx",
-  "libs/ui-shared/src/lib/simulation/SimulationInterface.tsx",
+  "apps/ally-helpline-dashboard/src/pages/achievements-view-all/AchievementsViewAll.tsx",
 ].map(relativePath => path.join(repoRoot, relativePath));
 
 let eslint: ESLint;

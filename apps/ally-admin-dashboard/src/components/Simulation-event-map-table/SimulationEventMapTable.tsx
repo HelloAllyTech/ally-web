@@ -178,7 +178,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+  }, [mappedEvents.length, mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
 
   // Version mode: report the full event set to the parent on every change so it
   // can be saved into the version config (never to the live scenario). Deps are
@@ -186,7 +186,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   useEffect(() => {
     if (!versionId || !onVersionEventsChange) return;
     onVersionEventsChange(convertToApiFormat(mappedEvents));
-  }, [mappedEvents, versionId]);
+  }, [mappedEvents, onVersionEventsChange, versionId]);
 
   // Table columns configuration
   const tableColumns = useMemo(() => {

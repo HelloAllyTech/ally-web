@@ -200,6 +200,19 @@ export default [
     },
   },
 
+  // Exception for scripts (allows Node.js globals and console.log)
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
+  },
+
   // 8️⃣ libs/ui-shared is the design-system package itself: it is the ONLY
   // place allowed to import @carbon/react directly. MUI/Emotion stay banned.
   {

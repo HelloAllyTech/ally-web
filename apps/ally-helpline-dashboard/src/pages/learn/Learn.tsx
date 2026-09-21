@@ -108,7 +108,7 @@ export const Learn: FC = () => {
     if (tabs.length > 0 && (!tabFromUrl || !isValidTabId(tabFromUrl))) {
       setSearchParams({ tab: tabs[0].id }, { replace: true });
     }
-  }, [tabFromUrl, setSearchParams, tabs]);
+  }, [tabFromUrl, setSearchParams, tabs, isValidTabId]);
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });

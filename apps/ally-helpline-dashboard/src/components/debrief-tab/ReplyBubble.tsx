@@ -136,7 +136,9 @@ export const ReplyBubble: FC<ReplyBubbleProps> = ({
 
   return (
     <div className={`flex w-full ${isLearner ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] rounded-[20px] px-4 py-2.5 ${isLearner ? "bg-primary-50" : "bg-ai-50"}`}>
+      <div
+        className={`max-w-[80%] rounded-[20px] px-4 py-2.5 ${isLearner ? "bg-primary-50" : "bg-ai-50"}`}
+      >
         <div className="flex items-start gap-3">
           {!isLearner && <AskAiIcon className="mt-0.5 h-8 w-8 shrink-0" />}
           <div className="flex flex-col gap-1">

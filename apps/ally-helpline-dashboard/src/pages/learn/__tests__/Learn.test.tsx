@@ -190,6 +190,11 @@ vi.mock("@components", () => ({
       </div>
     );
   },
+  ContinueLearningCard: ({ tracks }: { tracks: any[] }) => (
+    <div data-testid="continue-learning-card">
+      {tracks.length > 0 && <span>Continue Learning Card with tracks</span>}
+    </div>
+  ),
 }));
 
 // Mock framer-motion
@@ -1168,5 +1173,60 @@ describe("Tab Navigation", () => {
       button.getAttribute("data-testid"),
     );
     expect(tabButtonIds).toEqual(["tab-courses", "tab-cases", "tab-simulations", "tab-tracks"]);
+  });
+
+  it("should re-evaluate useEffect when isValidTabId changes due to tabs array change", async () => {
+    vi.clearAllMocks(); // Clear all mocks to ensure a clean state for this specific test
+
+    // Mock initial state: only 'Courses' tab is available, URL has an invalid tab
+    mockUseGetLearnTracksQuery.mockReturnValue({
+      data: { data: [{ id: "t1", title: "Track 1" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenariosQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockSearchParams.set("tab", "invalid-tab");
+    mockSetSearchParams.mockClear();
+
+    const { rerender } = render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+
+    await waitFor(() => {
+      // Expect the URL to be updated to 'courses' as it's the first valid tab
+      expect(mockSetSearchParams).toHaveBeenCalledWith({ tab: "courses" }, { replace: true });
+    });
+    mockSetSearchParams.mockClear();
+
+    // Now, change the available tabs (e.g., add 'Simulations') but keep the URL with the previously invalid tab
+    // This should cause the useEffect to re-run because 'tabs' (and thus 'isValidTabId') has changed.
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: { data: [{ id: "s1", title: "Scenario 1", status: "ACTIVE" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    // Ensure other mocks are still returning data to form the 'tabs' array
+    mockUseGetLearnTracksQuery.mockReturnValue({
+      data: { data: [{ id: "t1", title: "Track 1" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+
+    rerender(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+
+    await waitFor(() => {
+      // The effect should re-run and set the tab to the new first valid tab ('courses' again, as order is Courses, Cases, Simulations, Pathways)
+      expect(mockSetSearchParams).toHaveBeenCalledWith({ tab: "courses" }, { replace: true });
+    });
   });
 });
