@@ -36,6 +36,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
@@ -57,7 +58,7 @@ async function walk(dir, out = []) {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       if (!SKIP_DIRS.has(e.name)) await walk(p, out);
-    } else if (EXTS.some((x) => e.name.endsWith(x))) {
+    } else if (EXTS.some(x => e.name.endsWith(x))) {
       out.push(p);
     }
   }
@@ -77,7 +78,8 @@ async function measure() {
 
 const counts = measure();
 
-counts.then((current) => {
+/* eslint-disable no-console */
+counts.then(current => {
   const total = Object.values(current).reduce((a, b) => a + b, 0);
 
   if (process.argv.includes("--update")) {
@@ -130,3 +132,4 @@ counts.then((current) => {
     console.log(`colour literals: ${total}, no increase.`);
   }
 });
+/* eslint-enable no-console */
