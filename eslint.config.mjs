@@ -63,6 +63,14 @@ export default [
     },
   },
 
+  // Override for Node.js scripts to allow 'process' global
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
   // 4️⃣ Base & recommended rules
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,

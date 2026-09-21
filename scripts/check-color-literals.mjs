@@ -57,7 +57,7 @@ async function walk(dir, out = []) {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       if (!SKIP_DIRS.has(e.name)) await walk(p, out);
-    } else if (EXTS.some((x) => e.name.endsWith(x))) {
+    } else if (EXTS.some(x => e.name.endsWith(x))) {
       out.push(p);
     }
   }
@@ -77,21 +77,14 @@ async function measure() {
 
 const counts = measure();
 
-counts.then((current) => {
-  const total = Object.values(current).reduce((a, b) => a + b, 0);
-
+counts.then(current => {
   if (process.argv.includes("--update")) {
     writeFileSync(BASELINE, `${JSON.stringify(current, null, 2)}\n`);
-    console.log(
-      `colour-literal baseline written: ${total} literals in ${Object.keys(current).length} files`,
-    );
+
     return;
   }
 
   if (!existsSync(BASELINE)) {
-    console.error(
-      "No colour-literal baseline found. Create one with:\n  node scripts/check-color-literals.mjs --update",
-    );
     process.exit(1);
   }
 
@@ -103,30 +96,6 @@ counts.then((current) => {
   }
 
   if (regressions.length > 0) {
-    console.error("\n  Colour literals increased.\n");
-    for (const { file, was, now } of regressions) {
-      console.error(`    ${file}\n      ${was} -> ${now} (+${now - was})`);
-    }
-    console.error(
-      "\n  A component must name a token, not a colour: that is what lets the same\n" +
-        "  shared component render Carbon blue in the admin console and clay here.\n" +
-        "  Use a Tailwind token class (bg-primary-500, text-typography-Default,\n" +
-        "  bg-status-sageBg, ...). If the colour genuinely has no token, add one to\n" +
-        "  BOTH apps' tailwind configs rather than inlining it.\n\n" +
-        "  If this really is a categorical identity set (chart series, medals,\n" +
-        "  artifact swatches), re-baseline deliberately and say why in the commit:\n" +
-        "    node scripts/check-color-literals.mjs --update\n",
-    );
     process.exit(1);
-  }
-
-  const baseTotal = Object.values(base).reduce((a, b) => a + b, 0);
-  if (total < baseTotal) {
-    console.log(
-      `colour literals: ${total} (down ${baseTotal - total} from the baseline).\n` +
-        "  Lock it in with: node scripts/check-color-literals.mjs --update",
-    );
-  } else {
-    console.log(`colour literals: ${total}, no increase.`);
   }
 });
