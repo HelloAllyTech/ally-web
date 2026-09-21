@@ -84,6 +84,8 @@ vi.mock("@hooks", () => ({
     BadgeModal: null,
     isLoading: false,
   }),
+  // useAnalytics reads the role from the Redux store; this suite renders without one.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 // Mock assets

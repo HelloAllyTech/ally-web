@@ -17,6 +17,8 @@ import {
   UserInfo,
 } from "@components";
 import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
   navBarOptions,
   TabId,
   Permissions,
@@ -25,7 +27,12 @@ import {
   hasAllyAdminAccess,
   adminAppUrl,
 } from "@constants";
-import { useCanViewCharacterLibrary, usePracticeStreakSummary, useUser } from "@hooks";
+import {
+  useAnalytics,
+  useCanViewCharacterLibrary,
+  usePracticeStreakSummary,
+  useUser,
+} from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
@@ -127,6 +134,7 @@ const Tab: FC<TabProps> = ({
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
   // Shared with the /learn bar via a single void-arg cache entry, so the pill
@@ -222,6 +230,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   };
 
   const handleConfirmLogout = () => {
+    // On confirm, not on opening the dialog — the spec's event is the session
+    // actually ending, and the dialog can be cancelled.
+    track(ANALYTICS_EVENTS.ACCOUNT_LOGGED_OUT);
     logout();
     navigate("/login");
   };
@@ -355,6 +366,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const handleProfileUpload = async () => {
     const existingProfileUrl = user.profileImageUrl;
 
+    track(ANALYTICS_EVENTS.PROFILE_UPDATED, {
+      // Profile Settings renders the name as a disabled input and the form only
+      // carries `profileImageUrl`, so a name change is not reachable today.
+      // Sent anyway so the payload matches the spec if the field opens up.
+      [ANALYTICS_PROPS.NAME_CHANGED]: false,
+      [ANALYTICS_PROPS.IMAGE_CHANGED]: !!profileUrl && profileUrl !== existingProfileUrl,
+    });
     await uploadProfile({ profileImageUrl: profileUrl });
     if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
     await refetchUser();

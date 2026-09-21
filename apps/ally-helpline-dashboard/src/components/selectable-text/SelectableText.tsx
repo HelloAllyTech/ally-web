@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 import { useCreateCommentMutation } from "@src/api";
 import CommentAdditionDialog from "@src/components/comment-addition-dialog/CommentAdditionDialog";
 import CommentThread from "@src/components/comment-thread/CommentThread";
@@ -84,6 +86,7 @@ const SelectableText = ({
   isScribeReview,
 }: SelectableTextProps) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
     createComment,
@@ -296,6 +299,12 @@ const SelectableText = ({
     onCancelComment();
   }, []);
 
+  const trackCommentAdded = (comment: string) =>
+    track(ANALYTICS_EVENTS.REVIEW_COMMENT_ADDED, {
+      [ANALYTICS_PROPS.REVIEW_ID]: reviewId,
+      [ANALYTICS_PROPS.COMMENT_LENGTH]: comment.length,
+    });
+
   const handleAddComment = async (comment: string) => {
     const body = {
       threadId: selectedThreadId,
@@ -305,6 +314,7 @@ const SelectableText = ({
       selection: { startIndex: segment.start, endIndex: segment.end },
     };
     setCommentContent(comment);
+    trackCommentAdded(comment);
     await createComment({
       reviewId: reviewId,
       body: body,
@@ -325,6 +335,7 @@ const SelectableText = ({
       },
     };
     setCommentContent(comment);
+    trackCommentAdded(comment);
     await createComment({
       reviewId: reviewId,
       body: body,

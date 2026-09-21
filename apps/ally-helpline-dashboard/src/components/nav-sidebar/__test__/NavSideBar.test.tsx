@@ -40,6 +40,8 @@ vi.mock("@hooks", () => ({
   // Not visible by default — the mocked `navBarOptions` below has no
   // CHARACTER_LIBRARY entry anyway, so this only needs to exist, not vary.
   useCanViewCharacterLibrary: () => ({ canView: false, isLoading: false }),
+  // useAnalytics reads the role from the Redux store; this suite renders without one.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 // Mock react-router-dom
@@ -127,6 +129,11 @@ vi.mock("@constants", () => {
   };
   return {
     TabId,
+    ANALYTICS_EVENTS: {
+      ACCOUNT_LOGGED_OUT: "user.logged_out",
+      PROFILE_UPDATED: "profile.updated",
+    },
+    ANALYTICS_PROPS: { NAME_CHANGED: "name_changed", IMAGE_CHANGED: "image_changed" },
     hasAllyAdminAccess: mockHasAllyAdminAccess,
     adminAppUrl: "https://admin.example.test",
     TooltipLocation: {

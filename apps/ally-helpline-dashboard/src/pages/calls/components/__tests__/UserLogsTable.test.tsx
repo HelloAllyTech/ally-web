@@ -16,6 +16,14 @@ import { SessionType, CallLog, SimulationLog, ChatSummaryStatus } from "@types";
 
 import UserLogsTable from "../UserLogsTable";
 
+// useAnalytics reads the user role from the Redux store; these suites render
+// without a <Provider>/<AnalyticsProvider>, so stub the hook.
+vi.mock("@hooks", async importOriginal => ({
+  ...(await importOriginal<typeof import("@hooks")>()),
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
+
 // ---------------------------------------------------------------------------
 // Module mocks
 // ---------------------------------------------------------------------------

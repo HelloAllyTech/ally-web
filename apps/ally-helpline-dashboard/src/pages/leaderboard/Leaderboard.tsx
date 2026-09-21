@@ -10,8 +10,14 @@ import {
   useGetLeaderBoardListQuery,
 } from "@api";
 import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components";
-import { ROUTES, Permissions } from "@constants";
-import { useUser } from "@hooks";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  COMMUNITY_PERIOD,
+  ROUTES,
+  Permissions,
+} from "@constants";
+import { useAnalytics, useUser } from "@hooks";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 
 // Map UserBadge (earned badges) to AchievementItemData format
@@ -37,6 +43,7 @@ export const Leaderboard = () => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const { permissions } = useUser();
+  const { track } = useAnalytics();
 
   const isBadgesEnabled = permissions.includes(Permissions.VIEW_BADGES);
 
@@ -71,6 +78,9 @@ export const Leaderboard = () => {
   };
 
   const handleWindowChange = (filter: string) => {
+    track(ANALYTICS_EVENTS.COMMUNITY_PERIOD_CHANGED, {
+      [ANALYTICS_PROPS.PERIOD]: COMMUNITY_PERIOD[filter] ?? filter.toLowerCase(),
+    });
     setWindow(filter);
     setPathsOffset(0);
     setLeaderboardData([]);
@@ -98,6 +108,9 @@ export const Leaderboard = () => {
   const viewedBadgesCount = badgesCountResponse?.count ?? 0;
 
   const handleViewAllBadges = () => {
+    track(ANALYTICS_EVENTS.ACHIEVEMENTS_OPENED, {
+      [ANALYTICS_PROPS.UNLOCKED_COUNT]: viewedBadgesCount,
+    });
     navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL, { state: { from: "community" } });
   };
 

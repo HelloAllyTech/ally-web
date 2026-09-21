@@ -18,6 +18,8 @@ const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
+  // useAnalytics reads the role from the Redux store; this suite renders without one.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 vi.mock("@components", () => ({

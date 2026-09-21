@@ -24,6 +24,14 @@ import { store } from "@store";
 
 import { PostSimulationSummary } from "../PostSimulationSummary";
 
+// useAnalytics reads the user role from the Redux store; these suites render
+// without a <Provider>/<AnalyticsProvider>, so stub the hook.
+vi.mock("@hooks", async importOriginal => ({
+  ...(await importOriginal<typeof import("@hooks")>()),
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
+
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 const mockUseParams = vi.fn(() => ({ sessionId: "123" }));

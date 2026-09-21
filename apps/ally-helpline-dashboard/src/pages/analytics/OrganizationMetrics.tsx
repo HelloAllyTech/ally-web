@@ -9,8 +9,8 @@ import { useTranslation } from "react-i18next";
 import { InlineNotification, SkeletonText, Tile } from "@ally-ui-mono/ui-shared";
 import { useGetOrganizationMetricsQuery } from "@api";
 import { ToggleButtonGroup } from "@components";
-import { Permissions } from "@constants";
-import { useUser } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS, Permissions } from "@constants";
+import { useAnalytics, useUser } from "@hooks";
 import { OrganizationMetricsRange, ORGANIZATION_METRICS_RANGES } from "@types";
 
 import { ChartCard, PALETTE, lineOpts, timeBarOpts } from "./chartKit";
@@ -47,7 +47,16 @@ interface KpiTileConfig {
 export const OrganizationMetrics: FunctionComponent = () => {
   const { t } = useTranslation();
   const { permissions } = useUser();
+  const { track } = useAnalytics();
   const [range, setRange] = useState<OrganizationMetricsRange>("30d");
+
+  const handleRangeChange = (next: OrganizationMetricsRange) => {
+    if (next === range) return;
+    track(ANALYTICS_EVENTS.STATISTICS_DATE_RANGE_CHANGED, {
+      [ANALYTICS_PROPS.RANGE]: next,
+    });
+    setRange(next);
+  };
 
   // Analytics.tsx only mounts this component for holders of the permission
   // (see canViewNativeOrgMetrics there). This check is a second, independent
@@ -187,7 +196,7 @@ export const OrganizationMetrics: FunctionComponent = () => {
         <ToggleButtonGroup
           data-testid="organization-metrics-range-toggle"
           value={range}
-          onValueChange={value => setRange(value as OrganizationMetricsRange)}
+          onValueChange={value => handleRangeChange(value as OrganizationMetricsRange)}
           items={rangeOptions}
         />
       </div>

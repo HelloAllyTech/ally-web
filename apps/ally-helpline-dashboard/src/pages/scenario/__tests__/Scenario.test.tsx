@@ -134,6 +134,7 @@ const { mockStartSimulation } = vi.hoisted(() => {
 });
 
 // Mock hooks to avoid needing Redux Provider in tests
+const mockTrack = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => ({
     credits: { creditLimit: 100, consumedCredits: 0 },
@@ -146,6 +147,7 @@ vi.mock("@hooks", () => ({
     permissions: [],
     user: undefined,
   }),
+  useAnalytics: () => ({ track: mockTrack }),
 }));
 
 // Mock @ally-ui-mono/ui-shared
@@ -1061,6 +1063,81 @@ describe("Scenario Component", () => {
       );
 
       await waitFor(() => expect(dropdown).toHaveValue(ENGLISH.label));
+    });
+  });
+  describe("Analytics", () => {
+    it("reports simulation.opened once the scenario has loaded", async () => {
+      mockUseGetScenarioQuery.mockReturnValue({
+        data: {
+          ...mockScenario,
+          triggerWarnings: [{ id: 1, name: "Self-harm" }],
+          completion: { attemptCount: 2, lastCompletedAt: "2026-01-01T00:00:00Z" },
+        },
+        isSuccess: true,
+        isLoading: false,
+      });
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() =>
+        expect(mockTrack).toHaveBeenCalledWith("simulation.opened", {
+          simulation_id: "123",
+          simulation_name: "Test Scenario",
+          has_trigger_warning: true,
+          has_completed_before: true,
+        }),
+      );
+    });
+
+    it("reports no trigger warning and no prior completion when the scenario has neither", async () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() =>
+        expect(mockTrack).toHaveBeenCalledWith(
+          "simulation.opened",
+          expect.objectContaining({ has_trigger_warning: false, has_completed_before: false }),
+        ),
+      );
+    });
+
+    it("reports roleplay.start_clicked when Start is pressed", async () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("start-simulation-btn"));
+
+      expect(mockTrack).toHaveBeenCalledWith("roleplay.start_clicked", {
+        entry_point: "simulation",
+        item_id: "123",
+        item_name: "Test Scenario",
+      });
+    });
+
+    it("does not report again while the same scenario stays open", async () => {
+      const { rerender } = render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() => expect(mockTrack).toHaveBeenCalledTimes(1));
+      rerender(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+      expect(mockTrack).toHaveBeenCalledTimes(1);
     });
   });
 });

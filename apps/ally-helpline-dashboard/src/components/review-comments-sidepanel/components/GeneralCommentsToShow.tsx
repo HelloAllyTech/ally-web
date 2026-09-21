@@ -10,6 +10,8 @@ import { useCreateCommentMutation, useGetReviewByIdQuery } from "@api";
 import { CommentCard } from "@components";
 import { Button } from "@components/button";
 import { COMMENT_MAX_LENGTH } from "@constants";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 import { RootState } from "@store";
 import { CommentItem } from "@types";
 
@@ -50,6 +52,7 @@ const GeneralCommentsToShow = ({
   const { reviewId } = useParams<{ reviewId: string }>();
   const user = useSelector((state: RootState) => state.user.user);
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { data: review } = useGetReviewByIdQuery({ id: reviewId, isScribe: isScribeReview });
 
   const [
@@ -109,6 +112,10 @@ const GeneralCommentsToShow = ({
 
   const handleComment = async () => {
     try {
+      track(ANALYTICS_EVENTS.REVIEW_COMMENT_ADDED, {
+        [ANALYTICS_PROPS.REVIEW_ID]: reviewId,
+        [ANALYTICS_PROPS.COMMENT_LENGTH]: comment.length,
+      });
       await createComment({
         reviewId: reviewId,
         body: {

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -23,13 +23,17 @@ import {
   CreditInfo,
 } from "@components";
 import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  LANGUAGE_CHANGE_SOURCE,
+  ROLEPLAY_ENTRY_POINT,
   AUTO_CLOSE_DIALOG_DURATION,
   LOCAL_STORAGE_KEYS,
   Permissions,
   ROUTES,
   TooltipLocation,
 } from "@constants";
-import { useSimulationCredits, useStartSimulation, useUser } from "@hooks";
+import { useAnalytics, useSimulationCredits, useStartSimulation, useUser } from "@hooks";
 import { LanguageOption } from "@types";
 import { hasPermissions } from "@utils";
 
@@ -96,6 +100,25 @@ export const Scenario: FC = () => {
     },
   );
 
+  // `simulation.opened` reports the loaded detail page, so it waits on the query
+  // rather than firing on mount — `completion` and `triggerWarnings` are only
+  // known once the scenario arrives. Keyed on the id so the "up next" links
+  // between scenarios, which reuse this component, each report themselves.
+  const { track } = useAnalytics();
+  const trackedScenarioId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!scenario?.id || trackedScenarioId.current === scenario.id) return;
+    trackedScenarioId.current = scenario.id;
+    track(ANALYTICS_EVENTS.SIMULATION_OPENED, {
+      // The spec types both ids as strings; this one is numeric on the wire.
+      [ANALYTICS_PROPS.SIMULATION_ID]: String(scenario.id),
+      [ANALYTICS_PROPS.SIMULATION_NAME]: scenario.title,
+      [ANALYTICS_PROPS.HAS_TRIGGER_WARNING]: (scenario.triggerWarnings?.length ?? 0) > 0,
+      // Absent `completion` means never completed — guard on the object.
+      [ANALYTICS_PROPS.HAS_COMPLETED_BEFORE]: (scenario.completion?.attemptCount ?? 0) > 0,
+    });
+  }, [scenario, track]);
+
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -145,6 +168,12 @@ export const Scenario: FC = () => {
 
   const handleLanguageChange = (label: string) => {
     const selected = availableLanguages?.find(lang => lang.label === label) || null;
+    if (selected && selected.label !== selectedLanguage?.label) {
+      track(ANALYTICS_EVENTS.LANGUAGE_CHANGED, {
+        [ANALYTICS_PROPS.LANGUAGE]: selected.label,
+        [ANALYTICS_PROPS.SOURCE]: LANGUAGE_CHANGE_SOURCE.ROLEPLAY_CONFIRMATION_MODAL,
+      });
+    }
     setSelectedLanguage(selected);
   };
 
@@ -181,6 +210,13 @@ export const Scenario: FC = () => {
   };
 
   const onStartSimulationClick = () => {
+    // Intent, not a start: this reports the press itself, so it fires ahead of
+    // the auth branch below — a learner sent to the login dialog still clicked.
+    track(ANALYTICS_EVENTS.ROLEPLAY_START_CLICKED, {
+      [ANALYTICS_PROPS.ENTRY_POINT]: ROLEPLAY_ENTRY_POINT.SIMULATION,
+      [ANALYTICS_PROPS.ITEM_ID]: String(id),
+      [ANALYTICS_PROPS.ITEM_NAME]: scenario?.title,
+    });
     // TODO: update authorization check
     if (!isAuthenticated()) {
       // TODO: Retest login through dialog

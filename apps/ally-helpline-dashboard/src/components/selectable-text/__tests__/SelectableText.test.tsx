@@ -111,6 +111,8 @@ vi.mock("@src/components/comment-thread/CommentThread", () => ({
 // Mock useClickOutside hook
 vi.mock("@src/hooks", () => ({
   useClickOutside: vi.fn(),
+  // useAnalytics reads the role from the Redux store via the analytics context.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 describe("SelectableText Component", () => {

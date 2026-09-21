@@ -24,9 +24,16 @@ import {
   SkillsTab,
   ToggleSwitch,
 } from "@components";
-import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  ROLEPLAY_SUMMARY_TAB,
+  buildTrackRoute,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  ROUTES,
+} from "@constants";
 import { FeedbackDialog, ShortSessionUI, useSimulationSummaryPolling } from "@containers";
-import { useContinueTrack, useNextChallenge } from "@hooks";
+import { useAnalytics, useContinueTrack, useNextChallenge } from "@hooks";
 import {
   ActiveTrackContext,
   pageType,
@@ -52,10 +59,20 @@ const TAB_IDS = {
   UP_NEXT: 3,
 } as const;
 
+// PostHog reports the product-facing tab names, which the analytics spec fixes
+// verbatim — they are not derived from the labels, which are translated.
+const ANALYTICS_TAB: Record<number, string> = {
+  [TAB_IDS.DEBRIEF]: ROLEPLAY_SUMMARY_TAB.DEBRIEF,
+  [TAB_IDS.SKILLS]: ROLEPLAY_SUMMARY_TAB.SKILLS_DEMONSTRATED,
+  [TAB_IDS.TRANSCRIPT]: ROLEPLAY_SUMMARY_TAB.ANNOTATED_TRANSCRIPT,
+  [TAB_IDS.UP_NEXT]: ROLEPLAY_SUMMARY_TAB.UP_NEXT,
+};
+
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const [selectedTab, setSelectedTab] = useState<number>(TAB_IDS.DEBRIEF);
 
   const {
@@ -255,6 +272,10 @@ export const PostSimulationSummary: FC = () => {
   };
 
   const handleToggleChange = (value: string) => {
+    track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
+      [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+      [ANALYTICS_PROPS.ENABLED]: value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
+    });
     if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
       setShareForReview(true);
     } else {
@@ -263,6 +284,18 @@ export const PostSimulationSummary: FC = () => {
   };
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
+
+  // Only a real switch counts: the spec excludes the tab shown on load, and the
+  // fallback effect above can also reassign `selectedTab` without a click.
+  const handleTabChange = (tabId: number) => {
+    if (tabId !== selectedTab) {
+      track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_TAB_VIEWED, {
+        [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+        [ANALYTICS_PROPS.TAB]: ANALYTICS_TAB[tabId],
+      });
+    }
+    setSelectedTab(tabId);
+  };
 
   const handleStarSelect = (rating: number) => {
     setRating(rating);
@@ -431,7 +464,7 @@ export const PostSimulationSummary: FC = () => {
             <Tabs
               items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
               activeId={String(selectedTab)}
-              onChange={id => setSelectedTab(Number(id))}
+              onChange={id => handleTabChange(Number(id))}
               className="w-full shrink-0 border-b border-[#DBDBDB] font-primary"
               showCount={false}
             />

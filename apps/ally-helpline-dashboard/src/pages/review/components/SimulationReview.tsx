@@ -9,7 +9,8 @@ import { useGetReviewsQuery } from "@api";
 import { NoResults } from "@assets";
 import { FallbackUI } from "@components";
 import FeedCard from "@components/feed-card";
-import { ROUTES } from "@constants";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS, REVIEW_ACTOR_TYPE, ROUTES } from "@constants";
+import { useAnalytics, useUser } from "@hooks";
 import { ReviewItem } from "@types";
 
 import { PAGE_SIZE, SKELETON_COUNT } from "../constants";
@@ -34,6 +35,8 @@ const SimulationReview: FC<SimulationReviewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
+  const { user } = useUser();
 
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
@@ -88,8 +91,17 @@ const SimulationReview: FC<SimulationReviewProps> = ({
     });
   };
 
-  const onReviewTranscript = (reviewId: string) => {
-    navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", reviewId));
+  const onReviewTranscript = (item: ReviewItem) => {
+    track(ANALYTICS_EVENTS.REVIEW_CONVERSATION_OPENED, {
+      [ANALYTICS_PROPS.REVIEW_ID]: item.id,
+      [ANALYTICS_PROPS.SIMULATION_NAME]: item.scenario?.title,
+      // `reviewer_name` is not on the inbox payload — the list only carries who
+      // SHARED the session, not who reviewed it. Left off rather than filled
+      // with the sharer's name, which would read as the reviewer in PostHog.
+      [ANALYTICS_PROPS.ACTOR_TYPE]:
+        user?.id === item.createdBy?.id ? REVIEW_ACTOR_TYPE.LEARNER : REVIEW_ACTOR_TYPE.REVIEWER,
+    });
+    navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", item.id));
   };
 
   const isInitialLoading = isSimulationReviewsFetching && feedData.length === 0;
@@ -136,7 +148,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({
             scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
-            onReviewTranscript={() => onReviewTranscript(item.id)}
+            onReviewTranscript={() => onReviewTranscript(item)}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#EDE7F6"

@@ -11,6 +11,12 @@ vi.mock("@api", () => ({
   useCreateBugReportMutation: () => [mockCreateBugReport],
 }));
 
+// useAnalytics reads the user role from the Redux store; this suite renders
+// without a <Provider>, so stub the hook rather than wire up a store.
+vi.mock("@hooks", () => ({
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: (msg: string) => mockToastSuccess(msg),

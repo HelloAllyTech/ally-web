@@ -1,4 +1,4 @@
-import { FC, useMemo, useState, useRef, useEffect } from "react";
+import { FC, useCallback, useMemo, useState, useRef, useEffect } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,12 @@ import { CustomImage, htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { useLazyGetGeneralCommentsOverviewQuery } from "@api";
 import { ReviewTranscript, ScribeImage } from "@assets";
 import { AudioTranscriptPlayer, ReactionsModal } from "@components";
-import { useUser } from "@hooks";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  REVIEW_RECORDING_SOURCE,
+} from "@constants/analyticsEvents";
+import { useAnalytics, useUser } from "@hooks";
 import { getFormattedTimeFromDuration, formatDateTime, formatRelativeTime } from "@utils";
 
 import CommentsSection from "./CommentsSection";
@@ -38,6 +43,22 @@ const FeedCard: FC<FeedCardProps> = ({
 }) => {
   const { user: currentDetails } = useUser();
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
+
+  // Memoised: AudioTranscriptPlayer re-runs its play-state effect whenever this
+  // identity changes, so an inline arrow would report on every render.
+  const handleRecordingPlayStateChange = useCallback(
+    (isPlaying: boolean) => {
+      // Only the false -> true edge is a press of play; pausing and the end of
+      // the clip both report `false`.
+      if (!isPlaying) return;
+      track(ANALYTICS_EVENTS.REVIEW_RECORDING_PLAYED, {
+        [ANALYTICS_PROPS.REVIEW_ID]: id,
+        [ANALYTICS_PROPS.SOURCE]: REVIEW_RECORDING_SOURCE.REVIEW_LIST,
+      });
+    },
+    [track, id],
+  );
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
@@ -417,7 +438,10 @@ const FeedCard: FC<FeedCardProps> = ({
               className="rounded-[12px] border-[0.5px] px-3 py-2"
               onClick={e => e.stopPropagation()}
             >
-              <AudioTranscriptPlayer audioUrl={audioUrl} />
+              <AudioTranscriptPlayer
+                audioUrl={audioUrl}
+                onPlayStateChange={handleRecordingPlayStateChange}
+              />
             </div>
           )}
 

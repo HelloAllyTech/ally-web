@@ -15,6 +15,12 @@ vi.mock("@api", () => ({
   useGetPracticeStreakSummaryQuery: vi.fn(),
 }));
 
+// useAnalytics reads the user role from the Redux store; this suite renders
+// without a <Provider>, so stub the hook rather than wire up a store.
+vi.mock("@hooks", () => ({
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
 const CELLS = [
   { periodStart: "2026-08-07", periodEnd: "2026-08-07", minutes: 12.4 },
   { periodStart: "2026-08-08", periodEnd: "2026-08-08", minutes: 0 },

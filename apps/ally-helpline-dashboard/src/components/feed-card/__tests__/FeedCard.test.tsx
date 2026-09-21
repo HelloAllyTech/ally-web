@@ -24,6 +24,8 @@ vi.mock("@api", () => ({
 
 vi.mock("@hooks", () => ({
   useUser: () => ({ user: { id: 99, profileImageUrl: null } }),
+  // useAnalytics reads the role from the Redux store; this suite renders without one.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 vi.mock("@utils", () => ({
