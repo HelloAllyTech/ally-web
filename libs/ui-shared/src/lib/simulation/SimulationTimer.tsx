@@ -55,7 +55,7 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, onTimeLimit, onWarning, timeLimit]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
