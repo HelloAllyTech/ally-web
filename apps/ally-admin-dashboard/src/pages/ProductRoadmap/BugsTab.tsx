@@ -70,7 +70,7 @@ export const BugsTab: FC = () => {
         .
       </p>
 
-      <BugFindingsTable canTriage={false} onShowShortcuts={() => setShowShortcuts(true)} />
+      <BugFindingsTable onShowShortcuts={() => {}} canTriage={false} initialLimit={undefined} />
 
       {showShortcuts && (
         <KeyboardShortcutSheet canTriage={false} onClose={() => setShowShortcuts(false)} />

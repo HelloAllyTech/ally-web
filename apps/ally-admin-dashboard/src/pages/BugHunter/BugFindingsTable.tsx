@@ -268,6 +268,8 @@ const TableSkeleton: FC = () => (
 );
 
 export interface BugFindingsTableProps {
+  /** How many bugs to ask the server for on the first load. */
+  initialLimit?: number;
   /** Opens the shortcut sheet. Owned by the page so `?` works from anywhere on it. */
   onShowShortcuts: () => void;
   /**
@@ -332,7 +334,11 @@ export interface BugFindingsTableProps {
  * Stale rows under a warning strip are strictly better than no rows: the reader
  * keeps working, and the strip says the data may have moved on.
  */
-export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, canTriage }) => {
+export const BugFindingsTable: FC<BugFindingsTableProps> = ({
+  onShowShortcuts,
+  canTriage,
+  initialLimit = FINDINGS_BASE_LIMIT,
+}) => {
   const {
     bug: selectedId,
     bucket,
@@ -369,7 +375,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
   const [page, setPage] = useState(0);
 
   /** How far "Load more" has grown the server-side window. Resets with the run scope, below. */
-  const [limit, setLimit] = useState(FINDINGS_BASE_LIMIT);
+  const [limit, setLimit] = useState(initialLimit);
   /**
    * True only between a "Load more" click and the bigger window landing.
    *
@@ -433,8 +439,8 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
   // A new scope starts its own window fresh, rather than carrying over
   // however far a previous "Load more" run had grown it.
   useEffect(() => {
-    setLimit(FINDINGS_BASE_LIMIT);
-  }, [run]);
+    setLimit(initialLimit);
+  }, [run, initialLimit]);
 
   useEffect(() => {
     if (!isFetching) setLoadingMore(false);
@@ -442,7 +448,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({ onShowShortcuts, c
 
   const handleLoadMore = useCallback(() => {
     setLoadingMore(true);
-    setLimit(current => current + FINDINGS_LOAD_INCREMENT);
+    setLimit(current => (current ?? 0) + FINDINGS_LOAD_INCREMENT);
   }, []);
 
   /**
