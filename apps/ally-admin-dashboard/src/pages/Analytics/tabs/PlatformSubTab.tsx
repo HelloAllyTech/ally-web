@@ -10,7 +10,7 @@ import {
   useGetLearnerKpisQuery,
   useGetXpGrowthQuery,
 } from "@api";
-import { AnalyticsBucket } from "@types";
+import { AnalyticsBucket, AnalyticsGrain } from "@types";
 
 import {
   AnalyticsTabFilters,
@@ -24,6 +24,7 @@ import {
   DEFAULT_GROUPING,
   GROUPING_LABEL,
   bucketTitle,
+  grainAsBucket,
   groupingNote,
   inProgressCaption,
   isInProgress,
@@ -37,6 +38,7 @@ import {
   ChartCard,
   GroupingPicker,
   KpiTile,
+  KpiTileProps,
   MIN_N_FOR_SCORE,
   ScrollableChart,
   boundedDomainNote,
@@ -141,8 +143,35 @@ const HIGHLIGHTS_CHARTS = ["practice", "playTime", "csat", "costPerSim", "totalC
 
 const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion", "xp"];
 
-/** A weekly-or-coarser metric: a daily north star is noise, a yearly one hides it. */
-const WPL_GRAINS: AnalyticsBucket[] = ["week", "month"];
+/**
+ * A weekly-or-coarser metric: a daily north star is noise, a yearly one hides
+ * it. Quarter sits between month and year — still coarser than the metric's
+ * own daily grain, but not the "hides it" case year is excluded for — so it
+ * joins week/month rather than being held back with year.
+ */
+const WPL_GRAINS: AnalyticsBucket[] = ["week", "month", "quarter"];
+
+// `DEFAULT_GROUPING` is typed `AnalyticsGrain` (Phase 1 widening); this whole
+// tab is mechanism B, migrated in a later phase, and stays bucket-only.
+const DEFAULT_BUCKET = grainAsBucket(DEFAULT_GROUPING);
+
+/**
+ * `hQ`/`oQ` below are hand-rolled to one hook per SQL-bucketable grain — now
+ * five, `quarter` included (Phase 4 mechanism-B migration; Phase 0/2 already
+ * made `quarter` a legal bucket on both endpoints, so this is no new backend
+ * query shape, just one more fixed branch). They stay bucket-only: neither
+ * endpoint has an unbucketed "whole window" query of its own, so a chart fed
+ * by one that wants an All-time KPI reads it off the SAME bucketed response's
+ * `summary` (already a genuine whole-window aggregate on both DTOs, not a
+ * fold of the bucketed rows) rather than adding a sixth "allTime" hook.
+ */
+const BASE_HQ_OQ_BUCKET: AnalyticsBucket = "month";
+
+/** Every SQL-bucketable grain — the options list for a chart adding "quarter". */
+const QUARTER_GRAINS: AnalyticsBucket[] = ["day", "week", "month", "quarter", "year"];
+
+/** `QUARTER_GRAINS` plus "All time", for a chart with a genuine whole-window KPI. */
+const ALL_TIME_GRAINS: AnalyticsGrain[] = [...QUARTER_GRAINS, "allTime"];
 
 /**
  * Every chart opens on the same grain, so the first paint is two requests.
@@ -152,7 +181,7 @@ const WPL_GRAINS: AnalyticsBucket[] = ["week", "month"];
  * on week.
  */
 const DEFAULT_GROUPINGS = {
-  ...(Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_GROUPING])) as Record<
+  ...(Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_BUCKET])) as Record<
     ChartId,
     AnalyticsBucket
   >),
@@ -202,21 +231,54 @@ const DEFAULT_GROUPINGS = {
  *    the export, flagged, which is where a provisional number belongs.
  */
 export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
-  const { groupingFor, setGrouping, bucketsFor } = useChartGrouping<ChartId>(
-    DEFAULT_GROUPINGS,
-    DEFAULT_GROUPING,
-  );
+  const { groupingFor, setGrouping } = useChartGrouping<ChartId>(DEFAULT_GROUPINGS, DEFAULT_BUCKET);
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  /**
+   * "All time" isn't a bucket `useChartGrouping` can store — that hook stays
+   * bucket-only (see its file doc) — so it is tracked here as a flag layered
+   * on top, per chart. A chart's real bucket (`groupingFor`) is left exactly
+   * where it was when the reader last picked one, so flipping All-time back
+   * off returns to that grain rather than resetting to the default.
+   */
+  const [allTimeCharts, setAllTimeCharts] = useState<Set<ChartId>>(new Set());
+  const grainFor = (chart: ChartId): AnalyticsGrain =>
+    allTimeCharts.has(chart) ? "allTime" : groupingFor(chart);
+  const setGrain = (chart: ChartId, grouping: AnalyticsGrain) => {
+    const isAllTime = grouping === "allTime";
+    setAllTimeCharts(prev => {
+      if (prev.has(chart) === isAllTime) return prev;
+      const next = new Set(prev);
+      if (isAllTime) next.add(chart);
+      else next.delete(chart);
+      return next;
+    });
+    if (!isAllTime) setGrouping(chart, grouping);
+  };
+  /**
+   * The real SQL bucket a chart's response is actually fetched at, even in
+   * All-time mode: neither endpoint below has an unbucketed "whole window"
+   * query of its own, so All-time reads its KPI off the SAME bucketed
+   * response's `summary` (a genuine server-computed whole-window aggregate,
+   * not a client fold of the bucketed rows — see `BASE_HQ_OQ_BUCKET`'s doc).
+   */
+  const resolvedBucket = (chart: ChartId): AnalyticsBucket => grainAsBucket(grainFor(chart));
 
   /* ------------------------- one query per grain --------------------------- */
   //
-  // Four hooks per endpoint, fixed in number so hook order is stable, each
+  // Five hooks per endpoint, fixed in number so hook order is stable, each
   // skipped unless a chart FED BY THAT ENDPOINT is reading that grain. Untouched,
   // this is exactly two requests — the same as before the control existed — and
   // re-graining one chart adds exactly one. `compare` is never requested: the
   // window is all-time, which has no comparison basis.
-  const hBuckets = bucketsFor(HIGHLIGHTS_CHARTS);
-  const oBuckets = bucketsFor(OVERVIEW_CHARTS);
+  const hBuckets = new Set<AnalyticsBucket>([
+    BASE_HQ_OQ_BUCKET,
+    ...HIGHLIGHTS_CHARTS.map(resolvedBucket),
+  ]);
+  const oBuckets = new Set<AnalyticsBucket>([
+    BASE_HQ_OQ_BUCKET,
+    ...OVERVIEW_CHARTS.map(resolvedBucket),
+  ]);
 
   const hQ = {
     day: useGetAnalyticsHighlightsQuery(
@@ -230,6 +292,10 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     month: useGetAnalyticsHighlightsQuery(
       { ...query, bucket: "month" },
       { skip: !hBuckets.has("month") },
+    ),
+    quarter: useGetAnalyticsHighlightsQuery(
+      { ...query, bucket: "quarter" },
+      { skip: !hBuckets.has("quarter") },
     ),
     year: useGetAnalyticsHighlightsQuery(
       { ...query, bucket: "year" },
@@ -246,6 +312,10 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       { ...query, bucket: "month" },
       { skip: !oBuckets.has("month") },
     ),
+    quarter: useGetAnalyticsOverviewQuery(
+      { ...query, bucket: "quarter" },
+      { skip: !oBuckets.has("quarter") },
+    ),
     year: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "year" },
       { skip: !oBuckets.has("year") },
@@ -257,20 +327,24 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // ("practising learners in the latest full week" is a different number at a
   // monthly grain), so pinning a base grain here would only fetch a response
   // nothing displays.
-  const activationQ = useGrainQueries(useGetActivationQuery, query, new Set([groupingFor("wpl")]));
+  const activationQ = useGrainQueries(
+    useGetActivationQuery,
+    query,
+    new Set([resolvedBucket("wpl")]),
+  );
   const completionQ = useGrainQueries(
     useGetCompletionRateQuery,
     query,
-    new Set([groupingFor("completion")]),
+    new Set([resolvedBucket("completion")]),
   );
-  const activation = activationQ[groupingFor("wpl")];
-  const completion = completionQ[groupingFor("completion")];
+  const activation = activationQ[resolvedBucket("wpl")];
+  const completion = completionQ[resolvedBucket("completion")];
 
   // Cumulative platform XP. Its own endpoint (the append-only xp_events ledger)
   // and read at ONE grain — the chart's — because nothing else on this tab reads
   // from it, so pinning a base grain would only fetch a response nothing shows.
-  const xpQ = useGrainQueries(useGetXpGrowthQuery, query, new Set([groupingFor("xp")]));
-  const xpGrowthQ = xpQ[groupingFor("xp")];
+  const xpQ = useGrainQueries(useGetXpGrowthQuery, query, new Set([resolvedBucket("xp")]));
+  const xpGrowthQ = xpQ[resolvedBucket("xp")];
 
   // LEARNER-role-scoped counterparts of the overview KPIs above, which count
   // every account regardless of role. All-time: a lifetime headcount has no
@@ -280,8 +354,8 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
   // The base response. KPIs and the panels with no time axis read from here, so
   // they do not blink out when the last chart on this grain is switched away.
-  const highlights = hQ[DEFAULT_GROUPING];
-  const overview = oQ[DEFAULT_GROUPING];
+  const highlights = hQ[BASE_HQ_OQ_BUCKET];
+  const overview = oQ[BASE_HQ_OQ_BUCKET];
 
   const highlightsLoading = highlights.isLoading && !highlights.data;
   const overviewLoading = overview.isLoading && !overview.data;
@@ -303,11 +377,11 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
    * render would remount the picker (and unmount the chart's sibling subtree)
    * every time any state on this tab changed.
    */
-  const picker = (chart: ChartId, options?: AnalyticsBucket[]) => (
+  const picker = (chart: ChartId, options: AnalyticsGrain[] = QUARTER_GRAINS) => (
     <GroupingPicker
       id={`highlights-grouping-${chart}`}
-      value={groupingFor(chart)}
-      onChange={grouping => setGrouping(chart, grouping)}
+      value={grainFor(chart)}
+      onChange={grouping => setGrain(chart, grouping)}
       options={options}
     />
   );
@@ -329,29 +403,29 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
   /* --------------------- per-chart responses and grains -------------------- */
 
-  const newUsersQ = oQ[groupingFor("newUsers")];
-  const cumulativeQ = oQ[groupingFor("cumulative")];
-  const retentionQ = oQ[groupingFor("retention")];
-  const simsQ = oQ[groupingFor("sims")];
-  const practiceQ = hQ[groupingFor("practice")];
-  const playTimeQ = hQ[groupingFor("playTime")];
-  const csatQ = hQ[groupingFor("csat")];
-  const costPerSimQ = hQ[groupingFor("costPerSim")];
-  const totalCostQ = hQ[groupingFor("totalCost")];
+  const newUsersQ = oQ[resolvedBucket("newUsers")];
+  const cumulativeQ = oQ[resolvedBucket("cumulative")];
+  const retentionQ = oQ[resolvedBucket("retention")];
+  const simsQ = oQ[resolvedBucket("sims")];
+  const practiceQ = hQ[resolvedBucket("practice")];
+  const playTimeQ = hQ[resolvedBucket("playTime")];
+  const csatQ = hQ[resolvedBucket("csat")];
+  const costPerSimQ = hQ[resolvedBucket("costPerSim")];
+  const totalCostQ = hQ[resolvedBucket("totalCost")];
 
   const grain = {
-    newUsers: groupingFor("newUsers"),
-    cumulative: groupingFor("cumulative"),
-    retention: groupingFor("retention"),
-    sims: groupingFor("sims"),
-    practice: groupingFor("practice"),
-    playTime: groupingFor("playTime"),
-    csat: groupingFor("csat"),
-    costPerSim: groupingFor("costPerSim"),
-    totalCost: groupingFor("totalCost"),
-    wpl: groupingFor("wpl"),
-    completion: groupingFor("completion"),
-    xp: groupingFor("xp"),
+    newUsers: grainFor("newUsers"),
+    cumulative: grainFor("cumulative"),
+    retention: grainFor("retention"),
+    sims: grainFor("sims"),
+    practice: grainFor("practice"),
+    playTime: grainFor("playTime"),
+    csat: grainFor("csat"),
+    costPerSim: grainFor("costPerSim"),
+    totalCost: grainFor("totalCost"),
+    wpl: grainFor("wpl"),
+    completion: grainFor("completion"),
+    xp: grainFor("xp"),
   };
 
   /* ----------------------------- plotted series ---------------------------- */
@@ -812,7 +886,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   /** The header lines every export carries: window, grain, and the omission. */
   const exportLines = (
     window: string,
-    grouping: AnalyticsBucket,
+    grouping: AnalyticsGrain,
     inProgress?: string | null,
     ...extra: string[]
   ) => [
@@ -828,6 +902,95 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     unpriced > 0
       ? ` · ${unpriced.toLocaleString()} calls had no pricing entry, so this UNDERSTATES real spend`
       : " · every call in this window was priced";
+
+  /* --------------------------- All-time KPI tiles -------------------------- */
+  //
+  // Each reads OFF THE SAME bucketed response as the trend above it (see
+  // `resolvedBucket`'s doc) — every field below is a genuine whole-window
+  // aggregate the server already computes, not a client-side fold of the
+  // bucketed points (which would be wrong for a mean, a median, or a distinct
+  // count). A chart with no such aggregate, or where "the whole window as one
+  // number" asks a different question than the trend does (the north star,
+  // the new/returning partition, a per-period signup count that would just
+  // restate the cumulative-users figure beside it), does not offer "All time"
+  // at all — its `picker(...)` call below has no `ALL_TIME_GRAINS` override.
+
+  const practiceIsAllTime = grain.practice === "allTime";
+  const practiceKpi: KpiTileProps = {
+    label: "Practice minutes",
+    description:
+      "Total minutes learners spent practising, all time — the same figure as the KPI strip.",
+    value: formatKpi(h?.practiceMinutesOverall?.minutes),
+    n: h?.practiceMinutesOverall?.activeLearners,
+    nUnit: "active learners",
+  };
+
+  const playTimeIsAllTime = grain.playTime === "allTime";
+  const playTimeKpi: KpiTileProps = {
+    label: "Average simulation play time",
+    description: "Mean length of one completed simulation, all time.",
+    value: formatKpi(summary?.avgPlayTimeMinutes, { suffix: " min" }),
+    n: playTimeSessions,
+    nUnit: "timed sessions",
+  };
+
+  const csatIsAllTime = grain.csat === "allTime";
+  const csatKpi: KpiTileProps = {
+    label: "Learner satisfaction",
+    description: `Mean ${RATING_DOMAIN[0]}–${RATING_DOMAIN[1]} rating learners gave after a session, all time.`,
+    value: formatKpi(summary?.avgCsat, { decimals: 2 }),
+    n: summary?.csatResponses,
+    nUnit: "responses",
+    minN: MIN_N_FOR_SCORE,
+  };
+
+  const costPerSimIsAllTime = grain.costPerSim === "allTime";
+  const costPerSimKpi: KpiTileProps = {
+    label: "AI cost per completed simulation",
+    description:
+      "All platform AI spend (LLM + STT + TTS) divided by completed sims, all time." +
+      scopeNote(costUnscoped),
+    value: formatKpi(summary?.costPerCompletedSimUsd, { prefix: "$", decimals: 2 }),
+  };
+
+  const totalCostIsAllTime = grain.totalCost === "allTime";
+  const totalCostKpi: KpiTileProps = {
+    label: "Total AI spend",
+    description: "All platform AI spend, all time." + costUnpricedNote + scopeNote(costUnscoped),
+    value: formatKpi(summary?.totalAiCostUsd, { prefix: "$", decimals: 2 }),
+  };
+
+  const simsIsAllTime = grain.sims === "allTime";
+  const simsKpi: KpiTileProps = {
+    label: "Completed simulations",
+    description: "Volume context for the quality and cost figures, all time.",
+    value: formatKpi(summary?.completedSimulations),
+  };
+
+  const cumulativeIsAllTime = grain.cumulative === "allTime";
+  const cumulativeKpi: KpiTileProps = {
+    label: "Cumulative users",
+    description: "Every registered account, all time — the running total's final value.",
+    value: formatKpi(overviewSummary?.totalUsers),
+  };
+
+  const completionIsAllTime = grain.completion === "allTime";
+  const completionKpi: KpiTileProps = {
+    label: "Session completion rate",
+    description: "Completed of launched sessions, all time.",
+    value: formatPct(completionData?.summary.completionRatePct),
+    n: completionData?.summary.started,
+    nUnit: "sessions launched",
+  };
+
+  const xpIsAllTime = grain.xp === "allTime";
+  const xpKpi: KpiTileProps = {
+    label: "Cumulative XP awarded",
+    description: "Running total of every XP award across the platform, all time.",
+    value: formatKpi(xpGrowthQ.data?.summary.cumulativeXp),
+    n: xpGrowthQ.data?.summary.earners,
+    nUnit: "learners earning",
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -929,13 +1092,16 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
                 )} launched sessions reached a scored ending`
               : undefined
           }
-          loading={busy(completion)}
-          error={completion.isError}
+          loading={completionIsAllTime ? false : busy(completion)}
+          error={completionIsAllTime ? false : completion.isError}
           onRetry={completion.refetch}
-          empty={!busy(completion) && allRatesMissing(completionPoints)}
+          empty={
+            completionIsAllTime ? false : !busy(completion) && allRatesMissing(completionPoints)
+          }
           emptyText="No sessions launched in any period on this axis"
-          controls={picker("completion")}
+          controls={picker("completion", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("completion")}
+          kpi={completionIsAllTime ? completionKpi : undefined}
         >
           <ScrollableChart data={completionSeries}>
             <LineChart data={completionSeries} options={completionOpts} />
@@ -992,12 +1158,13 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
               extra: groupingNote(grain.cumulative),
               asOf: asOf(cumulativeQ.data?.window),
             })}
-            loading={busy(cumulativeQ)}
-            error={cumulativeQ.isError}
+            loading={cumulativeIsAllTime ? false : busy(cumulativeQ)}
+            error={cumulativeIsAllTime ? false : cumulativeQ.isError}
             onRetry={cumulativeQ.refetch}
-            empty={!busy(cumulativeQ) && cumulativeUsers.length === 0}
-            controls={picker("cumulative")}
+            empty={cumulativeIsAllTime ? false : !busy(cumulativeQ) && cumulativeUsers.length === 0}
+            controls={picker("cumulative", ALL_TIME_GRAINS)}
             onExpand={() => setExpanded("cumulative")}
+            kpi={cumulativeIsAllTime ? cumulativeKpi : undefined}
           >
             <ScrollableChart data={cumulativeUsers}>
               <LineChart data={cumulativeUsers} options={cumulativeOpts} />
@@ -1129,12 +1296,13 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             extra: groupingNote(grain.practice),
             asOf: asOf(practiceQ.data?.window),
           })}
-          loading={busy(practiceQ)}
-          error={practiceQ.isError}
+          loading={practiceIsAllTime ? false : busy(practiceQ)}
+          error={practiceIsAllTime ? false : practiceQ.isError}
           onRetry={practiceQ.refetch}
-          empty={!busy(practiceQ) && practice.length === 0}
-          controls={picker("practice")}
+          empty={practiceIsAllTime ? false : !busy(practiceQ) && practice.length === 0}
+          controls={picker("practice", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("practice")}
+          kpi={practiceIsAllTime ? practiceKpi : undefined}
         >
           <ScrollableChart data={practice}>
             <LineChart data={practice} options={practiceOpts} />
@@ -1161,12 +1329,15 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
               ? `${summary.avgPlayTimeMinutes} min per simulation on average, all time`
               : undefined
           }
-          loading={busy(playTimeQ)}
-          error={playTimeQ.isError}
+          loading={playTimeIsAllTime ? false : busy(playTimeQ)}
+          error={playTimeIsAllTime ? false : playTimeQ.isError}
           onRetry={playTimeQ.refetch}
-          empty={!busy(playTimeQ) && playTime.every(d => d.value === null)}
-          controls={picker("playTime")}
+          empty={
+            playTimeIsAllTime ? false : !busy(playTimeQ) && playTime.every(d => d.value === null)
+          }
+          controls={picker("playTime", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("playTime")}
+          kpi={playTimeIsAllTime ? playTimeKpi : undefined}
         >
           <ScrollableChart data={playTime}>
             <LineChart data={playTime} options={playTimeOpts} />
@@ -1185,12 +1356,13 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             extra: groupingNote(grain.sims),
             asOf: asOf(simsQ.data?.window),
           })}
-          loading={busy(simsQ)}
-          error={simsQ.isError}
+          loading={simsIsAllTime ? false : busy(simsQ)}
+          error={simsIsAllTime ? false : simsQ.isError}
           onRetry={simsQ.refetch}
-          empty={!busy(simsQ) && sims.length === 0}
-          controls={picker("sims")}
+          empty={simsIsAllTime ? false : !busy(simsQ) && sims.length === 0}
+          controls={picker("sims", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("sims")}
+          kpi={simsIsAllTime ? simsKpi : undefined}
         >
           <ScrollableChart data={sims}>
             <SimpleBarChart data={sims} options={simsOpts} />
@@ -1223,10 +1395,10 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
                 `${GROUPING_LABEL[grain.xp].toLowerCase()}`
               : undefined
           }
-          loading={busy(xpGrowthQ)}
-          error={xpGrowthQ.isError}
+          loading={xpIsAllTime ? false : busy(xpGrowthQ)}
+          error={xpIsAllTime ? false : xpGrowthQ.isError}
           onRetry={xpGrowthQ.refetch}
-          empty={!busy(xpGrowthQ) && cumulativeXp.length === 0}
+          empty={xpIsAllTime ? false : !busy(xpGrowthQ) && cumulativeXp.length === 0}
           emptyText={
             // Two different reasons the plot can be empty, and only one of them
             // is "no XP". At a coarse grain on a young platform EVERY bucket on
@@ -1241,8 +1413,9 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
                 ].toLowerCase()} to plot yet. Group by a finer period, or expand for the provisional figures.`
               : "No XP has been awarded in any period on this axis"
           }
-          controls={picker("xp")}
+          controls={picker("xp", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("xp")}
+          kpi={xpIsAllTime ? xpKpi : undefined}
         >
           <ScrollableChart data={cumulativeXp}>
             <LineChart data={cumulativeXp} options={xpOpts} />
@@ -1323,15 +1496,16 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             extra: groupingNote(grain.csat),
             asOf: asOf(csatQ.data?.window),
           })}
-          loading={busy(csatQ)}
-          error={csatQ.isError}
+          loading={csatIsAllTime ? false : busy(csatQ)}
+          error={csatIsAllTime ? false : csatQ.isError}
           onRetry={csatQ.refetch}
           n={summary?.csatResponses}
           nUnit="responses"
           minN={MIN_N_FOR_SCORE}
-          empty={!busy(csatQ) && csat.every(d => d.value === null)}
-          controls={picker("csat")}
+          empty={csatIsAllTime ? false : !busy(csatQ) && csat.every(d => d.value === null)}
+          controls={picker("csat", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("csat")}
+          kpi={csatIsAllTime ? csatKpi : undefined}
         >
           <ScrollableChart data={csat}>
             <LineChart data={csat} options={csatOpts} />
@@ -1409,14 +1583,19 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             costUnpricedNote +
             scopeNote(costUnscoped)
           }
-          loading={busy(costPerSimQ)}
-          error={costPerSimQ.isError}
+          loading={costPerSimIsAllTime ? false : busy(costPerSimQ)}
+          error={costPerSimIsAllTime ? false : costPerSimQ.isError}
           onRetry={costPerSimQ.refetch}
           errorTitle="Couldn't load AI cost"
           errorSubtitle="There was a problem fetching cost metrics."
-          empty={!busy(costPerSimQ) && costPerSim.every(d => d.value === null)}
-          controls={picker("costPerSim")}
+          empty={
+            costPerSimIsAllTime
+              ? false
+              : !busy(costPerSimQ) && costPerSim.every(d => d.value === null)
+          }
+          controls={picker("costPerSim", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("costPerSim")}
+          kpi={costPerSimIsAllTime ? costPerSimKpi : undefined}
         >
           <ScrollableChart data={costPerSim}>
             <LineChart data={costPerSim} options={costPerSimOpts} />
@@ -1439,12 +1618,13 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             costUnpricedNote +
             scopeNote(costUnscoped)
           }
-          loading={busy(totalCostQ)}
-          error={totalCostQ.isError}
+          loading={totalCostIsAllTime ? false : busy(totalCostQ)}
+          error={totalCostIsAllTime ? false : totalCostQ.isError}
           onRetry={totalCostQ.refetch}
-          empty={!busy(totalCostQ) && totalCost.length === 0}
-          controls={picker("totalCost")}
+          empty={totalCostIsAllTime ? false : !busy(totalCostQ) && totalCost.length === 0}
+          controls={picker("totalCost", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("totalCost")}
+          kpi={totalCostIsAllTime ? totalCostKpi : undefined}
         >
           <ScrollableChart data={totalCost}>
             <SimpleBarChart data={totalCost} options={totalCostOpts} />

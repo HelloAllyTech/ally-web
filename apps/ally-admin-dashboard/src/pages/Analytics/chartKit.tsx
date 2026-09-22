@@ -10,9 +10,9 @@ import {
   SkeletonPlaceholder,
   Tile,
 } from "@ally-ui-mono/ui-shared";
-import { AnalyticsBucket } from "@types";
+import { AnalyticsGrain } from "@types";
 
-import { GROUPINGS, GROUPING_LABEL } from "./analyticsGrouping";
+import { GROUPING_LABEL } from "./analyticsGrouping";
 import { CONTEXT, ColorScale, PALETTE, formatDelta } from "./chartScales";
 
 /**
@@ -709,7 +709,7 @@ export const Sparkline = ({
 /* KPI tile                                                                   */
 /* -------------------------------------------------------------------------- */
 
-interface KpiTileProps {
+export interface KpiTileProps {
   label: string;
   /**
    * What the number actually measures, in one line — the tile's equivalent of a
@@ -847,6 +847,15 @@ export const KpiTile = ({
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The historical 4-value default — every call site that does not pass its own
+ * `options` keeps offering exactly these, unchanged, even though the picker can
+ * now accept the full {@link AnalyticsGrain} vocabulary. A chart opts into
+ * "quarter"/"allTime" by passing its own `options` explicitly; until a chart is
+ * individually migrated it must keep rendering exactly as it does today.
+ */
+const LEGACY_GROUPING_OPTIONS: AnalyticsGrain[] = ["day", "week", "month", "year"];
+
+/**
  * The per-chart "group by" control, for {@link ChartCard.controls}.
  *
  * Lives on the chart rather than the page because the grain belongs to the
@@ -858,13 +867,13 @@ export const GroupingPicker = ({
   id,
   value,
   onChange,
-  options = GROUPINGS,
+  options = LEGACY_GROUPING_OPTIONS,
 }: {
   id: string;
-  value: AnalyticsBucket;
-  onChange: (grouping: AnalyticsBucket) => void;
+  value: AnalyticsGrain;
+  onChange: (grouping: AnalyticsGrain) => void;
   /** Restrict the offered grains where a coarser or finer one is meaningless. */
-  options?: AnalyticsBucket[];
+  options?: AnalyticsGrain[];
 }) => {
   const items = options.map(g => ({ id: g, label: GROUPING_LABEL[g] }));
   const selected = items.find(i => i.id === value) ?? items[0];
@@ -941,7 +950,15 @@ interface ChartCardProps {
    */
   bare?: boolean;
   height?: string;
-  children: ReactNode;
+  /**
+   * Swap the chart body for a {@link KpiTile} — the "All-time" collapse of a
+   * per-bucket series into one number. Purely additive: when omitted, `children`
+   * renders exactly as before. Header/caption/controls/source-footer are
+   * unaffected either way, so the grain picker does not move when a reader
+   * flips a chart to All-time.
+   */
+  kpi?: KpiTileProps;
+  children?: ReactNode;
 }
 
 /**
@@ -972,6 +989,7 @@ export const ChartCard = ({
   wide = false,
   bare = false,
   height = CHART_HEIGHT,
+  kpi,
   children,
 }: ChartCardProps) => {
   const thin = minN !== undefined && isThinSample(n, minN);
@@ -1010,6 +1028,8 @@ export const ChartCard = ({
     >
       {emptyText}
     </div>
+  ) : kpi ? (
+    <KpiTile {...kpi} />
   ) : (
     children
   );

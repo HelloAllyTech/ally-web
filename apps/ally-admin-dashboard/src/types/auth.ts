@@ -184,7 +184,14 @@ export interface AnalyticsData {
 export type AnalyticsRange = "30d" | "90d" | "12m" | "all";
 
 /** Grouping grain for a trend. Surfaced per chart, not per page. */
-export type AnalyticsBucket = "day" | "week" | "month" | "year";
+export type AnalyticsBucket = "day" | "week" | "month" | "quarter" | "year";
+
+/**
+ * The full grain vocabulary a chart's grouping control may offer: every
+ * SQL-bucketable {@link AnalyticsBucket} plus `"allTime"`, which collapses the
+ * chart's current window into a single KPI number instead of a bucketed series.
+ */
+export type AnalyticsGrain = AnalyticsBucket | "allTime";
 
 /**
  * The window the server actually resolved, echoed back so every chart, caption
@@ -385,6 +392,20 @@ export interface PracticeMinutesPoint {
 }
 
 /**
+ * The exact whole-window KPI figure paired with `practiceMinutes`, for a
+ * chart's "All-time" grouping mode. `minutes` equals the sum of
+ * `practiceMinutes[].minutes` (a SUM is associative across buckets), but
+ * `activeLearners` does NOT equal the sum of `practiceMinutes[].activeLearners`
+ * — that would double-count a learner active in more than one bucket. Both are
+ * computed server-side in a single un-bucketed query rather than folded from
+ * the trend.
+ */
+export interface PracticeMinutesOverall {
+  minutes: number;
+  activeLearners: number;
+}
+
+/**
  * How long one simulation lasts, per bucket. Median and p95 travel with the
  * mean because session length is skewed. Nulls mark a bucket with no completed,
  * timed session — the axis stays a real calendar and the line breaks.
@@ -445,6 +466,12 @@ export interface AnalyticsHighlightsResponse {
   topOrgsBelowFloor: TopOrgsBelowFloor;
   /** Gap-filled to a contiguous bucket axis. */
   practiceMinutes: PracticeMinutesPoint[];
+  /**
+   * The All-time KPI figure for `practiceMinutes` — a single query over the
+   * whole window, not a fold of the trend above (see the field's doc for why
+   * that matters for `activeLearners`).
+   */
+  practiceMinutesOverall: PracticeMinutesOverall;
   /** Contiguous axis, gap-filled with NULLs — an average has no zero. */
   playTime: PlayTimePoint[];
   // `qualityTrend` was retired here: it plotted an unpinned judge composite
@@ -1096,7 +1123,8 @@ export interface ChartPreference {
   /** Client-owned key, namespaced by tab, e.g. "highlights.practice". */
   chartId: string;
   range?: AnalyticsRange | null;
-  bucket?: AnalyticsBucket | null;
+  /** Named for its SQL-bucket origin; also accepts "allTime". */
+  bucket?: AnalyticsGrain | null;
 }
 
 export interface ChartPreferencesResponse {

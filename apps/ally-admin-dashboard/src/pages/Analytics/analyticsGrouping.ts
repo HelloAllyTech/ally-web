@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { AnalyticsBucket } from "@types";
+import { AnalyticsBucket, AnalyticsGrain } from "@types";
 
 /**
  * Per-chart time grouping — the "by day / week / month / year" control that sits
@@ -20,14 +20,16 @@ import { AnalyticsBucket } from "@types";
  * only for grains actually on screen (see {@link useChartGrouping}).
  */
 
-export const GROUPINGS: AnalyticsBucket[] = ["day", "week", "month", "year"];
+export const GROUPINGS: AnalyticsGrain[] = ["day", "week", "month", "quarter", "year", "allTime"];
 
 /** Display + axis-title name for a grain. One table, used by both. */
-export const GROUPING_LABEL: Record<AnalyticsBucket, string> = {
+export const GROUPING_LABEL: Record<AnalyticsGrain, string> = {
   day: "Day",
   week: "Week",
   month: "Month",
+  quarter: "Quarter",
   year: "Year",
+  allTime: "All time",
 };
 
 /**
@@ -38,14 +40,26 @@ export const GROUPING_LABEL: Record<AnalyticsBucket, string> = {
  * trend at all. Matches the server's own all-time default, so the first paint
  * needs no override.
  */
-export const DEFAULT_GROUPING: AnalyticsBucket = "month";
+export const DEFAULT_GROUPING: AnalyticsGrain = "month";
+
+/**
+ * Narrow a grain to the SQL-bucket-facing type a mechanism-B (`useChartGrouping`)
+ * consumer still expects. None of those consumers offer `"allTime"` yet — their
+ * `GroupingPicker` calls all draw from the legacy 4-value default — so `grain`
+ * is never actually `"allTime"` here; this only satisfies the type checker
+ * until a chart migrates onto `useGrainQueries`'s `allTime` branch (Phase 4).
+ */
+export const grainAsBucket = (
+  grain: AnalyticsGrain,
+  fallback: AnalyticsBucket = "month",
+): AnalyticsBucket => (grain === "allTime" ? fallback : grain);
 
 /** Axis / column title for a grain. Falls back to Week for unknown values. */
 export const bucketTitle = (bucket?: AnalyticsBucket | string): string =>
   GROUPING_LABEL[bucket as AnalyticsBucket] ?? GROUPING_LABEL.week;
 
 /** "Grouped by month" — for a provenance line or an export header. */
-export const groupingNote = (bucket: AnalyticsBucket): string =>
+export const groupingNote = (bucket: AnalyticsGrain): string =>
   `grouped by ${GROUPING_LABEL[bucket].toLowerCase()}`;
 
 /**
@@ -79,7 +93,7 @@ export const isInProgress = (bucket: string, inProgressBucket?: string | null): 
  * that the last period is missing on purpose rather than wonder where it went.
  */
 export const inProgressCaption = (
-  grouping: AnalyticsBucket,
+  grouping: AnalyticsGrain,
   inProgressBucket?: string | null,
 ): string =>
   inProgressBucket
@@ -115,7 +129,10 @@ export interface ChartGrouping<K extends string> {
  */
 export function useChartGrouping<K extends string>(
   defaults: Record<K, AnalyticsBucket>,
-  base: AnalyticsBucket = DEFAULT_GROUPING,
+  // `DEFAULT_GROUPING` is now typed `AnalyticsGrain` (Phase 1 widening); this
+  // hook is mechanism B, migrated in a later phase, and stays bucket-only —
+  // the value ("month") is always a valid `AnalyticsBucket`.
+  base: AnalyticsBucket = DEFAULT_GROUPING as AnalyticsBucket,
 ): ChartGrouping<K> {
   const [byChart, setByChart] = useState<Record<K, AnalyticsBucket>>(defaults);
 
@@ -139,33 +156,48 @@ export function useChartGrouping<K extends string>(
   return { groupingFor, setGrouping, bucketsFor, bucketsInUse };
 }
 
-/** One query result per grain, so a chart can read the grain it is set to. */
+/** One query result per bucketed grain, so a chart can read the grain it is set to. */
 export type GrainQueries<T> = Record<AnalyticsBucket, T>;
 
 /**
- * Four hooks for one endpoint — one per grain, in a fixed order so hook order
- * never changes — each skipped unless a chart fed by that endpoint is currently
- * reading that grain.
+ * One hook per bucketed grain, in a fixed order so hook order never changes,
+ * plus one `allTime` hook — each skipped unless a chart fed by that endpoint is
+ * currently reading that grain.
  *
- * The shape a caller ends up with is `q[groupingFor("chart")]`: re-graining a
- * chart replaces one request rather than adding one, and an endpoint is never
- * fetched at a grain nothing on screen displays. Lifted out of the individual
- * sub-tabs because every panel with a grain control needs exactly this, and a
- * per-file copy is a per-file chance to get the skip condition wrong.
+ * `allTime` is a different shape from the rest on purpose: it collapses the
+ * chart's current window into a single KPI number, so it cannot be answered by
+ * calling the bucketed series endpoint with a wider bucket (a mean of means, or
+ * a percentile, cannot be recovered from already-bucketed values) — it needs
+ * its own whole-window aggregate endpoint, hence the separate `overallHook`.
+ *
+ * `overallHook` is optional and defaults to a no-op skip-state hook so existing
+ * callers — none of which offer an All-time option yet — keep compiling
+ * unmodified; a chart wires up a real `overallHook` only once it actually adds
+ * "All-time" to its own `options` list.
+ *
+ * The shape a caller ends up with is `q[groupingFor("chart")]` for the bucketed
+ * grains, or `q.allTime` once wired. Lifted out of the individual sub-tabs
+ * because every panel with a grain control needs exactly this, and a per-file
+ * copy is a per-file chance to get the skip condition wrong.
  *
  * Pass the base grain in `grains` as well when a bucket-invariant panel (a KPI
  * tile, a funnel, a ranking) reads from the same response: without it that panel
  * blinks out the moment the last chart on that grain is switched away.
  */
-export const useGrainQueries = <A, T>(
-  useQueryHook: (arg: A & { bucket: AnalyticsBucket }, opts: { skip: boolean }) => T,
+const noOverallHook = <O>(): O => ({ data: undefined, isLoading: false }) as O;
+
+export const useGrainQueries = <A, T, O = { data: undefined; isLoading: false }>(
+  seriesHook: (arg: A & { bucket: AnalyticsBucket }, opts: { skip: boolean }) => T,
   query: A,
-  grains: Set<AnalyticsBucket>,
-): GrainQueries<T> => ({
-  day: useQueryHook({ ...query, bucket: "day" }, { skip: !grains.has("day") }),
-  week: useQueryHook({ ...query, bucket: "week" }, { skip: !grains.has("week") }),
-  month: useQueryHook({ ...query, bucket: "month" }, { skip: !grains.has("month") }),
-  year: useQueryHook({ ...query, bucket: "year" }, { skip: !grains.has("year") }),
+  grains: Set<AnalyticsGrain>,
+  overallHook: (arg: A, opts: { skip: boolean }) => O = noOverallHook<O>,
+): GrainQueries<T> & { allTime: O } => ({
+  day: seriesHook({ ...query, bucket: "day" }, { skip: !grains.has("day") }),
+  week: seriesHook({ ...query, bucket: "week" }, { skip: !grains.has("week") }),
+  month: seriesHook({ ...query, bucket: "month" }, { skip: !grains.has("month") }),
+  quarter: seriesHook({ ...query, bucket: "quarter" }, { skip: !grains.has("quarter") }),
+  year: seriesHook({ ...query, bucket: "year" }, { skip: !grains.has("year") }),
+  allTime: overallHook(query, { skip: !grains.has("allTime") }),
 });
 
 /**

@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 
 import { useGetCoachingLoopQuery, useGetScribeAdoptionQuery } from "@api";
-import { AnalyticsBucket } from "@types";
+import { AnalyticsBucket, AnalyticsGrain } from "@types";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
 import {
   DEFAULT_GROUPING,
   bucketTitle,
+  grainAsBucket,
   groupingNote,
   inProgressCaption,
   isBusy,
@@ -21,6 +22,7 @@ import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   GroupingPicker,
+  KpiTileProps,
   ScrollableChart,
   buildSource,
   lineOpts,
@@ -35,6 +37,7 @@ import {
   buildScribeSessionsSeries,
   buildSharedSessionsSeries,
   buildTurnaroundSeries,
+  formatCount,
   formatHours,
   formatPct,
 } from "../testingChart";
@@ -53,10 +56,22 @@ const SubHeading = ({ children }: { children: string }) => (
  */
 type ChartId = "coaching" | "scribeAdoption";
 
+// `DEFAULT_GROUPING` is typed `AnalyticsGrain` (Phase 1 widening); `useChartGrouping`
+// is mechanism B, migrated in a later phase, and stays bucket-only.
 const DEFAULT_GROUPINGS: Record<ChartId, AnalyticsBucket> = {
-  coaching: DEFAULT_GROUPING,
-  scribeAdoption: DEFAULT_GROUPING,
+  coaching: grainAsBucket(DEFAULT_GROUPING),
+  scribeAdoption: grainAsBucket(DEFAULT_GROUPING),
 };
+
+/**
+ * Every SQL-bucketable grain plus "All time" (Phase 4 mechanism-B migration).
+ * Both endpoints' `summary` is already a genuine whole-window aggregate —
+ * computed in its own unbucketed pass, never folded from the bucketed rows
+ * (see each service's doc: a median of medians, or a summed distinct count,
+ * is not the real figure) — so both pairs of charts get a real KPI tile in
+ * All-time mode, not a placeholder.
+ */
+const ALL_TIME_GRAINS: AnalyticsGrain[] = ["day", "week", "month", "quarter", "year", "allTime"];
 
 /**
  * Coaching & support — the human loop around the product.
@@ -75,30 +90,61 @@ const DEFAULT_GROUPINGS: Record<ChartId, AnalyticsBucket> = {
 export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
   const { groupingFor, setGrouping } = useChartGrouping<ChartId>(
     DEFAULT_GROUPINGS,
-    DEFAULT_GROUPING,
+    grainAsBucket(DEFAULT_GROUPING),
   );
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const grain = {
-    coaching: groupingFor("coaching"),
-    scribeAdoption: groupingFor("scribeAdoption"),
+  /**
+   * "All time" isn't a bucket `useChartGrouping` can store — that hook stays
+   * bucket-only (see its file doc) — so it is tracked here as a flag layered
+   * on top, per chart. A chart's real bucket (`groupingFor`) is left exactly
+   * where it was when the reader last picked one, so flipping All-time back
+   * off returns to that grain rather than resetting to the default.
+   */
+  const [allTimeCharts, setAllTimeCharts] = useState<Set<ChartId>>(new Set());
+  const grainFor = (chart: ChartId): AnalyticsGrain =>
+    allTimeCharts.has(chart) ? "allTime" : groupingFor(chart);
+  const setGrain = (chart: ChartId, grouping: AnalyticsGrain) => {
+    const isAllTime = grouping === "allTime";
+    setAllTimeCharts(prev => {
+      if (prev.has(chart) === isAllTime) return prev;
+      const next = new Set(prev);
+      if (isAllTime) next.add(chart);
+      else next.delete(chart);
+      return next;
+    });
+    if (!isAllTime) setGrouping(chart, grouping);
   };
 
-  const coachingQ = useGrainQueries(useGetCoachingLoopQuery, query, new Set([grain.coaching]));
-  const scribeQ = useGrainQueries(
-    useGetScribeAdoptionQuery,
-    query,
-    new Set([grain.scribeAdoption]),
-  );
+  const grain = {
+    coaching: grainFor("coaching"),
+    scribeAdoption: grainFor("scribeAdoption"),
+  };
 
-  const coaching = coachingQ[grain.coaching];
-  const scribe = scribeQ[grain.scribeAdoption];
+  /**
+   * The real SQL bucket each pair's response is actually fetched at, even in
+   * All-time mode: neither endpoint has an unbucketed "whole window" query of
+   * its own, so All-time reads its KPIs off the SAME bucketed response's
+   * `summary` (see `ALL_TIME_GRAINS`'s doc).
+   */
+  const coachingBucket = grainAsBucket(grain.coaching);
+  const scribeBucket = grainAsBucket(grain.scribeAdoption);
+
+  const coachingQ = useGrainQueries(useGetCoachingLoopQuery, query, new Set([coachingBucket]));
+  const scribeQ = useGrainQueries(useGetScribeAdoptionQuery, query, new Set([scribeBucket]));
+
+  const coaching = coachingQ[coachingBucket];
+  const scribe = scribeQ[scribeBucket];
+
+  const coachingIsAllTime = grain.coaching === "allTime";
+  const scribeIsAllTime = grain.scribeAdoption === "allTime";
 
   const picker = (chart: ChartId) => (
     <GroupingPicker
       id={`coaching-grouping-${chart}`}
-      value={groupingFor(chart)}
-      onChange={g => setGrouping(chart, g)}
+      value={grainFor(chart)}
+      onChange={g => setGrain(chart, g)}
+      options={ALL_TIME_GRAINS}
     />
   );
 
@@ -171,7 +217,7 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
 
   const exportLines = (
     window: string,
-    grouping: AnalyticsBucket,
+    grouping: AnalyticsGrain,
     inProgress?: string | null,
     ...extra: string[]
   ) => [
@@ -182,6 +228,43 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
       : []),
     ...extra,
   ];
+
+  /* --------------------------- All-time KPI tiles -------------------------- */
+  //
+  // Both `cl.summary` and `sa.summary` are genuine whole-window aggregates —
+  // each service computes them in their own unbucketed pass (see
+  // `ALL_TIME_GRAINS`'s doc) — so both pairs get real figures, read off the
+  // SAME bucketed response the trend above them uses.
+
+  const sharedSessionsKpi: KpiTileProps = {
+    label: "Sessions shared for review",
+    description: `${formatPct(cl?.summary.sharePct)} of completed sessions shared for review, all time.`,
+    value: formatCount(cl?.summary.sharedSessions),
+    n: cl?.summary.completedSessions,
+    nUnit: "completed sessions",
+  };
+
+  const turnaroundKpi: KpiTileProps = {
+    label: "Time to first comment (median)",
+    description: `Median hours from a session being shared to its first comment, all time. Periods — and this figure — need at least ${cl?.minSampleSize ?? 5} commented reviews to be stated.`,
+    value: formatHours(cl?.summary.medianHoursToFirstComment),
+    n: cl?.summary.reviewsWithComment,
+    nUnit: "reviews with a comment",
+  };
+
+  const scribeOrgsKpi: KpiTileProps = {
+    label: "Organisations using Scribe",
+    description: "Distinct orgs with at least one Scribe session, all time.",
+    value: formatCount(sa?.summary.orgs),
+    n: sa?.summary.counsellors,
+    nUnit: "counsellors, all time",
+  };
+
+  const scribeSessionsKpi: KpiTileProps = {
+    label: "Scribe sessions",
+    description: "Total Scribe sessions across the whole window.",
+    value: formatCount(sa?.summary.sessions),
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -204,12 +287,13 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
             )} of completed sessions`,
             asOf: asOf(cl?.window),
           })}
-          loading={isBusy(coaching)}
-          error={coaching.isError}
+          loading={coachingIsAllTime ? false : isBusy(coaching)}
+          error={coachingIsAllTime ? false : coaching.isError}
           onRetry={coaching.refetch}
-          empty={!isBusy(coaching) && sharedSeries.length === 0}
+          empty={coachingIsAllTime ? false : !isBusy(coaching) && sharedSeries.length === 0}
           controls={picker("coaching")}
           onExpand={() => setExpanded("coaching")}
+          kpi={coachingIsAllTime ? sharedSessionsKpi : undefined}
         >
           <ScrollableChart data={sharedSeries}>
             <SimpleBarChart data={sharedSeries} options={sharedOpts} />
@@ -237,11 +321,16 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
                 )}`
               : undefined
           }
-          loading={isBusy(coaching)}
-          error={coaching.isError}
+          loading={coachingIsAllTime ? false : isBusy(coaching)}
+          error={coachingIsAllTime ? false : coaching.isError}
           onRetry={coaching.refetch}
-          empty={!isBusy(coaching) && turnaroundSeries.every(d => d.value === null)}
+          empty={
+            coachingIsAllTime
+              ? false
+              : !isBusy(coaching) && turnaroundSeries.every(d => d.value === null)
+          }
           emptyText="No review has enough comments to state a turnaround"
+          kpi={coachingIsAllTime ? turnaroundKpi : undefined}
         >
           <ScrollableChart data={turnaroundSeries}>
             <LineChart data={turnaroundSeries} options={turnaroundOpts} />
@@ -266,12 +355,13 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
             extra: groupingNote(grain.scribeAdoption),
             asOf: asOf(sa?.window),
           })}
-          loading={isBusy(scribe)}
-          error={scribe.isError}
+          loading={scribeIsAllTime ? false : isBusy(scribe)}
+          error={scribeIsAllTime ? false : scribe.isError}
           onRetry={scribe.refetch}
-          empty={!isBusy(scribe) && scribeOrgsSeries.length === 0}
+          empty={scribeIsAllTime ? false : !isBusy(scribe) && scribeOrgsSeries.length === 0}
           controls={picker("scribeAdoption")}
           onExpand={() => setExpanded("scribe")}
+          kpi={scribeIsAllTime ? scribeOrgsKpi : undefined}
         >
           <ScrollableChart data={scribeOrgsSeries}>
             <SimpleBarChart data={scribeOrgsSeries} options={scribeOrgsOpts} />
@@ -289,10 +379,11 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
             extra: groupingNote(grain.scribeAdoption),
             asOf: asOf(sa?.window),
           })}
-          loading={isBusy(scribe)}
-          error={scribe.isError}
+          loading={scribeIsAllTime ? false : isBusy(scribe)}
+          error={scribeIsAllTime ? false : scribe.isError}
           onRetry={scribe.refetch}
-          empty={!isBusy(scribe) && scribeSessionsSeries.length === 0}
+          empty={scribeIsAllTime ? false : !isBusy(scribe) && scribeSessionsSeries.length === 0}
+          kpi={scribeIsAllTime ? scribeSessionsKpi : undefined}
         >
           <ScrollableChart data={scribeSessionsSeries}>
             <LineChart data={scribeSessionsSeries} options={scribeSessionsOpts} />

@@ -13,16 +13,24 @@ import { UsageLadderGrain } from "@types";
 
 import { AnalyticsTabFilters, asOfStamp, windowLabel } from "../analyticsFilters";
 import {
+  GROUPINGS,
   bucketTitle,
   groupingNote,
   inProgressCaption,
   withoutInProgress,
 } from "../analyticsGrouping";
-import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
+import {
+  defaultControlsFor,
+  grainAsBucket,
+  RANGE_SHORT,
+  RangePicker,
+  useChartControls,
+} from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   GroupingPicker,
+  KpiTileProps,
   ScrollableChart,
   barOpts,
   buildSource,
@@ -99,7 +107,14 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
   const [grain, setGrain] = useState<UsageLadderGrain>("month");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const { controlsFor, setRange, setBucket, hydrating } = useChartControls<WindowedChart>(
+  // Aliased: this tab already has a local `grain`/`setGrain` state above for the
+  // ladder chart's own (unrelated, mechanism-C) grain picker.
+  const {
+    controlsFor,
+    setRange,
+    setGrain: setSessionGrain,
+    hydrating,
+  } = useChartControls<WindowedChart>(
     "highlights.levels",
     // A count per bucket is readable at any grain, so this opens where the rest
     // of the tab does rather than needing an override.
@@ -118,7 +133,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
     {
       ...pickTenant(query),
       range: sessionControls.range,
-      bucket: sessionControls.bucket,
+      bucket: grainAsBucket(sessionControls.grain),
     },
     // Waiting for hydration stops every chart fetching its default window and
     // then immediately re-fetching the saved one.
@@ -153,6 +168,25 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
       })),
     [sessionPoints, q?.window.inProgressBucket],
   );
+
+  // All-time: `totalQualifiedSessions`/`totalCompletedSessions` are already
+  // whole-window totals (not per-bucket), so the KPI tile is a read of fields
+  // this same query already returns — no separate overall endpoint needed.
+  const isSessionsAllTime = sessionControls.grain === "allTime";
+  const qualifiedShare =
+    q && q.totalCompletedSessions > 0
+      ? Math.round((q.totalQualifiedSessions / q.totalCompletedSessions) * 100)
+      : null;
+  const qualifiedSessionsKpi: KpiTileProps = {
+    label: `Sessions of ${q?.qualifyingMinutes ?? 5}+ min`,
+    value: q ? q.totalQualifiedSessions.toLocaleString() : "—",
+    n: q?.totalCompletedSessions,
+    nUnit: "completed sessions",
+    description:
+      qualifiedShare !== null
+        ? `${qualifiedShare}% of completed sessions qualified, ${RANGE_SHORT[sessionControls.range]}.`
+        : "Completed sessions long enough to count as practice.",
+  };
 
   const funnelStages = useMemo(() => buildActivationFunnelStages(act?.funnel), [act]);
   const ttfBars = useMemo(() => buildTimeToFirstBars(act?.timeToFirstPractice), [act]);
@@ -408,7 +442,9 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           `Shorter sessions are someone opening a simulation and closing it. ` +
           `Compare with all completed sessions in the expanded view: a fall here ` +
           `means something different when total sessions fell with it.` +
-          inProgressCaption(sessionControls.bucket, q?.window.inProgressBucket)
+          (isSessionsAllTime
+            ? ""
+            : inProgressCaption(sessionControls.grain, q?.window.inProgressBucket))
         }
         takeaway={
           q && q.totalCompletedSessions > 0
@@ -417,7 +453,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
         }
         source={buildSource({
           derivation: "Completed sessions by call duration",
-          window: `${RANGE_SHORT[sessionControls.range]}, ${groupingNote(sessionControls.bucket)}`,
+          window: `${RANGE_SHORT[sessionControls.range]}, ${groupingNote(sessionControls.grain)}`,
           n: q?.totalQualifiedSessions,
           nUnit: "qualifying sessions",
           asOf: q?.computedAt ? new Date(q.computedAt).toLocaleDateString() : undefined,
@@ -437,12 +473,14 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
             />
             <GroupingPicker
               id="qualified-sessions-grouping"
-              value={sessionControls.bucket}
-              onChange={bucket => setBucket("qualifiedSessions", bucket)}
+              value={sessionControls.grain}
+              onChange={grain => setSessionGrain("qualifiedSessions", grain)}
+              options={GROUPINGS}
             />
           </div>
         }
         onExpand={() => setExpanded("qualifiedSessions")}
+        kpi={isSessionsAllTime ? qualifiedSessionsKpi : undefined}
         wide
       >
         <ScrollableChart data={sessionSeries}>
@@ -451,7 +489,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
             options={timeBarOpts({
               colorScale: single("Sessions of 5+ min"),
               leftTitle: "Sessions",
-              bottomTitle: bucketTitle(sessionControls.bucket),
+              bottomTitle: bucketTitle(sessionControls.grain),
               valueTicks: integerTickValues(Math.max(0, ...sessionSeries.map(d => d.value ?? 0))),
             })}
           />
@@ -527,14 +565,14 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
             options={timeBarOpts({
               colorScale: single("Sessions of 5+ min"),
               leftTitle: "Sessions",
-              bottomTitle: bucketTitle(sessionControls.bucket),
+              bottomTitle: bucketTitle(sessionControls.grain),
               height,
             })}
           />
         )}
         table={{
           columns: [
-            bucketTitle(sessionControls.bucket),
+            bucketTitle(sessionControls.grain),
             "Sessions of 5+ min",
             "All completed",
             "Qualifying share",

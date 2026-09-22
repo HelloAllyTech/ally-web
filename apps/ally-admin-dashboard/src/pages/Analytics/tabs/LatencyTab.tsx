@@ -2,21 +2,22 @@ import { useMemo, useState } from "react";
 
 import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import {
   useGetAgentJoinReliabilityQuery,
   useGetFillerQualityQuery,
   useGetStartLatencyQuery,
   useGetVoiceLatencyQuery,
 } from "@api";
-import { AnalyticsBucket } from "@types";
+import { AnalyticsBucket, AnalyticsGrain } from "@types";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
+import { grainAsBucket } from "../analyticsGrouping";
 import { ChartDetailModal, ChartTableData } from "../ChartDetailModal";
 import { LatencyByScenarioPanel } from "./LatencyByScenarioPanel";
 import { LatencySessionsPanel } from "./LatencySessionsPanel";
 import {
   ChartCard,
+  GroupingPicker,
   ScrollableChart,
   buildSource,
   hBarOpts,
@@ -64,11 +65,14 @@ import {
   latencyBucketTitle,
 } from "../latencyChart";
 
-const BUCKET_ITEMS: { id: AnalyticsBucket; label: string }[] = [
-  { id: "day", label: "Day-wise" },
-  { id: "week", label: "Week-wise" },
-  { id: "month", label: "Month-wise" },
-];
+/**
+ * This tab has a page-level date-range filter already (not a per-chart one), so
+ * one shared control here drives all 14 time-series cards from a single grain.
+ * `allTime` is deliberately left out: collapsing all 14 charts to a KPI tile at
+ * once via one control is a bigger, riskier change than widening the bucket
+ * vocabulary — see the mechanism-C migration task for the reasoning.
+ */
+const LATENCY_GRAIN_OPTIONS: AnalyticsGrain[] = ["day", "week", "month", "quarter", "year"];
 
 /**
  * Reference ceiling for the join-failure rate (%).
@@ -219,7 +223,6 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     () => buildVoiceLatencyByLanguageBars(data?.byLanguage ?? []),
     [data],
   );
-  const selectedBucket = BUCKET_ITEMS.find(b => b.id === bucket) ?? BUCKET_ITEMS[0];
 
   const targetSec = (data?.targetMs ?? 4000) / 1000;
   const llmTtftTargetSec = (data?.llmTtftTargetMs ?? 1500) / 1000;
@@ -540,21 +543,12 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
 
   const bucketPicker = (
     <div className="flex justify-end">
-      <div className="w-44">
-        <Dropdown
-          id="latency-bucket"
-          size="sm"
-          titleText="Granularity"
-          hideLabel
-          label="Granularity"
-          items={BUCKET_ITEMS}
-          selectedItem={selectedBucket}
-          itemToString={item => item?.label ?? ""}
-          onChange={({ selectedItem }) => {
-            if (selectedItem) setBucket(selectedItem.id);
-          }}
-        />
-      </div>
+      <GroupingPicker
+        id="latency-bucket"
+        value={bucket}
+        onChange={g => setBucket(grainAsBucket(g))}
+        options={LATENCY_GRAIN_OPTIONS}
+      />
     </div>
   );
 
