@@ -63,6 +63,7 @@ import {
   getModeChipConfig,
   reconcileLogsById,
   patchRowCustomFieldValues,
+  buildCounsellorFilterOptions,
   DenormalizedCustomFieldValue,
 } from "./utils";
 
@@ -481,11 +482,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       icon: <UserIcon />,
       filterable: true,
       filterType: FilterType.MULTISELECT,
-      filterOptions:
-        simulationFilterOptions?.counselors?.map(counselor => ({
-          label: counselor.name,
-          value: String(counselor.id),
-        })) || [],
+      filterOptions: buildCounsellorFilterOptions(simulationFilterOptions?.counselors ?? []),
     },
     {
       key: "dateAndTime",

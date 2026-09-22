@@ -234,7 +234,7 @@ export type GetAdminSimulationLogsResponse = {
  * session and nobody who has practised is missing from their own logs' filter.
  */
 export type GetAdminSimulationLogFiltersResponse = {
-  counselors: { id: number; name: string }[];
+  counselors: { id: number; name: string; email?: string }[];
   scenarios: { id: number; title: string }[];
 };
 export interface SimulationSummary {

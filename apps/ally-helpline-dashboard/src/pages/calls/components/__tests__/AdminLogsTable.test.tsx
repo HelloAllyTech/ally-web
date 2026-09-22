@@ -181,7 +181,11 @@ vi.mock("@utils", () => ({
   getSimulationScoreDisplay: vi.fn((score: number) => `${score}/100`),
 }));
 
-vi.mock("../utils", () => ({
+// Partial mock: the chip-config helpers are stubbed for readable assertions,
+// but everything else — notably buildCounsellorFilterOptions, which runs on
+// every render — keeps its real implementation.
+vi.mock("../utils", async importOriginal => ({
+  ...((await importOriginal()) as Record<string, unknown>),
   getSourceChipConfig: vi.fn((source: string) => ({
     label: source || "Unknown",
     variant: "default",
@@ -393,8 +397,8 @@ describe("AdminLogsTable", () => {
     vi.mocked(useGetAdminSimulationLogFiltersQuery).mockReturnValue({
       data: {
         counselors: [
-          { id: 7, name: "Asha" },
-          { id: 12, name: "Ravi" },
+          { id: 7, name: "Asha", email: "asha@example.com" },
+          { id: 12, name: "Ravi", email: "ravi@example.com" },
         ],
         scenarios: [
           { id: 3, title: "Crisis call" },
@@ -1362,6 +1366,29 @@ describe("AdminLogsTable", () => {
       expect(columnFor("scenarioTitle").filterOptions).toEqual([
         { label: "Crisis call", value: "3" },
         { label: "First-time caller", value: "5" },
+      ]);
+    });
+
+    it("distinguishes two people who share a display name", async () => {
+      vi.mocked(useGetAdminSimulationLogFiltersQuery).mockReturnValue({
+        data: {
+          counselors: [
+            { id: 99, name: "Shubham Bhoite", email: "a@example.com" },
+            { id: 123, name: "Shubham Bhoite", email: "b@example.com" },
+            { id: 7, name: "Asha", email: "asha@example.com" },
+          ],
+          scenarios: [],
+        },
+        isLoading: false,
+      } as any);
+
+      renderComponent(SessionType.SIMULATION, undefined, simulationFilterState);
+      await waitFor(() => expect(tableProps.current).not.toBeNull());
+
+      expect(columnFor("counsellorName").filterOptions).toEqual([
+        { label: "Shubham Bhoite (a@example.com)", value: "99" },
+        { label: "Shubham Bhoite (b@example.com)", value: "123" },
+        { label: "Asha", value: "7" },
       ]);
     });
 
