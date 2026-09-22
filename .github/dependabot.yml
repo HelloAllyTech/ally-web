@@ -1,0 +1,24 @@
+# Scopes Dependabot to the one directory that has a lockfile.
+#
+# This repo is npm workspaces: apps/* and libs/* each have a package.json, but
+# there is exactly one package-lock.json, at the root, and it resolves all of
+# them. With no config at all Dependabot discovers every workspace manifest and
+# tries to update them individually — which it cannot do without a lockfile
+# beside them, so those jobs fail with `dependency_file_not_supported`. That is
+# what was failing for vitest in /libs/ui-shared: not a bad dependency, a
+# directory Dependabot should never have been looking at.
+#
+# `open-pull-requests-limit: 0` turns OFF version-update pull requests. Security
+# updates are a separate switch (repo settings) and keep running — they just
+# use this entry's scope now, which is the whole point. Left off deliberately:
+# this repo already carries a large backlog of open Dependabot PRs, and turning
+# on routine version bumps for a 2,200-package tree would bury the security
+# ones that actually matter. Raise the limit when someone is ready to work
+# through them.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
