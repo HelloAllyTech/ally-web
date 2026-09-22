@@ -20,6 +20,14 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
 }) => {
   const [timer, setTimer] = useState<number>(0);
 
+  const onTimeLimitRef = useRef(onTimeLimit);
+  const onWarningRef = useRef(onWarning);
+
+  useEffect(() => {
+    onTimeLimitRef.current = onTimeLimit;
+    onWarningRef.current = onWarning;
+  });
+
   const hasWarnedRef = useRef(false);
   // Read pause state inside the interval without restarting it on every change.
   const isPausedRef = useRef(isPaused);
@@ -44,18 +52,18 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
       setTimer(timeElapsed);
 
       if (timeLimit - timeElapsed <= WARNING_THRESHOLD && !hasWarnedRef.current) {
-        onWarning?.();
+        onWarningRef.current?.();
         hasWarnedRef.current = true;
       }
 
       if (timeElapsed >= timeLimit + CLIENT_AUTO_END_GRACE_SECONDS) {
-        onTimeLimit?.();
+        onTimeLimitRef.current?.();
         clearInterval(interval);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime, onTimeLimit, onWarning, timeLimit]);
+  }, [startTime, timeLimit]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
