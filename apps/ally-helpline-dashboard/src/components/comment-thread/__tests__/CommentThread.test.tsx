@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -528,7 +528,7 @@ describe("CommentThread Component", () => {
       renderWithProvider(
         <CommentThread
           {...defaultProps}
-          comments={[]}
+          comments={[mockComments[0]]}
           setComments={setComments}
           deletedCommentIds={deletedCommentIds}
           threadsOffset={0}
@@ -575,6 +575,46 @@ describe("CommentThread Component", () => {
 
       expect(deletedCommentIds.current.has(mockComments[0].id)).toBe(true);
       expect(setComments).toHaveBeenCalled();
+    });
+  });
+
+  describe("Infinite re-render guard", () => {
+    it('does not fall into an infinite loop due to unstable onCommentChange', async () => {
+        const onCommentChange = vi.fn();
+        const TestParent = () => {
+            const [comments, setComments] = useState([]);
+            const [threadsOffset, setThreadsOffset] = useState(0);
+
+            stableApiResponse.data = [mockComments[0]];
+
+            return (
+                <CommentThread
+                    comments={comments}
+                    setComments={setComments}
+                    onCommentChange={() => onCommentChange()} // Unstable function
+                    id="thread-1"
+                    threadsOffset={threadsOffset}
+                    setThreadsOffset={setThreadsOffset}
+                    onCommentAddition={() => {}}
+                    onDeleteComment={() => {}}
+                    messageId="message-1"
+                    selection={{ startIndex: 0, endIndex: 0 }}
+                    onAddComment={() => {}}
+                    deletedCommentIds={{ current: new Set() }}
+                />
+            );
+        };
+        render(
+            <Provider store={mockStore}>
+                <TestParent />
+            </Provider>,
+        );
+
+        await act(async () => {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        });
+    
+        expect(onCommentChange).toHaveBeenCalledTimes(1);
     });
   });
 });
