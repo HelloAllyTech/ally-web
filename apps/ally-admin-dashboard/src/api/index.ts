@@ -4,6 +4,7 @@ export * from "./auth";
 export * from "./simulationStudio";
 export * from "./comfortAudio";
 export * from "./agentBuilder";
+export * from "./eventBuilder";
 export * from "./userManagement";
 export * from "./scenarioPath";
 export * from "./previewVoice";

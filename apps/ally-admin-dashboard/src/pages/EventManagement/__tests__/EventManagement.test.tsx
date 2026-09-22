@@ -38,7 +38,9 @@ vi.mock("@api", async importOriginal => {
     ...actual,
     useGetSessionEventsQuery: (...args: any[]) => mockUseGetSessionEventsQuery(...args),
     useUpdateSessionEventMutation: () => [mockUpdateSessionEvent],
-    useCreateSessionEventsMutation: () => [mockCreateSessionEvents],
+    // Full RTK tuple: the page reads `isLoading` off the second element to
+    // show the draft panel's in-flight state.
+    useCreateSessionEventsMutation: () => [mockCreateSessionEvents, { isLoading: false }],
     useDeleteSessionEventsMutation: () => [mockDeleteSessionEvents],
   };
 });
