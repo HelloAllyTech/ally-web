@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, FC } from "react";
+import { useEffect, useMemo, useState, useRef, FC } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,7 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetAdminSimulationLogFiltersQuery,
   useGetCustomFieldDefinitionsQuery,
 } from "@api";
 import {
@@ -111,13 +112,36 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
+  // Only the params this endpoint understands, rather than the whole shared
+  // filter object: `filters` is also where the Scribe table's tag/mode/status
+  // filters live, and spreading those in would send the roleplay endpoint
+  // query params it has no meaning for.
+  const simulationFilters = useMemo(
+    () => ({
+      limit: filters.limit,
+      offset: filters.offset,
+      counselorIds: filters.counselorIds,
+      scenarioIds: filters.scenarioIds,
+      sortBy: "createdAt",
+      order: "DESC" as const,
+      languageCode: i18n.language,
+    }),
+    [filters.limit, filters.offset, filters.counselorIds, filters.scenarioIds, i18n.language],
+  );
+
   const {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
     isError: isSimulationLogsError,
     refetch: refetchSimulationLogs,
-  } = useGetAdminSimulationLogsQuery(
-    { ...filters, sortBy: "createdAt", order: "DESC", languageCode: i18n.language },
+  } = useGetAdminSimulationLogsQuery(simulationFilters, { skip: !isSimulation });
+
+  // Filter options come from the roleplay logs themselves, not from the
+  // counsellor directory or the scenario catalog: `getCounsellors` below only
+  // lists members of the COUNSELOR group, so a listener or learner who has
+  // practised would be missing from the filter on their own sessions.
+  const { data: simulationFilterOptions } = useGetAdminSimulationLogFiltersQuery(
+    { languageCode: i18n.language },
     { skip: !isSimulation },
   );
 
@@ -140,12 +164,14 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     }
   };
 
-  // Reset data and pagination when switching session type
+  // Reset data, pagination AND filters when switching session type. The filter
+  // state is shared by both tables but their columns are not — carrying a
+  // Scribe tag filter into the Roleplay list (or a Role Play filter back) would
+  // silently narrow a list by a column that isn't on screen to un-narrow it.
   useEffect(() => {
     setLogs([]);
     setHasMore(true);
-    // Reset pagination to first page
-    dispatch(updateFilters({ ...filters, offset: 0 }));
+    dispatch(updateFilters({ offset: 0, limit: CALL_LOGS_PAGINATION_LIMIT }));
   }, [sessionType]);
 
   // Append new logs to the list and handle hasMore for both modes
@@ -437,12 +463,29 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       header: t("calls.table.scenario"),
       style: { width: "15%" },
       icon: <ScenarioIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      // Filtered by id, not by the rendered title: the same role play carries a
+      // different title per language, so matching on the label would select
+      // different sessions depending on the admin's UI language.
+      filterOptions:
+        simulationFilterOptions?.scenarios?.map(scenario => ({
+          label: scenario.title,
+          value: String(scenario.id),
+        })) || [],
     },
     {
       key: "counsellorName",
       header: t("calls.table.counsellorName"),
       style: { width: "15%" },
       icon: <UserIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions:
+        simulationFilterOptions?.counselors?.map(counselor => ({
+          label: counselor.name,
+          value: String(counselor.id),
+        })) || [],
     },
     {
       key: "dateAndTime",
@@ -483,6 +526,32 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const displayData = isCall
     ? logs.map(getAdminCallDisplayData)
     : logs.map(getAdminSimulationDisplayData);
+
+  /**
+   * Maps the roleplay table's filter entries onto the two params the
+   * admin-scenario-sessions endpoint understands. Both are id lists; an
+   * emptied selection drops the param so the list widens back out rather than
+   * asking the backend for "none of anyone".
+   */
+  const handleSimulationFilterChange = (data: any) => {
+    const { filter = [] } = data;
+    const idsOf = (key: string) => {
+      const entry = filter.find((f: { key: string }) => f.key === key);
+      if (!entry) return undefined;
+      const values = Array.isArray(entry.value) ? entry.value : [entry.value];
+      const ids = values.filter((value: string) => value !== "" && value != null);
+      return ids.length > 0 ? ids.join(",") : undefined;
+    };
+
+    dispatch(
+      updateFilters({
+        offset: 0,
+        limit: CALL_LOGS_PAGINATION_LIMIT,
+        counselorIds: idsOf("counsellorName"),
+        scenarioIds: idsOf("scenarioTitle"),
+      }),
+    );
+  };
 
   const handleFilterChange = (data: any) => {
     const { filter = [], sort = {} } = data;
@@ -616,12 +685,16 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         data-testid="admin-logs-table-container"
       >
         <GenericTable
+          // Remount per session type: the table holds its filter chips in its
+          // own state, and the two tables' columns don't overlap, so a reused
+          // instance would keep showing chips for columns that are gone.
+          key={sessionType}
           ref={tableRef}
           columns={isCall ? callColumns : simulationColumns}
           data={displayData}
           isLoading={isLoading}
-          showSelectedFilters={isCall}
-          onFilterChange={isCall ? handleFilterChange : undefined}
+          showSelectedFilters
+          onFilterChange={isCall ? handleFilterChange : handleSimulationFilterChange}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}

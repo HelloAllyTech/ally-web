@@ -1,7 +1,7 @@
 import React from "react";
 
 import { configureStore } from "@reduxjs/toolkit";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -11,9 +11,11 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetAdminSimulationLogFiltersQuery,
   useGetCustomFieldDefinitionsQuery,
   useGetCustomFieldsEnabledQuery,
 } from "@api";
+import { updateFilters } from "@reducer";
 import { SessionType, CallLog, SimulationLog, ChatSummaryStatus } from "@types";
 
 import AdminLogsTable from "../AdminLogsTable";
@@ -22,12 +24,19 @@ import AdminLogsTable from "../AdminLogsTable";
 // Module mocks
 // ---------------------------------------------------------------------------
 
+// The real GenericTable owns its filter state and hands the parent a
+// {filter, sort} payload; capturing its props lets the filter tests inspect the
+// column config and drive that callback directly.
+const tableProps: { current: any } = { current: null };
+
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   // Carbon Loading replaces MUI CircularProgress for the table spinner.
   Loading: () => <div data-testid="loading">Loading...</div>,
   Tooltip: ({ children }: any) => <>{children}</>,
-  GenericTable: React.forwardRef(
-    ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
+  GenericTable: React.forwardRef((props: any, ref: any) => {
+    const { columns, data, isLoading, handleLoadMore, fallbackUI, className } = props;
+    tableProps.current = props;
+    return (
       <div ref={ref} className={className} data-testid="generic-table">
         {isLoading && <div data-testid="table-loading">Loading...</div>}
         {fallbackUI}
@@ -57,13 +66,14 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
           </button>
         )}
       </div>
-    ),
-  ),
+    );
+  }),
 }));
 
 vi.mock("@api", () => ({
   useGetAdminCallLogsQuery: vi.fn(),
   useGetAdminSimulationLogsQuery: vi.fn(),
+  useGetAdminSimulationLogFiltersQuery: vi.fn(),
   useGetCounsellorsQuery: vi.fn(),
   useGetCallTagsQuery: vi.fn(),
   useGetCustomFieldDefinitionsQuery: vi.fn(),
@@ -340,6 +350,7 @@ describe("AdminLogsTable", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    tableProps.current = null;
 
     mockUseGetAdminCallLogsQuery.mockReturnValue({
       data: { data: [] },
@@ -376,6 +387,20 @@ describe("AdminLogsTable", () => {
 
     vi.mocked(useGetCallTagsQuery).mockReturnValue({
       data: { data: ["Depression", "Anxiety"] },
+      isLoading: false,
+    } as any);
+
+    vi.mocked(useGetAdminSimulationLogFiltersQuery).mockReturnValue({
+      data: {
+        counselors: [
+          { id: 7, name: "Asha" },
+          { id: 12, name: "Ravi" },
+        ],
+        scenarios: [
+          { id: 3, title: "Crisis call" },
+          { id: 5, title: "First-time caller" },
+        ],
+      },
       isLoading: false,
     } as any);
   });
@@ -1314,6 +1339,102 @@ describe("AdminLogsTable", () => {
       await waitFor(() => {
         expect(screen.getByTestId("manage-fields-dialog")).toBeInTheDocument();
       });
+    });
+  });
+  // -------------------------------------------------------------------------
+  describe("Roleplay log filters", () => {
+    const simulationFilterState = { filters: { offset: 0, limit: 25 } };
+
+    const columnFor = (key: string) =>
+      tableProps.current?.columns?.find((column: any) => column.key === key);
+
+    it("offers the people and role plays that actually have sessions", async () => {
+      renderComponent(SessionType.SIMULATION, undefined, simulationFilterState);
+
+      await waitFor(() => expect(tableProps.current).not.toBeNull());
+
+      expect(columnFor("counsellorName").filterable).toBe(true);
+      expect(columnFor("counsellorName").filterOptions).toEqual([
+        { label: "Asha", value: "7" },
+        { label: "Ravi", value: "12" },
+      ]);
+      expect(columnFor("scenarioTitle").filterable).toBe(true);
+      expect(columnFor("scenarioTitle").filterOptions).toEqual([
+        { label: "Crisis call", value: "3" },
+        { label: "First-time caller", value: "5" },
+      ]);
+    });
+
+    it("sends the selected people and role plays as id lists", async () => {
+      renderComponent(SessionType.SIMULATION, undefined, simulationFilterState);
+      await waitFor(() => expect(tableProps.current).not.toBeNull());
+
+      act(() => {
+        tableProps.current.onFilterChange({
+          filter: [
+            { key: "counsellorName", value: ["7", "12"] },
+            { key: "scenarioTitle", value: ["3"] },
+          ],
+          sort: { key: "", value: null },
+        });
+      });
+
+      expect(updateFilters).toHaveBeenCalledWith({
+        offset: 0,
+        limit: 25,
+        counselorIds: "7,12",
+        scenarioIds: "3",
+      });
+    });
+
+    it("drops the param when a selection is cleared, rather than filtering to nothing", async () => {
+      renderComponent(SessionType.SIMULATION, undefined, simulationFilterState);
+      await waitFor(() => expect(tableProps.current).not.toBeNull());
+
+      act(() => {
+        tableProps.current.onFilterChange({
+          filter: [{ key: "counsellorName", value: [] }],
+          sort: { key: "", value: null },
+        });
+      });
+
+      expect(updateFilters).toHaveBeenCalledWith({
+        offset: 0,
+        limit: 25,
+        counselorIds: undefined,
+        scenarioIds: undefined,
+      });
+    });
+
+    it("resets pagination so a new filter starts from the first page", async () => {
+      renderComponent(SessionType.SIMULATION, undefined, { filters: { offset: 50, limit: 25 } });
+      await waitFor(() => expect(tableProps.current).not.toBeNull());
+
+      act(() => {
+        tableProps.current.onFilterChange({
+          filter: [{ key: "scenarioTitle", value: ["5"] }],
+          sort: { key: "", value: null },
+        });
+      });
+
+      expect(updateFilters).toHaveBeenLastCalledWith(
+        expect.objectContaining({ offset: 0, scenarioIds: "5" }),
+      );
+    });
+
+    it("only sends the roleplay endpoint the params it understands", async () => {
+      // The filter slice is shared with the Scribe table, so a leftover tag or
+      // mode filter must not ride along on the roleplay request.
+      renderComponent(SessionType.SIMULATION, undefined, {
+        filters: { offset: 0, limit: 25, tags: "Depression", mode: "SCRIBE", counselorIds: "7" },
+      });
+
+      await waitFor(() => expect(mockUseGetAdminSimulationLogsQuery).toHaveBeenCalled());
+
+      const params = mockUseGetAdminSimulationLogsQuery.mock.calls[0][0];
+      expect(params).toMatchObject({ limit: 25, offset: 0, counselorIds: "7" });
+      expect(params).not.toHaveProperty("tags");
+      expect(params).not.toHaveProperty("mode");
     });
   });
 });
