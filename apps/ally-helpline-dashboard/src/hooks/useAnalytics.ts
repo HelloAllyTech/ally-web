@@ -45,10 +45,36 @@ export function useAnalytics() {
     track(ANALYTICS_EVENTS.USER_LOGGED_OUT);
   }, [track]);
 
+  // ui not available yet
+  const trackUpgradePromptShown = useCallback(
+    (props: { orgId?: string; triggerSource: string; currentPlan?: string }) => {
+      track(ANALYTICS_EVENTS.UPGRADE_PROMPT_SHOWN, {
+        [ANALYTICS_PROPS.ORG_ID]: props.orgId,
+        [ANALYTICS_PROPS.TRIGGER_SOURCE]: props.triggerSource,
+        [ANALYTICS_PROPS.CURRENT_PLAN]: props.currentPlan,
+      });
+    },
+    [track],
+  );
+
+  // ui not available yet
+  const trackUpgradeClicked = useCallback(
+    (props: { orgId?: string; currentPlan?: string; targetPlan?: string }) => {
+      track(ANALYTICS_EVENTS.UPGRADE_CLICKED, {
+        [ANALYTICS_PROPS.ORG_ID]: props.orgId,
+        [ANALYTICS_PROPS.CURRENT_PLAN]: props.currentPlan,
+        [ANALYTICS_PROPS.TARGET_PLAN]: props.targetPlan,
+      });
+    },
+    [track],
+  );
+
   return {
     track,
     trackLogin,
     trackLogout,
+    trackUpgradePromptShown,
+    trackUpgradeClicked,
     capturePageview,
     isFeatureEnabled,
   };

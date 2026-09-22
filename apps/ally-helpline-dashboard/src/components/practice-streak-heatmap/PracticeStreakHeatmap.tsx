@@ -5,6 +5,8 @@ import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useGetPracticeStreakQuery } from "@api";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 import { PracticeStreakCell, PracticeStreakGroupBy, PracticeStreakSummary } from "@types";
 import { cn } from "@utils";
 
@@ -46,8 +48,17 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
   onStartPractice,
 }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const [groupBy, setGroupBy] = useState<PracticeStreakGroupBy>(defaultGroupBy);
   const [expanded, setExpanded] = useState(false);
+
+  // One event covers both halves of the spec: opening the history panel, and
+  // switching its Day/Week/Month view once open. `view` is the grouping the
+  // learner ends up looking at either way.
+  const trackHistoryExpanded = (view: PracticeStreakGroupBy) =>
+    track(ANALYTICS_EVENTS.STREAK_HISTORY_EXPANDED, {
+      [ANALYTICS_PROPS.VIEW]: view.toLowerCase(),
+    });
   const [readout, setReadout] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -401,7 +412,12 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
             the header is not nested inside another button. */}
         <button
           type="button"
-          onClick={() => hasTimeline && setExpanded(prev => !prev)}
+          onClick={() => {
+            if (!hasTimeline) return;
+            // Collapsing is not an expand — only report the opening direction.
+            if (!expanded) trackHistoryExpanded(groupBy);
+            setExpanded(prev => !prev);
+          }}
           aria-expanded={hasTimeline ? expanded : undefined}
           aria-controls={hasTimeline ? "practice-streak-detail" : undefined}
           aria-label={
@@ -490,7 +506,12 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
                   setting for content that is collapsed by default. */}
               <ToggleButtonGroup
                 value={groupBy}
-                onValueChange={value => setGroupBy(value as PracticeStreakGroupBy)}
+                onValueChange={value => {
+                  const next = value as PracticeStreakGroupBy;
+                  if (next === groupBy) return;
+                  trackHistoryExpanded(next);
+                  setGroupBy(next);
+                }}
                 items={groupByItems}
                 disabled={isFetching || !cells.length}
                 className="mb-3"
