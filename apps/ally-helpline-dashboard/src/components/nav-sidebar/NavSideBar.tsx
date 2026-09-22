@@ -454,8 +454,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         [ANALYTICS_PROPS.IMAGE_CHANGED]: !!profileUrl && profileUrl !== existingProfileUrl,
       });
       setOpenSettings(false);
-    } catch (error) {
-      console.error("Failed to update profile", error);
+    } catch {
+      // console.error("Failed to update profile", error);
     }
   };
 

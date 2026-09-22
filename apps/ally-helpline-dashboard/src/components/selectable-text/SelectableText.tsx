@@ -321,8 +321,8 @@ const SelectableText = ({
         isScribe: isScribeReview,
       }).unwrap();
       trackCommentAdded(comment);
-    } catch (error) {
-      console.error("Failed to create comment", error);
+    } catch {
+      // console.error("Failed to create comment", error);
     }
   };
 
@@ -346,8 +346,8 @@ const SelectableText = ({
         isScribe: isScribeReview,
       }).unwrap();
       trackCommentAdded(comment);
-    } catch (error) {
-      console.error("Failed to create comment", error);
+    } catch {
+      // console.error("Failed to create comment", error);
     }
   };
 
