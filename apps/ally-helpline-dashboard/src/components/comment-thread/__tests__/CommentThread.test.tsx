@@ -577,4 +577,42 @@ describe("CommentThread Component", () => {
       expect(setComments).toHaveBeenCalled();
     });
   });
+
+  // --- The reseed effect must not re-run because of the render it caused.
+  // SelectableText (the only production caller) owns `comments` in its own
+  // useState and passes `onCommentChange` as an inline arrow, so a reseed
+  // re-renders it with a brand-new callback identity. If that identity is in
+  // the effect's dependency array the effect runs again, reseeds again, and
+  // the panel never settles. The tests above all pass stable vi.fn() props,
+  // which is exactly why they cannot see it. ---
+  describe("Reseed loop guard", () => {
+    /** Mirrors SelectableText: parent-owned list + an inline arrow callback. */
+    const CallerHarness = ({ onRender }: { onRender: () => void }) => {
+      const [comments, setComments] = React.useState<any[]>([]);
+      onRender();
+      return (
+        <CommentThread
+          {...defaultProps}
+          comments={comments}
+          setComments={setComments}
+          onCommentChange={params => mockOnCommentChange({ ...params, transcript: { id: 101 } })}
+        />
+      );
+    };
+
+    it("settles instead of reseeding forever when the caller's callback identity churns", () => {
+      stableApiResponse.data = [mockComments[0]];
+      let renders = 0;
+      // A hard stop, so a regression fails the assertion rather than hanging
+      // the suite on React's own update-depth ceiling.
+      const onRender = () => {
+        renders += 1;
+        if (renders > 25) throw new Error(`reseed loop: ${renders} renders`);
+      };
+
+      renderWithProvider(<CallerHarness onRender={onRender} />);
+
+      expect(renders).toBeLessThanOrEqual(3);
+    });
+  });
 });

@@ -67,6 +67,23 @@ const CommentThread = ({
     isScribe: isScribeReview,
   });
 
+  /**
+   * The reseed effect writes to the caller's state, so it must not also depend
+   * on the caller's callbacks. SelectableText — the only production caller —
+   * owns `comments` in its own `useState` and passes `onCommentChange` as an
+   * inline arrow, so the reseed below re-renders it with a fresh callback
+   * identity. With those callbacks in the dependency array the effect re-ran on
+   * the render it had just caused, reseeded again, and the comment panel never
+   * settled. Read the latest through a ref instead: the effect should run when
+   * the fetched page changes, and on nothing else.
+   */
+  const onCommentChangeRef = useRef(onCommentChange);
+  const setCommentsRef = useRef(setComments);
+  useEffect(() => {
+    onCommentChangeRef.current = onCommentChange;
+    setCommentsRef.current = setComments;
+  });
+
   useEffect(() => {
     if (!threadComments || threadComments.data.length === 0) return;
     // Exclude locally-deleted comments so a lagging refetch cannot re-add one.
@@ -74,19 +91,19 @@ const CommentThread = ({
       comment => !deletedCommentIds?.current.has(comment.id),
     );
     if (threadsOffset === 0) {
-      setComments?.(nextData);
-      onCommentChange?.({ comments: nextData, threadId: id });
+      setCommentsRef.current?.(nextData);
+      onCommentChangeRef.current?.({ comments: nextData, threadId: id });
     } else if (hasMore) {
-      setComments?.((prev: CommentItem[]) => {
+      setCommentsRef.current?.((prev: CommentItem[]) => {
         const prevList = prev ?? [];
         const existingComments = new Set(prevList.map(comment => comment.id));
         const newComments = nextData.filter(comment => !existingComments.has(comment.id));
-        onCommentChange?.({ comments: [...prevList, ...newComments], threadId: id });
+        onCommentChangeRef.current?.({ comments: [...prevList, ...newComments], threadId: id });
         return [...prevList, ...newComments];
       });
     }
     setHasMore(nextData.length > 0);
-  }, [threadComments, deletedCommentIds, hasMore, id, onCommentChange, setComments, threadsOffset]);
+  }, [threadComments, deletedCommentIds, hasMore, id, threadsOffset]);
 
   const handleCommentAddition = () => {
     onCommentAddition(comment);
