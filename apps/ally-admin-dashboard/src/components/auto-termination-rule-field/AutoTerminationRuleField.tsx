@@ -43,7 +43,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
   const { setValue, watch } = formMethods;
 
-  const watchedRules = watch(TERMINATION_RULES_FIELD) || [];
+  const watchedRulesValue = watch(TERMINATION_RULES_FIELD);
+  const watchedRules = useMemo(() => watchedRulesValue || [], [watchedRulesValue]);
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -51,11 +52,14 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
     searchName: searchTerm,
   });
 
-  const eventOptions =
-    sessionEventsData?.data?.map(event => ({
-      value: event.id || "",
-      label: event.name || "",
-    })) || [];
+  const eventOptions = useMemo(
+    () =>
+      sessionEventsData?.data?.map(event => ({
+        value: event.id || "",
+        label: event.name || "",
+      })) || [],
+    [sessionEventsData?.data],
+  );
 
   const filteredEventOptions = useMemo(() => {
     return eventOptions.filter(

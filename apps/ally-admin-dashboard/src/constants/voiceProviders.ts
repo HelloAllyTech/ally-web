@@ -517,7 +517,10 @@ export interface GroupedVoiceOption {
  * usable, so hiding either would take a decision away from the admin. This
  * only decides what they see first.
  */
-const genderMatchRank = (voiceGender?: string | null, preferredGender?: string | null): number => {
+export const genderMatchRank = (
+  voiceGender?: string | null,
+  preferredGender?: string | null,
+): number => {
   const preferred = String(preferredGender ?? "")
     .trim()
     .toLowerCase();

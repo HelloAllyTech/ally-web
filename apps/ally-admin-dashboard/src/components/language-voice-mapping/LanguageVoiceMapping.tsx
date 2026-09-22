@@ -10,6 +10,8 @@ import {
 import { NotionTable, cellTypes } from "@components";
 import { buildConfigPickerOptions, en } from "@constants";
 import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
+import { resolveAutoCast } from "@utils/voiceAutoSelect";
+import type { AutoSelectedVoice } from "@utils/voiceAutoSelect";
 
 interface VoiceOption {
   id: string;
@@ -113,6 +115,22 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   // activeOnly: a retired config stays resolvable for whatever already points
   // at it, but must not be offered as a new choice.
   const { data: sttConfigs = [] } = useGetSttConfigsQuery({ activeOnly: true });
+
+  /**
+   * The voices this component cast, keyed by language.
+   *
+   * Kept so a later pass can tell its own picks apart from a real choice — an
+   * author's, a character's, the copilot's, or one loaded from a saved
+   * simulation — and only ever revisit its own.
+   */
+  const autoPickedRef = useRef<Record<string, string>>({});
+  /**
+   * Languages whose voice the author cleared. Clearing a row is how a language
+   * is removed from a simulation, so re-casting it would make the control
+   * impossible to use.
+   */
+  const dismissedRef = useRef<Set<string>>(new Set());
+  const [autoPicks, setAutoPicks] = useState<AutoSelectedVoice[]>([]);
 
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -279,6 +297,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
           // Empty value = "Remove voice"; drop the mapping so the language is
           // no longer enabled for this simulation.
           delete nextLanguageVoices[rowId];
+          dismissedRef.current.add(rowId);
         }
         setValue(id, nextLanguageVoices, { shouldDirty: true });
       } else if (columnId === "stt") {
@@ -305,6 +324,57 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   const languageVoicesString = useMemo(
     () => JSON.stringify(languageVoices || {}),
     [languageVoices],
+  );
+
+  /**
+   * Cast a voice for every language, from what the simulation already says.
+   *
+   * A language with no entry here is not offered to the learner and publish is
+   * blocked until at least one has a voice, so an empty table is never the
+   * intended end state — it is just work the author has to do by hand, out of
+   * inputs the form already holds. The persona's gender and age are on screen a
+   * step earlier and every catalog voice carries the same two fields, so the
+   * cast is made from those and the author overrides whatever they disagree
+   * with. Re-cast whenever the persona changes, so editing the age or gender
+   * moves the voices with it.
+   *
+   * Only ever runs while every mapping present is one of this component's own.
+   * The moment anything else is in there — a voice loaded from a saved
+   * simulation, one merged in from a character, the copilot's cast, or a pick
+   * the author made — that map is a deliberate configuration, and a language
+   * missing from it is missing on purpose. Filling those gaps would quietly
+   * enable languages for learners that somebody had decided against, which is
+   * not a thing an author would find out about until a session ran.
+   */
+  useEffect(() => {
+    const cast = resolveAutoCast({
+      languages,
+      current: JSON.parse(languageVoicesString) as Record<string, string>,
+      alreadyCast: autoPickedRef.current,
+      dismissed: dismissedRef.current,
+      persona: { gender: personaGender, age: personaAge },
+    });
+    if (!cast) return;
+
+    autoPickedRef.current = cast.next;
+    setAutoPicks(cast.picks);
+    setValue(id, cast.next, { shouldDirty: true });
+  }, [languages, personaGender, personaAge, languageVoicesString, id, setValue]);
+
+  /**
+   * Languages the cast could not voice as the persona — the language has no
+   * voice of that gender at all. Worth saying out loud: a female client
+   * answering in a male voice is the kind of thing nobody notices until they
+   * listen back to a call.
+   */
+  const genderMismatches = useMemo(
+    () =>
+      autoPicks.filter(
+        // Checked against what the form actually holds, so the warning goes
+        // away once the author picks something else for that language.
+        pick => !pick.genderMatched && languageVoices?.[pick.languageId] === pick.voiceId,
+      ),
+    [autoPicks, languageVoices],
   );
   const prevHasMappingsRef = useRef<boolean | null>(null);
 
@@ -351,6 +421,22 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       </label>
       {errors?.[id]?.message && (
         <p className="text-destructive-500 text-sm">{errors[id].message}</p>
+      )}
+      {autoPicks.length > 0 && (
+        <p className="text-typography-600 text-sm">
+          {en.simulation.voicesAutoSelected}
+          {genderMismatches.length > 0 && (
+            <>
+              {" "}
+              <span className="text-warning-500">
+                {en.simulation.noVoiceMatchingPersonaGender.replace(
+                  "{languages}",
+                  genderMismatches.map(pick => pick.languageLabel).join(", "),
+                )}
+              </span>
+            </>
+          )}
+        </p>
       )}
       <NotionTable
         tableData={tableData}

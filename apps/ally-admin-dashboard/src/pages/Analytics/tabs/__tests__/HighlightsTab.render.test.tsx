@@ -78,6 +78,7 @@ import { HighlightsTab } from "../HighlightsTab";
 
 /** Label, and one heading or card title that only that sub-tab renders. */
 const SUB_TABS: [label: string, marker: RegExp][] = [
+  ["Goals", /XP earned vs\. goal/i],
   ["Platform", /North star/i],
   ["Usage levels", /Activation — getting to a first session/i],
   ["Skill growth", /Competency map/i],
@@ -112,7 +113,7 @@ const render = (ui: React.ReactElement) =>
  *
  * The charts each have their own tests; what this covers is the thing those
  * cannot — that every panel registered in the sub-tab list actually renders with
- * no data behind it. Eight sub-tabs' worth of hooks only run when their panel is
+ * no data behind it. Nine sub-tabs' worth of hooks only run when their panel is
  * selected, so a hook-order or missing-export mistake in one of them is
  * invisible until someone clicks that tab.
  */
@@ -122,14 +123,17 @@ describe("HighlightsTab", () => {
    * costs that much. It timed out at ~5.1s under full-suite load on CI while
    * passing in isolation, which made it a coin-flip on every PR.
    *
-   * Measured before reaching for the number, and the cost is simply the eight
-   * panels: 1.4s for the initial Platform mount, then 0.2-1.4s per sub-tab on a
-   * quiet machine, ~6s for the walk. The per-tab figures track panel size
+   * Measured (pre-Goals-sub-tab) at the cost of the eight original panels:
+   * 1.4s for the initial Platform mount, then 0.2-1.4s per sub-tab on a quiet
+   * machine, ~6s for the walk. The per-tab figures track panel size
    * (Curriculum 0.2s, Orgs 0.5s, Usage levels 1.3s), so it is React rendering
    * five to ten charts' worth of tree each time and not any one bad component —
    * there is no hot spot to delete. Sharing a machine with the rest of the
    * project is what moves the number: the same walk takes 14-18s alongside one
    * other file, and was measured at 36.8s inside a full 310-file project run.
+   * A ninth, lighter panel (Goals, one chart) now mounts first — a strictly
+   * smaller addition than any of the measured panels above, so the existing
+   * budget still has headroom.
    *
    * Two cheaper-looking fixes were measured and rejected:
    *
@@ -140,7 +144,7 @@ describe("HighlightsTab", () => {
    *    exactly the crash this mounts everything to catch.
    *  - One it() per sub-tab. Each test stays under 5s on a quiet machine but
    *    reaches 4.4s under load — no headroom, the same flake one chart later —
-   *    and re-paying the Tabs shell and the Platform panel eight times takes
+   *    and re-paying the Tabs shell and the first panel eight times takes
    *    the file from ~15s to ~26s.
    *
    * 60000 rather than the 30000 the ESLint-booting tests were normalised to in

@@ -38,9 +38,10 @@ const TITLE = "XP earned vs. goal";
  * shown as a target of zero: its Goal bar is simply absent, and
  * {@link goalsXpNoGoalNote} plus the detail table both say so in words.
  *
- * All-time by construction (from the platform data floor through today) and
- * platform-wide (no tenant filter) — the grain (month/quarter/year) is the
- * chart's own control, not the page's range picker.
+ * From a fixed April 2026 floor through today (not the platform's all-time
+ * data floor) and platform-wide (no tenant filter) — the grain
+ * (month/quarter/year) is the chart's own control, not the page's range
+ * picker.
  */
 export const GoalsXpCard = () => {
   const [grain, setGrain] = useState<XpGoalGrain>("month");
