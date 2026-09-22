@@ -218,10 +218,24 @@ export interface GetAdminSimulationLogsInput {
   sortBy?: string;
   order?: "ASC" | "DESC";
   languageCode?: string;
+  /** Comma-separated counselor ids — only sessions run by these people. */
+  counselorIds?: string;
+  /** Comma-separated scenario ids — only sessions of these role plays. */
+  scenarioIds?: string;
 }
 
 export type GetAdminSimulationLogsResponse = {
   data: AdminSimulationLog[];
+};
+
+/**
+ * The people and role plays the admin roleplay log list can be narrowed to.
+ * Derived from the logs themselves, so every option matches at least one
+ * session and nobody who has practised is missing from their own logs' filter.
+ */
+export type GetAdminSimulationLogFiltersResponse = {
+  counselors: { id: number; name: string; email?: string }[];
+  scenarios: { id: number; title: string }[];
 };
 export interface SimulationSummary {
   sessionId: string;
