@@ -92,8 +92,30 @@ export interface CombinationExpressionNode {
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
 }
+/** One few-shot example for a binary classifier, as the API stores it. */
+export interface BinaryClassificationExample {
+  text: string;
+}
+
 export interface BinaryClassificationTriggerCondition {
-  className: string;
+  /**
+   * An ARRAY, not a string, because the trigger-condition editor renders this
+   * as a MULTILINE_TEXT field and that field type produces a list of lines.
+   * `convertApiResponseToEvent` wraps the stored string into a one-element
+   * array and `convertEventToApiPayload` joins it back — this type said
+   * `string` and disagreed with both of them.
+   */
+  className: string[];
+  /**
+   * Few-shot examples of utterances that DO / DO NOT belong to the class.
+   *
+   * These must survive a round trip even when nothing in the UI edits them:
+   * the API replaces `detectionData` wholesale on update, so a PUT that omits
+   * them deletes them. `convertApiResponseToEvent` reads them back into the
+   * trigger condition for exactly that reason.
+   */
+  positiveExamples?: BinaryClassificationExample[];
+  negativeExamples?: BinaryClassificationExample[];
 }
 /**
  * Combination trigger condition

@@ -16,6 +16,7 @@ import {
   ListToolbar,
   ActionConfirmationPopup,
   EventTypeSelectionDialog,
+  GenerateEventPanel,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
@@ -34,6 +35,8 @@ import {
   convertEventToApiPayload,
   convertApiResponseToEvent,
   isDetectionConfigField,
+  draftToEventParam,
+  type EventDraft,
 } from "@utils";
 
 export const EventManagement: React.FC = () => {
@@ -52,6 +55,7 @@ export const EventManagement: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<UpdateEventDataParam | null>(null);
   const [showDeleteConfirmationPopup, setShowDeleteConfirmationPopup] = useState<boolean>(false);
   const [showEventTypeDialog, setShowEventTypeDialog] = useState<boolean>(false);
+  const [isGeneratePanelOpen, setIsGeneratePanelOpen] = useState<boolean>(false);
 
   const { data: sessionEventsData, isFetching } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -62,7 +66,7 @@ export const EventManagement: React.FC = () => {
     searchName: eventSearch,
   });
   const [updateSessionEvent] = useUpdateSessionEventMutation();
-  const [createSessionEvents] = useCreateSessionEventsMutation();
+  const [createSessionEvents, { isLoading: isCreatingEvent }] = useCreateSessionEventsMutation();
   const [deleteSessionEvents] = useDeleteSessionEventsMutation();
 
   // Handle data updates when query data changes
@@ -99,6 +103,15 @@ export const EventManagement: React.FC = () => {
   };
 
   const handleEventTypeSelect = async (eventType: string) => {
+    // Binary classification is authored in the draft panel rather than by
+    // writing a blank "New Event" row first. This catalogue is global — no
+    // tenant column — so a row created on the way to a dialog the author then
+    // abandons is permanent litter in every tenant's picker.
+    if (eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER) {
+      setIsGeneratePanelOpen(true);
+      return;
+    }
+
     const newEvent: UpdateEventDataParam = {
       name: "New Event",
       description: "",
@@ -132,6 +145,38 @@ export const EventManagement: React.FC = () => {
       toast.error(error?.data?.message || en.errors.failedToCreateEvent);
     }
   };
+
+  /**
+   * Create a drafted binary-classification event in the catalogue, then open it
+   * in the normal side panel so the author lands where every other event is
+   * edited. Returns false on failure so the draft panel stays open with the
+   * author's work instead of discarding a brief they would have to write again.
+   */
+  const handleCreateGeneratedEvent = useCallback(
+    async (draft: EventDraft): Promise<boolean> => {
+      const payload = convertEventToApiPayload(draftToEventParam(draft));
+      if (!payload) return false;
+
+      try {
+        const response = await createSessionEvents({ events: [payload] });
+        if (response.error) {
+          toast.error(en.errors.failedToCreateEvent);
+          return false;
+        }
+        toast.success(en.simulation.eventCreatedSuccessfully);
+        const createdEvent = response.data?.[0];
+        if (createdEvent) {
+          setSelectedEvent(convertApiResponseToEvent(createdEvent));
+          setIsSidePanelOpen(true);
+        }
+        return true;
+      } catch (error: any) {
+        toast.error(error?.data?.message || en.errors.failedToCreateEvent);
+        return false;
+      }
+    },
+    [createSessionEvents],
+  );
 
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
@@ -403,6 +448,12 @@ export const EventManagement: React.FC = () => {
           isOpen={showEventTypeDialog}
           onClose={() => setShowEventTypeDialog(false)}
           onSelect={handleEventTypeSelect}
+        />
+        <GenerateEventPanel
+          isOpen={isGeneratePanelOpen}
+          onClose={() => setIsGeneratePanelOpen(false)}
+          onCreate={handleCreateGeneratedEvent}
+          isCreating={isCreatingEvent}
         />
       </div>
     </div>

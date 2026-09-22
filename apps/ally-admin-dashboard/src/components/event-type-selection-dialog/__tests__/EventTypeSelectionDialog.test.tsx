@@ -231,7 +231,7 @@ describe("EventTypeSelectionDialog", () => {
       const expectedLabels: Record<EventType, string> = {
         SENTENCE_SIMILARITY: "Sentence Similarity",
         SEMANTIC_SIMILARITY: "Semantic Similarity",
-        BINARY_CLASSIFIER: "Binary Classification (Zero-shot)",
+        BINARY_CLASSIFIER: "Binary Classification",
         TIME_BASED: "Time Based",
         SCORE_BASED: "Score Based",
         COMBINATION: "Combination of",
@@ -246,7 +246,7 @@ describe("EventTypeSelectionDialog", () => {
       const expectedDescriptions: Record<EventType, string> = {
         SENTENCE_SIMILARITY: "Trigger based on what the speaker says.",
         SEMANTIC_SIMILARITY: "Trigger based on similar meaning.",
-        BINARY_CLASSIFIER: "Trigger based on binary classification.",
+        BINARY_CLASSIFIER: "Describe a behaviour; an LLM judges each thing the counsellor says.",
         TIME_BASED: "Trigger before, after, or at a specific time.",
         SCORE_BASED: "Trigger when score is greater, less, or equal to threshold.",
         COMBINATION: "Trigger based on multiple events.",

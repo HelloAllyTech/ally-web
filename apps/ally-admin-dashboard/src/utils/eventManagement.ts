@@ -16,6 +16,13 @@ import {
   isNonEmptyObject,
 } from "@utils";
 
+import { sanitizeClassifierExamples } from "./classifierExamples";
+
+// Re-exported so the existing `@utils` surface is unchanged; it lives in its
+// own leaf module so importing it does not pull in this file's `@utils` barrel
+// import (and with it the Redux store).
+export { sanitizeClassifierExamples } from "./classifierExamples";
+
 /**
  * Maps frontend operator to backend condition
  * @param operator - Frontend operator (e.g., "LESS_THAN", "GREATER_THAN")
@@ -196,8 +203,16 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   const backendDetectionType = mapDetectionTypeToBackend(event.detectionType);
 
   const detectionData: SessionEventDetectionData = {};
-  const { sentences, speaker, className, value, operator, expression } =
-    (event?.triggerCondition as any) || {};
+  const {
+    sentences,
+    speaker,
+    className,
+    value,
+    operator,
+    expression,
+    positiveExamples,
+    negativeExamples,
+  } = (event?.triggerCondition as any) || {};
 
   if (
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
@@ -212,6 +227,15 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNonEmptyArray(className)) detectionData.className = className?.join(" ");
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
+      // The API replaces `detectionData` wholesale on update, so these have to
+      // be written on EVERY save, not only when something edited them — a PUT
+      // that leaves them out deletes the few-shot block and silently drops the
+      // classifier back to zero-shot. `convertApiResponseToEvent` puts them on
+      // the trigger condition for this round trip.
+      const positives = sanitizeClassifierExamples(positiveExamples);
+      const negatives = sanitizeClassifierExamples(negativeExamples);
+      if (positives.length) detectionData.positiveExamples = positives;
+      if (negatives.length) detectionData.negativeExamples = negatives;
     } else {
       detectionData.className = "";
     }
@@ -385,9 +409,16 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
         };
       }
     } else if (frontendDetectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER) {
-      if (detectionData.className) {
+      const positives = sanitizeClassifierExamples(detectionData.positiveExamples);
+      const negatives = sanitizeClassifierExamples(detectionData.negativeExamples);
+      // Built even when there is no className, unlike before: an event that has
+      // examples but no class name would otherwise get `triggerCondition =
+      // undefined`, and the next save would write its examples away.
+      if (detectionData.className || positives.length || negatives.length) {
         triggerCondition = {
-          className: [detectionData.className],
+          className: detectionData.className ? [detectionData.className] : [],
+          positiveExamples: positives,
+          negativeExamples: negatives,
         };
       }
     } else if (frontendDetectionType === EVENT_DETECTION_TYPES.COMBINATION) {

@@ -91,6 +91,7 @@ export const ApiEndpoints = {
     GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
     DELETE_SESSION_EVENTS: "/v1/session-events/events",
+    GENERATE_EVENT_BUILDER_FIELD: "/v1/session-events/generate-field",
     GET_COVER_IMAGE_URL: "/v1/learn/scenarios/cover-image-url",
     DELETE_COVER_IMAGE: "/v1/learn/cover-image",
     GET_COVER_VIDEO_URL: "/v1/learn/scenarios/cover-video-url",

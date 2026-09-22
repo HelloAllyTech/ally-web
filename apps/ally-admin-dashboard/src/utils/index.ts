@@ -4,6 +4,8 @@ export * from "./permissions";
 export * from "./eventManagement";
 export * from "./createSimulation";
 export * from "./agentBuilderApply";
+export * from "./eventBuilderApply";
+export * from "./eventDraftPayload";
 export * from "./agentBuilderVoicePick";
 export * from "./eventMapping";
 export * from "./expressionTreeHelpers";

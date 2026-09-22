@@ -31,8 +31,11 @@ export interface EventTypeOption {
 export const EVENT_TYPE_POPUP_OPTIONS: EventTypeOption[] = [
   {
     value: "BINARY_CLASSIFIER",
-    label: "Binary Classification (Zero-shot)",
-    description: "Trigger based on binary classification.",
+    // No longer "(Zero-shot)": these events carry few-shot positive/negative
+    // examples, which the runtime has always supported and the editor now
+    // writes.
+    label: "Binary Classification",
+    description: "Describe a behaviour; an LLM judges each thing the counsellor says.",
     icon: BinaryClassification,
   },
   {
