@@ -1,6 +1,7 @@
 import { EventDetectionConfig } from "@types";
 
 import { SimulationStatus, ScenarioVoice } from "./createSimulation";
+import { BinaryClassificationExample } from "./triggerConditions";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -415,6 +416,13 @@ export interface SessionEventDetectionData {
   speaker?: string;
   sentences?: string[];
   className?: string;
+  /**
+   * BINARY_CLASSIFIER few-shot examples. ally-ai-learn inlines these into the
+   * classification prompt it rebuilds on every learner turn, so the count is
+   * capped server-side rather than left to the author.
+   */
+  positiveExamples?: BinaryClassificationExample[];
+  negativeExamples?: BinaryClassificationExample[];
   score?: number;
   time?: number;
   condition?: SessionEventDetectionCondition;

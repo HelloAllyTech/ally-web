@@ -10,6 +10,7 @@ import {
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
   useGetMappedScenarioEventsQuery,
+  useCreateSessionEventsMutation,
 } from "@api";
 import { Add, Refresh, Trash } from "@assets";
 import {
@@ -20,9 +21,19 @@ import {
   EventMapTableLoader,
   BulkAddEventsSidePanel,
   SegmentedToggle,
+  AddEventMethodDialog,
+  ADD_EVENT_METHOD,
+  GenerateEventPanel,
+  type AddEventMethod,
 } from "@components";
 import { ButtonVariant } from "@components/types";
-import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
+import {
+  ADVANCED_EVENTS_LATENCY_THRESHOLD,
+  SESSION_EVENT_STATUS_OPTIONS,
+  SORT_BY,
+  SORT_ORDER,
+  en,
+} from "@constants";
 import { UpdateScenarioEventDataParam } from "@types";
 import {
   createNewEvent,
@@ -34,6 +45,9 @@ import {
   isNonEmptyString,
   addScoreColors,
   getErrorMessage,
+  convertEventToApiPayload,
+  draftToEventParam,
+  type EventDraft,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
@@ -79,6 +93,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   const [selectedEventForEdit, setSelectedEventForEdit] =
     useState<UpdateScenarioEventDataParam | null>(null);
   const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
+  const [isAddMethodDialogOpen, setIsAddMethodDialogOpen] = useState(false);
+  const [isGeneratePanelOpen, setIsGeneratePanelOpen] = useState(false);
   const [viewMode, setViewMode] = useState<EventMapViewMode>("full");
 
   // The whole active-event catalogue backs the event picker, so this one
@@ -118,6 +134,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
 
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
+  const [createSessionEvents, { isLoading: isCreatingSessionEvent }] =
+    useCreateSessionEventsMutation();
 
   const sessionEvents = useMemo(() => sessionEventsData?.data || [], [sessionEventsData]);
   const isLoading = isSessionEventsLoading || isMappedEventsLoading;
@@ -145,6 +163,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
 
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
+
+  // Real mapped events, excluding the blank placeholder row the table always
+  // keeps. Feeds the latency warning, which is about how many classifiers the
+  // runtime has to evaluate — a row bound to nothing costs it nothing.
+  const mappedEventCount = useMemo(
+    () => mappedEvents.filter(event => isNonEmptyString(event.id?.value)).length,
+    [mappedEvents],
+  );
 
   // Calculate available session events options (excluding already mapped events)
   const sessionEventsOptions = useMemo(() => {
@@ -492,6 +518,69 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     setIsSidePanelOpen(true);
   };
 
+  const handleAddMethodSelect = useCallback((method: AddEventMethod) => {
+    if (method === ADD_EVENT_METHOD.DESCRIBE) {
+      setIsGeneratePanelOpen(true);
+      return;
+    }
+    handleAddEventInternal();
+  }, []);
+
+  /**
+   * Create the drafted event in the shared catalogue, then map it onto this
+   * simulation.
+   *
+   * Two steps because they are two different things: `session_events` is a
+   * global library row (no tenant column), and `scenario_events` is this
+   * simulation's use of it. Returns false on failure so the panel stays open
+   * with the author's work rather than discarding a brief they would have to
+   * write again.
+   *
+   * The created event is mapped from the CREATE RESPONSE rather than by waiting
+   * for the catalogue query to refetch — `sessionEventsMap` is built from that
+   * query, and a brand-new event is not in it yet, so going through the picker
+   * path would map a row whose name resolves to nothing.
+   */
+  const handleCreateGeneratedEvent = useCallback(
+    async (draft: EventDraft): Promise<boolean> => {
+      const payload = convertEventToApiPayload(draftToEventParam(draft));
+      if (!payload) return false;
+
+      try {
+        const response: any = await createSessionEvents({ events: [payload] });
+        if (response?.error) {
+          toast.error(getErrorMessage(response.error, en.errors.failedToCreateEvent));
+          return false;
+        }
+        const createdEvent = response?.data?.[0];
+        if (!createdEvent?.id) {
+          toast.error(en.errors.failedToCreateEvent);
+          return false;
+        }
+
+        const mappedEvent = formatToMappedEvent(createdEvent);
+        const previousEvents = mappedEvents;
+        setMappedEvents(current => [mappedEvent, ...current]);
+
+        const saved = await saveEventsToApi([mappedEvent]);
+        if (!saved) {
+          // The catalogue row exists but this simulation never got it. Roll the
+          // table back rather than showing a row that is not actually mapped —
+          // the event is in the library, so the author can add it from there.
+          setMappedEvents(previousEvents);
+          return false;
+        }
+
+        toast.success(en.simulation.eventCreatedSuccessfully);
+        return true;
+      } catch (error) {
+        toast.error(getErrorMessage(error, en.errors.failedToCreateEvent));
+        return false;
+      }
+    },
+    [createSessionEvents, mappedEvents, saveEventsToApi],
+  );
+
   // Handle event selection changes in the table
   const handleEventSelectionChange = useCallback(
     (selectedEvents: UpdateScenarioEventDataParam[]) => {
@@ -671,7 +760,11 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
       );
     }
     return (
-      <Button disabled={disabled} variant={ButtonVariant.PRIMARY} onClick={handleAddEventInternal}>
+      <Button
+        disabled={disabled}
+        variant={ButtonVariant.PRIMARY}
+        onClick={() => setIsAddMethodDialogOpen(true)}
+      >
         <Add />
         {`${en.simulation.addEvent}`}
       </Button>
@@ -763,6 +856,24 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         sessionEvents={sessionEvents}
         mappedEvents={mappedEvents}
         onBulkAdd={handleBulkAddEvents}
+      />
+      <AddEventMethodDialog
+        isOpen={isAddMethodDialogOpen}
+        onClose={() => setIsAddMethodDialogOpen(false)}
+        onSelect={handleAddMethodSelect}
+      />
+      <GenerateEventPanel
+        isOpen={isGeneratePanelOpen}
+        onClose={() => setIsGeneratePanelOpen(false)}
+        onCreate={handleCreateGeneratedEvent}
+        isCreating={isCreatingSessionEvent}
+        latencyWarning={
+          // Counting the event about to be added, so the warning appears on the
+          // one that crosses the line rather than one event late.
+          mappedEventCount + 1 > ADVANCED_EVENTS_LATENCY_THRESHOLD
+            ? en.simulation.advancedEventsLatencyWarning(mappedEventCount + 1)
+            : undefined
+        }
       />
     </div>
   );

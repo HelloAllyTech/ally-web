@@ -7,6 +7,12 @@ vi.mock("@api", () => ({
   useGetMappedScenarioEventsQuery: vi.fn(() => ({ data: { data: [] }, isLoading: false })),
   useMapScenarioEventsMutation: vi.fn(() => [vi.fn()]),
   useDeleteScenarioEventsMutation: vi.fn(() => [vi.fn()]),
+  // Backs the "Describe it" path on Add event; unused here, but the
+  // component resolves it on every render.
+  useCreateSessionEventsMutation: vi.fn(() => [
+    vi.fn(() => Promise.resolve({ data: [] })),
+    { isLoading: false },
+  ]),
 }));
 
 import * as api from "@api";
@@ -69,6 +75,23 @@ vi.mock("@components", () => ({
     isOpen ? <div data-testid="side-panel-open" /> : null,
   BulkAddEventsSidePanel: ({ isOpen }: any) =>
     isOpen ? <div data-testid="bulk-add-panel-open" /> : null,
+  // "Add event" now asks HOW to add one first. The dialog exposes its choices
+  // as buttons so the tests below can take either branch; "Pick from the
+  // catalogue" is the behaviour Add event had before.
+  AddEventMethodDialog: ({ isOpen, onSelect }: any) =>
+    isOpen ? (
+      <div data-testid="add-method-dialog">
+        <button type="button" onClick={() => onSelect("describe")}>
+          Describe it
+        </button>
+        <button type="button" onClick={() => onSelect("catalogue")}>
+          Pick from the catalogue
+        </button>
+      </div>
+    ) : null,
+  ADD_EVENT_METHOD: { DESCRIBE: "describe", CATALOGUE: "catalogue" },
+  GenerateEventPanel: ({ isOpen }: any) =>
+    isOpen ? <div data-testid="generate-panel-open" /> : null,
   EventMapTableLoader: () => <div data-testid="loader" />,
   cellTypes: {
     dropdownSearchable: "dropdownSearchable",
@@ -90,13 +113,17 @@ vi.mock("@constants", () => ({
       eventConfiguration: "Event Configuration",
       advancedSettings: "Event Configuration",
       eventsDeletedSuccessfully: "Events deleted successfully",
+      eventCreatedSuccessfully: "Event created successfully",
+      advancedEventsLatencyWarning: (count: number) => `Heads up: ${count} advanced events`,
     },
     common: { delete: "Delete" },
     errors: {
       failedToSaveEvents: "Failed to save events",
       failedToDeleteEvent: "Failed to delete event",
+      failedToCreateEvent: "Failed to create event",
     },
   },
+  ADVANCED_EVENTS_LATENCY_THRESHOLD: 10,
   TAG_TYPES: {
     USERS: "users",
     TENANTS: "tenants",
@@ -310,6 +337,9 @@ describe("SimulationEventMapTable", () => {
 
     const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
     fireEvent.click(addBtn);
+    // Add event now asks HOW first; "Pick from the catalogue" is the behaviour
+    // it had before the generator was added.
+    fireEvent.click(screen.getByText("Pick from the catalogue"));
     expect(screen.getByTestId("side-panel-open")).toBeInTheDocument();
   });
 
@@ -347,6 +377,7 @@ describe("SimulationEventMapTable", () => {
     await waitFor(() => expect(addButton()).not.toBeDisabled());
 
     fireEvent.click(addButton());
+    fireEvent.click(screen.getByText("Pick from the catalogue"));
 
     // Give the seeding effect every chance to run and clobber the new row.
     await waitFor(() => expect(screen.getByTestId("side-panel-open")).toBeInTheDocument());

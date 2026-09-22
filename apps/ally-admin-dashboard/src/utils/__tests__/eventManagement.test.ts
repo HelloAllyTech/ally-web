@@ -42,6 +42,7 @@ import {
   isExactlyOneEventSelected,
   convertEventToApiPayload,
   convertApiResponseToEvent,
+  sanitizeClassifierExamples,
 } from "../eventManagement";
 
 describe("eventManagement utils", () => {
@@ -863,5 +864,102 @@ describe("eventManagement utils", () => {
         expect((result.triggerCondition as any)?.speaker).toBe("user");
       });
     });
+  });
+});
+
+describe("binary classifier few-shot examples", () => {
+  // The API replaces `detectionData` wholesale on update, so anything the
+  // client does not send back on a save is deleted. Before these were carried
+  // on the trigger condition, every edit to a generated event wiped its
+  // examples and quietly dropped the classifier back to zero-shot.
+  const apiEvent: SessionEvent = {
+    id: "evt-1",
+    name: "Open-Ended Question",
+    detectionType: SessionEventDetectionType.BINARY_CLASSIFIER,
+    detectionData: {
+      className: "Open-ended question",
+      positiveExamples: [{ text: "What was that like for you?" }],
+      negativeExamples: [{ text: "Are you okay?" }],
+    },
+  };
+
+  describe("sanitizeClassifierExamples", () => {
+    it("accepts the API shape", () => {
+      expect(sanitizeClassifierExamples([{ text: "Say more." }])).toEqual([{ text: "Say more." }]);
+    });
+
+    it("accepts bare strings and trims them", () => {
+      expect(sanitizeClassifierExamples(["  Say more.  "])).toEqual([{ text: "Say more." }]);
+    });
+
+    it("drops blanks, which would reach the runtime prompt as empty examples", () => {
+      expect(sanitizeClassifierExamples([{ text: "   " }, { text: "" }, null])).toEqual([]);
+    });
+
+    it("returns an empty list for anything that is not an array", () => {
+      expect(sanitizeClassifierExamples(undefined)).toEqual([]);
+      expect(sanitizeClassifierExamples("nope")).toEqual([]);
+    });
+  });
+
+  it("reads examples off the API response onto the trigger condition", () => {
+    const result = convertApiResponseToEvent(apiEvent);
+    const condition = result.triggerCondition as any;
+
+    expect(condition.className).toEqual(["Open-ended question"]);
+    expect(condition.positiveExamples).toEqual([{ text: "What was that like for you?" }]);
+    expect(condition.negativeExamples).toEqual([{ text: "Are you okay?" }]);
+  });
+
+  it("builds a trigger condition for examples even with no class name", () => {
+    const result = convertApiResponseToEvent({
+      ...apiEvent,
+      detectionData: { positiveExamples: [{ text: "Say more." }] },
+    });
+
+    expect((result.triggerCondition as any)?.positiveExamples).toEqual([{ text: "Say more." }]);
+  });
+
+  it("writes examples back into the payload", () => {
+    const payload = convertEventToApiPayload({
+      name: "Open-Ended Question",
+      detectionType: EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
+      triggerCondition: {
+        className: ["Open-ended question"],
+        positiveExamples: [{ text: "What was that like for you?" }],
+        negativeExamples: [{ text: "Are you okay?" }],
+      },
+    } as unknown as UpdateEventDataParam)!;
+
+    expect(payload.detectionData?.positiveExamples).toEqual([
+      { text: "What was that like for you?" },
+    ]);
+    expect(payload.detectionData?.negativeExamples).toEqual([{ text: "Are you okay?" }]);
+  });
+
+  it("survives a full read-modify-write round trip", () => {
+    // The loop the side panel actually runs: load, edit an unrelated field,
+    // save. The examples must come out the far side untouched.
+    const loaded = convertApiResponseToEvent(apiEvent);
+    const payload = convertEventToApiPayload({ ...loaded, message: "Nice work" })!;
+
+    expect(payload.detectionData).toEqual(
+      expect.objectContaining({
+        className: "Open-ended question",
+        positiveExamples: [{ text: "What was that like for you?" }],
+        negativeExamples: [{ text: "Are you okay?" }],
+      }),
+    );
+  });
+
+  it("omits the keys entirely when an event has no examples", () => {
+    const payload = convertEventToApiPayload({
+      name: "Open-Ended Question",
+      detectionType: EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
+      triggerCondition: { className: ["Open-ended question"] },
+    } as unknown as UpdateEventDataParam)!;
+
+    expect(payload.detectionData).not.toHaveProperty("positiveExamples");
+    expect(payload.detectionData).not.toHaveProperty("negativeExamples");
   });
 });

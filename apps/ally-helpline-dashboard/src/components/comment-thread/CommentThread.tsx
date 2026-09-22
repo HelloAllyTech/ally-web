@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 
+import isEqual from "react-fast-compare";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -74,19 +75,34 @@ const CommentThread = ({
       comment => !deletedCommentIds?.current.has(comment.id),
     );
     if (threadsOffset === 0) {
-      setComments?.(nextData);
-      onCommentChange?.({ comments: nextData, threadId: id });
+      if (!isEqual(comments, nextData)) {
+        setComments?.(nextData);
+        onCommentChange?.({ comments: nextData, threadId: id });
+      }
     } else if (hasMore) {
       setComments?.((prev: CommentItem[]) => {
         const prevList = prev ?? [];
         const existingComments = new Set(prevList.map(comment => comment.id));
         const newComments = nextData.filter(comment => !existingComments.has(comment.id));
-        onCommentChange?.({ comments: [...prevList, ...newComments], threadId: id });
-        return [...prevList, ...newComments];
+        const finalComments = [...prevList, ...newComments];
+        if (!isEqual(prev, finalComments)) {
+          onCommentChange?.({ comments: finalComments, threadId: id });
+          return finalComments;
+        }
+        return prev;
       });
     }
     setHasMore(nextData.length > 0);
-  }, [threadComments, deletedCommentIds, hasMore, id, onCommentChange, setComments, threadsOffset]);
+  }, [
+    threadComments,
+    comments,
+    deletedCommentIds,
+    hasMore,
+    id,
+    onCommentChange,
+    setComments,
+    threadsOffset,
+  ]);
 
   const handleCommentAddition = () => {
     onCommentAddition(comment);

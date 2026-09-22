@@ -23,6 +23,12 @@ vi.mock("@api", async importOriginal => {
     useGetMappedScenarioEventsQuery: vi.fn(),
     useMapScenarioEventsMutation: vi.fn(() => [vi.fn(() => Promise.resolve({}))]),
     useDeleteScenarioEventsMutation: vi.fn(() => [vi.fn(() => Promise.resolve({}))]),
+    // Backs the "Describe it" path on Add event; unused here, but the
+    // component resolves it on every render.
+    useCreateSessionEventsMutation: vi.fn(() => [
+      vi.fn(() => Promise.resolve({ data: [] })),
+      { isLoading: false },
+    ]),
   };
 });
 
@@ -65,6 +71,11 @@ const renderTable = () =>
 
 const openEventPicker = () => {
   fireEvent.click(screen.getByText(en.simulation.addEvent));
+  // Add event asks HOW to add one first. This suite is about the catalogue
+  // behind the picker, so it always takes the "pick an existing event" branch —
+  // the behaviour Add event had before the generator was added.
+  fireEvent.click(screen.getByText("Pick from the catalogue"));
+  fireEvent.click(screen.getByText("Continue"));
   fireEvent.click(screen.getByText("Select an event"));
 };
 
