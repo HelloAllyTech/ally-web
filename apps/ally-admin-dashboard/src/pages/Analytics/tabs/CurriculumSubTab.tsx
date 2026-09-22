@@ -9,6 +9,7 @@ import { AnalyticsTabFilters, asOf, asOfStamp, windowLabel } from "../analyticsF
 import {
   DEFAULT_GROUPING,
   bucketTitle,
+  grainAsBucket,
   groupingNote,
   inProgressCaption,
   isBusy,
@@ -51,7 +52,20 @@ const SubHeading = ({ children }: { children: string }) => (
  */
 type ChartId = "languageMix";
 
-const DEFAULT_GROUPINGS: Record<ChartId, AnalyticsBucket> = { languageMix: DEFAULT_GROUPING };
+// `DEFAULT_GROUPING` is typed `AnalyticsGrain` (Phase 1 widening); `useChartGrouping`
+// is mechanism B, migrated in a later phase, and stays bucket-only.
+const DEFAULT_GROUPINGS: Record<ChartId, AnalyticsBucket> = {
+  languageMix: grainAsBucket(DEFAULT_GROUPING),
+};
+
+/**
+ * Every SQL-bucketable grain, quarter included (Phase 4 mechanism-B migration).
+ * No "All time" here: this is a 100%-stacked breakdown by language, and a
+ * stack has no single number to collapse to — a KPI tile would have to pick
+ * one language and hide the rest, which answers a different question than the
+ * chart does.
+ */
+const LANGUAGE_MIX_GRAINS: AnalyticsBucket[] = ["day", "week", "month", "quarter", "year"];
 
 /**
  * Curriculum — what learners practise, and what they finish.
@@ -73,7 +87,7 @@ const DEFAULT_GROUPINGS: Record<ChartId, AnalyticsBucket> = { languageMix: DEFAU
 export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
   const { groupingFor, setGrouping } = useChartGrouping<ChartId>(
     DEFAULT_GROUPINGS,
-    DEFAULT_GROUPING,
+    grainAsBucket(DEFAULT_GROUPING),
   );
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -92,7 +106,8 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
     <GroupingPicker
       id={`curriculum-grouping-${chart}`}
       value={groupingFor(chart)}
-      onChange={g => setGrouping(chart, g)}
+      onChange={g => setGrouping(chart, grainAsBucket(g))}
+      options={LANGUAGE_MIX_GRAINS}
     />
   );
 

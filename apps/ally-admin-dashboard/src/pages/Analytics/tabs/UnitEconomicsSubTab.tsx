@@ -7,17 +7,25 @@ import { useGetRoleplayCostQuery } from "@api";
 
 import { PLATFORM_WIDE_NOTE, windowLabel } from "../analyticsFilters";
 import {
+  GROUPINGS,
   bucketTitle,
   groupingNote,
   inProgressCaption,
   withoutInProgress,
 } from "../analyticsGrouping";
-import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
+import {
+  defaultControlsFor,
+  grainAsBucket,
+  RANGE_SHORT,
+  RangePicker,
+  useChartControls,
+} from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   GroupingPicker,
   KpiTile,
+  KpiTileProps,
   ScrollableChart,
   buildSource,
   lineOpts,
@@ -40,6 +48,17 @@ import {
 type ChartId = "unitCost" | "costSplit";
 
 const CHARTS: readonly ChartId[] = ["unitCost", "costSplit"];
+
+/**
+ * "Where the spend goes" has no `"allTime"` option, unlike its sibling chart:
+ * the whole point of that panel is the split BY area/service, and
+ * `RoleplayCostResponse` carries only whole-window TOTALS
+ * (`totalAttributableCostUsd` etc, no per-area/service breakdown aggregate).
+ * Collapsing it to one KPI number would either throw away the split — the
+ * one thing this chart exists to show — or duplicate the "Learner-caused AI
+ * spend" tile already in the KPI strip above. Left narrower on purpose.
+ */
+const SPLIT_GROUPING_OPTIONS = GROUPINGS.filter(g => g !== "allTime");
 
 /**
  * What ten minutes of roleplay costs us.
@@ -83,14 +102,14 @@ export const UnitEconomicsSubTab = () => {
   const [split, setSplit] = useState<CostSplit>("area");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const { controlsFor, setRange, setBucket, hydrating } = useChartControls<ChartId>(
+  const { controlsFor, setRange, setGrain, hydrating } = useChartControls<ChartId>(
     "highlights.cost",
     // Both charts open monthly: the numerator is spend and the denominator is
     // practice minutes, and on a daily axis one long session whose evaluation
     // landed after midnight visibly moves the ratio.
     defaultControlsFor(CHARTS, {
-      unitCost: { bucket: "month" },
-      costSplit: { bucket: "month" },
+      unitCost: { grain: "month" },
+      costSplit: { grain: "month" },
     }),
   );
 
@@ -101,11 +120,11 @@ export const UnitEconomicsSubTab = () => {
   // dedupes them into a single request whenever the two happen to agree — which
   // is the common case, since they open on the same defaults.
   const unitCost = useGetRoleplayCostQuery(
-    { range: unitControls.range, bucket: unitControls.bucket },
+    { range: unitControls.range, bucket: grainAsBucket(unitControls.grain) },
     { skip: hydrating },
   );
   const splitCost = useGetRoleplayCostQuery(
-    { range: splitControls.range, bucket: splitControls.bucket },
+    { range: splitControls.range, bucket: grainAsBucket(splitControls.grain) },
     { skip: hydrating },
   );
 
@@ -133,6 +152,19 @@ export const UnitEconomicsSubTab = () => {
   const attributableShare = attributableSharePct(u);
   const asOf = u?.computedAt ? new Date(u.computedAt).toLocaleDateString() : undefined;
   const splitMeta = COST_SPLITS.find(s => s.key === split) ?? COST_SPLITS[0];
+
+  // All-time: `overallCostPer10MinUsd` is already a whole-window aggregate on
+  // this same response (see RoleplayCostResponse), not a fold of the bucketed
+  // series — no separate overall query needed.
+  const isUnitCostAllTime = unitControls.grain === "allTime";
+  const unitCostKpi: KpiTileProps = {
+    label: `USD per ${u?.perMinutes ?? 10} min of practice`,
+    value: formatUsd(u?.overallCostPer10MinUsd),
+    description:
+      "Learner-caused AI spend over practice minutes, across the window. Same " +
+      "figure as the KPI strip above, shown here so switching this chart's grain " +
+      "to All-time still reads consistently with its other grains.",
+  };
 
   const splitPicker = (
     <div className="w-32 shrink-0">
@@ -207,18 +239,24 @@ export const UnitEconomicsSubTab = () => {
             `Learner-caused AI spend divided by practice minutes. A period with no ` +
             `practice has NO unit cost and breaks the line — a ratio with no ` +
             `denominator is not zero.` +
-            inProgressCaption(unitControls.bucket, u?.window.inProgressBucket) +
+            (isUnitCostAllTime
+              ? ""
+              : inProgressCaption(unitControls.grain, u?.window.inProgressBucket)) +
             unpricedNote(u)
           }
           source={buildSource({
             derivation: "Priced llm_usage (LLM + STT + TTS) / user_daily_scores minutes",
-            window: `${RANGE_SHORT[unitControls.range]}, ${groupingNote(unitControls.bucket)}`,
+            window: `${RANGE_SHORT[unitControls.range]}, ${groupingNote(unitControls.grain)}`,
             asOf,
             extra: `estimate · USD · ${PLATFORM_WIDE_NOTE}`,
           })}
           loading={hydrating || (unitCost.isLoading && !u)}
           error={Boolean(unitCost.error)}
-          empty={!unitCost.isLoading && !unitSeries.some(d => d.value !== null)}
+          empty={
+            isUnitCostAllTime
+              ? false
+              : !unitCost.isLoading && !unitSeries.some(d => d.value !== null)
+          }
           emptyText="No practice in this window, so there is no unit cost"
           errorSubtitle="There was a problem fetching cost metrics."
           onRetry={() => void unitCost.refetch()}
@@ -231,12 +269,14 @@ export const UnitEconomicsSubTab = () => {
               />
               <GroupingPicker
                 id="unit-cost-grouping"
-                value={unitControls.bucket}
-                onChange={bucket => setBucket("unitCost", bucket)}
+                value={unitControls.grain}
+                onChange={grain => setGrain("unitCost", grain)}
+                options={GROUPINGS}
               />
             </div>
           }
           onExpand={() => setExpanded("unitCost")}
+          kpi={isUnitCostAllTime ? unitCostKpi : undefined}
           wide
         >
           <ScrollableChart data={unitSeries}>
@@ -245,7 +285,7 @@ export const UnitEconomicsSubTab = () => {
               options={lineOpts({
                 colorScale: UNIT_COST_SCALE,
                 leftTitle: `USD per ${u?.perMinutes ?? 10} min`,
-                bottomTitle: bucketTitle(unitControls.bucket),
+                bottomTitle: bucketTitle(unitControls.grain),
               })}
             />
           </ScrollableChart>
@@ -261,12 +301,12 @@ export const UnitEconomicsSubTab = () => {
           caption={
             `Learner-caused AI spend ${splitMeta.description}. The parts sum to the ` +
             `total, so the stack is exact rather than indicative.` +
-            inProgressCaption(splitControls.bucket, c?.window.inProgressBucket) +
+            inProgressCaption(splitControls.grain, c?.window.inProgressBucket) +
             unpricedNote(c)
           }
           source={buildSource({
             derivation: "Priced llm_usage, grouped by task and service",
-            window: `${RANGE_SHORT[splitControls.range]}, ${groupingNote(splitControls.bucket)}`,
+            window: `${RANGE_SHORT[splitControls.range]}, ${groupingNote(splitControls.grain)}`,
             asOf: c?.computedAt ? new Date(c.computedAt).toLocaleDateString() : undefined,
             extra: `estimate · USD · ${PLATFORM_WIDE_NOTE}`,
           })}
@@ -286,8 +326,9 @@ export const UnitEconomicsSubTab = () => {
               />
               <GroupingPicker
                 id="cost-split-grouping"
-                value={splitControls.bucket}
-                onChange={bucket => setBucket("costSplit", bucket)}
+                value={splitControls.grain}
+                onChange={grain => setGrain("costSplit", grain)}
+                options={SPLIT_GROUPING_OPTIONS}
               />
             </div>
           }
@@ -300,7 +341,7 @@ export const UnitEconomicsSubTab = () => {
               options={stackedBarOpts({
                 colorScale: split === "area" ? COST_AREA_SCALE : COST_SERVICE_SCALE,
                 leftTitle: "USD",
-                bottomTitle: bucketTitle(splitControls.bucket),
+                bottomTitle: bucketTitle(splitControls.grain),
                 legend: true,
               })}
             />
@@ -323,14 +364,14 @@ export const UnitEconomicsSubTab = () => {
             options={lineOpts({
               colorScale: UNIT_COST_SCALE,
               leftTitle: `USD per ${u?.perMinutes ?? 10} min`,
-              bottomTitle: bucketTitle(unitControls.bucket),
+              bottomTitle: bucketTitle(unitControls.grain),
               height,
             })}
           />
         )}
         table={{
           columns: [
-            bucketTitle(unitControls.bucket),
+            bucketTitle(unitControls.grain),
             `USD per ${u?.perMinutes ?? 10} min`,
             "Learner-caused spend",
             "Practice minutes",
@@ -367,7 +408,7 @@ export const UnitEconomicsSubTab = () => {
             options={stackedBarOpts({
               colorScale: split === "area" ? COST_AREA_SCALE : COST_SERVICE_SCALE,
               leftTitle: "USD",
-              bottomTitle: bucketTitle(splitControls.bucket),
+              bottomTitle: bucketTitle(splitControls.grain),
               legend: true,
               height,
             })}
@@ -375,7 +416,7 @@ export const UnitEconomicsSubTab = () => {
         )}
         table={{
           columns: [
-            bucketTitle(splitControls.bucket),
+            bucketTitle(splitControls.grain),
             "Live roleplay",
             "Feedback & summary",
             "Quiz grading",

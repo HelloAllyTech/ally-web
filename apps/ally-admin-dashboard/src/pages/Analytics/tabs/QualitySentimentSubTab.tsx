@@ -6,18 +6,26 @@ import { useGetQualityDistributionQuery, useGetQualitySentimentQuery } from "@ap
 
 import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
 import {
+  GROUPINGS,
   bucketTitle,
   groupingNote,
   inProgressCaption,
   isInProgress,
   withoutInProgress,
 } from "../analyticsGrouping";
-import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
+import {
+  defaultControlsFor,
+  grainAsBucket,
+  RANGE_SHORT,
+  RangePicker,
+  useChartControls,
+} from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   GroupingPicker,
   KpiTile,
+  KpiTileProps,
   MIN_N_FOR_SCORE,
   ScrollableChart,
   boundedDomainNote,
@@ -122,16 +130,16 @@ const CHARTS: readonly ChartId[] = ["qualitySentiment", "distribution", "satisfa
 export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const { controlsFor, setRange, setBucket, hydrating } = useChartControls<ChartId>(
+  const { controlsFor, setRange, setGrain, hydrating } = useChartControls<ChartId>(
     "highlights.quality",
     // Both series need a sample per bucket to be stable, so this opens monthly
     // rather than at the tab's finest grain.
-    defaultControlsFor(CHARTS, { qualitySentiment: { bucket: "month" } }),
+    defaultControlsFor(CHARTS, { qualitySentiment: { grain: "month" } }),
   );
 
   const controls = controlsFor("qualitySentiment");
   const { data, isLoading, error, refetch } = useGetQualitySentimentQuery(
-    { ...query, range: controls.range, bucket: controls.bucket },
+    { ...query, range: controls.range, bucket: grainAsBucket(controls.grain) },
     { skip: hydrating },
   );
 
@@ -141,12 +149,12 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   // response it is drawing.
   const distControls = controlsFor("distribution");
   const distQ = useGetQualityDistributionQuery(
-    { ...query, range: distControls.range, bucket: distControls.bucket },
+    { ...query, range: distControls.range, bucket: grainAsBucket(distControls.grain) },
     { skip: hydrating },
   );
   const satControls = controlsFor("satisfaction");
   const satQ = useGetQualityDistributionQuery(
-    { ...query, range: satControls.range, bucket: satControls.bucket },
+    { ...query, range: satControls.range, bucket: grainAsBucket(satControls.grain) },
     { skip: hydrating },
   );
 
@@ -179,30 +187,30 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
     () =>
       lineOpts({
         leftTitle: "Composite score",
-        bottomTitle: bucketTitle(distControls.bucket),
+        bottomTitle: bucketTitle(distControls.grain),
         colorScale: SKILL_GROWTH_SCALE,
         domain: SCORE_DOMAIN,
       }),
-    [distControls.bucket],
+    [distControls.grain],
   );
   const distZoomedOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Composite score",
-        bottomTitle: bucketTitle(distControls.bucket),
+        bottomTitle: bucketTitle(distControls.grain),
         colorScale: SKILL_GROWTH_SCALE,
       }),
-    [distControls.bucket],
+    [distControls.grain],
   );
   const satOpts = useMemo(
     () =>
       stackedBarOpts({
         leftTitle: "Share of ratings (%)",
-        bottomTitle: bucketTitle(satControls.bucket),
+        bottomTitle: bucketTitle(satControls.grain),
         colorScale: RATING_BAND_SCALE,
         domain: PCT_DOMAIN,
       }),
-    [satControls.bucket],
+    [satControls.grain],
   );
   const tagOpts = useMemo(
     () => hBarOpts({ bottomTitle: "Low-rated sessions", colorScale: tagScale }),
@@ -234,7 +242,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
 
   const loading = hydrating || (isLoading && !data);
   const asOf = data?.computedAt ? new Date(data.computedAt).toLocaleDateString() : undefined;
-  const windowNote = `${RANGE_SHORT[controls.range]}, ${groupingNote(controls.bucket)}`;
+  const windowNote = `${RANGE_SHORT[controls.range]}, ${groupingNote(controls.grain)}`;
 
   const pickers = (
     <div className="flex items-center gap-2">
@@ -245,8 +253,9 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
       />
       <GroupingPicker
         id="quality-sentiment-grouping"
-        value={controls.bucket}
-        onChange={bucket => setBucket("qualitySentiment", bucket)}
+        value={controls.grain}
+        onChange={grain => setGrain("qualitySentiment", grain)}
+        options={GROUPINGS}
       />
     </div>
   );
@@ -260,8 +269,9 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
       />
       <GroupingPicker
         id={`${chart}-grouping`}
-        value={controlsFor(chart).bucket}
-        onChange={bucket => setBucket(chart, bucket)}
+        value={controlsFor(chart).grain}
+        onChange={grain => setGrain(chart, grain)}
+        options={GROUPINGS}
       />
     </div>
   );
@@ -272,6 +282,72 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   // dimension had any data.
   const noQuality = !qualityLine.some(d => d.value !== null);
   const noSentiment = !sentiment.some(d => d.value !== null);
+
+  /**
+   * All-time. The quality index and sentiment cards share ONE grain control
+   * (`controls`/`pickers`, rendered once on the quality card) so their x-axes
+   * never disagree — see the file doc's "Two axes, two cards". That coupling
+   * means widening the shared picker to offer "All time" affects both cards
+   * at once, even though only one has a backing aggregate today:
+   *
+   *  - `overallProxyNps` already exists (unchanged since before this task),
+   *    so the sentiment card gets a real KPI tile.
+   *  - The Quality Index's whole-window aggregate (`overallQualityIndex`) is
+   *    Phase-3 backend work tracked separately in the parent plan; as of this
+   *    change it had NOT landed (`overallQualityIndex` absent from both
+   *    `QualitySentimentResponseDto` on ally-be and this file's response
+   *    type). Rather than wire the quality card to `overallCompositeScore`
+   *    (a different metric — the raw judge score, not the index; the plan
+   *    explicitly warns against conflating the two), the quality card shows
+   *    an honest "not available yet" KPI state instead.
+   */
+  const isAllTime = controls.grain === "allTime";
+
+  const qualityIndexKpi: KpiTileProps = {
+    label: "Roleplay quality (index)",
+    value: "—",
+    description:
+      "All-time isn't available for the Quality Index yet — its whole-window " +
+      "aggregate hasn't shipped on the backend. Switch to a bucketed grain " +
+      "(Day–Year) to see this chart, or see the Actor goal score KPI above " +
+      "for a related, all-time-friendly figure.",
+  };
+
+  const sentimentAllTimeEmpty = data?.overallProxyNps == null;
+  const sentimentKpi: KpiTileProps = {
+    label: "Learner sentiment (proxy NPS)",
+    value: data?.overallProxyNps === null || !data ? "—" : `${data.overallProxyNps}`,
+    n: data?.totalResponses,
+    nUnit: "ratings",
+    description: "NOT an NPS — derived from the 1–5 rating. See the note below.",
+  };
+
+  const distIsAllTime = distControls.grain === "allTime";
+  const distributionKpi: KpiTileProps = {
+    label: "Roleplay quality — median",
+    value: formatScore(dist?.summary.medianScore),
+    n: dist?.summary.evaluatedSessions,
+    nUnit: "evaluated sessions",
+    minN: MIN_N_FOR_SCORE,
+    description:
+      dist?.summary.p25 != null && dist?.summary.p75 != null
+        ? `Interquartile range ${dist.summary.p25}–${dist.summary.p75} (${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]} scale).`
+        : "Interquartile range unavailable for this window.",
+  };
+
+  const satIsAllTime = satControls.grain === "allTime";
+  const satisfactionKpi: KpiTileProps = {
+    label: "Rated 4–5",
+    value: formatPct(sat?.summary.top2BoxPct),
+    n: sat?.summary.responses,
+    nUnit: "ratings",
+    minN: MIN_N_FOR_SCORE,
+    description: sat
+      ? `${sat.summary.low.toLocaleString()} rated 1–2, ${sat.summary.mid.toLocaleString()} rated 3, ` +
+        `${sat.summary.high.toLocaleString()} rated 4–5 · ${formatPct(sat.summary.responseRatePct)} of ` +
+        `completed sessions were rated.`
+      : undefined,
+  };
 
   return (
     <>
@@ -345,7 +421,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         <ChartCard
           title="Roleplay quality"
           caption={
-            `Weighted blend of four dimensions per ${bucketTitle(controls.bucket).toLowerCase()} — ` +
+            `Weighted blend of four dimensions per ${bucketTitle(controls.grain).toLowerCase()} — ` +
             `the stack is what it's made of, the line is their sum. ` +
             `${boundedDomainNote(QUALITY_INDEX_DOMAIN)} A period with no data in ANY ` +
             `dimension breaks the line rather than dropping to zero.` +
@@ -366,14 +442,15 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
             asOf,
             extra: windowLabel(data?.window),
           })}
-          loading={loading}
-          error={Boolean(error)}
-          empty={!isLoading && noQuality}
+          loading={isAllTime ? false : loading}
+          error={isAllTime ? false : Boolean(error)}
+          empty={isAllTime ? false : !isLoading && noQuality}
           emptyText="No session in this window has been evaluated"
           errorSubtitle="There was a problem fetching quality scores."
           onRetry={() => void refetch()}
           controls={pickers}
           onExpand={() => setExpanded("compare")}
+          kpi={isAllTime ? qualityIndexKpi : undefined}
         >
           <ScrollableChart data={quality}>
             <ComboChart
@@ -388,7 +465,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
                 lineGroup: QUALITY_INDEX_LABEL,
                 colorScale: QUALITY_INDEX_SCALE,
                 leftTitle: "Quality index",
-                bottomTitle: bucketTitle(controls.bucket),
+                bottomTitle: bucketTitle(controls.grain),
                 domain: QUALITY_INDEX_DOMAIN,
               })}
             />
@@ -413,11 +490,12 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           })}
           loading={loading}
           error={Boolean(error)}
-          empty={!isLoading && noSentiment}
+          empty={!isLoading && (isAllTime ? sentimentAllTimeEmpty : noSentiment)}
           emptyText="Not enough ratings in this window to state a figure"
           errorSubtitle="There was a problem fetching learner sentiment."
           onRetry={() => void refetch()}
           onExpand={() => setExpanded("compare")}
+          kpi={isAllTime ? sentimentKpi : undefined}
         >
           <ScrollableChart data={sentiment}>
             <LineChart
@@ -425,7 +503,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
               options={lineOpts({
                 colorScale: PROXY_NPS_SCALE,
                 leftTitle: "Proxy NPS",
-                bottomTitle: bucketTitle(controls.bucket),
+                bottomTitle: bucketTitle(controls.grain),
                 domain: PROXY_NPS_DOMAIN,
               })}
             />
@@ -442,24 +520,24 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           title="Roleplay quality — median and spread"
           caption={`The distribution behind the quality average: the median with its interquartile range. A median that climbs while the quartiles stay wide is a different story from one that climbs while they converge. Periods with fewer than ${
             dist?.minSampleSize ?? MIN_N_FOR_SCORE
-          } evaluated sessions carry no percentiles. ${boundedDomainNote(SCORE_DOMAIN)}${inProgressCaption(
-            distControls.bucket,
-            distInProgress,
-          )}`}
+          } evaluated sessions carry no percentiles. ${boundedDomainNote(SCORE_DOMAIN)}${
+            distIsAllTime ? "" : inProgressCaption(distControls.grain, distInProgress)
+          }`}
           source={buildSource({
             derivation: "LLM-judged composite score per session, percentiles per period",
             window: windowLabel(dist?.window),
             n: dist?.summary.evaluatedSessions,
             nUnit: "evaluated sessions",
-            extra: groupingNote(distControls.bucket),
+            extra: groupingNote(distControls.grain),
             asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
           })}
           loading={distLoading}
           error={distQ.isError}
           onRetry={distQ.refetch}
-          empty={!distLoading && distSeries.length === 0}
+          empty={distIsAllTime ? false : !distLoading && distSeries.length === 0}
           controls={chartPickers("distribution")}
           onExpand={() => setExpanded("distribution")}
+          kpi={distIsAllTime ? distributionKpi : undefined}
         >
           <ScrollableChart data={distSeries}>
             <LineChart data={distSeries} options={distOpts} />
@@ -470,28 +548,28 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           title="Satisfaction mix"
           caption={`Ratings split into 1–2 / 3 / 4–5 rather than averaged: a mean of 3.8 from all-4s and a mean of 3.8 from half-5s-and-half-2s call for opposite responses. ${satRated.length} period${
             satRated.length === 1 ? "" : "s"
-          } carry ratings; periods with none are absent, because a mix over nobody is undefined.${inProgressCaption(
-            satControls.bucket,
-            satInProgress,
-          )}`}
+          } carry ratings; periods with none are absent, because a mix over nobody is undefined.${
+            satIsAllTime ? "" : inProgressCaption(satControls.grain, satInProgress)
+          }`}
           source={buildSource({
             derivation: "Post-session ratings grouped into bands, share per period",
             window: windowLabel(sat?.window),
             n: sat?.summary.responses,
             nUnit: "ratings",
-            extra: `${groupingNote(satControls.bucket)} · ${formatPct(
+            extra: `${groupingNote(satControls.grain)} · ${formatPct(
               sat?.summary.responseRatePct,
             )} of completed sessions were rated`,
             asOf: sat?.computedAt ? new Date(sat.computedAt).toLocaleDateString() : undefined,
           })}
-          takeaway={satisfactionTakeaway(satPoints)}
+          takeaway={satIsAllTime ? undefined : satisfactionTakeaway(satPoints)}
           loading={satLoading}
           error={satQ.isError}
           onRetry={satQ.refetch}
-          empty={!satLoading && satSeries.length === 0}
+          empty={satIsAllTime ? false : !satLoading && satSeries.length === 0}
           emptyText="No ratings in any period on this axis"
           controls={chartPickers("satisfaction")}
           onExpand={() => setExpanded("satisfaction")}
+          kpi={satIsAllTime ? satisfactionKpi : undefined}
         >
           <ScrollableChart data={satSeries}>
             <StackedBarChart data={satSeries} options={satOpts} />
@@ -569,7 +647,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
               lineGroup: QUALITY_INDEX_LABEL,
               colorScale: QUALITY_INDEX_SCALE,
               leftTitle: "Quality index",
-              bottomTitle: bucketTitle(controls.bucket),
+              bottomTitle: bucketTitle(controls.grain),
               domain: QUALITY_INDEX_DOMAIN,
               height,
             })}
@@ -577,7 +655,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         )}
         table={{
           columns: [
-            bucketTitle(controls.bucket),
+            bucketTitle(controls.grain),
             QUALITY_INDEX_LABEL,
             "Actor goal score",
             "Evaluated sessions",
@@ -617,7 +695,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         source={buildSource({
           derivation: "LLM-judged composite score, percentiles per period",
           window: windowLabel(dist?.window),
-          extra: groupingNote(distControls.bucket),
+          extra: groupingNote(distControls.grain),
           asOf: dist?.computedAt ? new Date(dist.computedAt).toLocaleDateString() : undefined,
         })}
         zoomable
@@ -629,13 +707,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           />
         )}
         table={{
-          columns: [
-            bucketTitle(distControls.bucket),
-            "Median",
-            "25th pct",
-            "75th pct",
-            "Evaluated",
-          ],
+          columns: [bucketTitle(distControls.grain), "Median", "25th pct", "75th pct", "Evaluated"],
           rows: (dist?.quality ?? []).map(p => [
             rowKey(p.bucket, distInProgress),
             p.median,
@@ -646,7 +718,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         }}
         exportContext={[
           `Window: ${windowLabel(dist?.window)}`,
-          `Grouping: ${bucketTitle(distControls.bucket)}`,
+          `Grouping: ${bucketTitle(distControls.grain)}`,
           ...(distInProgress
             ? [`${distInProgress} is still accruing — provisional, and omitted from the chart`]
             : []),
@@ -663,7 +735,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         source={buildSource({
           derivation: "Post-session ratings grouped into bands",
           window: windowLabel(sat?.window),
-          extra: groupingNote(satControls.bucket),
+          extra: groupingNote(satControls.grain),
           asOf: sat?.computedAt ? new Date(sat.computedAt).toLocaleDateString() : undefined,
         })}
         render={({ height }) => (
@@ -671,7 +743,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         )}
         table={{
           columns: [
-            bucketTitle(satControls.bucket),
+            bucketTitle(satControls.grain),
             "1–2",
             "3",
             "4–5",
@@ -693,7 +765,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         }}
         exportContext={[
           `Window: ${windowLabel(sat?.window)}`,
-          `Grouping: ${bucketTitle(satControls.bucket)}`,
+          `Grouping: ${bucketTitle(satControls.grain)}`,
           ...(satInProgress
             ? [`${satInProgress} is still accruing — provisional, and omitted from the chart`]
             : []),

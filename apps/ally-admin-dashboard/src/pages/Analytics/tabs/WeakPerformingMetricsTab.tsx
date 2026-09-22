@@ -62,6 +62,20 @@ import { TabControls } from "../tabControlsSlot";
  *    turn by turn.
  */
 
+/**
+ * This tab's own grain vocabulary — narrower than the shared {@link AnalyticsBucket}
+ * on purpose: day and year buckets have no `BUCKETS_FOR_RANGE` entry because
+ * neither range on this page can produce a legal one (see below).
+ */
+type WeakMetricBucket = "week" | "month" | "quarter";
+
+/** Singular/plural noun and axis title for a {@link WeakMetricBucket}. */
+const BUCKET_NOUN: Record<WeakMetricBucket, { singular: string; plural: string; title: string }> = {
+  week: { singular: "week", plural: "weeks", title: "Week" },
+  month: { singular: "month", plural: "months", title: "Month" },
+  quarter: { singular: "quarter", plural: "quarters", title: "Quarter" },
+};
+
 type TagType = "green" | "warm-gray" | "red";
 
 const STATE_TAG: Record<WeakMetricState, { type: TagType; label: string }> = {
@@ -170,7 +184,7 @@ const seriesForm = (valuedBuckets: number, allZero: boolean): SeriesForm => {
 
 const SeriesCard: FC<{
   series: WeakMetricSeries;
-  bucket: string;
+  bucket: WeakMetricBucket;
   inProgressBucket?: string | null;
 }> = ({ series, bucket, inProgressBucket }) => {
   // `withoutInProgress` strips the still-accruing bucket from what is PLOTTED
@@ -232,11 +246,11 @@ const SeriesCard: FC<{
   const caption =
     [
       series.description,
-      inProgressCaption(bucket as never, inProgressBucket),
+      inProgressCaption(bucket, inProgressBucket),
       // Named, not silently dropped — otherwise a reader comparing this chart
       // against the raw counts finds buckets missing and no reason given.
       thinCount
-        ? ` ${thinCount} ${bucket === "week" ? "week" : "month"}${
+        ? ` ${thinCount} ${BUCKET_NOUN[bucket].singular}${
             thinCount === 1 ? "" : "s"
           } had too few turns to read as a rate and ${
             thinCount === 1 ? "is" : "are"
@@ -286,9 +300,7 @@ const SeriesCard: FC<{
           </Tag>
           <strong>{series.state === "none" ? "—" : formatValue(series.latest, series.unit)}</strong>
           {headlineIsAccruing && (
-            <span style={{ opacity: 0.75 }}>
-              {bucket === "week" ? "this week so far" : "this month so far"}
-            </span>
+            <span style={{ opacity: 0.75 }}>this {BUCKET_NOUN[bucket].singular} so far</span>
           )}
           {deltaLabel(series) && <span style={{ opacity: 0.75 }}>{deltaLabel(series)}</span>}
         </span>
@@ -320,7 +332,7 @@ const SeriesCard: FC<{
           data={points}
           options={lineOpts({
             leftTitle: UNIT_SUFFIX[series.unit]?.trim() || "Value",
-            bottomTitle: bucket === "week" ? "Week" : "Month",
+            bottomTitle: BUCKET_NOUN[bucket].title,
             colorScale: single(series.label, series.state === "none" ? PALETTE.gray : PALETTE.blue),
             legend: false,
           })}
@@ -331,7 +343,7 @@ const SeriesCard: FC<{
             data={points}
             options={timeBarOpts({
               leftTitle: UNIT_SUFFIX[series.unit]?.trim() || "Value",
-              bottomTitle: bucket === "week" ? "Week" : "Month",
+              bottomTitle: BUCKET_NOUN[bucket].title,
               colorScale: single(
                 series.label,
                 series.state === "none" ? PALETTE.gray : PALETTE.blue,
@@ -348,8 +360,8 @@ const SeriesCard: FC<{
                 metric looks like there. The reader's next move is the range
                 picker, so the caption points at it. */}
             {points.length === 1
-              ? `One complete ${bucket === "week" ? "week" : "month"} in this window — compared, not trended.`
-              : `${points.length} complete ${bucket === "week" ? "weeks" : "months"} in this window — widen the time range to see a trend.`}
+              ? `One complete ${BUCKET_NOUN[bucket].singular} in this window — compared, not trended.`
+              : `${points.length} complete ${BUCKET_NOUN[bucket].plural} in this window — widen the time range to see a trend.`}
           </p>
         </>
       ) : null}
@@ -359,7 +371,7 @@ const SeriesCard: FC<{
 
 const GroupSection: FC<{
   group: WeakMetricGroup;
-  bucket: string;
+  bucket: WeakMetricBucket;
   inProgressBucket?: string | null;
 }> = ({ group, bucket, inProgressBucket }) => {
   const tag = STATE_TAG[group.state];
@@ -540,8 +552,21 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
  * The user's choice is kept as a preference rather than overwritten, so a visit
  * to the 30-day view does not silently rewrite the granularity they set for a
  * 12-month read.
+ *
+ * `quarter` would be legal, by this same reasoning, on the two ranges wide
+ * enough to hold a complete one (12m has up to 4, "all" has more; 90d is
+ * itself about one quarter and would only ever offer the in-progress one,
+ * same trap as monthly-over-90-days above, one order worse) — but this
+ * endpoint's own backend DTO (`WeakMetricsBucket` in
+ * ally-be/src/analytics/dto/weak-metrics.dto.ts) only declares `week`/`month`
+ * today, unlike the shared `AnalyticsBucket` vocabulary most other endpoints
+ * already accept. Sending `bucket=quarter` here 400s under the global
+ * `ValidationPipe`'s `@IsEnum` check. `quarter` is therefore left OUT of this
+ * table until that DTO is widened — a backend change, out of scope for this
+ * frontend-only task. See `WeakMetricBucket`/`BUCKET_NOUN` above, which are
+ * already quarter-ready for the day that lands.
  */
-const BUCKETS_FOR_RANGE: Record<AnalyticsRange, Array<"week" | "month">> = {
+const BUCKETS_FOR_RANGE: Record<AnalyticsRange, WeakMetricBucket[]> = {
   "30d": ["week"],
   "90d": ["month", "week"],
   "12m": ["month", "week"],
@@ -564,7 +589,7 @@ const BUCKETS_FOR_RANGE: Record<AnalyticsRange, Array<"week" | "month">> = {
  * on months, and both stay switchable — a reader who wants the two-month
  * comparison can still ask for it.
  */
-const DEFAULT_BUCKET_FOR_RANGE: Record<AnalyticsRange, "week" | "month"> = {
+const DEFAULT_BUCKET_FOR_RANGE: Record<AnalyticsRange, WeakMetricBucket> = {
   "30d": "week",
   "90d": "week",
   "12m": "month",
@@ -577,12 +602,12 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
   const [promptVersion, setPromptVersion] = useState<string>("");
   // Null until the reader actually picks one, so a range change can move the
   // default without ever overriding a choice someone made on purpose.
-  const [bucketPreference, setBucketPreference] = useState<"week" | "month" | null>(null);
+  const [bucketPreference, setBucketPreference] = useState<WeakMetricBucket | null>(null);
 
   // Memoised for a stable `items` identity: Carbon's Dropdown is a Downshift
   // that rebuilds its menu state when the array changes, and this one is
   // recomputed on every keystroke in the filters above it.
-  const bucketItems = useMemo<Array<"week" | "month">>(
+  const bucketItems = useMemo<WeakMetricBucket[]>(
     () => BUCKETS_FOR_RANGE[query.range ?? "12m"] ?? ["month", "week"],
     [query.range],
   );
@@ -594,9 +619,16 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         ? fallbackBucket
         : bucketItems[0];
 
+  // The query's own `bucket` param stays "week" | "month" until the backend
+  // DTO adds "quarter" (see BUCKETS_FOR_RANGE above) — narrowed defensively
+  // here so a future widening of BUCKETS_FOR_RANGE can't silently send this
+  // endpoint a value it 400s on. Unreachable today: `bucket` is never
+  // "quarter" while BUCKETS_FOR_RANGE excludes it.
+  const apiBucket = bucket === "quarter" ? "month" : bucket;
+
   const { data, isFetching, isError, refetch } = useGetWeakPerformingMetricsQuery({
     range: query.range,
-    bucket,
+    bucket: apiBucket,
     language: language || undefined,
     llmModel: llmModel || undefined,
     scenarioId,
@@ -731,8 +763,10 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             label="By month"
             items={bucketItems}
             selectedItem={bucket}
-            itemToString={(i: string) => (i === "week" ? "By week" : "By month")}
-            onChange={({ selectedItem }: { selectedItem: "week" | "month" }) =>
+            itemToString={(i: string) =>
+              `By ${BUCKET_NOUN[i as WeakMetricBucket]?.singular ?? "month"}`
+            }
+            onChange={({ selectedItem }: { selectedItem: WeakMetricBucket }) =>
               setBucketPreference(selectedItem ?? null)
             }
           />

@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetChartPreferencesQuery, useSaveChartPreferencesMutation } from "@api";
-import { AnalyticsBucket, AnalyticsRange, ChartPreference } from "@types";
+import { AnalyticsGrain, AnalyticsRange, ChartPreference } from "@types";
 
-import { DEFAULT_GROUPING } from "./analyticsGrouping";
+import { DEFAULT_GROUPING, grainAsBucket } from "./analyticsGrouping";
+
+export { grainAsBucket };
 
 /**
  * Per-chart window and grain, saved per user.
@@ -52,8 +54,16 @@ export const DEFAULT_RANGE: AnalyticsRange = "all";
 /** One chart's controls. */
 export interface ChartControls {
   range: AnalyticsRange;
-  bucket: AnalyticsBucket;
+  grain: AnalyticsGrain;
 }
+
+/**
+ * The saved `ChartPreference.bucket` field is named for its SQL-bucket origin,
+ * but the backend now accepts the full grain vocabulary including `"allTime"`
+ * (it is stored as an opaque string, never interpolated into SQL) — so this is
+ * an identity passthrough kept only to name the wire field at its call sites.
+ */
+const grainToWireBucket = (grain: AnalyticsGrain): AnalyticsGrain => grain;
 
 export const RangePicker = ({
   id,
@@ -102,7 +112,7 @@ export interface ChartControlsState<K extends string> {
   /** The window and grain a given chart is currently read at. */
   controlsFor: (chart: K) => ChartControls;
   setRange: (chart: K, range: AnalyticsRange) => void;
-  setBucket: (chart: K, bucket: AnalyticsBucket) => void;
+  setGrain: (chart: K, grain: AnalyticsGrain) => void;
   /**
    * True until the saved preferences have been read.
    *
@@ -159,8 +169,10 @@ export function useChartControls<K extends string>(
           // A saved value that no longer exists comes back null from the server;
           // fall through to the chart's own default rather than to a global one,
           // because a chart's default is a statement about that metric.
+          // The wire field is still named `bucket`, but carries the full grain
+          // vocabulary (including `allTime`) — see `grainToWireBucket` below.
           range: pref.range ?? prev[chart].range,
-          bucket: pref.bucket ?? prev[chart].bucket,
+          grain: pref.bucket ?? prev[chart].grain,
         };
       });
       return next;
@@ -176,7 +188,8 @@ export function useChartControls<K extends string>(
     const batch: ChartPreference[] = [...pending.current.entries()].map(([chart, controls]) => ({
       chartId: key(chart),
       range: controls.range,
-      bucket: controls.bucket,
+      // Wire field is still named `bucket` — translate the local `grain` back.
+      bucket: grainToWireBucket(controls.grain),
     }));
     pending.current.clear();
     // Fire-and-forget: see the hook doc. `.unwrap()` is deliberately not called,
@@ -219,13 +232,13 @@ export function useChartControls<K extends string>(
     [update],
   );
 
-  const setBucket = useCallback(
-    (chart: K, bucket: AnalyticsBucket) => update(chart, { bucket }),
+  const setGrain = useCallback(
+    (chart: K, grain: AnalyticsGrain) => update(chart, { grain }),
     [update],
   );
 
   const controlsFor = useCallback(
-    (chart: K) => byChart[chart] ?? { range: DEFAULT_RANGE, bucket: DEFAULT_GROUPING },
+    (chart: K) => byChart[chart] ?? { range: DEFAULT_RANGE, grain: DEFAULT_GROUPING },
     [byChart],
   );
 
@@ -233,10 +246,10 @@ export function useChartControls<K extends string>(
     () => ({
       controlsFor,
       setRange,
-      setBucket,
+      setGrain,
       hydrating: (isLoading || isUninitialized) && !hydrated.current,
     }),
-    [controlsFor, setRange, setBucket, isLoading, isUninitialized],
+    [controlsFor, setRange, setGrain, isLoading, isUninitialized],
   );
 }
 
@@ -256,7 +269,7 @@ export const defaultControlsFor = <K extends string>(
       chart,
       {
         range: DEFAULT_RANGE,
-        bucket: DEFAULT_GROUPING,
+        grain: DEFAULT_GROUPING,
         ...(overrides[chart] ?? {}),
       },
     ]),
