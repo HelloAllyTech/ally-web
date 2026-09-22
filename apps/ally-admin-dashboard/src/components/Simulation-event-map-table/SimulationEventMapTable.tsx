@@ -132,6 +132,17 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   const isSavingRef = useRef(false);
   const reloadTimeoutRef = useRef<NodeJS.Timeout>();
 
+  /**
+   * Row count for the server-sync effect to read, deliberately NOT a dependency
+   * of it. The effect re-seeds local state from the server, so depending on a
+   * count the effect's own callers change made every local edit re-trigger it:
+   * adding a row grew the count, the effect re-seeded the server's rows, and the
+   * blank row the admin had just added vanished while its side panel stayed
+   * open on it. Version-mode deletes came back the same way, since that path
+   * only filters local state.
+   */
+  const mappedEventsLengthRef = useRef(0);
+
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
 
@@ -173,12 +184,16 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         ),
       );
 
-      if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
+      if (mappedEventsLengthRef.current <= 1) updateEventOrderMapping(formattedEvents);
       setMappedEvents(formattedEvents);
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedEvents.length, mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+  }, [mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+
+  useEffect(() => {
+    mappedEventsLengthRef.current = mappedEvents.length;
+  }, [mappedEvents]);
 
   // Version mode: report the full event set to the parent on every change so it
   // can be saved into the version config (never to the live scenario). Deps are
