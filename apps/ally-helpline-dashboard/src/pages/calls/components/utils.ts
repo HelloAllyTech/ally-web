@@ -152,3 +152,30 @@ export const patchRowCustomFieldValues = <
     changed.forEach(v => byField.set(v.fieldDefinitionId, v));
     return { ...row, customFieldValues: Array.from(byField.values()) };
   });
+
+/**
+ * Filter options for the roleplay logs' Counsellor column.
+ *
+ * Display names are not unique within a tenant: production has three separate
+ * accounts named "Sandeep Malhotra", plus two more duplicated names. Rendering
+ * those as identical rows gave an admin no way to tell which person they were
+ * picking — the value is the user id, so the two rows select genuinely
+ * different sessions while reading exactly the same.
+ *
+ * The email is appended only to the names that actually repeat. Disambiguating
+ * every row would put an address beside thirty names that never needed one, and
+ * the name is what an admin is scanning for.
+ */
+export const buildCounsellorFilterOptions = (
+  counselors: { id: number; name: string; email?: string }[],
+): { label: string; value: string }[] => {
+  const timesSeen = counselors.reduce<Record<string, number>>((acc, c) => {
+    acc[c.name] = (acc[c.name] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return counselors.map(c => ({
+    label: timesSeen[c.name] > 1 && c.email ? `${c.name} (${c.email})` : c.name,
+    value: String(c.id),
+  }));
+};
