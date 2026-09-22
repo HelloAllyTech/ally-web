@@ -9,6 +9,7 @@ import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   EndSimulationInput,
   EndSimulationResponse,
+  GetAdminSimulationLogFiltersResponse,
   GetAdminSimulationLogsInput,
   GetAdminSimulationLogsResponse,
   GetScenarioInput,
@@ -191,6 +192,25 @@ const learnAPI = baseAPI.injectEndpoints({
     >({
       query: params => ({
         url: ApiEndpoints.LEARN.GET_ADMIN_SIMULATION_LOGS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.SIMULATION_LOGS],
+    }),
+
+    /**
+     * List the people and role plays the admin session log list can be
+     * filtered by. Derived from the logs themselves, so the dropdowns carry no
+     * dead options and nobody who has practised is missing from them.
+     * @param {string} [languageCode] - Language to resolve role play titles in
+     * @returns {Promise<GetAdminSimulationLogFiltersResponse>} Filter options
+     */
+    getAdminSimulationLogFilters: builder.query<
+      GetAdminSimulationLogFiltersResponse,
+      { languageCode?: string }
+    >({
+      query: params => ({
+        url: ApiEndpoints.LEARN.GET_ADMIN_SIMULATION_LOG_FILTERS,
         method: HttpMethod.GET,
         params,
       }),
@@ -394,6 +414,7 @@ export const {
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetAdminSimulationLogFiltersQuery,
   useGetSimulationSummaryQuery,
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,

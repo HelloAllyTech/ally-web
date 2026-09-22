@@ -188,12 +188,20 @@ const tracksApi = baseAPI.injectEndpoints({
 
     setTrackTranslationMedia: builder.mutation<
       { success: boolean },
-      { id: string; languageId: number; trackItemId: string; url: string | null }
+      {
+        id: string;
+        languageId: number;
+        trackItemId: string;
+        url: string | null;
+        /** Omit for a VIDEO component's own cut; pass it to localise one
+         *  question's media instead. */
+        questionId?: string;
+      }
     >({
-      query: ({ id, languageId, trackItemId, url }) => ({
+      query: ({ id, languageId, trackItemId, url, questionId }) => ({
         url: ApiEndpoints.TRACKS.TRANSLATION_MEDIA(id, languageId),
         method: HttpMethod.PUT,
-        body: { trackItemId, url },
+        body: { trackItemId, url, ...(questionId ? { questionId } : {}) },
       }),
       invalidatesTags: [TAG_TYPES.TRACK_TRANSLATIONS],
     }),

@@ -79,7 +79,6 @@
     "jspdf": "^4.2.1",
     "livekit-client": "^2.17.0",
     "lucide-react": "^0.562.0",
-    "next": "~15.2.6",
     "next-themes": "^0.3.0",
     "posthog-js": "^1.390.2",
     "react": "18.3.1",
@@ -102,6 +101,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^8.3.2",
     "wavesurfer.js": "^7.10.1"
   },
   "devDependencies": {
@@ -114,7 +114,6 @@
     "@nx/eslint-plugin": "22.3.3",
     "@nx/jest": "^22.3.3",
     "@nx/js": "22.3.3",
-    "@nx/next": "22.3.3",
     "@nx/react": "22.3.3",
     "@nx/vite": "22.3.3",
     "@nx/web": "22.3.3",
@@ -170,6 +169,7 @@
     ]
   },
   "overrides": {
+    "adm-zip": "^0.6.1",
     "assertion-error": "1.1.0",
     "qs": "^6.14.2",
     "string-width": "4.2.3",

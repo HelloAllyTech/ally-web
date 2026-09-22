@@ -6,6 +6,7 @@ import {
   AnalyticsHighlightsResponse,
   AnalyticsOverviewResponse,
   AnalyticsRange,
+  BugAgentPerformanceResponse,
   CertificationResponse,
   ChartPreference,
   ChartPreferencesResponse,
@@ -327,6 +328,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getFixSessionEngineCost: builder.query<FixSessionEngineCostResponse, AnalyticsWindowQuery>({
       query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.FIX_SESSION_ENGINE_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Precision, fix throughput, speed, cost and reliability — bucketed by
+    // week regardless of the requested bucket, since this chart is inherently
+    // a week-over-week view.
+    getBugAgentPerformance: builder.query<BugAgentPerformanceResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.BUG_AGENT_PERFORMANCE,
         method: HttpMethod.GET,
         params: windowParams(q),
       }),
@@ -782,6 +793,7 @@ export const {
   useGetRoleplayCostQuery,
   useGetCodingAgentCostQuery,
   useGetFixSessionEngineCostQuery,
+  useGetBugAgentPerformanceQuery,
   useGetQualitySentimentQuery,
   useGetRagQualityQuery,
   useGetXpGrowthQuery,

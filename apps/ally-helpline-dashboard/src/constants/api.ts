@@ -81,6 +81,7 @@ export const ApiEndpoints = {
     GET_SCENARIO_PATHWAY_DETAILS: (pathwayId: string) => `/v1/learn/scenario-paths/${pathwayId}`,
     GET_SIMULATION_LOGS: "/v1/learn/scenario-sessions",
     GET_ADMIN_SIMULATION_LOGS: "/v1/learn/admin-scenario-sessions",
+    GET_ADMIN_SIMULATION_LOG_FILTERS: "/v1/learn/admin-scenario-session-filters",
     GET_SIMULATION_SUMMARY: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}`,
     SUBMIT_SIMULATION_FEEDBACK: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/feedback`,

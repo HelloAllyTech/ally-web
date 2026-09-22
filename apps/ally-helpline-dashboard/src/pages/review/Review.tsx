@@ -6,7 +6,8 @@ import { useSearchParams } from "react-router-dom";
 
 import { DropdownField, Tabs } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@components";
-import { useUser } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics, useUser } from "@hooks";
 import { hasPermissions } from "@utils";
 
 import ScribeReview from "./components/ScribeReview";
@@ -21,6 +22,12 @@ const ReviewWithTabs: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { permissions } = useUser();
+  const { track } = useAnalytics();
+
+  const trackFilterChange = (filter: string) =>
+    track(ANALYTICS_EVENTS.REVIEW_FILTER_CHANGED, {
+      [ANALYTICS_PROPS.FILTER]: filter.toLowerCase(),
+    });
 
   const visibleTabs = useMemo(
     () => TABS.filter(tab => hasPermissions(permissions, tab.permission)),
@@ -133,7 +140,9 @@ const ReviewWithTabs: FC = () => {
         className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
         value={simulationReadFilter}
         onValueChange={newFilter => {
-          if (newFilter !== simulationReadFilter) setSimulationReadFilter(newFilter);
+          if (newFilter === simulationReadFilter) return;
+          trackFilterChange(newFilter);
+          setSimulationReadFilter(newFilter);
         }}
         items={readFilterOptions}
         equalWidth
@@ -149,7 +158,9 @@ const ReviewWithTabs: FC = () => {
         className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
         value={scribeReadFilter}
         onValueChange={newFilter => {
-          if (newFilter !== scribeReadFilter) setScribeReadFilter(newFilter);
+          if (newFilter === scribeReadFilter) return;
+          trackFilterChange(newFilter);
+          setScribeReadFilter(newFilter);
         }}
         items={readFilterOptions}
         equalWidth

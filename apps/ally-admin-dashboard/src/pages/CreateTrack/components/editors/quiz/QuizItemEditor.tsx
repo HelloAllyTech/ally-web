@@ -14,6 +14,7 @@ import { MatchingEditor } from "./MatchingEditor";
 import { McqEditor } from "./McqEditor";
 import { OpenEndedEditor } from "./OpenEndedEditor";
 import { OrderingEditor } from "./OrderingEditor";
+import { QuestionMediaField } from "./QuestionMediaField";
 import { QuizSettingsFields } from "./QuizSettingsFields";
 import { TrueFalseEditor } from "./TrueFalseEditor";
 
@@ -177,6 +178,13 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                     />
                   </div>
                 )}
+
+                {/* Media sits between the prompt and the answer controls
+                    because that is where it belongs in the question: the
+                    learner reads the stem, looks at the picture, then
+                    answers. Combining words with a picture is also simply
+                    better than either alone. */}
+                <QuestionMediaField questionPath={questionPath} />
 
                 {renderTypeBody(activeQuestion.type, questionPath)}
 

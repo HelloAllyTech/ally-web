@@ -212,11 +212,33 @@ export interface QuizOption {
   text: string;
 }
 
+/**
+ * A picture or clip shown with a question, part of the stem rather than
+ * decoration. Mirrors ally-be's `QuestionMedia`. Present on any sanitized
+ * question — quiz, video interjection or inline article question.
+ */
+export interface QuestionMedia {
+  kind: "image" | "video";
+  /** `s3` = a file the trainer uploaded; the rest are third-party embeds. */
+  source: "s3" | "youtube" | "vimeo" | "loom";
+  url: string;
+  /** Images only — what the picture shows, for screen readers. */
+  alt?: string;
+  /**
+   * Uploaded video only: a still frame captured at author time, so the
+   * learner sees the clip's content before pressing play instead of
+   * whatever their player paints for a paused-at-zero video.
+   */
+  posterUrl?: string;
+}
+
 export interface SanitizedQuizQuestion {
   id: string;
   type: QuizQuestionType;
   prompt: string;
   points: number;
+  /** Optional picture or clip shown above the answer controls. */
+  media?: QuestionMedia;
   /** mcq_single / mcq_multi */
   options?: QuizOption[];
   /** ordering (pre-shuffled server-side) */

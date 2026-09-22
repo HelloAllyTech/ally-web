@@ -238,13 +238,14 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trac
     toast.success(`Confirmed ${result.reviewed} field${result.reviewed === 1 ? "" : "s"}.`);
   };
 
-  const handleMediaChange = async (trackItemId: string, url: string) => {
+  const handleMediaChange = async (trackItemId: string, url: string, questionId?: string) => {
     if (!trackId || editingLanguageId === null) return;
     await setMedia({
       id: trackId,
       languageId: editingLanguageId,
       trackItemId,
       url: url.trim() || null,
+      ...(questionId ? { questionId } : {}),
     });
   };
 
@@ -523,6 +524,54 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trac
                             placeholder="https://…"
                             onBlur={event => handleMediaChange(item.id, event.target.value)}
                           />
+                        </div>
+                      )}
+                      {(item.questionMedia ?? []).length > 0 && (
+                        <div className="flex flex-col gap-2 rounded-md border border-border-light p-3">
+                          <p className="text-xs font-medium text-typography-800">Question media</p>
+                          {/* Most pictures need nothing here. A photograph or a
+                              clip of a real interaction carries no language, and
+                              five copies of it are five things to keep in step.
+                              What does need replacing is anything with words in
+                              it — a labelled diagram, an app screenshot, a
+                              photographed form — because those stay in English
+                              however good the translation around them is. */}
+                          <p className="text-xs text-typography-500">
+                            Leave these blank unless the picture or clip has words in it. A photo or
+                            a recording of a real interaction reads the same in every language; a
+                            labelled diagram or a screenshot does not.
+                          </p>
+                          {(item.questionMedia ?? []).map(question => (
+                            <div
+                              key={question.questionId}
+                              className="flex flex-col gap-1 border-t border-border-light pt-2 first:border-t-0 first:pt-0"
+                            >
+                              <label className="text-xs text-typography-600">
+                                {question.kind === "image" ? "Image" : "Video"} ·{" "}
+                                {question.prompt || "Untitled question"}
+                              </label>
+                              <a
+                                href={question.sourceUrl}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                className="text-[11px] text-primary-500 underline break-all"
+                              >
+                                View the English original
+                              </a>
+                              <input
+                                className={inputClass}
+                                defaultValue={question.url ?? ""}
+                                placeholder="https://… (blank = use the original)"
+                                onBlur={event =>
+                                  handleMediaChange(
+                                    item.id,
+                                    event.target.value,
+                                    question.questionId,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
                         </div>
                       )}
                       {item.deferredTo && (

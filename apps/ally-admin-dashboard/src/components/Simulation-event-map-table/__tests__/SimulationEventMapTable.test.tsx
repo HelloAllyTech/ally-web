@@ -313,6 +313,46 @@ describe("SimulationEventMapTable", () => {
     expect(screen.getByTestId("side-panel-open")).toBeInTheDocument();
   });
 
+  // The seeding effect re-seeds from the server/version snapshot. If a purely
+  // local row count can re-trigger it, the row the admin just added is wiped
+  // out from under them — and the Add button, which disables itself while a
+  // blank row is waiting to be filled in, re-enables to prove it.
+  it("keeps the newly added blank row instead of re-seeding it away", async () => {
+    vi.mocked(api.useGetSessionEventsQuery).mockReturnValue({
+      data: { data: [{ id: "e1", name: "Event 1" }] },
+      isLoading: false,
+    } as any);
+    vi.mocked(api.useGetMappedScenarioEventsQuery).mockReturnValue({
+      data: {
+        data: [
+          {
+            eventId: "e1",
+            name: "Event 1",
+            score: 0,
+            emoji: "🫥",
+            message: "",
+            feedbackStatus: false,
+            branchingStatus: false,
+            branchInstruction: "",
+            checklistVisibilityStatus: false,
+          },
+        ],
+      },
+      isLoading: false,
+    } as any);
+
+    render(<SimulationEventMapTable simulationId={"123"} />);
+
+    const addButton = () => screen.getByText("Add Event").closest("button") as HTMLButtonElement;
+    await waitFor(() => expect(addButton()).not.toBeDisabled());
+
+    fireEvent.click(addButton());
+
+    // Give the seeding effect every chance to run and clobber the new row.
+    await waitFor(() => expect(screen.getByTestId("side-panel-open")).toBeInTheDocument());
+    expect(addButton()).toBeDisabled();
+  });
+
   it("shows delete button when rows are selected and calls delete mutation", async () => {
     const deleteMock = vi.fn().mockResolvedValueOnce({});
     vi.mocked(api.useGetSessionEventsQuery).mockReturnValue({

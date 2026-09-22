@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useSubmitInterjectionAnswerMutation } from "@api";
 import { SubmitInterjectionAnswerResponse, VideoInterjection } from "@types";
 
+import { QuestionMedia } from "./QuestionMedia";
 import {
   initialAnswerState,
   isAnswered,
@@ -94,6 +95,7 @@ export const VideoInterjectionOverlay: FC<VideoInterjectionOverlayProps> = ({
           {t("tracks2.video.interjection.title")}
         </p>
         <h2 className="mb-4 text-lg font-semibold text-typography-900">{question.prompt}</h2>
+        <QuestionMedia media={question.media} />
 
         {renderWidget()}
 

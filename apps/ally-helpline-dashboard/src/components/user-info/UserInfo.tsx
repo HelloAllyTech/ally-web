@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Ally, Arrow, Bolt, DataPolicy, Logout, ManageAccount } from "@assets";
 import { AppTooltip, PermissionGuard } from "@components";
-import { ALLY_DATA_POLICY_URL, Permissions, TooltipLocation } from "@constants";
-import { useSimulationCredits } from "@hooks";
+import { ANALYTICS_EVENTS, ALLY_DATA_POLICY_URL, Permissions, TooltipLocation } from "@constants";
+import { useAnalytics, useSimulationCredits } from "@hooks";
 import { User } from "@types";
 import { openLinkInNewTab } from "@utils";
 
@@ -19,6 +19,7 @@ const UserInfo: FC<{
   name?: string;
 }> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl, name }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -155,14 +156,20 @@ const UserInfo: FC<{
           </PermissionGuard>
           <div className="flex flex-col items-center justify-center text-base">
             <button
-              onClick={onProfileSettings}
+              onClick={() => {
+                track(ANALYTICS_EVENTS.PROFILE_SETTINGS_OPENED);
+                onProfileSettings();
+              }}
               className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
             >
               <ManageAccount />
               {t("profile.settings.title")}
             </button>
             <button
-              onClick={() => openLinkInNewTab(ALLY_DATA_POLICY_URL)}
+              onClick={() => {
+                track(ANALYTICS_EVENTS.DATA_POLICY_VIEWED);
+                openLinkInNewTab(ALLY_DATA_POLICY_URL);
+              }}
               className="flex items-center gap-3 text-typography-700 hover:bg-gray-100 p-1  rounded justify-start w-full border-gray-200"
             >
               <DataPolicy />

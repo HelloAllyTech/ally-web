@@ -43,6 +43,10 @@ export interface CallsState {
     minQualityScore?: number;
     maxQualityScore?: number;
     tags?: string;
+    /** Roleplay logs: comma-separated ids of the people whose sessions to show. */
+    counselorIds?: string;
+    /** Roleplay logs: comma-separated ids of the role plays to show. */
+    scenarioIds?: string;
   };
   audioUpload: AudioUpload[];
 }

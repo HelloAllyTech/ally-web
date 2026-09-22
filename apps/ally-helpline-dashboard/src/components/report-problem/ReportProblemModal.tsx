@@ -7,6 +7,8 @@ import { toast } from "sonner";
 
 import { BugReportForm, BugReportSubmitError, detectDeviceOs } from "@ally-ui-mono/ui-shared";
 import { useCreateBugReportMutation } from "@api";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 
 export interface ReportProblemModalProps {
   open: boolean;
@@ -22,6 +24,7 @@ export interface ReportProblemModalProps {
 export const ReportProblemModal: FC<ReportProblemModalProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const { track } = useAnalytics();
   const [createBugReport] = useCreateBugReportMutation();
 
   const handleSubmit = async (description: string) => {
@@ -34,6 +37,9 @@ export const ReportProblemModal: FC<ReportProblemModalProps> = ({ open, onClose 
           clientTimestamp: new Date().toISOString(),
         },
       }).unwrap();
+      track(ANALYTICS_EVENTS.REPORT_PROBLEM_SUBMITTED, {
+        [ANALYTICS_PROPS.DESCRIPTION_LENGTH]: description.length,
+      });
     } catch (error) {
       const fetchError = error as FetchBaseQueryError & { data?: { statusCode?: number } };
       const rateLimited = fetchError?.status === 429 || fetchError?.data?.statusCode === 429;

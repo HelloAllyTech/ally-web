@@ -8,11 +8,24 @@
 # Deliberately its own workflow rather than a `pull_request` trigger on the
 # deploy pipeline, which would ship every PR.
 #
-# NOTE ON ENFORCEMENT: adding this file makes the checks run and report, but does
-# not make them mandatory — that is a branch-protection setting. Landed that way
-# on purpose, so a suite that turns out to be red on master blocks nobody while
-# it is being fixed. Mark "test" and "lint" as required checks once they are
-# green.
+# NOTE ON ENFORCEMENT: "Vitest", "Typecheck" and "Lint & format" are required
+# checks as of 2026-09-21, via the repo ruleset
+# "master: tests, types and lint must pass".
+#
+# Required by the names GitHub reports them under — each job's `name:`, NOT the
+# job ids `test`, `typecheck` and `lint`. A required context that nothing ever
+# reports does not fail a merge, it blocks it forever waiting for a check that
+# will never arrive, so these strings and the ruleset's have to move together.
+# Renaming a job here without editing the ruleset wedges master.
+#
+# "gitleaks" and "docs-guard" are deliberately NOT required: they pass today,
+# but the ask was tests/types/lint. Add them when someone decides to, rather
+# than by accident. "Dependabot" is red on master and is an alerts check, not a
+# CI job — requiring it would block every merge.
+#
+# Admins and maintainers bypass the ruleset, so pushing straight to master still
+# works — this repo is trunk-based and protection was removed on 2026-09-17 for
+# that reason. The gate is aimed at pull requests, Bug Hunter's included.
 
 # ally-web ships two independently-released apps plus a shared lib, so a
 # ui-shared change needs both suites — `npm test` runs them via Nx's
@@ -120,7 +133,7 @@ jobs:
 
   # NOT report-only, unlike the lint job above: the debt was 11 errors total
   # (10 admin, 1 helpline, 0 ui-shared) and this PR clears all of them, so there
-  # is nothing to grandfather. Mark "Typecheck" required alongside "Vitest".
+  # is nothing to grandfather. Required alongside "Vitest" since 2026-09-21.
   #
   # Why this job exists at all: on 2026-08-26 two PRs that were each green in
   # isolation merged in sequence — one removed PrivateLayout's `requiredRole`

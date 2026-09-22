@@ -26,7 +26,8 @@ import {
   ScribeIcon,
 } from "@assets";
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
-import { useCustomFieldsEnabled } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics, useCustomFieldsEnabled } from "@hooks";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
@@ -58,6 +59,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const dispatch = useDispatch();
   const location = useLocation();
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
 
   const { filters } = useSelector((state: RootState) => state.calls);
 
@@ -444,7 +446,15 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
-          onClick={() => setSummary(row.raw)}
+          onClick={() => {
+            // `sessionId` is the human-readable session name shown in the Call
+            // ID column (e.g. SS-3816-2026-08-24), which is what the analytics
+            // spec's `call_id` refers to — not the internal row id.
+            track(ANALYTICS_EVENTS.ROLEPLAY_LOG_SUMMARY_VIEWED, {
+              [ANALYTICS_PROPS.CALL_ID]: row.sessionId,
+            });
+            setSummary(row.raw);
+          }}
           fullWidth={true}
           variant="icon"
           data-testid={`user-logs-simulation-review-button-${row.id}`}

@@ -32,6 +32,12 @@ vi.mock("@api", () => ({
   useSubmitSimulationFeedbackMutation: () => [mockSubmitSimulationFeedback, { isLoading: false }],
 }));
 
+// useAnalytics reads the user role from the Redux store; this suite renders
+// without a <Provider>, so stub the hook rather than wire up a store.
+vi.mock("@hooks", () => ({
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>

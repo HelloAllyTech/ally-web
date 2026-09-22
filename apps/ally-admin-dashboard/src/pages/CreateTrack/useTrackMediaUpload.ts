@@ -19,6 +19,12 @@ export const useTrackMediaUpload = () => {
     file: File,
     kind: TrackMediaUploadUrlInput["kind"],
     durationSeconds?: number,
+    /**
+     * Suppresses the failure toast. For a derived file the trainer never
+     * chose — a video's poster frame — where "Upload failed" would read as
+     * "your video did not upload" and send them round the loop again.
+     */
+    options?: { silent?: boolean },
   ): Promise<string | null> => {
     try {
       setIsUploading(true);
@@ -36,7 +42,9 @@ export const useTrackMediaUpload = () => {
 
       return publicUrl;
     } catch (error: any) {
-      toast.error(error?.data?.message || "Upload failed. Please try again.");
+      if (!options?.silent) {
+        toast.error(error?.data?.message || "Upload failed. Please try again.");
+      }
       return null;
     } finally {
       setIsUploading(false);

@@ -5,6 +5,7 @@ import { Tab, TabList, TabPanel, TabPanels, CarbonTabs as Tabs } from "@ally-ui-
 import { AnalyticsTabFilters } from "../analyticsFilters";
 import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
 import { CurriculumSubTab } from "./CurriculumSubTab";
+import { GoalsTab } from "./GoalsTab";
 import { OrgEngagementSubTab } from "./OrgEngagementSubTab";
 import { PlatformSubTab } from "./PlatformSubTab";
 import { QualitySentimentSubTab } from "./QualitySentimentSubTab";
@@ -28,10 +29,24 @@ interface SubTabDef {
 
 const SUB_TABS: SubTabDef[] = [
   {
-    // First entry = the landing panel. The former Highlights tab in full —
-    // certification hero, KPI strip, growth, engagement, outcomes, adoption and
-    // the existing unit-economics charts — plus the north-star pair, which
-    // belongs on the first screen a leader sees rather than a click away.
+    // First entry = the landing panel. "Are we on pace against a goal" is the
+    // question leadership opens Highlights to answer, ahead of the broader
+    // platform-history picture in the sub-tabs below.
+    //
+    // No page-level pickers reach it: it is all-time and platform-wide by
+    // construction, and its own grain control (month/quarter/year) lives on
+    // the card, not on the tab strip.
+    id: "goals",
+    label: "Goals",
+    blurb:
+      "Are we on pace? Actual XP earned per period against a goal for that period, where one has been set.",
+    render: () => <GoalsTab />,
+  },
+  {
+    // The former Highlights tab in full — certification hero, KPI strip, growth,
+    // engagement, outcomes, adoption and the existing unit-economics charts —
+    // plus the north-star pair, which belongs on the first platform-history
+    // screen a leader sees rather than a click away.
     id: "platform",
     label: "Platform",
     blurb:

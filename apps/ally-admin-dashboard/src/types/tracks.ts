@@ -99,11 +99,37 @@ export interface QuizOption {
   text: string;
 }
 
+/**
+ * A picture or clip shown with a question, so a question can ask what the
+ * learner *observes* rather than only what they can read. Mirrors ally-be's
+ * `QuestionMedia` — see `track/type/quiz.type.ts` there for the contract.
+ */
+export type QuestionMediaKind = "image" | "video";
+
+export type QuestionMediaSource = "s3" | "youtube" | "vimeo" | "loom";
+
+export interface QuestionMedia {
+  kind: QuestionMediaKind;
+  /** `s3` = uploaded file; the rest are third-party embeds. */
+  source: QuestionMediaSource;
+  url: string;
+  /** Images only — what the picture shows, for screen readers. */
+  alt?: string;
+  /**
+   * Uploaded video only: a still frame captured in the browser at upload
+   * time, so the learner sees the clip's content before pressing play
+   * rather than whatever their player paints for a paused-at-zero video.
+   */
+  posterUrl?: string;
+}
+
 interface QuizQuestionBase {
   id: string; // uuid
   prompt: string;
   explanation?: string;
   points?: number; // default 1
+  /** Optional picture or clip shown above the answer controls. */
+  media?: QuestionMedia;
 }
 
 export interface McqSingleQuestion extends QuizQuestionBase {
@@ -442,7 +468,7 @@ export interface TrackMediaUploadUrlInput {
   fileName: string;
   fileSize: number;
   contentType: string;
-  kind: "image" | "video";
+  kind: "image" | "video" | "question_image" | "question_video";
   duration?: number;
 }
 
@@ -578,6 +604,22 @@ export interface TrackTranslationField {
   needsReview: boolean;
 }
 
+/**
+ * One question's media, and whatever the trainer has pointed it at for this
+ * language. Only questions that actually carry media appear — a text-only
+ * quiz produces an empty list rather than a column of empty URL boxes.
+ */
+export interface TrackTranslationQuestionMedia {
+  questionId: string;
+  /** So the trainer can tell which picture they are overriding. */
+  prompt: string;
+  kind: QuestionMediaKind;
+  /** The English original, shown as the thing being replaced. */
+  sourceUrl: string;
+  /** The localised URL, or null when this language uses the original. */
+  url: string | null;
+}
+
 export interface TrackTranslationItem {
   id: string;
   type: TrackItemType;
@@ -585,6 +627,8 @@ export interface TrackTranslationItem {
   fields: TrackTranslationField[];
   /** VIDEO only: the per-language cut, if the trainer supplied one. */
   media: { url: string | null } | null;
+  /** Any question on this component that carries a picture or clip. */
+  questionMedia: TrackTranslationQuestionMedia[];
   /** ROLEPLAY/CASE defer to the linked entity's own translation. */
   deferredTo: { kind: "SCENARIO" | "CASE"; id: string } | null;
 }

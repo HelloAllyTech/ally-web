@@ -65,6 +65,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
             <div className="flex items-center gap-2 p-2">
               <input
                 type="checkbox"
+                id="agreement_checkbox"
                 checked={agreeCheck}
                 onChange={() => setAgreeCheck(prev => !prev)}
               />

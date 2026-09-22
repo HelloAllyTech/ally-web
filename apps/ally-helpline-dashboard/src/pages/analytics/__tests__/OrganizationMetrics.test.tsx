@@ -18,6 +18,8 @@ let capturedOnDragEnd:
 
 vi.mock("@hooks", () => ({
   useUser: () => ({ permissions: mockPermissions }),
+  // useAnalytics reads the role from the Redux store; this suite renders without one.
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 // dnd-kit drives its sortable context off real PointerEvent sequences, which

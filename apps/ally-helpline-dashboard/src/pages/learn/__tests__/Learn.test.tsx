@@ -25,6 +25,7 @@ const {
   mockUseGetScenarioPathwaysQuery,
   mockUseGetScenarioCasesQuery,
   mockUseGetLearnTracksQuery,
+  mockTrack,
 } = vi.hoisted(() => ({
   mockUseGetScenariosQuery: vi.fn(),
   mockUseGetScenarioPathwaysQuery: vi.fn(),
@@ -34,6 +35,7 @@ const {
     isLoading: false,
     refetch: vi.fn(),
   })),
+  mockTrack: vi.fn(),
 }));
 
 vi.mock("@api", () => ({
@@ -120,6 +122,7 @@ vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,
   useAchievementBadgeModal: () => mockUseAchievementBadgeModal(),
+  useAnalytics: () => ({ track: mockTrack }),
 }));
 
 // Import the mocked hook for use in component mock
@@ -164,8 +167,16 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
-  PracticeStreakHeatmap: ({ className }: { className?: string }) => (
-    <div data-testid="practice-streak-heatmap" className={className} />
+  PracticeStreakHeatmap: ({
+    className,
+    onStartPractice,
+  }: {
+    className?: string;
+    onStartPractice?: () => void;
+  }) => (
+    <div data-testid="practice-streak-heatmap" className={className}>
+      <button data-testid="streak-cta" onClick={onStartPractice} />
+    </div>
   ),
   CreditsDisplay: ({ className }: { className?: string }) => {
     const mockData = getMockCredits();
@@ -622,7 +633,6 @@ describe("Learn Component", () => {
       );
       expect(screen.queryByTestId("tab-courses")).not.toBeInTheDocument();
     });
-
   });
 
   /**
@@ -1227,6 +1237,123 @@ describe("Tab Navigation", () => {
     await waitFor(() => {
       // The effect should re-run and set the tab to the new first valid tab ('courses' again, as order is Courses, Cases, Simulations, Pathways)
       expect(mockSetSearchParams).toHaveBeenCalledWith({ tab: "courses" }, { replace: true });
+    });
+  });
+  /**
+   * TEST GROUP: PostHog analytics
+   * learn.page_viewed and learn.tab_switched
+   */
+  describe("Analytics", () => {
+    // Sibling suite, so nothing clears the spies between tests — do it here.
+    beforeEach(() => {
+      vi.clearAllMocks();
+      populateAllTabs();
+    });
+
+    const pageViewCalls = () =>
+      mockTrack.mock.calls.filter(([name]) => name === "learn.page_viewed");
+
+    it("fires learn.page_viewed once with the tab actually shown", () => {
+      mockSearchParams.set("tab", "cases");
+      const { rerender } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      expect(mockTrack).toHaveBeenCalledWith("learn.page_viewed", { initial_tab: "cases" });
+
+      rerender(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(pageViewCalls()).toHaveLength(1);
+    });
+
+    it("holds learn.page_viewed until the tab queries settle", () => {
+      mockUseGetScenarioCasesQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        refetch: vi.fn(),
+      });
+      const { rerender } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(pageViewCalls()).toHaveLength(0);
+
+      populateAllTabs();
+      mockSearchParams.set("tab", "tracks");
+      rerender(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(mockTrack).toHaveBeenCalledWith("learn.page_viewed", {
+        initial_tab: "learning_pathway",
+      });
+    });
+
+    it("fires learn.tab_switched with the product-facing tab name", async () => {
+      mockSearchParams.set("tab", "cases");
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      await userEvent.click(screen.getByTestId("tab-tracks"));
+
+      expect(mockTrack).toHaveBeenCalledWith("learn.tab_switched", { tab: "learning_pathway" });
+    });
+
+    it("does not fire learn.tab_switched when the active tab is re-clicked", async () => {
+      mockSearchParams.set("tab", "cases");
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      await userEvent.click(screen.getByTestId("tab-cases"));
+
+      expect(mockTrack).not.toHaveBeenCalledWith("learn.tab_switched", expect.anything());
+    });
+    it("fires roleplay.start_clicked from the streak widget CTA", async () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      await userEvent.click(screen.getByTestId("streak-cta"));
+
+      expect(mockTrack).toHaveBeenCalledWith("roleplay.start_clicked", {
+        entry_point: "streak_widget",
+        item_id: "s1",
+        item_name: "Scenario 1",
+      });
+    });
+
+    it("names no item when the streak CTA has no active scenario to open", async () => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: { data: [{ id: "s1", title: "Scenario 1", status: "COMING_SOON" }] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      await userEvent.click(screen.getByTestId("streak-cta"));
+
+      expect(mockTrack).toHaveBeenCalledWith("roleplay.start_clicked", {
+        entry_point: "streak_widget",
+      });
     });
   });
 });

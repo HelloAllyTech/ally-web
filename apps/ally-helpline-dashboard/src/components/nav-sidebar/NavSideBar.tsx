@@ -18,6 +18,8 @@ import {
   UserInfo,
 } from "@components";
 import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
   navBarOptions,
   TabId,
   Permissions,
@@ -27,6 +29,7 @@ import {
   adminAppUrl,
 } from "@constants";
 import {
+  useAnalytics,
   useCanViewAnalytics,
   useCanViewCharacterLibrary,
   usePracticeStreakSummary,
@@ -156,6 +159,7 @@ const Tab: FC<TabProps> = ({
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
   // Shared with the /learn bar via a single void-arg cache entry, so the pill
@@ -268,6 +272,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   };
 
   const handleConfirmLogout = () => {
+    // On confirm, not on opening the dialog — the spec's event is the session
+    // actually ending, and the dialog can be cancelled.
+    track(ANALYTICS_EVENTS.ACCOUNT_LOGGED_OUT);
     logout();
     navigate("/login");
   };
@@ -435,10 +442,21 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const handleProfileUpload = async () => {
     const existingProfileUrl = user.profileImageUrl;
 
-    await uploadProfile({ profileImageUrl: profileUrl });
-    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
-    await refetchUser();
-    setOpenSettings(false);
+    try {
+      await uploadProfile({ profileImageUrl: profileUrl });
+      if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+      await refetchUser();
+      track(ANALYTICS_EVENTS.PROFILE_UPDATED, {
+        // Profile Settings renders the name as a disabled input and the form only
+        // carries `profileImageUrl`, so a name change is not reachable today.
+        // Sent anyway so the payload matches the spec if the field opens up.
+        [ANALYTICS_PROPS.NAME_CHANGED]: false,
+        [ANALYTICS_PROPS.IMAGE_CHANGED]: !!profileUrl && profileUrl !== existingProfileUrl,
+      });
+      setOpenSettings(false);
+    } catch (error) {
+      console.error("Failed to update profile", error);
+    }
   };
 
   return (

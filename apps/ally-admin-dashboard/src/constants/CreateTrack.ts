@@ -37,6 +37,24 @@ export const MAX_MCQ_OPTIONS = 8;
 /** Inline questions per article. Mirrors the server's own cap. */
 export const MAX_ARTICLE_QUESTIONS = 10;
 
+/* ---- Question media ----------------------------------------------------- */
+
+/**
+ * Mirrors ally-be's `TRACK_QUESTION_*` limits. Duplicated here on purpose:
+ * the server is the authority and rejects an over-limit file at presign time,
+ * but it can only do that after the trainer has picked the file and waited for
+ * a round trip. Checking here turns that into an instant, specific message.
+ * These deliberately sit far below the lesson-media limits — question media
+ * stands between the learner and an answer they cannot give until it loads.
+ */
+export const MAX_QUESTION_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_QUESTION_VIDEO_BYTES = 50 * 1024 * 1024;
+export const MAX_QUESTION_VIDEO_SECONDS = 3 * 60;
+export const MAX_QUESTION_MEDIA_ALT_LENGTH = 300;
+
+export const QUESTION_IMAGE_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+export const QUESTION_VIDEO_CONTENT_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
 export const TRACK_ITEM_TYPE_LABELS: Record<TrackItemType, string> = {
   [TrackItemType.ROLEPLAY]: "Roleplay",
   [TrackItemType.CASE]: "Case",
