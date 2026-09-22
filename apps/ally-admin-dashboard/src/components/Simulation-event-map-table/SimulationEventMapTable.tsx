@@ -178,7 +178,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedEvents.length, mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
 
   // Version mode: report the full event set to the parent on every change so it
   // can be saved into the version config (never to the live scenario). Deps are
