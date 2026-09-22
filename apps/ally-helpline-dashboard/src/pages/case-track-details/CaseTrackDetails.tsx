@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, useEffect } from "react";
+import { FC, useState, useCallback, useEffect, useRef } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -20,8 +20,8 @@ import {
   ConfirmationDialog,
   ButtonVariant,
 } from "@components";
-import { ROUTES } from "@constants";
-import { useStartSimulation } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS, ROLEPLAY_ENTRY_POINT, ROUTES } from "@constants";
+import { useAnalytics, useStartSimulation } from "@hooks";
 import { PathwayScenarioStatus, PathwayScenario, LanguageOption, pageType } from "@types";
 
 type CaseTrackDetailsType = "case" | "track";
@@ -64,6 +64,22 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   const data = type === pageType.CASE ? caseData : pathwayData;
   const isLoading = type === pageType.CASE ? isCaseLoading : isPathwayLoading;
+
+  // `case.opened` / `pathway.opened` report the loaded page, so they wait on the
+  // query rather than firing on mount. Keyed on the id, not a boolean: routing
+  // straight from one case to the next reuses this component without remounting.
+  const { track } = useAnalytics();
+  const trackedId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!data || trackedId.current === data.id) return;
+    trackedId.current = data.id;
+    const isCase = type === pageType.CASE;
+    track(isCase ? ANALYTICS_EVENTS.CASE_OPENED : ANALYTICS_EVENTS.PATHWAY_OPENED, {
+      [isCase ? ANALYTICS_PROPS.CASE_ID : ANALYTICS_PROPS.PATHWAY_ID]: data.id,
+      [isCase ? ANALYTICS_PROPS.CASE_NAME : ANALYTICS_PROPS.PATHWAY_NAME]: data.title,
+      [ANALYTICS_PROPS.SIMULATION_COUNT]: data.totalScenarios ?? data.scenarios?.length ?? 0,
+    });
+  }, [type, data, track]);
 
   // Auto-select first language when a scenario is selected
   useEffect(() => {
@@ -130,6 +146,14 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   );
 
   const handleStartOrContinueSimulation = async () => {
+    // The item is the case/pathway the learner pressed Start on, not the scenario
+    // it resolves to — that is picked below and can fail on a locked pathway.
+    track(ANALYTICS_EVENTS.ROLEPLAY_START_CLICKED, {
+      [ANALYTICS_PROPS.ENTRY_POINT]:
+        type === pageType.CASE ? ROLEPLAY_ENTRY_POINT.CASE : ROLEPLAY_ENTRY_POINT.PATHWAY,
+      [ANALYTICS_PROPS.ITEM_ID]: data?.id,
+      [ANALYTICS_PROPS.ITEM_NAME]: data?.title,
+    });
     await enrollSession();
     const nextScenario = data?.scenarios.find(
       scenario => scenario.status === PathwayScenarioStatus.UNLOCKED,

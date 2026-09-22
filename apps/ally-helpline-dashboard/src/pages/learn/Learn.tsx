@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -17,8 +17,14 @@ import {
   PracticeStreakHeatmap,
   ScenarioCard,
 } from "@components";
-import { Permissions, buildTrackRoute } from "@constants";
-import { useUser } from "@hooks";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  ROLEPLAY_ENTRY_POINT,
+  Permissions,
+  buildTrackRoute,
+} from "@constants";
+import { useAnalytics, useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
@@ -33,10 +39,20 @@ enum TabId {
 
 type LearnTabId = TabId;
 
+// PostHog reports the product-facing tab names: internally `tracks`, but the
+// tab (and the analytics spec) calls it the Learning Pathway.
+const ANALYTICS_TAB: Record<TabId, string> = {
+  [TabId.SIMULATIONS]: "simulations",
+  [TabId.CASES]: "cases",
+  [TabId.TRACKS]: "learning_pathway",
+  [TabId.COURSES]: "courses",
+};
+
 export const Learn: FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { permissions, isAuthenticated } = useUser();
+  const { track } = useAnalytics();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const hasCasePermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS); // TODO: remove this skip when the feature flag is enabled
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,8 +126,30 @@ export const Learn: FC = () => {
     }
   }, [tabFromUrl, setSearchParams, tabs, isValidTabId]);
 
+  // `initial_tab` must be the tab the learner actually lands on, and which tabs
+  // exist depends on all four queries — so wait for them to settle rather than
+  // firing on mount, when `activeTab` is still the Simulations fallback. The ref
+  // keeps it to one event per visit: tab switches change `activeTab`, not this.
+  const isAnyTabLoading =
+    isTracksLoading || isCasesLoading || isScenariosLoading || isPathwaysLoading;
+  const hasTrackedPageView = useRef(false);
+  useEffect(() => {
+    if (hasTrackedPageView.current || isAnyTabLoading) return;
+    hasTrackedPageView.current = true;
+    track(ANALYTICS_EVENTS.LEARN_PAGE_VIEWED, {
+      [ANALYTICS_PROPS.INITIAL_TAB]: ANALYTICS_TAB[activeTab],
+    });
+  }, [isAnyTabLoading, activeTab, track]);
+
   const handleTabChange = (newValue: LearnTabId) => {
-    if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
+    if (!isValidTabId(newValue)) return;
+    // Tabs fires onChange for the active tab too — that is not a switch.
+    if (newValue !== activeTab) {
+      track(ANALYTICS_EVENTS.LEARN_TAB_SWITCHED, {
+        [ANALYTICS_PROPS.TAB]: ANALYTICS_TAB[newValue],
+      });
+    }
+    setSearchParams({ tab: newValue });
   };
 
   const onScenarioCardClick = (itemId: number) => {
@@ -201,6 +239,15 @@ export const Learn: FC = () => {
     const firstActive = getSortedScenarios()?.find(
       scenario => scenario.status === ScenarioStatus.ACTIVE,
     );
+    // The tap is the intent, so it reports even on the fallback below — which
+    // has no scenario to name, and so sends no item.
+    track(ANALYTICS_EVENTS.ROLEPLAY_START_CLICKED, {
+      [ANALYTICS_PROPS.ENTRY_POINT]: ROLEPLAY_ENTRY_POINT.STREAK_WIDGET,
+      ...(firstActive && {
+        [ANALYTICS_PROPS.ITEM_ID]: String(firstActive.id),
+        [ANALYTICS_PROPS.ITEM_NAME]: firstActive.title,
+      }),
+    });
     if (firstActive) {
       navigate(`/scenario/${firstActive.id}`);
       return;

@@ -8,6 +8,8 @@ import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -46,6 +48,7 @@ const BadgeCardSkeleton: FC = () => {
 
 export const AchievementsViewAll: FC = () => {
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -106,6 +109,10 @@ export const AchievementsViewAll: FC = () => {
   }
 
   const handleFilterChange = (value: string) => {
+    if (value === activeFilter) return;
+    track(ANALYTICS_EVENTS.ACHIEVEMENTS_FILTER_CHANGED, {
+      [ANALYTICS_PROPS.FILTER]: value.toLowerCase(),
+    });
     setActiveFilter(value);
   };
 

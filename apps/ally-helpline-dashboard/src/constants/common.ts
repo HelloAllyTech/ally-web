@@ -32,18 +32,7 @@ export enum KeyboardKeys {
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SINGLE_DIGIT_REGEX = /^\d$/;
 
-export enum LanguageMap {
-  bn = "Bengali",
-  en = "English",
-  gu = "Gujarati",
-  hi = "Hindi",
-  kn = "Kannada",
-  ml = "Malayalam",
-  or = "Oriya",
-  pa = "Punjabi",
-  ta = "Tamil",
-  te = "Telugu",
-}
+export { LanguageMap } from "./language";
 
 export enum HttpMethod {
   GET = "GET",
