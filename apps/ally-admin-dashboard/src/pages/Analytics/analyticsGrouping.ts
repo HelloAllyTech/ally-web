@@ -20,6 +20,13 @@ import { AnalyticsBucket, AnalyticsGrain } from "@types";
  * only for grains actually on screen (see {@link useChartGrouping}).
  */
 
+/**
+ * The full grain vocabulary — every SQL-bucketable value plus `"allTime"`. This
+ * is NOT the default {@link GroupingPicker} offers (that stays the legacy
+ * 4-value list until a chart explicitly opts in by passing `options={GROUPINGS}`
+ * or its own narrowed list); it exists so a migrating chart has one canonical
+ * "everything" list to opt into rather than hand-rolling it.
+ */
 export const GROUPINGS: AnalyticsGrain[] = ["day", "week", "month", "quarter", "year", "allTime"];
 
 /** Display + axis-title name for a grain. One table, used by both. */
@@ -43,11 +50,14 @@ export const GROUPING_LABEL: Record<AnalyticsGrain, string> = {
 export const DEFAULT_GROUPING: AnalyticsGrain = "month";
 
 /**
- * Narrow a grain to the SQL-bucket-facing type a mechanism-B (`useChartGrouping`)
- * consumer still expects. None of those consumers offer `"allTime"` yet — their
- * `GroupingPicker` calls all draw from the legacy 4-value default — so `grain`
- * is never actually `"allTime"` here; this only satisfies the type checker
- * until a chart migrates onto `useGrainQueries`'s `allTime` branch (Phase 4).
+ * Narrow a grain to the SQL-bucket-facing value a query param actually accepts.
+ *
+ * `"allTime"` is never sent as a `bucket` param — the endpoints that back an
+ * All-time KPI tile return their whole-window aggregate (e.g.
+ * `practiceMinutesOverall`) on the SAME response as the bucketed series,
+ * regardless of which bucket was requested, so a chart in All-time mode still
+ * needs a valid bucket to ask for; `fallback` is what it asks for while
+ * reading the aggregate field instead of `points`.
  */
 export const grainAsBucket = (
   grain: AnalyticsGrain,
@@ -56,7 +66,7 @@ export const grainAsBucket = (
 
 /** Axis / column title for a grain. Falls back to Week for unknown values. */
 export const bucketTitle = (bucket?: AnalyticsBucket | string): string =>
-  GROUPING_LABEL[bucket as AnalyticsBucket] ?? GROUPING_LABEL.week;
+  GROUPING_LABEL[bucket as AnalyticsGrain] ?? GROUPING_LABEL.week;
 
 /** "Grouped by month" — for a provenance line or an export header. */
 export const groupingNote = (bucket: AnalyticsGrain): string =>
@@ -129,9 +139,9 @@ export interface ChartGrouping<K extends string> {
  */
 export function useChartGrouping<K extends string>(
   defaults: Record<K, AnalyticsBucket>,
-  // `DEFAULT_GROUPING` is now typed `AnalyticsGrain` (Phase 1 widening); this
-  // hook is mechanism B, migrated in a later phase, and stays bucket-only —
-  // the value ("month") is always a valid `AnalyticsBucket`.
+  // `DEFAULT_GROUPING` is typed `AnalyticsGrain` (the shared vocabulary this
+  // hook does not yet speak — see Phase-4 migration notes on the tabs that use
+  // it); the value itself ("month") is always a valid `AnalyticsBucket`.
   base: AnalyticsBucket = DEFAULT_GROUPING as AnalyticsBucket,
 ): ChartGrouping<K> {
   const [byChart, setByChart] = useState<Record<K, AnalyticsBucket>>(defaults);

@@ -5,6 +5,7 @@ import { GoalsXpPoint } from "@types";
 import {
   ACTUAL_GROUP,
   GOAL_GROUP,
+  XP_GOAL_GRAIN_OPTIONS,
   buildGoalsXpSeries,
   buildGoalsXpTable,
   goalsXpEmptyText,
@@ -12,6 +13,7 @@ import {
   goalsXpTakeaway,
   goalsXpUpcomingNote,
   noGoalPeriods,
+  toXpGoalGrain,
 } from "../goalsXpChart";
 
 const point = (overrides: Partial<GoalsXpPoint> & { periodLabel: string }): GoalsXpPoint => ({
@@ -232,5 +234,27 @@ describe("buildGoalsXpTable", () => {
     const table = buildGoalsXpTable(points);
 
     expect(table.rows).toEqual([["Oct 2026 (upcoming)", "—", 3_000]]);
+  });
+});
+
+describe("toXpGoalGrain", () => {
+  it("passes through the three grains the endpoint understands", () => {
+    expect(toXpGoalGrain("month")).toBe("month");
+    expect(toXpGoalGrain("quarter")).toBe("quarter");
+    expect(toXpGoalGrain("year")).toBe("year");
+  });
+
+  it("falls back to month for a grain the picker's own options never offer", () => {
+    // Unreachable via the UI — GroupingPicker is narrowed to XP_GOAL_GRAIN_OPTIONS
+    // — but the fallback must still be well-defined for the type checker.
+    expect(toXpGoalGrain("day")).toBe("month");
+    expect(toXpGoalGrain("week")).toBe("month");
+    expect(toXpGoalGrain("allTime")).toBe("month");
+  });
+});
+
+describe("XP_GOAL_GRAIN_OPTIONS", () => {
+  it("offers exactly the three grains the endpoint supports, no day/week/allTime", () => {
+    expect(XP_GOAL_GRAIN_OPTIONS).toEqual(["month", "quarter", "year"]);
   });
 });

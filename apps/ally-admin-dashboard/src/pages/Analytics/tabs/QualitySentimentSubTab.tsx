@@ -8,18 +8,13 @@ import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
 import {
   GROUPINGS,
   bucketTitle,
+  grainAsBucket,
   groupingNote,
   inProgressCaption,
   isInProgress,
   withoutInProgress,
 } from "../analyticsGrouping";
-import {
-  defaultControlsFor,
-  grainAsBucket,
-  RANGE_SHORT,
-  RangePicker,
-  useChartControls,
-} from "../chartControls";
+import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
@@ -50,15 +45,12 @@ import {
   satisfactionTakeaway,
 } from "../testingChart";
 import {
-  PROXY_NPS_DOMAIN,
   PROXY_NPS_LABEL,
-  PROXY_NPS_SCALE,
   QUALITY_INDEX_DIMENSIONS,
   QUALITY_INDEX_DIMENSION_LABELS,
   QUALITY_INDEX_DOMAIN,
   QUALITY_INDEX_LABEL,
   QUALITY_INDEX_SCALE,
-  buildProxyNpsSeries,
   buildQualityIndexAreaSeries,
   buildQualityIndexSeries,
   correlationNote,
@@ -234,7 +226,6 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   const qualityAreas = useMemo(() => buildQualityIndexAreaSeries(points), [points]);
   const qualityLine = useMemo(() => buildQualityIndexSeries(points), [points]);
   const quality = useMemo(() => [...qualityAreas, ...qualityLine], [qualityAreas, qualityLine]);
-  const sentiment = useMemo(() => buildProxyNpsSeries(points), [points]);
 
   const coverage = data?.indexCoverage ?? [];
   const fullyCalibrated = isIndexFullyCalibrated(coverage);
@@ -281,45 +272,29 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   // testing the combined array would never report "empty" even when no
   // dimension had any data.
   const noQuality = !qualityLine.some(d => d.value !== null);
-  const noSentiment = !sentiment.some(d => d.value !== null);
 
   /**
    * All-time. The quality index and sentiment cards share ONE grain control
    * (`controls`/`pickers`, rendered once on the quality card) so their x-axes
-   * never disagree — see the file doc's "Two axes, two cards". That coupling
-   * means widening the shared picker to offer "All time" affects both cards
-   * at once, even though only one has a backing aggregate today:
-   *
-   *  - `overallProxyNps` already exists (unchanged since before this task),
-   *    so the sentiment card gets a real KPI tile.
-   *  - The Quality Index's whole-window aggregate (`overallQualityIndex`) is
-   *    Phase-3 backend work tracked separately in the parent plan; as of this
-   *    change it had NOT landed (`overallQualityIndex` absent from both
-   *    `QualitySentimentResponseDto` on ally-be and this file's response
-   *    type). Rather than wire the quality card to `overallCompositeScore`
-   *    (a different metric — the raw judge score, not the index; the plan
-   *    explicitly warns against conflating the two), the quality card shows
-   *    an honest "not available yet" KPI state instead.
+   * never disagree — see the file doc's "Two axes, two cards". Both cards now
+   * have a real backing aggregate: `overallProxyNps` for sentiment, and
+   * `overallQualityIndex` for the index — a genuine whole-window blend of the
+   * same four dimensions the chart stacks, not a fold of the bucketed line
+   * (see the parent plan's Phase 3). It is a DIFFERENT figure from
+   * `overallCompositeScore` (the raw actor-goal judge mean, one of the four
+   * inputs) — the two must not be conflated.
    */
   const isAllTime = controls.grain === "allTime";
 
   const qualityIndexKpi: KpiTileProps = {
     label: "Roleplay quality (index)",
-    value: "—",
+    value: data?.overallQualityIndex === null || !data ? "—" : `${data.overallQualityIndex}`,
+    n: data?.totalEvaluatedSessions,
+    nUnit: "evaluated sessions",
+    minN: MIN_N_FOR_SCORE,
     description:
-      "All-time isn't available for the Quality Index yet — its whole-window " +
-      "aggregate hasn't shipped on the backend. Switch to a bucketed grain " +
-      "(Day–Year) to see this chart, or see the Actor goal score KPI above " +
-      "for a related, all-time-friendly figure.",
-  };
-
-  const sentimentAllTimeEmpty = data?.overallProxyNps == null;
-  const sentimentKpi: KpiTileProps = {
-    label: "Learner sentiment (proxy NPS)",
-    value: data?.overallProxyNps === null || !data ? "—" : `${data.overallProxyNps}`,
-    n: data?.totalResponses,
-    nUnit: "ratings",
-    description: "NOT an NPS — derived from the 1–5 rating. See the note below.",
+      "Weighted blend of the same four dimensions as the chart below, over " +
+      "the whole window — not a sum of the plotted buckets.",
   };
 
   const distIsAllTime = distControls.grain === "allTime";
@@ -471,45 +446,16 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
             />
           </ScrollableChart>
         </ChartCard>
-
-        <ChartCard
-          title="Learner sentiment (proxy NPS)"
-          caption={
-            `%promoters − %detractors from the 1–5 post-session rating, on the ` +
-            `NPS ±100 scale. ${boundedDomainNote(PROXY_NPS_DOMAIN)} Suppressed ` +
-            `in any period with fewer than ${data?.minResponses ?? 5} responses, ` +
-            `where a single rating moves it by tens of points.`
-          }
-          source={buildSource({
-            derivation: "scenario_session_feedbacks.rating, cut 5 / 4 / <=3",
-            window: windowNote,
-            n: data?.totalResponses,
-            nUnit: "ratings",
-            asOf,
-            extra: windowLabel(data?.window),
-          })}
-          loading={loading}
-          error={Boolean(error)}
-          empty={!isLoading && (isAllTime ? sentimentAllTimeEmpty : noSentiment)}
-          emptyText="Not enough ratings in this window to state a figure"
-          errorSubtitle="There was a problem fetching learner sentiment."
-          onRetry={() => void refetch()}
-          onExpand={() => setExpanded("compare")}
-          kpi={isAllTime ? sentimentKpi : undefined}
-        >
-          <ScrollableChart data={sentiment}>
-            <LineChart
-              data={sentiment}
-              options={lineOpts({
-                colorScale: PROXY_NPS_SCALE,
-                leftTitle: "Proxy NPS",
-                bottomTitle: bucketTitle(controls.grain),
-                domain: PROXY_NPS_DOMAIN,
-              })}
-            />
-          </ScrollableChart>
-        </ChartCard>
       </div>
+
+      {/* "Learner sentiment (proxy NPS)" moved to Goals, relabelled
+          "Sentiment related to role play quality" (Highlights → Goals). The
+          "Proxy NPS" KPI tile above stays — its description still says "see
+          the note below", which still refers to the `proxyNote` paragraph
+          further down this page, unchanged. The "Quality index against
+          learner sentiment" detail modal below is left wired to this card's
+          own expand button; it is an audit comparison of BOTH series and was
+          never specific to the removed chart. */}
 
       {/* The distribution and the raw ratings behind the two summary series
           above. Same sessions, read three more ways: the spread the median

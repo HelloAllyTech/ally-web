@@ -2,14 +2,14 @@ import { useMemo, useState } from "react";
 
 import { GroupedBarChart } from "@carbon/charts-react";
 
-import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetGoalsXpQuery } from "@api";
-import { XpGoalGrain } from "@types";
 
+import { GROUPING_LABEL } from "./analyticsGrouping";
+import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
-import { ChartCard, ScrollableChart, buildSource, timeBarOpts } from "./chartKit";
+import { ChartCard, GroupingPicker, ScrollableChart, buildSource, timeBarOpts } from "./chartKit";
 import {
-  GOALS_XP_GRAINS,
+  XP_GOAL_GRAIN_OPTIONS,
   buildGoalsXpSeries,
   buildGoalsXpTable,
   goalsXpEmptyText,
@@ -17,7 +17,10 @@ import {
   goalsXpScale,
   goalsXpTakeaway,
   goalsXpUpcomingNote,
+  toXpGoalGrain,
 } from "./goalsXpChart";
+
+type ChartId = "xp";
 
 const asOfStamp = (computedAt?: string): string | undefined => {
   if (!computedAt) return undefined;
@@ -39,13 +42,37 @@ const TITLE = "XP earned vs. goal";
  * {@link goalsXpNoGoalNote} plus the detail table both say so in words.
  *
  * From a fixed April 2026 floor through today (not the platform's all-time
- * data floor) and platform-wide (no tenant filter) — the grain
- * (month/quarter/year) is the chart's own control, not the page's range
- * picker.
+ * data floor) and platform-wide (no tenant filter) — the grain is the chart's
+ * own control, not the page's range picker (there is no page-level range on
+ * Goals at all).
+ *
+ * ## Grain, and why there's no "All-time"
+ *
+ * Uses the shared {@link GroupingPicker}/{@link useChartControls}, narrowed via
+ * `options` to {@link XP_GOAL_GRAIN_OPTIONS} — the endpoint only understands
+ * month/quarter/year, because a goal row is seeded at one of those three
+ * grains and a day/week axis would have nothing under it.
+ *
+ * No "All-time" option either, deliberately: the endpoint returns no
+ * whole-window total, only per-period points. Summing `actualXp` across the
+ * currently-displayed points would work (a sum is associative), but the
+ * "Goal" side would not be an honest whole-window target — it would be a fold
+ * of whichever grain happened to be selected, silently changing value if a
+ * reader switched from monthly to quarterly first. That is exactly the
+ * "fold of bucketed data" the rest of this platform's All-time tiles are
+ * built to avoid, so this card leaves it out rather than fake a number.
  */
 export const GoalsXpCard = () => {
-  const [grain, setGrain] = useState<XpGoalGrain>("month");
-  const { data, isLoading, isError, refetch } = useGetGoalsXpQuery({ grain });
+  const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
+    "goals.xp",
+    defaultControlsFor(["xp"], { xp: { grain: "month" } }),
+  );
+  const grain = controlsFor("xp").grain;
+  const xpGrain = toXpGoalGrain(grain);
+  const { data, isLoading, isError, refetch } = useGetGoalsXpQuery(
+    { grain: xpGrain },
+    { skip: hydrating },
+  );
   const [expanded, setExpanded] = useState(false);
 
   const points = data?.points ?? [];
@@ -56,14 +83,11 @@ export const GoalsXpCard = () => {
   const upcomingNote = goalsXpUpcomingNote(points);
   const emptyText = goalsXpEmptyText(points);
 
-  const items = GOALS_XP_GRAINS;
-  const selectedItem = items.find(i => i.key === grain) ?? items[0];
-
   const opts = useMemo(
     () =>
       timeBarOpts({
         leftTitle: "XP",
-        bottomTitle: GOALS_XP_GRAINS.find(g => g.key === grain)?.label ?? "Period",
+        bottomTitle: GROUPING_LABEL[grain],
         colorScale: goalsXpScale,
         height: "340px",
       }),
@@ -95,35 +119,23 @@ export const GoalsXpCard = () => {
         caption={caption}
         takeaway={takeaway}
         source={source}
-        loading={isLoading && !data}
+        loading={(isLoading || hydrating) && !data}
         error={isError}
         onRetry={refetch}
         empty={!isLoading && Boolean(emptyText)}
         emptyText={emptyText}
+        controls={
+          <GroupingPicker
+            id="goals-xp-grain"
+            value={grain}
+            onChange={g => setGrain("xp", g)}
+            options={XP_GOAL_GRAIN_OPTIONS}
+          />
+        }
         onExpand={() => setExpanded(true)}
         height="340px"
       >
         <div className="flex flex-col gap-4">
-          {/* `relative` is load-bearing: Carbon's Dropdown renders its open list as
-              an absolutely-positioned child, which escapes a `static` scroll
-              container and inflates an ancestor's scrollHeight into a phantom
-              second scrollbar (see RoadmapDeliveryCard for the same note). */}
-          <div className="relative w-40">
-            <Dropdown
-              id="goals-xp-grain"
-              size="md"
-              titleText="Group by"
-              hideLabel
-              label="Group by"
-              items={items}
-              selectedItem={selectedItem}
-              itemToString={item => item?.label ?? ""}
-              onChange={({ selectedItem: picked }) => {
-                if (picked) setGrain(picked.key);
-              }}
-            />
-          </div>
-
           <ScrollableChart data={series}>
             <GroupedBarChart data={series} options={opts} />
           </ScrollableChart>
@@ -143,7 +155,7 @@ export const GoalsXpCard = () => {
           table={table}
           exportContext={[
             "Window: all time",
-            `Grouped by ${GOALS_XP_GRAINS.find(g => g.key === grain)?.label.toLowerCase()}`,
+            `Grouped by ${GROUPING_LABEL[grain].toLowerCase()}`,
             ...(noGoalNote ? [noGoalNote] : []),
             ...(upcomingNote ? [upcomingNote] : []),
           ]}

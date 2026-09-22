@@ -59,7 +59,6 @@ import {
   buildVoiceLatencyByLanguageBars,
   buildVoiceLatencySeries,
   countFirstAudioTurns,
-  countMaskedTurns,
   countStartLatencySessions,
   countVoiceLatencyTurns,
   latencyBucketTitle,
@@ -187,7 +186,6 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
 
   const points = data?.points ?? [];
   const axisTitle = useMemo(() => latencyBucketTitle(data?.bucket), [data]);
-  const liveSeries = useMemo(() => buildVoiceLatencySeries(points, "pipeline"), [points]);
   const historySeries = useMemo(() => buildVoiceLatencySeries(points, "transcript"), [points]);
   const liveTurns = useMemo(() => countVoiceLatencyTurns(points, "pipeline"), [points]);
   const historyTurns = useMemo(() => countVoiceLatencyTurns(points, "transcript"), [points]);
@@ -205,9 +203,6 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const firstAudioLatencySeries = useMemo(() => buildFirstAudioLatencySeries(points), [points]);
   const replyLatencySeries = useMemo(() => buildReplyLatencySeries(points), [points]);
   const firstAudioTurns = useMemo(() => countFirstAudioTurns(points), [points]);
-  const maskedTurns = useMemo(() => countMaskedTurns(points), [points]);
-  const maskedSharePct =
-    firstAudioTurns > 0 ? Math.round((100 * maskedTurns) / firstAudioTurns) : null;
   // The quality half of the filler story. The mix chart above says how much of
   // the window was masked; these say whether the masking was any good.
   const fillerFindingSeries = useMemo(() => buildFillerFindingSeries(fillerData), [fillerData]);
@@ -228,22 +223,6 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const llmTtftTargetSec = (data?.llmTtftTargetMs ?? 1500) / 1000;
   const startTargetSec = (startData?.targetMs ?? 4000) / 1000;
   const languageNote = languageParam ? ` · language: ${languageParam}` : " · all languages";
-
-  const voiceOptions = useMemo(
-    () =>
-      lineOpts({
-        leftTitle: "Seconds",
-        bottomTitle: axisTitle,
-        colorScale: LATENCY_STAT_SCALE,
-        extra: axesWithThreshold({
-          leftTitle: "Seconds",
-          bottomTitle: axisTitle,
-          thresholdValue: targetSec,
-          thresholdLabel: `Target ${targetSec}s or under`,
-        }),
-      }),
-    [axisTitle, targetSec],
-  );
 
   const llmTtftOptions = useMemo(
     () =>
@@ -481,15 +460,8 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const startWindow = windowLabel(startData?.window);
   const reliabilityWindow = windowLabel(reliabilityData?.window);
 
-  const liveSource = buildSource({
-    derivation: "Live pipeline turn metrics, per-turn response latency",
-    window: `${voiceWindow}${languageNote}`,
-    n: liveTurns,
-    nUnit: "turns",
-    asOf: asOf(data?.window),
-  });
-
-  // Same window/turn count as liveSource — llmTtft rides the same query and
+  // Same window/turn count as the (now relocated) live-pipeline voice-latency
+  // chart on Goals — llmTtft rides the same query and
   // the same per-bucket `turns` field, just a different column within it.
   const llmTtftSource = buildSource({
     derivation: "Live pipeline turn metrics, graph-start-to-first-token latency",
@@ -570,35 +542,15 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     <div className="grid grid-cols-1 gap-4">
       {bucketPicker}
 
-      <ChartCard
-        title="Time to first voice — live pipeline"
-        caption={
-          "How long the learner waits to hear ANY voice — a thinking filler, an " +
-          "interim reply, or the reply itself, whichever came first. Median, " +
-          "average and slow tail (p95)." +
-          (maskedSharePct !== null
-            ? ` ${maskedSharePct}% of turns in this window were fronted by a filler or interim.`
-            : "")
-        }
-        source={liveSource}
-        loading={isLoading && !data}
-        error={isError}
-        onRetry={refetch}
-        onExpand={() => setExpanded("live")}
-        errorTitle="Couldn't load time to first voice"
-        errorSubtitle="There was a problem fetching turn-latency metrics."
-        empty={!isLoading && liveSeries.length === 0}
-      >
-        <ScrollableChart data={liveSeries}>
-          <LineChart data={liveSeries} options={voiceOptions} />
-        </ScrollableChart>
-      </ChartCard>
-
-      {/* The two cards below exist so the headline above stays readable. It
-          measures time to the first audio of ANY kind, so it improves both when
-          the pipeline gets faster and when more turns are masked by a filler —
-          the mix chart says which happened, and the reply chart says what the
-          pipeline did underneath. */}
+      {/* "Time to first voice — live pipeline" moved to Goals (Highlights →
+          Goals → "Roleplay voice latency"), where it carries its own grain
+          control (including All-time) rather than sharing this tab's shared
+          bucket. The two cards below exist so the headline that used to sit
+          here stays readable: this one measures time to the first audio of
+          ANY kind, so it improves both when the pipeline gets faster and when
+          more turns are masked by a filler — the mix chart says which
+          happened, and the reply chart says what the pipeline did
+          underneath. */}
       <ChartCard
         title="What the learner heard first"
         caption="Share of turns fronted by a thinking filler, an interim reply, or the reply itself."
@@ -958,23 +910,6 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
       />
 
       {/* ---------------------------- Detail views ---------------------------- */}
-
-      {expanded === "live" && (
-        <ChartDetailModal
-          open={expanded === "live"}
-          onClose={() => setExpanded(null)}
-          title="Time to first voice — live pipeline"
-          caption="Time until the learner heard any voice — filler, interim reply or the reply itself. Median, average and slow tail (p95)."
-          source={liveSource}
-          table={seriesTable(liveSeries, axisTitle)}
-          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
-          render={({ height }) => (
-            <ScrollableChart data={liveSeries}>
-              <LineChart data={liveSeries} options={{ ...voiceOptions, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
 
       {expanded === "firstAudioMix" && (
         <ChartDetailModal
