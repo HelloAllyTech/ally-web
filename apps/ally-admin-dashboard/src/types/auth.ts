@@ -189,7 +189,10 @@ export type AnalyticsBucket = "day" | "week" | "month" | "quarter" | "year";
 /**
  * The full grain vocabulary a chart's grouping control may offer: every
  * SQL-bucketable {@link AnalyticsBucket} plus `"allTime"`, which collapses the
- * chart's current window into a single KPI number instead of a bucketed series.
+ * chart's current window into a single KPI number instead of a bucketed series
+ * (see {@link ChartCard}'s `kpi` prop). Never passed to the server as a
+ * `bucket` param — a chart reading `"allTime"` requests a whole-window
+ * aggregate field on the same response instead (e.g. `practiceMinutesOverall`).
  */
 export type AnalyticsGrain = AnalyticsBucket | "allTime";
 
@@ -327,6 +330,16 @@ export interface XpGrowthResponse {
 /* XP goals — GET /v1/analytics/xp-goals                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The wire contract for `/v1/analytics/xp-goals` — the request `grain` param
+ * and the response's echoed `grain` field, never day/week/allTime because a
+ * goal row is seeded at one of these three grains only. NOT the type of
+ * `GoalsXpCard`'s own picker control any more — that migrated onto the shared
+ * `AnalyticsGrain`/`GroupingPicker` (narrowed via `options`), converting back
+ * to this type at the request boundary (see `toXpGoalGrain` in
+ * `goalsXpChart.ts`). Kept, not retired, because the response's `grain` field
+ * still needs an accurate type.
+ */
 export type XpGoalGrain = "month" | "quarter" | "year";
 
 /** One period's actual XP earned against its goal, if one has been set. */
@@ -1097,6 +1110,12 @@ export interface QualitySentimentResponse {
   points: QualitySentimentPoint[];
   overallCompositeScore: number | null;
   overallProxyNps: number | null;
+  /**
+   * Whole-window Roleplay Quality Index — a fresh aggregate, not a fold of
+   * `points`. Distinct from `overallCompositeScore`, which is the raw
+   * actor-goal judge mean and only one of the index's four inputs.
+   */
+  overallQualityIndex: number | null;
   totalEvaluatedSessions: number;
   totalResponses: number;
   minResponses: number;
@@ -1123,7 +1142,7 @@ export interface ChartPreference {
   /** Client-owned key, namespaced by tab, e.g. "highlights.practice". */
   chartId: string;
   range?: AnalyticsRange | null;
-  /** Named for its SQL-bucket origin; also accepts "allTime". */
+  /** Named for its SQL-bucket origin; also accepts `"allTime"`, stored opaquely. */
   bucket?: AnalyticsGrain | null;
 }
 
@@ -1443,6 +1462,21 @@ export interface VoiceLatencyByLanguageRow {
   avgSttFinalizeMs: number | null;
 }
 
+/**
+ * Whole-window, un-bucketed live-pipeline latency — a fresh aggregate query,
+ * NOT a fold of `points`: percentiles do not average across buckets.
+ */
+export interface VoiceLatencyOverall {
+  /** Live-pipeline turns aggregated over the whole window. */
+  turns: number;
+  /** Mean voice-to-voice latency (ms); null with no turns. */
+  avgMs: number | null;
+  /** Median (p50) voice-to-voice latency (ms); null with no turns. */
+  p50Ms: number | null;
+  /** p95 voice-to-voice latency (ms); null with no turns. */
+  p95Ms: number | null;
+}
+
 export interface VoiceLatencyResponse {
   range: AnalyticsRange;
   window: AnalyticsWindow;
@@ -1455,6 +1489,8 @@ export interface VoiceLatencyResponse {
   points: VoiceLatencyPoint[];
   /** Live-pipeline latency by language, independent of the `language` filter. */
   byLanguage: VoiceLatencyByLanguageRow[];
+  /** The All-time KPI figure — see {@link VoiceLatencyOverall}. */
+  overall: VoiceLatencyOverall;
 }
 
 /**

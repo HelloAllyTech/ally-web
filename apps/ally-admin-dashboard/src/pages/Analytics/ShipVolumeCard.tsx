@@ -43,19 +43,21 @@ const TITLE = "Changed lines shipped per week, by repo";
  * **It is an output measure and the card says so twice**, in the caption and in
  * the takeaway's phrasing, because churn invites a reading it cannot support.
  * Lines say how much code moved, never whether the right thing moved, and a
- * small well-abstracted change routinely beats a large one. The outcome
- * counterpart is the votes-shipped chart directly above it on this tab, which is
- * why this one sits second: a reader meets "did we ship what was wanted" before
- * "how much did we move".
+ * small well-abstracted change routinely beats a large one. Its outcome
+ * counterpart — votes shipped — lives on the Product Management tab, not
+ * beside it here: this card moved to Highlights → Goals so leadership meets
+ * "how much did we build this period" alongside the other pace-of-the-business
+ * charts, without implying the two tabs measure the same thing.
  *
  * **Deliberately not split by author.** GitHub would hand that over in the same
  * call, and a per-person line count is the canonical way this metric does
- * damage. The repo split is the cut that answers the question worth asking.
+ * damage. The repo split is the cut that answers the question worth asking —
+ * collective output, never individual.
  *
- * Owns its own window control rather than taking a page-level range, matching
- * the tab's other card: a weekly axis wider than about a year stops being
- * readable long before "all time" would, so this chart's window is a property of
- * this chart.
+ * Owns its own window control rather than taking a page-level range: a weekly
+ * axis wider than about a year stops being readable long before "all time"
+ * would, so this chart's window is a property of this chart, same as its
+ * Goals-tab siblings' grain pickers.
  */
 export const ShipVolumeCard = () => {
   const [weeksWindow, setWeeksWindow] = useState(DEFAULT_SHIP_VOLUME_WEEKS);
@@ -95,9 +97,9 @@ export const ShipVolumeCard = () => {
     `40,000 lines did real work that a net figure would show as almost nothing. ` +
     `This measures how much code MOVED — it is a capacity signal, not a ` +
     `productivity one, and it says nothing about whether the right thing moved; ` +
-    `the votes-shipped chart above is the outcome counterpart. Weeks begin on ` +
-    `Sunday, matching GitHub's own buckets, and there is deliberately no split by ` +
-    `author.`;
+    `see the Product Management tab's votes-shipped chart for that outcome ` +
+    `counterpart. Weeks begin on Sunday, matching GitHub's own buckets, and ` +
+    `there is deliberately no split by author.`;
 
   const source = buildSource({
     derivation:

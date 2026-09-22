@@ -9,17 +9,12 @@ import { PLATFORM_WIDE_NOTE, windowLabel } from "../analyticsFilters";
 import {
   GROUPINGS,
   bucketTitle,
+  grainAsBucket,
   groupingNote,
   inProgressCaption,
   withoutInProgress,
 } from "../analyticsGrouping";
-import {
-  defaultControlsFor,
-  grainAsBucket,
-  RANGE_SHORT,
-  RangePicker,
-  useChartControls,
-} from "../chartControls";
+import { defaultControlsFor, RANGE_SHORT, RangePicker, useChartControls } from "../chartControls";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,

@@ -849,9 +849,10 @@ export const KpiTile = ({
 /**
  * The historical 4-value default — every call site that does not pass its own
  * `options` keeps offering exactly these, unchanged, even though the picker can
- * now accept the full {@link AnalyticsGrain} vocabulary. A chart opts into
- * "quarter"/"allTime" by passing its own `options` explicitly; until a chart is
- * individually migrated it must keep rendering exactly as it does today.
+ * now accept the full {@link AnalyticsGrain} vocabulary (`GROUPINGS` in
+ * ./analyticsGrouping). A chart opts into "quarter"/"allTime" by passing its own
+ * `options` explicitly — until it does, it must keep rendering exactly as it
+ * does today.
  */
 const LEGACY_GROUPING_OPTIONS: AnalyticsGrain[] = ["day", "week", "month", "year"];
 
@@ -952,10 +953,10 @@ interface ChartCardProps {
   height?: string;
   /**
    * Swap the chart body for a {@link KpiTile} — the "All-time" collapse of a
-   * per-bucket series into one number. Purely additive: when omitted, `children`
-   * renders exactly as before. Header/caption/controls/source-footer are
-   * unaffected either way, so the grain picker does not move when a reader
-   * flips a chart to All-time.
+   * per-bucket series into one whole-window number. Purely additive: when
+   * omitted, `children` renders exactly as before. Header/caption/controls/
+   * source-footer are unaffected either way, so the grain picker does not move
+   * when a reader flips a chart to All-time.
    */
   kpi?: KpiTileProps;
   children?: ReactNode;

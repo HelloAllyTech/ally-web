@@ -61,6 +61,16 @@ import {
 } from "@types";
 
 import { baseAPI } from "./baseApi";
+import { ActiveUsersXpQuery, ActiveUsersXpResponse } from "../pages/Analytics/activeUsersXpChart";
+import {
+  BugHunterVolumeQuery,
+  BugHunterVolumeResponse,
+} from "../pages/Analytics/bugHunterVolumeChart";
+import { XpByTenantQuery, XpByTenantResponse } from "../pages/Analytics/xpByTenantChart";
+import {
+  XpLevelReachedQuery,
+  XpLevelReachedResponse,
+} from "../pages/Analytics/xpLevelReachedChart";
 
 /**
  * Window params every super-admin analytics endpoint accepts.
@@ -177,6 +187,23 @@ type OrgEngagementQuery = {
 type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
+
+/**
+ * Paths for the four Highlights -> Goals endpoints added in this groundwork
+ * pass. Declared here rather than added to `ApiEndpoints.ANALYTICS` in
+ * `@constants` (constants/common.ts): that registry is out of scope for this
+ * additive-only edit, and these routes are not yet wired into
+ * `AnalyticsController` on the backend (ally-be groundwork only). Spelled to
+ * match the kebab-case convention every sibling ANALYTICS path already uses
+ * (e.g. `xp-goals`, `roadmap-delivery`) and the DTO file names they come
+ * from — confirm/adjust once the controller lands.
+ */
+const GOALS_TAB_PATHS = {
+  ACTIVE_USERS_XP: "/v1/analytics/active-users-xp",
+  XP_LEVEL_REACHED: "/v1/analytics/xp-level-reached",
+  BUG_HUNTER_VOLUME: "/v1/analytics/bug-hunter-volume",
+  XP_BY_TENANT: "/v1/analytics/xp-by-tenant",
+} as const;
 
 type ConversationDriftQuery = AnalyticsWindowQuery & {
   language?: string;
@@ -732,6 +759,57 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
 
+    /* ------------------ Highlights -> Goals tab (groundwork) ----------------- */
+    //
+    // Four new cards, not yet mounted into GoalsTab (a later pass). Response/
+    // query types live beside the pure transforms in `pages/Analytics/*Chart.ts`
+    // rather than in `@types` (types/auth.ts is mid-edit by a concurrent
+    // session) — see each type's own doc comment.
+
+    // Distinct learners clearing the ACTIVE_USER_XP_THRESHOLD-XP bar WITHIN
+    // each bucket. Standard window params minus `tenantId`: platform-wide only,
+    // matching XP Goals and the other Goals-tab charts.
+    getActiveUsersXp: builder.query<ActiveUsersXpResponse, ActiveUsersXpQuery>({
+      query: (q = {}) => ({
+        url: GOALS_TAB_PATHS.ACTIVE_USERS_XP,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Learners reaching each XP level (L1-L10) for the first time, per bucket.
+    // Standard window params minus `tenantId`/`compare`: platform-wide only.
+    getXpLevelReached: builder.query<XpLevelReachedResponse, XpLevelReachedQuery>({
+      query: (q = {}) => ({
+        url: GOALS_TAB_PATHS.XP_LEVEL_REACHED,
+        method: HttpMethod.GET,
+        // `windowParams` only stringifies whichever fields are set — it does
+        // not validate `bucket` against the shared (narrower) vocabulary, so
+        // this endpoint's own wider `quarter`-inclusive bucket type is safe
+        // to pass through. See `XpLevelReachedBucket`'s doc comment.
+        params: windowParams(q as AnalyticsWindowQuery),
+      }),
+    }),
+    // Bug Hunter found vs. fixed volume per bucket. Standard window params;
+    // `tenantId` is deliberately not offered here — `bug_findings` carries no
+    // tenant column, so it would be a no-op on the server.
+    getBugHunterVolume: builder.query<BugHunterVolumeResponse, BugHunterVolumeQuery>({
+      query: (q = {}) => ({
+        url: GOALS_TAB_PATHS.BUG_HUNTER_VOLUME,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Total XP within a trailing window, split by tenant (top 8 + "Other").
+    // Its OWN window vocabulary (30d/90d/365d/all) — a single bar, not a
+    // bucketed trend — so it takes `window`, not `range`/`bucket`.
+    getXpByTenant: builder.query<XpByTenantResponse, XpByTenantQuery>({
+      query: ({ window } = {}) => ({
+        url: GOALS_TAB_PATHS.XP_BY_TENANT,
+        method: HttpMethod.GET,
+        params: window ? { window } : {},
+      }),
+    }),
+
     // Pin the reference experiment all language-quality deltas read against.
     setLanguageReference: builder.mutation<
       LanguageEvalReference | null,
@@ -800,4 +878,8 @@ export const {
   useGetGoalsXpQuery,
   useGetChartPreferencesQuery,
   useSaveChartPreferencesMutation,
+  useGetActiveUsersXpQuery,
+  useGetXpLevelReachedQuery,
+  useGetBugHunterVolumeQuery,
+  useGetXpByTenantQuery,
 } = analyticsAPI;

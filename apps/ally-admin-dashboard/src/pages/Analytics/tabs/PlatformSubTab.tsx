@@ -58,7 +58,6 @@ import {
   CUMULATIVE_XP_SCALE,
   NEW_USERS_SCALE,
   PLAY_TIME_SCALE,
-  PRACTICE_SCALE,
   RATING_DOMAIN,
   RETENTION_SCALE,
   SCORE_DOMAIN,
@@ -78,7 +77,6 @@ import {
   buildTotalCostSeries,
   buildTrackFunnelStages,
   formatKpi,
-  peakActiveLearners,
   sparkValues,
   totalPlayTimeSessions,
   totalUnpricedCalls,
@@ -122,7 +120,6 @@ type ChartId =
   | "cumulative"
   | "retention"
   | "sims"
-  | "practice"
   | "playTime"
   | "csat"
   | "costPerSim"
@@ -139,7 +136,7 @@ type ChartId =
  * queries) for a grain nothing on that side is showing.
  */
 const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
-const HIGHLIGHTS_CHARTS = ["practice", "playTime", "csat", "costPerSim", "totalCost"] as const;
+const HIGHLIGHTS_CHARTS = ["playTime", "csat", "costPerSim", "totalCost"] as const;
 
 const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion", "xp"];
 
@@ -407,7 +404,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   const cumulativeQ = oQ[resolvedBucket("cumulative")];
   const retentionQ = oQ[resolvedBucket("retention")];
   const simsQ = oQ[resolvedBucket("sims")];
-  const practiceQ = hQ[resolvedBucket("practice")];
   const playTimeQ = hQ[resolvedBucket("playTime")];
   const csatQ = hQ[resolvedBucket("csat")];
   const costPerSimQ = hQ[resolvedBucket("costPerSim")];
@@ -418,7 +414,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     cumulative: grainFor("cumulative"),
     retention: grainFor("retention"),
     sims: grainFor("sims"),
-    practice: grainFor("practice"),
     playTime: grainFor("playTime"),
     csat: grainFor("csat"),
     costPerSim: grainFor("costPerSim"),
@@ -464,17 +459,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     () => buildSimulationsSeries(withoutInProgress(simsPoints, p => p.bucket, simsInProgress)),
     [simsPoints, simsInProgress],
   );
-
-  const practicePoints = practiceQ.data?.practiceMinutes ?? [];
-  const practiceInProgress = practiceQ.data?.window.inProgressBucket;
-  const practice = useMemo(
-    () =>
-      buildPracticeMinutesSeries(
-        withoutInProgress(practicePoints, p => p.bucket, practiceInProgress),
-      ),
-    [practicePoints, practiceInProgress],
-  );
-  const learners = useMemo(() => peakActiveLearners(practicePoints), [practicePoints]);
 
   const playTimePoints = playTimeQ.data?.playTime ?? [];
   const playTimeInProgress = playTimeQ.data?.window.inProgressBucket;
@@ -766,16 +750,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       }),
     [roles],
   );
-  const practiceOpts = useMemo(
-    () =>
-      lineOpts({
-        leftTitle: "Minutes",
-        bottomTitle: bucketTitle(grain.practice),
-        colorScale: PRACTICE_SCALE,
-        legend: false,
-      }),
-    [grain.practice],
-  );
   const playTimeOpts = useMemo(
     () =>
       lineOpts({
@@ -914,16 +888,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // the new/returning partition, a per-period signup count that would just
   // restate the cumulative-users figure beside it), does not offer "All time"
   // at all — its `picker(...)` call below has no `ALL_TIME_GRAINS` override.
-
-  const practiceIsAllTime = grain.practice === "allTime";
-  const practiceKpi: KpiTileProps = {
-    label: "Practice minutes",
-    description:
-      "Total minutes learners spent practising, all time — the same figure as the KPI strip.",
-    value: formatKpi(h?.practiceMinutesOverall?.minutes),
-    n: h?.practiceMinutesOverall?.activeLearners,
-    nUnit: "active learners",
-  };
 
   const playTimeIsAllTime = grain.playTime === "allTime";
   const playTimeKpi: KpiTileProps = {
@@ -1282,33 +1246,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
       <SubHeading>Engagement</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <ChartCard
-          title="Practice minutes"
-          caption={`Total minutes learners spent practising. Zero periods are real zeros, not missing data.${inProgressCaption(
-            grain.practice,
-            practiceInProgress,
-          )}`}
-          source={buildSource({
-            derivation: "Sum of user_daily_scores.minutesPlayed",
-            window: windowLabel(practiceQ.data?.window),
-            n: learners,
-            nUnit: "learners at peak",
-            extra: groupingNote(grain.practice),
-            asOf: asOf(practiceQ.data?.window),
-          })}
-          loading={practiceIsAllTime ? false : busy(practiceQ)}
-          error={practiceIsAllTime ? false : practiceQ.isError}
-          onRetry={practiceQ.refetch}
-          empty={practiceIsAllTime ? false : !busy(practiceQ) && practice.length === 0}
-          controls={picker("practice", ALL_TIME_GRAINS)}
-          onExpand={() => setExpanded("practice")}
-          kpi={practiceIsAllTime ? practiceKpi : undefined}
-        >
-          <ScrollableChart data={practice}>
-            <LineChart data={practice} options={practiceOpts} />
-          </ScrollableChart>
-        </ChartCard>
-
         <ChartCard
           title="Average simulation play time"
           caption={`How long one simulation lasts. The mean is the headline; the median and p95 are there because session length is skewed — a few very long sittings pull an average away from the typical session. Breaks in the lines are periods with no completed session, not zero-length ones.${inProgressCaption(
@@ -1785,39 +1722,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           render={({ height }) => (
             <ScrollableChart data={sims}>
               <SimpleBarChart data={sims} options={{ ...simsOpts, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
-
-      {expanded === "practice" && (
-        <ChartDetailModal
-          open
-          onClose={() => setExpanded(null)}
-          title="Practice minutes"
-          source={buildSource({
-            derivation: "Sum of user_daily_scores.minutesPlayed",
-            window: windowLabel(practiceQ.data?.window),
-            n: learners,
-            nUnit: "learners at peak",
-            extra: groupingNote(grain.practice),
-          })}
-          table={{
-            columns: [bucketTitle(grain.practice), "Minutes", "Active learners"],
-            rows: practicePoints.map(p => [
-              rowKey(p.bucket, practiceInProgress),
-              p.minutes,
-              p.activeLearners,
-            ]),
-          }}
-          exportContext={exportLines(
-            windowLabel(practiceQ.data?.window),
-            grain.practice,
-            practiceInProgress,
-          )}
-          render={({ height }) => (
-            <ScrollableChart data={practice}>
-              <LineChart data={practice} options={{ ...practiceOpts, height }} />
             </ScrollableChart>
           )}
         />
