@@ -121,7 +121,7 @@ export const BugHunterVolumeCard = () => {
           <GroupingPicker
             id="bug-hunter-volume-grain"
             value={grain}
-            onChange={setGrain}
+            onChange={g => setGrain(g as AnalyticsBucket)}
             options={GRAIN_OPTIONS}
           />
         }

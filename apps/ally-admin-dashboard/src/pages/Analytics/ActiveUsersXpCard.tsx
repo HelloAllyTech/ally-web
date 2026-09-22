@@ -118,7 +118,7 @@ export const ActiveUsersXpCard = () => {
           <GroupingPicker
             id="active-users-xp-grain"
             value={grain}
-            onChange={setGrain}
+            onChange={g => setGrain(g as AnalyticsBucket)}
             options={GRAIN_OPTIONS}
           />
         }
