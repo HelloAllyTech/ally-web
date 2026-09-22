@@ -1,5 +1,6 @@
 import type { AgentBuilderSpokenLanguage, AgentBuilderVoicePick } from "@api";
-import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
+
+import { pickVoiceForLanguage } from "./voiceAutoSelect";
 
 /**
  * Fallback selection of a Language–Voice mapping for the languages Agent
@@ -13,11 +14,10 @@ import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
  * The *primary* cast is the `language_voices` field — an LLM call that reads
  * the brief and the persona and picks per language. This module covers what
  * that call doesn't: a language it skipped, an id it invented (the server drops
- * those), or the whole call failing. It delegates to `buildGroupedVoiceOptions`
- * — the same ordering the Language–Voice picker renders — and takes the top
- * option, so the fallback is exactly "the first voice the dropdown would have
- * shown you for this persona" rather than a third, private notion of a good
- * voice that could drift from the one on screen.
+ * those), or the whole call failing. It delegates to `pickVoiceForLanguage` —
+ * the same heuristic that casts a manually-created simulation — so the copilot
+ * and the form agree on what the right voice is instead of keeping two private
+ * notions that could drift apart.
  */
 
 /** A catalog language with its voices, as `getAvailableLanguageVoices` returns it. */
@@ -72,9 +72,6 @@ export const pickVoicesForLanguages = ({
   existingLanguageVoices = {},
 }: PickVoicesArgs): VoicePick[] => {
   const byId = new Map(catalog.map(lang => [String(lang.language_id), lang]));
-  const wantedGender = String(personaGender ?? "")
-    .trim()
-    .toLowerCase();
 
   return languages.flatMap<VoicePick>(language => {
     const languageId = String(language.languageId);
@@ -84,24 +81,22 @@ export const pickVoicesForLanguages = ({
     const voices = catalogLanguage?.voices ?? [];
     if (voices.length === 0) return [];
 
-    const [top] = buildGroupedVoiceOptions(voices, personaGender, personaAge);
-    if (!top?.value) return [];
-
-    const chosen = voices.find(voice => voice.id === top.value);
-    const chosenGender = String(chosen?.gender ?? "")
-      .trim()
-      .toLowerCase();
+    const selection = pickVoiceForLanguage(voices, {
+      gender: personaGender,
+      age: personaAge,
+    });
+    if (!selection) return [];
 
     return [
       {
         languageId,
         languageLabel: catalogLanguage?.label ?? language.label,
-        voiceId: top.value,
-        voiceName: chosen?.name ?? top.label,
+        voiceId: selection.voice.id,
+        voiceName: selection.voice.name,
         source: "fallback",
         // An unrecorded voice gender isn't a mismatch — it's unknown, and the
-        // picker already ranks it ahead of a deliberate mismatch.
-        genderMatched: !wantedGender || !chosenGender || chosenGender === wantedGender,
+        // scorer already ranks it ahead of a deliberate mismatch.
+        genderMatched: selection.genderMatched,
       },
     ];
   });

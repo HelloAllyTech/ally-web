@@ -336,6 +336,10 @@ export const en = {
     voice: "Voice",
     selectVoice: "Select voice",
     removeVoiceDisableLanguage: "Remove voice (disable language)",
+    voicesAutoSelected:
+      "Voices were selected automatically from the persona's gender and age. Change any of them, or remove a voice to drop that language.",
+    noVoiceMatchingPersonaGender:
+      "No voice of the persona's gender exists for {languages} — that language is voiced against it.",
     simulationEvents: "Simulation Events",
     createNewEvent: "Create new event",
     createNewBadge: "Create New Badge",
