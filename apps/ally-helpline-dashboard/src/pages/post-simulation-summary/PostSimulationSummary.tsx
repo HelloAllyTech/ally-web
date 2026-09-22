@@ -23,14 +23,21 @@ import {
   ShareForReview,
   ToggleSwitch,
 } from "@components";
-import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  ROLEPLAY_SUMMARY_TAB,
+  buildTrackRoute,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  ROUTES,
+} from "@constants";
 import {
   FeedbackDialog,
   ShortSessionUI,
   TechnicalInterruptionUI,
   useSimulationSummaryPolling,
 } from "@containers";
-import { useContinueTrack, useNextChallenge } from "@hooks";
+import { useAnalytics, useContinueTrack, useNextChallenge } from "@hooks";
 import {
   ActiveTrackContext,
   SessionType,
@@ -53,10 +60,18 @@ const TAB_IDS = {
   TRANSCRIPT: 2,
 } as const;
 
+// PostHog reports the product-facing tab names, which the analytics spec fixes
+// verbatim — they are not derived from the labels, which are translated.
+const ANALYTICS_TAB: Record<number, string> = {
+  [TAB_IDS.DEBRIEF]: ROLEPLAY_SUMMARY_TAB.DEBRIEF,
+  [TAB_IDS.TRANSCRIPT]: ROLEPLAY_SUMMARY_TAB.ANNOTATED_TRANSCRIPT,
+};
+
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { track } = useAnalytics();
   const [selectedTab, setSelectedTab] = useState<number>(TAB_IDS.DEBRIEF);
 
   const {
@@ -236,20 +251,44 @@ export const PostSimulationSummary: FC = () => {
         };
         await createReview(params).unwrap();
       }
+      return true;
     } catch (err: any) {
       toast.error(err?.data?.message ?? t("common.somethingWentWrong"));
+      return false;
     }
   };
 
-  const handleToggleChange = (value: string) => {
+  const handleToggleChange = async (value: string) => {
     if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
       setShareForReview(true);
+      track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
+        [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+        [ANALYTICS_PROPS.ENABLED]: true,
+      });
     } else {
-      handleCreateReview(value);
+      const success = await handleCreateReview(value);
+      if (success) {
+        track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_SHARE_TOGGLED, {
+          [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+          [ANALYTICS_PROPS.ENABLED]: false,
+        });
+      }
     }
   };
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
+
+  // Only a real switch counts: the spec excludes the tab shown on load, and the
+  // fallback effect above can also reassign `selectedTab` without a click.
+  const handleTabChange = (tabId: number) => {
+    if (tabId !== selectedTab) {
+      track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_TAB_VIEWED, {
+        [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: sessionId,
+        [ANALYTICS_PROPS.TAB]: ANALYTICS_TAB[tabId],
+      });
+    }
+    setSelectedTab(tabId);
+  };
 
   const handleStarSelect = (rating: number) => {
     setRating(rating);
@@ -425,7 +464,7 @@ export const PostSimulationSummary: FC = () => {
             <Tabs
               items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
               activeId={String(selectedTab)}
-              onChange={id => setSelectedTab(Number(id))}
+              onChange={id => handleTabChange(Number(id))}
               // Sticky so switching tabs stays reachable once a long note or
               // transcript has been scrolled past.
               className="sticky top-0 z-20 w-full shrink-0 border-b border-[#d6cdbe] bg-white font-primary"

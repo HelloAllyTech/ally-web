@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,15 @@ import {
   GeneralCommentsToShow,
 } from "@components";
 import { TagType } from "@components/share-for-review/ShareForReview";
-import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  REVIEW_RECORDING_SOURCE,
+  KeyboardKeys,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  TAG_TYPES,
+} from "@constants";
+import { useAnalytics } from "@hooks";
 import { RootState } from "@store";
 import {
   CommentChangeParams,
@@ -55,7 +63,21 @@ export const ReviewDetails = () => {
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
+  const { track } = useAnalytics();
   const isScribeReview = pathname.includes("scribe-review");
+
+  // Memoised for the same reason as in FeedCard: AudioTranscriptPlayer keys its
+  // play-state effect on this callback's identity.
+  const handleRecordingPlayStateChange = useCallback(
+    (isPlaying: boolean) => {
+      if (!isPlaying) return;
+      track(ANALYTICS_EVENTS.REVIEW_RECORDING_PLAYED, {
+        [ANALYTICS_PROPS.REVIEW_ID]: reviewId,
+        [ANALYTICS_PROPS.SOURCE]: REVIEW_RECORDING_SOURCE.CONVERSATION_DETAIL,
+      });
+    },
+    [track, reviewId],
+  );
 
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -557,7 +579,10 @@ export const ReviewDetails = () => {
           )}
           {!isScribeReview && reviewDetails?.scenarioSession?.audioUrl && (
             <div className="pb-6 rounded-[12px] border-[0.5px] px-4 py-3">
-              <AudioTranscriptPlayer audioUrl={reviewDetails.scenarioSession.audioUrl} />
+              <AudioTranscriptPlayer
+                audioUrl={reviewDetails.scenarioSession.audioUrl}
+                onPlayStateChange={handleRecordingPlayStateChange}
+              />
             </div>
           )}
           {!isScribeReview && (
