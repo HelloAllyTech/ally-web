@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
-import { ROUTES, Permissions } from "@constants";
-import { useUser } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS, ROUTES, Permissions } from "@constants";
+import { useAnalytics, useUser } from "@hooks";
 import { UserBadge, ViewedStatus } from "@types";
 import { isPathExcluded } from "@utils";
 
@@ -27,6 +27,11 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const confettiTriggered = useRef(false);
   const { pathname } = useLocation();
   const { i18n } = useTranslation();
+  const { track } = useAnalytics();
+  // Badge ids already reported this session — the unviewed list is refetched on
+  // focus/reconnect, so the same badge can surface again before the view-status
+  // write lands, and each unlock must report exactly once.
+  const reportedBadgeIds = useRef<Set<string>>(new Set());
 
   const isBadgesEnabled = permissions.includes(Permissions.VIEW_BADGES);
   const isSimulationPath = isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
@@ -153,6 +158,15 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   }, [badges.length]);
 
   const currentBadge = currentBadgeIndex !== null ? badges[currentBadgeIndex] : null;
+
+  useEffect(() => {
+    if (!currentBadge?.badgeId || reportedBadgeIds.current.has(currentBadge.badgeId)) return;
+    reportedBadgeIds.current.add(currentBadge.badgeId);
+    track(ANALYTICS_EVENTS.BADGE_UNLOCKED, {
+      [ANALYTICS_PROPS.BADGE_NAME]: currentBadge.name,
+      [ANALYTICS_PROPS.BADGE_DESCRIPTION]: currentBadge.description,
+    });
+  }, [currentBadge?.badgeId, currentBadge?.name, currentBadge?.description, track]);
 
   const BadgeModal =
     isBadgesEnabled && currentBadge ? (

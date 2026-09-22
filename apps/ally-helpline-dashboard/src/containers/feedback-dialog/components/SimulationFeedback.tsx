@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 import { useSubmitSimulationFeedbackMutation } from "@api";
 import { Button, StarRating, TextField } from "@components";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 
 import { FeedbackSectionProps } from "../types";
 
@@ -16,6 +18,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
   initialTags,
 }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const [rating, setRating] = useState<number>(initialRating ?? 0);
   const [comment, setComment] = useState<string>(initialComment ?? "");
   const [selectedTags, setSelectedTags] = useState<string[]>(initialTags ?? []);
@@ -59,6 +62,11 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
       throw new Error();
     } else if (response.data) {
       toast.success("Feedback submitted successfully");
+      track(ANALYTICS_EVENTS.ROLEPLAY_SUMMARY_RATED, {
+        [ANALYTICS_PROPS.SCENARIO_SESSION_ID]: String(id),
+        [ANALYTICS_PROPS.RATING]: rating,
+        [ANALYTICS_PROPS.HAS_FEEDBACK_TEXT]: comment.trim().length > 0,
+      });
       onSubmitComplete();
     }
   };

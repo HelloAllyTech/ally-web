@@ -2,6 +2,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
+import {
+  ANALYTICS_EVENTS,
+  ANALYTICS_PROPS,
+  LANGUAGE_CHANGE_SOURCE,
+} from "@constants/analyticsEvents";
+import { LanguageMap } from "@constants/language";
+import { useAnalytics } from "@hooks";
 
 import i18n from "../../i18n";
 
@@ -27,7 +34,16 @@ const getCodeFromLabel = (label: string): string => {
 };
 
 // Language selector that follows existing UI/UX using shared DropdownField
-const LanguageSelector = ({ label }: { label?: string }) => {
+const LanguageSelector = ({
+  label,
+  // Which surface the change came from — the sidebar selector, or the roleplay
+  // confirmation screen's own picker. Part of the `language.changed` payload.
+  source = LANGUAGE_CHANGE_SOURCE.SIDEBAR,
+}: {
+  label?: string;
+  source?: string;
+}) => {
+  const { track } = useAnalytics();
   const [lng, setLng] = useState<string>(i18n.language);
 
   useEffect(() => {
@@ -42,6 +58,12 @@ const LanguageSelector = ({ label }: { label?: string }) => {
 
   const handleChange = async (selectedLabel: string) => {
     const newCode = getCodeFromLabel(selectedLabel);
+    // The spec reports the English language name, not the native label or the
+    // ISO code, so the value stays stable as display labels are localised.
+    track(ANALYTICS_EVENTS.LANGUAGE_CHANGED, {
+      [ANALYTICS_PROPS.LANGUAGE]: LanguageMap[newCode] ?? newCode,
+      [ANALYTICS_PROPS.SOURCE]: source,
+    });
     await i18n.changeLanguage(newCode);
     localStorage.setItem("i18nextLng", newCode); // explicit persist
     setLng(newCode);

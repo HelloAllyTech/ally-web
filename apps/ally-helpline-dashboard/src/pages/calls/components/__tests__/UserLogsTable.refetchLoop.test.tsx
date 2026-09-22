@@ -30,6 +30,15 @@ import UserLogsTable from "../UserLogsTable";
 // UserLogsTable.test.tsx mocks every hook and therefore cannot see one.
 // ---------------------------------------------------------------------------
 
+// useAnalytics requires <AnalyticsProvider>, which this suite doesn't render
+// (it only wraps UserLogsTable in <Provider>/<MemoryRouter> to exercise RTK
+// Query directly). Stub just this hook; every other hook (useCustomFieldsEnabled
+// included) stays real so it still hits the fetch stub above.
+vi.mock("@hooks", async importOriginal => ({
+  ...(await importOriginal<typeof import("@hooks")>()),
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
+
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { log: vi.fn(), warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
   Loading: () => <div data-testid="loading">Loading...</div>,
