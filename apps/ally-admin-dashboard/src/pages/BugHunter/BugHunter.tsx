@@ -19,6 +19,7 @@ import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { KeyboardShortcutSheet } from "./KeyboardShortcutSheet";
 import { LiveWorkBoard } from "./LiveWorkBoard";
 import { NeedsYouQueue } from "./NeedsYouQueue";
+import { NotebookPanel } from "./NotebookPanel";
 import { NotificationInbox } from "./NotificationInbox";
 import { RunHistoryTable } from "./RunHistoryTable";
 import { UxSignalsPanel } from "./UxSignalsPanel";
@@ -105,12 +106,13 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
 const SECTION = {
   work: "work",
   performance: "performance",
+  notebook: "notebook",
   about: "about",
 } as const;
 
 type Section = (typeof SECTION)[keyof typeof SECTION];
 
-const SECTIONS: Section[] = [SECTION.work, SECTION.performance, SECTION.about];
+const SECTIONS: Section[] = [SECTION.work, SECTION.performance, SECTION.notebook, SECTION.about];
 
 export const BugHunter: FC = () => {
   // Already in flight from the profile card with identical args, so both of
@@ -181,6 +183,10 @@ export const BugHunter: FC = () => {
     () => [
       { id: SECTION.work, label: en.bugHunter.sectionWork },
       { id: SECTION.performance, label: en.bugHunter.sectionPerformance },
+      // What the agent wrote down for its future self, and what admins added.
+      // Its own tab: it is neither today's work nor a metric, and a reader who
+      // wants to teach the agent something should not have to hunt for where.
+      { id: SECTION.notebook, label: en.bugHunter.sectionNotebook },
       { id: SECTION.about, label: en.bugHunter.sectionAbout },
     ],
     [],
@@ -251,6 +257,12 @@ export const BugHunter: FC = () => {
             <RunHistoryTable />
           </div>
         </>
+      )}
+
+      {section === SECTION.notebook && (
+        <div className="mt-6 flex-1">
+          <NotebookPanel canTriage={canTriage} />
+        </div>
       )}
 
       {section === SECTION.about && (

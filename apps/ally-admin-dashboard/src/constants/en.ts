@@ -2637,6 +2637,7 @@ export const en = {
     sectionWork: "Work",
     sectionPerformance: "Performance",
     sectionAbout: "About",
+    sectionNotebook: "Notebook",
     filtersButton: "Filters",
     filtersPanelLabel: "Filter bugs",
     filterSectionStatus: "Status",
@@ -2807,6 +2808,47 @@ export const en = {
     notificationLevelActionNeeded: "Needs you",
     notificationLevelProblem: "Problem",
     notificationLevelInfo: "Update",
+    // ── The notebook ─────────────────────────────────────────────────────────
+    notebookTitle: "My notebook",
+    notebookIntro:
+      "What I write down at the end of a run so the next one starts smarter — where bugs hide, what turned out not to be one, how a hard fix was made to work. You can add to it too. I read the strongest entries for a repo before every sweep and search the rest as I work.",
+    notebookRepoLabel: "Repo",
+    notebookRepoAll: "Platform-wide only",
+    notebookEmpty:
+      "Nothing written for this scope yet. It fills in as sweeps finish, or start it off below.",
+    notebookLoading: "Reading the notebook…",
+    notebookError: "Couldn't read the notebook right now.",
+    notebookSeen: "seen {count}×",
+    notebookPinned: "Pinned",
+    notebookByMe: "written by me",
+    notebookByHuman: "added by an admin",
+    notebookPlatformWide: "every repo",
+    notebookRetire: "Retire",
+    notebookRetireConfirmTitle: "Retire this entry?",
+    notebookRetireConfirmBody:
+      "It stops being read before sweeps and stops turning up in searches. Nothing is deleted, and an admin can write it again.",
+    notebookRetireConfirm: "Retire it",
+    notebookRetired: "Retired.",
+    notebookRetireFailed: "Couldn't retire that entry.",
+    notebookAddTitle: "Add an entry",
+    notebookAddHint:
+      "One lesson, written for someone who wasn't there: name the repo, the file or command, and the symptom. Under {max} characters.",
+    notebookAddLabel: "What should the next sweep know?",
+    notebookAddPlaceholder:
+      "e.g. ally-web: the admin dashboard suite needs NX_DAEMON=false or unrelated tests fail with a socket error — rerun before filing it as a bug.",
+    notebookAddTooLong: "{length} of {max} characters — trim it to the one lesson.",
+    notebookAddRepoLabel: "Applies to",
+    notebookAddRepoAll: "Every repo",
+    notebookAddTagsLabel: "Tags (optional, comma-separated)",
+    notebookAddTagsPlaceholder: "flaky-test, false-positive, fix-gotcha",
+    notebookAddPinLabel: "Pin it",
+    notebookAddPinTooltip:
+      "A pinned entry is a person's decision: the hourly curator never edits or retires it.",
+    notebookAddButton: "Add to notebook",
+    notebookAddButtonBusy: "Adding…",
+    notebookAdded: "Added. I'll read it before the next sweep.",
+    notebookAddFailed: "Couldn't add that entry.",
+    notebookReadOnly: "You can read the notebook; adding and retiring needs the Bug Hunter toggle.",
     // ── Multi-repo plan ──────────────────────────────────────────────────────
     planTitle: "This fix spans {count} repos",
     planSubtitle:

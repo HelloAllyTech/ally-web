@@ -539,3 +539,52 @@ export interface BugHunterMetrics {
     perMergedFixUsd: number | null;
   };
 }
+
+// ── The notebook (agent memory) ────────────────────────────────────────────
+// ally-be src/agent-memory. Postgres is the system of record; search runs over a
+// derived Weaviate index. See docs/bug-hunter-memory-adr.md.
+
+export enum BugHunterMemoryStatus {
+  /** Written by the agent, waiting for the hourly curator. Not yet searched or shown to sweeps. */
+  CANDIDATE = "candidate",
+  ACTIVE = "active",
+  /** Folded into another entry by the curator. */
+  MERGED = "merged",
+  RETIRED = "retired",
+}
+
+/** Hard cap on an entry, in characters — mirrors ally-be's AGENT_MEMORY_BODY_MAX and the table's CHECK. */
+export const BUG_HUNTER_MEMORY_BODY_MAX = 600;
+
+export interface BugHunterMemoryEntry {
+  id: string;
+  body: string;
+  tags: string[];
+  /** Null means platform-wide. */
+  repos: string[] | null;
+  status: BugHunterMemoryStatus;
+  /** Pinned by a person: the curator never edits or retires it. */
+  pinned: boolean;
+  /** How many runs independently wrote this lesson. */
+  sourceCount: number;
+  timesApplied: number;
+  timesContradicted: number;
+  /** The run whose reflection wrote it; null for a human entry. */
+  runId: string | null;
+  findingId: string | null;
+  /** The admin who wrote it by hand; null for the agent's own entries. */
+  createdBy: number | null;
+  embeddingStatus: "pending" | "success" | "failed" | "skipped";
+  createdAt: string;
+}
+
+export interface ListBugHunterMemoryResponse {
+  items: BugHunterMemoryEntry[];
+}
+
+export interface WriteBugHunterMemoryBody {
+  body: string;
+  repos?: string[];
+  tags?: string[];
+  pinned?: boolean;
+}

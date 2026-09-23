@@ -513,6 +513,10 @@ export const ApiEndpoints = {
     NOTIFICATIONS: "/v1/bug-hunter/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,
     NOTIFICATIONS_READ_ALL: "/v1/bug-hunter/notifications/read-all",
+    // The notebook Bug Hunter reads before hunting and writes at close —
+    // ally-be src/agent-memory, docs/bug-hunter-memory-adr.md.
+    MEMORY: "/v1/bug-hunter/memory",
+    MEMORY_RETIRE: (id: string) => `/v1/bug-hunter/memory/${id}/retire`,
   },
   BUILDER: {
     SESSIONS: "/v1/builder/sessions",
@@ -851,6 +855,8 @@ export const TAG_TYPES = {
   BUG_HUNTER_RUNS: "bugHunterRuns",
   BUG_HUNTER_FINDINGS: "bugHunterFindings",
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
+  // Bug Hunter's notebook. Also registered in baseApi.ts's `tagTypes`.
+  BUG_HUNTER_MEMORY: "bugHunterMemory",
   // UX Signals scan log. Also registered in baseApi.ts's `tagTypes`.
   UX_SIGNAL_SCANS: "uxSignalScans",
   // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag

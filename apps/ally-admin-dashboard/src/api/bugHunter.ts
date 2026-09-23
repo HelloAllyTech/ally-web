@@ -10,6 +10,9 @@ import {
   BugHunterModelSettings,
   BugHunterNotification,
   ListBugHunterNotificationsResponse,
+  BugHunterMemoryEntry,
+  ListBugHunterMemoryResponse,
+  WriteBugHunterMemoryBody,
   BugHunterSettings,
   BugHuntRun,
   BugHuntRunDetail,
@@ -286,6 +289,43 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_NOTIFICATIONS, id: "LIST" }],
     }),
 
+    // ── The notebook ────────────────────────────────────────────────────────
+    // What past sweeps and admins wrote down for the next one. Active entries
+    // for a repo (plus platform-wide ones), strongest evidence first.
+    getBugHunterMemory: builder.query<
+      ListBugHunterMemoryResponse,
+      { repo?: string; limit?: number } | void
+    >({
+      query: params => ({
+        url: ApiEndpoints.BUG_HUNTER.MEMORY,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_MEMORY, id: "LIST" }],
+    }),
+
+    /**
+     * Add an entry by hand. A person's note lands ACTIVE at once — it is
+     * already curated — and a pinned one is never edited or retired by the
+     * hourly curator.
+     */
+    addBugHunterMemory: builder.mutation<BugHunterMemoryEntry, WriteBugHunterMemoryBody>({
+      query: body => ({
+        url: ApiEndpoints.BUG_HUNTER.MEMORY,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_MEMORY, id: "LIST" }],
+    }),
+
+    retireBugHunterMemory: builder.mutation<BugHunterMemoryEntry, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.MEMORY_RETIRE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_MEMORY, id: "LIST" }],
+    }),
+
     /**
      * Rewrite the bug's description before putting Bug Hunter on it. This text
      * is the fix agent's entire brief — see ally-be's `buildFixSessionPrompt`
@@ -381,4 +421,7 @@ export const {
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,
   useMarkAllBugHunterNotificationsReadMutation,
+  useGetBugHunterMemoryQuery,
+  useAddBugHunterMemoryMutation,
+  useRetireBugHunterMemoryMutation,
 } = bugHunterAPI;
