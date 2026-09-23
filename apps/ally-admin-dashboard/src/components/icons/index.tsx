@@ -110,6 +110,7 @@ import {
   Security as CSecurity,
   Locked as CLocked,
   Mobile as CMobile,
+  Notification as CNotification,
   Template as CTemplate,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
@@ -282,6 +283,7 @@ export const RotateCcw = createCarbonIcon(CRestart);
 export const UploadCloud = createCarbonIcon(CCloudUpload);
 export const Terminal = createCarbonIcon(CTerminal);
 export const Mobile = createCarbonIcon(CMobile);
+export const Notification = createCarbonIcon(CNotification);
 // Component Library — a "template" glyph reads directly as "reusable content
 // template", which is exactly what the sidebar entry links to.
 export const Template = createCarbonIcon(CTemplate);

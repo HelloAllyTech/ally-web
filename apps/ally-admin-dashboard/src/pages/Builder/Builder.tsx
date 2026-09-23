@@ -21,7 +21,7 @@ import {
   useUnarchiveBuilderSessionMutation,
 } from "@api";
 import { FilterDropdown, ListPagination, ListToolbar } from "@components";
-import { BuilderNotificationInbox } from "@components/builder";
+import { BuilderNotificationBell } from "@components/builder";
 import { FilterChipProps } from "@components/types";
 import { en, ROUTES } from "@constants";
 import { BuilderSession, BuilderSessionStatus } from "@types";
@@ -355,6 +355,7 @@ export const Builder: React.FC = () => {
               renderIcon={MachineLearningModel}
               onClick={() => navigate(`${ROUTES.SETTINGS}?tab=ai-models`)}
             />
+            <BuilderNotificationBell />
           </div>
         </div>
         <div className="mt-3 flex items-end gap-2">
@@ -382,10 +383,6 @@ export const Builder: React.FC = () => {
           </Button>
         </div>
       </header>
-
-      <div className="mb-4">
-        <BuilderNotificationInbox />
-      </div>
 
       {(isError || (showArchived && isArchivedError)) && (
         <InlineNotification
