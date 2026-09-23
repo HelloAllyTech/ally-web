@@ -1,4 +1,5 @@
 export * from "./BuildActivityFeed";
+export * from "./BuilderNotificationBell";
 export * from "./BuilderNotificationInbox";
 export * from "./BuildView";
 export * from "./ChatComposer";

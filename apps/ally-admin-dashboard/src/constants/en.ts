@@ -3565,7 +3565,7 @@ export const en = {
       title: "Notifications",
       unreadLabel: (count: number) => (count === 1 ? "1 unread" : `${count} unread`),
       markAllRead: "Mark all read",
-      empty: "Nothing yet.",
+      empty: "No notifications",
       kinds: {
         question_pending: "Needs an answer",
         build_completed: "Build finished",

@@ -10,10 +10,11 @@ vi.mock("@icons", () => ({
   BarChart3: () => <svg />,
   Book: () => <svg />,
   Timer: () => <svg />,
+  Notification: () => <svg />,
 }));
 
 vi.mock("@components/builder", () => ({
-  BuilderNotificationInbox: () => <div>NotificationInboxStub</div>,
+  BuilderNotificationBell: () => <div>NotificationBellStub</div>,
 }));
 
 vi.mock("@components", () => ({
