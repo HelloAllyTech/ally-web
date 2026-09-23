@@ -57,9 +57,19 @@ export interface knowledgeSource {
   id: string;
   title: string;
   content: string;
+  /**
+   * Memory lock: the state id from which the character may talk about this.
+   * Unset / null = always available. See components/knowledge-source/memoryLocks.ts.
+   */
+  unlocksFromStateId?: string | null;
 }
 
-export type KnowledgeSourceInput = { id?: string; title: string; content: string };
+export type KnowledgeSourceInput = {
+  id?: string;
+  title: string;
+  content: string;
+  unlocksFromStateId?: string | null;
+};
 
 export enum enumBehaviourInstructionCategory {
   HELPER_SHOULD_DO = "SHOULD_DO",

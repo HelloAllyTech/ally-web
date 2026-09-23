@@ -274,6 +274,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       id: source.id,
       title: source.title,
       content: source.content,
+      unlocksFromStateId: source.unlocksFromStateId ?? null,
     })),
   };
 };

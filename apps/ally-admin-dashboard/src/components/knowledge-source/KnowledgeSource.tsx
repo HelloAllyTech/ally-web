@@ -6,8 +6,12 @@ import { toast } from "sonner";
 import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Close, Delete, Plus, Search } from "@assets";
 import { en, ENHANCE_TYPE } from "@constants";
+import { useIsPlaceholderUsed } from "@hooks";
 
 import { EnhanceButton } from "../enhance-button";
+import { ladderOrder, stateLabel } from "./memoryLocks";
+
+import type { SimulationStateFormValue } from "../states-editor/types";
 
 /**
  * How many knowledge documents to generate when the form is empty and the
@@ -21,6 +25,8 @@ interface KnowledgeSourceItem {
   id: string;
   title: string;
   content: string;
+  /** Memory lock: hidden from the character until this state. See memoryLocks.ts. */
+  unlocksFromStateId?: string | null;
 }
 
 interface KnowledgeSourceProps {
@@ -49,6 +55,20 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   } = formMethods;
 
   const knowledgeSources = getValues(id) || [];
+
+  // Memory locks key off the simulation's states, so the picker shows only
+  // when the States editor does — or when a source already carries a lock, so
+  // a trainer who switched prompts can still see and clear it.
+  const selectedPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const { isUsed: promptUsesStates } = useIsPlaceholderUsed(
+    selectedPromptCode,
+    "state_x_guidelines",
+  );
+  const ladder = ladderOrder(
+    ((formMethods.watch("states") as SimulationStateFormValue[] | undefined) ?? []).filter(
+      state => !!state?.id,
+    ),
+  );
 
   const filteredSources = knowledgeSources.filter((item: KnowledgeSourceItem) =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -90,7 +110,11 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     setSearchTerm("");
   };
 
-  const handleUpdateTab = (index: number, field: "title" | "content", value: string) => {
+  const handleUpdateTab = (
+    index: number,
+    field: "title" | "content" | "unlocksFromStateId",
+    value: string | null,
+  ) => {
     const updatedSources = [...knowledgeSources];
     updatedSources[index] = {
       ...updatedSources[index],
@@ -174,6 +198,11 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                   <span className="text-base truncate pr-2 min-w-0 flex-1">
                     {item.title || "Untitled"}
                   </span>
+                  {item.unlocksFromStateId && (
+                    <span className="flex-shrink-0 rounded-full bg-background-tertiary px-2 py-0.5 text-xs text-typography-600">
+                      {en.knowledgeSource.lockedBadge}
+                    </span>
+                  )}
 
                   <Tooltip label={en.knowledgeSource.remove} align="top">
                     <button
@@ -207,6 +236,32 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                 className="w-full min-w-0 rounded border-none bg-white p-1 text-base focus:outline-none"
               />
             </div>
+
+            {(promptUsesStates || activeTab.unlocksFromStateId) && (
+              <div className="flex-shrink-0 flex flex-col gap-1 px-1 pb-1">
+                <label className="flex items-center gap-2 text-sm text-typography-700">
+                  {en.knowledgeSource.unlocksAt}
+                  <select
+                    aria-label={en.knowledgeSource.unlocksAt}
+                    value={activeTab.unlocksFromStateId ?? ""}
+                    onChange={e =>
+                      handleUpdateTab(activeTabIndex, "unlocksFromStateId", e.target.value || null)
+                    }
+                    className="rounded border border-border-light bg-white px-2 py-1 text-sm focus:outline-none"
+                  >
+                    <option value="">{en.knowledgeSource.unlocksAtAlways}</option>
+                    {ladder.map((state, index) => (
+                      <option key={state.id} value={state.id}>
+                        {stateLabel(state, index)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {activeTab.unlocksFromStateId && (
+                  <p className="text-xs text-typography-500">{en.knowledgeSource.lockedHint}</p>
+                )}
+              </div>
+            )}
 
             <div className="flex-1 min-h-0 flex flex-col">
               <TextArea

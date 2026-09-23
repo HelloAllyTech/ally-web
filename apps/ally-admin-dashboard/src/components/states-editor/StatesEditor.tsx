@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import { TrashRed } from "@assets";
-import { ENHANCE_TYPE } from "@constants";
+import { en, ENHANCE_TYPE } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
 import { EnhanceButton } from "../enhance-button";
@@ -12,11 +13,19 @@ import { FormLabel } from "../form-label";
 import { cascadeBoundEdit, removeStateAndStitch } from "./cascadeBoundEdit";
 import { seedNextState, startingStateId } from "./stateSeeds";
 import { SimulationStateFormValue } from "./types";
+import {
+  LockableSource,
+  reassignLocksForRemovedState,
+  sourcesOpeningAt,
+} from "../knowledge-source/memoryLocks";
 
 // Re-export the form-value type from this barrel for legacy importers
 // (the editor used to own it). Anything new should import from
 // `./types` directly.
 export type { SimulationStateFormValue };
+
+/** RHF field holding the simulation's Knowledge Sources (the client's memories). */
+const KNOWLEDGE_SOURCES_FIELD = "knowledgeSources";
 
 interface StatesEditorProps {
   /** RHF id (e.g. "states"). */
@@ -112,12 +121,39 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
 
   const removeState = useCallback(
     (stateId: string) => {
+      // Memories locked to this state move with it (see
+      // reassignLocksForRemovedState) — a lock naming a deleted state would
+      // otherwise hide the memory all session and be rejected on save.
+      const sources =
+        (formMethods.getValues(KNOWLEDGE_SOURCES_FIELD) as LockableSource[] | undefined) ?? [];
+      const {
+        sources: nextSources,
+        moved,
+        movedTo,
+      } = reassignLocksForRemovedState(sources, states, stateId);
+      if (moved > 0) {
+        formMethods.setValue(KNOWLEDGE_SOURCES_FIELD, nextSources, { shouldDirty: true });
+        if (movedTo) {
+          toast.info(
+            en.knowledgeSource.locksMovedOnStateRemoval(
+              moved,
+              movedTo.name?.trim() || "next state",
+            ),
+          );
+        } else {
+          // The last state went, so there is nothing left to lock against.
+          toast.warning(en.knowledgeSource.locksClearedOnLastStateRemoval(moved));
+        }
+      }
       // Re-stitch so deleting a middle card doesn't leave a score gap
       // between its neighbours (the previous state absorbs the band).
       writeBack(removeStateAndStitch(states, stateId));
     },
-    [states, writeBack],
+    [states, writeBack, formMethods],
   );
+
+  const watchedSources =
+    (formMethods.watch(KNOWLEDGE_SOURCES_FIELD) as LockableSource[] | undefined) ?? [];
 
   // Auto-seed a single blank state ONCE per editor-mount when the editor
   // becomes visible with no states. Subsequent "Remove" actions that drop
@@ -330,6 +366,22 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
                 rows={2}
               />
+
+              {/* Read-only: locks are set on each Knowledge Source ("Unlocks at"). */}
+              {(() => {
+                const opening = sourcesOpeningAt(watchedSources, state.id);
+                if (opening.length === 0) return null;
+                return (
+                  <p className="text-sm text-typography-600">
+                    {en.knowledgeSource.opensUpHere}{" "}
+                    <span className="text-typography-900">
+                      {opening
+                        .map(source => source.title || en.knowledgeSource.untitled)
+                        .join(", ")}
+                    </span>
+                  </p>
+                );
+              })()}
             </div>
           );
         });

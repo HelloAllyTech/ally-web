@@ -739,6 +739,9 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
             id: item.id,
             title: item.title,
             content: item.content,
+            // Memory lock. Sent as null (not dropped) when cleared, so
+            // choosing "Always" overwrites a stored lock.
+            unlocksFromStateId: item.unlocksFromStateId || null,
           }))
         : [],
       // Which post-session tabs this roleplay shows. Always send both keys —

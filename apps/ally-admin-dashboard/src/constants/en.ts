@@ -897,6 +897,16 @@ export const en = {
     enterTitle: "Enter title",
     enterContent: "Enter content",
     titleAndContentRequired: "Please enter a title and content",
+    unlocksAt: "Unlocks at",
+    unlocksAtAlways: "Always (from the start)",
+    lockedHint:
+      "Until then the character only sees this title, as something it isn't ready to talk about. Name the topic, not the fact.",
+    lockedBadge: "Locked",
+    opensUpHere: "Memories that open up here:",
+    locksMovedOnStateRemoval: (count: number, stateName: string) =>
+      `${count} ${count === 1 ? "memory now unlocks" : "memories now unlock"} at "${stateName}"`,
+    locksClearedOnLastStateRemoval: (count: number) =>
+      `${count} locked ${count === 1 ? "memory is" : "memories are"} now always available — there are no states left to unlock at`,
   },
   badge: {
     badgeAddedToTenant: "Badge added to tenant successfully",
