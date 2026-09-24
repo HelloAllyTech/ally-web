@@ -178,6 +178,7 @@ export const RoleplayVoiceLatencyCard = () => {
               }
             : undefined
         }
+        chartId="AAQ-003"
       >
         <ScrollableChart data={series}>
           <LineChart data={series} options={opts} />

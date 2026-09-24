@@ -245,6 +245,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={activation.refetch}
           empty={!activationLoading && funnelStages.length === 0}
           height="auto"
+          chartId="AAQ-035"
         >
           <FunnelBars stages={funnelStages} unit="learners" />
         </ChartCard>
@@ -273,6 +274,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={activation.refetch}
           empty={!activationLoading && ttfBars.length === 0}
           onExpand={() => setExpanded("timeToFirst")}
+          chartId="AAQ-036"
         >
           <ScrollableChart data={ttfBars} on="group">
             <SimpleBarChart data={ttfBars} options={ttfOpts} />
@@ -313,6 +315,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={() => void ladder.refetch()}
           controls={grainPicker}
           onExpand={() => setExpanded("attainment")}
+          chartId="AAQ-037"
         >
           <ScrollableChart data={attainment}>
             <GroupedBarChart
@@ -351,6 +354,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching usage levels."
           onRetry={() => void ladder.refetch()}
           onExpand={() => setExpanded("cumulative")}
+          chartId="AAQ-038"
         >
           <ScrollableChart data={cumulative}>
             <LineChart
@@ -389,6 +393,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching the usage funnel."
           onRetry={() => void ladder.refetch()}
           height="auto"
+          chartId="AAQ-039"
         >
           <FunnelBars stages={ladderFunnel} unit="accounts" />
         </ChartCard>
@@ -423,6 +428,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching stickiness."
           onRetry={() => void stickiness.refetch()}
           height="auto"
+          chartId="AAQ-040"
         >
           <FunnelBars stages={stickinessStages} unit="learners" />
         </ChartCard>
@@ -477,6 +483,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
         onExpand={() => setExpanded("qualifiedSessions")}
         kpi={isSessionsAllTime ? qualifiedSessionsKpi : undefined}
         wide
+        chartId="AAQ-041"
       >
         <ScrollableChart data={sessionSeries}>
           <SimpleBarChart

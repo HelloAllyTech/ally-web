@@ -563,6 +563,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && firstAudioMixSeries.length === 0}
         emptyText="No turns with a recorded first-audio source in this range"
+        chartId="AAQ-085"
       >
         <ScrollableChart data={firstAudioMixSeries}>
           <StackedBarChart data={firstAudioMixSeries} options={firstAudioMixOptions} />
@@ -596,6 +597,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching thinking-filler judge results."
         empty={!fillerLoading && fillerFindingSeries.length === 0}
         emptyText="No judged fillers in this range — run the filler judge backfill to populate it"
+        chartId="AAQ-086"
       >
         <ScrollableChart data={fillerFindingSeries}>
           <LineChart data={fillerFindingSeries} options={fillerFindingOptions} />
@@ -618,6 +620,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching thinking-filler judge results."
         empty={!fillerLoading && fillerDiversitySeries.length === 0}
         emptyText="No judged fillers in this range"
+        chartId="AAQ-087"
       >
         <ScrollableChart data={fillerDiversitySeries}>
           <LineChart data={fillerDiversitySeries} options={fillerDiversityOptions} />
@@ -642,6 +645,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching thinking-filler judge results."
         empty={!fillerLoading && fillerUnconfiguredSeries.length === 0}
         emptyText="No judged fillers in this range"
+        chartId="AAQ-088"
       >
         <ScrollableChart data={fillerUnconfiguredSeries}>
           <LineChart data={fillerUnconfiguredSeries} options={fillerUnconfiguredOptions} />
@@ -664,6 +668,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && firstAudioLatencySeries.length === 0}
         emptyText="No turns with a recorded first-audio source in this range"
+        chartId="AAQ-089"
       >
         <ScrollableChart data={firstAudioLatencySeries}>
           <LineChart data={firstAudioLatencySeries} options={firstAudioLatencyOptions} />
@@ -686,6 +691,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && replyLatencySeries.length === 0}
         emptyText="No turns with a recorded first-audio source in this range"
+        chartId="AAQ-090"
       >
         <ScrollableChart data={replyLatencySeries}>
           <LineChart data={replyLatencySeries} options={replyLatencyOptions} />
@@ -703,6 +709,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load LLM TTFT"
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && llmTtftSeries.length === 0}
+        chartId="AAQ-091"
       >
         <ScrollableChart data={llmTtftSeries}>
           <LineChart data={llmTtftSeries} options={llmTtftOptions} />
@@ -720,6 +727,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load prompt cache hit rate"
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && cacheHitRateSeries.length === 0}
+        chartId="AAQ-092"
       >
         <ScrollableChart data={cacheHitRateSeries}>
           <LineChart data={cacheHitRateSeries} options={cacheHitRateOptions} />
@@ -741,6 +749,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           })}
           loading={isLoading && !data}
           onExpand={() => setExpanded("history")}
+          chartId="AAQ-093"
         >
           <ScrollableChart data={historySeries}>
             <LineChart data={historySeries} options={historyOptions} />
@@ -765,6 +774,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching turn-latency metrics."
           empty={!isLoading && byLanguageBars.avg.length === 0}
           onExpand={() => setExpanded("byLanguage")}
+          chartId="AAQ-094"
         >
           <SimpleBarChart data={byLanguageBars.avg} options={languageBarOptions} />
         </ChartCard>
@@ -784,6 +794,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching turn-latency metrics."
           empty={!isLoading && byLanguageBars.p95.length === 0}
           onExpand={() => setExpanded("byLanguage")}
+          chartId="AAQ-095"
         >
           <SimpleBarChart data={byLanguageBars.p95} options={languageBarOptions} />
         </ChartCard>
@@ -803,6 +814,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           errorSubtitle="There was a problem fetching turn-latency metrics."
           empty={!isLoading && byLanguageBars.sttFinalize.length === 0}
           onExpand={() => setExpanded("byLanguage")}
+          chartId="AAQ-096"
         >
           <SimpleBarChart data={byLanguageBars.sttFinalize} options={languageBarOptions} />
         </ChartCard>
@@ -825,6 +837,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load start latency"
         errorSubtitle="There was a problem fetching start-latency metrics."
         empty={!startLoading && startSegments.length === 0}
+        chartId="AAQ-097"
       >
         <ScrollableChart data={startSegments}>
           <StackedBarChart data={startSegments} options={startSegmentOptions} />
@@ -848,6 +861,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load start latency"
         errorSubtitle="There was a problem fetching start-latency metrics."
         empty={!startLoading && startTotals.length === 0}
+        chartId="AAQ-098"
       >
         <ScrollableChart data={startTotals}>
           <LineChart data={startTotals} options={startTotalOptions} />
@@ -871,6 +885,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load join latency"
         errorSubtitle="There was a problem fetching reliability metrics."
         empty={!reliabilityLoading && joinLatencySeries.length === 0}
+        chartId="AAQ-099"
       >
         <ScrollableChart data={joinLatencySeries}>
           <LineChart data={joinLatencySeries} options={joinLatencyOptions} />
@@ -894,6 +909,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorTitle="Couldn't load join reliability"
         errorSubtitle="There was a problem fetching reliability metrics."
         empty={!reliabilityLoading && reliabilityPoints.length === 0}
+        chartId="AAQ-100"
       >
         <ScrollableChart data={rateSeries}>
           <LineChart data={rateSeries} options={rateOptions} />

@@ -110,6 +110,7 @@ export const BugHunterVolumeCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}
@@ -127,6 +128,7 @@ export const BugHunterVolumeCard = () => {
         }
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-009"
       >
         <ScrollableChart data={series}>
           <GroupedBarChart data={series} options={opts} />

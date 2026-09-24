@@ -37,9 +37,8 @@ const SUB_TABS: SubTabDef[] = [
     // construction, and its own grain control (month/quarter/year) lives on
     // the card, not on the tab strip.
     id: "goals",
-    label: "Goals",
-    blurb:
-      "Are we on pace? Actual XP earned per period against a goal for that period, where one has been set.",
+    label: "Priority",
+    blurb: "",
     render: () => <GoalsTab />,
   },
   {
@@ -167,7 +166,9 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
           ))}
         </TabList>
 
-        <p className="mt-3 max-w-3xl text-xs leading-relaxed text-typography-500">{active.blurb}</p>
+        {active.blurb ? (
+          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-typography-500">{active.blurb}</p>
+        ) : null}
 
         <TabPanels>
           {SUB_TABS.map((tab, i) => (

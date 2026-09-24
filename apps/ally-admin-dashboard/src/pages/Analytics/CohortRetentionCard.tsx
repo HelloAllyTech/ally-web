@@ -148,6 +148,7 @@ export const CohortRetentionCard = ({ tenantId }: { tenantId?: string }) => {
       empty={!isLoading && rows.length === 0}
       emptyText="No learner accounts yet — cohorts appear once learners sign up."
       height="340px"
+      chartId="AAQ-152"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">

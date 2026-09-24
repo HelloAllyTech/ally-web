@@ -107,6 +107,7 @@ export const ActiveUsersXpCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}
@@ -123,6 +124,7 @@ export const ActiveUsersXpCard = () => {
           />
         }
         onExpand={() => setExpanded(true)}
+        chartId="AAQ-006"
       >
         <ScrollableChart data={series}>
           <SimpleBarChart data={series} options={opts} />

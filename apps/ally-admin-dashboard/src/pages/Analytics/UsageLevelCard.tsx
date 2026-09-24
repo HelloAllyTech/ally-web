@@ -122,6 +122,7 @@ export const UsageLevelCard = ({ tenantId }: { tenantId?: string }) => {
         emptyText="No completed month has enough learners to show a mix yet."
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-154"
       >
         <div className="flex flex-col gap-4">
           {/* `relative` is load-bearing: Carbon's Dropdown renders its open list as
