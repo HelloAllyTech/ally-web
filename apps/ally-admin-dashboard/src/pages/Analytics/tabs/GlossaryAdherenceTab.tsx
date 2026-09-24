@@ -163,6 +163,7 @@ export const GlossaryAdherenceTab: FC<AnalyticsTabFilters> = ({ language, onSele
             error={overview.isError}
             onRetry={overview.refetch}
             empty={!bars.length}
+            chartId="AAQ-120"
           >
             <SimpleBarChart
               data={bars}
@@ -311,6 +312,7 @@ const SingleLanguageView: FC<{
               error={isError}
               onRetry={refetch}
               empty={!bars.length}
+              chartId="AAQ-121"
             >
               <SimpleBarChart
                 data={bars}

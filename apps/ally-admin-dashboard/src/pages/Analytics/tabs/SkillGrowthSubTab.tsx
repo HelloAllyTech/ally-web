@@ -201,6 +201,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={growth.isLoading}
           error={growth.isError}
           onRetry={growth.refetch}
+          chartId="AAQ-042"
         />
         <KpiTile
           label="Classified learners"
@@ -213,6 +214,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={growth.isLoading}
           error={growth.isError}
           onRetry={growth.refetch}
+          chartId="AAQ-043"
         />
         <KpiTile
           label="Median first session"
@@ -226,6 +228,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={growth.isLoading}
           error={growth.isError}
           onRetry={growth.refetch}
+          chartId="AAQ-044"
         />
         <KpiTile
           label="Evaluated sessions"
@@ -234,6 +237,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={growth.isLoading}
           error={growth.isError}
           onRetry={growth.refetch}
+          chartId="AAQ-045"
         />
       </div>
 
@@ -270,6 +274,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
               }) => selectedItem && setVariant(selectedItem.key)}
             />
           }
+          chartId="AAQ-046"
         >
           <ScrollableChart data={curveSeries}>
             <LineChart data={curveSeries} options={curveOpts} />
@@ -292,6 +297,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           emptyText="No learner has enough evaluated sessions to classify yet"
           onRetry={growth.refetch}
           onExpand={() => setExpanded("mix")}
+          chartId="AAQ-047"
         >
           <ScrollableChart data={mixSeries}>
             <StackedBarChart data={mixSeries} options={mixOpts} />
@@ -329,6 +335,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
           empty={!competencyMap.isLoading && competencyPoints.length === 0}
           emptyText={`No competency yet has ${cm?.minSampleSize ?? MIN_N_FOR_SCORE} evaluated sessions`}
           onExpand={() => setExpanded("competency")}
+          chartId="AAQ-048"
         >
           <ScatterChart data={competencyPoints} options={competencyOpts} />
         </ChartCard>
@@ -371,6 +378,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
             }}
           />
         }
+        chartId="AAQ-049"
       >
         <div className="overflow-auto">
           <table className="w-full text-sm">

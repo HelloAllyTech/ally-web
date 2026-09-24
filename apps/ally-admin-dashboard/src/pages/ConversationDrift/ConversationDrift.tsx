@@ -413,6 +413,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 gap-6 mt-4">
               <ChartCard
                 bare
+                chartId="AAQ-105"
                 title="Drift rate over time"
                 caption="% of sessions that drifted, per period — Live (real app runs) vs Historical (backfilled)"
                 empty={!data?.driftTrend?.length}
@@ -426,6 +427,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 gap-6">
               <ChartCard
                 bare
+                chartId="AAQ-106"
                 title="Drift rate by language"
                 caption="% of sessions that drifted, per language"
                 empty={!data?.driftRateByLanguage?.length}
@@ -445,6 +447,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 gap-6">
               <ChartCard
                 bare
+                chartId="AAQ-107"
                 title="Kinds of drift"
                 caption="Among sessions that drifted, how many showed each kind. A session can show several kinds, so bars overlap. Empty when no session crossed the drift threshold."
                 empty={!data?.kindsOfDrift?.length}
@@ -458,6 +461,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 gap-6">
               <ChartCard
                 bare
+                chartId="AAQ-108"
                 title="Root cause"
                 caption="Among drifted sessions, what caused it — LLM (blue/purple) vs STT (red/orange). Empty when no session drifted."
                 empty={!data?.rootCause?.length}
@@ -476,6 +480,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <ChartCard
                 bare
+                chartId="AAQ-109"
                 title="Garble severity"
                 caption="How badly the counselor transcript was mangled (sessions with ≥1 partial / severe turn)."
                 empty={!garbleSeverityBars.length}
@@ -484,6 +489,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
               </ChartCard>
               <ChartCard
                 bare
+                chartId="AAQ-110"
                 title="STT error type"
                 caption="What kind of STT mistake occurred — points at the fix (provider / language / biasing)."
                 empty={!data?.sttErrorTypeMix?.length}
@@ -516,6 +522,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             <div className="grid grid-cols-1 gap-6">
               <ChartCard
                 bare
+                chartId="AAQ-111"
                 title={`Drift rate by ${selectedExp?.label.toLowerCase() ?? "dimension"}`}
                 caption={
                   expEmpty

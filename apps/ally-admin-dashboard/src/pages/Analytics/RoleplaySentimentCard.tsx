@@ -6,7 +6,7 @@ import { useGetQualitySentimentQuery } from "@api";
 
 import { asOf, windowLabel } from "./analyticsFilters";
 import { GROUPINGS, bucketTitle, grainAsBucket, groupingNote } from "./analyticsGrouping";
-import { RangePicker, defaultControlsFor, useChartControls } from "./chartControls";
+import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
 import {
   ChartCard,
@@ -51,7 +51,7 @@ const TITLE = "Sentiment related to role play quality";
  * combo chart (left untouched) can be read at different resolutions.
  */
 export const RoleplaySentimentCard = () => {
-  const { controlsFor, setRange, setGrain, hydrating } = useChartControls<ChartId>(
+  const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.sentiment",
     defaultControlsFor(["sentiment"]),
   );
@@ -59,8 +59,10 @@ export const RoleplaySentimentCard = () => {
   const grain = controls.grain;
   const isAllTime = grain === "allTime";
 
+  // Always read the full platform history: this card offers only a grouping
+  // control, never a window scope, so the data availability is never narrowed.
   const { data, isLoading, error, refetch } = useGetQualitySentimentQuery(
-    { range: controls.range, bucket: grainAsBucket(grain) },
+    { range: "all", bucket: grainAsBucket(grain) },
     { skip: hydrating },
   );
   const [expanded, setExpanded] = useState(false);
@@ -111,19 +113,12 @@ export const RoleplaySentimentCard = () => {
         emptyText="Not enough ratings in this window to state a figure"
         onExpand={() => setExpanded(true)}
         controls={
-          <div className="flex items-center gap-2">
-            <RangePicker
-              id="goals-sentiment-range"
-              value={controls.range}
-              onChange={r => setRange("sentiment", r)}
-            />
-            <GroupingPicker
-              id="goals-sentiment-grain"
-              value={grain}
-              onChange={g => setGrain("sentiment", g)}
-              options={GROUPINGS}
-            />
-          </div>
+          <GroupingPicker
+            id="goals-sentiment-grain"
+            value={grain}
+            onChange={g => setGrain("sentiment", g)}
+            options={GROUPINGS}
+          />
         }
         kpi={
           isAllTime
@@ -142,6 +137,7 @@ export const RoleplaySentimentCard = () => {
               }
             : undefined
         }
+        chartId="AAQ-005"
       >
         <ScrollableChart data={series}>
           <LineChart data={series} options={opts} />

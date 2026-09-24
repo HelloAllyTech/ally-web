@@ -108,6 +108,7 @@ export const CodingAgentCost = ({ query }: AnalyticsTabFilters) => {
         empty={trendData.length === 0}
         emptyText="No Bug Hunter or Builder usage recorded for this window"
         wide
+        chartId="AAQ-126"
       >
         <ScrollableChart data={trendData}>
           <LineChart data={trendData} options={trendOptions} />
@@ -125,6 +126,7 @@ export const CodingAgentCost = ({ query }: AnalyticsTabFilters) => {
           empty={bugHunterModels.length === 0}
           emptyText="No Bug Hunter spend recorded for this window"
           height={CHART_HEIGHT}
+          chartId="AAQ-127"
         >
           <ScrollableChart data={bugHunterModels} on="group">
             <SimpleBarChart data={bugHunterModels} options={breakdownOptionsFor(bugHunterModels)} />
@@ -141,6 +143,7 @@ export const CodingAgentCost = ({ query }: AnalyticsTabFilters) => {
           empty={builderModels.length === 0}
           emptyText="No Builder spend recorded for this window"
           height={CHART_HEIGHT}
+          chartId="AAQ-128"
         >
           <ScrollableChart data={builderModels} on="group">
             <SimpleBarChart data={builderModels} options={breakdownOptionsFor(builderModels)} />

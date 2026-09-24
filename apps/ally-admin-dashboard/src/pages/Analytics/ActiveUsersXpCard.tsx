@@ -123,6 +123,7 @@ export const ActiveUsersXpCard = () => {
           />
         }
         onExpand={() => setExpanded(true)}
+        chartId="AAQ-006"
       >
         <ScrollableChart data={series}>
           <SimpleBarChart data={series} options={opts} />

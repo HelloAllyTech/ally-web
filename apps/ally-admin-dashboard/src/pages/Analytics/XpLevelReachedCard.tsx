@@ -163,6 +163,7 @@ export const XpLevelReachedCard = () => {
         }
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-007"
       >
         <ScrollableChart data={series}>
           <GroupedBarChart data={series} options={opts} />

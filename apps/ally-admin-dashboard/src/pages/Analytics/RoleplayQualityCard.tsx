@@ -6,7 +6,7 @@ import { useGetQualitySentimentQuery } from "@api";
 
 import { asOf, windowLabel } from "./analyticsFilters";
 import { GROUPINGS, bucketTitle, grainAsBucket, groupingNote } from "./analyticsGrouping";
-import { RangePicker, defaultControlsFor, useChartControls } from "./chartControls";
+import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
 import {
   ChartCard,
@@ -43,7 +43,7 @@ const TITLE = "Roleplay quality";
  * does not move the other.
  */
 export const RoleplayQualityCard = () => {
-  const { controlsFor, setRange, setGrain, hydrating } = useChartControls<ChartId>(
+  const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.quality",
     defaultControlsFor(["quality"]),
   );
@@ -51,8 +51,10 @@ export const RoleplayQualityCard = () => {
   const grain = controls.grain;
   const isAllTime = grain === "allTime";
 
+  // Always read the full platform history: this card offers only a grouping
+  // control, never a window scope, so the data availability is never narrowed.
   const { data, isLoading, error, refetch } = useGetQualitySentimentQuery(
-    { range: controls.range, bucket: grainAsBucket(grain) },
+    { range: "all", bucket: grainAsBucket(grain) },
     { skip: hydrating },
   );
   const [expanded, setExpanded] = useState(false);
@@ -110,19 +112,12 @@ export const RoleplayQualityCard = () => {
         n={data?.totalEvaluatedSessions}
         minN={MIN_N_FOR_SCORE}
         controls={
-          <div className="flex items-center gap-2">
-            <RangePicker
-              id="goals-quality-range"
-              value={controls.range}
-              onChange={r => setRange("quality", r)}
-            />
-            <GroupingPicker
-              id="goals-quality-grain"
-              value={grain}
-              onChange={g => setGrain("quality", g)}
-              options={GROUPINGS}
-            />
-          </div>
+          <GroupingPicker
+            id="goals-quality-grain"
+            value={grain}
+            onChange={g => setGrain("quality", g)}
+            options={GROUPINGS}
+          />
         }
         kpi={
           isAllTime
@@ -142,6 +137,7 @@ export const RoleplayQualityCard = () => {
               }
             : undefined
         }
+        chartId="AAQ-004"
       >
         <ScrollableChart data={series}>
           <LineChart data={series} options={opts} />
