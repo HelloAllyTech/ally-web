@@ -398,6 +398,28 @@ describe("WeakPerformingMetricsTab", () => {
         expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "month" })),
       );
     });
+
+    /**
+     * 90 days is itself about one quarter, so it would only ever offer the
+     * in-progress one — the same trap as monthly-over-90-days above, one order
+     * worse. 12 months has up to 4 complete quarters, which is a real series.
+     */
+    it("does not offer quarters on 90 days", () => {
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "90d" }} />);
+      expect(queryMock).not.toHaveBeenCalledWith(expect.objectContaining({ bucket: "quarter" }));
+    });
+
+    it("offers quarters on 12 months, now that the backend accepts them, and honours the pick", async () => {
+      const user = userEvent.setup();
+      render(<WeakPerformingMetricsTab {...filters} query={{ range: "12m" }} />);
+
+      await user.click(screen.getByRole("combobox", { name: /granularity/i }));
+      await user.click(screen.getByRole("option", { name: "By quarter" }));
+
+      await waitFor(() =>
+        expect(queryMock).toHaveBeenCalledWith(expect.objectContaining({ bucket: "quarter" })),
+      );
+    });
   });
 
   it("renders each group with its series", () => {
