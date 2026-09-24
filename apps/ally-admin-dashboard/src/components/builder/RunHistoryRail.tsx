@@ -5,7 +5,7 @@ import { en } from "@constants";
 import { BuilderBuildRun } from "@types";
 
 import { CollapsibleSection } from "./CollapsibleSection";
-import { formatCostUsd, formatRunDuration } from "./runFormat";
+import { formatCostUsd, formatRunDuration, runDidNothing, totalCostUsd } from "./runFormat";
 import { BUILDER_RUN_STATUS_TAG_TYPE } from "../../pages/Builder/builderMotion";
 
 interface RunHistoryRailProps {
@@ -43,8 +43,13 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
 
   if (runs.length <= 1) return null;
 
+  // The number worth seeing while the strip is folded is what it all cost, not
+  // how many attempts there were. Seven runs said nothing about eleven dollars.
+  const spent = totalCostUsd(runs);
+  const meta = spent > 0 ? `${runs.length} · ${formatCostUsd(String(spent))}` : String(runs.length);
+
   return (
-    <CollapsibleSection heading={strings.runHistoryHeading} meta={String(runs.length)}>
+    <CollapsibleSection heading={strings.runHistoryHeading} meta={meta}>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {runs.map(run => {
           const isSelected = run.id === selectedRunId;
@@ -52,6 +57,9 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
             ? (formatRunDuration(run.dispatchedAt, run.completedAt) ?? strings.runDurationUnknown)
             : strings.runDurationLive;
           const cost = formatCostUsd(run.costUsd);
+          // See runDidNothing: a run that ended in seconds having spent nothing
+          // is a footnote, and should not compete with one that spent an hour.
+          const quiet = runDidNothing(run) && !isSelected;
 
           return (
             <button
@@ -60,7 +68,8 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
               onClick={() => onSelect(run.id)}
               aria-current={isSelected}
               className={[
-                "flex shrink-0 flex-col items-start gap-1 rounded border px-3 py-1.5 text-left transition-colors",
+                "flex shrink-0 flex-col items-start gap-1 rounded border text-left transition-colors",
+                quiet ? "px-2 py-1 opacity-60" : "px-3 py-1.5",
                 isSelected
                   ? "border-primary-400 bg-primary-50"
                   : "border-neutral-200 bg-white hover:border-neutral-300",
@@ -74,10 +83,12 @@ export const RunHistoryRail: React.FC<RunHistoryRailProps> = ({
                   {strings.runStatusLabels[run.status] ?? run.status}
                 </Tag>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-typography-500">
-                <span>{duration}</span>
-                {cost && <span>{cost}</span>}
-              </div>
+              {!quiet && (
+                <div className="flex items-center gap-2 text-[11px] text-typography-500">
+                  <span>{duration}</span>
+                  {cost && <span>{cost}</span>}
+                </div>
+              )}
             </button>
           );
         })}

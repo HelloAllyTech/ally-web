@@ -51,3 +51,48 @@ export const formatEventGap = (fromIso: string, toIso: string, minMs = 15_000): 
   if (to - from < minMs) return null;
   return formatRunDuration(fromIso, toIso);
 };
+
+/**
+ * Did this run do anything at all?
+ *
+ * A session's strip gives every run an identical card, so a run that burned
+ * 34 minutes and $10.18 and one that died in 1m03s having written nothing
+ * look the same. Six of those in a row read as "this is hopelessly broken"
+ * when most were a config error fixed in the next minute — and the one that
+ * actually cost money gets no more attention than the rest.
+ *
+ * Stacks, "Dynamic visibility scaling tied to information urgency": visibility
+ * should be proportional to importance and should CHANGE with state rather
+ * than stay constant. So the ones that spent nothing and ended almost
+ * immediately are rendered quietly.
+ *
+ * Deliberately conservative. Only an ENDED run can be judged this way — a live
+ * run has spent nothing yet and is the most interesting thing on the page —
+ * and anything that reached a minute, or cost a cent, keeps its full weight.
+ * A wrong call here hides something a person needed, so it errs towards
+ * showing.
+ */
+export const runDidNothing = (run: {
+  status: string;
+  costUsd: string | null;
+  dispatchedAt: string;
+  completedAt: string | null;
+}): boolean => {
+  if (!run.completedAt) return false;
+  if (run.status !== "FAILED" && run.status !== "CANCELLED") return false;
+
+  const spent = Number(run.costUsd ?? 0);
+  if (Number.isFinite(spent) && spent >= 0.01) return false;
+
+  const start = new Date(run.dispatchedAt).getTime();
+  const end = new Date(run.completedAt).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  return end - start < 90_000;
+};
+
+/** Total spend across a session's runs, for the strip's heading. */
+export const totalCostUsd = (runs: { costUsd: string | null }[]): number =>
+  runs.reduce((sum, run) => {
+    const value = Number(run.costUsd ?? 0);
+    return sum + (Number.isFinite(value) ? value : 0);
+  }, 0);

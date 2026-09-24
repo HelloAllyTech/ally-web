@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatCostUsd, formatRunDuration } from "../runFormat";
+import { formatCostUsd, formatRunDuration, runDidNothing, totalCostUsd } from "../runFormat";
 
 /**
  * A run's duration and spend are read to answer "was that reasonable?", so the
@@ -55,5 +55,73 @@ describe("formatCostUsd", () => {
     expect(formatCostUsd(null)).toBeNull();
     expect(formatCostUsd(undefined)).toBeNull();
     expect(formatCostUsd("not money")).toBeNull();
+  });
+});
+
+/**
+ * Fixtures are one real session's seven runs, from 2026-09-24. They are the
+ * reason this exists: six failures in a row rendered identically, and the one
+ * that cost $10.18 was indistinguishable from the two that died in a minute on
+ * a config error.
+ */
+const run = (over: Partial<Parameters<typeof runDidNothing>[0]> = {}) => ({
+  status: "FAILED",
+  costUsd: null,
+  dispatchedAt: "2026-09-24T19:34:34Z",
+  completedAt: "2026-09-24T19:35:37Z",
+  ...over,
+});
+
+describe("runDidNothing", () => {
+  it("quiets a run that died in seconds having spent nothing", () => {
+    // Run 3: 1m03s, no spend — a key-name error fixed in the next minute.
+    expect(runDidNothing(run())).toBe(true);
+  });
+
+  it("keeps a run that spent real money, however it ended", () => {
+    // Run 1: 34m, $10.18. The most important card in the strip.
+    expect(runDidNothing(run({ costUsd: "10.18", completedAt: "2026-09-24T20:08:39Z" }))).toBe(
+      false,
+    );
+  });
+
+  it("keeps a long run even when its spend is unrecorded", () => {
+    // Gemini reports no cost of its own, so an absent figure must never be
+    // read as "did nothing" — that is the whole Gemini fleet.
+    expect(runDidNothing(run({ completedAt: "2026-09-24T19:50:00Z" }))).toBe(false);
+  });
+
+  it("never quiets a live run", () => {
+    // It has spent nothing yet and is the most interesting thing on the page.
+    expect(runDidNothing(run({ completedAt: null }))).toBe(false);
+  });
+
+  it("never quiets a run that succeeded", () => {
+    expect(runDidNothing(run({ status: "SUCCEEDED" }))).toBe(false);
+  });
+
+  it("keeps a run that spent even a cent", () => {
+    expect(runDidNothing(run({ costUsd: "0.01" }))).toBe(false);
+  });
+});
+
+describe("totalCostUsd", () => {
+  it("adds up what a session actually cost", () => {
+    // The seven runs as they were: the number nobody could see without adding
+    // them up by hand.
+    expect(
+      totalCostUsd([
+        { costUsd: "10.18" },
+        { costUsd: null },
+        { costUsd: null },
+        { costUsd: "0.33" },
+        { costUsd: "0.65" },
+        { costUsd: "0.47" },
+      ]),
+    ).toBeCloseTo(11.63, 2);
+  });
+
+  it("treats unrecorded and unparsable spend as zero, not NaN", () => {
+    expect(totalCostUsd([{ costUsd: null }, { costUsd: "not money" }])).toBe(0);
   });
 });
