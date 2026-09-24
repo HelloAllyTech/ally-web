@@ -78,7 +78,7 @@ import { HighlightsTab } from "../HighlightsTab";
 
 /** Label, and one heading or card title that only that sub-tab renders. */
 const SUB_TABS: [label: string, marker: RegExp][] = [
-  ["Goals", /XP earned vs\. goal/i],
+  ["Priority", /Utilization actual versus goal/i],
   ["Platform", /North star/i],
   ["Usage levels", /Activation — getting to a first session/i],
   ["Skill growth", /Competency map/i],

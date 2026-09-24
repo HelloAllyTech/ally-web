@@ -48,14 +48,14 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  * every language, matching `GoalsXpCard`'s existing construction.
  */
 export const GoalsTab = () => (
+  // One chart per row at every screen size — a single column, never two cards
+  // side by side — so each chart gets the full width to breathe.
   <div className="flex flex-col gap-4">
     <GoalsXpCard />
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <RoleplayMinutesCard />
-      <RoleplayVoiceLatencyCard />
-      <RoleplayQualityCard />
-      <RoleplaySentimentCard />
-    </div>
+    <RoleplayMinutesCard />
+    <RoleplayVoiceLatencyCard />
+    <RoleplayQualityCard />
+    <RoleplaySentimentCard />
     <ActiveUsersXpCard />
     <XpLevelReachedCard />
     <ShipVolumeCard />

@@ -104,6 +104,14 @@ export const RoleplaySentimentCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
+        metaExtra={
+          data?.proxyNote ? (
+            <span>
+              <strong>On the proxy NPS:</strong> {data.proxyNote}
+            </span>
+          ) : undefined
+        }
         source={source}
         loading={loading}
         error={Boolean(error)}
@@ -144,14 +152,9 @@ export const RoleplaySentimentCard = () => {
         </ScrollableChart>
       </ChartCard>
 
-      {/* The server's own caveat, rendered verbatim, outside the ChartCard so
-          it stays visible in both trend and All-time (KPI) mode — the same
-          third redundant channel the original chart carried. */}
-      {data?.proxyNote && (
-        <p className="mt-1 text-xs leading-relaxed text-typography-500">
-          <strong>On the proxy NPS:</strong> {data.proxyNote}
-        </p>
-      )}
+      {/* The server's own proxy-NPS caveat is folded into the card's help tooltip
+          (via metaExtra) so the card face stays minimal; it still renders in full
+          in the expanded detail modal below. */}
 
       {expanded && (
         <ChartDetailModal
