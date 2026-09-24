@@ -117,6 +117,7 @@ export const LatencyByScenarioPanel = ({
           errorTitle="Couldn't load latency by simulation"
           errorSubtitle="There was a problem fetching turn-latency metrics."
           empty={!isLoading && bars.avgResponseLatency.length === 0}
+          chartId="AAQ-101"
         >
           <SimpleBarChart data={bars.avgResponseLatency} options={responseLatencyOptions} />
         </ChartCard>
@@ -130,6 +131,7 @@ export const LatencyByScenarioPanel = ({
           errorTitle="Couldn't load latency by simulation"
           errorSubtitle="There was a problem fetching turn-latency metrics."
           empty={!isLoading && bars.avgLlmTtft.length === 0}
+          chartId="AAQ-102"
         >
           <SimpleBarChart data={bars.avgLlmTtft} options={llmTtftOptions} />
         </ChartCard>
@@ -146,6 +148,7 @@ export const LatencyByScenarioPanel = ({
         errorSubtitle="There was a problem fetching per-simulation latency metrics."
         empty={!isLoading && rows.length === 0}
         emptyText="No pipeline turns in the current window (and language, if set)."
+        chartId="AAQ-103"
       >
         <div className="flex flex-col gap-3">
           <Table className="w-full text-left border-collapse">

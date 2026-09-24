@@ -339,6 +339,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description="Mean LLM-judge composite over the window, 0–100. One of the four inputs to the Quality index chart below — not the same figure."
+          chartId="AAQ-054"
         />
 
         <KpiTile
@@ -350,6 +351,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description="NOT an NPS — derived from the 1–5 rating. See the note below."
+          chartId="AAQ-055"
         />
 
         <KpiTile
@@ -361,6 +363,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description="Pearson r across periods that have both. Co-movement, not cause."
+          chartId="AAQ-056"
         />
 
         {/* The median beside the mean, and the top-2-box beside the proxy NPS.
@@ -378,6 +381,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={distLoading}
           error={distQ.isError}
           onRetry={distQ.refetch}
+          chartId="AAQ-057"
         />
         <KpiTile
           label="Rated 4–5"
@@ -389,6 +393,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={distLoading}
           error={distQ.isError}
           onRetry={distQ.refetch}
+          chartId="AAQ-058"
         />
       </div>
 
@@ -426,6 +431,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={pickers}
           onExpand={() => setExpanded("compare")}
           kpi={isAllTime ? qualityIndexKpi : undefined}
+          chartId="AAQ-059"
         >
           <ScrollableChart data={quality}>
             <ComboChart
@@ -484,6 +490,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={chartPickers("distribution")}
           onExpand={() => setExpanded("distribution")}
           kpi={distIsAllTime ? distributionKpi : undefined}
+          chartId="AAQ-060"
         >
           <ScrollableChart data={distSeries}>
             <LineChart data={distSeries} options={distOpts} />
@@ -516,6 +523,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={chartPickers("satisfaction")}
           onExpand={() => setExpanded("satisfaction")}
           kpi={satIsAllTime ? satisfactionKpi : undefined}
+          chartId="AAQ-061"
         >
           <ScrollableChart data={satSeries}>
             <StackedBarChart data={satSeries} options={satOpts} />
@@ -539,6 +547,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           empty={!distLoading && tagBars.length === 0}
           emptyText="No tags on low-rated sessions yet"
           onExpand={() => setExpanded("tags")}
+          chartId="AAQ-062"
         >
           <ScrollableChart data={tagBars} on="group">
             <SimpleBarChart data={tagBars} options={tagOpts} />

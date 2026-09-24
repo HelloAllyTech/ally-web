@@ -204,6 +204,7 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
           empty={!trackDropoff.isLoading && itemBars.length === 0}
           emptyText="No track progress recorded yet"
           onExpand={() => setExpanded("itemTypes")}
+          chartId="AAQ-050"
         >
           <SimpleBarChart data={itemBars} options={itemOpts} />
         </ChartCard>
@@ -230,6 +231,7 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
           empty={!isBusy(languageMix) && languageSeries.length === 0}
           controls={picker("languageMix")}
           onExpand={() => setExpanded("languageMix")}
+          chartId="AAQ-051"
         >
           <ScrollableChart data={languageSeries}>
             <StackedBarChart data={languageSeries} options={languageOpts} />
@@ -253,6 +255,7 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={scenarioUsage.refetch}
           empty={!scenarioUsage.isLoading && mostUsedBars.length === 0}
           emptyText="No completed sessions yet"
+          chartId="AAQ-052"
         >
           <ScrollableChart data={mostUsedBars} on="group">
             <SimpleBarChart
@@ -275,6 +278,7 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={scenarioUsage.refetch}
           empty={!scenarioUsage.isLoading && leastUsedBars.length === 0}
           emptyText="No completed sessions yet"
+          chartId="AAQ-053"
         >
           <ScrollableChart data={leastUsedBars} on="group">
             <SimpleBarChart

@@ -67,10 +67,11 @@ export const applyCompletionToDetailDraft = (
 const tracksAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /** List Track 2.0 tracks visible to the learner (with progress). */
-    getLearnTracks: builder.query<GetLearnTracksResponse, void>({
-      query: () => ({
+    getLearnTracks: builder.query<GetLearnTracksResponse, { languageCode: string }>({
+      query: ({ languageCode }) => ({
         url: ApiEndpoints.TRACKS.GET_TRACKS,
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       providesTags: [TAG_TYPES.LEARN_TRACKS],
     }),

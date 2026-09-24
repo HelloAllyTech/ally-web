@@ -20,9 +20,28 @@ import { CONTEXT, ColorScale, PALETTE, STAT } from "./chartScales";
  * is an artefact of the measurement, not a fact about the system.
  */
 export const LATENCY_GROUPS = {
-  p50: "p50 (median)",
+  p50: "P50 (median)",
   avg: "Average",
-  p95: "p95 (slow tail)",
+  p95: "P95 (slow tail)",
+};
+
+/**
+ * Plain-language, decision-oriented explanations of the three latency lines,
+ * shown on hover over the legend. Written for a leader, not an engineer: what
+ * the number means for learners, and what it tells you to do.
+ */
+export const LATENCY_GROUP_HELP: Record<string, string> = {
+  [LATENCY_GROUPS.p50]:
+    "The typical wait. Half of all replies arrive faster than this, half slower. " +
+    "This is what most learners feel in an ordinary session.",
+  [LATENCY_GROUPS.avg]:
+    "Every wait added up and shared out evenly. A few very slow replies drag it " +
+    "up, so when it sits well above the typical wait, a minority of learners is " +
+    "having a noticeably worse time than everyone else.",
+  [LATENCY_GROUPS.p95]:
+    "The bad-day wait. Only 1 reply in 20 is slower than this. These are the " +
+    "pauses learners remember and complain about, so this is the line to keep " +
+    "under the target.",
 };
 
 /**

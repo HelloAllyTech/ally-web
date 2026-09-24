@@ -2,14 +2,20 @@ import { useMemo, useState } from "react";
 
 import { StackedBarChart } from "@carbon/charts-react";
 
-import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetShipVolumeQuery } from "@api";
 
+import { GROUPING_LABEL, bucketTitle } from "./analyticsGrouping";
+import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
-import { ChartCard, ScrollableChart, buildSource, stackedBarOpts } from "./chartKit";
 import {
-  DEFAULT_SHIP_VOLUME_WEEKS,
-  SHIP_VOLUME_WINDOWS,
+  ChartCard,
+  GroupingPicker,
+  ScrollableChart,
+  buildSource,
+  stackedBarOpts,
+} from "./chartKit";
+import {
+  SHIP_VOLUME_GROUPINGS,
   buildShipVolumeScale,
   buildShipVolumeSeries,
   buildShipVolumeTable,
@@ -18,7 +24,9 @@ import {
   partialFootnote,
   partialWeek,
   plottedWeeks,
+  rollUpShipVolume,
   shipVolumeEmptyText,
+  shipVolumePeriodNoun,
   shipVolumeTakeaway,
   unavailableNote,
 } from "./shipVolumeChart";
@@ -30,7 +38,9 @@ const asOfStamp = (computedAt?: string): string | undefined => {
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
-const TITLE = "Changed lines shipped per week, by repo";
+const TITLE = "Changed Lines Shipped by Repo";
+
+type ChartId = "ship";
 
 /**
  * How much code lands across the Ally repos each week.
@@ -54,40 +64,46 @@ const TITLE = "Changed lines shipped per week, by repo";
  * damage. The repo split is the cut that answers the question worth asking —
  * collective output, never individual.
  *
- * Owns its own window control rather than taking a page-level range: a weekly
- * axis wider than about a year stops being readable long before "all time"
- * would, so this chart's window is a property of this chart, same as its
- * Goals-tab siblings' grain pickers.
+ * Like the rest of this tab: the whole history, and only a grouping control.
+ * GitHub gives weekly totals only, so the grouping offers Week through
+ * All-time but no Day ({@link SHIP_VOLUME_GROUPINGS}), and the coarser grains
+ * are sums of whole weeks ({@link rollUpShipVolume}).
  */
 export const ShipVolumeCard = () => {
-  const [weeksWindow, setWeeksWindow] = useState(DEFAULT_SHIP_VOLUME_WEEKS);
-  const { data, isLoading, isError, refetch } = useGetShipVolumeQuery({ weeks: weeksWindow });
+  const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
+    "goals.ship",
+    defaultControlsFor(["ship"], { ship: { grain: "month" } }),
+  );
+  const grain = controlsFor("ship").grain;
+  const noun = shipVolumePeriodNoun(grain);
+
+  const { data, isLoading, isError, refetch } = useGetShipVolumeQuery({ span: "all" });
   const [expanded, setExpanded] = useState(false);
 
-  const weeks = useMemo(() => buildShipVolumeWeeks(data), [data]);
+  const weeks = useMemo(() => rollUpShipVolume(buildShipVolumeWeeks(data), grain), [data, grain]);
   const repos = useMemo(() => data?.repos ?? [], [data]);
   const series = useMemo(() => buildShipVolumeSeries(weeks, repos), [weeks, repos]);
   const scale = useMemo(() => buildShipVolumeScale(repos), [repos]);
-  const table = useMemo(() => buildShipVolumeTable(weeks, repos), [weeks, repos]);
+  const table = useMemo(
+    () => buildShipVolumeTable(weeks, repos, bucketTitle(grain)),
+    [weeks, repos, grain],
+  );
 
   const plotted = plottedWeeks(weeks);
   const inProgress = partialWeek(weeks);
-  const takeaway = shipVolumeTakeaway(weeks);
+  const takeaway = grain === "allTime" ? undefined : shipVolumeTakeaway(weeks, noun);
   const missing = unavailableNote(data);
   const emptyText = shipVolumeEmptyText(data, weeks);
-
-  const items = useMemo(() => SHIP_VOLUME_WINDOWS.map((w, id) => ({ id, ...w })), []);
-  const selectedItem = items.find(i => i.weeks === weeksWindow) ?? items[0];
 
   const opts = useMemo(
     () =>
       stackedBarOpts({
         leftTitle: "Changed lines",
-        bottomTitle: "Week beginning",
+        bottomTitle: grain === "week" ? "Week beginning" : GROUPING_LABEL[grain],
         colorScale: scale,
         height: "340px",
       }),
-    [scale],
+    [scale, grain],
   );
 
   const caption =
@@ -98,13 +114,15 @@ export const ShipVolumeCard = () => {
     `This measures how much code MOVED — it is a capacity signal, not a ` +
     `productivity one, and it says nothing about whether the right thing moved; ` +
     `see the Product Management tab's votes-shipped chart for that outcome ` +
-    `counterpart. Weeks begin on Sunday, matching GitHub's own buckets, and ` +
-    `there is deliberately no split by author.`;
+    `counterpart. Weeks begin on Sunday, matching GitHub's own buckets; GitHub ` +
+    `counts weekly only, so there is no Day grouping, and a week that straddles ` +
+    `a month boundary counts toward the month it started in. There is ` +
+    `deliberately no split by author.`;
 
   const source = buildSource({
     derivation:
       "GitHub /stats/code_frequency per repo (additions + deletions on the default branch), summed weekly",
-    window: `Last ${data?.weeksRequested ?? weeksWindow} weeks, Sunday-anchored`,
+    window: "All time, Sunday-anchored weeks",
     n: data?.plotted.churn,
     nUnit: "changed lines plotted",
     extra: "Ally's own engineering output — platform-wide, no tenant scope",
@@ -117,49 +135,10 @@ export const ShipVolumeCard = () => {
         wide
         title={TITLE}
         caption={caption}
-        takeaway={takeaway}
-        source={source}
-        loading={isLoading && !data}
-        error={isError}
-        onRetry={refetch}
-        empty={!isLoading && plotted.length === 0}
-        emptyText={emptyText}
-        onExpand={() => setExpanded(true)}
-        height="340px"
-      >
-        <div className="flex flex-col gap-4">
-          {/* `relative` is load-bearing: Carbon's Dropdown renders its open list
-              as an absolutely-positioned child, which escapes a `static` scroll
-              container and inflates an ancestor's scrollHeight into a phantom
-              second scrollbar. */}
-          <div className="relative w-80">
-            <Dropdown
-              id="ship-volume-window"
-              size="md"
-              titleText="Window"
-              label="Window"
-              items={items}
-              selectedItem={selectedItem}
-              itemToString={item => item?.label ?? ""}
-              onChange={({ selectedItem: picked }) => {
-                if (picked) setWeeksWindow(picked.weeks);
-              }}
-            />
-          </div>
-
-          <ScrollableChart data={series}>
-            <StackedBarChart data={series} options={opts} />
-          </ScrollableChart>
-
-          <div className="flex flex-col gap-1 text-xs text-typography-500">
-            {/* Spells out the asterisk on the axis. Carbon truncates a tick label
-                past 14 characters, so the marker has to be short and its meaning
-                has to live here in prose. */}
-            {inProgress && <span>{partialFootnote(inProgress)}</span>}
-            {/* The coverage line is the most important sentence on this panel when
-                it appears: a repo that failed to load shortens every bar with
-                nothing on the chart to show that it happened. */}
-            {missing && <span className="text-support-warning-inverse">{missing}</span>}
+        collapseMeta
+        metaExtra={
+          <div className="flex flex-col gap-1">
+            {inProgress && <span>{partialFootnote(inProgress, noun)}</span>}
             {data && data.plotted.churn > 0 && (
               <span>
                 {formatLines(data.plotted.added)} added and {formatLines(data.plotted.deleted)}{" "}
@@ -169,6 +148,36 @@ export const ShipVolumeCard = () => {
               </span>
             )}
           </div>
+        }
+        takeaway={takeaway}
+        source={source}
+        loading={hydrating || (isLoading && !data)}
+        error={isError}
+        onRetry={refetch}
+        empty={!isLoading && plotted.length === 0}
+        emptyText={emptyText}
+        onExpand={() => setExpanded(true)}
+        controls={
+          <GroupingPicker
+            id="goals-ship-grain"
+            value={grain}
+            onChange={g => setGrain("ship", g)}
+            options={SHIP_VOLUME_GROUPINGS}
+          />
+        }
+        height="340px"
+        chartId="AAQ-008"
+      >
+        <div className="flex flex-col gap-4">
+          <ScrollableChart data={series}>
+            <StackedBarChart data={series} options={opts} />
+          </ScrollableChart>
+
+          {/* The routine footnotes (partial-week marker, churn breakdown) are folded
+              into the help tooltip via metaExtra. The coverage warning stays on the
+              face on purpose: when a repo fails to load it shortens every bar with
+              nothing on the chart to show it happened, so it must not hide in a hover. */}
+          {missing && <p className="text-xs text-support-warning-inverse">{missing}</p>}
         </div>
       </ChartCard>
 
@@ -181,12 +190,13 @@ export const ShipVolumeCard = () => {
           source={source}
           table={table}
           exportContext={[
-            `Window: last ${data?.weeksRequested ?? weeksWindow} weeks, Sunday-anchored (GitHub's own week boundary)`,
+            "Window: all time, Sunday-anchored weeks (GitHub's own week boundary)",
+            `Grouped by ${GROUPING_LABEL[grain].toLowerCase()}`,
             "Churn = lines added + lines removed on each repo's default branch",
             "An output measure: how much code moved, not whether the right thing moved",
             "No author split, by design",
             "Includes lockfiles and generated files, which GitHub's statistics do not separate",
-            ...(inProgress ? [`${inProgress.plainLabel} is the week in progress`] : []),
+            ...(inProgress ? [`${inProgress.plainLabel} is the ${noun} in progress`] : []),
             ...(missing ? [missing] : []),
           ]}
           render={({ height }) => (
