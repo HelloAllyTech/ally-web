@@ -73,7 +73,7 @@ export const BuilderNotificationBell: FC = () => {
           </div>
           <ul className="max-h-80 overflow-y-auto custom-scrollbar">
             {isError ? (
-              <li className="px-4 py-6 text-sm text-typography-500">{strings.empty}</li>
+              <li className="px-4 py-6 text-sm text-destructive-500">{strings.error}</li>
             ) : items.length === 0 ? (
               <li className="px-4 py-6 text-sm text-typography-500">{strings.empty}</li>
             ) : (
