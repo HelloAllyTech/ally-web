@@ -171,4 +171,31 @@ describe("BuilderSession", () => {
     terminal("COMPLETED");
     expect(screen.getByText("Retry build")).toBeTruthy();
   });
+
+  /**
+   * The header used to prefer a local copy of the status that was seeded once,
+   * at load, and never cleared — so a build that finished while you watched it
+   * kept reading "Building" beneath a phase rail that had already reached the
+   * end, and only a refresh reconciled the two. The poll moving is the moment
+   * the local copy stops being the newer of the two.
+   */
+  it("follows the session row when a build finishes while the page is open", () => {
+    sessionResult = {
+      data: { ...baseSession, status: "BUILDING", currentStage: "CODING" },
+      isLoading: false,
+      isError: false,
+    };
+    const { rerender } = render(<BuilderSession />);
+    expect(screen.getByText("Building")).toBeTruthy();
+
+    sessionResult = {
+      data: { ...baseSession, status: "COMPLETED", currentStage: "CODING" },
+      isLoading: false,
+      isError: false,
+    };
+    rerender(<BuilderSession />);
+
+    expect(screen.getByText("Done")).toBeTruthy();
+    expect(screen.queryByText("Building")).toBeNull();
+  });
 });

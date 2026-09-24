@@ -126,6 +126,14 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
     // CANCELLED and COMPLETED are final. FAILED is not: a retry moves the same
     // session back to BUILDING, and the poll has to be running to see it.
     setSessionIsLive(!["COMPLETED", "CANCELLED"].includes(sessionStatus));
+    // Hand authority back to the row. `status` below is an optimistic overlay
+    // that wins over the polled row, and without this it won a stale value
+    // forever: seeded at hydration, never cleared, so a build that finished
+    // server-side left the header reading "Building" under a phase rail that
+    // had already reached the end — and only a refresh reconciled them. The
+    // server having moved is exactly the moment the overlay stops being the
+    // newer of the two.
+    setStatus(null);
   }, [sessionStatus]);
   const { data: settings } = useGetBuilderSettingsQuery();
   // Read for one question only: did this session ship anything? See canRestart.
@@ -138,6 +146,10 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   const [prd, setPrd] = useState<BuilderPrdDocument | null>(null);
   const [readiness, setReadiness] = useState<BuilderPrdReadiness | null>(null);
   const [versionNumber, setVersionNumber] = useState(0);
+  // An optimistic overlay on the session row's own status, for the gap between
+  // the interview stream saying it is done and the next poll confirming it.
+  // Null means "the row is authoritative", which is the normal state — the
+  // effect above restores it the moment the row moves.
   const [status, setStatus] = useState<BuilderSessionStatus | null>(null);
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -183,7 +195,6 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
     setPrd(session.prd);
     setReadiness(session.readiness);
     setVersionNumber(session.prdVersionNumber);
-    setStatus(session.status);
     hydrateMessages(session.messages);
   }, [session, hydrateMessages]);
 
