@@ -1,11 +1,11 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { Notification } from "@icons";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@ally-ui-mono/ui-shared";
 import { useGetBuilderNotificationsQuery, useMarkBuilderNotificationsReadMutation } from "@api";
 import { en, ROUTES } from "@constants";
-import { Notification } from "@icons";
 import { BuilderNotification } from "@types";
 import { formatDateTime } from "@utils";
 
