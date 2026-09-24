@@ -7,7 +7,8 @@ import { useAgentBuilderGeneration } from "../useAgentBuilderGeneration";
 
 /**
  * The wizard's orchestration is the part unit tests of the parsers can't reach:
- * two of its calls are SEQUENCED (spoken_languages decides the language fan-out;
+ * generation is CHAINED (challenge description + persona first, then every other
+ * field with them as context), two further calls are SEQUENCED (spoken_languages decides the language fan-out;
  * language_voices waits on persona), and a Stop has to cancel calls that didn't
  * exist when it was pressed. These cover that shape.
  */
@@ -41,9 +42,18 @@ const CATALOG_FOR_MOCK = [
  */
 const mocks = vi.hoisted(() => {
   /** Per-field canned responses; each `trigger` resolves from here. */
-  const state: { responses: Record<string, unknown>; failing: Set<string> } = {
+  /**
+   * `holds` lets a test keep one field's call in flight until it releases it,
+   * to observe what the chain does while a foundation field is still running.
+   */
+  const state: {
+    responses: Record<string, unknown>;
+    failing: Set<string>;
+    holds: Record<string, Promise<void>>;
+  } = {
     responses: {},
     failing: new Set<string>(),
+    holds: {},
   };
   const requests: Array<Record<string, unknown>> = [];
   const aborts = vi.fn();
@@ -53,9 +63,11 @@ const mocks = vi.hoisted(() => {
     return {
       abort: aborts,
       unwrap: () =>
-        state.failing.has(field)
-          ? Promise.reject({ data: { message: "boom" } })
-          : Promise.resolve({ value: state.responses[field] }),
+        (state.holds[field] ?? Promise.resolve()).then(() =>
+          state.failing.has(field)
+            ? Promise.reject({ data: { message: "boom" } })
+            : { value: state.responses[field] },
+        ),
     };
   });
   return { state, requests, aborts, trigger };
@@ -114,6 +126,7 @@ beforeEach(() => {
   aborts.mockClear();
   trigger.mockClear();
   state.failing = new Set();
+  state.holds = {};
   state.responses = {
     role_instruction: "Be guarded.",
     title: "A tired daughter-in-law",
@@ -275,5 +288,87 @@ describe("useAgentBuilderGeneration", () => {
     expect(result.current.phase).toBe("aborted");
     // One abort per request made, the per-language ones included.
     expect(aborts).toHaveBeenCalledTimes(requests.length);
+  });
+});
+
+describe("useAgentBuilderGeneration — chained stages", () => {
+  const STAGE_ONE = ["challenge_description", "persona", "spoken_languages"];
+
+  it("sends every later field what the foundation established", async () => {
+    const { form } = makeForm();
+    const { result } = renderHook(() => useAgentBuilderGeneration(form));
+
+    act(() => result.current.start(INPUTS));
+    await waitFor(() => expect(result.current.phase).toBe("done"));
+
+    const expected = {
+      challengeDescription: "She minimises.",
+      persona: { name: "Suchi", age: 34, gender: "female" },
+    };
+    const later = requests.filter(r => !STAGE_ONE.includes(String(r.field)));
+    // Title, role instruction, backstory, knowledge sources, reminders, the
+    // per-language rows and the voice cast all build on the same client.
+    expect(later.map(r => r.field)).toEqual(
+      expect.arrayContaining(["title", "backstory", "opening_statements", "language_voices"]),
+    );
+    for (const request of later) {
+      expect(request.establishedContext).toEqual(expected);
+    }
+    for (const request of requests.filter(r => STAGE_ONE.includes(String(r.field)))) {
+      expect(request.establishedContext).toBeUndefined();
+    }
+  });
+
+  it("holds later fields as waiting until the foundation lands", async () => {
+    let releasePersona = () => {};
+    state.holds.persona = new Promise<void>(resolve => {
+      releasePersona = resolve;
+    });
+    const { form } = makeForm();
+    const { result } = renderHook(() => useAgentBuilderGeneration(form));
+
+    act(() => result.current.start(INPUTS));
+    await waitFor(() =>
+      expect(result.current.tasks.find(t => t.field === "challenge_description")?.status).toBe(
+        "done",
+      ),
+    );
+
+    expect(fieldsRequested()).not.toContain("title");
+    expect(result.current.tasks.find(t => t.field === "title")?.status).toBe("waiting");
+    // Waiting rows don't count towards progress.
+    expect(result.current.doneCount).toBeLessThan(result.current.tasks.length);
+
+    act(() => releasePersona());
+    await waitFor(() => expect(result.current.phase).toBe("done"));
+    expect(fieldsRequested()).toContain("title");
+  });
+
+  it("still runs the later fields when a foundation field fails, with what did land", async () => {
+    state.failing = new Set(["persona"]);
+    const { form } = makeForm();
+    const { result } = renderHook(() => useAgentBuilderGeneration(form));
+
+    act(() => result.current.start(INPUTS));
+    await waitFor(() => expect(result.current.phase).toBe("done"));
+
+    const backstory = requests.find(r => r.field === "backstory");
+    expect(backstory?.establishedContext).toEqual({ challengeDescription: "She minimises." });
+    expect(result.current.tasks.find(t => t.field === "backstory")?.status).toBe("done");
+  });
+
+  it("never fires the waiting fields when stopped during the foundation", async () => {
+    state.holds.persona = new Promise<void>(() => {});
+    const { form } = makeForm();
+    const { result } = renderHook(() => useAgentBuilderGeneration(form));
+
+    act(() => result.current.start(INPUTS));
+    await waitFor(() => expect(fieldsRequested()).toContain("persona"));
+    act(() => result.current.abort());
+
+    expect(result.current.phase).toBe("aborted");
+    expect(result.current.tasks.find(t => t.field === "title")?.status).toBe("aborted");
+    await Promise.resolve();
+    expect(fieldsRequested()).not.toContain("title");
   });
 });

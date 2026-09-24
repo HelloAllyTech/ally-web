@@ -4,7 +4,7 @@ import type { UseFormReturn } from "react-hook-form";
 
 import { FORM_FIELD_IDS } from "@constants";
 
-import { applyAgentBuilderField } from "../agentBuilderApply";
+import { applyAgentBuilderField, readEstablishedContext } from "../agentBuilderApply";
 
 /**
  * Minimal RHF stub — applyAgentBuilderField touches setValue, and (for the
@@ -276,5 +276,39 @@ describe("applyAgentBuilderField — linguistic_style_samples / allowed_filler_w
     expect(applyAgentBuilderField("linguistic_style_samples", [], form)).toBeNull();
     expect(applyAgentBuilderField("allowed_filler_words", undefined, form)).toBeNull();
     expect(setValue).not.toHaveBeenCalled();
+  });
+});
+
+describe("readEstablishedContext", () => {
+  const formWith = (values: Record<string, unknown>) =>
+    ({ getValues: (key: string) => values[key] }) as unknown as UseFormReturn<any>;
+
+  it("reads the description and persona the form now holds", () => {
+    expect(
+      readEstablishedContext(
+        formWith({
+          [FORM_FIELD_IDS.DESCRIPTION]: " <p>Withdrawn</p> ",
+          name: "Suchi",
+          age: 34,
+          gender: "female",
+          profession: "",
+          currentLocation: "Chennai",
+        }),
+      ),
+    ).toEqual({
+      challengeDescription: "<p>Withdrawn</p>",
+      persona: { name: "Suchi", age: 34, gender: "female", currentLocation: "Chennai" },
+    });
+  });
+
+  it("drops an age the server would reject and clips over-long text", () => {
+    const context = readEstablishedContext(
+      formWith({ age: "", name: "x".repeat(300), [FORM_FIELD_IDS.DESCRIPTION]: "" }),
+    );
+    expect(context).toEqual({ persona: { name: "x".repeat(200) } });
+  });
+
+  it("returns undefined when nothing has been established", () => {
+    expect(readEstablishedContext(formWith({ age: 0 }))).toBeUndefined();
   });
 });
