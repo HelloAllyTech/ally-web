@@ -44,15 +44,13 @@ const courseDiscussionApi = baseAPI.injectEndpoints({
       invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
     }),
 
-    moderateDeletePost: builder.mutation<{ success: boolean }, { itemId: string; postId: string }>(
-      {
-        query: ({ postId }) => ({
-          url: ApiEndpoints.COURSE_DISCUSSION.POST(postId),
-          method: HttpMethod.DELETE,
-        }),
-        invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
-      },
-    ),
+    moderateDeletePost: builder.mutation<{ success: boolean }, { itemId: string; postId: string }>({
+      query: ({ postId }) => ({
+        url: ApiEndpoints.COURSE_DISCUSSION.POST(postId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
+    }),
 
     lockDiscussionThread: builder.mutation<
       DiscussionPost,

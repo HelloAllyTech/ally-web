@@ -27,7 +27,8 @@ const errorMessage = (error: unknown, fallback: string): string =>
 
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : "");
 
-const actionClass = "text-xs font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50";
+const actionClass =
+  "text-xs font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50";
 const destructiveActionClass =
   "text-xs font-medium text-destructive-500 hover:text-destructive-600 disabled:opacity-50";
 
@@ -62,10 +63,7 @@ export const DiscussionModerationPanel: FC<DiscussionModerationPanelProps> = ({
     isFetching: isFetchingDiscussion,
     isError: isDiscussionError,
     refetch: refetchDiscussion,
-  } = useGetModeratedDiscussionQuery(
-    { itemId, tenantId: tenantId ?? "" },
-    { skip: !tenantId },
-  );
+  } = useGetModeratedDiscussionQuery({ itemId, tenantId: tenantId ?? "" }, { skip: !tenantId });
 
   const [editPost, { isLoading: isSavingEdit }] = useModerateEditPostMutation();
   const [deletePost, { isLoading: isDeleting }] = useModerateDeletePostMutation();
@@ -292,8 +290,7 @@ export const DiscussionModerationPanel: FC<DiscussionModerationPanelProps> = ({
     if (!tenants || tenants.length === 0) {
       return (
         <p className="text-sm text-typography-500">
-          No one has posted in this discussion yet. Organisations appear here once a learner
-          posts.
+          No one has posted in this discussion yet. Organisations appear here once a learner posts.
         </p>
       );
     }

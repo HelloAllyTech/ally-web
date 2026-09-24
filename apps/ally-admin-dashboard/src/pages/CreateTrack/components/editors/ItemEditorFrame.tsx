@@ -21,8 +21,8 @@ import { hasPermissions } from "@utils";
 
 import { serializeItem } from "../../trackFormUtils";
 import { CompletionRuleFields } from "../CompletionRuleFields";
-import { DiscussionModerationPanel } from "../discussion/DiscussionModerationPanel";
 import { useIsComponentLibraryEditor } from "./componentLibraryEditorContext";
+import { DiscussionModerationPanel } from "../discussion/DiscussionModerationPanel";
 
 interface ItemEditorFrameProps {
   sectionIndex: number;

@@ -1,7 +1,7 @@
-import type { TFunction } from "i18next";
-
 import { TRACK_DISCUSSION_POST_QUERY_PARAM } from "@constants";
 import { formatRelativeTime } from "@utils";
+
+import type { TFunction } from "i18next";
 
 /** The `message` of an ally-be error body, when it has one. */
 export const apiErrorMessage = (error: unknown): string | undefined => {

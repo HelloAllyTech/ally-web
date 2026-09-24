@@ -107,15 +107,16 @@ const discussionAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
     }),
-    deleteDiscussionPost: builder.mutation<{ success: boolean }, { itemId: string; postId: string }>(
-      {
-        query: ({ postId }) => ({
-          url: ApiEndpoints.COURSE_DISCUSSION.POST(postId),
-          method: HttpMethod.DELETE,
-        }),
-        invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
-      },
-    ),
+    deleteDiscussionPost: builder.mutation<
+      { success: boolean },
+      { itemId: string; postId: string }
+    >({
+      query: ({ postId }) => ({
+        url: ApiEndpoints.COURSE_DISCUSSION.POST(postId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: (_result, _error, { itemId }) => [discussionTag(itemId)],
+    }),
     lockDiscussionPost: builder.mutation<
       DiscussionPost,
       { itemId: string; postId: string; locked: boolean }

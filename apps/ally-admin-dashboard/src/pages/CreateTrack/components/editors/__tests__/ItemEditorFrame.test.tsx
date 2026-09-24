@@ -30,7 +30,12 @@ vi.mock("@assets", () => ({
 
 vi.mock("@components", () => ({
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
-    <button type="button" aria-label={label} aria-pressed={enabled} onClick={() => onChange(!enabled)}>
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={enabled}
+      onClick={() => onChange(!enabled)}
+    >
       toggle
     </button>
   ),

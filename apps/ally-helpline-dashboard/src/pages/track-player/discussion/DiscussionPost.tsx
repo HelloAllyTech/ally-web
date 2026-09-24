@@ -207,7 +207,11 @@ export const DiscussionPost: FC<DiscussionPostProps> = ({
                 </button>
               )}
               {post.canDelete && (
-                <button type="button" className={actionClass} onClick={() => setConfirmDelete(true)}>
+                <button
+                  type="button"
+                  className={actionClass}
+                  onClick={() => setConfirmDelete(true)}
+                >
                   {t("tracks2.discussion.delete")}
                 </button>
               )}
