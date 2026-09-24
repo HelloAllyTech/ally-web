@@ -332,6 +332,8 @@ export interface SatisfactionMixPoint {
   /** Ratings 4–5. */
   high: number;
   responses: number;
+  /** Mean of the raw 1–5 ratings (2 dp); null when nobody rated. `responses` is its n. */
+  avgRating: number | null;
   top2BoxPct: number | null;
   /** Completed sessions in the bucket — the response-rate denominator. */
   completedSessions: number;
@@ -351,6 +353,8 @@ export interface QualityDistributionResponse {
     p25: number | null;
     p75: number | null;
     responses: number;
+    /** Mean of every raw rating in the window, not a mean of bucket means. */
+    avgRating: number | null;
     low: number;
     mid: number;
     high: number;

@@ -1,4 +1,5 @@
 import { ActiveUsersXpCard } from "../ActiveUsersXpCard";
+import { AverageRatingCard } from "../AverageRatingCard";
 import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
 import { GoalsXpCard } from "../GoalsXpCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
@@ -35,6 +36,9 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *  - `SatisfactionMixCard` — Quality & sentiment's "Satisfaction mix" (the
  *    1–2 / 3 / 4–5 rating breakdown), in the slot the proxy-NPS line used to
  *    hold; the Quality & sentiment copy stays where it is.
+ *  - `AverageRatingCard` — the mean post-session rating per period (AAQ-156),
+ *    off the same `quality-distribution` ratings as the Satisfaction Mix, each
+ *    point labelled with the number of ratings it averages.
  *  - `ActiveUsersXpCard`, `XpLevelReachedCard`, `BugHunterVolumeCard`,
  *    `XpByTenantCard` — new, purpose-built for this tab's brief rather than
  *    adapted from an existing chart — see each card's own doc comment for why
@@ -57,6 +61,7 @@ export const GoalsTab = () => (
     <RoleplayVoiceLatencyCard />
     <RoleplayQualityCard />
     <SatisfactionMixCard />
+    <AverageRatingCard />
     <ActiveUsersXpCard />
     <XpLevelReachedCard />
     <ShipVolumeCard />
