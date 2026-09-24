@@ -18,6 +18,12 @@ export type AgentBuilderField =
   | "spoken_languages"
   | "language_voices";
 
+/** Mirrors the server's EstablishedContextDto. */
+export interface AgentBuilderEstablishedContext {
+  challengeDescription?: string;
+  persona?: Partial<AgentBuilderPersona>;
+}
+
 export interface GenerateAgentBuilderFieldRequest {
   field: AgentBuilderField;
   actorDescription: string;
@@ -34,6 +40,12 @@ export interface GenerateAgentBuilderFieldRequest {
   /** `language_voices` only: the generated persona, so the cast matches it. */
   personaGender?: string;
   personaAge?: number;
+  /**
+   * The chain's first stage (challenge description + persona), sent with
+   * every later field so it builds on the same client. Ignored server-side
+   * by the first-stage fields themselves and by `spoken_languages`.
+   */
+  establishedContext?: AgentBuilderEstablishedContext;
   model?: string;
   provider?: "openai" | "anthropic";
 }
