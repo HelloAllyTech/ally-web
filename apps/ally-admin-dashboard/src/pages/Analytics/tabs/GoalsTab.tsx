@@ -3,8 +3,8 @@ import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
 import { GoalsXpCard } from "../GoalsXpCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
-import { RoleplaySentimentCard } from "../RoleplaySentimentCard";
 import { RoleplayVoiceLatencyCard } from "../RoleplayVoiceLatencyCard";
+import { SatisfactionMixCard } from "../SatisfactionMixCard";
 import { ShipVolumeCard } from "../ShipVolumeCard";
 import { XpByTenantCard } from "../XpByTenantCard";
 import { XpLevelReachedCard } from "../XpLevelReachedCard";
@@ -32,8 +32,9 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *    The 4-dimension breakdown stays on Quality & sentiment's own untouched
  *    "Roleplay quality" combo chart — this is a second, simpler view of the
  *    same number, not a duplicate bug (see the card's caption).
- *  - `RoleplaySentimentCard` — was Quality & sentiment's "Learner sentiment
- *    (proxy NPS)", relabelled.
+ *  - `SatisfactionMixCard` — Quality & sentiment's "Satisfaction mix" (the
+ *    1–2 / 3 / 4–5 rating breakdown), in the slot the proxy-NPS line used to
+ *    hold; the Quality & sentiment copy stays where it is.
  *  - `ActiveUsersXpCard`, `XpLevelReachedCard`, `BugHunterVolumeCard`,
  *    `XpByTenantCard` — new, purpose-built for this tab's brief rather than
  *    adapted from an existing chart — see each card's own doc comment for why
@@ -55,7 +56,7 @@ export const GoalsTab = () => (
     <RoleplayMinutesCard />
     <RoleplayVoiceLatencyCard />
     <RoleplayQualityCard />
-    <RoleplaySentimentCard />
+    <SatisfactionMixCard />
     <ActiveUsersXpCard />
     <XpLevelReachedCard />
     <ShipVolumeCard />

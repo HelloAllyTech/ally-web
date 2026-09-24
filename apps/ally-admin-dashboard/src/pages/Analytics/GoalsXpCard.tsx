@@ -3,24 +3,22 @@ import { useMemo, useState } from "react";
 import { GroupedBarChart } from "@carbon/charts-react";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-
 import { useGetGoalsXpQuery } from "@api";
-
 import { TooltipIcon } from "@assets";
 
-import { GROUPING_LABEL } from "./analyticsGrouping";
+import { GROUPINGS, GROUPING_LABEL } from "./analyticsGrouping";
 import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
 import { ChartCard, GroupingPicker, ScrollableChart, buildSource, timeBarOpts } from "./chartKit";
 import {
-  XP_GOAL_GRAIN_OPTIONS,
   buildGoalsXpSeries,
   buildGoalsXpTable,
   goalsXpEmptyText,
   goalsXpNoGoalNote,
   goalsXpScale,
   goalsXpUpcomingNote,
-  toXpGoalGrain,
+  showsGoal,
+  toXpChartGrain,
 } from "./goalsXpChart";
 
 type ChartId = "xp";
@@ -45,16 +43,17 @@ const TITLE = "Utilization Actual Versus Goal";
 const XP_HELP_STATIC = (
   <>
     <p>
-      Actual XP earned each period against the goal set for that period. Goals are seeded
-      in the database, not set here — a period with no goal shows no goal bar, and a future
-      period with a goal shows its target before any actual XP is in. Platform-wide, all time.
+      Actual XP earned each period against the goal set for that period. Goals are seeded in the
+      database, not set here — a period with no goal shows no goal bar, and a future period with a
+      goal shows its target before any actual XP is in. Goals are set per month, quarter or year, so
+      grouped by day, week or all time the chart shows actual XP only. Platform-wide, all time.
     </p>
     <p className="mt-2">
       XP rewards learner effort, not a session&rsquo;s score: 1 per practice minute, +10 for
       completing a session, daily depth bonuses (10/20/40 at 15/30/60 minutes), 5&ndash;30 for
-      completing a track item by type, +15 for starting a debrief thread, +5 per substantive
-      peer comment, and +100 for practising 4+ days in a week. Per-source daily caps apply, up
-      to 250 XP a day.
+      completing a track item by type, +15 for starting a debrief thread, +5 per substantive peer
+      comment, and +100 for practising 4+ days in a week. Per-source daily caps apply, up to 250 XP
+      a day.
     </p>
   </>
 );
@@ -74,21 +73,14 @@ const XP_HELP_STATIC = (
  * own control, not the page's range picker (there is no page-level range on
  * Goals at all).
  *
- * ## Grain, and why there's no "All-time"
+ * ## Grain, and when the Goal bar shows
  *
- * Uses the shared {@link GroupingPicker}/{@link useChartControls}, narrowed via
- * `options` to {@link XP_GOAL_GRAIN_OPTIONS} — the endpoint only understands
- * month/quarter/year, because a goal row is seeded at one of those three
- * grains and a day/week axis would have nothing under it.
- *
- * No "All-time" option either, deliberately: the endpoint returns no
- * whole-window total, only per-period points. Summing `actualXp` across the
- * currently-displayed points would work (a sum is associative), but the
- * "Goal" side would not be an honest whole-window target — it would be a fold
- * of whichever grain happened to be selected, silently changing value if a
- * reader switched from monthly to quarterly first. That is exactly the
- * "fold of bucketed data" the rest of this platform's All-time tiles are
- * built to avoid, so this card leaves it out rather than fake a number.
+ * Offers the full shared {@link GROUPINGS}, like every other Goals chart. Goals
+ * are seeded per month/quarter/year only, so the Goal bar appears at those
+ * three grains ({@link showsGoal}); at day, week and all-time the endpoint
+ * returns actual XP alone and the chart is just the Actual bar. All-time is a
+ * single bar from the backend, not a fold of whichever grain was selected, and
+ * carries no goal because there is no honest whole-window target.
  */
 export const GoalsXpCard = () => {
   const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
@@ -96,9 +88,9 @@ export const GoalsXpCard = () => {
     defaultControlsFor(["xp"], { xp: { grain: "quarter" } }),
   );
   const grain = controlsFor("xp").grain;
-  const xpGrain = toXpGoalGrain(grain);
+  const withGoal = showsGoal(grain);
   const { data, isLoading, isError, refetch } = useGetGoalsXpQuery(
-    { grain: xpGrain },
+    { grain: toXpChartGrain(grain) },
     { skip: hydrating },
   );
   const [expanded, setExpanded] = useState(false);
@@ -106,8 +98,9 @@ export const GoalsXpCard = () => {
   const points = data?.points ?? [];
   const series = useMemo(() => buildGoalsXpSeries(data?.points ?? []), [data]);
   const table = useMemo(() => buildGoalsXpTable(data?.points ?? []), [data]);
-  const noGoalNote = goalsXpNoGoalNote(points);
-  const upcomingNote = goalsXpUpcomingNote(points);
+  // Without goals at this grain, "no goal set" notes would be noise, not a fact.
+  const noGoalNote = withGoal ? goalsXpNoGoalNote(points) : null;
+  const upcomingNote = withGoal ? goalsXpUpcomingNote(points) : null;
   const emptyText = goalsXpEmptyText(points);
 
   const opts = useMemo(
@@ -169,7 +162,7 @@ export const GoalsXpCard = () => {
             id="goals-xp-grain"
             value={grain}
             onChange={g => setGrain("xp", g)}
-            options={XP_GOAL_GRAIN_OPTIONS}
+            options={GROUPINGS}
           />
         }
         onExpand={() => setExpanded(true)}
