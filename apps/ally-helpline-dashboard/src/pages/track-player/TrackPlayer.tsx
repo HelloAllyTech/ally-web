@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useGetLearnTrackDetailQuery, useStartTrackItemMutation } from "@api";
 import { NoResults } from "@assets";
@@ -26,7 +26,20 @@ import { QuizItemPlayer } from "./components/players/quiz/QuizItemPlayer";
 import { RoleplayItemPlayer } from "./components/players/RoleplayItemPlayer";
 import { VideoItemPlayer } from "./components/players/VideoItemPlayer";
 import { PlayerTopBar } from "./components/PlayerTopBar";
+import { DiscussionThread } from "./discussion/DiscussionThread";
+import { DISCUSSION_POST_QUERY_PARAM } from "./discussion/discussionUtils";
 import { useTrackPlayerNavigation } from "./useTrackPlayerNavigation";
+
+/** Arrow-key page turning must not fire while the learner is typing. */
+const isEditableTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "INPUT" ||
+    target.tagName === "SELECT"
+  );
+};
 
 /**
  * Full-screen, page-turner Track 2.0 player. Loads the track detail, starts
@@ -38,6 +51,10 @@ export const TrackPlayer: FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { trackId = "", itemId = "" } = useParams<{ trackId: string; itemId: string }>();
+  // `?post=<id>` — set by a discussion-reply notification; the thread
+  // scrolls to and flashes that post.
+  const [searchParams] = useSearchParams();
+  const highlightPostId = searchParams.get(DISCUSSION_POST_QUERY_PARAM);
 
   const {
     data: track,
@@ -107,6 +124,7 @@ export const TrackPlayer: FC = () => {
   // Keyboard arrows for page turning.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
       if (e.key === "ArrowRight" && nav.canAdvance && nav.hasNext) nav.goNext();
       if (e.key === "ArrowLeft" && nav.hasPrev) nav.goPrev();
     };
@@ -120,6 +138,14 @@ export const TrackPlayer: FC = () => {
 
   const alreadyCompleted =
     nav.current?.item.status === TrackItemStatus.COMPLETED || justCompleted.has(itemId);
+
+  // The discussion is appended beneath the item inside one scroll container:
+  // each player keeps its own full-height layout and inner scroll, and the
+  // thread is reached by scrolling past it. The wrapper depends only on the
+  // item's flag (so the player never remounts when the thread appears); the
+  // thread itself waits until the item content has loaded.
+  const hasDiscussion = nav.current?.item.hasDiscussion === true;
+  const isItemReady = !!payload && !loadError && !isLoadingItem;
 
   const renderItem = () => {
     if (loadError) {
@@ -257,9 +283,24 @@ export const TrackPlayer: FC = () => {
             }}
             className="h-full min-h-0"
           >
-            <ErrorBoundary variant="panel" resetKey={itemId}>
-              {renderItem()}
-            </ErrorBoundary>
+            {hasDiscussion ? (
+              <div data-testid="track-item-scroll" className="h-full min-h-0 overflow-y-auto">
+                <div className="h-full min-h-0">
+                  <ErrorBoundary variant="panel" resetKey={itemId}>
+                    {renderItem()}
+                  </ErrorBoundary>
+                </div>
+                {isItemReady && (
+                  <ErrorBoundary variant="panel" resetKey={`discussion-${itemId}`}>
+                    <DiscussionThread itemId={itemId} highlightPostId={highlightPostId} />
+                  </ErrorBoundary>
+                )}
+              </div>
+            ) : (
+              <ErrorBoundary variant="panel" resetKey={itemId}>
+                {renderItem()}
+              </ErrorBoundary>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
