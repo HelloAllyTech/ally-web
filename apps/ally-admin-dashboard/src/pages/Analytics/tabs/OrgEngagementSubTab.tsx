@@ -140,6 +140,7 @@ export const OrgEngagementSubTab = () => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description={`At least one completed simulation. ${PLATFORM_WIDE_NOTE}`}
+          chartId="AAQ-067"
         />
 
         <KpiTile
@@ -151,6 +152,7 @@ export const OrgEngagementSubTab = () => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description="Of the orgs that existed before this window opened — see the note below."
+          chartId="AAQ-068"
         />
 
         <KpiTile
@@ -160,6 +162,7 @@ export const OrgEngagementSubTab = () => {
           error={Boolean(error)}
           onRetry={() => void refetch()}
           description="Non-test, non-deleted tenants. The funnel's top row."
+          chartId="AAQ-069"
         />
       </div>
 
@@ -189,6 +192,7 @@ export const OrgEngagementSubTab = () => {
           errorSubtitle="There was a problem fetching org engagement."
           onRetry={() => void refetch()}
           height="auto"
+          chartId="AAQ-070"
         >
           <FunnelBars stages={funnel} unit="orgs" />
         </ChartCard>
@@ -218,6 +222,7 @@ export const OrgEngagementSubTab = () => {
           errorSubtitle="There was a problem fetching org activity."
           onRetry={() => void refetch()}
           onExpand={() => setExpanded("activity")}
+          chartId="AAQ-071"
         >
           <ScrollableChart data={activity.counts}>
             <LineChart
@@ -257,6 +262,7 @@ export const OrgEngagementSubTab = () => {
           onRetry={() => void refetch()}
           onExpand={() => setExpanded("share")}
           wide
+          chartId="AAQ-072"
         >
           <ScrollableChart data={activity.shares}>
             <LineChart
@@ -305,6 +311,7 @@ export const OrgEngagementSubTab = () => {
           onRetry={orgSessionDistribution.refetch}
           empty={!orgSessionDistribution.isLoading && minutesBars.length === 0}
           emptyText="No orgs with learners yet"
+          chartId="AAQ-073"
         >
           <SimpleBarChart
             data={minutesBars}
@@ -331,6 +338,7 @@ export const OrgEngagementSubTab = () => {
           onRetry={orgSessionDistribution.refetch}
           empty={!orgSessionDistribution.isLoading && sessionsBars.length === 0}
           emptyText="No orgs with learners yet"
+          chartId="AAQ-074"
         >
           <SimpleBarChart
             data={sessionsBars}

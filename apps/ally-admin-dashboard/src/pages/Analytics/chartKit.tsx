@@ -706,11 +706,73 @@ export const Sparkline = ({
 };
 
 /* -------------------------------------------------------------------------- */
+/* Chart ID badge                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The stable "admin analytics question ID" (e.g. `AAQ-042`) rendered next to a
+ * chart's title. Every chart, KPI tile and funnel on the Analytics page carries
+ * one; it never changes when a chart is restyled or moved, so it is the handle
+ * used to refer to a specific chart in code review, tickets and requests. The
+ * canonical id -> chart map is served read-only by ally-be at
+ * `GET /v1/analytics/chart-registry` (see its
+ * `admin-analytics-chart-registry.constants.ts`).
+ *
+ * Deliberately quiet: monospace, small, muted, no background — enough to read
+ * and copy, not enough to compete with the chart. Click (or Enter/Space) copies
+ * the id to the clipboard. `stopPropagation` keeps a click off any surrounding
+ * expand/row affordance.
+ */
+export const ChartIdBadge = ({ id }: { id?: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  if (!id) return null;
+
+  const copy = () => {
+    navigator.clipboard?.writeText(id).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      },
+      () => undefined,
+    );
+  };
+
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      aria-label={`Chart ID ${id}, click to copy`}
+      title={`Chart ID ${id} — click to copy`}
+      onClick={e => {
+        e.stopPropagation();
+        copy();
+      }}
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          copy();
+        }
+      }}
+      className="shrink-0 cursor-pointer select-none rounded-sm border border-[#e0e0e0] px-1 py-px font-mono text-[10px] leading-none text-typography-400 hover:text-typography-700"
+    >
+      {copied ? "copied" : id}
+    </span>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* KPI tile                                                                   */
 /* -------------------------------------------------------------------------- */
 
 export interface KpiTileProps {
   label: string;
+  /**
+   * Stable admin analytics question id (e.g. `AAQ-042`). Rendered as a quiet
+   * {@link ChartIdBadge} beside the label. See the badge's doc for what it is.
+   */
+  chartId?: string;
   /**
    * What the number actually measures, in one line — the tile's equivalent of a
    * {@link ChartCard} caption. Rendered on the face of the tile rather than in a
@@ -762,6 +824,7 @@ export interface KpiTileProps {
  */
 export const KpiTile = ({
   label,
+  chartId,
   description,
   value,
   n,
@@ -784,7 +847,10 @@ export const KpiTile = ({
 
   return (
     <Tile className="analytics-kpi">
-      <p className="text-sm text-typography-600 mb-2">{label}</p>
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <p className="text-sm text-typography-600">{label}</p>
+        <ChartIdBadge id={chartId} />
+      </div>
 
       {loading ? (
         <SkeletonPlaceholder className="analytics-kpi-skeleton" />
@@ -912,6 +978,12 @@ interface ChartCardProps {
    *  tooltip that holds a metric's measurement caveats, for instance. Plain
    *  strings still work and remain the common case. */
   title?: React.ReactNode;
+  /**
+   * Stable admin analytics question id (e.g. `AAQ-042`). Rendered as a quiet
+   * {@link ChartIdBadge} beside the title. See the badge's doc for what it is
+   * and where the canonical id -> chart map lives.
+   */
+  chartId?: string;
   /** Sub-text under the title: what the number means, caveats, denominators. */
   caption?: string;
   /**
@@ -972,6 +1044,7 @@ interface ChartCardProps {
  */
 export const ChartCard = ({
   title,
+  chartId,
   caption,
   source,
   takeaway,
@@ -1037,19 +1110,22 @@ export const ChartCard = ({
 
   const body = (
     <>
-      {(title || onExpand || controls) && (
+      {(title || onExpand || controls || chartId) && (
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            {title && (
-              /* The native `title` attribute only accepts a string; a node
-                 title carries its own affordance (a tooltip) and needs none. */
-              <h3
-                className="text-sm font-medium text-typography-900"
-                title={typeof title === "string" ? title : undefined}
-              >
-                {title}
-              </h3>
-            )}
+            <div className="flex items-center gap-2">
+              {title && (
+                /* The native `title` attribute only accepts a string; a node
+                   title carries its own affordance (a tooltip) and needs none. */
+                <h3
+                  className="text-sm font-medium text-typography-900"
+                  title={typeof title === "string" ? title : undefined}
+                >
+                  {title}
+                </h3>
+              )}
+              <ChartIdBadge id={chartId} />
+            </div>
             {caption && <p className="text-xs text-typography-500">{caption}</p>}
           </div>
           <div className="flex items-start gap-1 shrink-0">

@@ -2,14 +2,12 @@ import { useMemo, useState } from "react";
 
 import { StackedBarChart } from "@carbon/charts-react";
 
-import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetShipVolumeQuery } from "@api";
 
 import { ChartDetailModal } from "./ChartDetailModal";
 import { ChartCard, ScrollableChart, buildSource, stackedBarOpts } from "./chartKit";
 import {
   DEFAULT_SHIP_VOLUME_WEEKS,
-  SHIP_VOLUME_WINDOWS,
   buildShipVolumeScale,
   buildShipVolumeSeries,
   buildShipVolumeTable,
@@ -54,13 +52,13 @@ const TITLE = "Changed lines shipped per week, by repo";
  * damage. The repo split is the cut that answers the question worth asking —
  * collective output, never individual.
  *
- * Owns its own window control rather than taking a page-level range: a weekly
- * axis wider than about a year stops being readable long before "all time"
- * would, so this chart's window is a property of this chart, same as its
- * Goals-tab siblings' grain pickers.
+ * Pinned to a fixed window, with no window control: a weekly axis wider than
+ * about a year stops being readable long before "all time" would, so the
+ * readable span is a fixed property of the chart rather than something the
+ * reader scopes.
  */
 export const ShipVolumeCard = () => {
-  const [weeksWindow, setWeeksWindow] = useState(DEFAULT_SHIP_VOLUME_WEEKS);
+  const weeksWindow = DEFAULT_SHIP_VOLUME_WEEKS;
   const { data, isLoading, isError, refetch } = useGetShipVolumeQuery({ weeks: weeksWindow });
   const [expanded, setExpanded] = useState(false);
 
@@ -75,9 +73,6 @@ export const ShipVolumeCard = () => {
   const takeaway = shipVolumeTakeaway(weeks);
   const missing = unavailableNote(data);
   const emptyText = shipVolumeEmptyText(data, weeks);
-
-  const items = useMemo(() => SHIP_VOLUME_WINDOWS.map((w, id) => ({ id, ...w })), []);
-  const selectedItem = items.find(i => i.weeks === weeksWindow) ?? items[0];
 
   const opts = useMemo(
     () =>
@@ -126,27 +121,9 @@ export const ShipVolumeCard = () => {
         emptyText={emptyText}
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-008"
       >
         <div className="flex flex-col gap-4">
-          {/* `relative` is load-bearing: Carbon's Dropdown renders its open list
-              as an absolutely-positioned child, which escapes a `static` scroll
-              container and inflates an ancestor's scrollHeight into a phantom
-              second scrollbar. */}
-          <div className="relative w-80">
-            <Dropdown
-              id="ship-volume-window"
-              size="md"
-              titleText="Window"
-              label="Window"
-              items={items}
-              selectedItem={selectedItem}
-              itemToString={item => item?.label ?? ""}
-              onChange={({ selectedItem: picked }) => {
-                if (picked) setWeeksWindow(picked.weeks);
-              }}
-            />
-          </div>
-
           <ScrollableChart data={series}>
             <StackedBarChart data={series} options={opts} />
           </ScrollableChart>

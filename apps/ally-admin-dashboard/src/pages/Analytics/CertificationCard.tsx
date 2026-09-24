@@ -164,6 +164,7 @@ export const CertificationCard = ({ tenantId }: { tenantId?: string }) => {
         emptyText="No practice history yet, so there is nothing to certify against."
         onExpand={() => setExpanded(true)}
         height="360px"
+        chartId="AAQ-011"
       >
         <div className="flex flex-col gap-6">
           {nobodyYet ? (
