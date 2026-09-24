@@ -132,6 +132,7 @@ export const XpLevelReachedCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}

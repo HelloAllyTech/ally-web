@@ -9,8 +9,11 @@ import {
   InlineNotification,
   SkeletonPlaceholder,
   Tile,
+  Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsGrain } from "@types";
+
+import { TooltipIcon } from "@assets";
 
 import { GROUPING_LABEL } from "./analyticsGrouping";
 import { CONTEXT, ColorScale, PALETTE, formatDelta } from "./chartScales";
@@ -946,7 +949,7 @@ export const GroupingPicker = ({
   const selected = items.find(i => i.id === value) ?? items[0];
 
   return (
-    <div className="w-28 shrink-0">
+    <div className="w-32 shrink-0">
       <Dropdown
         id={id}
         size="sm"
@@ -979,6 +982,14 @@ interface ChartCardProps {
    *  strings still work and remain the common case. */
   title?: React.ReactNode;
   /**
+   * Optional help affordance rendered beside the title — typically a
+   * {@link Tooltip} wrapping a {@link TooltipIcon} that holds the measurement
+   * detail a caption would otherwise spell out inline. Kept separate from
+   * `title` so `title` can stay a plain string for the expand button's
+   * `iconDescription` and the detail modal.
+   */
+  titleHelp?: React.ReactNode;
+  /**
    * Stable admin analytics question id (e.g. `AAQ-042`). Rendered as a quiet
    * {@link ChartIdBadge} beside the title. See the badge's doc for what it is
    * and where the canonical id -> chart map lives.
@@ -986,6 +997,20 @@ interface ChartCardProps {
   chartId?: string;
   /** Sub-text under the title: what the number means, caveats, denominators. */
   caption?: string;
+  /**
+   * Fold the meta — `caption`, `source`, and any `metaExtra` — off the card face
+   * and into a help tooltip beside the title, leaving just the plot. Keeps a
+   * dense chart tab minimal while the detail is still one hover away (and the
+   * full provenance still shows in the expanded detail modal). When set, the
+   * caller need not also pass `titleHelp`; this builds it.
+   */
+  collapseMeta?: boolean;
+  /**
+   * Extra per-chart notes (e.g. a suppression or in-progress footnote) that used
+   * to render under the plot. Only shown when `collapseMeta` is set, appended
+   * inside the folded tooltip after the caption.
+   */
+  metaExtra?: ReactNode;
   /**
    * Provenance line: derivation · window · n · as-of. Build it with
    * {@link buildSource}. Every tile should carry one — tiles get exported and
@@ -1044,8 +1069,11 @@ interface ChartCardProps {
  */
 export const ChartCard = ({
   title,
+  titleHelp,
   chartId,
   caption,
+  collapseMeta = false,
+  metaExtra,
   source,
   takeaway,
   loading = false,
@@ -1108,6 +1136,33 @@ export const ChartCard = ({
     children
   );
 
+  // When collapseMeta is set, the caption, source and any metaExtra come off the
+  // card face and into a single help tooltip beside the title. An explicit
+  // titleHelp always wins, so a card can still hand-build its own tooltip.
+  const folded = collapseMeta && (caption || source || metaExtra);
+  const resolvedTitleHelp =
+    titleHelp ??
+    (folded ? (
+      <Tooltip
+        label={
+          <div style={{ maxWidth: "22rem" }} className="text-xs leading-relaxed">
+            {caption && <p>{caption}</p>}
+            {metaExtra && <div className={caption ? "mt-2" : undefined}>{metaExtra}</div>}
+            {source && <p className="mt-2 text-typography-400">{source}</p>}
+          </div>
+        }
+        align="bottom"
+      >
+        <button
+          type="button"
+          className="cursor-pointer inline-flex items-center"
+          aria-label={typeof title === "string" ? `About ${title}` : "About this chart"}
+        >
+          <TooltipIcon />
+        </button>
+      </Tooltip>
+    ) : null);
+
   const body = (
     <>
       {(title || onExpand || controls || chartId) && (
@@ -1125,8 +1180,9 @@ export const ChartCard = ({
                 </h3>
               )}
               <ChartIdBadge id={chartId} />
+              {resolvedTitleHelp}
             </div>
-            {caption && <p className="text-xs text-typography-500">{caption}</p>}
+            {caption && !collapseMeta && <p className="text-xs text-typography-500">{caption}</p>}
           </div>
           <div className="flex items-start gap-1 shrink-0">
             {controls}
@@ -1147,7 +1203,9 @@ export const ChartCard = ({
       {takeaway && <div className="text-xs font-medium mt-1">{takeaway}</div>}
       <div className="mb-2" />
       {visualField}
-      {source && <p className="mt-2 text-[11px] leading-tight text-typography-500">{source}</p>}
+      {source && !collapseMeta && (
+        <p className="mt-2 text-[11px] leading-tight text-typography-500">{source}</p>
+      )}
     </>
   );
 

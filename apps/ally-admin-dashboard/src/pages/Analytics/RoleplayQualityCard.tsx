@@ -101,6 +101,7 @@ export const RoleplayQualityCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
         source={source}
         loading={loading}
         error={Boolean(error)}

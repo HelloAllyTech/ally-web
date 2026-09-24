@@ -107,6 +107,7 @@ export const ActiveUsersXpCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}
