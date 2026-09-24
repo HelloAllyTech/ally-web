@@ -26,7 +26,7 @@ import {
 
 type ChartId = "quality";
 
-const TITLE = "Roleplay quality";
+const TITLE = "Roleplay Quality";
 
 /**
  * The Roleplay Quality Index, composite number only — no dimension breakdown.

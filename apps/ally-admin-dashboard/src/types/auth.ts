@@ -330,17 +330,17 @@ export interface XpGrowthResponse {
 /* XP goals — GET /v1/analytics/xp-goals                                      */
 /* -------------------------------------------------------------------------- */
 
+/** The grains a goal row can be seeded at in `analytics_xp_goals`. */
+export type XpGoalGrain = "month" | "quarter" | "year";
+
 /**
  * The wire contract for `/v1/analytics/xp-goals` — the request `grain` param
- * and the response's echoed `grain` field, never day/week/allTime because a
- * goal row is seeded at one of these three grains only. NOT the type of
- * `GoalsXpCard`'s own picker control any more — that migrated onto the shared
- * `AnalyticsGrain`/`GroupingPicker` (narrowed via `options`), converting back
- * to this type at the request boundary (see `toXpGoalGrain` in
- * `goalsXpChart.ts`). Kept, not retired, because the response's `grain` field
- * still needs an accurate type.
+ * and the response's echoed `grain`. Wider than {@link XpGoalGrain}: day, week
+ * and all come back as actual XP only (`goalXp: null` throughout). The card's
+ * picker speaks the shared `AnalyticsGrain`, converted at the request boundary
+ * by `toXpChartGrain` in `goalsXpChart.ts`.
  */
-export type XpGoalGrain = "month" | "quarter" | "year";
+export type XpChartGrain = "day" | "week" | XpGoalGrain | "all";
 
 /** One period's actual XP earned against its goal, if one has been set. */
 export interface GoalsXpPoint {
@@ -359,7 +359,7 @@ export interface GoalsXpPoint {
 }
 
 export interface GoalsXpResponse {
-  grain: XpGoalGrain;
+  grain: XpChartGrain;
   points: GoalsXpPoint[];
   /** Always platform-wide (tenantId null) — Goals has no tenant filter. */
   scoping: AnalyticsScoping;
@@ -1214,6 +1214,8 @@ export interface ShipVolumeResponse {
 export interface ShipVolumeQuery {
   /** 12 | 26 | 52. Defaults to 12 server-side. */
   weeks?: number;
+  /** `all` = every week since the first change on any repo; overrides `weeks`. */
+  span?: "all";
 }
 
 // Vote-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto

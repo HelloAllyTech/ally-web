@@ -38,7 +38,7 @@ const asOfStamp = (computedAt?: string): string | undefined => {
  *  week bucket. */
 const GRAIN_OPTIONS: AnalyticsBucket[] = ["day", "week", "month", "year"];
 
-const TITLE = "Bug Hunter find vs. fix volume";
+const TITLE = "Bug Hunter Find vs. Fix Volume";
 
 /**
  * How much moves through each half of Bug Hunter's pipeline, per period —

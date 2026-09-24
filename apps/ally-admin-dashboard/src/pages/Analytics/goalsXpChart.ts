@@ -1,4 +1,4 @@
-import { AnalyticsGrain, GoalsXpPoint, XpGoalGrain } from "@types";
+import { AnalyticsGrain, GoalsXpPoint, XpChartGrain } from "@types";
 
 import { context, single } from "./chartKit";
 import { ColorScale, PALETTE } from "./chartScales";
@@ -11,24 +11,16 @@ import { ColorScale, PALETTE } from "./chartScales";
  */
 
 /**
- * The grains {@link GET /v1/analytics/xp-goals} actually supports — month,
- * quarter or year, never day/week/allTime. Goal rows are seeded one per
- * period at one of these three grains, so a finer axis would have nothing to
- * plot and there is no whole-window total behind an "All-time" KPI (see the
- * card's own doc for why All-time was left off rather than faked from a fold
- * of whichever grain happened to be selected). Passed as {@link GroupingPicker}'s
- * `options` to narrow the shared control down to exactly these three.
+ * Whether a grain has goals to show. Goal rows are seeded one per month,
+ * quarter or year, so at day, week and all-time there is no target to compare
+ * against — the chart shows the Actual bar alone.
  */
-export const XP_GOAL_GRAIN_OPTIONS: AnalyticsGrain[] = ["month", "quarter", "year"];
+export const showsGoal = (grain: AnalyticsGrain): boolean =>
+  grain === "month" || grain === "quarter" || grain === "year";
 
-/**
- * `GroupingPicker` speaks the wider {@link AnalyticsGrain}; the request/response
- * wire only ever carries these three. Safe in practice because `options` above
- * is the only way the control's value changes — the `"month"` fallback is
- * unreachable, not a silent default.
- */
-export const toXpGoalGrain = (grain: AnalyticsGrain): XpGoalGrain =>
-  grain === "month" || grain === "quarter" || grain === "year" ? grain : "month";
+/** `GroupingPicker`'s grain → the endpoint's; only All-time is spelled differently. */
+export const toXpChartGrain = (grain: AnalyticsGrain): XpChartGrain =>
+  grain === "allTime" ? "all" : grain;
 
 export const ACTUAL_GROUP = "Actual XP";
 export const GOAL_GROUP = "Goal";

@@ -5,7 +5,6 @@ import { GoalsXpPoint } from "@types";
 import {
   ACTUAL_GROUP,
   GOAL_GROUP,
-  XP_GOAL_GRAIN_OPTIONS,
   buildGoalsXpSeries,
   buildGoalsXpTable,
   goalsXpEmptyText,
@@ -13,7 +12,8 @@ import {
   goalsXpTakeaway,
   goalsXpUpcomingNote,
   noGoalPeriods,
-  toXpGoalGrain,
+  showsGoal,
+  toXpChartGrain,
 } from "../goalsXpChart";
 
 const point = (overrides: Partial<GoalsXpPoint> & { periodLabel: string }): GoalsXpPoint => ({
@@ -237,24 +237,24 @@ describe("buildGoalsXpTable", () => {
   });
 });
 
-describe("toXpGoalGrain", () => {
-  it("passes through the three grains the endpoint understands", () => {
-    expect(toXpGoalGrain("month")).toBe("month");
-    expect(toXpGoalGrain("quarter")).toBe("quarter");
-    expect(toXpGoalGrain("year")).toBe("year");
-  });
-
-  it("falls back to month for a grain the picker's own options never offer", () => {
-    // Unreachable via the UI — GroupingPicker is narrowed to XP_GOAL_GRAIN_OPTIONS
-    // — but the fallback must still be well-defined for the type checker.
-    expect(toXpGoalGrain("day")).toBe("month");
-    expect(toXpGoalGrain("week")).toBe("month");
-    expect(toXpGoalGrain("allTime")).toBe("month");
+describe("toXpChartGrain", () => {
+  it("passes every picker grain through, spelling All-time as the endpoint does", () => {
+    expect(toXpChartGrain("day")).toBe("day");
+    expect(toXpChartGrain("week")).toBe("week");
+    expect(toXpChartGrain("month")).toBe("month");
+    expect(toXpChartGrain("quarter")).toBe("quarter");
+    expect(toXpChartGrain("year")).toBe("year");
+    expect(toXpChartGrain("allTime")).toBe("all");
   });
 });
 
-describe("XP_GOAL_GRAIN_OPTIONS", () => {
-  it("offers exactly the three grains the endpoint supports, no day/week/allTime", () => {
-    expect(XP_GOAL_GRAIN_OPTIONS).toEqual(["month", "quarter", "year"]);
+describe("showsGoal", () => {
+  it("shows the Goal bar only at month, quarter and year", () => {
+    expect(showsGoal("month")).toBe(true);
+    expect(showsGoal("quarter")).toBe(true);
+    expect(showsGoal("year")).toBe(true);
+    expect(showsGoal("day")).toBe(false);
+    expect(showsGoal("week")).toBe(false);
+    expect(showsGoal("allTime")).toBe(false);
   });
 });

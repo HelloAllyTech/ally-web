@@ -11,9 +11,8 @@ import {
   Tile,
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
-import { AnalyticsGrain } from "@types";
-
 import { TooltipIcon } from "@assets";
+import { AnalyticsGrain } from "@types";
 
 import { GROUPING_LABEL } from "./analyticsGrouping";
 import { CONTEXT, ColorScale, PALETTE, formatDelta } from "./chartScales";
@@ -513,12 +512,9 @@ type ChartDatum = { key?: string | number | null; group?: string | number | null
  * container once there are enough of them, so a chart with six bars is untouched
  * and no scrollbar appears.
  *
- * Two honest costs, both stated on the surface rather than discovered:
- *  - **The value axis scrolls with the plot.** Carbon draws axis and plot in one
- *    SVG, so there is nothing to pin. Hover gives the exact value, and the
- *    expanded view's table gives all of them.
- *  - **Part of the range is off-screen.** The note below the plot says so; a plot
- *    cut off at the card edge with no caption reads as the whole series.
+ * The value axis stays pinned while the plot scrolls — see {@link PinnedValueAxis}.
+ * Part of the range is off-screen, and the note below the plot says so: a plot
+ * cut off at the card edge with no caption reads as the whole series.
  *
  * The alternative — thinning ticks to every nth label — keeps everything in view
  * but shrinks the marks themselves, and a chart whose bars are narrower than the
@@ -561,24 +557,126 @@ export const ScrollableChart = ({
 
   return (
     <>
-      <div
-        ref={scroller}
-        className="analytics-chart-scroll"
-        // Focusable only while it overflows: a scroll container is unreachable by
-        // keyboard without a tab stop, and a tab stop on a container with nothing
-        // to scroll is just an extra press on the way to the next control.
-        {...(overflowing
-          ? { tabIndex: 0, role: "group", "aria-label": "Chart, scrollable horizontally" }
-          : {})}
-      >
-        <div style={{ minWidth }}>{children}</div>
+      <div className="relative">
+        <div
+          ref={scroller}
+          className="analytics-chart-scroll"
+          // Focusable only while it overflows: a scroll container is unreachable by
+          // keyboard without a tab stop, and a tab stop on a container with nothing
+          // to scroll is just an extra press on the way to the next control.
+          {...(overflowing
+            ? { tabIndex: 0, role: "group", "aria-label": "Chart, scrollable horizontally" }
+            : {})}
+        >
+          <div style={{ minWidth }}>{children}</div>
+        </div>
+        {overflowing && <PinnedValueAxis scroller={scroller} />}
       </div>
       {overflowing && (
         <p className="mt-1 text-[11px] leading-tight text-typography-500">
-          Scroll sideways for the rest of the range — the value axis scrolls with the plot.
+          Scroll sideways for the rest of the range.
         </p>
       )}
     </>
+  );
+};
+
+/** Presentation properties copied inline, since the copy sits outside Carbon's CSS scope. */
+const AXIS_STYLE_PROPS = [
+  "fill",
+  "stroke",
+  "stroke-width",
+  "stroke-dasharray",
+  "opacity",
+  "visibility",
+  "display",
+  "font-family",
+  "font-size",
+  "font-weight",
+  "text-anchor",
+  "dominant-baseline",
+];
+
+/** The first opaque background behind `el`, so the pinned axis hides the plot scrolling under it. */
+const backgroundBehind = (el: HTMLElement | null): string => {
+  for (let node = el; node; node = node.parentElement) {
+    const bg = getComputedStyle(node).backgroundColor;
+    if (bg && bg !== "transparent" && !/rgba\(.*,\s*0\)$/.test(bg)) return bg;
+  }
+  return "transparent";
+};
+
+/**
+ * A pinned copy of the chart's value axis, laid over the left edge of a
+ * {@link ScrollableChart} that overflows.
+ *
+ * Carbon draws the axis and the plot in one SVG, so the real axis cannot be made
+ * sticky — it scrolls away with the plot and the reader loses the scale. Instead
+ * this clones Carbon's `g.axis.left` into its own SVG that does not scroll,
+ * re-cloning whenever Carbon redraws (new data, a resize). It is a read-only
+ * picture: `pointer-events: none` lets hover and clicks reach the chart beneath.
+ */
+const PinnedValueAxis = ({ scroller }: { scroller: React.RefObject<HTMLDivElement> }) => {
+  const overlay = useRef<HTMLDivElement>(null);
+  const svg = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const root = scroller.current;
+    if (!root) return undefined;
+    let frame = 0;
+
+    const draw = () => {
+      frame = 0;
+      const axis = root.querySelector<SVGGElement>("g.axis.left");
+      const frameSvg = axis?.closest("svg.layout-svg-wrapper");
+      const box = overlay.current;
+      const target = svg.current;
+      if (!axis || !frameSvg || !box || !target) return;
+
+      const frameRect = frameSvg.getBoundingClientRect();
+      const width = axis.getBoundingClientRect().right - frameRect.left;
+      box.style.top = `${frameRect.top - root.getBoundingClientRect().top}px`;
+      box.style.width = `${Math.max(0, width)}px`;
+      box.style.height = `${frameRect.height}px`;
+      box.style.background = backgroundBehind(root);
+      target.setAttribute("width", String(Math.max(0, width)));
+      target.setAttribute("height", String(frameRect.height));
+
+      const copy = axis.cloneNode(true) as SVGGElement;
+      const from = [axis, ...Array.from(axis.querySelectorAll("*"))];
+      const to = [copy, ...Array.from(copy.querySelectorAll("*"))];
+      from.forEach((el, i) => {
+        const computed = getComputedStyle(el);
+        const style = (to[i] as SVGElement).style;
+        AXIS_STYLE_PROPS.forEach(prop => style.setProperty(prop, computed.getPropertyValue(prop)));
+      });
+      target.replaceChildren(copy);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(draw);
+    };
+
+    schedule();
+    const mutations = new MutationObserver(schedule);
+    mutations.observe(root, { subtree: true, childList: true, attributes: true });
+    const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
+    resize?.observe(root);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      mutations.disconnect();
+      resize?.disconnect();
+    };
+  }, [scroller]);
+
+  return (
+    <div
+      ref={overlay}
+      aria-hidden
+      className="pointer-events-none absolute left-0 overflow-hidden"
+      style={{ top: 0, width: 0, height: 0 }}
+    >
+      <svg ref={svg} />
+    </div>
   );
 };
 
