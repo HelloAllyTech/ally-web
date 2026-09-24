@@ -42,14 +42,23 @@ type SettingsDraft = Pick<
 >;
 
 /**
- * Gemini CLI is wired in as a second engine but unverified end-to-end — see
- * run-engine.sh's gemini case and forward-events.mjs's normaliseGemini() for
- * exactly what's confirmed (real installed-package schema) versus what a
- * first real run still needs to prove out.
+ * Only what Builder will actually run — the same list as the AI models tab's,
+ * and it has to stay the same list. ally-be holds an engine ALLOWLIST
+ * (`builderAllowedEngines`) and overrules anything off it wherever the value
+ * came from, including this row, so offering `claude-code` here would be a
+ * control that appears to work and silently does not.
+ *
+ * This picker was missed when the models tab's was corrected, which is worse
+ * than it sounds: a `<select>` whose value is absent from its options renders
+ * as the first one, so with prod on `opencode` this page read "Claude Code" —
+ * a settings screen stating the opposite of what is stored.
+ *
+ * Putting Claude back is one environment variable on ally-be plus an entry
+ * here, in that order — the list is what decides, this is only what offers.
  */
 const BUILDER_ENGINE_OPTIONS = [
-  { value: "claude-code", text: "Claude Code" },
-  { value: "gemini", text: "Gemini CLI (unverified — see run-engine.sh)" },
+  { value: "gemini", text: "Gemini CLI" },
+  { value: "opencode", text: "opencode (multi-provider harness)" },
 ];
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
@@ -301,7 +310,7 @@ export const BuilderSettings: React.FC = () => {
                 id="builder-settings-engine"
                 labelText={strings.engineLabel}
                 hideLabel
-                value={draft.defaultEngine ?? "claude-code"}
+                value={draft.defaultEngine ?? BUILDER_ENGINE_OPTIONS[0].value}
                 onChange={event => set("defaultEngine", event.target.value)}
               >
                 {BUILDER_ENGINE_OPTIONS.map(option => (
