@@ -133,6 +133,7 @@ export const RoleplayMinutesCard = () => {
               }
             : undefined
         }
+        chartId="AAQ-002"
       >
         <ScrollableChart data={series}>
           <LineChart data={series} options={opts} />

@@ -189,6 +189,7 @@ export const UnitEconomicsSubTab = () => {
           error={Boolean(unitCost.error)}
           onRetry={() => void unitCost.refetch()}
           description="Learner-caused AI spend over practice minutes, across the window."
+          chartId="AAQ-075"
         />
 
         <KpiTile
@@ -198,6 +199,7 @@ export const UnitEconomicsSubTab = () => {
           error={Boolean(unitCost.error)}
           onRetry={() => void unitCost.refetch()}
           description="Live roleplay, feedback and quiz grading."
+          chartId="AAQ-076"
         />
 
         <KpiTile
@@ -207,6 +209,7 @@ export const UnitEconomicsSubTab = () => {
           error={Boolean(unitCost.error)}
           onRetry={() => void unitCost.refetch()}
           description="Judges, authoring, copilot, translation, internal tooling. Excluded from the ratio."
+          chartId="AAQ-077"
         />
 
         <KpiTile
@@ -216,6 +219,7 @@ export const UnitEconomicsSubTab = () => {
           error={Boolean(unitCost.error)}
           onRetry={() => void unitCost.refetch()}
           description="The denominator — the same measurement the practice-minutes chart uses."
+          chartId="AAQ-078"
         />
       </div>
 
@@ -273,6 +277,7 @@ export const UnitEconomicsSubTab = () => {
           onExpand={() => setExpanded("unitCost")}
           kpi={isUnitCostAllTime ? unitCostKpi : undefined}
           wide
+          chartId="AAQ-079"
         >
           <ScrollableChart data={unitSeries}>
             <LineChart
@@ -329,6 +334,7 @@ export const UnitEconomicsSubTab = () => {
           }
           onExpand={() => setExpanded("costSplit")}
           wide
+          chartId="AAQ-080"
         >
           <ScrollableChart data={splitSeries}>
             <StackedBarChart

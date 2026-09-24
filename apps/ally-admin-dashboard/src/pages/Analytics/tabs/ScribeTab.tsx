@@ -337,6 +337,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={overview.refetch}
           errorTitle="Couldn't load scribe analytics"
           errorSubtitle="There was a problem fetching scribe session metrics."
+          chartId="AAQ-136"
         >
           <div />
         </ChartCard>
@@ -344,7 +345,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
             {overviewKpis.map(kpi => (
-              <KpiTile key={kpi.label} {...kpi} />
+              <KpiTile key={kpi.label} {...kpi} chartId="AAQ-137" />
             ))}
           </div>
 
@@ -363,6 +364,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               wide
               empty={!overview.data?.sessionsTrend?.length}
               onExpand={() => setExpanded("sessions")}
+              chartId="AAQ-138"
             >
               <ScrollableChart data={sessionsData}>
                 <LineChart data={sessionsData} options={sessionsOpts} />
@@ -380,6 +382,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={overviewLoading}
               empty={!outcomeData.length}
+              chartId="AAQ-139"
             >
               <DonutChart
                 data={outcomeData}
@@ -398,6 +401,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={overviewLoading}
               empty={!captureMethodData.length}
+              chartId="AAQ-140"
             >
               <DonutChart
                 data={captureMethodData}
@@ -416,6 +420,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={overviewLoading}
               empty={!noteModeAllData.length}
+              chartId="AAQ-141"
             >
               <DonutChart
                 data={noteModeAllData}
@@ -434,6 +439,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={failures.refetch}
           errorTitle="Couldn't load summary-failure analytics"
           errorSubtitle="There was a problem fetching scribe failure metrics."
+          chartId="AAQ-142"
         >
           <div />
         </ChartCard>
@@ -441,7 +447,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
         <>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {failuresKpis.map(kpi => (
-              <KpiTile key={kpi.label} {...kpi} />
+              <KpiTile key={kpi.label} {...kpi} chartId="AAQ-143" />
             ))}
           </div>
 
@@ -460,6 +466,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               wide
               empty={!failures.data?.failureRateTrend?.length}
               onExpand={() => setExpanded("failureRate")}
+              chartId="AAQ-144"
             >
               <ScrollableChart data={rateData}>
                 <LineChart data={rateData} options={rateOpts} />
@@ -479,6 +486,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               loading={failuresLoading}
               wide
               empty={!funnelStages.some(p => p.reached > 0)}
+              chartId="AAQ-145"
             >
               <FunnelBars stages={funnelStages} unit="sessions" />
             </ChartCard>
@@ -494,6 +502,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={failuresLoading}
               empty={!captureData.length}
+              chartId="AAQ-146"
             >
               <DonutChart
                 data={captureData}
@@ -512,6 +521,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={failuresLoading}
               empty={!noteModeData.length}
+              chartId="AAQ-147"
             >
               <DonutChart
                 data={noteModeData}
@@ -530,6 +540,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               loading={failuresLoading}
               wide
               empty={!sttProviderStats.length}
+              chartId="AAQ-148"
             >
               <div className="flex flex-col gap-2">
                 {sttProviderStats.map(s => {
@@ -577,6 +588,7 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               })}
               loading={failuresLoading}
               empty={!summaryModelData.length}
+              chartId="AAQ-149"
             >
               {/* Horizontal bars, not a donut: model ids are long free-text
                   labels and the count is unbounded, which is the case a donut

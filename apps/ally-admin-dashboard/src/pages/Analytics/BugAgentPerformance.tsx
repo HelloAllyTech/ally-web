@@ -132,6 +132,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
           empty={precisionTrend.length === 0}
           emptyText="Nothing judged yet in this window"
           height={CHART_HEIGHT}
+          chartId="AAQ-130"
         >
           <ScrollableChart data={precisionTrend}>
             <LineChart data={precisionTrend} options={precisionOptions} />
@@ -149,6 +150,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
           empty={sourceAccuracy.length === 0}
           emptyText="No finder has a judged finding yet in this window"
           height={CHART_HEIGHT}
+          chartId="AAQ-131"
         >
           <ScrollableChart data={sourceAccuracy} on="group">
             <SimpleBarChart data={sourceAccuracy} options={sourceAccuracyOptions} />
@@ -168,6 +170,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
         emptyText="No fix-session activity recorded yet in this window"
         wide
         height={CHART_HEIGHT}
+        chartId="AAQ-132"
       >
         <ScrollableChart data={throughputTrend}>
           <LineChart data={throughputTrend} options={throughputOptions} />
@@ -186,6 +189,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
         emptyText="No stage transitions recorded yet in this window"
         wide
         height={CHART_HEIGHT}
+        chartId="AAQ-133"
       >
         <ScrollableChart data={speedTrend}>
           <LineChart data={speedTrend} options={speedOptions} />
@@ -213,6 +217,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
         emptyText="No Bug Hunter spend recorded yet in this window"
         wide
         height={CHART_HEIGHT}
+        chartId="AAQ-134"
       >
         <ScrollableChart data={costTrend}>
           <LineChart data={costTrend} options={costOptions} />
@@ -236,6 +241,7 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
         emptyText="No runs recorded yet in this window"
         wide
         height={CHART_HEIGHT}
+        chartId="AAQ-135"
       >
         <ScrollableChart data={reliabilityTrend}>
           <LineChart data={reliabilityTrend} options={reliabilityOptions} />

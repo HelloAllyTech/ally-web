@@ -320,6 +320,7 @@ const SeriesCard: FC<{
           ? "Not instrumented — nothing is being recorded for this metric yet."
           : "No data in this window."
       }
+      chartId="AAQ-081"
     >
       {form === "clean" ? (
         <p style={{ margin: "0.5rem 0", fontSize: "0.875rem", opacity: 0.75 }}>
@@ -668,6 +669,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         error
         onRetry={() => refetch()}
         errorTitle="Could not load actor quality metrics"
+        chartId="AAQ-082"
       >
         <span />
       </ChartCard>
@@ -765,7 +767,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           tab, which is where a reader goes looking for it rather than past it. */}
 
       {isFetching && !data ? (
-        <ChartCard title="Actor quality metrics" loading>
+        <ChartCard title="Actor quality metrics" loading chartId="AAQ-083">
           <span />
         </ChartCard>
       ) : (
@@ -853,6 +855,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
                       : ""}
                   </strong>
                 }
+                chartId="AAQ-084"
               >
                 <span />
               </ChartCard>

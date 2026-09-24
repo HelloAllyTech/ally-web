@@ -29,7 +29,7 @@ import { en } from "@constants";
 import { AnalyticsAgentMessage, AnalyticsAgentTurnInput, AskAnalyticsAgentResponse } from "@types";
 
 import { AgentChartModel, buildAgentChart } from "../agentChart";
-import { CHART_HEIGHT, ScrollableChart } from "../chartKit";
+import { CHART_HEIGHT, ChartIdBadge, ScrollableChart } from "../chartKit";
 
 /**
  * Analytics Agent — the conversational tab of the analytics dashboard.
@@ -239,9 +239,12 @@ const AgentAnswer = ({
           {chart && (
             <div className="mt-4">
               {response.chart?.title && (
-                <h4 className="text-sm font-medium text-typography-900 mb-1">
-                  {response.chart.title}
-                </h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-sm font-medium text-typography-900">
+                    {response.chart.title}
+                  </h4>
+                  <ChartIdBadge id="AAQ-151" />
+                </div>
               )}
               {/* A scatter's x-axis is a quantity, not a growing set of
                   categories, so it has nothing to scroll for. */}

@@ -134,6 +134,7 @@ export const GoalsXpCard = () => {
         }
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-001"
       >
         <div className="flex flex-col gap-4">
           <ScrollableChart data={series}>
