@@ -110,6 +110,7 @@ export const BugHunterVolumeCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}

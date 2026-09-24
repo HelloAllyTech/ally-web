@@ -112,6 +112,20 @@ export const ShipVolumeCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
+        metaExtra={
+          <div className="flex flex-col gap-1">
+            {inProgress && <span>{partialFootnote(inProgress)}</span>}
+            {data && data.plotted.churn > 0 && (
+              <span>
+                {formatLines(data.plotted.added)} added and {formatLines(data.plotted.deleted)}{" "}
+                removed across the window. Lockfiles and build output are not excluded here —
+                GitHub&apos;s statistics count every line on the branch — so a week with a big
+                dependency bump reads higher than the hand-written work in it.
+              </span>
+            )}
+          </div>
+        }
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}
@@ -128,24 +142,13 @@ export const ShipVolumeCard = () => {
             <StackedBarChart data={series} options={opts} />
           </ScrollableChart>
 
-          <div className="flex flex-col gap-1 text-xs text-typography-500">
-            {/* Spells out the asterisk on the axis. Carbon truncates a tick label
-                past 14 characters, so the marker has to be short and its meaning
-                has to live here in prose. */}
-            {inProgress && <span>{partialFootnote(inProgress)}</span>}
-            {/* The coverage line is the most important sentence on this panel when
-                it appears: a repo that failed to load shortens every bar with
-                nothing on the chart to show that it happened. */}
-            {missing && <span className="text-support-warning-inverse">{missing}</span>}
-            {data && data.plotted.churn > 0 && (
-              <span>
-                {formatLines(data.plotted.added)} added and {formatLines(data.plotted.deleted)}{" "}
-                removed across the window. Lockfiles and build output are not excluded here —
-                GitHub&apos;s statistics count every line on the branch — so a week with a big
-                dependency bump reads higher than the hand-written work in it.
-              </span>
-            )}
-          </div>
+          {/* The routine footnotes (partial-week marker, churn breakdown) are folded
+              into the help tooltip via metaExtra. The coverage warning stays on the
+              face on purpose: when a repo fails to load it shortens every bar with
+              nothing on the chart to show it happened, so it must not hide in a hover. */}
+          {missing && (
+            <p className="text-xs text-support-warning-inverse">{missing}</p>
+          )}
         </div>
       </ChartCard>
 
