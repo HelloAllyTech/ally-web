@@ -56,7 +56,7 @@ import {
   VoiceLatencyResponse,
   VoiceLatencySessionsSummary,
   WeakMetricsResponse,
-  XpGoalGrain,
+  XpChartGrain,
   XpGrowthResponse,
 } from "@types";
 
@@ -280,7 +280,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // tab. Goals are read-only here; they are seeded directly into
     // analytics_xp_goals by migration. Platform-wide only, no tenant param —
     // takes just the grain, which is the chart's own control.
-    getGoalsXp: builder.query<GoalsXpResponse, { grain?: XpGoalGrain }>({
+    getGoalsXp: builder.query<GoalsXpResponse, { grain?: XpChartGrain }>({
       query: ({ grain } = {}) => ({
         url: ApiEndpoints.ANALYTICS.XP_GOALS,
         method: HttpMethod.GET,
@@ -440,10 +440,10 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // the window is the chart's own control, because a weekly axis wider than a
     // year stops being readable long before "all time" would.
     getShipVolume: builder.query<ShipVolumeResponse, ShipVolumeQuery>({
-      query: ({ weeks }) => ({
+      query: ({ weeks, span }) => ({
         url: ApiEndpoints.ANALYTICS.SHIP_VOLUME,
         method: HttpMethod.GET,
-        params: weeks ? { weeks } : undefined,
+        params: span ? { span } : weeks ? { weeks } : undefined,
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({

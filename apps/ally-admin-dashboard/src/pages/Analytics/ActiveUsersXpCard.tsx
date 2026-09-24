@@ -38,7 +38,7 @@ const asOfStamp = (computedAt?: string): string | undefined => {
  *  active THIS period". */
 const GRAIN_OPTIONS: AnalyticsBucket[] = ["day", "week", "month", "year"];
 
-const TITLE = "Active learners (XP)";
+const TITLE = "Active Learners (XP)";
 
 /**
  * Distinct learners clearing the {@link ACTIVE_USER_XP_THRESHOLD}-XP bar

@@ -1,4 +1,4 @@
-import { ShipVolumeResponse, ShipVolumeWeek } from "@types";
+import { AnalyticsGrain, ShipVolumeResponse, ShipVolumeWeek } from "@types";
 
 import { ColorScale, PALETTE, stableScale } from "./chartScales";
 
@@ -112,9 +112,9 @@ export const plottedWeeks = (weeks: ShipVolumeWeekView[]): ShipVolumeWeekView[] 
 export const partialWeek = (weeks: ShipVolumeWeekView[]): ShipVolumeWeekView | undefined =>
   weeks.find(w => w.partial);
 
-export const partialFootnote = (week: ShipVolumeWeekView): string =>
-  `* ${week.plainLabel} is the week in progress — it can only grow, so compare it ` +
-  `with the weeks beside it only once it closes.`;
+export const partialFootnote = (week: ShipVolumeWeekView, noun = "week"): string =>
+  `* ${week.plainLabel} is the ${noun} in progress — it can only grow, so compare it ` +
+  `with the ${noun}s beside it only once it closes.`;
 
 /**
  * The one-line reading, computed from the COMPLETE weeks only.
@@ -124,7 +124,10 @@ export const partialFootnote = (week: ShipVolumeWeekView): string =>
  * a bar more than a busy week does), and two adjacent bars are the pair a reader
  * is least entitled to draw a trend from.
  */
-export const shipVolumeTakeaway = (weeks: ShipVolumeWeekView[]): string | undefined => {
+export const shipVolumeTakeaway = (
+  weeks: ShipVolumeWeekView[],
+  noun = "week",
+): string | undefined => {
   const complete = weeks.filter(w => !w.partial && w.churn > 0);
   if (complete.length < 2) return undefined;
 
@@ -134,16 +137,17 @@ export const shipVolumeTakeaway = (weeks: ShipVolumeWeekView[]): string | undefi
   if (mean <= 0) return undefined;
 
   const share = latest.churn / mean;
-  const scale = `${formatLines(latest.churn)} changed lines in the week of ${latest.plainLabel}`;
+  const when = noun === "week" ? `the week of ${latest.plainLabel}` : latest.plainLabel;
+  const scale = `${formatLines(latest.churn)} changed lines in ${when}`;
 
   // A tenth either way is inside this series' ordinary bounce; calling that a
   // change would train the reader to see movement that is not there.
   if (share >= 0.9 && share <= 1.1) {
-    return `${scale} — in line with the previous ${prior.length} weeks.`;
+    return `${scale} — in line with the previous ${prior.length} ${noun}s.`;
   }
   const pct = Math.round(Math.abs(share - 1) * 100);
   const direction = share > 1 ? "above" : "below";
-  return `${scale} — ${pct}% ${direction} the previous ${prior.length}-week average.`;
+  return `${scale} — ${pct}% ${direction} the previous ${prior.length}-${noun} average.`;
 };
 
 /**
@@ -206,9 +210,10 @@ export const shipVolumeEmptyText = (
 export const buildShipVolumeTable = (
   weeks: ShipVolumeWeekView[],
   repos: string[],
+  periodTitle = "Week of",
 ): { columns: string[]; rows: (string | number | null)[][] } => ({
   columns: [
-    "Week of",
+    periodTitle,
     "Changed lines",
     "Added",
     "Removed",
@@ -235,3 +240,80 @@ const listOf = (names: string[]): string =>
   names.length <= 1
     ? (names[0] ?? "")
     : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+
+/**
+ * The groupings this chart can offer. No Day: GitHub's code-frequency
+ * statistics only exist per week, so anything finer would be invented.
+ */
+export const SHIP_VOLUME_GROUPINGS: AnalyticsGrain[] = [
+  "week",
+  "month",
+  "quarter",
+  "year",
+  "allTime",
+];
+
+/** The period noun for footnotes and the takeaway ("week", "month", …). */
+export const shipVolumePeriodNoun = (grain: AnalyticsGrain): string =>
+  grain === "allTime" ? "period" : grain;
+
+const periodStartOf = (weekStart: string, grain: AnalyticsGrain): string => {
+  if (grain === "week") return weekStart;
+  if (grain === "allTime") return "all";
+  const [y, m] = weekStart.split("-").map(Number);
+  if (grain === "year") return `${y}-01-01`;
+  if (grain === "quarter")
+    return `${y}-${String(Math.floor((m - 1) / 3) * 3 + 1).padStart(2, "0")}-01`;
+  return `${y}-${String(m).padStart(2, "0")}-01`;
+};
+
+const periodLabelOf = (start: string, grain: AnalyticsGrain): string => {
+  if (grain === "week") return start;
+  if (grain === "allTime") return "All time";
+  const [y, m] = start.split("-").map(Number);
+  if (grain === "year") return String(y);
+  if (grain === "quarter") return `Q${Math.floor((m - 1) / 3) + 1} ${y}`;
+  const d = new Date(Date.UTC(y, m - 1, 1));
+  return d.toLocaleDateString(undefined, { month: "short", year: "numeric", timeZone: "UTC" });
+};
+
+/**
+ * Regroups GitHub's weeks into the chosen grain. A week counts toward the
+ * period its Sunday falls in — GitHub gives no finer split, so a week that
+ * straddles a month boundary lands wholly in the month it started. A period
+ * is in progress when it holds the in-progress week. Week labels become the
+ * ISO date so a multi-year weekly axis never repeats a label.
+ */
+export const rollUpShipVolume = (
+  weeks: ShipVolumeWeekView[],
+  grain: AnalyticsGrain,
+): ShipVolumeWeekView[] => {
+  const periods = new Map<string, ShipVolumeWeekView>();
+  for (const w of weeks) {
+    const start = periodStartOf(w.weekStart, grain);
+    const p =
+      periods.get(start) ??
+      ({
+        weekStart: start,
+        label: "",
+        plainLabel: periodLabelOf(start, grain),
+        added: 0,
+        deleted: 0,
+        churn: 0,
+        partial: false,
+        churnByRepo: {},
+      } as ShipVolumeWeekView);
+    p.added += w.added;
+    p.deleted += w.deleted;
+    p.churn += w.churn;
+    p.partial = p.partial || w.partial;
+    for (const [repo, churn] of Object.entries(w.churnByRepo)) {
+      p.churnByRepo[repo] = (p.churnByRepo[repo] ?? 0) + churn;
+    }
+    periods.set(start, p);
+  }
+  return [...periods.values()].map(p => ({
+    ...p,
+    label: p.partial ? `${p.plainLabel} *` : p.plainLabel,
+  }));
+};
