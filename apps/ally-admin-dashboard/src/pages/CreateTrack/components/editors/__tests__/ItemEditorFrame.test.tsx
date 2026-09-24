@@ -4,6 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@hooks", () => ({
   useCanViewComponentLibrary: vi.fn(),
+  useUser: vi.fn(),
+}));
+
+vi.mock("@utils", () => ({
+  hasPermissions: (granted: string[] = [], required: string[]) =>
+    required.every(permission => granted.includes(permission)),
+}));
+
+vi.mock("../../discussion/DiscussionModerationPanel", () => ({
+  DiscussionModerationPanel: ({ itemId }: { itemId: string }) => (
+    <div data-testid="moderation-panel">{itemId}</div>
+  ),
 }));
 
 vi.mock("@api", () => ({
@@ -13,9 +25,15 @@ vi.mock("@api", () => ({
 vi.mock("@assets", () => ({
   Save: () => <span data-testid="save-icon" />,
   Trash: () => <span data-testid="trash-icon" />,
+  TooltipIcon: () => <span data-testid="tooltip-icon" />,
 }));
 
 vi.mock("@components", () => ({
+  ToggleSwitch: ({ enabled, onChange, label }: any) => (
+    <button type="button" aria-label={label} aria-pressed={enabled} onClick={() => onChange(!enabled)}>
+      toggle
+    </button>
+  ),
   ActionConfirmationPopup: ({
     isOpen,
     title,
@@ -61,6 +79,7 @@ vi.mock("@constants", () => ({
   },
   isComponentLibrarySupportedType: (type: string) =>
     ["QUIZ", "ANNOTATED_ARTIFACT", "ARTICLE", "VIDEO", "JOURNAL"].includes(type),
+  Permissions: { EDIT_ADMIN_TRACK: "edit:admin:track" },
   SAVE_AS_TEMPLATE_LABEL: "Save as template",
   TRACK_ITEM_TYPE_LABELS: {
     ROLEPLAY: "Roleplay",
@@ -88,7 +107,7 @@ vi.mock("sonner", () => ({
 }));
 
 import * as api from "@api";
-import { useCanViewComponentLibrary } from "@hooks";
+import { useCanViewComponentLibrary, useUser } from "@hooks";
 import { TrackItemType } from "@types";
 
 import { ItemEditorFrame } from "../ItemEditorFrame";
@@ -138,6 +157,7 @@ describe("ItemEditorFrame — Save as template", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (useUser as ReturnType<typeof vi.fn>).mockReturnValue({ permissions: [], features: [] });
     (useCanViewComponentLibrary as ReturnType<typeof vi.fn>).mockReturnValue(true);
     (api.useCreateComponentTemplateMutation as ReturnType<typeof vi.fn>).mockReturnValue([
       mockCreateComponentTemplate,
@@ -221,5 +241,74 @@ describe("ItemEditorFrame — Save as template", () => {
     expect(screen.getByDisplayValue("My Item")).toBeInTheDocument();
     // And the dialog stays open with the failed attempt's edits intact.
     expect(screen.getByTestId("save-as-template-dialog")).toBeInTheDocument();
+  });
+});
+
+describe("ItemEditorFrame — discussion", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useCanViewComponentLibrary as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (api.useCreateComponentTemplateMutation as ReturnType<typeof vi.fn>).mockReturnValue([
+      vi.fn(),
+      { isLoading: false },
+    ]);
+  });
+
+  const asModerator = () =>
+    (useUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      permissions: ["edit:admin:track"],
+      features: [],
+    });
+
+  it("renders the Enable discussion switch, off by default, and flips it", () => {
+    (useUser as ReturnType<typeof vi.fn>).mockReturnValue({ permissions: [], features: [] });
+    render(<Harness type={TrackItemType.ARTICLE} />);
+    const toggle = screen.getByRole("button", { name: "Enable discussion" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("offers moderation only for a saved item with discussion on, to a course author", () => {
+    asModerator();
+    render(
+      <Harness
+        type={TrackItemType.ARTICLE}
+        itemOverrides={{ serverId: "item-1", hasDiscussion: true }}
+      />,
+    );
+    fireEvent.click(screen.getByText("Moderate discussion"));
+    expect(screen.getByTestId("moderation-panel")).toHaveTextContent("item-1");
+  });
+
+  it("hides moderation for an unsaved item", () => {
+    asModerator();
+    render(<Harness type={TrackItemType.ARTICLE} itemOverrides={{ hasDiscussion: true }} />);
+    expect(screen.queryByText("Moderate discussion")).not.toBeInTheDocument();
+  });
+
+  it("hides moderation when discussion is off", () => {
+    asModerator();
+    render(
+      <Harness
+        type={TrackItemType.ARTICLE}
+        itemOverrides={{ serverId: "item-1", hasDiscussion: false }}
+      />,
+    );
+    expect(screen.queryByText("Moderate discussion")).not.toBeInTheDocument();
+  });
+
+  it("hides moderation without edit:admin:track", () => {
+    (useUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      permissions: ["view:admin:track"],
+      features: [],
+    });
+    render(
+      <Harness
+        type={TrackItemType.ARTICLE}
+        itemOverrides={{ serverId: "item-1", hasDiscussion: true }}
+      />,
+    );
+    expect(screen.queryByText("Moderate discussion")).not.toBeInTheDocument();
   });
 });
