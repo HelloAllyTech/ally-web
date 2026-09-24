@@ -553,24 +553,16 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
  * to the 30-day view does not silently rewrite the granularity they set for a
  * 12-month read.
  *
- * `quarter` would be legal, by this same reasoning, on the two ranges wide
- * enough to hold a complete one (12m has up to 4, "all" has more; 90d is
- * itself about one quarter and would only ever offer the in-progress one,
- * same trap as monthly-over-90-days above, one order worse) — but this
- * endpoint's own backend DTO (`WeakMetricsBucket` in
- * ally-be/src/analytics/dto/weak-metrics.dto.ts) only declares `week`/`month`
- * today, unlike the shared `AnalyticsBucket` vocabulary most other endpoints
- * already accept. Sending `bucket=quarter` here 400s under the global
- * `ValidationPipe`'s `@IsEnum` check. `quarter` is therefore left OUT of this
- * table until that DTO is widened — a backend change, out of scope for this
- * frontend-only task. See `WeakMetricBucket`/`BUCKET_NOUN` above, which are
- * already quarter-ready for the day that lands.
+ * `quarter` is legal, by this same reasoning, on the two ranges wide enough to
+ * hold a complete one — 12m has up to 4, "all" has more. 90d is itself about
+ * one quarter and would only ever offer the in-progress one, same trap as
+ * monthly-over-90-days above, one order worse, so it is left off there.
  */
 const BUCKETS_FOR_RANGE: Record<AnalyticsRange, WeakMetricBucket[]> = {
   "30d": ["week"],
   "90d": ["month", "week"],
-  "12m": ["month", "week"],
-  all: ["month", "week"],
+  "12m": ["quarter", "month", "week"],
+  all: ["quarter", "month", "week"],
 };
 
 /**
@@ -619,16 +611,9 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
         ? fallbackBucket
         : bucketItems[0];
 
-  // The query's own `bucket` param stays "week" | "month" until the backend
-  // DTO adds "quarter" (see BUCKETS_FOR_RANGE above) — narrowed defensively
-  // here so a future widening of BUCKETS_FOR_RANGE can't silently send this
-  // endpoint a value it 400s on. Unreachable today: `bucket` is never
-  // "quarter" while BUCKETS_FOR_RANGE excludes it.
-  const apiBucket = bucket === "quarter" ? "month" : bucket;
-
   const { data, isFetching, isError, refetch } = useGetWeakPerformingMetricsQuery({
     range: query.range,
-    bucket: apiBucket,
+    bucket,
     language: language || undefined,
     llmModel: llmModel || undefined,
     scenarioId,

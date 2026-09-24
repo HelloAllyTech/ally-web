@@ -602,7 +602,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       WeakMetricsResponse,
       {
         range?: string;
-        bucket?: "week" | "month";
+        bucket?: "week" | "month" | "quarter";
         language?: string;
         llmModel?: string;
         scenarioId?: number;
