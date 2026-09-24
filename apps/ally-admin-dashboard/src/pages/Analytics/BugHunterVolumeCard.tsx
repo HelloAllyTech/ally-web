@@ -38,7 +38,7 @@ const asOfStamp = (computedAt?: string): string | undefined => {
  *  week bucket. */
 const GRAIN_OPTIONS: AnalyticsBucket[] = ["day", "week", "month", "year"];
 
-const TITLE = "Bug Hunter find vs. fix volume";
+const TITLE = "Bug Hunter Find vs. Fix Volume";
 
 /**
  * How much moves through each half of Bug Hunter's pipeline, per period —
@@ -110,6 +110,7 @@ export const BugHunterVolumeCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}
@@ -127,6 +128,7 @@ export const BugHunterVolumeCard = () => {
         }
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-009"
       >
         <ScrollableChart data={series}>
           <GroupedBarChart data={series} options={opts} />

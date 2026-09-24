@@ -16,6 +16,7 @@ import { en } from "@constants";
 import { RagFloorPoint, RagQualityResponse } from "@types";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
+import { ChartIdBadge } from "../chartKit";
 
 /**
  * Corpus retrieval quality: what the LLM judge says about whether retrieval answered the
@@ -238,7 +239,10 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
       </Tile>
 
       <Tile className="p-4">
-        <h3 className="text-sm text-typography-900 font-secondary">{en.ragQuality.floorTitle}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm text-typography-900 font-secondary">{en.ragQuality.floorTitle}</h3>
+          <ChartIdBadge id="AAQ-122" />
+        </div>
         <p className="mt-1 text-xs text-typography-500">{en.ragQuality.floorHelp}</p>
         <Table className="mt-3">
           <TableHead>
@@ -262,9 +266,12 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
       </Tile>
 
       <Tile className="p-4">
-        <h3 className="text-sm text-typography-900 font-secondary">
-          {en.ragQuality.consumerTitle}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm text-typography-900 font-secondary">
+            {en.ragQuality.consumerTitle}
+          </h3>
+          <ChartIdBadge id="AAQ-123" />
+        </div>
         <Table className="mt-3">
           <TableHead>
             <TableRow>
@@ -288,7 +295,10 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
       </Tile>
 
       <Tile className="p-4">
-        <h3 className="text-sm text-typography-900 font-secondary">{en.ragQuality.gapsTitle}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm text-typography-900 font-secondary">{en.ragQuality.gapsTitle}</h3>
+          <ChartIdBadge id="AAQ-124" />
+        </div>
         <p className="mt-1 text-xs text-typography-500">{en.ragQuality.gapsHelp}</p>
         {d.gaps.length === 0 ? (
           <p className="mt-3 text-xs text-typography-500" data-testid="rag-no-gaps">

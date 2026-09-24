@@ -785,16 +785,37 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     // array is valid. We require `name` specifically (not just "any field
     // touched") because that's what the backend validates as mandatory;
     // filtering on OR would allow guidelines-only states that still 400.
-    if (Array.isArray((simulationData as any).states)) {
-      const filledStates = ((simulationData as any).states as any[]).filter(
-        s => typeof s?.name === "string" && s.name.trim().length > 0,
-      );
+    const unfilteredStates = (simulationData as any).states as any[] | undefined;
+    let filledStates: any[] | undefined;
+    const removedStateIds: string[] = [];
+
+    if (Array.isArray(unfilteredStates)) {
+      filledStates = unfilteredStates.filter(s => {
+        const isFilled = typeof s?.name === "string" && s.name.trim().length > 0;
+        if (!isFilled) {
+          removedStateIds.push(s.id);
+        }
+        return isFilled;
+      });
       // When all state cards are blank the user hasn't configured any states.
       // Send null (not []) so the backend treats this as "not configured" and
       // skips validation against the prompt variant's {state_x_guidelines}.
       // Send undefined (not null) when empty so ally-be's merge logic excludes
       // the field and preserves any states already stored in metadata.
       (simulationData as any).states = filledStates.length > 0 ? filledStates : undefined;
+    }
+
+    // A knowledge-source lock pointing at a state that was just filtered out
+    // (e.g. for being unnamed) must be cleared or reassigned, otherwise the
+    // roleplay may fail to save or the knowledge may be hidden all session.
+    if (Array.isArray((simulationData as any).knowledgeSources)) {
+      (simulationData as any).knowledgeSources = (
+        (simulationData as any).knowledgeSources as any[]
+      ).map(ks =>
+        ks.unlocksFromStateId && removedStateIds.includes(ks.unlocksFromStateId)
+          ? { ...ks, unlocksFromStateId: null }
+          : ks,
+      );
     }
 
     // The partner-org tag only means something for Partner Sim entries; when

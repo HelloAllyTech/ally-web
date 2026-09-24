@@ -8,6 +8,7 @@ import { TrashRed } from "@assets";
 import { en, ENHANCE_TYPE } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
+import { DropdownField } from "../dropdown-field";
 import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { cascadeBoundEdit, removeStateAndStitch } from "./cascadeBoundEdit";
@@ -26,6 +27,12 @@ export type { SimulationStateFormValue };
 
 /** RHF field holding the simulation's Knowledge Sources (the client's memories). */
 const KNOWLEDGE_SOURCES_FIELD = "knowledgeSources";
+
+const DIALOGUE_LENGTH_OPTIONS = [
+  { value: "short", label: "Short" },
+  { value: "medium", label: "Medium" },
+  { value: "long", label: "Long" },
+];
 
 interface StatesEditorProps {
   /** RHF id (e.g. "states"). */
@@ -365,6 +372,21 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 onChange={event => updateState(state.id, { guidelines: event.target.value })}
                 placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
                 rows={2}
+              />
+
+              <DropdownField
+                id={`state-dialogue-length-${state.id}`}
+                label="Dialogue Length"
+                value={state.dialogueLength ?? ""}
+                onChange={value =>
+                  updateState(state.id, {
+                    dialogueLength: (value ||
+                      undefined) as SimulationStateFormValue["dialogueLength"],
+                  })
+                }
+                options={DIALOGUE_LENGTH_OPTIONS}
+                allowDeselect
+                data-testid={`dialogue-length-dropdown`}
               />
 
               {/* Read-only: locks are set on each Knowledge Source ("Unlocks at"). */}

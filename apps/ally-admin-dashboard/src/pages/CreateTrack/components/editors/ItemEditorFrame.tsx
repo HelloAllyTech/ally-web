@@ -1,25 +1,28 @@
 import { FC, ReactNode, useState } from "react";
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
+import { TextArea, TextInput, Tooltip } from "@ally-ui-mono/ui-shared";
 import { useCreateComponentTemplateMutation } from "@api";
-import { Save, Trash } from "@assets";
-import { ActionConfirmationPopup } from "@components";
+import { Save, TooltipIcon, Trash } from "@assets";
+import { ActionConfirmationPopup, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
   isComponentLibrarySupportedType,
+  Permissions,
   SAVE_AS_TEMPLATE_LABEL,
   TRACK_ITEM_TYPE_LABELS,
 } from "@constants";
-import { useCanViewComponentLibrary } from "@hooks";
+import { useCanViewComponentLibrary, useUser } from "@hooks";
 import { TrackFormValues, TrackItemType } from "@types";
+import { hasPermissions } from "@utils";
 
 import { serializeItem } from "../../trackFormUtils";
 import { CompletionRuleFields } from "../CompletionRuleFields";
 import { useIsComponentLibraryEditor } from "./componentLibraryEditorContext";
+import { DiscussionModerationPanel } from "../discussion/DiscussionModerationPanel";
 
 interface ItemEditorFrameProps {
   sectionIndex: number;
@@ -63,6 +66,17 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
     useCreateComponentTemplateMutation();
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [templateName, setTemplateName] = useState("");
+
+  // Discussions are a per-course-item setting — a Component Library template
+  // is not a course item, so the switch is hidden in the template editor.
+  // Moderation needs a persisted item (the API is keyed by its server id)
+  // and the course-author permission the backend gates moderation on.
+  const { permissions } = useUser();
+  const canModerateDiscussion = hasPermissions(permissions, [Permissions.EDIT_ADMIN_TRACK]);
+  const serverId = useWatch({ control, name: `${base}.serverId` });
+  const hasDiscussion = useWatch({ control, name: `${base}.hasDiscussion` });
+  const itemTitle = useWatch({ control, name: `${base}.title` });
+  const [showModeration, setShowModeration] = useState(false);
 
   const closeTemplateDialog = () => {
     setShowTemplateDialog(false);
@@ -166,6 +180,53 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
         type={type}
         disabled={disabled}
       />
+
+      {!isTemplateEditor && (
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="inline-flex items-center gap-1">
+              <span className={labelClass}>Enable discussion</span>
+              <Tooltip
+                label="Learners who can open this item can post and reply beneath it. Visible only to learners in the same organisation."
+                align="bottom"
+              >
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
+            </span>
+            {serverId && hasDiscussion && canModerateDiscussion && (
+              <button
+                type="button"
+                onClick={() => setShowModeration(true)}
+                className="self-start mt-1 text-sm text-primary-600 hover:text-primary-700"
+              >
+                Moderate discussion
+              </button>
+            )}
+          </div>
+          <Controller
+            control={control}
+            name={`${base}.hasDiscussion`}
+            render={({ field }) => (
+              <ToggleSwitch
+                label="Enable discussion"
+                enabled={field.value ?? false}
+                onChange={field.onChange}
+                disabled={disabled}
+              />
+            )}
+          />
+        </div>
+      )}
+
+      {showModeration && serverId && (
+        <DiscussionModerationPanel
+          itemId={serverId}
+          itemTitle={itemTitle}
+          onClose={() => setShowModeration(false)}
+        />
+      )}
 
       {canSaveAsTemplate && (
         <ActionConfirmationPopup

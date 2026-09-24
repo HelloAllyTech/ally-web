@@ -88,6 +88,7 @@ export const OrgHealthCard = ({
       empty={!loading && rows.length === 0}
       emptyText="No organisations with any activity yet"
       height="auto"
+      chartId="AAQ-153"
     >
       <TableContainer>
         <Table size="sm">

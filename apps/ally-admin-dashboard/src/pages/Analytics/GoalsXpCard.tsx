@@ -2,22 +2,23 @@ import { useMemo, useState } from "react";
 
 import { GroupedBarChart } from "@carbon/charts-react";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetGoalsXpQuery } from "@api";
+import { TooltipIcon } from "@assets";
 
-import { GROUPING_LABEL } from "./analyticsGrouping";
+import { GROUPINGS, GROUPING_LABEL } from "./analyticsGrouping";
 import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
 import { ChartCard, GroupingPicker, ScrollableChart, buildSource, timeBarOpts } from "./chartKit";
 import {
-  XP_GOAL_GRAIN_OPTIONS,
   buildGoalsXpSeries,
   buildGoalsXpTable,
   goalsXpEmptyText,
   goalsXpNoGoalNote,
   goalsXpScale,
-  goalsXpTakeaway,
   goalsXpUpcomingNote,
-  toXpGoalGrain,
+  showsGoal,
+  toXpChartGrain,
 } from "./goalsXpChart";
 
 type ChartId = "xp";
@@ -29,7 +30,33 @@ const asOfStamp = (computedAt?: string): string | undefined => {
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
-const TITLE = "XP earned vs. goal";
+const TITLE = "Utilization Actual Versus Goal";
+
+/**
+ * The measurement detail that used to sit under the title as a caption — plus the
+ * per-period notes and the provenance line that used to sit on the card face —
+ * all folded behind the help tooltip beside the title, so the card itself stays
+ * minimal: just the plot. These two paragraphs are the static part (what the
+ * bars mean and how XP is earned); the notes and source line are appended per
+ * render because they depend on the data.
+ */
+const XP_HELP_STATIC = (
+  <>
+    <p>
+      Actual XP earned each period against the goal set for that period. Goals are seeded in the
+      database, not set here — a period with no goal shows no goal bar, and a future period with a
+      goal shows its target before any actual XP is in. Goals are set per month, quarter or year, so
+      grouped by day, week or all time the chart shows actual XP only. Platform-wide, all time.
+    </p>
+    <p className="mt-2">
+      XP rewards learner effort, not a session&rsquo;s score: 1 per practice minute, +10 for
+      completing a session, daily depth bonuses (10/20/40 at 15/30/60 minutes), 5&ndash;30 for
+      completing a track item by type, +15 for starting a debrief thread, +5 per substantive peer
+      comment, and +100 for practising 4+ days in a week. Per-source daily caps apply, up to 250 XP
+      a day.
+    </p>
+  </>
+);
 
 /**
  * Actual platform XP earned per period against a goal for that period, where
@@ -46,31 +73,24 @@ const TITLE = "XP earned vs. goal";
  * own control, not the page's range picker (there is no page-level range on
  * Goals at all).
  *
- * ## Grain, and why there's no "All-time"
+ * ## Grain, and when the Goal bar shows
  *
- * Uses the shared {@link GroupingPicker}/{@link useChartControls}, narrowed via
- * `options` to {@link XP_GOAL_GRAIN_OPTIONS} — the endpoint only understands
- * month/quarter/year, because a goal row is seeded at one of those three
- * grains and a day/week axis would have nothing under it.
- *
- * No "All-time" option either, deliberately: the endpoint returns no
- * whole-window total, only per-period points. Summing `actualXp` across the
- * currently-displayed points would work (a sum is associative), but the
- * "Goal" side would not be an honest whole-window target — it would be a fold
- * of whichever grain happened to be selected, silently changing value if a
- * reader switched from monthly to quarterly first. That is exactly the
- * "fold of bucketed data" the rest of this platform's All-time tiles are
- * built to avoid, so this card leaves it out rather than fake a number.
+ * Offers the full shared {@link GROUPINGS}, like every other Goals chart. Goals
+ * are seeded per month/quarter/year only, so the Goal bar appears at those
+ * three grains ({@link showsGoal}); at day, week and all-time the endpoint
+ * returns actual XP alone and the chart is just the Actual bar. All-time is a
+ * single bar from the backend, not a fold of whichever grain was selected, and
+ * carries no goal because there is no honest whole-window target.
  */
 export const GoalsXpCard = () => {
   const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.xp",
-    defaultControlsFor(["xp"], { xp: { grain: "month" } }),
+    defaultControlsFor(["xp"], { xp: { grain: "quarter" } }),
   );
   const grain = controlsFor("xp").grain;
-  const xpGrain = toXpGoalGrain(grain);
+  const withGoal = showsGoal(grain);
   const { data, isLoading, isError, refetch } = useGetGoalsXpQuery(
-    { grain: xpGrain },
+    { grain: toXpChartGrain(grain) },
     { skip: hydrating },
   );
   const [expanded, setExpanded] = useState(false);
@@ -78,9 +98,9 @@ export const GoalsXpCard = () => {
   const points = data?.points ?? [];
   const series = useMemo(() => buildGoalsXpSeries(data?.points ?? []), [data]);
   const table = useMemo(() => buildGoalsXpTable(data?.points ?? []), [data]);
-  const takeaway = goalsXpTakeaway(points);
-  const noGoalNote = goalsXpNoGoalNote(points);
-  const upcomingNote = goalsXpUpcomingNote(points);
+  // Without goals at this grain, "no goal set" notes would be noise, not a fact.
+  const noGoalNote = withGoal ? goalsXpNoGoalNote(points) : null;
+  const upcomingNote = withGoal ? goalsXpUpcomingNote(points) : null;
   const emptyText = goalsXpEmptyText(points);
 
   const opts = useMemo(
@@ -94,14 +114,6 @@ export const GoalsXpCard = () => {
     [grain],
   );
 
-  const caption =
-    "Actual XP earned per period, from the same xp_events ledger as the Highlights " +
-    "cumulative-XP chart, against a goal for that period where one has been recorded. " +
-    "Goals are set directly in the database, not through this console — a period with " +
-    "no target is shown with no Goal bar rather than a target of zero. Extends past " +
-    "today when a future period already has a goal set, shown as an upcoming target " +
-    "with no Actual bar. Platform-wide, all time.";
-
   const source = buildSource({
     derivation: "SUM(xp_events.xp) per period vs. analytics_xp_goals.targetXp",
     window: "All time",
@@ -111,14 +123,35 @@ export const GoalsXpCard = () => {
     asOf: asOfStamp(data?.computedAt),
   });
 
+  // Everything the card used to show around the plot — the how-it-works copy, the
+  // per-period notes, and the provenance line — folded into the one help tooltip so
+  // the card face stays minimal. The full provenance still shows on the card in the
+  // expanded detail view below.
+  const help = (
+    <div style={{ maxWidth: "22rem" }} className="text-xs leading-relaxed">
+      {XP_HELP_STATIC}
+      {noGoalNote && <p className="mt-2">{noGoalNote}</p>}
+      {upcomingNote && <p className="mt-2">{upcomingNote}</p>}
+      <p className="mt-2 text-typography-400">{source}</p>
+    </div>
+  );
+
   return (
     <>
       <ChartCard
         wide
         title={TITLE}
-        caption={caption}
-        takeaway={takeaway}
-        source={source}
+        titleHelp={
+          <Tooltip label={help} align="bottom">
+            <button
+              type="button"
+              className="cursor-pointer inline-flex items-center"
+              aria-label="How this chart and XP are calculated"
+            >
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        }
         loading={(isLoading || hydrating) && !data}
         error={isError}
         onRetry={refetch}
@@ -129,20 +162,16 @@ export const GoalsXpCard = () => {
             id="goals-xp-grain"
             value={grain}
             onChange={g => setGrain("xp", g)}
-            options={XP_GOAL_GRAIN_OPTIONS}
+            options={GROUPINGS}
           />
         }
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-001"
       >
-        <div className="flex flex-col gap-4">
-          <ScrollableChart data={series}>
-            <GroupedBarChart data={series} options={opts} />
-          </ScrollableChart>
-
-          {noGoalNote && <p className="text-xs text-typography-500">{noGoalNote}</p>}
-          {upcomingNote && <p className="text-xs text-typography-500">{upcomingNote}</p>}
-        </div>
+        <ScrollableChart data={series}>
+          <GroupedBarChart data={series} options={opts} />
+        </ScrollableChart>
       </ChartCard>
 
       {expanded && (

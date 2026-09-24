@@ -448,6 +448,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
             error={isError}
             onRetry={refetch}
             empty={!languageBars.length}
+            chartId="AAQ-113"
           >
             <SimpleBarChart
               data={languageBars}
@@ -559,6 +560,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
               loading={isFetching}
               error={isError}
               empty={!data?.werByVoice?.length}
+              chartId="AAQ-114"
             >
               <SimpleBarChart
                 data={(data?.werByVoice ?? []).map(v => ({
@@ -633,6 +635,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           error={isError}
           onRetry={refetch}
           empty={!hasAnyError}
+          chartId="AAQ-115"
         >
           <StackedBarChart
             data={dimensionBars}
@@ -676,6 +679,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           loading={isFetching}
           error={isError}
           empty={!trendLines.length}
+          chartId="AAQ-116"
         >
           <ScrollableChart data={trendLines}>
             <LineChart
@@ -721,6 +725,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           loading={isFetching}
           error={isError}
           empty={!experimentBars.length}
+          chartId="AAQ-117"
         >
           <SimpleBarChart
             data={experimentBars}
@@ -775,6 +780,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           loading={isFetching}
           error={isError}
           empty={!categoryBars.length}
+          chartId="AAQ-118"
         >
           <SimpleBarChart
             data={categoryBars}
@@ -791,6 +797,7 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           loading={isFetching}
           error={isError}
           empty={!basisBars.length}
+          chartId="AAQ-119"
         >
           <SimpleBarChart
             data={basisBars}

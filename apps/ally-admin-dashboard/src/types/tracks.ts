@@ -392,6 +392,8 @@ export interface TrackItemDetail {
   caseId?: string | null;
   content?: TrackItemContent | null;
   completionCriteria?: CompletionCriteria | null;
+  /** Learners who can open the item can post and reply beneath it. */
+  hasDiscussion?: boolean;
 }
 
 export interface TrackSectionDetail {
@@ -445,6 +447,8 @@ export interface TrackStructureItemInput {
   caseId?: string;
   content?: TrackItemContent;
   completionCriteria?: CompletionCriteria;
+  /** Omitted leaves the stored value untouched. */
+  hasDiscussion?: boolean;
 }
 
 export interface TrackStructureSectionInput {
@@ -507,6 +511,8 @@ export interface TrackItemFormValue {
   annotation?: AnnotationFormValue;
   game?: GameContent;
   completionCriteria: CompletionCriteria;
+  /** Per-item "Enable discussion" switch; defaults off. */
+  hasDiscussion?: boolean;
 }
 
 export interface TrackSectionFormValue {

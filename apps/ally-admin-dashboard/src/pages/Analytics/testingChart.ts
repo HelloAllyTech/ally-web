@@ -68,10 +68,13 @@ export const TESTING_GROUPS = {
   neverPractised: "Never yet",
   itemCompletion: "Completed of reached",
   tagCount: "Low-rated sessions",
+  avgRating: "Average rating",
 };
 
 export const SCORE_DOMAIN: [number, number] = [0, 100];
 export const PCT_DOMAIN: [number, number] = [0, 100];
+/** The 1–5 post-session rating scale, fixed so a 4.2 always sits in the same place. */
+export const RATING_DOMAIN: [number, number] = [1, 5];
 
 /* -------------------------------------------------------------------------- */
 /* Formatting                                                                 */
@@ -431,6 +434,47 @@ export const satisfactionTakeaway = (points: SatisfactionMixPoint[]): string | n
   const diff = Number((latest.top2BoxPct - first.top2BoxPct).toFixed(1));
   const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
   return `${head} — ${arrow} ${Math.abs(diff).toFixed(1)} pp vs the first period on the axis`;
+};
+
+/** A 1–5 mean rating to two decimals, or an em dash when nobody rated. */
+export const formatRating = (n: number | null | undefined): string =>
+  n === null || n === undefined ? "—" : n.toFixed(2);
+
+export const AVG_RATING_SCALE: ColorScale = { [TESTING_GROUPS.avgRating]: PALETTE.blue };
+
+/**
+ * The mean post-session rating per bucket, off the same buckets as the
+ * satisfaction mix. Buckets nobody rated are dropped rather than drawn at zero
+ * — there is no rating 0, and a mean over nobody is undefined. Each point
+ * carries its `responses` so the chart can print the n beside it.
+ */
+export const buildAverageRatingSeries = (
+  points: SatisfactionMixPoint[],
+): (Datum & { responses: number })[] =>
+  ratedBuckets(points)
+    .filter(p => p.avgRating !== null)
+    .map(p => ({
+      group: TESTING_GROUPS.avgRating,
+      key: p.bucket,
+      value: p.avgRating as number,
+      responses: p.responses,
+    }));
+
+/** The latest mean rating and its n, against the first rated bucket on the axis. */
+export const averageRatingTakeaway = (points: SatisfactionMixPoint[]): string | null => {
+  const plottable = ratedBuckets(points).filter(p => p.avgRating !== null);
+  if (plottable.length === 0) return null;
+  const latest = plottable[plottable.length - 1];
+  const n = latest.responses;
+  const head = `Averaged ${formatRating(latest.avgRating)} over ${n.toLocaleString()} rating${
+    n === 1 ? "" : "s"
+  } in the latest period`;
+  if (plottable.length < 2) return head;
+  const diff = Number(
+    ((latest.avgRating as number) - (plottable[0].avgRating as number)).toFixed(2),
+  );
+  const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
+  return `${head} — ${arrow} ${Math.abs(diff).toFixed(2)} vs the first period on the axis`;
 };
 
 /**

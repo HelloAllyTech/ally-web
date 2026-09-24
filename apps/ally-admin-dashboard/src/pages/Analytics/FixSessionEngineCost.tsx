@@ -110,6 +110,7 @@ export const FixSessionEngineCost = () => {
       empty={bars.length === 0}
       emptyText="No completed fix session has both an engine and a cost recorded yet for this window"
       height={CHART_HEIGHT}
+      chartId="AAQ-129"
     >
       {lowSampleEngines.length > 0 && (
         <p className="text-xs text-typography-600 mb-2">
