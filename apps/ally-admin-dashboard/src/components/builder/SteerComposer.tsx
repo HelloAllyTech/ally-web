@@ -15,10 +15,15 @@ const MAX_LENGTH = 2000;
 /**
  * Redirect a build instead of cancelling it.
  *
- * Cancel was the only lever over a running build, and it discards the working
- * tree — nothing is pushed before the final phase — along with every dollar
- * that produced it. So "this is going the wrong way" and "stop everything"
- * had one button between them, and the cost of choosing wrong was an hour.
+ * Cancel was the only lever over a running build, and it discarded the working
+ * tree along with every dollar that produced it. So "this is going the wrong
+ * way" and "stop everything" had one button between them, and the cost of
+ * choosing wrong was an hour.
+ *
+ * (Cancelling is less destructive than it was: the coder pushes after every
+ * attempt now, so the branch survives. It still throws away the rest of the
+ * pipeline — gate, reviewer, pull request — which is what this exists to
+ * avoid.)
  *
  * The delivery promise is stated on the control rather than implied by it.
  * Notes land at a phase boundary, because a coding agent is one long
@@ -61,13 +66,19 @@ export const SteerComposer: React.FC<{ sessionId: string; live: boolean }> = ({
         </span>
       </div>
 
+      {/* Bordered and short on purpose. The bare auto-expanding textarea read
+          as body copy with a Send button beneath it — people did not recognise
+          it as somewhere to type. Two lines is enough for the one sentence
+          this control is for; it grows to four if the note runs long. */}
       <AutoExpandableTextarea
         id="builder-steer-note"
         value={note}
         onChange={setNote}
         placeholder={strings.placeholder}
         disabled={isLoading}
-        maxLines={5}
+        maxLines={4}
+        // No `minLines` prop exists; the height floor is set in CSS instead.
+        className="min-h-[2.5rem] rounded border border-border-light bg-white px-2 py-1.5 focus:border-primary-500"
         onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
           // Enter sends, Shift+Enter breaks a line — the same contract as the
           // interview composer above it, so one text box on the page does not

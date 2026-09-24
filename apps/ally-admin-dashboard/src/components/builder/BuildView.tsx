@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { LogoGithub, PullRequest as PullRequestIcon } from "@icons";
 import { toast } from "sonner";
 
-import { ActionableNotification, Button, Tag, Tile } from "@ally-ui-mono/ui-shared";
+import { ActionableNotification, Button, Tag } from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBuilderQuestionMutation,
   useGetBuilderPendingQuestionsQuery,
@@ -361,6 +362,16 @@ export const BuildView: React.FC<BuildViewProps> = ({
    * Still hidden once a raise could not change anything: a completed or
    * cancelled session's ceiling is history.
    */
+  /** A pull request still wants a decision until it is merged or closed. */
+  const awaitingMerge = useMemo(
+    () => (pullRequests ?? []).filter(pr => !pr.merged && pr.state !== "closed"),
+    [pullRequests],
+  );
+  const settledPrs = useMemo(
+    () => (pullRequests ?? []).filter(pr => pr.merged || pr.state === "closed"),
+    [pullRequests],
+  );
+
   const budgetOver = Boolean(budget?.exceeded) && status !== "COMPLETED" && status !== "CANCELLED";
 
   // Only for a run you are actually looking at. Scrolling back to an earlier,
@@ -410,7 +421,27 @@ export const BuildView: React.FC<BuildViewProps> = ({
         />
       )}
 
-      <PhaseRail currentStage={currentStage} active={isLive} failed={status === "FAILED"} />
+      {/* The run's GitHub link rides the rail's row rather than owning a
+          full-width bar at the foot of the page. It is a way out to the raw
+          logs — useful, occasionally, to one person debugging — and it was
+          taking more vertical space than the pull requests. */}
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <PhaseRail currentStage={currentStage} active={isLive} failed={status === "FAILED"} />
+        </div>
+        {selectedRun?.githubRunUrl && (
+          <a
+            href={selectedRun.githubRunUrl}
+            target="_blank"
+            rel="noreferrer"
+            title={strings.watchOnGithub}
+            aria-label={strings.watchOnGithub}
+            className="mr-3 shrink-0 rounded p-1.5 text-typography-500 hover:bg-neutral-100 hover:text-typography-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
+          >
+            <LogoGithub size={16} />
+          </a>
+        )}
+      </div>
 
       <RunHistoryRail runs={runs ?? []} selectedRunId={selectedRunId} onSelect={handleSelectRun} />
 
@@ -456,52 +487,71 @@ export const BuildView: React.FC<BuildViewProps> = ({
         }
       />
 
-      {pullRequests && pullRequests.length > 0 && (
-        <CollapsibleSection
-          heading={strings.pullRequestsHeading}
-          meta={String(pullRequests.length)}
-        >
-          <div className="flex flex-col gap-2">
-            {pullRequests.map(pullRequest => (
-              <Tile key={pullRequest.id} className="flex items-center gap-2 text-sm">
-                <Tag type={pullRequest.merged ? "green" : "blue"} size="sm">
-                  {pullRequest.merged ? strings.prMerged : strings.prOpen}
+      {/* Pull requests, split by whether they still want something from you.
+          Stacks' "Unattended Execution: Risk-Based Action Gating" is the frame:
+          work an agent cannot finish alone becomes a pending item a person
+          resolves out of band — so the one awaiting a merge is a decision, not
+          a row in a list. "Dynamic visibility scaling tied to information
+          urgency" is the other half: give that one weight and quiet the rest.
+
+          Before this they were identical tiles in a collapsed section, so the
+          single thing a build exists to produce — a pull request somebody has
+          to look at — looked exactly like the three already merged above it. */}
+      {awaitingMerge.length > 0 && (
+        <section className="mx-3 mt-3 rounded border border-primary-200 bg-primary-50/50 p-3">
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-typography-900">
+            <PullRequestIcon size={16} />
+            {awaitingMerge.length === 1
+              ? strings.prAwaitingOne
+              : strings.prAwaitingMany(awaitingMerge.length)}
+          </h2>
+          <ul className="mt-2 flex flex-col gap-2">
+            {awaitingMerge.map(pullRequest => (
+              <li key={pullRequest.id} className="flex items-center gap-3">
+                <a
+                  href={pullRequest.prUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="min-w-0 flex-1 text-sm text-primary-700 hover:underline"
+                >
+                  <span className="block truncate font-medium">
+                    {pullRequest.title ?? `${pullRequest.repo} #${pullRequest.prNumber}`}
+                  </span>
+                  <span className="block truncate text-xs text-typography-600">
+                    {pullRequest.repo} #{pullRequest.prNumber}
+                  </span>
+                </a>
+                <Button size="sm" disabled={isMerging} onClick={() => handleMerge(pullRequest.id)}>
+                  {mergingId === pullRequest.id ? strings.prMerging : strings.prMerge}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Settled ones are a record, not a task: one quiet line each, collapsed. */}
+      {settledPrs.length > 0 && (
+        <CollapsibleSection heading={strings.pullRequestsHeading} meta={String(settledPrs.length)}>
+          <ul className="flex flex-col gap-1">
+            {settledPrs.map(pullRequest => (
+              <li key={pullRequest.id} className="flex items-center gap-2 text-xs">
+                <Tag type={pullRequest.merged ? "green" : "gray"} size="sm">
+                  {pullRequest.merged ? strings.prMerged : strings.prClosed}
                 </Tag>
                 <a
                   href={pullRequest.prUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 truncate text-primary-600 hover:underline"
+                  className="min-w-0 flex-1 truncate text-typography-600 hover:underline"
                 >
                   {pullRequest.repo} #{pullRequest.prNumber}
                   {pullRequest.title ? ` — ${pullRequest.title}` : ""}
                 </a>
-                {!pullRequest.merged && pullRequest.state !== "closed" && (
-                  <Button
-                    kind="ghost"
-                    size="sm"
-                    disabled={isMerging}
-                    onClick={() => handleMerge(pullRequest.id)}
-                  >
-                    {mergingId === pullRequest.id ? strings.prMerging : strings.prMerge}
-                  </Button>
-                )}
-              </Tile>
+              </li>
             ))}
-          </div>
+          </ul>
         </CollapsibleSection>
-      )}
-
-      {selectedRun?.githubRunUrl && (
-        <div className="border-t border-neutral-200 px-4 py-2">
-          <Button
-            kind="ghost"
-            size="sm"
-            onClick={() => window.open(selectedRun.githubRunUrl!, "_blank")}
-          >
-            {strings.watchOnGithub}
-          </Button>
-        </div>
       )}
 
       {budget && (

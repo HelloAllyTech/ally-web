@@ -3486,6 +3486,12 @@ export const en = {
       } as Record<string, string>,
       watchOnGithub: "Watch on GitHub",
       pullRequestsHeading: "Pull requests",
+      // Named for what it wants from you, not for what it is. A heading that
+      // says "Pull requests" describes a data type; one that says a review is
+      // waiting describes a job.
+      prAwaitingOne: "A pull request is waiting for you",
+      prAwaitingMany: (count: number) => `${count} pull requests are waiting for you`,
+      prClosed: "Closed",
       noPullRequests: "No pull requests opened yet.",
       prMerged: "Merged",
       prOpen: "Open",
