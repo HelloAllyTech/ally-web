@@ -22,6 +22,7 @@ export * from "./awsLogs";
 export * from "./mobileReleases";
 export * from "./appVersion";
 export * from "./tracks";
+export * from "./courseDiscussion";
 export * from "./organizationAccess";
 export * from "./superDuperAdmins";
 export * from "./aiLab";

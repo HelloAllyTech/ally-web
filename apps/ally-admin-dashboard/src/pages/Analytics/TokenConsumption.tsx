@@ -161,6 +161,7 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
         emptyText="No AI usage recorded for this window"
         onExpand={() => setExpanded(true)}
         wide
+        chartId="AAQ-125"
       >
         {/* "By model" is an open-ended axis — one category per model the platform
             has ever called, with long free-text names. */}

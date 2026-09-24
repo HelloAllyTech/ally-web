@@ -976,7 +976,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           all-time window: see the file header. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
         {kpis.map(kpi => (
-          <KpiTile key={kpi.label} {...kpi} />
+          <KpiTile key={kpi.label} {...kpi} chartId="AAQ-012" />
         ))}
       </div>
 
@@ -996,6 +996,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={busy(activation)}
           error={activation.isError}
           onRetry={activation.refetch}
+          chartId="AAQ-013"
         />
         <KpiTile
           label="Activation rate"
@@ -1006,6 +1007,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={busy(activation)}
           error={activation.isError}
           onRetry={activation.refetch}
+          chartId="AAQ-014"
         />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -1028,6 +1030,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           empty={!busy(activation) && wplSeries.length === 0}
           controls={picker("wpl", WPL_GRAINS)}
           onExpand={() => setExpanded("wpl")}
+          chartId="AAQ-015"
         >
           <ScrollableChart data={wplSeries}>
             <LineChart data={wplSeries} options={wplOpts} />
@@ -1066,6 +1069,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("completion", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("completion")}
           kpi={completionIsAllTime ? completionKpi : undefined}
+          chartId="AAQ-016"
         >
           <ScrollableChart data={completionSeries}>
             <LineChart data={completionSeries} options={completionOpts} />
@@ -1081,6 +1085,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={overview.refetch}
           errorTitle="Couldn't load platform metrics"
           errorSubtitle="There was a problem fetching growth and activity."
+          chartId="AAQ-017"
         >
           <div />
         </ChartCard>
@@ -1104,6 +1109,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             empty={!busy(newUsersQ) && newUsers.length === 0}
             controls={picker("newUsers")}
             onExpand={() => setExpanded("newUsers")}
+            chartId="AAQ-018"
           >
             <ScrollableChart data={newUsers}>
               <SimpleBarChart data={newUsers} options={newUsersOpts} />
@@ -1129,6 +1135,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             controls={picker("cumulative", ALL_TIME_GRAINS)}
             onExpand={() => setExpanded("cumulative")}
             kpi={cumulativeIsAllTime ? cumulativeKpi : undefined}
+            chartId="AAQ-019"
           >
             <ScrollableChart data={cumulativeUsers}>
               <LineChart data={cumulativeUsers} options={cumulativeOpts} />
@@ -1153,6 +1160,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             empty={!busy(retentionQ) && retention.length === 0}
             controls={picker("retention")}
             onExpand={() => setExpanded("retention")}
+            chartId="AAQ-020"
           >
             <ScrollableChart data={retention}>
               <StackedBarChart data={retention} options={retentionOpts} />
@@ -1172,6 +1180,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             })}
             loading={overviewLoading}
             empty={!overviewLoading && roles.bars.length === 0}
+            chartId="AAQ-021"
           >
             <SimpleBarChart data={roles.bars} options={rolesOpts} />
           </ChartCard>
@@ -1204,6 +1213,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             loading={learnerKpis.isLoading && !lk}
             error={learnerKpis.isError}
             onRetry={learnerKpis.refetch}
+            chartId="AAQ-022"
           />
           <KpiTile
             label="Active learners"
@@ -1212,6 +1222,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             loading={learnerKpis.isLoading && !lk}
             error={learnerKpis.isError}
             onRetry={learnerKpis.refetch}
+            chartId="AAQ-023"
           />
           <KpiTile
             label="Completed sessions"
@@ -1220,6 +1231,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             loading={learnerKpis.isLoading && !lk}
             error={learnerKpis.isError}
             onRetry={learnerKpis.refetch}
+            chartId="AAQ-024"
           />
         </div>
 
@@ -1237,6 +1249,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           error={learnerKpis.isError}
           onRetry={learnerKpis.refetch}
           empty={!learnerKpis.isLoading && learnerSignupSeries.length === 0}
+          chartId="AAQ-025"
         >
           <ScrollableChart data={learnerSignupSeries}>
             <LineChart data={learnerSignupSeries} options={learnerSignupOpts} />
@@ -1275,6 +1288,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("playTime", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("playTime")}
           kpi={playTimeIsAllTime ? playTimeKpi : undefined}
+          chartId="AAQ-026"
         >
           <ScrollableChart data={playTime}>
             <LineChart data={playTime} options={playTimeOpts} />
@@ -1300,6 +1314,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("sims", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("sims")}
           kpi={simsIsAllTime ? simsKpi : undefined}
+          chartId="AAQ-027"
         >
           <ScrollableChart data={sims}>
             <SimpleBarChart data={sims} options={simsOpts} />
@@ -1353,6 +1368,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("xp", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("xp")}
           kpi={xpIsAllTime ? xpKpi : undefined}
+          chartId="AAQ-028"
         >
           <ScrollableChart data={cumulativeXp}>
             <LineChart data={cumulativeXp} options={xpOpts} />
@@ -1395,6 +1411,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
             })}
             loading={overviewLoading}
             empty={!overviewLoading && m.series.length === 0}
+            chartId="AAQ-029"
           >
             <ScrollableChart data={m.series}>
               <LineChart
@@ -1443,6 +1460,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("csat", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("csat")}
           kpi={csatIsAllTime ? csatKpi : undefined}
+          chartId="AAQ-030"
         >
           <ScrollableChart data={csat}>
             <LineChart data={csat} options={csatOpts} />
@@ -1463,6 +1481,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         loading={highlightsLoading}
         empty={!highlightsLoading && !funnelStages.some(st => st.reached > 0)}
         wide
+        chartId="AAQ-031"
       >
         <div className="flex flex-col gap-4">
           <FunnelBars stages={funnelStages} unit="enrollments" />
@@ -1497,6 +1516,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         onRetry={highlights.refetch}
         empty={!highlightsLoading && topOrgs.length === 0}
         wide
+        chartId="AAQ-032"
       >
         <SimpleBarChart data={topOrgs} options={orgsOpts} />
       </ChartCard>
@@ -1533,6 +1553,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("costPerSim", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("costPerSim")}
           kpi={costPerSimIsAllTime ? costPerSimKpi : undefined}
+          chartId="AAQ-033"
         >
           <ScrollableChart data={costPerSim}>
             <LineChart data={costPerSim} options={costPerSimOpts} />
@@ -1562,6 +1583,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("totalCost", ALL_TIME_GRAINS)}
           onExpand={() => setExpanded("totalCost")}
           kpi={totalCostIsAllTime ? totalCostKpi : undefined}
+          chartId="AAQ-034"
         >
           <ScrollableChart data={totalCost}>
             <SimpleBarChart data={totalCost} options={totalCostOpts} />

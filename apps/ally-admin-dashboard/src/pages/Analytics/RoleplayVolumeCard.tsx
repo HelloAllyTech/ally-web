@@ -105,6 +105,7 @@ export const RoleplayVolumeCard = ({ tenantId }: { tenantId?: string }) => {
         emptyText="No learner accounts in scope yet."
         onExpand={() => setExpanded(true)}
         height="340px"
+        chartId="AAQ-155"
       >
         <div className="flex flex-col gap-4">
           <SimpleBarChart data={series} options={opts} />

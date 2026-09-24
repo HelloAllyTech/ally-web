@@ -103,6 +103,7 @@ export const LatencySessionsPanel = ({
     <ChartCard
       title="Session-wise latency by simulation"
       caption="Latest-first per-session breakdown for a chosen simulation, plus its overall average — narrows further with the Language filter above."
+      chartId="AAQ-104"
     >
       <div className="flex flex-col gap-4">
         <div className="w-72">

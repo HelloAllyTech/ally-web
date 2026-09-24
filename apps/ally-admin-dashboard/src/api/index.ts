@@ -26,6 +26,7 @@ export * from "./mobileReleases";
 export * from "./appVersion";
 export * from "./tracks";
 export * from "./componentTemplates";
+export * from "./courseDiscussion";
 export * from "./blog";
 export * from "./aiLab";
 export * from "./builder";

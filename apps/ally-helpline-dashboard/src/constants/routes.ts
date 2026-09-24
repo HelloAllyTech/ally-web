@@ -76,6 +76,14 @@ export const ROUTES = {
 export const buildTrackRoute = (trackId: string) => `/track/${trackId}`;
 export const buildTrackItemRoute = (trackId: string, itemId: string) =>
   `/track/${trackId}/item/${itemId}`;
+/** Query param pointing the track player at a discussion post to highlight. */
+export const TRACK_DISCUSSION_POST_QUERY_PARAM = "post";
+export const buildTrackItemDiscussionPostRoute = (
+  trackId: string,
+  itemId: string,
+  postId: string,
+) =>
+  `${buildTrackItemRoute(trackId, itemId)}?${TRACK_DISCUSSION_POST_QUERY_PARAM}=${encodeURIComponent(postId)}`;
 export const buildTrackProgressRoute = (trackId: string) => `/track/${trackId}/progress`;
 
 export const excludeNavBar = [

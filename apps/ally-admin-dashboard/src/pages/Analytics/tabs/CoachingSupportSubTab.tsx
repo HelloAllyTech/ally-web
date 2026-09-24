@@ -294,6 +294,7 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("coaching")}
           onExpand={() => setExpanded("coaching")}
           kpi={coachingIsAllTime ? sharedSessionsKpi : undefined}
+          chartId="AAQ-063"
         >
           <ScrollableChart data={sharedSeries}>
             <SimpleBarChart data={sharedSeries} options={sharedOpts} />
@@ -331,6 +332,7 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
           }
           emptyText="No review has enough comments to state a turnaround"
           kpi={coachingIsAllTime ? turnaroundKpi : undefined}
+          chartId="AAQ-064"
         >
           <ScrollableChart data={turnaroundSeries}>
             <LineChart data={turnaroundSeries} options={turnaroundOpts} />
@@ -362,6 +364,7 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
           controls={picker("scribeAdoption")}
           onExpand={() => setExpanded("scribe")}
           kpi={scribeIsAllTime ? scribeOrgsKpi : undefined}
+          chartId="AAQ-065"
         >
           <ScrollableChart data={scribeOrgsSeries}>
             <SimpleBarChart data={scribeOrgsSeries} options={scribeOrgsOpts} />
@@ -384,6 +387,7 @@ export const CoachingSupportSubTab = ({ query }: AnalyticsTabFilters) => {
           onRetry={scribe.refetch}
           empty={scribeIsAllTime ? false : !isBusy(scribe) && scribeSessionsSeries.length === 0}
           kpi={scribeIsAllTime ? scribeSessionsKpi : undefined}
+          chartId="AAQ-066"
         >
           <ScrollableChart data={scribeSessionsSeries}>
             <LineChart data={scribeSessionsSeries} options={scribeSessionsOpts} />

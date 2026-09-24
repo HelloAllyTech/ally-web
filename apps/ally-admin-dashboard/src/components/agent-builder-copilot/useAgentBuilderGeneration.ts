@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 import {
+  AgentBuilderEstablishedContext,
   AgentBuilderField,
   AgentBuilderSpokenLanguage,
   useGenerateAgentBuilderFieldMutation,
@@ -15,7 +16,7 @@ import { useIsPlaceholderUsed, useResolvedPrimaryLanguageId } from "@hooks";
 // module load. Pulling that in here drags the whole Redux store into anything
 // that renders this hook (its own test included, where the store initializes
 // against a mocked `@api` and deadlocks).
-import { applyAgentBuilderField } from "@utils/agentBuilderApply";
+import { applyAgentBuilderField, readEstablishedContext } from "@utils/agentBuilderApply";
 import {
   describeVoicePicks,
   pickVoicesForLanguages,
@@ -23,12 +24,20 @@ import {
 } from "@utils/agentBuilderVoicePick";
 
 /**
- * Drives Agent Builder Copilot's parallel field generation.
+ * Drives Agent Builder Copilot's chained field generation.
  *
- * On `start`, it fires one LLM call PER target Basic Settings field concurrently
- * (via the abortable RTK mutation trigger). As each returns it parses + writes
- * that field into the shared form immediately, so results paint into the
- * mirrored Basic Settings on the left as they arrive — no waiting for the batch.
+ * On `start`, it runs in TWO STAGES so the fields describe one coherent
+ * scenario rather than each inventing its own client. Stage one — the
+ * challenge description and persona — is generated from the brief alone. Once
+ * both have settled, stage two fires every other field in parallel with that
+ * pair attached as `establishedContext`: the backstory is the history of the
+ * person the persona named, the states and role instruction play out the
+ * challenge the description set, the title names that scenario. Within a
+ * stage, one LLM call per field runs concurrently (via the abortable RTK
+ * mutation trigger), and each result is written into the shared form as soon
+ * as it returns, so Basic Settings still fills in live. Stage-two rows show as
+ * "waiting" until the foundation lands, so the pause reads as a dependency
+ * rather than a stall.
  * `abort` cancels every in-flight request natively (`.abort()`), stops applying
  * results, and marks the remaining tasks aborted.
  *
@@ -53,7 +62,8 @@ import {
  * after the batch settles.
  */
 
-export type GenerationTaskStatus = "active" | "done" | "empty" | "error" | "aborted";
+/** `waiting` = a stage-two row queued behind the foundation fields. */
+export type GenerationTaskStatus = "waiting" | "active" | "done" | "empty" | "error" | "aborted";
 
 export interface GenerationTask {
   /**
@@ -85,10 +95,10 @@ export interface GenerationInputs {
  * appended once the languages are known.
  */
 const BASE_FIELD_PLAN: { field: AgentBuilderField; label: string }[] = [
-  { field: "role_instruction", label: "Role instruction" },
-  { field: "title", label: "Title" },
   { field: "challenge_description", label: "Challenge description" },
   { field: "persona", label: "Persona (name, age, gender, profession, location)" },
+  { field: "title", label: "Title" },
+  { field: "role_instruction", label: "Role instruction" },
   { field: "backstory", label: "Character backstory" },
   { field: "knowledge_sources", label: "Knowledge sources" },
   { field: "reminders", label: "Reminders" },
@@ -136,6 +146,24 @@ const STATES_FIELD: { field: AgentBuilderField; label: string } = {
   field: "states",
   label: "States",
 };
+
+/**
+ * Stage one of the chain. Mirrors the server's FOUNDATION_AGENT_BUILDER_FIELDS.
+ * Kept to the two short fields everything else most needs to agree with: stage
+ * two waits for the slower of them, so each addition here is latency on the
+ * whole batch.
+ */
+const FOUNDATION_FIELDS: ReadonlySet<AgentBuilderField> = new Set<AgentBuilderField>([
+  "challenge_description",
+  "persona",
+]);
+
+/**
+ * Runs alongside stage one because it reads the brief alone — but the
+ * per-language rows it creates are stage-two fields and wait like the rest.
+ */
+const isStageOne = (field: AgentBuilderField): boolean =>
+  FOUNDATION_FIELDS.has(field) || field === "spoken_languages";
 
 const DEFAULT_KNOWLEDGE_SOURCES = 3;
 
@@ -217,7 +245,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         fieldPlan.map(t => ({
           ...t,
           key: t.field,
-          status: "active" as GenerationTaskStatus,
+          status: (isStageOne(t.field) ? "active" : "waiting") as GenerationTaskStatus,
         })),
       );
       setPhase("running");
@@ -226,6 +254,11 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
       // Per-field promises, so the voice pick can wait on `persona` alone
       // rather than on the whole batch — it needs the gender, nothing else.
       const runsByField = new Map<AgentBuilderField, Promise<void>>();
+      // Assigned once the stage-one runs exist (below); resolves to what they
+      // settled, read back from the form. Never rejects — runTask swallows —
+      // so a failed foundation field just means less context, not no stage two.
+      let foundation: Promise<AgentBuilderEstablishedContext | undefined> =
+        Promise.resolve(undefined);
 
       /**
        * Fire one field (optionally for one language), keeping the abort handle
@@ -238,6 +271,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         key: string;
         field: AgentBuilderField;
         languageId?: string;
+        establishedContext?: AgentBuilderEstablishedContext;
       }): Promise<void> => {
         const handle = trigger({
           field: task.field,
@@ -245,6 +279,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
           competency: inputs.competency,
           agentTestCases: inputs.agentTestCases,
           ...(task.languageId ? { languageId: task.languageId } : {}),
+          ...(task.establishedContext ? { establishedContext: task.establishedContext } : {}),
           ...(task.field === "knowledge_sources"
             ? { numKnowledgeSources: DEFAULT_KNOWLEDGE_SOURCES }
             : {}),
@@ -279,6 +314,22 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
       };
 
       /**
+       * Fire a stage-two row once the foundation has settled, with what it
+       * established attached. A Stop pressed while the row was waiting leaves
+       * it unfired (abort() has already marked it cancelled).
+       */
+      const runAfterFoundation = async (task: {
+        key: string;
+        field: AgentBuilderField;
+        languageId?: string;
+      }): Promise<void> => {
+        const establishedContext = await foundation;
+        if (abortedRef.current) return;
+        patchTask(task.key, { status: "active" });
+        return runTask({ ...task, establishedContext });
+      };
+
+      /**
        * Append a row per (language-scoped field × language) and fire them all.
        * The language row itself resolves to the names so the trainer can see
        * what was inferred from the brief — and spot a wrong guess before
@@ -303,12 +354,13 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         );
         setTasks(prev => [
           ...prev,
-          ...languageTasks.map(t => ({ ...t, status: "active" as GenerationTaskStatus })),
-          { ...LANGUAGE_VOICES_TASK, status: "active" as GenerationTaskStatus },
+          ...languageTasks.map(t => ({ ...t, status: "waiting" as GenerationTaskStatus })),
+          { ...LANGUAGE_VOICES_TASK, status: "waiting" as GenerationTaskStatus },
         ]);
-        return Promise.allSettled([...languageTasks.map(runTask), assignVoices(languages)]).then(
-          () => undefined,
-        );
+        return Promise.allSettled([
+          ...languageTasks.map(runAfterFoundation),
+          assignVoices(languages),
+        ]).then(() => undefined);
       };
 
       /**
@@ -318,13 +370,15 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
        * ones still empty, and never overwrites a deliberate choice.
        */
       const assignVoices = async (languages: AgentBuilderSpokenLanguage[]): Promise<void> => {
-        // Never rejects (runTask swallows), so this resolves either way; a
-        // failed persona just means casting with no gender to match.
-        await (runsByField.get("persona") ?? Promise.resolve());
+        // The persona is a foundation field, so waiting on the foundation
+        // covers it. Never rejects, so this resolves either way; a failed
+        // persona just means casting with no gender to match.
+        const establishedContext = await foundation;
         if (abortedRef.current) {
           patchTask(LANGUAGE_VOICES_TASK.key, { status: "aborted" });
           return;
         }
+        patchTask(LANGUAGE_VOICES_TASK.key, { status: "active" });
 
         const personaGender = formMethods.getValues("gender") as string | undefined;
         const personaAge = formMethods.getValues("age") as number | undefined;
@@ -348,6 +402,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
             languageIds: unmapped.map(language => String(language.languageId)),
             ...(personaGender ? { personaGender } : {}),
             ...(typeof personaAge === "number" ? { personaAge } : {}),
+            ...(establishedContext ? { establishedContext } : {}),
           });
           handles.push(handle);
           const res = await handle.unwrap();
@@ -400,11 +455,17 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         });
       };
 
-      const runs = fieldPlan.map(({ field }) => {
-        const run = runTask({ key: field, field });
-        runsByField.set(field, run);
-        return run;
-      });
+      // Stage one fires now; its settle becomes the context stage two reads.
+      for (const { field } of fieldPlan.filter(t => isStageOne(t.field))) {
+        runsByField.set(field, runTask({ key: field, field }));
+      }
+      foundation = Promise.allSettled(
+        [...FOUNDATION_FIELDS].map(field => runsByField.get(field) ?? Promise.resolve()),
+      ).then(() => readEstablishedContext(formMethods));
+      for (const { field } of fieldPlan.filter(t => !isStageOne(t.field))) {
+        runsByField.set(field, runAfterFoundation({ key: field, field }));
+      }
+      const runs = [...runsByField.values()];
       // Same array the per-language calls push into later, so Stop cancels
       // them too even though they don't exist yet at this point.
       handlesRef.current = handles;
@@ -435,7 +496,11 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         /* already settled */
       }
     });
-    setTasks(prev => prev.map(t => (t.status === "active" ? { ...t, status: "aborted" } : t)));
+    setTasks(prev =>
+      prev.map(t =>
+        t.status === "active" || t.status === "waiting" ? { ...t, status: "aborted" } : t,
+      ),
+    );
     setPhase("aborted");
   }, []);
 
@@ -462,7 +527,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
     [],
   );
 
-  const doneCount = tasks.filter(t => t.status !== "active").length;
+  const doneCount = tasks.filter(t => t.status !== "active" && t.status !== "waiting").length;
   const appliedCount = tasks.filter(t => t.status === "done").length;
 
   return { phase, tasks, start, abort, reset, doneCount, appliedCount };
