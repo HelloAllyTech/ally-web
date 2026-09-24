@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { LineChart } from "@carbon/charts-react";
+import { SimpleBarChart } from "@carbon/charts-react";
 
 import { useGetAnalyticsHighlightsQuery } from "@api";
 
@@ -16,7 +16,7 @@ import {
 } from "./analyticsGrouping";
 import { defaultControlsFor, useChartControls } from "./chartControls";
 import { ChartDetailModal } from "./ChartDetailModal";
-import { ChartCard, GroupingPicker, ScrollableChart, buildSource, lineOpts } from "./chartKit";
+import { ChartCard, GroupingPicker, ScrollableChart, buildSource, timeBarOpts } from "./chartKit";
 import {
   PRACTICE_SCALE,
   buildPracticeMinutesSeries,
@@ -26,7 +26,7 @@ import {
 
 type ChartId = "minutes";
 
-const TITLE = "Roleplay minutes";
+const TITLE = "Roleplay Minutes";
 
 /**
  * Total minutes learners spent practising, per period — relocated here from
@@ -71,7 +71,7 @@ export const RoleplayMinutesCard = () => {
 
   const opts = useMemo(
     () =>
-      lineOpts({
+      timeBarOpts({
         leftTitle: "Minutes",
         bottomTitle: bucketTitle(grain),
         colorScale: PRACTICE_SCALE,
@@ -104,6 +104,7 @@ export const RoleplayMinutesCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
         source={source}
         loading={loading}
         error={isError}
@@ -136,7 +137,7 @@ export const RoleplayMinutesCard = () => {
         chartId="AAQ-002"
       >
         <ScrollableChart data={series}>
-          <LineChart data={series} options={opts} />
+          <SimpleBarChart data={series} options={opts} />
         </ScrollableChart>
       </ChartCard>
 
@@ -153,7 +154,7 @@ export const RoleplayMinutesCard = () => {
           exportContext={["Window: all time · platform-wide", groupingNote(grain)]}
           render={({ height }) => (
             <ScrollableChart data={series}>
-              <LineChart data={series} options={{ ...opts, height }} />
+              <SimpleBarChart data={series} options={{ ...opts, height }} />
             </ScrollableChart>
           )}
         />

@@ -46,6 +46,7 @@ import {
 import {
   CACHE_HIT_RATE_SCALE,
   FIRST_AUDIO_SCALE,
+  LATENCY_GROUPS,
   LATENCY_STAT_SCALE,
   START_SEGMENT_SCALE,
   START_TOTAL_SCALE,
@@ -348,9 +349,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         leftTitle: "Seconds",
         bottomTitle: axisTitle,
         colorScale: {
-          "p50 (median)": CONTEXT.faint,
-          Average: CONTEXT.line,
-          "p95 (slow tail)": CONTEXT.strong,
+          [LATENCY_GROUPS.p50]: CONTEXT.faint,
+          [LATENCY_GROUPS.avg]: CONTEXT.line,
+          [LATENCY_GROUPS.p95]: CONTEXT.strong,
         },
       }),
     [axisTitle],

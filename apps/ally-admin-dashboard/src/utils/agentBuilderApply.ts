@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
 import type {
+  AgentBuilderEstablishedContext,
   AgentBuilderField,
   AgentBuilderKnowledgeSource,
   AgentBuilderPersona,
@@ -247,4 +248,51 @@ export const applyAgentBuilderField = (
     default:
       return null;
   }
+};
+
+/**
+ * Server-side caps on EstablishedContextDto. Exceeding one would 400 the whole
+ * call, so clip here: a clipped description still anchors the later fields.
+ */
+const ESTABLISHED_CONTEXT_LIMITS = {
+  challengeDescription: 8000,
+  text: 200,
+  gender: 50,
+} as const;
+
+/**
+ * Read what the chain's first stage settled — the challenge description and
+ * persona — from the FORM, not from the raw responses. The form is what the
+ * trainer sees, so a failed foundation call, or a value they typed or edited
+ * while it ran, is exactly what the later fields should build on. Returns
+ * undefined when there is nothing to send.
+ */
+export const readEstablishedContext = (
+  formMethods: UseFormReturn<any>,
+): AgentBuilderEstablishedContext | undefined => {
+  const text = (key: string, max: number): string | undefined => {
+    const v = formMethods.getValues(key);
+    return isNonEmptyString(v) ? truncate(v.trim(), max) : undefined;
+  };
+  const rawAge = Number(formMethods.getValues("age"));
+  const persona: Partial<AgentBuilderPersona> = {
+    name: text("name", ESTABLISHED_CONTEXT_LIMITS.text),
+    age: Number.isInteger(rawAge) && rawAge >= 1 && rawAge <= 120 ? rawAge : undefined,
+    gender: text("gender", ESTABLISHED_CONTEXT_LIMITS.gender),
+    profession: text("profession", ESTABLISHED_CONTEXT_LIMITS.text),
+    currentLocation: text("currentLocation", ESTABLISHED_CONTEXT_LIMITS.text),
+  };
+  const presentPersona = Object.fromEntries(
+    Object.entries(persona).filter(([, v]) => v !== undefined),
+  ) as Partial<AgentBuilderPersona>;
+  const challengeDescription = text(
+    FORM_FIELD_IDS.DESCRIPTION,
+    ESTABLISHED_CONTEXT_LIMITS.challengeDescription,
+  );
+  const hasPersona = Object.keys(presentPersona).length > 0;
+  if (!challengeDescription && !hasPersona) return undefined;
+  return {
+    ...(challengeDescription ? { challengeDescription } : {}),
+    ...(hasPersona ? { persona: presentPersona } : {}),
+  };
 };

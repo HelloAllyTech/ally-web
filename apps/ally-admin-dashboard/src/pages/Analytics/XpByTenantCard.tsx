@@ -23,7 +23,7 @@ const asOfStamp = (computedAt?: string): string | undefined => {
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
-const TITLE = "XP by tenant";
+const TITLE = "XP by Tenant";
 
 /**
  * Total platform XP earned within a trailing window, split by tenant — ONE
@@ -76,6 +76,7 @@ export const XpByTenantCard = () => {
       <ChartCard
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}

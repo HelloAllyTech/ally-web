@@ -788,6 +788,10 @@ export const serializeItem = (item: TrackItemFormValue, order: number): TrackStr
   const criteria = compactCriteria(item.completionCriteria);
   if (criteria) payload.completionCriteria = criteria;
 
+  // Always explicit so switching it off is persisted (omitting it would leave
+  // the stored value untouched server-side).
+  payload.hasDiscussion = item.hasDiscussion ?? false;
+
   return payload;
 };
 
@@ -837,6 +841,7 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
               ...DEFAULT_COMPLETION_CRITERIA[item.type],
               ...(item.completionCriteria ?? {}),
             },
+            hasDiscussion: item.hasDiscussion ?? false,
           };
           switch (item.type) {
             case TrackItemType.ROLEPLAY:

@@ -101,6 +101,8 @@ export interface TrackDetailItem {
   score: number | null;
   attemptCount: number | null;
   maxWatchedPct: number | null;
+  /** The author enabled a discussion thread beneath this item. */
+  hasDiscussion?: boolean;
 }
 
 export interface TrackSection {

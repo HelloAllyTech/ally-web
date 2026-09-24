@@ -30,7 +30,7 @@ const {
   mockUseGetScenariosQuery: vi.fn(),
   mockUseGetScenarioPathwaysQuery: vi.fn(),
   mockUseGetScenarioCasesQuery: vi.fn(),
-  mockUseGetLearnTracksQuery: vi.fn(() => ({
+  mockUseGetLearnTracksQuery: vi.fn((args: any) => ({
     data: { data: [] },
     isLoading: false,
     refetch: vi.fn(),
@@ -42,7 +42,7 @@ vi.mock("@api", () => ({
   useGetScenariosQuery: (args: any) => mockUseGetScenariosQuery(args),
   useGetScenarioPathwaysQuery: (args: any) => mockUseGetScenarioPathwaysQuery(args),
   useGetScenarioCasesQuery: (args: any) => mockUseGetScenarioCasesQuery(args),
-  useGetLearnTracksQuery: () => mockUseGetLearnTracksQuery(),
+  useGetLearnTracksQuery: (args: any) => mockUseGetLearnTracksQuery(args),
 }));
 
 import { Learn } from "../Learn";
@@ -1054,6 +1054,11 @@ describe("Learn Component", () => {
       }),
     );
     expect(mockUseGetScenarioCasesQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
+    expect(mockUseGetLearnTracksQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         languageCode: expect.any(String), // i18n.language
       }),

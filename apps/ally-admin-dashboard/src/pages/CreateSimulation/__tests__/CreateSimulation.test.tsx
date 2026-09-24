@@ -1041,4 +1041,36 @@ describe("CreateSimulation", () => {
       );
     });
   });
+
+  describe("Knowledge Source Unlocks", () => {
+    it("should clear unlocksFromStateId for knowledge sources when the state is unnamed and filtered out on save", async () => {
+      mockParams.id = "existing-id";
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        states: [
+          { id: "state-1", name: "Named State" },
+          { id: "state-2", name: "" },
+        ],
+        knowledgeSources: [{ id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: "state-2" }],
+        triggerWarningIds: [],
+      });
+
+      renderCreateSimulation();
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(() => {
+        expect(mockUpdateSimulation).toHaveBeenCalledWith(
+          expect.objectContaining({
+            id: "existing-id",
+            simulation: expect.objectContaining({
+              states: [{ id: "state-1", name: "Named State" }],
+              knowledgeSources: [{ id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: null }],
+            }),
+          }),
+        );
+      });
+    });
+  });
 });

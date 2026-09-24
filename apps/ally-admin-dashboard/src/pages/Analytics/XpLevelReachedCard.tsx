@@ -54,7 +54,7 @@ const grainLabel = (grain: XpLevelReachedBucket): string =>
 
 const DEFAULT_LEVELS = Array.from({ length: XP_LEVEL_REACHED_MAX_LEVEL }, (_, i) => i + 1);
 
-const TITLE = "New levels reached per period";
+const TITLE = "New Levels Reached per Period";
 
 /**
  * Learners reaching each XP level for the first time, per period — the flow
@@ -132,6 +132,7 @@ export const XpLevelReachedCard = () => {
         wide
         title={TITLE}
         caption={caption}
+        collapseMeta
         takeaway={takeaway}
         source={source}
         loading={isLoading && !data}

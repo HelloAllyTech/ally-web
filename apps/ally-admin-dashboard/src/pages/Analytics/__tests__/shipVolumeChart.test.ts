@@ -9,6 +9,7 @@ import {
   partialFootnote,
   partialWeek,
   plottedWeeks,
+  rollUpShipVolume,
   shipVolumeEmptyText,
   shipVolumeTakeaway,
   unavailableNote,
@@ -306,5 +307,46 @@ describe("partialWeek / partialFootnote", () => {
     expect(found?.weekStart).toBe("2026-08-30");
     expect(partialFootnote(found!)).toContain(LABEL);
     expect(partialFootnote(found!)).toContain("only grow");
+  });
+});
+
+describe("rollUpShipVolume", () => {
+  const weeks = buildShipVolumeWeeks(
+    response({
+      weeks: [
+        week("2026-06-28", { "ally-be": [10, 0] }),
+        week("2026-07-05", { "ally-be": [5, 5], "ally-web": [1, 0] }),
+        week("2026-08-30", { "ally-web": [2, 2] }, true),
+      ],
+    }),
+  );
+
+  it("sums whole weeks into the month each week starts in", () => {
+    const months = rollUpShipVolume(weeks, "month");
+    expect(months.map(m => m.weekStart)).toEqual(["2026-06-01", "2026-07-01", "2026-08-01"]);
+    expect(months[1].churn).toBe(11);
+    expect(months[1].churnByRepo).toEqual({ "ally-be": 10, "ally-web": 1 });
+    expect(months[2].partial).toBe(true);
+    expect(months[2].label.endsWith(" *")).toBe(true);
+  });
+
+  it("labels weeks by ISO date so a multi-year axis never repeats a label", () => {
+    expect(rollUpShipVolume(weeks, "week").map(w => w.plainLabel)).toEqual([
+      "2026-06-28",
+      "2026-07-05",
+      "2026-08-30",
+    ]);
+  });
+
+  it("folds everything into one All-time period", () => {
+    const all = rollUpShipVolume(weeks, "allTime");
+    expect(all).toHaveLength(1);
+    expect(all[0].plainLabel).toBe("All time");
+    expect(all[0].churn).toBe(25);
+  });
+
+  it("names quarters and years", () => {
+    expect(rollUpShipVolume(weeks, "quarter").map(q => q.plainLabel)).toEqual(["Q2 2026", "Q3 2026"]);
+    expect(rollUpShipVolume(weeks, "year").map(y => y.plainLabel)).toEqual(["2026"]);
   });
 });

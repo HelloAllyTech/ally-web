@@ -158,4 +158,11 @@ describe("BuilderNotificationBell", () => {
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("No notifications")).toBeInTheDocument();
   });
+
+  it("shows an error message when the notification request fails", () => {
+    queryResult = { data: undefined, isLoading: false, isError: true };
+    render(<BuilderNotificationBell />);
+    fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
+    expect(screen.getByText("Failed to load notifications.")).toBeInTheDocument();
+  });
 });

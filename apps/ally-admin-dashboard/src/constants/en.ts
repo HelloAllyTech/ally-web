@@ -3618,6 +3618,7 @@ export const en = {
       unreadLabel: (count: number) => (count === 1 ? "1 unread" : `${count} unread`),
       markAllRead: "Mark all read",
       empty: "No notifications",
+      error: "Failed to load notifications.",
       kinds: {
         question_pending: "Needs an answer",
         build_completed: "Build finished",

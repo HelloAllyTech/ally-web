@@ -279,6 +279,7 @@ export const baseAPI = createApi({
     TAG_TYPES.PROGRESS,
     TAG_TYPES.NOTIFICATIONS,
     TAG_TYPES.UNREAD_NOTIFICATION_COUNT,
+    TAG_TYPES.COURSE_DISCUSSION,
   ],
   endpoints: () => ({}),
 });

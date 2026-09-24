@@ -444,3 +444,54 @@ describe("question media", () => {
     expect((rebuilt.sections[0].items[1].quiz as QuizContent).questions[0].media).toEqual(image);
   });
 });
+
+describe("hasDiscussion (course discussions)", () => {
+  const detailWith = (hasDiscussion?: boolean): TrackDetail =>
+    ({
+      id: "track-1",
+      title: "Onboarding",
+      description: "d",
+      coverImageUrl: "",
+      status: SimulationStatus.DRAFT,
+      isGlobal: false,
+      totalItems: 1,
+      sections: [
+        {
+          id: "section-1",
+          title: "S",
+          description: "",
+          order: 1,
+          items: [
+            {
+              id: "item-1",
+              type: TrackItemType.JOURNAL,
+              order: 1,
+              title: "Reflect",
+              content: { prompts: [] },
+              ...(hasDiscussion === undefined ? {} : { hasDiscussion }),
+            },
+          ],
+        },
+      ],
+    }) as unknown as TrackDetail;
+
+  it("round-trips an enabled discussion from the GET into the /structure body", () => {
+    const form = deserializeTrack(detailWith(true));
+    expect(form.sections[0].items[0].hasDiscussion).toBe(true);
+    expect(serializeTrackForm(form).sections[0].items[0].hasDiscussion).toBe(true);
+  });
+
+  it("defaults to off when the server omits it, and sends false explicitly", () => {
+    const form = deserializeTrack(detailWith(undefined));
+    expect(form.sections[0].items[0].hasDiscussion).toBe(false);
+    expect(serializeTrackForm(form).sections[0].items[0].hasDiscussion).toBe(false);
+  });
+
+  it("a brand-new item sends hasDiscussion: false", () => {
+    const form: TrackFormValues = {
+      ...deserializeTrack(detailWith(undefined)),
+    };
+    form.sections[0].items = [createItemOfType(TrackItemType.ARTICLE)];
+    expect(serializeTrackForm(form).sections[0].items[0].hasDiscussion).toBe(false);
+  });
+});
