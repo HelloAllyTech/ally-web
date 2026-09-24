@@ -60,6 +60,12 @@ const Spinner = () => (
 
 const TaskStatusIcon = ({ status }: { status: GenerationTaskStatus }) => {
   if (status === "active") return <Spinner />;
+  // Queued behind the foundation fields — a still, hollow ring, so it reads as
+  // "next" rather than as work in progress.
+  if (status === "waiting")
+    return (
+      <span className="inline-block h-4 w-4 shrink-0 rounded-full border-2 border-border-light" />
+    );
   if (status === "done") return <CheckCircle size={16} className="shrink-0 text-[#43A047]" />;
   if (status === "error") return <FailIcon size={16} className="shrink-0 text-[#FE6F64]" />;
   // empty / aborted — muted dash.
@@ -70,6 +76,7 @@ const taskNote = (task: GenerationTask): string | null => {
   if (task.status === "error") return task.error || "generation failed";
   if (task.status === "empty") return "no content generated";
   if (task.status === "aborted") return "cancelled";
+  if (task.status === "waiting") return "waits for description and persona";
   return null;
 };
 
@@ -178,7 +185,9 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
                         className={
                           task.status === "error"
                             ? "text-[#FE6F64]"
-                            : task.status === "empty" || task.status === "aborted"
+                            : task.status === "empty" ||
+                                task.status === "aborted" ||
+                                task.status === "waiting"
                               ? "text-typography-500"
                               : "text-typography-800"
                         }
