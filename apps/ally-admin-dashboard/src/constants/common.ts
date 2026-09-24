@@ -208,6 +208,17 @@ export const ApiEndpoints = {
     DELETE_ONE: (id: string) => `/v1/learn/admin/component-templates/${id}`,
   },
 
+  // Course discussions — per-item, per-organisation threads on Track 2.0
+  // items. Moderators (edit:admin:track) pass `tenantId` to read/lock any
+  // organisation's thread.
+  COURSE_DISCUSSION: {
+    GET: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion`,
+    TENANTS: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion/tenants`,
+    LOCK_DISCUSSION: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion/lock`,
+    POST: (postId: string) => `/v1/learn/discussion/posts/${postId}`,
+    LOCK_POST: (postId: string) => `/v1/learn/discussion/posts/${postId}/lock`,
+  },
+
   CHARACTERS: {
     GET_CHARACTERS: "/v1/scenario-characters",
     CREATE_CHARACTER: "/v1/scenario-characters",
@@ -822,6 +833,8 @@ export const TAG_TYPES = {
   // Component Library. Also registered in baseApi.ts's `tagTypes` — an
   // unregistered tag is silently ignored and its invalidation never fires.
   COMPONENT_LIBRARY: "componentLibrary",
+  // Course discussion moderation. Also registered in baseApi.ts's `tagTypes`.
+  COURSE_DISCUSSION: "courseDiscussion",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
   // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions
