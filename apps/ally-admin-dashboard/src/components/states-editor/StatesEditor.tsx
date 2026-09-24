@@ -376,9 +376,14 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
 
               <DropdownField
                 id={`state-dialogue-length-${state.id}`}
-                labelText="Dialogue Length"
-                value={state.dialogueLength}
-                onChange={value => updateState(state.id, { dialogueLength: value as any })}
+                label="Dialogue Length"
+                value={state.dialogueLength ?? ""}
+                onChange={value =>
+                  updateState(state.id, {
+                    dialogueLength: (value ||
+                      undefined) as SimulationStateFormValue["dialogueLength"],
+                  })
+                }
                 options={DIALOGUE_LENGTH_OPTIONS}
                 allowDeselect
                 data-testid={`dialogue-length-dropdown`}
