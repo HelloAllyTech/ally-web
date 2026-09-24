@@ -93,7 +93,18 @@ beforeEach(() => {
   };
 });
 
-describe("GenerateEventPanel", () => {
+/**
+ * Every async case here waits on a six-field generation batch, and each
+ * settled field re-renders the whole panel — ~1.2s of pure jsdom work on an
+ * idle machine. Under the full suite that runs alongside five other workers
+ * and crosses vitest's 5000ms default, so these fail on CI and pass in
+ * isolation. The suite-level timeout is headroom for that contention, not a
+ * licence for the panel to get slower: it is checked with
+ * `npx vitest run src/components/event-builder/__tests__/GenerateEventPanel.test.tsx --testTimeout=700`,
+ * which passes only while this timeout — and not the global default — is what
+ * these tests run under.
+ */
+describe("GenerateEventPanel", { timeout: 15_000 }, () => {
   it("renders nothing when closed", () => {
     const { container } = render(
       <GenerateEventPanel isOpen={false} onClose={vi.fn()} onCreate={vi.fn()} />,
