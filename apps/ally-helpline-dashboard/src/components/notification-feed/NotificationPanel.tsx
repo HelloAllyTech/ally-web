@@ -1,11 +1,14 @@
 import { FC } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import {
   NotificationItem as NotificationItemType,
   useGetNotificationsQuery,
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
 } from "@api";
+import { buildTrackItemDiscussionPostRoute } from "@constants";
 
 import NotificationItem from "./NotificationItem";
 
@@ -13,12 +16,32 @@ interface NotificationPanelProps {
   onClose: () => void;
 }
 
+const COURSE_DISCUSSION_REPLY = "COURSE_DISCUSSION_REPLY";
+
+/**
+ * The track-player route a notification deep-links to, or null when it has
+ * no target. `data` is free-form JSON from the backend, so every field is
+ * checked rather than trusted.
+ */
+export const notificationTargetRoute = (notification: NotificationItemType): string | null => {
+  if (notification.type !== COURSE_DISCUSSION_REPLY) return null;
+  const data = notification.data ?? {};
+  const { screen, trackId, itemId, postId } = data as Record<string, unknown>;
+  if (screen !== "CourseDiscussion") return null;
+  if (typeof trackId !== "string" || !trackId) return null;
+  if (typeof itemId !== "string" || !itemId) return null;
+  if (typeof postId !== "string" || !postId) return null;
+  return buildTrackItemDiscussionPostRoute(trackId, itemId, postId);
+};
+
 /**
  * Right-anchored dropdown panel listing the caller's notifications. Clicking
- * an item marks it read; engagement reminders are informational (no deep link
- * target yet), so the panel stays open for further reading.
+ * an item marks it read. A course-discussion reply then opens the track player
+ * at that item with the reply highlighted (and closes the panel); engagement
+ * reminders are informational (no deep link target), so the panel stays open.
  */
 const NotificationPanel: FC<NotificationPanelProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const { data, isLoading } = useGetNotificationsQuery({ limit: 25, offset: 0 });
   const [markRead] = useMarkNotificationReadMutation();
   const [markAllRead] = useMarkAllNotificationsReadMutation();
@@ -29,6 +52,11 @@ const NotificationPanel: FC<NotificationPanelProps> = ({ onClose }) => {
   const onItemClick = (notification: NotificationItemType) => {
     if (notification.readAt == null) {
       markRead(notification.id);
+    }
+    const target = notificationTargetRoute(notification);
+    if (target) {
+      onClose();
+      navigate(target);
     }
   };
 

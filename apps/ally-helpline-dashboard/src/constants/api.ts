@@ -130,6 +130,15 @@ export const ApiEndpoints = {
     JOURNAL_SUBMIT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal/submit`,
     ANNOTATION_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/annotation-attempts`,
   },
+  // Course discussions — the thread beneath a Track 2.0 item.
+  COURSE_DISCUSSION: {
+    GET: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion`,
+    CREATE_POST: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion/posts`,
+    LOCK_DISCUSSION: (itemId: string) => `/v1/learn/track-items/${itemId}/discussion/lock`,
+    REPLY: (postId: string) => `/v1/learn/discussion/posts/${postId}/replies`,
+    POST: (postId: string) => `/v1/learn/discussion/posts/${postId}`,
+    LOCK_POST: (postId: string) => `/v1/learn/discussion/posts/${postId}/lock`,
+  },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
