@@ -16,7 +16,9 @@ import { CONTEXT, PALETTE } from "../chartScales";
 import {
   TESTING_GROUPS,
   allRatesMissing,
+  averageRatingTakeaway,
   buildActivationFunnelStages,
+  buildAverageRatingSeries,
   buildCompetencyScatter,
   buildCompletionRateSeries,
   buildItemTypeBars,
@@ -34,6 +36,7 @@ import {
   creditUtilisationLabel,
   formatHours,
   formatPct,
+  formatRating,
   formatScore,
   itemTypeLabel,
   itemTypeTakeaway,
@@ -81,6 +84,7 @@ const satisfactionPoint = (over: Partial<SatisfactionMixPoint> = {}): Satisfacti
   mid: 0,
   high: 0,
   responses: 0,
+  avgRating: null,
   top2BoxPct: null,
   completedSessions: 0,
   responseRatePct: null,
@@ -338,6 +342,30 @@ describe("quality and satisfaction", () => {
       satisfactionPoint({ bucket: "2026-02-01", responses: 10, high: 7, top2BoxPct: 70 }),
     ]);
     expect(takeaway).toContain("↑ 20.0 pp");
+  });
+
+  it("plots the mean rating per rated bucket and carries its n", () => {
+    const series = buildAverageRatingSeries([
+      satisfactionPoint({ responses: 6, avgRating: 3.83 }),
+      satisfactionPoint({ bucket: "2026-02-01" }),
+      satisfactionPoint({ bucket: "2026-03-01", responses: 1, avgRating: 5 }),
+    ]);
+    expect(series).toEqual([
+      { group: TESTING_GROUPS.avgRating, key: "2026-01-01", value: 3.83, responses: 6 },
+      { group: TESTING_GROUPS.avgRating, key: "2026-03-01", value: 5, responses: 1 },
+    ]);
+  });
+
+  it("states the latest mean rating with its n and the change on the axis", () => {
+    const takeaway = averageRatingTakeaway([
+      satisfactionPoint({ responses: 7, avgRating: 3.86 }),
+      satisfactionPoint({ bucket: "2026-02-01", responses: 6, avgRating: 3.83 }),
+    ]);
+    expect(takeaway).toBe(
+      "Averaged 3.83 over 6 ratings in the latest period — ↓ 0.03 vs the first period on the axis",
+    );
+    expect(averageRatingTakeaway([satisfactionPoint({})])).toBeNull();
+    expect(formatRating(null)).toBe("—");
   });
 
   it("ranks tag bars with the leader in the accent and the tail in grey", () => {
