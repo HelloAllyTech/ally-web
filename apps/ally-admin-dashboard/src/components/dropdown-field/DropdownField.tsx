@@ -9,7 +9,7 @@ import { useClickOutside, useDebounce } from "@hooks";
 
 const DEBOUNCE_DELAY = 500;
 
-export const DropdownField: React.FC<DropdownFieldProps> = ({
+export const DropdownField: React.FC<DropdownFieldProps & { "data-testid"?: string }> = ({
   label,
   id,
   formMethods,
@@ -25,6 +25,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   borderless = false,
   value: controlledValue,
   onChange: controlledOnChange,
+  "data-testid": dataTestId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -150,7 +151,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2" ref={dropdownRef}>
+    <div className="flex flex-col gap-2" ref={dropdownRef} data-testid={dataTestId}>
       <div className="relative">
         {isControlled ? (
           renderField({
