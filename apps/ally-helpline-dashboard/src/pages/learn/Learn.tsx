@@ -61,7 +61,7 @@ export const Learn: FC = () => {
     data: tracksData,
     isLoading: isTracksLoading,
     refetch: refetchTracks,
-  } = useGetLearnTracksQuery();
+  } = useGetLearnTracksQuery({ languageCode: i18n.language });
   const tracks = tracksData?.data ?? [];
 
   const {
