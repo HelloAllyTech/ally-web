@@ -34,19 +34,32 @@ const CLAUDE_CODE_MODEL_OPTIONS = [
 ];
 
 /**
- * Builder's second engine. Unverified end-to-end as of this build — see
- * run-engine.sh's gemini case and forward-events.mjs's normaliseGemini() for
- * exactly what's confirmed (real installed-package schema) versus what a
- * first real run still needs to prove out.
+ * Builder's default engine, proven end to end: a full unattended run on
+ * 2026-09-23 planned, coded, caught its own missed requirement, remediated,
+ * reviewed and merged ally-web#694.
  */
 const GEMINI_MODEL_OPTIONS = [
   { value: "gemini-2.5-flash", text: "gemini-2.5-flash (fastest, cheapest)" },
   { value: "gemini-2.5-pro", text: "gemini-2.5-pro (strongest)" },
 ];
 
+/**
+ * Only what Builder will actually run.
+ *
+ * ally-be holds an engine ALLOWLIST (`builderAllowedEngines`) and overrules
+ * anything off it wherever the value came from — the run override, the
+ * session, or this very row. `claude-code` is off that list, deliberately, so
+ * offering it here would be a control that appears to work and silently does
+ * not: pick it, save it, and every build still runs on Gemini. A picker whose
+ * choice is quietly ignored is the exact failure this platform has spent a
+ * week removing, so the option is gone rather than disabled with an asterisk.
+ *
+ * Putting Claude back is one environment variable on ally-be plus an entry
+ * here, in that order — the list is what decides, this is only what offers.
+ */
 const BUILDER_ENGINE_OPTIONS = [
-  { value: "claude-code", text: "Claude Code" },
-  { value: "gemini", text: "Gemini CLI (unverified — see run-engine.sh)" },
+  { value: "gemini", text: "Gemini CLI" },
+  { value: "opencode", text: "opencode (multi-provider harness)" },
 ];
 
 /**
@@ -60,8 +73,14 @@ const BUG_HUNTER_ENGINE_OPTIONS = [
   { value: "gemini", text: "Gemini CLI (skips escalation)" },
 ];
 
+/**
+ * opencode is a harness rather than a vendor: it runs whichever provider it
+ * holds a key for, and Builder points it at the same Gemini models. ally-be
+ * says the same thing in `BUILDER_MULTI_PROVIDER_ENGINES`, which is why it
+ * filters no model on opencode's behalf.
+ */
 const modelOptionsForEngine = (engine: string) =>
-  engine === "gemini" ? GEMINI_MODEL_OPTIONS : CLAUDE_CODE_MODEL_OPTIONS;
+  engine === "claude-code" ? CLAUDE_CODE_MODEL_OPTIONS : GEMINI_MODEL_OPTIONS;
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
   label,
