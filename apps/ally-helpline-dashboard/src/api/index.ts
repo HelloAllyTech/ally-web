@@ -18,6 +18,7 @@ export * from "./tooltips";
 export * from "./legalContent";
 export * from "./organizationSettings";
 export * from "./notifications";
+export * from "./discussionApi";
 export * from "./tracks";
 export * from "./blog";
 export * from "./changelog";
