@@ -48,7 +48,6 @@ import {
 } from "../ladderChart";
 import {
   TESTING_GROUPS,
-  buildActivationFunnelStages,
   buildTimeToFirstBars,
   buildTimeToFirstScale,
   formatCount,
@@ -74,13 +73,14 @@ const GRAIN_ITEMS: { id: UsageLadderGrain; label: string }[] = [
 /**
  * Usage levels — how deep into the product learners actually get.
  *
- * Seven panels off four endpoints. The organising idea is that "engagement" is
+ * Six panels off four endpoints. The organising idea is that "engagement" is
  * three different questions and this tab answers each separately rather than
  * averaging them into one number:
  *
- *  - **Activation**: whether a learner ever starts. The funnel and the
- *    time-to-first-practice histogram are the entry to everything below — a
- *    ladder rung cannot be reached by someone who never finished a session.
+ *  - **Activation**: whether a learner ever starts. The time-to-first-practice
+ *    histogram is the entry to everything below — a ladder rung cannot be
+ *    reached by someone who never finished a session. (The activation funnel,
+ *    AAQ-035, moved to Highlights → Priority.)
  *  - **Depth**: the L1–L5 ladder, by lifetime practice minutes. Its flow series
  *    ("how many L3s did we produce this quarter") and its stock series ("how
  *    many L3s exist") are deliberately two charts, because a healthy platform
@@ -118,7 +118,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
 
   const ladder = useGetUsageLadderQuery({ ...pickTenant(query), grain });
   const stickiness = useGetPracticeStickinessQuery(pickTenant(query));
-  // Both activation panels are all-time counts over learner ACCOUNTS, so this
+  // Time to first practice is an all-time count over learner ACCOUNTS, so this
   // asks for no window and no grain: the bucketed series off the same endpoint
   // is the north star on the Platform sub-tab, not anything drawn here.
   const activation = useGetActivationQuery(pickTenant(query));
@@ -183,7 +183,6 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
         : "Completed sessions long enough to count as practice.",
   };
 
-  const funnelStages = useMemo(() => buildActivationFunnelStages(act?.funnel), [act]);
   const ttfBars = useMemo(() => buildTimeToFirstBars(act?.timeToFirstPractice), [act]);
   const ttfScale = useMemo(() => buildTimeToFirstScale(act?.timeToFirstPractice), [act]);
   const ttfOpts = useMemo(
@@ -225,31 +224,12 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
   return (
     <>
       {/* Before depth: whether a learner starts at all. A ladder rung is only
-          reachable by someone who got past their first session, so the two
-          activation panels come before the climb rather than after it. */}
+          reachable by someone who got past their first session, so activation
+          comes before the climb rather than after it. The activation funnel
+          (AAQ-035) moved to Priority; time to first practice stays here. */}
       <SubHeading>Activation — getting to a first session</SubHeading>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <ChartCard
-          title="New-learner activation funnel"
-          caption={`Of every ${act?.funnel.denominatorLabel ?? "learner account"}, how many reached each step. The first bar is 100% by construction — it is the population, not a measurement. All-time: this is a question about accounts, not about a period.`}
-          source={buildSource({
-            derivation: "users joined to completed sessions, all time",
-            window: "all time",
-            n: act?.summary.registeredLearners,
-            nUnit: "learner accounts",
-            asOf: asOfStamp(act?.computedAt),
-          })}
-          loading={activationLoading}
-          error={activation.isError}
-          onRetry={activation.refetch}
-          empty={!activationLoading && funnelStages.length === 0}
-          height="auto"
-          chartId="AAQ-035"
-        >
-          <FunnelBars stages={funnelStages} unit="learners" />
-        </ChartCard>
-
         <ChartCard
           title="Time to first practice"
           caption={`Days from signing up to completing a first session, as counts of learners. ${

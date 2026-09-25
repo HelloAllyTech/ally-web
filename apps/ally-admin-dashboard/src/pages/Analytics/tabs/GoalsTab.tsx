@@ -1,8 +1,13 @@
+import { ActivationFunnelCard } from "../ActivationFunnelCard";
 import { ActiveUsersXpCard } from "../ActiveUsersXpCard";
 import { AverageRatingCard } from "../AverageRatingCard";
 import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
 import { ScrollNoteContext } from "../chartKit";
+import { CumulativeUsersCard } from "../CumulativeUsersCard";
 import { GoalsXpCard } from "../GoalsXpCard";
+import { NewUsersCard } from "../NewUsersCard";
+import { NewVsReturningUsersCard } from "../NewVsReturningUsersCard";
+import { PlayTimeCard } from "../PlayTimeCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
 import { RoleplayVoiceLatencyCard } from "../RoleplayVoiceLatencyCard";
@@ -47,6 +52,11 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *    don't answer the same question.
  *  - `ShipVolumeCard` — relocated here from the Product management tab (its
  *    own doc comment explains why).
+ *  - `NewUsersCard` (AAQ-018), `CumulativeUsersCard` (AAQ-019),
+ *    `NewVsReturningUsersCard` (AAQ-020), `PlayTimeCard` (AAQ-026) — were
+ *    Platform's growth and play-time charts; `ActivationFunnelCard` (AAQ-035)
+ *    was Usage levels' activation funnel. Moved, not copied: each now lives
+ *    only here.
  *
  * Each relocated card lost the page-level filter its old tab offered (a
  * tenant filter for Practice minutes, a language filter for voice latency) —
@@ -70,6 +80,11 @@ export const GoalsTab = () => (
       <ShipVolumeCard />
       <BugHunterVolumeCard />
       <XpByTenantCard />
+      <NewUsersCard />
+      <CumulativeUsersCard />
+      <NewVsReturningUsersCard />
+      <PlayTimeCard />
+      <ActivationFunnelCard />
     </div>
   </ScrollNoteContext.Provider>
 );

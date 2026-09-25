@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
+import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 
 import {
   useGetActivationQuery,
@@ -45,7 +45,6 @@ import {
   buildSource,
   hBarOpts,
   lineOpts,
-  stackedBarOpts,
   timeBarOpts,
 } from "../chartKit";
 import { CONTEXT, PALETTE } from "../chartScales";
@@ -54,12 +53,8 @@ import { FunnelBars } from "../FunnelBars";
 import {
   CSAT_SCALE,
   COST_PER_SIM_SCALE,
-  CUMULATIVE_USERS_SCALE,
   CUMULATIVE_XP_SCALE,
-  NEW_USERS_SCALE,
-  PLAY_TIME_SCALE,
   RATING_DOMAIN,
-  RETENTION_SCALE,
   SCORE_DOMAIN,
   TOTAL_COST_SCALE,
   buildActiveUserMultiples,
@@ -67,10 +62,7 @@ import {
   buildCsatTrendSeries,
   buildCumulativeUsersSeries,
   buildCumulativeXpSeries,
-  buildNewUsersSeries,
-  buildPlayTimeSeries,
   buildPracticeMinutesSeries,
-  buildRetentionSeries,
   buildRoleBars,
   buildSimulationsSeries,
   buildTopOrgBars,
@@ -78,7 +70,6 @@ import {
   buildTrackFunnelStages,
   formatKpi,
   sparkValues,
-  totalPlayTimeSessions,
   totalUnpricedCalls,
 } from "../highlightsChart";
 import { RoleplayVolumeCard } from "../RoleplayVolumeCard";
@@ -115,18 +106,7 @@ const scopeNote = (unscoped: boolean) => (unscoped ? ` · ${PLATFORM_WIDE_NOTE}`
  * cards (cohort retention, usage levels, roleplay volume) own their own grain by
  * construction.
  */
-type ChartId =
-  | "newUsers"
-  | "cumulative"
-  | "retention"
-  | "sims"
-  | "playTime"
-  | "csat"
-  | "costPerSim"
-  | "totalCost"
-  | "wpl"
-  | "completion"
-  | "xp";
+type ChartId = "sims" | "csat" | "costPerSim" | "totalCost" | "wpl" | "completion" | "xp";
 
 /**
  * Which endpoint feeds each chart.
@@ -135,8 +115,8 @@ type ChartId =
  * a growth chart must not re-run the highlights aggregation (thirteen parallel
  * queries) for a grain nothing on that side is showing.
  */
-const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
-const HIGHLIGHTS_CHARTS = ["playTime", "csat", "costPerSim", "totalCost"] as const;
+const OVERVIEW_CHARTS = ["sims"] as const;
+const HIGHLIGHTS_CHARTS = ["csat", "costPerSim", "totalCost"] as const;
 
 const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS, "wpl", "completion", "xp"];
 
@@ -400,21 +380,13 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
   /* --------------------- per-chart responses and grains -------------------- */
 
-  const newUsersQ = oQ[resolvedBucket("newUsers")];
-  const cumulativeQ = oQ[resolvedBucket("cumulative")];
-  const retentionQ = oQ[resolvedBucket("retention")];
   const simsQ = oQ[resolvedBucket("sims")];
-  const playTimeQ = hQ[resolvedBucket("playTime")];
   const csatQ = hQ[resolvedBucket("csat")];
   const costPerSimQ = hQ[resolvedBucket("costPerSim")];
   const totalCostQ = hQ[resolvedBucket("totalCost")];
 
   const grain = {
-    newUsers: grainFor("newUsers"),
-    cumulative: grainFor("cumulative"),
-    retention: grainFor("retention"),
     sims: grainFor("sims"),
-    playTime: grainFor("playTime"),
     csat: grainFor("csat"),
     costPerSim: grainFor("costPerSim"),
     totalCost: grainFor("totalCost"),
@@ -428,45 +400,12 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // `withoutInProgress` strips the still-accruing period from what is PLOTTED
   // only. The detail tables below read the full arrays and flag that row.
 
-  const newUsersPoints = newUsersQ.data?.userGrowth ?? [];
-  const newUsersInProgress = newUsersQ.data?.window.inProgressBucket;
-  const newUsers = useMemo(
-    () => buildNewUsersSeries(withoutInProgress(newUsersPoints, p => p.date, newUsersInProgress)),
-    [newUsersPoints, newUsersInProgress],
-  );
-
-  const cumulativePoints = cumulativeQ.data?.userGrowth ?? [];
-  const cumulativeInProgress = cumulativeQ.data?.window.inProgressBucket;
-  const cumulativeUsers = useMemo(
-    () =>
-      buildCumulativeUsersSeries(
-        withoutInProgress(cumulativePoints, p => p.date, cumulativeInProgress),
-      ),
-    [cumulativePoints, cumulativeInProgress],
-  );
-
-  const retentionPoints = retentionQ.data?.retention ?? [];
-  const retentionInProgress = retentionQ.data?.window.inProgressBucket;
-  const retention = useMemo(
-    () =>
-      buildRetentionSeries(withoutInProgress(retentionPoints, p => p.bucket, retentionInProgress)),
-    [retentionPoints, retentionInProgress],
-  );
-
   const simsPoints = simsQ.data?.simulationsCompleted ?? [];
   const simsInProgress = simsQ.data?.window.inProgressBucket;
   const sims = useMemo(
     () => buildSimulationsSeries(withoutInProgress(simsPoints, p => p.bucket, simsInProgress)),
     [simsPoints, simsInProgress],
   );
-
-  const playTimePoints = playTimeQ.data?.playTime ?? [];
-  const playTimeInProgress = playTimeQ.data?.window.inProgressBucket;
-  const playTime = useMemo(
-    () => buildPlayTimeSeries(withoutInProgress(playTimePoints, p => p.bucket, playTimeInProgress)),
-    [playTimePoints, playTimeInProgress],
-  );
-  const playTimeSessions = useMemo(() => totalPlayTimeSessions(playTimePoints), [playTimePoints]);
 
   const csatPoints = csatQ.data?.csatTrend ?? [];
   const csatInProgress = csatQ.data?.window.inProgressBucket;
@@ -690,25 +629,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // that varies, and a fresh options object on every render makes Carbon re-apply
   // (and re-animate) the chart.
 
-  const newUsersOpts = useMemo(
-    () =>
-      timeBarOpts({
-        leftTitle: "New users",
-        bottomTitle: bucketTitle(grain.newUsers),
-        colorScale: NEW_USERS_SCALE,
-      }),
-    [grain.newUsers],
-  );
-  const cumulativeOpts = useMemo(
-    () =>
-      lineOpts({
-        leftTitle: "Users",
-        bottomTitle: bucketTitle(grain.cumulative),
-        colorScale: CUMULATIVE_USERS_SCALE,
-        legend: false,
-      }),
-    [grain.cumulative],
-  );
   const xpOpts = useMemo(
     () =>
       lineOpts({
@@ -718,15 +638,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         legend: false,
       }),
     [grain.xp],
-  );
-  const retentionOpts = useMemo(
-    () =>
-      stackedBarOpts({
-        leftTitle: "Active users",
-        bottomTitle: bucketTitle(grain.retention),
-        colorScale: RETENTION_SCALE,
-      }),
-    [grain.retention],
   );
   const simsOpts = useMemo(
     () =>
@@ -749,15 +660,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         },
       }),
     [roles],
-  );
-  const playTimeOpts = useMemo(
-    () =>
-      lineOpts({
-        leftTitle: "Minutes per session",
-        bottomTitle: bucketTitle(grain.playTime),
-        colorScale: PLAY_TIME_SCALE,
-      }),
-    [grain.playTime],
   );
   const csatOpts = useMemo(
     () =>
@@ -889,15 +791,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // restate the cumulative-users figure beside it), does not offer "All time"
   // at all — its `picker(...)` call below has no `ALL_TIME_GRAINS` override.
 
-  const playTimeIsAllTime = grain.playTime === "allTime";
-  const playTimeKpi: KpiTileProps = {
-    label: "Average simulation play time",
-    description: "Mean length of one completed simulation, all time.",
-    value: formatKpi(summary?.avgPlayTimeMinutes, { suffix: " min" }),
-    n: playTimeSessions,
-    nUnit: "timed sessions",
-  };
-
   const csatIsAllTime = grain.csat === "allTime";
   const csatKpi: KpiTileProps = {
     label: "Learner satisfaction",
@@ -929,13 +822,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     label: "Completed simulations",
     description: "Volume context for the quality and cost figures, all time.",
     value: formatKpi(summary?.completedSimulations),
-  };
-
-  const cumulativeIsAllTime = grain.cumulative === "allTime";
-  const cumulativeKpi: KpiTileProps = {
-    label: "Cumulative users",
-    description: "Every registered account, all time — the running total's final value.",
-    value: formatKpi(overviewSummary?.totalUsers),
   };
 
   const completionIsAllTime = grain.completion === "allTime";
@@ -1092,82 +978,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <ChartCard
-            title="New users per period"
-            caption={`Registrations in each period — the growth signal.${inProgressCaption(
-              grain.newUsers,
-              newUsersInProgress,
-            )}`}
-            source={buildSource({
-              derivation: "users.createdAt, bucketed",
-              window: windowLabel(newUsersQ.data?.window),
-              extra: groupingNote(grain.newUsers),
-              asOf: asOf(newUsersQ.data?.window),
-            })}
-            loading={busy(newUsersQ)}
-            error={newUsersQ.isError}
-            onRetry={newUsersQ.refetch}
-            empty={!busy(newUsersQ) && newUsers.length === 0}
-            controls={picker("newUsers")}
-            onExpand={() => setExpanded("newUsers")}
-            chartId="AAQ-018"
-          >
-            <ScrollableChart data={newUsers}>
-              <SimpleBarChart data={newUsers} options={newUsersOpts} />
-            </ScrollableChart>
-          </ChartCard>
-
-          <ChartCard
-            title="Cumulative users"
-            caption={`Running total. Shown separately because it is two orders of magnitude larger than the per-period figure — on one axis it flattens the chart beside it.${inProgressCaption(
-              grain.cumulative,
-              cumulativeInProgress,
-            )}`}
-            source={buildSource({
-              derivation: "Running total of registrations",
-              window: windowLabel(cumulativeQ.data?.window),
-              extra: groupingNote(grain.cumulative),
-              asOf: asOf(cumulativeQ.data?.window),
-            })}
-            loading={cumulativeIsAllTime ? false : busy(cumulativeQ)}
-            error={cumulativeIsAllTime ? false : cumulativeQ.isError}
-            onRetry={cumulativeQ.refetch}
-            empty={cumulativeIsAllTime ? false : !busy(cumulativeQ) && cumulativeUsers.length === 0}
-            controls={picker("cumulative", ALL_TIME_GRAINS)}
-            onExpand={() => setExpanded("cumulative")}
-            kpi={cumulativeIsAllTime ? cumulativeKpi : undefined}
-            chartId="AAQ-019"
-          >
-            <ScrollableChart data={cumulativeUsers}>
-              <LineChart data={cumulativeUsers} options={cumulativeOpts} />
-            </ScrollableChart>
-          </ChartCard>
-
-          <ChartCard
-            title="Active users — new vs returning"
-            caption={`Stacked because the two partition the period's active users. "New" means the account was created in that same period, so the split moves with the grouping — read yearly, most of a year's actives count as returning.${inProgressCaption(
-              grain.retention,
-              retentionInProgress,
-            )}`}
-            source={buildSource({
-              derivation: "Distinct active users per period, split by account age",
-              window: windowLabel(retentionQ.data?.window),
-              extra: groupingNote(grain.retention),
-              asOf: asOf(retentionQ.data?.window),
-            })}
-            loading={busy(retentionQ)}
-            error={retentionQ.isError}
-            onRetry={retentionQ.refetch}
-            empty={!busy(retentionQ) && retention.length === 0}
-            controls={picker("retention")}
-            onExpand={() => setExpanded("retention")}
-            chartId="AAQ-020"
-          >
-            <ScrollableChart data={retention}>
-              <StackedBarChart data={retention} options={retentionOpts} />
-            </ScrollableChart>
-          </ChartCard>
-
-          <ChartCard
             title="Users by role"
             caption={
               roles.otherRoles > 0
@@ -1187,11 +997,11 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         </div>
       )}
 
-      {/* Sits next to "new vs returning" deliberately: both are retention, and
-          adjacency is what tells the reader they are related. That chart
-          re-partitions each period independently; this one follows one cohort
-          forward, which is the only way to see whether newer intakes stick. It
-          owns its own query and is month-grained by construction — a cohort
+      {/* Follows one cohort forward, which is the only way to see whether newer
+          intakes stick. Its per-period companion, "Active users — new vs
+          returning" (AAQ-020), moved to Priority along with the new-users and
+          cumulative-users charts (AAQ-018/019) that used to share this section.
+          It owns its own query and is month-grained by construction — a cohort
           triangle needs a fixed cohort grain, so it carries no grouping control. */}
       <div className="mt-4">
         <CohortRetentionCard tenantId={query.tenantId} />
@@ -1259,42 +1069,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
       <SubHeading>Engagement</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <ChartCard
-          title="Average simulation play time"
-          caption={`How long one simulation lasts. The mean is the headline; the median and p95 are there because session length is skewed — a few very long sittings pull an average away from the typical session. Breaks in the lines are periods with no completed session, not zero-length ones.${inProgressCaption(
-            grain.playTime,
-            playTimeInProgress,
-          )}`}
-          source={buildSource({
-            derivation:
-              "scenario_session_details.callDuration over COMPLETED sessions, net of paused time",
-            window: windowLabel(playTimeQ.data?.window),
-            n: playTimeSessions,
-            nUnit: "timed sessions",
-            extra: groupingNote(grain.playTime),
-            asOf: asOf(playTimeQ.data?.window),
-          })}
-          takeaway={
-            summary?.avgPlayTimeMinutes !== null && summary?.avgPlayTimeMinutes !== undefined
-              ? `${summary.avgPlayTimeMinutes} min per simulation on average, all time`
-              : undefined
-          }
-          loading={playTimeIsAllTime ? false : busy(playTimeQ)}
-          error={playTimeIsAllTime ? false : playTimeQ.isError}
-          onRetry={playTimeQ.refetch}
-          empty={
-            playTimeIsAllTime ? false : !busy(playTimeQ) && playTime.every(d => d.value === null)
-          }
-          controls={picker("playTime", ALL_TIME_GRAINS)}
-          onExpand={() => setExpanded("playTime")}
-          kpi={playTimeIsAllTime ? playTimeKpi : undefined}
-          chartId="AAQ-026"
-        >
-          <ScrollableChart data={playTime}>
-            <LineChart data={playTime} options={playTimeOpts} />
-          </ScrollableChart>
-        </ChartCard>
-
         <ChartCard
           title="Completed simulations"
           caption={`Volume context for the quality and cost figures.${inProgressCaption(
@@ -1599,63 +1373,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         only draw it as a fall.
       */}
 
-      {expanded === "newUsers" && (
-        <ChartDetailModal
-          open
-          onClose={() => setExpanded(null)}
-          title="New users per period"
-          source={buildSource({
-            derivation: "users.createdAt, bucketed",
-            window: windowLabel(newUsersQ.data?.window),
-            extra: groupingNote(grain.newUsers),
-          })}
-          table={{
-            columns: [bucketTitle(grain.newUsers), "New users"],
-            rows: newUsersPoints.map(p => [rowKey(p.date, newUsersInProgress), p.newUsers]),
-          }}
-          exportContext={exportLines(
-            windowLabel(newUsersQ.data?.window),
-            grain.newUsers,
-            newUsersInProgress,
-          )}
-          render={({ height }) => (
-            <ScrollableChart data={newUsers}>
-              <SimpleBarChart data={newUsers} options={{ ...newUsersOpts, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
-
-      {expanded === "cumulative" && (
-        <ChartDetailModal
-          open
-          onClose={() => setExpanded(null)}
-          title="Cumulative users"
-          source={buildSource({
-            derivation: "Running total of registrations",
-            window: windowLabel(cumulativeQ.data?.window),
-            extra: groupingNote(grain.cumulative),
-          })}
-          table={{
-            columns: [bucketTitle(grain.cumulative), "Cumulative users"],
-            rows: cumulativePoints.map(p => [
-              rowKey(p.date, cumulativeInProgress),
-              p.cumulativeUsers,
-            ]),
-          }}
-          exportContext={exportLines(
-            windowLabel(cumulativeQ.data?.window),
-            grain.cumulative,
-            cumulativeInProgress,
-          )}
-          render={({ height }) => (
-            <ScrollableChart data={cumulativeUsers}>
-              <LineChart data={cumulativeUsers} options={{ ...cumulativeOpts, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
-
       {expanded === "xp" && (
         <ChartDetailModal
           open
@@ -1694,38 +1411,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
         />
       )}
 
-      {expanded === "retention" && (
-        <ChartDetailModal
-          open
-          onClose={() => setExpanded(null)}
-          title="Active users — new vs returning"
-          caption='"New" is relative to the grouping: an account created in the same period as the activity. Re-grouping this chart genuinely changes the question, not just the resolution.'
-          source={buildSource({
-            derivation: "Distinct active users per period, split by account age",
-            window: windowLabel(retentionQ.data?.window),
-            extra: groupingNote(grain.retention),
-          })}
-          table={{
-            columns: [bucketTitle(grain.retention), "New", "Returning"],
-            rows: retentionPoints.map(p => [
-              rowKey(p.bucket, retentionInProgress),
-              p.newUsers,
-              p.returningUsers,
-            ]),
-          }}
-          exportContext={exportLines(
-            windowLabel(retentionQ.data?.window),
-            grain.retention,
-            retentionInProgress,
-          )}
-          render={({ height }) => (
-            <ScrollableChart data={retention}>
-              <StackedBarChart data={retention} options={{ ...retentionOpts, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
-
       {expanded === "sims" && (
         <ChartDetailModal
           open
@@ -1744,50 +1429,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           render={({ height }) => (
             <ScrollableChart data={sims}>
               <SimpleBarChart data={sims} options={{ ...simsOpts, height }} />
-            </ScrollableChart>
-          )}
-        />
-      )}
-
-      {expanded === "playTime" && (
-        <ChartDetailModal
-          open
-          onClose={() => setExpanded(null)}
-          title="Average simulation play time"
-          caption="Mean, median and p95 length of one completed simulation. Where the mean sits well above the median, a minority of long sittings is carrying it."
-          source={buildSource({
-            derivation:
-              "scenario_session_details.callDuration over COMPLETED sessions, net of paused time",
-            window: windowLabel(playTimeQ.data?.window),
-            n: playTimeSessions,
-            nUnit: "timed sessions",
-            extra: groupingNote(grain.playTime),
-          })}
-          table={{
-            columns: [
-              bucketTitle(grain.playTime),
-              "Mean (min)",
-              "Median (min)",
-              "p95 (min)",
-              "Sessions",
-            ],
-            rows: playTimePoints.map(p => [
-              rowKey(p.bucket, playTimeInProgress),
-              p.avgMinutes ?? "—",
-              p.medianMinutes ?? "—",
-              p.p95Minutes ?? "—",
-              p.sessions,
-            ]),
-          }}
-          exportContext={exportLines(
-            windowLabel(playTimeQ.data?.window),
-            grain.playTime,
-            playTimeInProgress,
-            `Timed sessions: ${playTimeSessions}`,
-          )}
-          render={({ height }) => (
-            <ScrollableChart data={playTime}>
-              <LineChart data={playTime} options={{ ...playTimeOpts, height }} />
             </ScrollableChart>
           )}
         />
