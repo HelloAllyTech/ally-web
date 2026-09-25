@@ -119,11 +119,20 @@ export interface XpByTenantDatum {
 export const isGrouped = (data: XpByTenantResponse): boolean =>
   Boolean(data.grain && data.grain !== "all" && data.points);
 
-/** The still-accruing period, when the response is grouped and has one. */
+/**
+ * The still-accruing period to leave OFF the plot, when there is one.
+ *
+ * Only when a completed period remains beside it: with the whole history
+ * inside the current year (or quarter), dropping it would leave a blank chart
+ * that looks like missing data. Then it stays on, and the table flags it.
+ */
 export const xpByTenantInProgress = (
   data: XpByTenantResponse | undefined,
-): XpByTenantPoint | undefined =>
-  data && isGrouped(data) ? data.points?.find(p => p.inProgress) : undefined;
+): XpByTenantPoint | undefined => {
+  if (!data || !isGrouped(data)) return undefined;
+  const points = data.points ?? [];
+  return points.length > 1 ? points.find(p => p.inProgress) : undefined;
+};
 
 /**
  * The stacked bars to plot. Ungrouped (all time): ONE bar keyed on the

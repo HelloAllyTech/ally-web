@@ -225,6 +225,29 @@ describe("grouped by period", () => {
     ]);
   });
 
+  it("keeps a lone in-progress period on the plot rather than drawing nothing", () => {
+    const onlyCurrent = response({
+      grain: "year",
+      segments: [{ tenantId: "a", tenantName: "Acme", xp: 500 }],
+      totalXp: 500,
+      points: [
+        {
+          periodStart: "2026-01-01",
+          periodLabel: "2026",
+          segments: [{ tenantId: "a", tenantName: "Acme", xp: 500 }],
+          otherXp: 0,
+          totalXp: 500,
+          inProgress: true,
+        },
+      ],
+    });
+
+    expect(xpByTenantInProgress(onlyCurrent)).toBeUndefined();
+    expect(buildXpByTenantSeries(onlyCurrent)).toEqual([
+      { group: "Acme", key: "2026", value: 500 },
+    ]);
+  });
+
   it("gives every named tenant its own hue, so stacked bands never collide", () => {
     const eight = response({
       grain: "month",
