@@ -5,7 +5,7 @@ import {
 } from "@types";
 
 import { CATEGORICAL, ColorScale } from "./chartScales";
-import { ChartDatum } from "./ladderChart";
+import { ChartDatum } from "./engagementChart";
 import { formatUsd } from "./unitCostChart";
 
 /**
