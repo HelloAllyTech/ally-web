@@ -57,10 +57,7 @@ type SettingsDraft = Pick<
  * Putting Claude back is one environment variable on ally-be plus an entry
  * here, in that order — the list is what decides, this is only what offers.
  */
-const BUILDER_ENGINE_OPTIONS = [
-  { value: "gemini", text: "Gemini CLI" },
-  { value: "opencode", text: "opencode (multi-provider harness)" },
-];
+const BUILDER_ENGINE_OPTIONS = [{ value: "opencode", text: "opencode (multi-provider harness)" }];
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
   label,

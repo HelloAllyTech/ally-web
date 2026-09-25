@@ -138,20 +138,26 @@ describe("AiModelsTab", () => {
     expect(updateBugHunterSettings).not.toHaveBeenCalled();
   });
 
-  it("switching Builder's engine clears its model fields, since a model id from one engine means nothing to the other", async () => {
+  /**
+   * Builder has one engine, so its picker cannot offer a wrong answer.
+   *
+   * The engines it used to offer had their invocation cases, install steps and
+   * event normalisers deleted when opencode — a harness rather than a vendor —
+   * made a second and third way to run a model unnecessary. Offering one now
+   * would be a control that appears to work and silently does not: ally-be's
+   * allowlist overrules anything off it wherever it came from.
+   *
+   * Bug Hunter's picker above still offers two, and is meant to: it is a
+   * separate harness that installs its own engines in its own workflows.
+   */
+  it("offers Builder no engine it cannot run", () => {
     render(<AiModelsTab />);
 
-    fireEvent.change(screen.getAllByLabelText("Engine")[1], { target: { value: "gemini" } });
-    fireEvent.click(screen.getAllByText("Save")[1]);
+    const options = Array.from(
+      screen.getAllByLabelText("Engine")[1].querySelectorAll("option"),
+    ).map(option => option.getAttribute("value"));
 
-    await vi.waitFor(() => {
-      expect(updateBuilderSettings).toHaveBeenCalledWith({
-        defaultEngine: "gemini",
-        plannerModel: "",
-        coderModel: "",
-        verifierModel: "",
-      });
-    });
+    expect(options).toEqual(["opencode"]);
   });
 
   it("shows an error only for the section that failed to load", () => {

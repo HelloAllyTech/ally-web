@@ -57,10 +57,7 @@ const GEMINI_MODEL_OPTIONS = [
  * Putting Claude back is one environment variable on ally-be plus an entry
  * here, in that order — the list is what decides, this is only what offers.
  */
-const BUILDER_ENGINE_OPTIONS = [
-  { value: "gemini", text: "Gemini CLI" },
-  { value: "opencode", text: "opencode (multi-provider harness)" },
-];
+const BUILDER_ENGINE_OPTIONS = [{ value: "opencode", text: "opencode (multi-provider harness)" }];
 
 /**
  * Gemini CLI has no equivalent to the Task-tool subagent dispatch
@@ -75,9 +72,13 @@ const BUG_HUNTER_ENGINE_OPTIONS = [
 
 /**
  * opencode is a harness rather than a vendor: it runs whichever provider it
- * holds a key for, and Builder points it at the same Gemini models. ally-be
- * says the same thing in `BUILDER_MULTI_PROVIDER_ENGINES`, which is why it
- * filters no model on opencode's behalf.
+ * holds a key for, and Builder points it at Gemini models by default.
+ *
+ * ally-be no longer filters models by engine at all — the filter existed for
+ * engines that ran one vendor each, and they are gone. run-engine.sh derives
+ * the provider from the model id, so naming a model is how a vendor is chosen.
+ * Bug Hunter keeps its own engines and its own picker above; it is a separate
+ * harness with a separate lifecycle.
  */
 const modelOptionsForEngine = (engine: string) =>
   engine === "claude-code" ? CLAUDE_CODE_MODEL_OPTIONS : GEMINI_MODEL_OPTIONS;
