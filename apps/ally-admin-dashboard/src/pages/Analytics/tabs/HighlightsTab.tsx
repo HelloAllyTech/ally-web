@@ -42,21 +42,20 @@ const SUB_TABS: SubTabDef[] = [
     render: () => <GoalsTab />,
   },
   {
-    // The former Highlights tab in full — certification hero, KPI strip, growth,
+    // The former Highlights tab in full — KPI strip, growth,
     // engagement, outcomes, adoption and the existing unit-economics charts —
     // plus the north-star pair, which belongs on the first platform-history
     // screen a leader sees rather than a click away.
     id: "platform",
     label: "Platform",
-    blurb:
-      "The whole-platform picture: the north star, certification, growth, engagement, outcomes and adoption.",
+    blurb: "The whole-platform picture: the north star, growth, engagement, outcomes and adoption.",
     render: f => <PlatformSubTab {...f} />,
   },
   {
     id: "levels",
-    label: "Usage levels",
+    label: "Usage",
     blurb:
-      "Whether learners start at all, how deep they get (the L1–L5 lifetime-minutes ladder), and whether they come back.",
+      "Whether learners start at all, whether they come back, and how much of their practice is long enough to count.",
     render: f => <UsageLevelsSubTab {...f} />,
   },
   {
@@ -137,8 +136,8 @@ const SUB_TABS: SubTabDef[] = [
  * re-pick it every morning.
  *
  * A page-level range would have been the smaller change and the wrong one: the
- * charts here are not slices of one question. Certification and the usage ladder
- * are lifetime totals that a window would redefine rather than narrow; the org
+ * charts here are not slices of one question. Activation and stickiness are
+ * lifetime measures that a window would redefine rather than narrow; the org
  * counts are as-of-now; the cost ratio wants months. One picker over all of them
  * would either lie about what it scoped or force every panel to the least useful
  * common period.

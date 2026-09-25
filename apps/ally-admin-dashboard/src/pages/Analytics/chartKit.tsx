@@ -76,7 +76,7 @@ interface AxisOptsBase {
   /**
    * Explicit tick values for the value axis. Build with
    * {@link integerTickValues} for any axis counting PEOPLE or events: left to
-   * itself, D3 subdivides a 0–3 range into halves, and "1.5 learners certified"
+   * itself, D3 subdivides a 0–3 range into halves, and "1.5 learners"
    * is not a quantity that exists.
    */
   valueTicks?: number[];
@@ -89,7 +89,7 @@ interface AxisOptsBase {
  *
  * For count axes. A count has no fractional values, so an axis that offers them
  * is inviting the reader to read one — and on the small ranges these charts
- * often have (three certified learners, two orgs), D3's default subdivision
+ * often have (three learners, two orgs), D3's default subdivision
  * produces nothing but fractions. Always spans zero, and always includes `max`
  * so the tallest bar has a labelled tick to sit against.
  */
