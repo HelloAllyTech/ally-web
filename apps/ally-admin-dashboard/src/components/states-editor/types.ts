@@ -14,5 +14,5 @@ export interface SimulationStateFormValue {
   scoreLower: number | null;
   scoreUpper: number | null;
   ragEnabled: boolean;
-  dialogueLength?: 'short' | 'medium' | 'long';
+  dialogueLength?: "short" | "medium" | "long";
 }

@@ -72,6 +72,14 @@ something Ally-specific.
   Resolve lazily inside the function that needs it — especially for barrel imports.
 - **Gate on `roles`, not `role`.** `GET /users/me` returns both; the singular `role` is a
   lossy legacy collapse of a user's real group memberships. Authorise on the array.
+  This extends to **hook dependency arrays**: `useSessionManager` gated on
+  `hasCallPermission(permissions)` but keyed its effect on `user?.role`, so a counsellor
+  whose persisted `role` was already set never refetched their in-progress call once
+  `permissions` arrived. Key the effect on the value the gate reads.
+- **`npm run lint` has a `--max-warnings` ceiling.** Every warning in this repo is
+  `react-hooks/exhaustive-deps`, so that number is the count of unreviewed dependency
+  arrays. A new one fails the build. Most of the backlog is deliberate, so don't bulk-"fix"
+  it — when you do remove one, lower the ceiling in `package.json` to match.
 - **Derive deployment facts from one value.** When the admin console briefly had two mount
   points, asset URLs, router basename, redirects and the `<base>` tag all derived from the
   Vite `base` — so they could not disagree. Don't add a second "am I embedded?" flag.

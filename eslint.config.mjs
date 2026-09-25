@@ -153,6 +153,13 @@ export default [
       // two registered, the `eslint-disable-next-line react-hooks/exhaustive-deps`
       // comments already in the codebase were hard errors for an unknown rule.
       "react-hooks/rules-of-hooks": "error",
+      // Stays a warning because the codebase carries a large legacy backlog of
+      // these, and most of them are deliberate (mount-only effects,
+      // notify-on-change effects) rather than defects. The backlog is instead
+      // held in place by the `--max-warnings` ceiling in the root `lint`
+      // script: every warning in this repo is this rule, so that number IS the
+      // count of unreviewed dependency arrays. Adding one fails the build.
+      // Lower the ceiling when you remove one; never raise it.
       "react-hooks/exhaustive-deps": "warn",
 
       // Project-specific overrides
