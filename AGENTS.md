@@ -72,11 +72,39 @@ something Ally-specific.
   Resolve lazily inside the function that needs it — especially for barrel imports.
 - **Gate on `roles`, not `role`.** `GET /users/me` returns both; the singular `role` is a
   lossy legacy collapse of a user's real group memberships. Authorise on the array.
+  This extends to **hook dependency arrays**: `useSessionManager` gated on
+  `hasCallPermission(permissions)` but keyed its effect on `user?.role`, so a counsellor
+  whose persisted `role` was already set never refetched their in-progress call once
+  `permissions` arrived. Key the effect on the value the gate reads.
+- **`npm run lint` has a `--max-warnings` ceiling.** Every warning in this repo is
+  `react-hooks/exhaustive-deps`, so that number is the count of unreviewed dependency
+  arrays. A new one fails the build. Most of the backlog is deliberate, so don't bulk-"fix"
+  it — when you do remove one, lower the ceiling in `package.json` to match.
 - **Derive deployment facts from one value.** When the admin console briefly had two mount
   points, asset URLs, router basename, redirects and the `<base>` tag all derived from the
   Vite `base` — so they could not disagree. Don't add a second "am I embedded?" flag.
 - **Node 22.** The backend is 24; using the wrong one produces confusing install failures.
 - **Three apps, one lib.** A `ui-shared` change needs all three test suites, not just yours.
+- **Add tooltips for non-obvious controls.** When building or touching an admin form/builder
+  screen — anything with jargon, a hidden side effect, a cross-field dependency, or a control
+  whose behaviour isn't obvious from its label — add a help tooltip rather than leaving it for
+  the trainer/admin to discover by trial and error. Pattern (already used throughout the app,
+  e.g. `apps/ally-admin-dashboard/src/pages/CreateTrack/`):
+  ```tsx
+  import { Tooltip } from "@ally-ui-mono/ui-shared";
+  import { TooltipIcon } from "@assets";
+
+  <Tooltip label="One or two sentences, written for the person filling the form in." align="top">
+    <button type="button" className="cursor-pointer inline-flex items-center">
+      <TooltipIcon />
+    </button>
+  </Tooltip>
+  ```
+  Reach for this on a case-by-case basis as you write or edit the field, not as a separate
+  sweep — skip it for controls that are already self-explanatory. There's also a data-driven
+  variant (`TooltipHint`/`AppTooltip` in `src/components/app-tooltip/`) backed by the "Manage
+  Tooltips" CMS page, for copy a non-engineer needs to edit later — most one-off engineering
+  additions don't need that.
 
 ## Commands
 
