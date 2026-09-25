@@ -6,7 +6,9 @@ import {
   buildXpByTenantScale,
   buildXpByTenantSeries,
   buildXpByTenantTable,
+  toXpByTenantGrain,
   xpByTenantEmptyText,
+  xpByTenantInProgress,
   xpByTenantTakeaway,
 } from "../xpByTenantChart";
 
@@ -152,5 +154,114 @@ describe("buildXpByTenantTable", () => {
       ["Acme", 750, "75%"],
       [OTHER_TENANTS_LABEL, 250, "25%"],
     ]);
+  });
+});
+
+describe("grouped by period", () => {
+  const grouped = response({
+    grain: "month",
+    segments: [
+      { tenantId: "a", tenantName: "Acme", xp: 700 },
+      { tenantId: "b", tenantName: "Beta", xp: 200 },
+    ],
+    otherXp: 100,
+    totalXp: 1000,
+    points: [
+      {
+        periodStart: "2026-07-01",
+        periodLabel: "Jul 2026",
+        segments: [{ tenantId: "a", tenantName: "Acme", xp: 400 }],
+        otherXp: 50,
+        totalXp: 450,
+        inProgress: false,
+      },
+      {
+        periodStart: "2026-08-01",
+        periodLabel: "Aug 2026",
+        segments: [],
+        otherXp: 0,
+        totalXp: 0,
+        inProgress: false,
+      },
+      {
+        periodStart: "2026-09-01",
+        periodLabel: "Sep 2026",
+        segments: [
+          { tenantId: "a", tenantName: "Acme", xp: 300 },
+          { tenantId: "b", tenantName: "Beta", xp: 200 },
+        ],
+        otherXp: 50,
+        totalXp: 550,
+        inProgress: true,
+      },
+    ],
+  });
+
+  it("maps allTime to the wire's `all` and passes bucketed grains through", () => {
+    expect(toXpByTenantGrain("allTime")).toBe("all");
+    expect(toXpByTenantGrain("quarter")).toBe("quarter");
+  });
+
+  it("plots one zero-filled bar per completed period, leaving off the one in progress", () => {
+    expect(buildXpByTenantSeries(grouped)).toEqual([
+      { group: "Acme", key: "Jul 2026", value: 400 },
+      { group: "Beta", key: "Jul 2026", value: 0 },
+      { group: OTHER_TENANTS_LABEL, key: "Jul 2026", value: 50 },
+      { group: "Acme", key: "Aug 2026", value: 0 },
+      { group: "Beta", key: "Aug 2026", value: 0 },
+      { group: OTHER_TENANTS_LABEL, key: "Aug 2026", value: 0 },
+    ]);
+    expect(xpByTenantInProgress(grouped)?.periodLabel).toBe("Sep 2026");
+  });
+
+  it("keeps the in-progress period in the table, labelled", () => {
+    const table = buildXpByTenantTable(grouped);
+
+    expect(table.columns).toEqual(["Period", "Acme", "Beta", OTHER_TENANTS_LABEL, "Total"]);
+    expect(table.rows).toEqual([
+      ["Jul 2026", 400, 0, 50, 450],
+      ["Aug 2026", 0, 0, 0, 0],
+      ["Sep 2026 (in progress)", 300, 200, 50, 550],
+    ]);
+  });
+
+  it("gives every named tenant its own hue, so stacked bands never collide", () => {
+    const eight = response({
+      grain: "month",
+      points: [],
+      segments: Array.from({ length: 8 }, (_, i) => ({
+        tenantId: `t${i}`,
+        tenantName: `Tenant ${i}`,
+        xp: 100 - i,
+      })),
+      totalXp: 1,
+    });
+    const hues = Object.values(buildXpByTenantScale(eight));
+
+    expect(new Set(hues).size).toBe(8);
+  });
+
+  it("treats an all-time response as the single window bar", () => {
+    const allTime = response({
+      grain: "all",
+      segments: [{ tenantId: "a", tenantName: "Acme", xp: 500 }],
+      totalXp: 500,
+      points: [
+        {
+          periodStart: "2026-01-01",
+          periodLabel: "All time",
+          segments: [{ tenantId: "a", tenantName: "Acme", xp: 500 }],
+          otherXp: 0,
+          totalXp: 500,
+          inProgress: false,
+        },
+      ],
+    });
+
+    expect(buildXpByTenantSeries(allTime)).toEqual([
+      { group: "Acme", key: "Last 90 days", value: 500 },
+    ]);
+    expect(xpByTenantInProgress(allTime)).toBeUndefined();
+    expect(buildXpByTenantTable(allTime).columns).toEqual(["Tenant", "XP", "Share"]);
   });
 });

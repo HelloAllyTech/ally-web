@@ -800,13 +800,13 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
     // Total XP within a trailing window, split by tenant (top 8 + "Other").
-    // Its OWN window vocabulary (30d/90d/365d/all) — a single bar, not a
-    // bucketed trend — so it takes `window`, not `range`/`bucket`.
+    // Its OWN window vocabulary (30d/90d/365d/all), not `range`; `grain` groups
+    // it into one stacked bar per period (`all` = one bar for the window).
     getXpByTenant: builder.query<XpByTenantResponse, XpByTenantQuery>({
-      query: ({ window } = {}) => ({
+      query: ({ window, grain } = {}) => ({
         url: GOALS_TAB_PATHS.XP_BY_TENANT,
         method: HttpMethod.GET,
-        params: window ? { window } : {},
+        params: { ...(window ? { window } : {}), ...(grain ? { grain } : {}) },
       }),
     }),
 
