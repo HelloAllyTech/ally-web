@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { BuilderNotification } from "@types";
@@ -21,12 +21,15 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
 }));
 
-const markAllRead = vi.fn();
+const markAllRead = vi.fn(() => ({ unwrap: () => Promise.resolve({ ok: true }) }));
 let queryResult: {
   data: { notifications: BuilderNotification[]; unread: number } | undefined;
   isLoading: boolean;
   isError: boolean;
+  refetch: () => void;
 };
+
+const refetch = vi.fn();
 
 vi.mock("@api", () => ({
   useGetBuilderNotificationsQuery: () => queryResult,
@@ -48,20 +51,20 @@ const notification = (overrides: Partial<BuilderNotification> = {}): BuilderNoti
 
 describe("BuilderNotificationBell", () => {
   it("renders a disabled bell while loading", () => {
-    queryResult = { data: undefined, isLoading: true, isError: false };
+    queryResult = { data: undefined, isLoading: true, isError: false, refetch };
     render(<BuilderNotificationBell />);
     expect(screen.getByTestId("bell-icon")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /notifications/i })).toBeDisabled();
   });
 
   it("renders the bell icon when loaded", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
     expect(screen.getByTestId("bell-icon")).toBeInTheDocument();
   });
 
   it("shows unread badge when there are unread notifications", () => {
-    queryResult = { data: { notifications: [notification()], unread: 3 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [notification()], unread: 3 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
     expect(screen.getByText("3")).toBeInTheDocument();
   });
@@ -71,13 +74,14 @@ describe("BuilderNotificationBell", () => {
       data: { notifications: [notification({ readAt: new Date().toISOString() })], unread: 0 },
       isLoading: false,
       isError: false,
+      refetch,
     };
     render(<BuilderNotificationBell />);
     expect(screen.queryByText("0")).toBeNull();
   });
 
   it("opens the popover when the bell is clicked", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
 
     expect(screen.queryByText("No notifications")).toBeNull();
@@ -86,7 +90,7 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("closes the popover when the bell is clicked again", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
 
     const bell = screen.getByRole("button", { name: /notifications/i });
@@ -97,7 +101,7 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("closes the popover when clicking outside the container", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
     render(
       <div>
         <BuilderNotificationBell />
@@ -113,7 +117,7 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("shows Mark all read button only when there are unread notifications", () => {
-    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("Mark all read")).toBeInTheDocument();
@@ -124,6 +128,7 @@ describe("BuilderNotificationBell", () => {
       data: { notifications: [notification({ readAt: new Date().toISOString() })], unread: 0 },
       isLoading: false,
       isError: false,
+      refetch,
     };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
@@ -131,7 +136,7 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("calls markAllRead when the button is clicked", () => {
-    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     fireEvent.click(screen.getByText("Mark all read"));
@@ -143,6 +148,7 @@ describe("BuilderNotificationBell", () => {
       data: { notifications: [notification({ sessionId: "session-42" })], unread: 1 },
       isLoading: false,
       isError: false,
+      refetch,
     };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
@@ -153,16 +159,32 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("shows No notifications empty state when there are no notifications", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false };
+    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("No notifications")).toBeInTheDocument();
   });
 
   it("shows an error message when the notification request fails", () => {
-    queryResult = { data: undefined, isLoading: false, isError: true };
+    queryResult = { data: undefined, isLoading: false, isError: true, refetch };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("Failed to load notifications.")).toBeInTheDocument();
+  });
+
+  it("refetches notifications after marking all as read", async () => {
+    const refetch = vi.fn();
+    queryResult = {
+      data: { notifications: [notification()], unread: 1 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
+    render(<BuilderNotificationBell />);
+    fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
+    fireEvent.click(screen.getByText("Mark all read"));
+    await waitFor(() => {
+      expect(refetch).toHaveBeenCalled();
+    });
   });
 });
