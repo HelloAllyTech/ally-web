@@ -98,7 +98,7 @@ const fmtS = (ms: number | null): string =>
 export const RoleplayVoiceLatencyCard = () => {
   const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.latency",
-    defaultControlsFor(["latency"]),
+    defaultControlsFor(["latency"], { latency: { grain: "week" } }),
   );
   const grain = controlsFor("latency").grain;
   const isAllTime = grain === "allTime";

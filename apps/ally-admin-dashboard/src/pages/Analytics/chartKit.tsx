@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
 import { Maximize } from "@icons";
@@ -499,6 +499,14 @@ export const MIN_CATEGORY_WIDTH = 28;
 /** Width the value axis (title + tick labels) takes before the plot starts. */
 const AXIS_GUTTER = 88;
 
+/**
+ * Whether {@link ScrollableChart} captions an overflowing plot with its
+ * "scroll sideways" note. On by default; a tab that would rather keep its cards
+ * to just the plot turns it off for every chart beneath it with a provider,
+ * so a card reused on another tab keeps the note there.
+ */
+export const ScrollNoteContext = createContext(true);
+
 /** The shape {@link ScrollableChart} needs to count a series' x categories. */
 type ChartDatum = { key?: string | number | null; group?: string | number | null };
 
@@ -514,7 +522,8 @@ type ChartDatum = { key?: string | number | null; group?: string | number | null
  *
  * The value axis stays pinned while the plot scrolls — see {@link PinnedValueAxis}.
  * Part of the range is off-screen, and the note below the plot says so: a plot
- * cut off at the card edge with no caption reads as the whole series.
+ * cut off at the card edge with no caption reads as the whole series. A tab can
+ * drop the note with {@link ScrollNoteContext}; the pinned axis and tab stop stay.
  *
  * The alternative — thinning ticks to every nth label — keeps everything in view
  * but shrinks the marks themselves, and a chart whose bars are narrower than the
@@ -536,6 +545,7 @@ export const ScrollableChart = ({
 }) => {
   const scroller = useRef<HTMLDivElement>(null);
   const [overflowing, setOverflowing] = useState(false);
+  const showNote = useContext(ScrollNoteContext);
 
   const categories = useMemo(() => new Set(data.map(d => d[on])).size, [data, on]);
   const minWidth = categories * minCategoryWidth + AXIS_GUTTER;
@@ -572,7 +582,7 @@ export const ScrollableChart = ({
         </div>
         {overflowing && <PinnedValueAxis scroller={scroller} />}
       </div>
-      {overflowing && (
+      {overflowing && showNote && (
         <p className="mt-1 text-[11px] leading-tight text-typography-500">
           Scroll sideways for the rest of the range.
         </p>

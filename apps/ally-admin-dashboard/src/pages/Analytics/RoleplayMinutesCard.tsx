@@ -48,7 +48,7 @@ const TITLE = "Roleplay Minutes";
 export const RoleplayMinutesCard = () => {
   const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.minutes",
-    defaultControlsFor(["minutes"]),
+    defaultControlsFor(["minutes"], { minutes: { grain: "week" } }),
   );
   const grain = controlsFor("minutes").grain;
   const isAllTime = grain === "allTime";

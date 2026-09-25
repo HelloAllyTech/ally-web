@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MIN_CATEGORY_WIDTH, ScrollableChart } from "../chartKit";
+import { MIN_CATEGORY_WIDTH, ScrollNoteContext, ScrollableChart } from "../chartKit";
 
 /**
  * The wrapper that stops a long series from being compressed into an unreadable
@@ -71,6 +71,21 @@ describe("ScrollableChart", () => {
     // The caveat is on the surface, not in a tooltip: a plot cut off at the card
     // edge otherwise reads as the whole series.
     expect(screen.getByText(/Scroll sideways for the rest of the range/)).toBeInTheDocument();
+    restore();
+  });
+  it("drops the note, but not the tab stop, under a provider that turns it off", () => {
+    const restore = fakeLayout(1400, 500);
+    const { container } = render(
+      <ScrollNoteContext.Provider value={false}>
+        <ScrollableChart data={series(Array.from({ length: 50 }, (_, i) => `2026-06-${i + 1}`))}>
+          <div>plot</div>
+        </ScrollableChart>
+      </ScrollNoteContext.Provider>,
+    );
+
+    const scroller = container.querySelector(".analytics-chart-scroll") as HTMLElement;
+    expect(scroller.getAttribute("tabindex")).toBe("0");
+    expect(screen.queryByText(/Scroll sideways/)).not.toBeInTheDocument();
     restore();
   });
 });
