@@ -149,7 +149,12 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
         itemId,
         answers: answerInputs,
       }).unwrap();
-      applyAttemptResult(attempt);
+
+      if (quiz.settings.showExplanations === "after_each") {
+        setResult(attempt);
+      } else {
+        applyAttemptResult(attempt);
+      }
     } catch {
       toast.error(t("common.somethingWentWrong"));
     }
@@ -213,6 +218,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
   }
 
   const question = questions[current];
+
   const answerState = answers[question.id] ?? {};
   const answered = isAnswered(question, answerState);
   const isLast = current === questions.length - 1;
@@ -226,6 +232,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
             question={question}
             state={answerState}
             onChange={s => setAnswer(question.id, s)}
+            result={result}
           />
         );
       case "true_false":
@@ -264,6 +271,15 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
         );
       default:
         return null;
+    }
+  };
+
+  const handleNextAfterExplanation = () => {
+    setResult(null);
+    if (isLast) {
+      applyAttemptResult(result!);
+    } else {
+      setCurrent(c => c + 1);
     }
   };
 
@@ -307,7 +323,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
         </button>
         {isLast ? (
           <button
-            onClick={handleSubmit}
+            onClick={result ? handleNextAfterExplanation : handleSubmit}
             disabled={!answered || isSubmitting}
             className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
           >
@@ -315,7 +331,11 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
           </button>
         ) : (
           <button
-            onClick={() => setCurrent(c => Math.min(questions.length - 1, c + 1))}
+            onClick={
+              result
+                ? handleNextAfterExplanation
+                : () => setCurrent(c => Math.min(questions.length - 1, c + 1))
+            }
             disabled={!answered}
             className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
           >
