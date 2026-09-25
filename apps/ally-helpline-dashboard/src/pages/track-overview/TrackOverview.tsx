@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -7,7 +7,9 @@ import { toast } from "sonner";
 import {
   useEnrollTrackMutation,
   useGetLearnTrackDetailQuery,
+  useGetTrackLanguagesQuery,
   useLazyGetNextTrackItemQuery,
+  useSetTrackLanguageMutation,
 } from "@api";
 import { ROUTES, buildTrackItemRoute } from "@constants";
 import { TrackDetailItem, TrackItemStatus } from "@types";
@@ -40,6 +42,22 @@ export const TrackOverview: FC = () => {
 
   const [enrollTrack] = useEnrollTrackMutation();
   const [getNextItem] = useLazyGetNextTrackItemQuery();
+  const [setTrackLanguage] = useSetTrackLanguageMutation();
+
+  // Enrollments created before the web sent a language have none saved, so
+  // the overview reads in the app language while the player — which only
+  // knows the saved choice — serves English. Adopt the app language once,
+  // when the course is published in it, so both agree.
+  const { data: languagesData } = useGetTrackLanguagesQuery(
+    { trackId },
+    { skip: !trackId || !track?.enrolled },
+  );
+  useEffect(() => {
+    if (!track?.enrolled || !languagesData || languagesData.selectedLanguageCode) return;
+    const reading = track.languageCode;
+    if (!reading || reading === "en") return;
+    void setTrackLanguage({ trackId, languageCode: reading });
+  }, [track?.enrolled, track?.languageCode, languagesData, setTrackLanguage, trackId]);
   const [isStarting, setIsStarting] = useState(false);
   const [isProgressDrawerOpen, setIsProgressDrawerOpen] = useState(false);
 

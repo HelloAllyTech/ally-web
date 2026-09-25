@@ -4,10 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TrackDetail } from "@types";
 
-const { mockUseGetLearnTrackDetailQuery, mockEnrollTrack, mockGetNextItem } = vi.hoisted(() => ({
+const {
+  mockUseGetLearnTrackDetailQuery,
+  mockUseGetTrackLanguagesQuery,
+  mockEnrollTrack,
+  mockGetNextItem,
+  mockSetTrackLanguage,
+} = vi.hoisted(() => ({
   mockUseGetLearnTrackDetailQuery: vi.fn(),
+  mockUseGetTrackLanguagesQuery: vi.fn(),
   mockEnrollTrack: vi.fn(),
   mockGetNextItem: vi.fn(),
+  mockSetTrackLanguage: vi.fn(),
 }));
 
 vi.mock("@api", () => ({
@@ -15,7 +23,9 @@ vi.mock("@api", () => ({
     mockUseGetLearnTrackDetailQuery(args, opts),
   useEnrollTrackMutation: () => [mockEnrollTrack],
   useLazyGetNextTrackItemQuery: () => [mockGetNextItem],
-  useSetTrackLanguageMutation: () => [vi.fn(), { isLoading: false }],
+  useGetTrackLanguagesQuery: (args: unknown, opts: unknown) =>
+    mockUseGetTrackLanguagesQuery(args, opts),
+  useSetTrackLanguageMutation: () => [mockSetTrackLanguage, { isLoading: false }],
 }));
 
 vi.mock("react-i18next", () => ({
@@ -106,6 +116,8 @@ describe("TrackOverview course language", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseGetLearnTrackDetailQuery.mockReturnValue({ data: track, isLoading: false });
+    mockUseGetTrackLanguagesQuery.mockReturnValue({ data: undefined });
+    mockSetTrackLanguage.mockReturnValue({ unwrap: () => Promise.resolve({ languageCode: "hi" }) });
     mockEnrollTrack.mockReturnValue({ unwrap: () => Promise.resolve({ trackEnrollmentId: "e1" }) });
     mockGetNextItem.mockReturnValue({
       unwrap: () => Promise.resolve({ trackCompleted: true, nextItem: null }),
@@ -131,6 +143,41 @@ describe("TrackOverview course language", () => {
     await waitFor(() =>
       expect(mockEnrollTrack).toHaveBeenCalledWith({ trackId: "t1", languageCode: "hi" }),
     );
+  });
+
+  it("does not touch the server's language before enrollment", () => {
+    renderPage();
+    expect(mockUseGetTrackLanguagesQuery).toHaveBeenCalledWith(
+      { trackId: "t1" },
+      expect.objectContaining({ skip: true }),
+    );
+    expect(mockSetTrackLanguage).not.toHaveBeenCalled();
+  });
+
+  it("adopts the app language for an enrollment saved without one", async () => {
+    mockUseGetLearnTrackDetailQuery.mockReturnValue({
+      data: { ...track, enrolled: true, trackEnrollmentId: "e1" },
+      isLoading: false,
+    });
+    mockUseGetTrackLanguagesQuery.mockReturnValue({
+      data: { languages: track.availableLanguages, selectedLanguageCode: null },
+    });
+    renderPage();
+    await waitFor(() =>
+      expect(mockSetTrackLanguage).toHaveBeenCalledWith({ trackId: "t1", languageCode: "hi" }),
+    );
+  });
+
+  it("leaves an enrollment alone once it has a saved language", () => {
+    mockUseGetLearnTrackDetailQuery.mockReturnValue({
+      data: { ...track, enrolled: true, trackEnrollmentId: "e1" },
+      isLoading: false,
+    });
+    mockUseGetTrackLanguagesQuery.mockReturnValue({
+      data: { languages: track.availableLanguages, selectedLanguageCode: "hi" },
+    });
+    renderPage();
+    expect(mockSetTrackLanguage).not.toHaveBeenCalled();
   });
 
   it("carries a pre-enrollment language choice into the detail query and enroll", async () => {
