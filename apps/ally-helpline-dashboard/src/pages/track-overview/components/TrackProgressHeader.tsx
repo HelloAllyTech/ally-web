@@ -7,6 +7,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ArrowRight } from "@assets";
 import { ROUTES } from "@constants";
 import { TrackDetail } from "@types";
+import { sanitizeHtml } from "@utils";
 
 interface TrackProgressHeaderProps {
   track: TrackDetail;
@@ -113,9 +114,12 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
         </button>
 
         {track.description && (
-          <p className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed">
-            {track.description}
-          </p>
+          <div
+            className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(track.description),
+            }}
+          />
         )}
 
         {!isComplete && (
