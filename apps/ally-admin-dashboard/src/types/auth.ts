@@ -706,6 +706,64 @@ export interface RoleplayCostResponse {
   computedAt: string;
 }
 
+// AI cost to DELIVER a roleplay session, per minute of practice — mirrors
+// RoleplaySessionCostResponseDto from GET /api/v1/analytics/roleplay-session-cost.
+// The session is the unit: every model call tagged to it, opener to debrief
+// chat, bucketed by when the SESSION started. Analysis spend tagged to a session
+// (actor evaluation, judges) comes back as `excludedCostUsd`, never in the cost.
+export type SessionCostComponent =
+  | "dialogue"
+  | "stt"
+  | "tts"
+  | "fillers"
+  | "events"
+  | "coaching"
+  | "debrief";
+
+export type SessionCostComponents = Record<SessionCostComponent, number | null>;
+
+export interface SessionCostComponentDef {
+  key: SessionCostComponent;
+  label: string;
+  description: string;
+}
+
+export interface RoleplaySessionCostTotals {
+  /** Sessions started, however short. */
+  sessions: number;
+  minutes: number;
+  costUsd: number;
+  /** null when no minutes were recorded — a ratio with no denominator. */
+  costPerMinuteUsd: number | null;
+  costPerSessionUsd: number | null;
+  costByComponent: SessionCostComponents;
+  /** Sums to `costPerMinuteUsd`; all null over zero minutes. */
+  perMinuteByComponent: SessionCostComponents;
+  excludedCostUsd: number;
+  /** Delivery calls with no price entry: the cost understates by these. */
+  unpricedCalls: number;
+}
+
+export interface RoleplaySessionCostPoint extends RoleplaySessionCostTotals {
+  bucket: string;
+  /** Began before every delivery call was logged: cost is understated. */
+  partial: boolean;
+}
+
+export interface RoleplaySessionCostResponse {
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  components: SessionCostComponentDef[];
+  points: RoleplaySessionCostPoint[];
+  overall: RoleplaySessionCostTotals;
+  /** ISO timestamp full logging began; null until it has. */
+  fullCoverageFrom: string | null;
+  coverageNote: string;
+  estimateNote: string;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Bug Hunter + Builder AI cost — mirrors CodingAgentCostResponseDto from
 // GET /api/v1/analytics/coding-agent-cost. NOT `llm_usage.service` (both
 // features write `service: 'llm'`) — the discriminator is `task`. Every

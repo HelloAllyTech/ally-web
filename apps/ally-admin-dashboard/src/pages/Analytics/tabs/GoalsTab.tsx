@@ -5,6 +5,7 @@ import { ScrollNoteContext } from "../chartKit";
 import { GoalsXpCard } from "../GoalsXpCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
+import { RoleplaySessionCostCard } from "../RoleplaySessionCostCard";
 import { RoleplayVoiceLatencyCard } from "../RoleplayVoiceLatencyCard";
 import { SatisfactionMixCard } from "../SatisfactionMixCard";
 import { ShipVolumeCard } from "../ShipVolumeCard";
@@ -47,6 +48,9 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *    don't answer the same question.
  *  - `ShipVolumeCard` — relocated here from the Product management tab (its
  *    own doc comment explains why).
+ *  - `RoleplaySessionCostCard` — new (AAQ-157): AI cost per minute of roleplay,
+ *    costed per SESSION and stacked by component. Not the Unit economics
+ *    cost-per-10-minutes chart, which buckets each call by when it ran.
  *
  * Each relocated card lost the page-level filter its old tab offered (a
  * tenant filter for Practice minutes, a language filter for voice latency) —
@@ -70,6 +74,7 @@ export const GoalsTab = () => (
       <ShipVolumeCard />
       <BugHunterVolumeCard />
       <XpByTenantCard />
+      <RoleplaySessionCostCard />
     </div>
   </ScrollNoteContext.Provider>
 );
