@@ -1489,6 +1489,18 @@
   },
   "tracks2": {
     "breadcrumb": "Learn",
+    "language": {
+      "readingIn": "Reading in {{language}}",
+      "change": "Change",
+      "title": "Course language",
+      "subtitle": "Changes this course only — your app language stays as it is.",
+      "changeFailed": "Could not change the course language. Please try again.",
+      "fallback": {
+        "VIDEO_NOT_LOCALISED": "This video is in English",
+        "SCENARIO_NOT_TRANSLATED": "This role play runs in English",
+        "CASE_NOT_TRANSLATED": "This case is in English"
+      }
+    },
     "coursesTitle": "Courses",
     "progress": "{{completed}} of {{total}}",
     "trackCompleted": "Track completed",
@@ -1629,7 +1641,8 @@
         "attemptsLeft_other": "{{count}} attempts left",
         "unlimitedAttempts": "Unlimited attempts",
         "start": "Start quiz",
-        "noAttemptsLeft": "No attempts remaining"
+        "noAttemptsLeft": "No attempts remaining",
+        "notScored": "Not scored — there are no right or wrong answers"
       },
       "question": {
         "progress": "Question {{current}} of {{total}}",
@@ -1646,7 +1659,9 @@
         "moveUp": "Move up",
         "moveDown": "Move down",
         "wordCount": "{{count}} / {{min}} words",
-        "aiGraded": "This answer is graded by AI"
+        "aiGraded": "This answer is graded by AI",
+        "ratePrompt": "Rate each statement",
+        "notScored": "Not scored"
       },
       "results": {
         "title": "Your results",
@@ -1663,7 +1678,13 @@
         "grading": "Grading...",
         "retry": "Retry quiz",
         "next": "Next",
-        "attemptsUsed": "Attempt {{used}} of {{max}}"
+        "attemptsUsed": "Attempt {{used}} of {{max}}",
+        "notScored": "Not scored",
+        "correctAnswer": "Correct answer",
+        "yourResponses": "Your responses",
+        "noResponse": "No response",
+        "responsesSubmitted": "Responses submitted",
+        "responsesSubmittedBody": "Thanks — your answers have been recorded."
       }
     },
     "question": {

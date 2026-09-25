@@ -22,9 +22,11 @@ import { clearItemProgress, loadItemProgress, saveItemProgress } from "@utils";
 
 import { QuestionMedia } from "../QuestionMedia";
 import { QuizAnswerState, initialAnswerState, isAnswered, toAnswerInput } from "./quizAnswerState";
+import { isGraded } from "./quizHelpers";
 import { QuizIntro } from "./QuizIntro";
 import { QuizResults } from "./QuizResults";
 import { FillBlankQuestion } from "./widgets/FillBlankQuestion";
+import { LikertScaleQuestion } from "./widgets/LikertScaleQuestion";
 import { MatchingQuestion } from "./widgets/MatchingQuestion";
 import { McqQuestion } from "./widgets/McqQuestion";
 import { OpenEndedQuestion } from "./widgets/OpenEndedQuestion";
@@ -203,6 +205,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
       <QuizResults
         result={result}
         questions={questions}
+        answers={answers}
         isRegrading={isRegrading}
         canRetry={attemptsLeft > 0}
         onRegrade={handleRegrade}
@@ -262,6 +265,14 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
             onChange={s => setAnswer(question.id, s)}
           />
         );
+      case "likert_scale":
+        return (
+          <LikertScaleQuestion
+            question={question}
+            state={answerState}
+            onChange={s => setAnswer(question.id, s)}
+          />
+        );
       default:
         return null;
     }
@@ -288,6 +299,13 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.2 }}
             >
+              {/* Said up front, so a learner answering a reflection or
+                  survey question knows it isn't being judged. */}
+              {!isGraded(question) && (
+                <span className="mb-2 inline-block rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-typography-700">
+                  {t("tracks2.quiz.question.notScored")}
+                </span>
+              )}
               <h2 className="mb-4 text-lg font-semibold text-typography-900">{question.prompt}</h2>
               <QuestionMedia media={question.media} />
               {renderWidget()}

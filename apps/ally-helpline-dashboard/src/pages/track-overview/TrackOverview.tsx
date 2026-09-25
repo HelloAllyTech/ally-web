@@ -12,6 +12,7 @@ import {
 import { ROUTES, buildTrackItemRoute } from "@constants";
 import { TrackDetailItem, TrackItemStatus } from "@types";
 
+import { CourseLanguagePicker } from "./components/CourseLanguagePicker";
 import { SectionMilestone } from "./components/SectionMilestone";
 import { TrackProgressDrawer } from "./components/TrackProgressDrawer";
 import { TrackProgressHeader } from "./components/TrackProgressHeader";
@@ -22,11 +23,20 @@ import { TrackProgressHeader } from "./components/TrackProgressHeader";
  * item nodes deep-link into the player; locked ones are inert.
  */
 export const TrackOverview: FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { trackId = "" } = useParams<{ trackId: string }>();
 
-  const { data: track, isLoading } = useGetLearnTrackDetailQuery({ trackId }, { skip: !trackId });
+  // A language picked before enrolling. There is no enrollment row to persist
+  // it on yet, so it rides along on the detail query and then seeds enroll;
+  // once enrolled, the server's saved choice wins and this is ignored.
+  const [preferredLanguage, setPreferredLanguage] = useState<string | null>(null);
+  const languageCode = preferredLanguage ?? i18n.language;
+
+  const { data: track, isLoading } = useGetLearnTrackDetailQuery(
+    { trackId, languageCode },
+    { skip: !trackId },
+  );
 
   const [enrollTrack] = useEnrollTrackMutation();
   const [getNextItem] = useLazyGetNextTrackItemQuery();
@@ -64,7 +74,9 @@ export const TrackOverview: FC = () => {
     setIsStarting(true);
     try {
       if (!track.enrolled) {
-        await enrollTrack({ trackId }).unwrap();
+        // Seeds the course language from what they are reading it in now, so
+        // a Hindi-UI learner opening a Hindi-published course starts in Hindi.
+        await enrollTrack({ trackId, languageCode }).unwrap();
       }
       // Ask the server for the next unlocked-but-incomplete item.
       const nextResult = await getNextItem({ trackId }).unwrap();
@@ -111,6 +123,14 @@ export const TrackOverview: FC = () => {
         isStarting={isStarting}
         onStartOrContinue={handleStartOrContinue}
         onProgressClick={track.enrolled ? () => setIsProgressDrawerOpen(true) : undefined}
+      />
+
+      <CourseLanguagePicker
+        trackId={trackId}
+        options={track.availableLanguages ?? []}
+        currentLanguageCode={track.languageCode ?? "en"}
+        enrolled={track.enrolled}
+        onPreferredLanguageChange={setPreferredLanguage}
       />
 
       {isProgressDrawerOpen && (

@@ -103,6 +103,37 @@ export interface TrackDetailItem {
   maxWatchedPct: number | null;
   /** The author enabled a discussion thread beneath this item. */
   hasDiscussion?: boolean;
+  /**
+   * Non-null when this component reads in English despite the course being
+   * read in another language — the card tells the learner why up front.
+   */
+  languageFallbackReason?: TrackLanguageFallbackReason | null;
+}
+
+/** Why a component reads in English inside a translated course. */
+export enum TrackLanguageFallbackReason {
+  VIDEO_NOT_LOCALISED = "VIDEO_NOT_LOCALISED",
+  SCENARIO_NOT_TRANSLATED = "SCENARIO_NOT_TRANSLATED",
+  CASE_NOT_TRANSLATED = "CASE_NOT_TRANSLATED",
+}
+
+/** A language a course is published in — English first, then translations. */
+export interface TrackLanguageOption {
+  languageId: number;
+  /** e.g. `hi` — what the learner sends back and what is persisted. */
+  languageCode: string;
+  /** Endonym where the backend has one, e.g. `हिन्दी`. */
+  label: string;
+  isSource: boolean;
+}
+
+export interface GetTrackLanguagesResponse {
+  languages: TrackLanguageOption[];
+  selectedLanguageCode: string | null;
+}
+
+export interface SetTrackLanguageResponse {
+  languageCode: string;
 }
 
 export interface TrackSection {
@@ -126,6 +157,10 @@ export interface TrackDetail {
   trackEnrollmentId: string | null;
   completedItems: number;
   completedAt: string | null;
+  /** What the learner is reading the course in right now. */
+  languageCode?: string | null;
+  /** Every language the course is published in, English included. */
+  availableLanguages?: TrackLanguageOption[];
   sections: TrackSection[];
 }
 
@@ -207,7 +242,8 @@ export type QuizQuestionType =
   | "ordering"
   | "matching"
   | "fill_blank"
-  | "open_ended";
+  | "open_ended"
+  | "likert_scale";
 
 export interface QuizOption {
   id: string;
@@ -238,7 +274,14 @@ export interface SanitizedQuizQuestion {
   id: string;
   type: QuizQuestionType;
   prompt: string;
+  /** 0 for an ungraded question. */
   points: number;
+  /**
+   * false = answered but not scored (a survey or reflection question, or any
+   * Likert). Missing on payloads from before ungraded questions existed —
+   * treat as true.
+   */
+  graded?: boolean;
   /** Optional picture or clip shown above the answer controls. */
   media?: QuestionMedia;
   /** mcq_single / mcq_multi */
@@ -254,6 +297,10 @@ export interface SanitizedQuizQuestion {
   blankIds?: string[];
   /** open_ended */
   minWords?: number;
+  /** likert_scale — the rows to rate */
+  statements?: QuizOption[];
+  /** likert_scale — the shared scale, lowest point first */
+  scale?: QuizOption[];
 }
 
 export interface SanitizedQuiz {
@@ -263,6 +310,7 @@ export interface SanitizedQuiz {
     showExplanations: string;
   };
   questions: SanitizedQuizQuestion[];
+  /** Graded questions only — 0 means a survey, with no score to pass. */
   totalPoints: number;
 }
 
@@ -274,6 +322,8 @@ export interface QuizAnswerInput {
   pairs?: { leftId: string; rightId: string }[];
   blanks?: { blankId: string; answer: string }[];
   text?: string;
+  /** likert_scale — one scale point per statement */
+  ratings?: { statementId: string; scaleOptionId: string }[];
 }
 
 /**
@@ -308,21 +358,42 @@ export interface SubmitInterjectionAnswerResponse {
 
 export type QuizAttemptStatus = "GRADED" | "PENDING_GRADING";
 
+/**
+ * The answer key, as the results screen reveals it. Same field names as
+ * `QuizAnswerInput` so both render the same way; fill-blank carries every
+ * accepted answer rather than one.
+ */
+export interface QuizCorrectAnswer {
+  selectedOptionIds?: string[];
+  booleanAnswer?: boolean;
+  orderedItemIds?: string[];
+  pairs?: { leftId: string; rightId: string }[];
+  blanks?: { blankId: string; acceptedAnswers: string[] }[];
+}
+
 export interface QuizQuestionResult {
   questionId: string;
-  /** null = pending LLM grading */
+  /**
+   * null = pending LLM grading, OR an ungraded question with no answer key
+   * to be right or wrong against. Use `isPendingResult` to tell them apart.
+   */
   correct: boolean | null;
+  /** false = not scored. Missing on older attempts — treat as true. */
+  graded?: boolean;
   pointsAwarded: number;
   pointsPossible: number;
   explanation?: string;
   llmFeedback?: string;
+  /** Present only when there is a key and the trainer lets learners see it. */
+  correctAnswer?: QuizCorrectAnswer;
 }
 
 export interface QuizAttemptResult {
   attemptId: string;
   attemptNumber: number;
   status: QuizAttemptStatus;
-  scorePct: number;
+  /** null when the quiz has no graded questions — a survey has no score. */
+  scorePct: number | null;
   passed: boolean;
   passScore: number;
   attemptsUsed: number;

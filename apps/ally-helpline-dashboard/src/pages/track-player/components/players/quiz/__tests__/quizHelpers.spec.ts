@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   applyMatchSelection,
   breakMatch,
+  formatCorrectAnswer,
+  formatLikertResponses,
+  isPendingResult,
+  isSurveyQuiz,
   leftIdForRight,
   rightIdForLeft,
   splitFillBlankTemplate,
@@ -77,5 +81,108 @@ describe("matching pairing reducer", () => {
     expect(rightIdForLeft(pairs, "lX")).toBeNull();
     expect(leftIdForRight(pairs, "r9")).toBe("l1");
     expect(leftIdForRight(pairs, "rX")).toBeNull();
+  });
+});
+
+describe("isPendingResult", () => {
+  it("is pending only for a graded question with no verdict yet", () => {
+    expect(isPendingResult({ correct: null })).toBe(true);
+    expect(isPendingResult({ correct: null, graded: true })).toBe(true);
+    expect(isPendingResult({ correct: null, graded: false })).toBe(false);
+    expect(isPendingResult({ correct: false })).toBe(false);
+  });
+});
+
+describe("isSurveyQuiz", () => {
+  it("is a survey only when every question is ungraded", () => {
+    expect(isSurveyQuiz([{ graded: false }, { graded: false }])).toBe(true);
+    expect(isSurveyQuiz([{ graded: false }, { graded: true }])).toBe(false);
+    // Older payloads carry no flag at all — those are graded.
+    expect(isSurveyQuiz([{}])).toBe(false);
+    expect(isSurveyQuiz([])).toBe(false);
+  });
+});
+
+describe("formatCorrectAnswer", () => {
+  const labels = { true: "True", false: "False" };
+
+  it("resolves option ids to their text", () => {
+    const question = {
+      type: "mcq_multi",
+      options: [
+        { id: "a", text: "Listen" },
+        { id: "b", text: "Interrupt" },
+        { id: "c", text: "Reflect" },
+      ],
+    };
+    expect(formatCorrectAnswer(question, { selectedOptionIds: ["a", "c"] }, labels)).toEqual([
+      "Listen, Reflect",
+    ]);
+  });
+
+  it("labels true/false", () => {
+    expect(formatCorrectAnswer({ type: "true_false" }, { booleanAnswer: false }, labels)).toEqual([
+      "False",
+    ]);
+  });
+
+  it("numbers an ordering and arrows a matching", () => {
+    const ordering = {
+      type: "ordering",
+      items: [
+        { id: "x", text: "Greet" },
+        { id: "y", text: "Assess" },
+      ],
+    };
+    expect(formatCorrectAnswer(ordering, { orderedItemIds: ["x", "y"] }, labels)).toEqual([
+      "1. Greet",
+      "2. Assess",
+    ]);
+    const matching = {
+      type: "matching",
+      left: [{ id: "l1", text: "Anger" }],
+      right: [{ id: "r1", text: "Validate" }],
+    };
+    expect(
+      formatCorrectAnswer(matching, { pairs: [{ leftId: "l1", rightId: "r1" }] }, labels),
+    ).toEqual(["Anger → Validate"]);
+  });
+
+  it("joins a blank's accepted answers", () => {
+    expect(
+      formatCorrectAnswer(
+        { type: "fill_blank" },
+        { blanks: [{ blankId: "b1", acceptedAnswers: ["calm", "steady"] }] },
+        labels,
+      ),
+    ).toEqual(["calm / steady"]);
+  });
+
+  it("shows nothing when there is no key", () => {
+    expect(formatCorrectAnswer({ type: "mcq_single" }, undefined, labels)).toEqual([]);
+  });
+
+  it("drops ids that no longer resolve instead of showing them raw", () => {
+    const question = { type: "mcq_single", options: [{ id: "a", text: "A" }] };
+    expect(formatCorrectAnswer(question, { selectedOptionIds: ["gone"] }, labels)).toEqual([]);
+  });
+});
+
+describe("formatLikertResponses", () => {
+  it("pairs each statement with its chosen point, or null", () => {
+    const question = {
+      statements: [
+        { id: "s1", text: "I felt prepared" },
+        { id: "s2", text: "I felt calm" },
+      ],
+      scale: [
+        { id: "p1", text: "Disagree" },
+        { id: "p2", text: "Agree" },
+      ],
+    };
+    expect(formatLikertResponses(question, { s1: "p2" })).toEqual([
+      { statement: "I felt prepared", rating: "Agree" },
+      { statement: "I felt calm", rating: null },
+    ]);
   });
 });

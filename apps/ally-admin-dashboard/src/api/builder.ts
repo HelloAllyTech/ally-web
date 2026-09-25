@@ -349,6 +349,7 @@ export const builderAPI = baseAPI.injectEndpoints({
         enabled?: boolean;
         autoReviewEnabled?: boolean;
         autoApproveEnabled?: boolean;
+        autoMergeEnabled?: boolean;
         autoReleaseEnabled?: boolean;
         autoFixEnabled?: boolean;
         maxFixRunsPerPr?: number;

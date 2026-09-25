@@ -52,6 +52,7 @@ const PROSE_SECTIONS: (keyof BuilderPrdDocument)[] = [
   "problem",
   "usersAndContext",
   "existingBehaviour",
+  "whereChangesBelong",
   "goals",
   "nonGoals",
 ];

@@ -14,8 +14,10 @@ import {
   EnrollTrackResponse,
   GetLearnTracksResponse,
   GetNextTrackItemResponse,
+  GetTrackLanguagesResponse,
   QuizAnswerInput,
   QuizAttemptResult,
+  SetTrackLanguageResponse,
   StartTrackItemResponse,
   SubmitArticleQuestionAnswerResponse,
   SubmitInterjectionAnswerResponse,
@@ -76,13 +78,47 @@ const tracksAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.LEARN_TRACKS],
     }),
 
-    /** Full track detail: sections + items with per-item progress status. */
-    getLearnTrackDetail: builder.query<TrackDetail, { trackId: string }>({
-      query: ({ trackId }) => ({
+    /**
+     * Full track detail: sections + items with per-item progress status.
+     *
+     * `languageCode` is the app language the learner is browsing in. The
+     * server reads the course in it when the course is published in it — an
+     * enrolled learner's saved per-course choice wins over it — and otherwise
+     * falls back to English. Without it, a Hindi-UI learner always got English.
+     */
+    getLearnTrackDetail: builder.query<TrackDetail, { trackId: string; languageCode?: string }>({
+      query: ({ trackId, languageCode }) => ({
         url: ApiEndpoints.TRACKS.GET_TRACK_DETAIL(trackId),
+        method: HttpMethod.GET,
+        params: languageCode ? { languageCode } : undefined,
+      }),
+      providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
+    }),
+
+    /** Languages this course is published in, plus the learner's saved choice. */
+    getTrackLanguages: builder.query<GetTrackLanguagesResponse, { trackId: string }>({
+      query: ({ trackId }) => ({
+        url: ApiEndpoints.TRACKS.LANGUAGES(trackId),
         method: HttpMethod.GET,
       }),
       providesTags: [TAG_TYPES.LEARN_TRACK_DETAIL],
+    }),
+
+    /**
+     * Persist the learner's language for ONE course (requires enrollment).
+     * Every title, prompt and option changes with it, so the whole track cache
+     * is invalidated.
+     */
+    setTrackLanguage: builder.mutation<
+      SetTrackLanguageResponse,
+      { trackId: string; languageCode: string }
+    >({
+      query: ({ trackId, languageCode }) => ({
+        url: ApiEndpoints.TRACKS.SET_LANGUAGE(trackId),
+        method: HttpMethod.PUT,
+        body: { languageCode },
+      }),
+      invalidatesTags: ALL_TRACK_TAGS,
     }),
 
     /**
@@ -108,11 +144,17 @@ const tracksAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.LEARN_TRACK_NEXT],
     }),
 
-    /** Idempotent enrollment — creates all progress rows server-side. */
-    enrollTrack: builder.mutation<EnrollTrackResponse, { trackId: string }>({
-      query: ({ trackId }) => ({
+    /**
+     * Idempotent enrollment — creates all progress rows server-side.
+     *
+     * `languageCode` seeds the enrollment's course language (the language every
+     * lesson is served and marked in), when the course is published in it.
+     */
+    enrollTrack: builder.mutation<EnrollTrackResponse, { trackId: string; languageCode?: string }>({
+      query: ({ trackId, languageCode }) => ({
         url: ApiEndpoints.TRACKS.ENROLL(trackId),
         method: HttpMethod.POST,
+        body: languageCode ? { languageCode } : undefined,
       }),
       invalidatesTags: ALL_TRACK_TAGS,
     }),
@@ -301,6 +343,8 @@ const tracksAPI = baseAPI.injectEndpoints({
 export const {
   useGetLearnTracksQuery,
   useGetLearnTrackDetailQuery,
+  useGetTrackLanguagesQuery,
+  useSetTrackLanguageMutation,
   useGetLearnTrackProgressQuery,
   useGetNextTrackItemQuery,
   useLazyGetNextTrackItemQuery,

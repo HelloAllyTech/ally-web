@@ -15,11 +15,20 @@ export const BuilderNotificationBell: FC = () => {
   const navigate = useNavigate();
   const strings = en.builder.notifications;
 
-  const { data, isLoading, isError } = useGetBuilderNotificationsQuery(undefined, {
+  const { data, isLoading, isError, refetch } = useGetBuilderNotificationsQuery(undefined, {
     pollingInterval: 15_000,
     skipPollingIfUnfocused: true,
   });
   const [markAllRead, { isLoading: isClearing }] = useMarkBuilderNotificationsReadMutation();
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllRead().unwrap();
+      refetch();
+    } catch {
+      // Errors fall through to the isError on the main query.
+    }
+  };
 
   const items = data?.notifications ?? [];
   const unread = data?.unread ?? 0;
@@ -66,7 +75,7 @@ export const BuilderNotificationBell: FC = () => {
           <div className="flex items-center justify-between gap-2 border-b border-border-light px-4 py-3">
             <span className="text-sm font-semibold text-typography-900">{strings.title}</span>
             {unread > 0 && (
-              <Button size="sm" kind="ghost" disabled={isClearing} onClick={() => markAllRead()}>
+              <Button size="sm" kind="ghost" disabled={isClearing} onClick={handleMarkAllRead}>
                 {strings.markAllRead}
               </Button>
             )}

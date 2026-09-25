@@ -4,12 +4,14 @@ import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-
 
 import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
+import { ToggleSwitch } from "@components";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import { QuizQuestion, QuizQuestionType, TrackFormValues, TrackItemType } from "@types";
 
 import { createQuestionOfType, QuestionPath } from "../../../trackFormUtils";
 import { ItemEditorFrame } from "../ItemEditorFrame";
 import { FillBlankEditor } from "./FillBlankEditor";
+import { LikertScaleEditor } from "./LikertScaleEditor";
 import { MatchingEditor } from "./MatchingEditor";
 import { McqEditor } from "./McqEditor";
 import { OpenEndedEditor } from "./OpenEndedEditor";
@@ -24,6 +26,13 @@ interface QuizItemEditorProps {
   onDelete: () => void;
 }
 
+/**
+ * Types the QUIZ add-menu offers. `likert_scale` (and the Graded/Show
+ * correct answer toggles below) are quiz-only — the server 400s on either
+ * from an article inline question or a video interjection — so this list is
+ * never reused directly by those pickers; `VideoItemEditor` derives its own
+ * filtered copy instead of exporting this one unfiltered.
+ */
 export const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
   "mcq_single",
   "mcq_multi",
@@ -32,30 +41,39 @@ export const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
   "matching",
   "fill_blank",
   "open_ended",
+  "likert_scale",
 ];
 
 /**
  * Dispatches a question type to its type-specific editor body. Exported so
  * `VideoItemEditor`'s interjection authoring can reuse it unchanged — an
  * interjection question is the same `QuizQuestion` union (minus
- * `open_ended`, filtered out at the type-picker level, not here).
+ * `open_ended` and `likert_scale`, filtered out at the type-picker level,
+ * not here). `graded` defaults to `true` since an interjection has no
+ * Graded toggle of its own and is always graded.
  */
-export const renderTypeBody = (type: QuizQuestionType, questionPath: QuestionPath) => {
+export const renderTypeBody = (
+  type: QuizQuestionType,
+  questionPath: QuestionPath,
+  graded = true,
+) => {
   switch (type) {
     case "mcq_single":
-      return <McqEditor questionPath={questionPath} multi={false} />;
+      return <McqEditor questionPath={questionPath} multi={false} graded={graded} />;
     case "mcq_multi":
-      return <McqEditor questionPath={questionPath} multi />;
+      return <McqEditor questionPath={questionPath} multi graded={graded} />;
     case "true_false":
-      return <TrueFalseEditor questionPath={questionPath} />;
+      return <TrueFalseEditor questionPath={questionPath} graded={graded} />;
     case "ordering":
       return <OrderingEditor questionPath={questionPath} />;
     case "matching":
-      return <MatchingEditor questionPath={questionPath} />;
+      return <MatchingEditor questionPath={questionPath} graded={graded} />;
     case "fill_blank":
-      return <FillBlankEditor questionPath={questionPath} />;
+      return <FillBlankEditor questionPath={questionPath} graded={graded} />;
     case "open_ended":
-      return <OpenEndedEditor questionPath={questionPath} />;
+      return <OpenEndedEditor questionPath={questionPath} graded={graded} />;
+    case "likert_scale":
+      return <LikertScaleEditor questionPath={questionPath} />;
     default:
       return null;
   }
@@ -88,6 +106,11 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
 
   const activeQuestion = questions[activeIndex];
   const questionPath = `${base}.quiz.questions.${activeIndex}` as QuestionPath;
+  const isLikert = activeQuestion?.type === "likert_scale";
+  const isOpenEnded = activeQuestion?.type === "open_ended";
+  // Likert is never graded whatever the (nonexistent, for that type) toggle
+  // would say; every other type follows its own Graded toggle, absent = true.
+  const isGraded = !isLikert && activeQuestion?.isGraded !== false;
 
   return (
     <ItemEditorFrame
@@ -186,7 +209,74 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                     better than either alone. */}
                 <QuestionMediaField questionPath={questionPath} />
 
-                {renderTypeBody(activeQuestion.type, questionPath)}
+                {renderTypeBody(activeQuestion.type, questionPath, isGraded)}
+
+                <div className="flex flex-col gap-2 border-t border-border-light pt-3">
+                  {isLikert ? (
+                    <p className="text-xs text-typography-500">
+                      Rating-scale questions are never graded.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="inline-flex items-center gap-1">
+                          <label className="text-sm font-medium text-typography-800">Graded</label>
+                          <Tooltip
+                            label="Counts towards the quiz score. Turn off for survey or reflection questions — the correct answer then becomes optional."
+                            align="top"
+                          >
+                            <button
+                              type="button"
+                              className="cursor-pointer inline-flex items-center"
+                            >
+                              <TooltipIcon />
+                            </button>
+                          </Tooltip>
+                        </span>
+                        <Controller
+                          control={control}
+                          name={`${questionPath}.isGraded`}
+                          render={({ field }) => (
+                            <ToggleSwitch
+                              enabled={field.value !== false}
+                              onChange={field.onChange}
+                            />
+                          )}
+                        />
+                      </div>
+                      {!isOpenEnded && (
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="inline-flex items-center gap-1">
+                            <label className="text-sm font-medium text-typography-800">
+                              Show correct answer after submitting
+                            </label>
+                            <Tooltip
+                              label="When off, learners still see whether they were right, but not the answer. Your explanation (if shown) may still give it away."
+                              align="top"
+                            >
+                              <button
+                                type="button"
+                                className="cursor-pointer inline-flex items-center"
+                              >
+                                <TooltipIcon />
+                              </button>
+                            </Tooltip>
+                          </span>
+                          <Controller
+                            control={control}
+                            name={`${questionPath}.showCorrectAnswer`}
+                            render={({ field }) => (
+                              <ToggleSwitch
+                                enabled={field.value !== false}
+                                onChange={field.onChange}
+                              />
+                            )}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
 
                 <div className="flex flex-col gap-1.5">
                   <span className="inline-flex items-center gap-1">
@@ -220,27 +310,29 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                   />
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium text-typography-800">Points</label>
-                  <Controller
-                    control={control}
-                    name={`${questionPath}.points`}
-                    render={({ field }) => (
-                      <input
-                        type="number"
-                        min={1}
-                        className="w-20 border border-border-light rounded-md px-2 py-1 text-sm outline-none focus:border-primary-400"
-                        value={field.value ?? ""}
-                        onChange={event =>
-                          field.onChange(
-                            event.target.value === "" ? undefined : Number(event.target.value),
-                          )
-                        }
-                        onWheel={event => event.currentTarget.blur()}
-                      />
-                    )}
-                  />
-                </div>
+                {isGraded && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-medium text-typography-800">Points</label>
+                    <Controller
+                      control={control}
+                      name={`${questionPath}.points`}
+                      render={({ field }) => (
+                        <input
+                          type="number"
+                          min={1}
+                          className="w-20 border border-border-light rounded-md px-2 py-1 text-sm outline-none focus:border-primary-400"
+                          value={field.value ?? ""}
+                          onChange={event =>
+                            field.onChange(
+                              event.target.value === "" ? undefined : Number(event.target.value),
+                            )
+                          }
+                          onWheel={event => event.currentTarget.blur()}
+                        />
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-typography-500">

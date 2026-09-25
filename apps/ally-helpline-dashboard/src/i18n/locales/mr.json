@@ -1414,7 +1414,8 @@
         "attemptsLeft_other": "{{count}} प्रयत्न शिल्लक",
         "unlimitedAttempts": "अमर्यादित प्रयत्न",
         "start": "क्विझ सुरू करा",
-        "noAttemptsLeft": "कोणतेही प्रयत्न शिल्लक नाहीत"
+        "noAttemptsLeft": "कोणतेही प्रयत्न शिल्लक नाहीत",
+        "notScored": "गुण दिले जाणार नाहीत — कोणतेही उत्तर बरोबर किंवा चूक नाही"
       },
       "question": {
         "progress": "प्रश्न {{current}} / {{total}}",
@@ -1428,7 +1429,9 @@
         "orderPrompt": "हे योग्य क्रमाने लावा",
         "matchPrompt": "डावीकडील एक घटक निवडा, मग उजवीकडील त्याची जोडी निवडा",
         "wordCount": "{{count}} / {{min}} शब्द",
-        "aiGraded": "या उत्तराचे मूल्यांकन AI करते"
+        "aiGraded": "या उत्तराचे मूल्यांकन AI करते",
+        "ratePrompt": "प्रत्येक विधानाला रेटिंग द्या",
+        "notScored": "गुण दिले जाणार नाहीत"
       },
       "results": {
         "title": "तुमचे निकाल",
@@ -1445,7 +1448,13 @@
         "grading": "मूल्यांकन होत आहे...",
         "retry": "क्विझ पुन्हा करा",
         "next": "पुढील",
-        "attemptsUsed": "प्रयत्न {{used}} / {{max}}"
+        "attemptsUsed": "प्रयत्न {{used}} / {{max}}",
+        "notScored": "गुण दिले नाहीत",
+        "correctAnswer": "बरोबर उत्तर",
+        "yourResponses": "तुमचे प्रतिसाद",
+        "noResponse": "प्रतिसाद नाही",
+        "responsesSubmitted": "प्रतिसाद सबमिट झाले",
+        "responsesSubmittedBody": "धन्यवाद — तुमची उत्तरे नोंदवली गेली आहेत."
       }
     },
     "question": {

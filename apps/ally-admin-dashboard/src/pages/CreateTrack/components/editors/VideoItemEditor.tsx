@@ -28,11 +28,12 @@ import { useTrackMediaUpload } from "../../useTrackMediaUpload";
 import { QUESTION_TYPE_ORDER, renderTypeBody } from "./quiz/QuizItemEditor";
 
 /** Question types valid for an interjection — `open_ended` is LLM-graded and
- * doesn't fit a synchronous hard-pause, so it's excluded here (not in the
- * shared `QUESTION_TYPE_ORDER`, since a plain quiz question can still be
- * open-ended). */
+ * doesn't fit a synchronous hard-pause, and `likert_scale` (plus the Graded /
+ * Show-correct-answer toggles) is quiz-only per the server's own validator —
+ * both are excluded here rather than in the shared `QUESTION_TYPE_ORDER`,
+ * since a plain quiz question can still be either. */
 const INTERJECTION_QUESTION_TYPES: QuizQuestionType[] = QUESTION_TYPE_ORDER.filter(
-  type => type !== "open_ended",
+  type => type !== "open_ended" && type !== "likert_scale",
 );
 
 const newInterjectionId = () => crypto.randomUUID();
