@@ -10,6 +10,8 @@ import { QuestionPath } from "../../../trackFormUtils";
 
 interface MatchingEditorProps {
   questionPath: QuestionPath;
+  /** Ungraded (`isGraded: false`) makes pairing every left entry optional. */
+  graded?: boolean;
 }
 
 const newId = () => crypto.randomUUID();
@@ -18,7 +20,7 @@ const newId = () => crypto.randomUUID();
  * Matching editor: left prompts, right answers (which may include distractors),
  * and a per-left mapping to the correct right entry stored in `correctPairs`.
  */
-export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath }) => {
+export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath, graded = true }) => {
   const { control, setValue } = useFormContext<TrackFormValues>();
 
   const leftName = `${questionPath}.left` as `sections.0.items.0.quiz.questions.0.left`;
@@ -75,7 +77,9 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="text-sm font-medium text-typography-800">Pairs</label>
+      <label className="text-sm font-medium text-typography-800">
+        Pairs{graded ? "" : " (optional)"}
+      </label>
       <div className="flex flex-col gap-2">
         {left.map((leftEntry, index) => (
           <div key={leftEntry.id} className="flex items-center gap-2">

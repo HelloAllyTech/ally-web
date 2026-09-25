@@ -4,6 +4,10 @@ import { describe, expect, it } from "vitest";
 import { SimulationStatus } from "@types";
 import {
   ArticleContent,
+  FillBlankQuestion,
+  LikertScaleQuestion,
+  MatchingQuestion,
+  McqMultiQuestion,
   McqSingleQuestion,
   QuestionMedia,
   QuizContent,
@@ -11,10 +15,12 @@ import {
   TrackFormValues,
   TrackGameKey,
   TrackItemType,
+  TrueFalseQuestion,
 } from "@types";
 
 import {
   createItemOfType,
+  createQuestionOfType,
   deserializeTrack,
   serializeTrackForm,
   validateTrackForPublish,
@@ -493,5 +499,225 @@ describe("hasDiscussion (course discussions)", () => {
     };
     form.sections[0].items = [createItemOfType(TrackItemType.ARTICLE)];
     expect(serializeTrackForm(form).sections[0].items[0].hasDiscussion).toBe(false);
+  });
+});
+
+describe("likert_scale question type", () => {
+  /** Puts a single question of the given type on the baseline form's quiz. */
+  const formWithQuestion = (question: QuizContent["questions"][number]): TrackFormValues => {
+    const form = buildValidForm();
+    (form.sections[0].items[1].quiz as QuizContent).questions = [question];
+    return form;
+  };
+
+  const messages = (form: TrackFormValues) =>
+    validateTrackForPublish(form).map(error => error.message);
+
+  it("creates a default 5-point agreement scale with one blank statement, and no points", () => {
+    const question = createQuestionOfType("likert_scale") as LikertScaleQuestion;
+    expect(question.statements).toEqual([{ id: expect.any(String), text: "" }]);
+    expect(question.scale.map(point => point.text)).toEqual([
+      "Strongly disagree",
+      "Disagree",
+      "Neutral",
+      "Agree",
+      "Strongly agree",
+    ]);
+    expect(question.points).toBeUndefined();
+    expect(question.isGraded).toBeUndefined();
+  });
+
+  it("publishes a filled-in likert question", () => {
+    const question = createQuestionOfType("likert_scale") as LikertScaleQuestion;
+    question.prompt = "Rate your confidence";
+    question.statements[0].text = "I feel confident having this conversation";
+    expect(validateTrackForPublish(formWithQuestion(question))).toEqual([]);
+  });
+
+  it("blocks publishing with a blank statement or scale point", () => {
+    const question = createQuestionOfType("likert_scale") as LikertScaleQuestion;
+    question.prompt = "Rate your confidence";
+    expect(messages(formWithQuestion(question)).join(" ")).toMatch(/every statement needs text/);
+
+    question.statements[0].text = "I feel confident";
+    question.scale[0].text = "";
+    expect(messages(formWithQuestion(question)).join(" ")).toMatch(/every scale point needs text/);
+  });
+
+  it("blocks publishing outside the 1-20 statement / 2-10 scale-point range", () => {
+    const question = createQuestionOfType("likert_scale") as LikertScaleQuestion;
+    question.prompt = "Rate your confidence";
+    question.statements[0].text = "Statement";
+    question.scale = [{ id: "s1", text: "Only one" }];
+    expect(messages(formWithQuestion(question)).join(" ")).toMatch(/2-10 points/);
+
+    question.scale = Array.from({ length: 11 }, (_, i) => ({ id: `s${i}`, text: `Point ${i}` }));
+    expect(messages(formWithQuestion(question)).join(" ")).toMatch(/2-10 points/);
+  });
+
+  it("never sends isGraded, even if the form somehow carries a stray true", () => {
+    const question = {
+      ...(createQuestionOfType("likert_scale") as LikertScaleQuestion),
+      prompt: "Rate your confidence",
+      isGraded: true,
+    };
+    question.statements[0].text = "Statement";
+    const structure = serializeTrackForm(formWithQuestion(question));
+    const sent = (structure.sections[0].items[1].content as QuizContent).questions[0];
+    expect(sent).not.toHaveProperty("isGraded");
+  });
+});
+
+describe("ungraded questions (isGraded: false) and showCorrectAnswer", () => {
+  const formWithQuestion = (question: QuizContent["questions"][number]): TrackFormValues => {
+    const form = buildValidForm();
+    (form.sections[0].items[1].quiz as QuizContent).questions = [question];
+    return form;
+  };
+
+  it("does not block publish when a graded-by-default question is marked ungraded with no key", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.options = [
+      { id: "o1", text: "Right" },
+      { id: "o2", text: "Wrong" },
+    ];
+    question.isGraded = false;
+    question.correctOptionIds = [];
+    expect(validateTrackForPublish(formWithQuestion(question))).toEqual([]);
+  });
+
+  it("still blocks publish when a graded question has no key", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.options = [
+      { id: "o1", text: "Right" },
+      { id: "o2", text: "Wrong" },
+    ];
+    question.correctOptionIds = [];
+    const errors = validateTrackForPublish(formWithQuestion(question)).map(e => e.message);
+    expect(errors.join(" ")).toMatch(/mark exactly one correct option/);
+  });
+
+  it("still validates a key that IS given on an ungraded question", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.isGraded = false;
+    question.correctOptionIds = ["does-not-exist"];
+    const errors = validateTrackForPublish(formWithQuestion(question)).map(e => e.message);
+    expect(errors.join(" ")).toMatch(/mark exactly one correct option/);
+  });
+
+  it("does not require a true_false correctAnswer when ungraded", () => {
+    const trueFalse = createQuestionOfType("true_false") as TrueFalseQuestion;
+    trueFalse.prompt = "Is this true?";
+    trueFalse.isGraded = false;
+    (trueFalse as unknown as { correctAnswer: unknown }).correctAnswer = undefined;
+    expect(validateTrackForPublish(formWithQuestion(trueFalse))).toEqual([]);
+  });
+
+  it("does not require every matching left entry to be paired when ungraded", () => {
+    const matching = createQuestionOfType("matching") as MatchingQuestion;
+    matching.prompt = "Match these";
+    matching.isGraded = false;
+    matching.left[0].text = "Left 1";
+    matching.left[1].text = "Left 2";
+    matching.right[0].text = "Right 1";
+    matching.right[1].text = "Right 2";
+    matching.correctPairs = [];
+    expect(validateTrackForPublish(formWithQuestion(matching))).toEqual([]);
+  });
+
+  it("omits isGraded/showCorrectAnswer from the payload when they equal the default", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    // Explicitly true — still the default, so it should not be sent.
+    question.isGraded = true;
+    question.showCorrectAnswer = true;
+    const structure = serializeTrackForm(formWithQuestion(question));
+    const sent = (structure.sections[0].items[1].content as QuizContent).questions[0];
+    expect(sent).not.toHaveProperty("isGraded");
+    expect(sent).not.toHaveProperty("showCorrectAnswer");
+  });
+
+  it("sends isGraded: false and showCorrectAnswer: false explicitly", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.isGraded = false;
+    question.showCorrectAnswer = false;
+    const structure = serializeTrackForm(formWithQuestion(question));
+    const sent = (structure.sections[0].items[1].content as QuizContent).questions[0];
+    expect(sent).toMatchObject({ isGraded: false, showCorrectAnswer: false });
+  });
+
+  it("strips a stale correct-option id left over from a deleted option on an ungraded question", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.isGraded = false;
+    question.correctOptionIds = ["deleted-option-id"];
+    const structure = serializeTrackForm(formWithQuestion(question));
+    const sent = (structure.sections[0].items[1].content as QuizContent)
+      .questions[0] as McqMultiQuestion;
+    expect(sent.correctOptionIds).toEqual([]);
+  });
+
+  it("strips a blank-string accepted answer left in an ungraded fill_blank, but keeps a real one on a graded question", () => {
+    const gradedFillBlank = createQuestionOfType("fill_blank") as FillBlankQuestion;
+    gradedFillBlank.template = "The capital of France is {{b1}}.";
+    gradedFillBlank.blanks = [{ id: "b1", acceptedAnswers: ["Paris"] }];
+    const gradedStructure = serializeTrackForm(formWithQuestion(gradedFillBlank));
+    const gradedSent = (gradedStructure.sections[0].items[1].content as QuizContent)
+      .questions[0] as FillBlankQuestion;
+    expect(gradedSent.blanks[0].acceptedAnswers).toEqual(["Paris"]);
+
+    const ungradedFillBlank = createQuestionOfType("fill_blank") as FillBlankQuestion;
+    ungradedFillBlank.isGraded = false;
+    ungradedFillBlank.template = "The capital of France is {{b1}}.";
+    ungradedFillBlank.blanks = [{ id: "b1", acceptedAnswers: ["   "] }];
+    const ungradedStructure = serializeTrackForm(formWithQuestion(ungradedFillBlank));
+    const ungradedSent = (ungradedStructure.sections[0].items[1].content as QuizContent)
+      .questions[0] as FillBlankQuestion;
+    expect(ungradedSent.blanks[0].acceptedAnswers).toEqual([]);
+  });
+
+  it("round-trips isGraded/showCorrectAnswer through serialize -> deserialize", () => {
+    const question = createQuestionOfType("mcq_single") as McqSingleQuestion;
+    question.prompt = "Pick one";
+    question.isGraded = false;
+    question.showCorrectAnswer = false;
+    const form = formWithQuestion(question);
+    const structure = serializeTrackForm(form);
+
+    const detail: TrackDetail = {
+      id: "track-1",
+      title: form.title,
+      description: form.description,
+      coverImageUrl: form.coverImageUrl,
+      status: SimulationStatus.DRAFT,
+      isGlobal: form.isGlobal,
+      totalItems: 2,
+      sections: structure.sections.map(section => ({
+        id: section.id ?? "s-0",
+        title: section.title,
+        description: section.description ?? "",
+        order: section.order,
+        items: section.items.map(item => ({
+          id: item.id ?? "generated",
+          type: item.type,
+          order: item.order,
+          title: item.title,
+          description: item.description,
+          scenarioId: item.scenarioId ?? null,
+          caseId: item.caseId ?? null,
+          content: item.content ?? null,
+          completionCriteria: item.completionCriteria ?? null,
+        })),
+      })),
+    };
+
+    const rebuilt = deserializeTrack(detail);
+    const rebuiltQuestion = (rebuilt.sections[0].items[1].quiz as QuizContent).questions[0];
+    expect(rebuiltQuestion.isGraded).toBe(false);
+    expect(rebuiltQuestion.showCorrectAnswer).toBe(false);
   });
 });

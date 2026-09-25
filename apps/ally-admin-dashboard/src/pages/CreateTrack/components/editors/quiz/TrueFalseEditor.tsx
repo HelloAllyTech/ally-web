@@ -8,16 +8,20 @@ import { QuestionPath } from "../../../trackFormUtils";
 
 interface TrueFalseEditorProps {
   questionPath: QuestionPath;
+  /** Ungraded (`isGraded: false`) makes picking a correct answer optional. */
+  graded?: boolean;
 }
 
-export const TrueFalseEditor: FC<TrueFalseEditorProps> = ({ questionPath }) => {
+export const TrueFalseEditor: FC<TrueFalseEditorProps> = ({ questionPath, graded = true }) => {
   const { control } = useFormContext<TrackFormValues>();
   const name =
     `${questionPath}.correctAnswer` as `sections.0.items.0.quiz.questions.0.correctAnswer`;
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-typography-800">Correct answer</label>
+      <label className="text-sm font-medium text-typography-800">
+        Correct answer{graded ? "" : " (optional)"}
+      </label>
       <Controller
         control={control}
         name={name}

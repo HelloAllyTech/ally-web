@@ -122,7 +122,47 @@ export const QUIZ_QUESTION_TYPE_LABELS: Record<QuizQuestionType, string> = {
   matching: "Matching",
   fill_blank: "Fill in the blank",
   open_ended: "Open ended",
+  likert_scale: "Rating scale (Likert)",
 };
+
+/* ---- Likert scale (quiz question) ---------------------------------------- */
+
+/** Mirrors ally-be's `TRACK_LIKERT_*` limits. */
+export const MIN_LIKERT_STATEMENTS = 1;
+export const MAX_LIKERT_STATEMENTS = 20;
+export const MIN_LIKERT_SCALE_POINTS = 2;
+export const MAX_LIKERT_SCALE_POINTS = 10;
+
+export interface LikertScalePreset {
+  key: string;
+  label: string;
+  scale: string[];
+}
+
+/**
+ * Starter scales a trainer can drop in rather than typing labels from
+ * scratch. Kept to the three the contract calls out — anything more bespoke,
+ * the trainer edits the points directly.
+ */
+export const LIKERT_SCALE_PRESETS: LikertScalePreset[] = [
+  {
+    key: "agreement5",
+    label: "Agreement (5)",
+    scale: ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
+  },
+  {
+    key: "frequency5",
+    label: "Frequency (5)",
+    scale: ["Never", "Rarely", "Sometimes", "Often", "Always"],
+  },
+  {
+    key: "satisfaction5",
+    label: "Satisfaction (5)",
+    scale: ["Very dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very satisfied"],
+  },
+];
+
+export const DEFAULT_LIKERT_SCALE_PRESET = LIKERT_SCALE_PRESETS[0];
 
 export const QUIZ_SHOW_EXPLANATIONS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "after_each", label: "After each question" },
