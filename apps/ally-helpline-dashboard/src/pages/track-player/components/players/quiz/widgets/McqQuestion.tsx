@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { SanitizedQuizQuestion } from "@types";
+import { QuizAttemptResult, SanitizedQuizQuestion } from "@types";
 
 import { QuizAnswerState } from "../quizAnswerState";
 
@@ -10,15 +10,17 @@ interface McqQuestionProps {
   question: SanitizedQuizQuestion;
   state: QuizAnswerState;
   onChange: (state: QuizAnswerState) => void;
+  result?: QuizAttemptResult | null;
 }
 
 /** Multiple-choice question — radio for mcq_single, checkbox for mcq_multi. */
-export const McqQuestion: FC<McqQuestionProps> = ({ question, state, onChange }) => {
+export const McqQuestion: FC<McqQuestionProps> = ({ question, state, onChange, result }) => {
   const { t } = useTranslation();
   const isMulti = question.type === "mcq_multi";
   const selected = state.selectedOptionIds ?? [];
 
   const toggle = (optionId: string) => {
+    if (result) return;
     if (isMulti) {
       const next = selected.includes(optionId)
         ? selected.filter(id => id !== optionId)
@@ -28,6 +30,8 @@ export const McqQuestion: FC<McqQuestionProps> = ({ question, state, onChange })
       onChange({ selectedOptionIds: [optionId] });
     }
   };
+
+  const questionResult = result?.questions.find(r => r.questionId === question.id);
 
   return (
     <div>
@@ -68,6 +72,14 @@ export const McqQuestion: FC<McqQuestionProps> = ({ question, state, onChange })
           );
         })}
       </div>
+      {questionResult?.explanation && (
+        <div className="mt-4 rounded-lg bg-neutral-50 p-4">
+          <p className="text-sm font-medium text-typography-700">
+            {t("tracks2.quiz.results.explanation")}:
+          </p>
+          <p className="text-sm text-typography-900">{questionResult.explanation}</p>
+        </div>
+      )}
     </div>
   );
 };
