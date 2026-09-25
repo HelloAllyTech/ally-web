@@ -10,6 +10,7 @@ import { NewVsReturningUsersCard } from "../NewVsReturningUsersCard";
 import { PlayTimeCard } from "../PlayTimeCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
+import { RoleplaySessionCostCard } from "../RoleplaySessionCostCard";
 import { RoleplayVoiceLatencyCard } from "../RoleplayVoiceLatencyCard";
 import { SatisfactionMixCard } from "../SatisfactionMixCard";
 import { ShipVolumeCard } from "../ShipVolumeCard";
@@ -57,6 +58,9 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *    Platform's growth and play-time charts; `ActivationFunnelCard` (AAQ-035)
  *    was Usage levels' activation funnel. Moved, not copied: each now lives
  *    only here.
+ *  - `RoleplaySessionCostCard` — new (AAQ-157): AI cost per minute of roleplay,
+ *    costed per SESSION and stacked by component. Not the Unit economics
+ *    cost-per-10-minutes chart, which buckets each call by when it ran.
  *
  * Each relocated card lost the page-level filter its old tab offered (a
  * tenant filter for Practice minutes, a language filter for voice latency) —
@@ -85,6 +89,7 @@ export const GoalsTab = () => (
       <NewVsReturningUsersCard />
       <PlayTimeCard />
       <ActivationFunnelCard />
+      <RoleplaySessionCostCard />
     </div>
   </ScrollNoteContext.Provider>
 );

@@ -426,6 +426,7 @@ export const ApiEndpoints = {
     QUALIFIED_SESSIONS: "/v1/analytics/qualified-sessions",
     ORG_ENGAGEMENT: "/v1/analytics/org-engagement",
     ROLEPLAY_COST: "/v1/analytics/roleplay-cost",
+    ROLEPLAY_SESSION_COST: "/v1/analytics/roleplay-session-cost",
     CODING_AGENT_COST: "/v1/analytics/coding-agent-cost",
     FIX_SESSION_ENGINE_COST: "/v1/analytics/fix-session-engine-cost",
     BUG_AGENT_PERFORMANCE: "/v1/analytics/bug-agent-performance",

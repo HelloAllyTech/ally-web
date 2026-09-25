@@ -33,6 +33,7 @@ import {
   RagQualityResponse,
   RoadmapDeliveryResponse,
   RoleplayCostResponse,
+  RoleplaySessionCostResponse,
   RoleplayVolumeResponse,
   ScenarioUsageResponse,
   ScribeAdoptionResponse,
@@ -291,6 +292,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getRoleplayCost: builder.query<RoleplayCostResponse, AnalyticsWindowQuery>({
       query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.ROLEPLAY_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Per-SESSION delivery cost per minute (Highlights → Priority). Distinct
+    // from getRoleplayCost: that buckets each call by when it ran; this one
+    // buckets a session's whole cost, debrief included, by when it started.
+    getRoleplaySessionCost: builder.query<RoleplaySessionCostResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ROLEPLAY_SESSION_COST,
         method: HttpMethod.GET,
         params: windowParams(q),
       }),
@@ -822,6 +833,7 @@ export const {
   useGetQualifiedSessionsQuery,
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
+  useGetRoleplaySessionCostQuery,
   useGetCodingAgentCostQuery,
   useGetFixSessionEngineCostQuery,
   useGetBugAgentPerformanceQuery,
