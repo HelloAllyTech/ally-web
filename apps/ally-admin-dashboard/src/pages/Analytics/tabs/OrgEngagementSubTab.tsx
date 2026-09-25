@@ -21,15 +21,12 @@ import {
   lineOpts,
 } from "../chartKit";
 import { sequentialScale } from "../chartScales";
-import { FunnelBars } from "../FunnelBars";
 import {
   ORG_ACTIVITY_SCALE,
-  ORG_LADDER_CAVEAT,
   ORG_SHARE_SCALE,
   buildOrgActivitySeries,
-  buildOrgFunnelStages,
   periodLabel,
-} from "../ladderChart";
+} from "../engagementChart";
 import { OrgHealthCard } from "../OrgHealthCard";
 
 /**
@@ -49,7 +46,7 @@ const WINDOW_ITEMS: { id: 7 | 28 | 90; label: string }[] = [
 ];
 
 /**
- * Orgs — how far each account has got, and how many are still alive.
+ * Orgs — how many accounts there are, and how many are still alive.
  *
  * ## Platform-wide, always
  *
@@ -94,7 +91,6 @@ export const OrgEngagementSubTab = () => {
     [osd],
   );
 
-  const funnel = useMemo(() => buildOrgFunnelStages(data), [data]);
   const activity = useMemo(() => buildOrgActivitySeries(data), [data]);
 
   const asOf = data?.computedAt ? new Date(data.computedAt).toLocaleDateString() : undefined;
@@ -161,7 +157,7 @@ export const OrgEngagementSubTab = () => {
           loading={loading}
           error={Boolean(error)}
           onRetry={() => void refetch()}
-          description="Non-test, non-deleted tenants. The funnel's top row."
+          description="Non-test, non-deleted tenants."
           chartId="AAQ-069"
         />
       </div>
@@ -172,31 +168,9 @@ export const OrgEngagementSubTab = () => {
         a miss would make this share fall every time a deal closed.
       </p>
 
-      <SubHeading>Engagement ladder</SubHeading>
+      <SubHeading>Activity trend</SubHeading>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <ChartCard
-          title="Org created → L1 → L4"
-          caption={ORG_LADDER_CAVEAT}
-          source={buildSource({
-            derivation: "Total practice minutes across each org's learners",
-            window: "all time",
-            n: data?.orgs,
-            nUnit: "orgs",
-            asOf,
-            extra: PLATFORM_WIDE_NOTE,
-          })}
-          loading={loading}
-          error={Boolean(error)}
-          empty={!isLoading && !funnel.length}
-          errorSubtitle="There was a problem fetching org engagement."
-          onRetry={() => void refetch()}
-          height="auto"
-          chartId="AAQ-070"
-        >
-          <FunnelBars stages={funnel} unit="orgs" />
-        </ChartCard>
-
         {/* Count and share together. Either alone misleads: a rising count with
             a falling share means we are signing orgs faster than we activate
             them, which reads as growth on one and decline on the other. */}
@@ -239,9 +213,7 @@ export const OrgEngagementSubTab = () => {
             />
           </ScrollableChart>
         </ChartCard>
-      </div>
 
-      <div className="mt-4">
         <ChartCard
           title="Share of orgs active each month"
           caption={
@@ -261,7 +233,6 @@ export const OrgEngagementSubTab = () => {
           errorSubtitle="There was a problem fetching org activity."
           onRetry={() => void refetch()}
           onExpand={() => setExpanded("share")}
-          wide
           chartId="AAQ-072"
         >
           <ScrollableChart data={activity.shares}>

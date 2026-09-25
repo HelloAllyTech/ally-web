@@ -25,7 +25,7 @@ const idleQuery = () => ({
 
 // Full replacement, not a partial spread: there is no need to pull in the real
 // `@api` barrel's import graph. The two customer panels are stubbed idle —
-// these tests are about the engagement-ladder cards, and a card with no data
+// these tests are about the org-activity cards, and a card with no data
 // renders its empty state without touching the assertions below.
 vi.mock("@api", () => ({
   useGetOrgEngagementQuery: (args: unknown) => queryMock(args),
@@ -36,8 +36,6 @@ vi.mock("@api", () => ({
 import { OrgEngagementSubTab } from "../OrgEngagementSubTab";
 
 const response = () => ({
-  levels: [],
-  funnel: [],
   orgs: 40,
   activityDays: 28,
   activeOrgs: 20,
