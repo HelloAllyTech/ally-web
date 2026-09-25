@@ -364,6 +364,7 @@ export interface BuilderSettings {
   autoReviewEnabled: boolean;
   /** Whether a review that found nothing may submit an approving review. */
   autoApproveEnabled: boolean;
+  autoMergeEnabled: boolean;
   /** Whether a merged pull request releases itself to production. */
   autoReleaseEnabled: boolean;
   /** Whether Builder may push commits to its own open pull requests. */

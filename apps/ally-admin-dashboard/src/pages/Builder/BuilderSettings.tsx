@@ -30,6 +30,7 @@ type SettingsDraft = Pick<
   | "enabled"
   | "autoReviewEnabled"
   | "autoApproveEnabled"
+  | "autoMergeEnabled"
   | "autoReleaseEnabled"
   | "autoFixEnabled"
   | "maxFixRunsPerPr"
@@ -109,6 +110,7 @@ export const BuilderSettings: React.FC = () => {
         enabled: data.enabled,
         autoReviewEnabled: data.autoReviewEnabled,
         autoApproveEnabled: data.autoApproveEnabled,
+        autoMergeEnabled: data.autoMergeEnabled,
         autoReleaseEnabled: data.autoReleaseEnabled,
         autoFixEnabled: data.autoFixEnabled,
         maxFixRunsPerPr: data.maxFixRunsPerPr,
@@ -132,6 +134,7 @@ export const BuilderSettings: React.FC = () => {
         enabled: draft.enabled,
         autoReviewEnabled: draft.autoReviewEnabled,
         autoApproveEnabled: draft.autoApproveEnabled,
+        autoMergeEnabled: draft.autoMergeEnabled,
         autoReleaseEnabled: draft.autoReleaseEnabled,
         autoFixEnabled: draft.autoFixEnabled,
         maxFixRunsPerPr: draft.maxFixRunsPerPr,
@@ -209,20 +212,37 @@ export const BuilderSettings: React.FC = () => {
                 />
                 <p className="pt-1 text-xs text-typography-500">{strings.autoApproveHelp}</p>
 
-                {/* Nested one level deeper again. Releasing something nobody
-                    approved is not a setting anyone should be able to reach by
-                    accident, and the ladder — read, vouch, ship — is the whole
-                    shape of how much each switch lets go of. */}
+                {/* Nested one level deeper again. Neither of these is a
+                    setting anyone should be able to reach by accident, and the
+                    ladder — read, vouch, take, ship — is the whole shape of how
+                    much each switch lets go of.
+
+                    Siblings rather than a further nesting: merging is Builder
+                    taking the work itself, releasing is what happens to a
+                    merged pull request whoever merged it. Hanging release off
+                    merge would say a hand-merged one does not release, which is
+                    not true. */}
                 {draft.autoApproveEnabled && (
                   <div className="mt-3 border-t border-border-light pt-3">
                     <CarbonToggle
-                      id="builder-settings-auto-release"
-                      labelText={strings.autoReleaseLabel}
+                      id="builder-settings-auto-merge"
+                      labelText={strings.autoMergeLabel}
                       size="sm"
-                      toggled={draft.autoReleaseEnabled}
-                      onToggle={(checked: boolean) => set("autoReleaseEnabled", checked)}
+                      toggled={draft.autoMergeEnabled}
+                      onToggle={(checked: boolean) => set("autoMergeEnabled", checked)}
                     />
-                    <p className="pt-1 text-xs text-typography-500">{strings.autoReleaseHelp}</p>
+                    <p className="pt-1 text-xs text-typography-500">{strings.autoMergeHelp}</p>
+
+                    <div className="mt-3 border-t border-border-light pt-3">
+                      <CarbonToggle
+                        id="builder-settings-auto-release"
+                        labelText={strings.autoReleaseLabel}
+                        size="sm"
+                        toggled={draft.autoReleaseEnabled}
+                        onToggle={(checked: boolean) => set("autoReleaseEnabled", checked)}
+                      />
+                      <p className="pt-1 text-xs text-typography-500">{strings.autoReleaseHelp}</p>
+                    </div>
                   </div>
                 )}
               </div>
