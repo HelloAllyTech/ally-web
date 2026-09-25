@@ -8,7 +8,7 @@ const { baseQuery } = await import("../baseAPI");
 
 /**
  * `GET /settings/chat-types` is NOT public: ally-be guards it with
- * VIEW_SETTINGS_CHAT_TYPES and resolves the tenant from the token. #690 dropped
+ * VIEW_SETTINGS_CHAT_TYPES and resolves the tenant from the token. PR 690 dropped
  * the Authorization header for `getChatTypes`, every call 401'd, the available
  * chat types came back empty, and Start Scribe Mode / Upload Audio vanished for
  * every counsellor. Every endpoint carries the token.
