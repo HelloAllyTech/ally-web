@@ -342,7 +342,7 @@ export interface WaBotSettings {
   helplineNumbers: string;
 }
 
-/** Booleans only — the endpoint never returns a secret's value. */
+/** Booleans and counts only — the endpoint never returns a secret's value. */
 export interface WaProviderHealth {
   enabled: boolean;
   provider: string;
@@ -351,6 +351,31 @@ export interface WaProviderHealth {
   phoneNumberIdConfigured: boolean;
   accessTokenConfigured: boolean;
   inboundQueueConfigured: boolean;
+  // Optional: a backend one release behind this build does not send them, and "unknown" must not
+  // render as "missing".
+  businessAccountIdConfigured?: boolean;
+  inboundDlqConfigured?: boolean;
+  kbIngestQueueConfigured?: boolean;
+  helplineNumbersSet?: boolean;
+  mappedNumbers?: number;
+  indexedDocuments?: number;
+}
+
+/** Meta's live answer about the configured token and number. */
+export interface WaConnectionCheck {
+  ok: boolean;
+  error?: string;
+  phoneNumber?: {
+    displayPhoneNumber?: string;
+    verifiedName?: string;
+    qualityRating?: string;
+    nameStatus?: string;
+    platformType?: string;
+    status?: string;
+  };
+  /** null = not checked (no business account id configured), never "not subscribed". */
+  subscribedApps?: string[] | null;
+  subscriptionError?: string;
 }
 
 // ── Preview console ──────────────────────────────────────────────────────────

@@ -21,6 +21,8 @@ import { ButtonVariant } from "@components/types";
 import { en, TooltipLocation } from "@constants";
 import { WaBotSettings } from "@types";
 
+import { ProviderConnectionSection } from "./ProviderConnectionSection";
+
 /**
  * Bot settings.
  *
@@ -139,28 +141,7 @@ export const BotSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <Section title={en.whatsappBot.settings.providerSection}>
-        <p className="text-xs text-typography-500 pb-2">{en.whatsappBot.settings.providerHelp}</p>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-          <HealthRow
-            label={en.whatsappBot.settings.verifyToken}
-            ok={health?.verifyTokenConfigured}
-          />
-          <HealthRow label={en.whatsappBot.settings.appSecret} ok={health?.appSecretConfigured} />
-          <HealthRow
-            label={en.whatsappBot.settings.phoneNumberId}
-            ok={health?.phoneNumberIdConfigured}
-          />
-          <HealthRow
-            label={en.whatsappBot.settings.accessToken}
-            ok={health?.accessTokenConfigured}
-          />
-          <HealthRow
-            label={en.whatsappBot.settings.inboundQueue}
-            ok={health?.inboundQueueConfigured}
-          />
-        </div>
-      </Section>
+      <ProviderConnectionSection health={health} />
 
       <Section title={en.whatsappBot.settings.messagesSection}>
         <TextArea
@@ -383,15 +364,6 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     <h3 className="text-base text-typography-900 font-secondary">{title}</h3>
     {children}
   </section>
-);
-
-const HealthRow: React.FC<{ label: string; ok?: boolean }> = ({ label, ok }) => (
-  <div className="flex justify-between border-b border-border-light py-1">
-    <span className="text-typography-600">{label}</span>
-    <span className={ok ? "text-green-700" : "text-destructive-600"}>
-      {ok ? en.whatsappBot.settings.providerHealthy : en.whatsappBot.settings.providerMissing}
-    </span>
-  </div>
 );
 
 const TextArea: React.FC<{
