@@ -2,6 +2,7 @@ import {
   DEFAULT_ANNOTATION_SETTINGS,
   DEFAULT_COMPLETION_CRITERIA,
   DEFAULT_GAME_CONTENT,
+  DEFAULT_LIKERT_SCALE_PRESET,
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_VIDEO_WATCH_PCT,
   itemNodeKey,
@@ -9,8 +10,12 @@ import {
   MAX_ANNOTATION_UNITS,
   MAX_ARTICLE_QUESTIONS,
   MAX_JOURNAL_PROMPTS,
+  MAX_LIKERT_SCALE_POINTS,
+  MAX_LIKERT_STATEMENTS,
   MAX_MCQ_OPTIONS,
   MAX_QUESTION_MEDIA_ALT_LENGTH,
+  MIN_LIKERT_SCALE_POINTS,
+  MIN_LIKERT_STATEMENTS,
   MIN_MCQ_OPTIONS,
   sectionNodeKey,
   TRACK_ITEM_TYPE_LABELS,
@@ -24,6 +29,7 @@ import {
   FillBlankQuestion,
   GameContent,
   JournalContent,
+  LikertScaleQuestion,
   MatchingQuestion,
   McqMultiQuestion,
   McqSingleQuestion,
@@ -231,6 +237,17 @@ export const createQuestionOfType = (type: QuizQuestionType): QuizQuestion => {
       return { ...base, type, template: "", blanks: [] };
     case "open_ended":
       return { ...base, type, rubric: { guidance: "", criteria: [], maxScore: 10 } };
+    case "likert_scale":
+      // Never graded, so no `points` — the default 5-point agreement scale
+      // with one blank statement to fill in.
+      return {
+        id: base.id,
+        prompt: base.prompt,
+        explanation: base.explanation,
+        type,
+        statements: [{ id: newId(), text: "" }],
+        scale: DEFAULT_LIKERT_SCALE_PRESET.scale.map(text => ({ id: newId(), text })),
+      };
   }
 };
 
@@ -398,11 +415,24 @@ const validateQuestionMedia = (media: QuestionMedia, label: string): string[] =>
   return errors;
 };
 
+/**
+ * A rating-scale question is never graded (whatever `isGraded` says), so
+ * only it forces `requireKey` false regardless of the flag. Every other type
+ * follows the trainer's own Graded toggle — absent/true = graded.
+ */
+const isQuestionGraded = (question: QuizQuestion): boolean =>
+  question.type !== "likert_scale" && question.isGraded !== false;
+
 const validateQuestion = (question: QuizQuestion, label: string): string[] => {
   const errors: string[] = [];
   const needsPrompt = question.type !== "fill_blank";
   if (needsPrompt && isBlank(question.prompt)) errors.push(`${label}: question text is required`);
   if (question.media) errors.push(...validateQuestionMedia(question.media, label));
+
+  // Only a graded question must carry its answer key; an ungraded one may be
+  // a pure opinion/reflection prompt. A key that IS given is still checked,
+  // since it still decides the right/wrong the learner is shown.
+  const requireKey = isQuestionGraded(question);
 
   switch (question.type) {
     case "mcq_single":
@@ -414,19 +444,22 @@ const validateQuestion = (question: QuizQuestion, label: string): string[] => {
       if (q.options.some(option => isBlank(option.text))) {
         errors.push(`${label}: every option needs text`);
       }
-      const optionIds = new Set(q.options.map(option => option.id));
-      const validCorrect = q.correctOptionIds.filter(id => optionIds.has(id));
-      if (question.type === "mcq_single" && validCorrect.length !== 1) {
-        errors.push(`${label}: mark exactly one correct option`);
-      }
-      if (question.type === "mcq_multi" && validCorrect.length < 1) {
-        errors.push(`${label}: mark at least one correct option`);
+      const hasKey = requireKey || (q.correctOptionIds?.length ?? 0) > 0;
+      if (hasKey) {
+        const optionIds = new Set(q.options.map(option => option.id));
+        const validCorrect = (q.correctOptionIds ?? []).filter(id => optionIds.has(id));
+        if (question.type === "mcq_single" && validCorrect.length !== 1) {
+          errors.push(`${label}: mark exactly one correct option`);
+        }
+        if (question.type === "mcq_multi" && validCorrect.length < 1) {
+          errors.push(`${label}: mark at least one correct option`);
+        }
       }
       break;
     }
     case "true_false": {
       const q = question as TrueFalseQuestion;
-      if (typeof q.correctAnswer !== "boolean") {
+      if (requireKey && typeof q.correctAnswer !== "boolean") {
         errors.push(`${label}: pick the correct answer`);
       }
       break;
@@ -443,12 +476,14 @@ const validateQuestion = (question: QuizQuestion, label: string): string[] => {
       if (q.left.some(entry => isBlank(entry.text)) || q.right.some(entry => isBlank(entry.text))) {
         errors.push(`${label}: every entry needs text`);
       }
-      const rightIds = new Set(q.right.map(entry => entry.id));
-      const pairedLeftIds = new Set(
-        q.correctPairs.filter(pair => rightIds.has(pair.rightId)).map(pair => pair.leftId),
-      );
-      if (q.left.some(entry => !pairedLeftIds.has(entry.id))) {
-        errors.push(`${label}: every left entry needs a matching right answer`);
+      if (requireKey) {
+        const rightIds = new Set(q.right.map(entry => entry.id));
+        const pairedLeftIds = new Set(
+          q.correctPairs.filter(pair => rightIds.has(pair.rightId)).map(pair => pair.leftId),
+        );
+        if (q.left.some(entry => !pairedLeftIds.has(entry.id))) {
+          errors.push(`${label}: every left entry needs a matching right answer`);
+        }
       }
       break;
     }
@@ -458,20 +493,50 @@ const validateQuestion = (question: QuizQuestion, label: string): string[] => {
       if (tokens.length === 0) {
         errors.push(`${label}: template needs at least one {{blank}} token`);
       }
-      for (const token of tokens) {
-        const blank = q.blanks.find(entry => entry.id === token);
-        const answers = (blank?.acceptedAnswers ?? []).filter(answer => !isBlank(answer));
-        if (answers.length === 0) {
-          errors.push(`${label}: blank "${token}" needs at least one accepted answer`);
+      if (requireKey) {
+        for (const token of tokens) {
+          const blank = q.blanks.find(entry => entry.id === token);
+          const answers = (blank?.acceptedAnswers ?? []).filter(answer => !isBlank(answer));
+          if (answers.length === 0) {
+            errors.push(`${label}: blank "${token}" needs at least one accepted answer`);
+          }
         }
       }
       break;
     }
     case "open_ended": {
       const q = question as OpenEndedQuestion;
-      if (isBlank(q.rubric?.guidance)) errors.push(`${label}: grading guidance is required`);
-      if (!q.rubric || !(q.rubric.maxScore >= 1)) {
-        errors.push(`${label}: rubric max score must be at least 1`);
+      // Ungraded never reaches the LLM grader, so its rubric is unused —
+      // nothing to validate.
+      if (requireKey) {
+        if (isBlank(q.rubric?.guidance)) errors.push(`${label}: grading guidance is required`);
+        if (!q.rubric || !(q.rubric.maxScore >= 1)) {
+          errors.push(`${label}: rubric max score must be at least 1`);
+        }
+      }
+      break;
+    }
+    case "likert_scale": {
+      const q = question as LikertScaleQuestion;
+      if (
+        (q.statements?.length ?? 0) < MIN_LIKERT_STATEMENTS ||
+        (q.statements?.length ?? 0) > MAX_LIKERT_STATEMENTS
+      ) {
+        errors.push(`${label}: needs ${MIN_LIKERT_STATEMENTS}-${MAX_LIKERT_STATEMENTS} statements`);
+      }
+      if (q.statements?.some(statement => isBlank(statement.text))) {
+        errors.push(`${label}: every statement needs text`);
+      }
+      if (
+        (q.scale?.length ?? 0) < MIN_LIKERT_SCALE_POINTS ||
+        (q.scale?.length ?? 0) > MAX_LIKERT_SCALE_POINTS
+      ) {
+        errors.push(
+          `${label}: scale needs ${MIN_LIKERT_SCALE_POINTS}-${MAX_LIKERT_SCALE_POINTS} points`,
+        );
+      }
+      if (q.scale?.some(point => isBlank(point.text))) {
+        errors.push(`${label}: every scale point needs text`);
       }
       break;
     }
@@ -697,28 +762,87 @@ const serializeAnnotation = (annotation: AnnotationFormValue): AnnotationContent
   };
 };
 
+/**
+ * An ungraded question may keep a partial or stale answer key in form state
+ * (e.g. the option it once marked correct got deleted) — harmless in the
+ * editor since it's never read, but the server validates whatever key IS
+ * present even when it isn't required. So for an ungraded question, prune
+ * each key field down to references that still exist rather than shipping a
+ * partial/dangling one the server would otherwise reject.
+ */
+const sanitizeAnswerKeyForUngraded = (question: QuizQuestion): QuizQuestion => {
+  if (isQuestionGraded(question)) return question;
+  switch (question.type) {
+    case "mcq_single":
+    case "mcq_multi": {
+      const optionIds = new Set(question.options.map(option => option.id));
+      const correctOptionIds = (question.correctOptionIds ?? []).filter(id => optionIds.has(id));
+      return { ...question, correctOptionIds };
+    }
+    case "matching": {
+      const leftIds = new Set(question.left.map(entry => entry.id));
+      const rightIds = new Set(question.right.map(entry => entry.id));
+      const correctPairs = (question.correctPairs ?? []).filter(
+        pair => leftIds.has(pair.leftId) && rightIds.has(pair.rightId),
+      );
+      return { ...question, correctPairs };
+    }
+    case "fill_blank": {
+      const blanks = question.blanks.map(blank => ({
+        ...blank,
+        acceptedAnswers: (blank.acceptedAnswers ?? []).filter(answer => !isBlank(answer)),
+      }));
+      return { ...question, blanks };
+    }
+    default:
+      return question;
+  }
+};
+
+/**
+ * `isGraded`/`showCorrectAnswer` are only meaningful as an explicit `false` —
+ * absent means the (graded / shown) default, so we never write `true`
+ * needlessly and every course saved before these fields existed keeps an
+ * identical payload. `likert_scale` can never be graded (the server 400s on
+ * `isGraded: true`), so it never forwards the flag at all.
+ */
+const serializeQuestionFlags = (question: QuizQuestion): QuizQuestion => {
+  const { isGraded, showCorrectAnswer, ...rest } = question;
+  return {
+    ...rest,
+    ...(isGraded === false && question.type !== "likert_scale" ? { isGraded: false } : {}),
+    ...(showCorrectAnswer === false ? { showCorrectAnswer: false } : {}),
+  } as QuizQuestion;
+};
+
 const serializeQuiz = (quiz: QuizContent): QuizContent => ({
   settings: { ...quiz.settings },
   questions: quiz.questions.map(question => {
-    if (question.type === "ordering") {
+    let next = question;
+    if (next.type === "ordering") {
       // Authored row order IS the correct order.
-      return { ...question, correctOrder: question.items.map(entry => entry.id) };
+      next = { ...next, correctOrder: next.items.map(entry => entry.id) };
     }
-    if (question.type === "fill_blank") {
+    if (next.type === "fill_blank") {
+      // `const` (unlike the reassigned `next`) so the "fill_blank" narrowing
+      // survives inside the `.map` closure below.
+      const fillBlank = next;
       // Only keep blanks whose token still exists in the template.
-      const tokens = parseBlankTokens(question.template);
-      return {
-        ...question,
+      const tokens = parseBlankTokens(fillBlank.template);
+      next = {
+        ...fillBlank,
         blanks: tokens.map(
           token =>
-            question.blanks.find(blank => blank.id === token) ?? {
+            fillBlank.blanks.find(blank => blank.id === token) ?? {
               id: token,
               acceptedAnswers: [],
             },
         ),
       };
     }
-    return question;
+    next = sanitizeAnswerKeyForUngraded(next);
+    next = serializeQuestionFlags(next);
+    return next;
   }),
 });
 

@@ -13,11 +13,13 @@ interface McqEditorProps {
   /** Absolute RHF path to the question node. */
   questionPath: QuestionPath;
   multi: boolean;
+  /** Ungraded (`isGraded: false`) makes marking a correct option optional. */
+  graded?: boolean;
 }
 
 const newOptionId = () => crypto.randomUUID();
 
-export const McqEditor: FC<McqEditorProps> = ({ questionPath, multi }) => {
+export const McqEditor: FC<McqEditorProps> = ({ questionPath, multi, graded = true }) => {
   const { control, setValue } = useFormContext<TrackFormValues>();
 
   const { fields, append, remove } = useFieldArray({
@@ -58,6 +60,7 @@ export const McqEditor: FC<McqEditorProps> = ({ questionPath, multi }) => {
         <label className="text-sm font-medium text-typography-800">
           Options ({fields.length}/{MAX_MCQ_OPTIONS}) —{" "}
           {multi ? "check all correct answers" : "select the one correct answer"}
+          {graded ? "" : " (optional)"}
         </label>
         <Tooltip
           label="Whether learners can pick one answer or several is set when you add the question and can't be changed afterward — delete and re-add it to switch."
