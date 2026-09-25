@@ -82,6 +82,7 @@ export interface BuilderPrdDocument {
   usersAndContext: string;
   /** What the platform already does here — written before any requirement is. */
   existingBehaviour: string;
+  whereChangesBelong: string;
   goals: string;
   nonGoals: string;
   requirements: BuilderPrdRequirement[];

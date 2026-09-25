@@ -3344,6 +3344,7 @@ export const en = {
         problem: "Problem",
         usersAndContext: "Users & context",
         existingBehaviour: "What already exists",
+        whereChangesBelong: "Where the change belongs",
         goals: "Goals",
         nonGoals: "Non-goals",
         requirements: "Requirements",
