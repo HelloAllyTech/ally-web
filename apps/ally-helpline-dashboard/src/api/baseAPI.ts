@@ -76,9 +76,9 @@ export const handleLogout = () => {
  */
 export const baseQuery = fetchBaseQuery({
   baseUrl: API_URL + "/api",
-  prepareHeaders: (headers, { endpoint }) => {
+  prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-    if (token && endpoint !== "getChatTypes") {
+    if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
     return headers;
