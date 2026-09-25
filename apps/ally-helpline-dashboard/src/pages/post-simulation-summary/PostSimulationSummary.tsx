@@ -103,7 +103,7 @@ export const PostSimulationSummary: FC = () => {
   // recommendation — see the breadcrumb + bottom CTA below.
   const [trackContext] = useState<ActiveTrackContext | null>(() => readTrackContext());
   const { data: trackDetail } = useGetLearnTrackDetailQuery(
-    { trackId: trackContext?.trackId ?? "" },
+    { trackId: trackContext?.trackId ?? "", languageCode: i18n.language },
     { skip: !trackContext },
   );
   const continueTrack = useContinueTrack(trackContext);

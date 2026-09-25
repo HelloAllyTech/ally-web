@@ -1489,6 +1489,18 @@
   },
   "tracks2": {
     "breadcrumb": "Learn",
+    "language": {
+      "readingIn": "Reading in {{language}}",
+      "change": "Change",
+      "title": "Course language",
+      "subtitle": "Changes this course only — your app language stays as it is.",
+      "changeFailed": "Could not change the course language. Please try again.",
+      "fallback": {
+        "VIDEO_NOT_LOCALISED": "This video is in English",
+        "SCENARIO_NOT_TRANSLATED": "This role play runs in English",
+        "CASE_NOT_TRANSLATED": "This case is in English"
+      }
+    },
     "coursesTitle": "Courses",
     "progress": "{{completed}} of {{total}}",
     "trackCompleted": "Track completed",

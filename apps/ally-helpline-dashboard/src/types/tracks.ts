@@ -103,6 +103,37 @@ export interface TrackDetailItem {
   maxWatchedPct: number | null;
   /** The author enabled a discussion thread beneath this item. */
   hasDiscussion?: boolean;
+  /**
+   * Non-null when this component reads in English despite the course being
+   * read in another language — the card tells the learner why up front.
+   */
+  languageFallbackReason?: TrackLanguageFallbackReason | null;
+}
+
+/** Why a component reads in English inside a translated course. */
+export enum TrackLanguageFallbackReason {
+  VIDEO_NOT_LOCALISED = "VIDEO_NOT_LOCALISED",
+  SCENARIO_NOT_TRANSLATED = "SCENARIO_NOT_TRANSLATED",
+  CASE_NOT_TRANSLATED = "CASE_NOT_TRANSLATED",
+}
+
+/** A language a course is published in — English first, then translations. */
+export interface TrackLanguageOption {
+  languageId: number;
+  /** e.g. `hi` — what the learner sends back and what is persisted. */
+  languageCode: string;
+  /** Endonym where the backend has one, e.g. `हिन्दी`. */
+  label: string;
+  isSource: boolean;
+}
+
+export interface GetTrackLanguagesResponse {
+  languages: TrackLanguageOption[];
+  selectedLanguageCode: string | null;
+}
+
+export interface SetTrackLanguageResponse {
+  languageCode: string;
 }
 
 export interface TrackSection {
@@ -126,6 +157,10 @@ export interface TrackDetail {
   trackEnrollmentId: string | null;
   completedItems: number;
   completedAt: string | null;
+  /** What the learner is reading the course in right now. */
+  languageCode?: string | null;
+  /** Every language the course is published in, English included. */
+  availableLanguages?: TrackLanguageOption[];
   sections: TrackSection[];
 }
 

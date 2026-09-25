@@ -48,7 +48,7 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
  * completion triggers the celebration overlays.
  */
 export const TrackPlayer: FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { trackId = "", itemId = "" } = useParams<{ trackId: string; itemId: string }>();
   // `?post=<id>` — set by a discussion-reply notification; the thread
@@ -60,7 +60,7 @@ export const TrackPlayer: FC = () => {
     data: track,
     isError: isTrackError,
     refetch: refetchTrack,
-  } = useGetLearnTrackDetailQuery({ trackId }, { skip: !trackId });
+  } = useGetLearnTrackDetailQuery({ trackId, languageCode: i18n.language }, { skip: !trackId });
   const [startTrackItem] = useStartTrackItemMutation();
 
   // Items completed in this player session (drives Next gating optimistically).

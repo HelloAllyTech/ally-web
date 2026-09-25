@@ -95,6 +95,13 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
             <StateChip item={item} isNext={isNext} />
           </span>
           <span className="text-xs text-typography-700">{getTrackItemMeta(item, t)}</span>
+          {/* A component the trainer could not localise — say so on the card
+              rather than surprising the learner once it opens. */}
+          {item.languageFallbackReason && (
+            <span className="mt-0.5 text-xs text-typography-500">
+              {t(`tracks2.language.fallback.${item.languageFallbackReason}`)}
+            </span>
+          )}
           {/* Always-visible reason, not hover-only, so it reaches touch and screen-reader users too. */}
           {isLocked && (
             <span className="mt-0.5 text-xs text-typography-400">{t("tracks2.lockedTooltip")}</span>
