@@ -3,9 +3,9 @@ import { FC, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { CustomImage, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { CustomImage, Tooltip } from "@ally-ui-mono/ui-shared";
 import { TooltipIcon, Trash } from "@assets";
-import { Button, ToggleSwitch } from "@components";
+import { Button, RichTextEditor, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { TrackFormValues } from "@types";
 
@@ -58,14 +58,10 @@ export const TrackSettingsEditor: FC = () => {
           control={control}
           name="description"
           render={({ field }) => (
-            <TextArea
-              id="track-description"
-              labelText="Description"
-              hideLabel
-              {...field}
-              rows={3}
+            <RichTextEditor
+              value={field.value ?? ""}
+              onChange={field.onChange}
               placeholder="What will the learner get out of this track?"
-              className="w-full"
             />
           )}
         />

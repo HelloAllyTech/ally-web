@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import DOMPurify from "dompurify";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -113,9 +114,12 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
         </button>
 
         {track.description && (
-          <p className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed">
-            {track.description}
-          </p>
+          <div
+            className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(track.description),
+            }}
+          />
         )}
 
         {!isComplete && (
