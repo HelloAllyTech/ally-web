@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 
 import { BarChart3, Book, MachineLearningModel, Settings, Timer } from "@icons";
 import { useNavigate } from "react-router-dom";
@@ -263,6 +263,12 @@ export const Builder: React.FC = () => {
   const isCurrentLoading = showArchived ? isArchivedLoading : isLoading;
   const hasLoaded = showArchived ? archivedPage !== undefined : sessions !== undefined;
 
+  useEffect(() => {
+    if (isError || isArchivedError) {
+      toast.error(strings.loadFailed);
+    }
+  }, [isError, isArchivedError, strings.loadFailed]);
+
   const open = (id: string) => navigate(ROUTES.BUILDER_SESSION(id));
 
   const start = async () => {
@@ -384,17 +390,9 @@ export const Builder: React.FC = () => {
         </div>
       </header>
 
-      {(isError || (showArchived && isArchivedError)) && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          hideCloseButton
-          title={strings.loadFailed}
-          className="mb-4"
-        />
-      )}
 
-      <div className="mb-4">
+
+      <div className="mb-4 flex flex-col gap-4">
         <Checkbox
           id="builder-show-archived"
           labelText={strings.showArchivedLabel}
@@ -404,28 +402,27 @@ export const Builder: React.FC = () => {
             setArchivedOffset(0);
           }}
         />
+        {!isCurrentLoading && hasLoaded && (
+          <>
+            <ListToolbar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              placeholder={strings.searchPlaceholder}
+              filterChips={filterChips}
+              addFilterCta={{ label: strings.filterButton, onClick: () => setIsFilterOpen(o => !o) }}
+              addFilterButtonRef={addFilterBtnRef}
+            />
+            <FilterDropdown<SessionFilters>
+              isOpen={isFilterOpen}
+              onClose={() => setIsFilterOpen(false)}
+              sections={[{ id: "status", label: strings.filterStatusLabel, options: statusOptions }]}
+              onApplyFilters={next => setStatusFilter((next.status ?? []) as BuilderSessionStatus[])}
+              anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+              currentFilters={{ status: statusFilter }}
+            />
+          </>
+        )}
       </div>
-
-      {!isCurrentLoading && hasLoaded && (
-        <div className="mb-4">
-          <ListToolbar
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            placeholder={strings.searchPlaceholder}
-            filterChips={filterChips}
-            addFilterCta={{ label: strings.filterButton, onClick: () => setIsFilterOpen(o => !o) }}
-            addFilterButtonRef={addFilterBtnRef}
-          />
-          <FilterDropdown<SessionFilters>
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            sections={[{ id: "status", label: strings.filterStatusLabel, options: statusOptions }]}
-            onApplyFilters={next => setStatusFilter((next.status ?? []) as BuilderSessionStatus[])}
-            anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
-            currentFilters={{ status: statusFilter }}
-          />
-        </div>
-      )}
 
       {isCurrentLoading ? (
         <SkeletonText paragraph lineCount={4} />
