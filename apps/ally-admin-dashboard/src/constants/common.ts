@@ -598,6 +598,9 @@ export const ApiEndpoints = {
     TEMPLATES_TEST: "/v1/whatsapp/templates/test",
     SETTINGS: "/v1/whatsapp/settings",
     PROVIDER_HEALTH: "/v1/whatsapp/settings/provider-health",
+    PROVIDER_CHECK: "/v1/whatsapp/settings/provider-check",
+    PROVIDER_REGISTER: "/v1/whatsapp/settings/provider-register",
+    PROVIDER_SUBSCRIBE: "/v1/whatsapp/settings/provider-subscribe",
     PREVIEW_ASK: "/v1/whatsapp/preview/ask",
     // Conversations, unanswered queue and usage dashboard
     CONVERSATIONS: "/v1/whatsapp/conversations",

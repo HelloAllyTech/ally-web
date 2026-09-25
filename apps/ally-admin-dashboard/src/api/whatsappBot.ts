@@ -30,6 +30,7 @@ import {
   WaBotSettings,
   WaPreviewRequest,
   WaPreviewResponse,
+  WaConnectionCheck,
   WaProviderHealth,
   WaTemplate,
   WaTemplateKind,
@@ -370,6 +371,34 @@ const whatsappBotAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.WHATSAPP_BOT_SETTINGS],
     }),
 
+    /**
+     * Ask Meta, live, whether the token and number work.
+     *
+     * A mutation so it runs only when the admin presses the button: as a query it would call out to
+     * Meta on every mount of the settings tab and on every settings save.
+     */
+    checkWaProviderConnection: builder.mutation<WaConnectionCheck, void>({
+      query: () => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PROVIDER_CHECK,
+        method: HttpMethod.POST,
+      }),
+    }),
+
+    registerWaPhoneNumber: builder.mutation<WaConnectionCheck, { pin: string }>({
+      query: body => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PROVIDER_REGISTER,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    subscribeWaProviderApp: builder.mutation<WaConnectionCheck, void>({
+      query: () => ({
+        url: ApiEndpoints.WHATSAPP_BOT.PROVIDER_SUBSCRIBE,
+        method: HttpMethod.POST,
+      }),
+    }),
+
     // ---- Preview console ----
 
     /**
@@ -641,6 +670,9 @@ export const {
   useGetWaSettingsQuery,
   useUpdateWaSettingsMutation,
   useGetWaProviderHealthQuery,
+  useCheckWaProviderConnectionMutation,
+  useRegisterWaPhoneNumberMutation,
+  useSubscribeWaProviderAppMutation,
   usePreviewWaAskMutation,
   useGetWaConversationsQuery,
   useGetWaConversationQuery,
