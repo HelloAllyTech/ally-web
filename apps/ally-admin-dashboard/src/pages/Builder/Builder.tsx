@@ -4,14 +4,7 @@ import { BarChart3, Book, MachineLearningModel, Settings, Timer } from "@icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import {
-  Button,
-  Checkbox,
-  InlineNotification,
-  SkeletonText,
-  Tag,
-  Tile,
-} from "@ally-ui-mono/ui-shared";
+import { Button, Checkbox, SkeletonText, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import {
   useArchiveBuilderSessionMutation,
@@ -390,8 +383,6 @@ export const Builder: React.FC = () => {
         </div>
       </header>
 
-
-
       <div className="mb-4 flex flex-col gap-4">
         <Checkbox
           id="builder-show-archived"
@@ -409,14 +400,21 @@ export const Builder: React.FC = () => {
               onSearchChange={setSearchQuery}
               placeholder={strings.searchPlaceholder}
               filterChips={filterChips}
-              addFilterCta={{ label: strings.filterButton, onClick: () => setIsFilterOpen(o => !o) }}
+              addFilterCta={{
+                label: strings.filterButton,
+                onClick: () => setIsFilterOpen(o => !o),
+              }}
               addFilterButtonRef={addFilterBtnRef}
             />
             <FilterDropdown<SessionFilters>
               isOpen={isFilterOpen}
               onClose={() => setIsFilterOpen(false)}
-              sections={[{ id: "status", label: strings.filterStatusLabel, options: statusOptions }]}
-              onApplyFilters={next => setStatusFilter((next.status ?? []) as BuilderSessionStatus[])}
+              sections={[
+                { id: "status", label: strings.filterStatusLabel, options: statusOptions },
+              ]}
+              onApplyFilters={next =>
+                setStatusFilter((next.status ?? []) as BuilderSessionStatus[])
+              }
               anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
               currentFilters={{ status: statusFilter }}
             />

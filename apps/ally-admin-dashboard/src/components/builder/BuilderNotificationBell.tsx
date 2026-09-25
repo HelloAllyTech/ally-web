@@ -25,7 +25,7 @@ export const BuilderNotificationBell: FC = () => {
     try {
       await markAllRead().unwrap();
       refetch();
-    } catch (error) {
+    } catch {
       // Errors fall through to the isError on the main query.
     }
   };
