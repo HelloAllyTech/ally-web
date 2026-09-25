@@ -1,8 +1,13 @@
+import { ActivationFunnelCard } from "../ActivationFunnelCard";
 import { ActiveUsersXpCard } from "../ActiveUsersXpCard";
 import { AverageRatingCard } from "../AverageRatingCard";
 import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
 import { ScrollNoteContext } from "../chartKit";
+import { CumulativeUsersCard } from "../CumulativeUsersCard";
 import { GoalsXpCard } from "../GoalsXpCard";
+import { NewUsersCard } from "../NewUsersCard";
+import { NewVsReturningUsersCard } from "../NewVsReturningUsersCard";
+import { PlayTimeCard } from "../PlayTimeCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
 import { RoleplaySessionCostCard } from "../RoleplaySessionCostCard";
@@ -48,6 +53,11 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *    don't answer the same question.
  *  - `ShipVolumeCard` — relocated here from the Product management tab (its
  *    own doc comment explains why).
+ *  - `NewUsersCard` (AAQ-018), `CumulativeUsersCard` (AAQ-019),
+ *    `NewVsReturningUsersCard` (AAQ-020), `PlayTimeCard` (AAQ-026) — were
+ *    Platform's growth and play-time charts; `ActivationFunnelCard` (AAQ-035)
+ *    was Usage levels' activation funnel. Moved, not copied: each now lives
+ *    only here.
  *  - `RoleplaySessionCostCard` — new (AAQ-157): AI cost per minute of roleplay,
  *    costed per SESSION and stacked by component. Not the Unit economics
  *    cost-per-10-minutes chart, which buckets each call by when it ran.
@@ -74,6 +84,11 @@ export const GoalsTab = () => (
       <ShipVolumeCard />
       <BugHunterVolumeCard />
       <XpByTenantCard />
+      <NewUsersCard />
+      <CumulativeUsersCard />
+      <NewVsReturningUsersCard />
+      <PlayTimeCard />
+      <ActivationFunnelCard />
       <RoleplaySessionCostCard />
     </div>
   </ScrollNoteContext.Provider>
