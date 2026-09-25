@@ -1,6 +1,7 @@
 import { ActiveUsersXpCard } from "../ActiveUsersXpCard";
 import { AverageRatingCard } from "../AverageRatingCard";
 import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
+import { ScrollNoteContext } from "../chartKit";
 import { GoalsXpCard } from "../GoalsXpCard";
 import { RoleplayMinutesCard } from "../RoleplayMinutesCard";
 import { RoleplayQualityCard } from "../RoleplayQualityCard";
@@ -54,18 +55,21 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  */
 export const GoalsTab = () => (
   // One chart per row at every screen size — a single column, never two cards
-  // side by side — so each chart gets the full width to breathe.
-  <div className="flex flex-col gap-4">
-    <GoalsXpCard />
-    <RoleplayMinutesCard />
-    <RoleplayVoiceLatencyCard />
-    <RoleplayQualityCard />
-    <SatisfactionMixCard />
-    <AverageRatingCard />
-    <ActiveUsersXpCard />
-    <XpLevelReachedCard />
-    <ShipVolumeCard />
-    <BugHunterVolumeCard />
-    <XpByTenantCard />
-  </div>
+  // side by side — so each chart gets the full width to breathe. No "scroll
+  // sideways" caption under a wide plot here: Priority keeps each card to the plot.
+  <ScrollNoteContext.Provider value={false}>
+    <div className="flex flex-col gap-4">
+      <GoalsXpCard />
+      <RoleplayMinutesCard />
+      <RoleplayVoiceLatencyCard />
+      <RoleplayQualityCard />
+      <SatisfactionMixCard />
+      <AverageRatingCard />
+      <ActiveUsersXpCard />
+      <XpLevelReachedCard />
+      <ShipVolumeCard />
+      <BugHunterVolumeCard />
+      <XpByTenantCard />
+    </div>
+  </ScrollNoteContext.Provider>
 );

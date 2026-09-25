@@ -85,7 +85,7 @@ const XP_HELP_STATIC = (
 export const GoalsXpCard = () => {
   const { controlsFor, setGrain, hydrating } = useChartControls<ChartId>(
     "goals.xp",
-    defaultControlsFor(["xp"], { xp: { grain: "quarter" } }),
+    defaultControlsFor(["xp"], { xp: { grain: "month" } }),
   );
   const grain = controlsFor("xp").grain;
   const withGoal = showsGoal(grain);
