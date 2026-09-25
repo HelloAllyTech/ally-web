@@ -39,20 +39,27 @@ export const componentScale = (components: readonly SessionCostComponentDef[]): 
  * The stack: each component's USD per minute, per period.
  *
  * The components partition the delivery cost and share one denominator, so they
- * genuinely sum to the headline and a stack is the honest reading. A null (no
- * minutes that period) is dropped rather than zeroed: a period with no practice
- * has no unit cost, and a zero-height bar would draw it as the cheapest one.
+ * genuinely sum to the headline and a stack is the honest reading.
+ *
+ * A period with no minutes has no unit cost, so it gets ONE null placeholder
+ * rather than zeros: nothing is drawn (a zero-height bar would read as the
+ * cheapest period on the chart), but the period keeps its slot on the axis.
+ * Dropping it outright would close the gap and make three quiet weeks look
+ * like none.
  */
 export const buildPerMinuteStack = (
   points: readonly RoleplaySessionCostPoint[],
   components: readonly SessionCostComponentDef[],
 ): ChartDatum[] =>
-  points.flatMap(p =>
-    components.flatMap(c => {
+  points.flatMap(p => {
+    const key = periodKey(p);
+    const data = components.flatMap(c => {
       const value = p.perMinuteByComponent[c.key];
-      return value === null ? [] : [{ group: c.label, key: periodKey(p), value }];
-    }),
-  );
+      return value === null ? [] : [{ group: c.label, key, value }];
+    });
+    if (data.length > 0 || components.length === 0) return data;
+    return [{ group: components[0].label, key, value: null }];
+  });
 
 /**
  * The caption sentence about coverage. Three states, because "not yet" and
@@ -95,6 +102,16 @@ export const sessionUnpricedNote = (
 export const formatPerMinute = (value: number | null | undefined): string =>
   value === null || value === undefined ? "—" : `${formatUsd(value)}/min`;
 
+/**
+ * Minutes for the table. A handful of seconds must not print as "0" beside a
+ * ratio computed from it — that reads as division by zero.
+ */
+export const formatMinutes = (minutes: number): string | number => {
+  if (minutes === 0) return 0;
+  if (minutes < 0.1) return "<0.1";
+  return Math.round(minutes * 10) / 10;
+};
+
 /** Table columns for the expanded view, in display order. */
 export const tableColumns = (
   periodTitle: string,
@@ -119,7 +136,7 @@ export const tableRow = (
 ): (string | number)[] => [
   inProgress ? `${p.bucket} (in progress)` : p.bucket,
   p.sessions,
-  Math.round(p.minutes * 10) / 10,
+  formatMinutes(p.minutes),
   formatUsd(p.costUsd),
   formatUsd(p.costPerMinuteUsd),
   formatUsd(p.costPerSessionUsd),

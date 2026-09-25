@@ -6,6 +6,7 @@ import {
   buildPerMinuteStack,
   componentScale,
   coverageCaption,
+  formatMinutes,
   periodKey,
   sessionUnpricedNote,
   tableColumns,
@@ -58,12 +59,18 @@ describe("sessionCostChart", () => {
     expect(series[0]).toEqual({ group: "Live dialogue", key: "2026-07-01 *", value: 0.001 });
   });
 
-  it("drops a period with no minutes rather than drawing it as free", () => {
+  it("keeps a period with no minutes on the axis without drawing it as free", () => {
     const series = buildPerMinuteStack(
       [point({ minutes: 0, perMinuteByComponent: components(null) })],
       COMPONENTS,
     );
-    expect(series).toEqual([]);
+    expect(series).toEqual([{ group: "Live dialogue", key: "2026-08-01", value: null }]);
+  });
+
+  it("never prints a few seconds as zero minutes", () => {
+    expect(formatMinutes(0)).toBe(0);
+    expect(formatMinutes(0.005)).toBe("<0.1");
+    expect(formatMinutes(12.34)).toBe(12.3);
   });
 
   it("colours components by fixed position, not by what has spend", () => {
