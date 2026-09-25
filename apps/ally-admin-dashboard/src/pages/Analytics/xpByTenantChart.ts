@@ -111,7 +111,12 @@ export interface XpByTenantDatum {
   value: number;
 }
 
-const isGrouped = (data: XpByTenantResponse): boolean =>
+/**
+ * Whether the response is a per-period reading. Read off the RESPONSE, not the
+ * picker: a backend that predates grouping answers every grain with the single
+ * window bar, and the card must then label it as that one bar.
+ */
+export const isGrouped = (data: XpByTenantResponse): boolean =>
   Boolean(data.grain && data.grain !== "all" && data.points);
 
 /** The still-accruing period, when the response is grouped and has one. */

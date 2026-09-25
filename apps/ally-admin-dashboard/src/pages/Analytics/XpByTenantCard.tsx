@@ -22,6 +22,7 @@ import {
   buildXpByTenantScale,
   buildXpByTenantSeries,
   buildXpByTenantTable,
+  isGrouped,
   toXpByTenantGrain,
   xpByTenantAxisTitle,
   xpByTenantEmptyText,
@@ -79,17 +80,18 @@ export const XpByTenantCard = () => {
   const inProgress = xpByTenantInProgress(data);
   const emptyText = xpByTenantEmptyText(data);
   const takeaway = xpByTenantTakeaway(data);
-  const grouped = grain !== "allTime";
+  // From the response, not the picker — see `isGrouped`.
+  const grouped = data ? isGrouped(data) : grain !== "allTime";
 
   const opts = useMemo(
     () =>
       stackedBarOpts({
         leftTitle: "XP",
-        bottomTitle: xpByTenantAxisTitle(grain),
+        bottomTitle: grouped ? xpByTenantAxisTitle(grain) : "",
         colorScale: scale,
         height: "340px",
       }),
-    [scale, grain],
+    [scale, grain, grouped],
   );
 
   const caption =
