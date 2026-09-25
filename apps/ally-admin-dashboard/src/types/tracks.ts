@@ -130,6 +130,21 @@ interface QuizQuestionBase {
   points?: number; // default 1
   /** Optional picture or clip shown above the answer controls. */
   media?: QuestionMedia;
+  /**
+   * `false` = no points, excluded from the quiz score — lets a quiz mix
+   * assessment with survey/reflection prompts. Absent = graded (every
+   * question written before this field existed). An ungraded question may
+   * omit its answer key; `likert_scale` is never graded whatever this says.
+   * Quiz items only — article/video questions are always graded.
+   */
+  isGraded?: boolean;
+  /**
+   * `false` = after submitting, the learner is told whether they were right
+   * but not what the right answer was. Absent = shown. Independent of
+   * `isGraded`, and meaningless for `likert_scale`/`open_ended` (no fixed
+   * answer). Quiz items only.
+   */
+  showCorrectAnswer?: boolean;
 }
 
 export interface McqSingleQuestion extends QuizQuestionBase {
@@ -200,6 +215,20 @@ export interface OpenEndedQuestion extends QuizQuestionBase {
   rubric: OpenEndedRubric;
 }
 
+/**
+ * One rating scale applied to several statements — "rate each of these from
+ * Strongly disagree to Strongly agree". Opinion, not knowledge: there is no
+ * answer key and it is never graded. The scale is shared by every statement;
+ * a matrix of per-row scales is deliberately out of scope.
+ */
+export interface LikertScaleQuestion extends QuizQuestionBase {
+  type: "likert_scale";
+  /** The things being rated, one row each. 1-20. */
+  statements: QuizOption[];
+  /** The scale points, lowest first — e.g. Strongly disagree … Strongly agree. 2-10. */
+  scale: QuizOption[];
+}
+
 export type QuizQuestion =
   | McqSingleQuestion
   | McqMultiQuestion
@@ -207,7 +236,8 @@ export type QuizQuestion =
   | OrderingQuestion
   | MatchingQuestion
   | FillBlankQuestion
-  | OpenEndedQuestion;
+  | OpenEndedQuestion
+  | LikertScaleQuestion;
 
 export type QuizQuestionType = QuizQuestion["type"];
 

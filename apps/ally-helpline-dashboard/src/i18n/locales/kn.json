@@ -1412,7 +1412,8 @@
         "attemptsLeft_other": "{{count}} ಪ್ರಯತ್ನಗಳು ಬಾಕಿ",
         "unlimitedAttempts": "ಅನಿಯಮಿತ ಪ್ರಯತ್ನಗಳು",
         "start": "ಕ್ವಿಜ್ ಆರಂಭಿಸಿ",
-        "noAttemptsLeft": "ಯಾವುದೇ ಪ್ರಯತ್ನಗಳು ಬಾಕಿ ಇಲ್ಲ"
+        "noAttemptsLeft": "ಯಾವುದೇ ಪ್ರಯತ್ನಗಳು ಬಾಕಿ ಇಲ್ಲ",
+        "notScored": "ಅಂಕಗಳಿಲ್ಲ — ಯಾವುದೇ ಉತ್ತರ ಸರಿ ಅಥವಾ ತಪ್ಪು ಅಲ್ಲ"
       },
       "question": {
         "progress": "ಪ್ರಶ್ನೆ {{current}} / {{total}}",
@@ -1426,7 +1427,9 @@
         "orderPrompt": "ಇವುಗಳನ್ನು ಸರಿಯಾದ ಕ್ರಮದಲ್ಲಿ ಜೋಡಿಸಿ",
         "matchPrompt": "ಎಡಭಾಗದ ಒಂದು ಅಂಶವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ, ನಂತರ ಬಲಭಾಗದಲ್ಲಿ ಅದರ ಜೋಡಿಯನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ",
         "wordCount": "{{count}} / {{min}} ಪದಗಳು",
-        "aiGraded": "ಈ ಉತ್ತರವನ್ನು AI ಮೌಲ್ಯಮಾಪನ ಮಾಡುತ್ತದೆ"
+        "aiGraded": "ಈ ಉತ್ತರವನ್ನು AI ಮೌಲ್ಯಮಾಪನ ಮಾಡುತ್ತದೆ",
+        "ratePrompt": "ಪ್ರತಿ ಹೇಳಿಕೆಯನ್ನು ರೇಟ್ ಮಾಡಿ",
+        "notScored": "ಅಂಕಗಳಿಲ್ಲ"
       },
       "results": {
         "title": "ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳು",
@@ -1443,7 +1446,13 @@
         "grading": "ಮೌಲ್ಯಮಾಪನ ನಡೆಯುತ್ತಿದೆ...",
         "retry": "ಕ್ವಿಜ್ ಮತ್ತೆ ಮಾಡಿ",
         "next": "ಮುಂದಿನದು",
-        "attemptsUsed": "ಪ್ರಯತ್ನ {{used}} / {{max}}"
+        "attemptsUsed": "ಪ್ರಯತ್ನ {{used}} / {{max}}",
+        "notScored": "ಅಂಕಗಳಿಲ್ಲ",
+        "correctAnswer": "ಸರಿಯಾದ ಉತ್ತರ",
+        "yourResponses": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗಳು",
+        "noResponse": "ಪ್ರತಿಕ್ರಿಯೆ ಇಲ್ಲ",
+        "responsesSubmitted": "ಪ್ರತಿಕ್ರಿಯೆಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ",
+        "responsesSubmittedBody": "ಧನ್ಯವಾದಗಳು — ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ."
       }
     },
     "question": {

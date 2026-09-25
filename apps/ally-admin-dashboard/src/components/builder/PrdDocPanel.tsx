@@ -50,6 +50,10 @@ const PROSE_SECTIONS: (keyof BuilderPrdDocument)[] = [
   // Before Goals, matching the rubric: what exists is what decides which
   // goals are worth having.
   "existingBehaviour",
+  // And immediately after it: which repo owns each change. Knowing what
+  // exists is what makes that answerable, and a build can only edit the repos
+  // this section leads the plan to name.
+  "whereChangesBelong",
   "goals",
   "nonGoals",
   "testPlanMd",

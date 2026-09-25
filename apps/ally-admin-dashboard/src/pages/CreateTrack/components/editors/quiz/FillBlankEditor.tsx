@@ -11,9 +11,11 @@ import { nextBlankTokenId, parseBlankTokens, QuestionPath } from "../../../track
 
 interface FillBlankEditorProps {
   questionPath: QuestionPath;
+  /** Ungraded (`isGraded: false`) makes each blank's accepted answers optional. */
+  graded?: boolean;
 }
 
-export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {
+export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath, graded = true }) => {
   const { control, setValue } = useFormContext<TrackFormValues>();
   const templateRef = useRef<HTMLTextAreaElement>(null);
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
@@ -110,6 +112,11 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {
 
       {tokens.length > 0 && (
         <div className="flex flex-col gap-3">
+          {!graded && (
+            <p className="text-xs text-typography-500">
+              Accepted answers are optional — this question isn&apos;t graded.
+            </p>
+          )}
           {tokens.map(token => {
             const blank = getBlank(token);
             return (

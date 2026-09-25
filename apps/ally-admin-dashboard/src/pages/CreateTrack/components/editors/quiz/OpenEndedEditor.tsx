@@ -14,9 +14,15 @@ interface OpenEndedEditorProps {
   // across both call sites, so this prop takes the same union as its
   // siblings.
   questionPath: QuestionPath;
+  /**
+   * Ungraded (`isGraded: false`) skips LLM grading entirely, so the rubric
+   * below is unused — kept in form state but called out rather than hidden,
+   * in case the trainer flips Graded back on later.
+   */
+  graded?: boolean;
 }
 
-export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
+export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath, graded = true }) => {
   const { control } = useFormContext<TrackFormValues>();
 
   const { fields, append, remove } = useFieldArray({
@@ -27,8 +33,16 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
 
   return (
     <div className="flex flex-col gap-4">
+      {!graded && (
+        <p className="text-xs text-typography-600 bg-secondary-50 border border-border-light rounded-md px-3 py-2">
+          This question is ungraded, so it skips LLM grading — the guidance and rubric below are not
+          used.
+        </p>
+      )}
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-typography-800">Grading guidance</label>
+        <label className="text-sm font-medium text-typography-800">
+          Grading guidance{graded ? "" : " (optional)"}
+        </label>
         <Controller
           control={control}
           name={

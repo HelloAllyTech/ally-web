@@ -14,7 +14,7 @@ import { useSocket } from "./useSocket";
 
 export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   const { autoConnect = true } = options;
-  const { user, permissions } = useSelector((state: RootState) => state.user);
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const location = useLocation();
   const [getCounsellorChat] = useLazyGetCounsellorChatQuery();
@@ -118,7 +118,11 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
     if (enableConnection) {
       fetchActiveChat();
     }
-  }, [user?.role, enableConnection, getCounsellorChat, setSession]);
+    // Keyed on `permissions` — the value the gate above actually reads. It used
+    // to key on the legacy `user?.role`, which the body never looks at and which
+    // can already be set from the persisted store while `permissions` is still
+    // empty, so the effect held a stale empty array and never refetched.
+  }, [permissions, enableConnection, getCounsellorChat, setSession]);
 
   // Handle socket connection
   useEffect(() => {
