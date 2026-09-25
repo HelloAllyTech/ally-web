@@ -4,7 +4,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ArtifactLabelPalette } from "../ArtifactLabelPalette";
-import { ArtifactLabel, ArtifactMark, ArtifactMarker, ArtifactUnit, markKey } from "../ArtifactMarker";
+import {
+  ArtifactLabel,
+  ArtifactMark,
+  ArtifactMarker,
+  ArtifactUnit,
+  markKey,
+} from "../ArtifactMarker";
 
 const units: ArtifactUnit[] = [
   { id: "u1", speaker: "Caller", text: "I don't know why I called." },
@@ -31,11 +37,7 @@ const Harness = ({ initial = [] as ArtifactMark[] }) => {
 
   return (
     <>
-      <ArtifactLabelPalette
-        labels={labels}
-        armedLabelId={armedLabelId}
-        onArm={setArmedLabelId}
-      />
+      <ArtifactLabelPalette labels={labels} armedLabelId={armedLabelId} onArm={setArmedLabelId} />
       <ArtifactMarker
         units={units}
         labels={labels}

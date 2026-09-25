@@ -46,7 +46,9 @@ describe("what ally-be will actually accept", () => {
    */
   it("rejects from new as well as pending approval", () => {
     const rejectable = Object.values(BugFindingStatus).filter(canReject);
-    expect(rejectable.sort()).toEqual([BugFindingStatus.NEW, BugFindingStatus.PENDING_APPROVAL].sort());
+    expect(rejectable.sort()).toEqual(
+      [BugFindingStatus.NEW, BugFindingStatus.PENDING_APPROVAL].sort(),
+    );
   });
 
   it("offers a fix session from exactly the statuses @types mirrors", () => {
@@ -127,7 +129,9 @@ describe("age", () => {
    * a staleness signal cannot survive.
    */
   it("only colours bugs that are still waiting on somebody", () => {
-    expect(showsStaleness(finding({ id: "a", status: BugFindingStatus.PENDING_APPROVAL }))).toBe(true);
+    expect(showsStaleness(finding({ id: "a", status: BugFindingStatus.PENDING_APPROVAL }))).toBe(
+      true,
+    );
     expect(showsStaleness(finding({ id: "a", status: BugFindingStatus.FAILED }))).toBe(true);
     expect(showsStaleness(finding({ id: "a", status: BugFindingStatus.NEW }))).toBe(true);
 

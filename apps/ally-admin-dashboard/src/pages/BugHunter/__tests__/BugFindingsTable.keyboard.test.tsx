@@ -244,9 +244,7 @@ describe("BugFindingsTable — keyboard triage", () => {
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       expect(approveFinding).not.toHaveBeenCalled();
-      expect(toastError).toHaveBeenCalledWith(
-        "That doesn't apply to this bug from where it is.",
-      );
+      expect(toastError).toHaveBeenCalledWith("That doesn't apply to this bug from where it is.");
     });
 
     it("offers the reject confirmation for a new bug, which ally-be does accept", () => {

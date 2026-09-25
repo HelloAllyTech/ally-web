@@ -579,42 +579,42 @@ describe("CommentThread Component", () => {
   });
 
   describe("Infinite re-render guard", () => {
-    it('does not fall into an infinite loop due to unstable onCommentChange', async () => {
-        const onCommentChange = vi.fn();
-        const TestParent = () => {
-            const [comments, setComments] = useState([]);
-            const [threadsOffset, setThreadsOffset] = useState(0);
+    it("does not fall into an infinite loop due to unstable onCommentChange", async () => {
+      const onCommentChange = vi.fn();
+      const TestParent = () => {
+        const [comments, setComments] = useState([]);
+        const [threadsOffset, setThreadsOffset] = useState(0);
 
-            stableApiResponse.data = [mockComments[0]];
+        stableApiResponse.data = [mockComments[0]];
 
-            return (
-                <CommentThread
-                    comments={comments}
-                    setComments={setComments}
-                    onCommentChange={() => onCommentChange()} // Unstable function
-                    id="thread-1"
-                    threadsOffset={threadsOffset}
-                    setThreadsOffset={setThreadsOffset}
-                    onCommentAddition={() => {}}
-                    onDeleteComment={() => {}}
-                    messageId="message-1"
-                    selection={{ startIndex: 0, endIndex: 0 }}
-                    onAddComment={() => {}}
-                    deletedCommentIds={{ current: new Set() }}
-                />
-            );
-        };
-        render(
-            <Provider store={mockStore}>
-                <TestParent />
-            </Provider>,
+        return (
+          <CommentThread
+            comments={comments}
+            setComments={setComments}
+            onCommentChange={() => onCommentChange()} // Unstable function
+            id="thread-1"
+            threadsOffset={threadsOffset}
+            setThreadsOffset={setThreadsOffset}
+            onCommentAddition={() => {}}
+            onDeleteComment={() => {}}
+            messageId="message-1"
+            selection={{ startIndex: 0, endIndex: 0 }}
+            onAddComment={() => {}}
+            deletedCommentIds={{ current: new Set() }}
+          />
         );
+      };
+      render(
+        <Provider store={mockStore}>
+          <TestParent />
+        </Provider>,
+      );
 
-        await act(async () => {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        });
-    
-        expect(onCommentChange).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      });
+
+      expect(onCommentChange).toHaveBeenCalledTimes(1);
     });
   });
 });

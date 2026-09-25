@@ -31,11 +31,7 @@ vi.mock("@api", async importOriginal => ({
 }));
 
 import { en } from "@constants";
-import {
-  AnalyticsSuggestion,
-  AnalyticsSuggestionStatus,
-  RoadmapOpportunityType,
-} from "@types";
+import { AnalyticsSuggestion, AnalyticsSuggestionStatus, RoadmapOpportunityType } from "@types";
 
 import { SuggestionsTab } from "../tabs/suggestions/SuggestionsTab";
 
@@ -116,7 +112,12 @@ describe("SuggestionsTab", () => {
         id: "c",
         batchId: "batch-2",
         title: "From an older run",
-        window: { range: null, from: "2026-01-01", to: "2026-03-31", label: "2026-01-01 → 2026-03-31" },
+        window: {
+          range: null,
+          from: "2026-01-01",
+          to: "2026-03-31",
+          label: "2026-01-01 → 2026-03-31",
+        },
       }),
     ]);
     render(<SuggestionsTab />);
@@ -164,9 +165,7 @@ describe("SuggestionsTab", () => {
     );
     unmount();
 
-    listReturns([
-      suggestion({ status: AnalyticsSuggestionStatus.ACCEPTED, opportunityId: null }),
-    ]);
+    listReturns([suggestion({ status: AnalyticsSuggestionStatus.ACCEPTED, opportunityId: null })]);
     render(<SuggestionsTab />);
     expect(screen.getByText(strings.opportunityGone)).toBeInTheDocument();
   });
@@ -261,9 +260,7 @@ describe("SuggestionsTab", () => {
       await waitFor(() =>
         expect(screen.getByText("scribeOverview: query failed")).toBeInTheDocument(),
       );
-      expect(
-        screen.getByText(fill(strings.sectionsUnavailable, { count: 1 })),
-      ).toBeInTheDocument();
+      expect(screen.getByText(fill(strings.sectionsUnavailable, { count: 1 }))).toBeInTheDocument();
     });
 
     it("treats a run that proposed nothing as a result, not a failure", async () => {
@@ -367,9 +364,7 @@ describe("SuggestionsTab", () => {
       await user.click(screen.getByRole("button", { name: strings.reject }));
       await user.click(screen.getByRole("button", { name: strings.rejectSubmit }));
 
-      await waitFor(() =>
-        expect(rejectMock).toHaveBeenCalledWith({ id: "sug-1", body: {} }),
-      );
+      await waitFor(() => expect(rejectMock).toHaveBeenCalledWith({ id: "sug-1", body: {} }));
     });
 
     it("passes a typed reason through, trimmed", async () => {

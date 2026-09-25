@@ -31,13 +31,7 @@ describe("splitArticleHtml", () => {
       [question("q1"), question("q2")],
     );
 
-    expect(segments.map(s => s.kind)).toEqual([
-      "html",
-      "question",
-      "html",
-      "question",
-      "html",
-    ]);
+    expect(segments.map(s => s.kind)).toEqual(["html", "question", "html", "question", "html"]);
     expect(segments.filter(s => s.kind === "question").map(s => (s as any).question.id)).toEqual([
       "q1",
       "q2",

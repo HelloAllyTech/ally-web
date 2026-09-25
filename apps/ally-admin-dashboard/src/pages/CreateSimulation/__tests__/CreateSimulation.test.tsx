@@ -1052,7 +1052,9 @@ describe("CreateSimulation", () => {
           { id: "state-1", name: "Named State" },
           { id: "state-2", name: "" },
         ],
-        knowledgeSources: [{ id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: "state-2" }],
+        knowledgeSources: [
+          { id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: "state-2" },
+        ],
         triggerWarningIds: [],
       });
 
@@ -1066,7 +1068,9 @@ describe("CreateSimulation", () => {
             id: "existing-id",
             simulation: expect.objectContaining({
               states: [{ id: "state-1", name: "Named State" }],
-              knowledgeSources: [{ id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: null }],
+              knowledgeSources: [
+                { id: "ks-1", title: "Test", content: "Test", unlocksFromStateId: null },
+              ],
             }),
           }),
         );

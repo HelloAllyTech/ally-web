@@ -32,7 +32,6 @@ vi.mock("@hooks", async importOriginal => ({
   useAnalytics: () => ({ track: vi.fn() }),
 }));
 
-
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 const mockUseParams = vi.fn(() => ({ sessionId: "123" }));

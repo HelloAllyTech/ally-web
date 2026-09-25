@@ -130,10 +130,9 @@ describe("GenerateEventPanel", { timeout: 15_000 }, () => {
     typeBrief();
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
 
-    await waitFor(
-      () => expect(screen.getByRole("button", { name: "Add event" })).toBeEnabled(),
-      { timeout: 4000 },
-    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "Add event" })).toBeEnabled(), {
+      timeout: 4000,
+    });
   });
 
   it("persists nothing while generating", async () => {

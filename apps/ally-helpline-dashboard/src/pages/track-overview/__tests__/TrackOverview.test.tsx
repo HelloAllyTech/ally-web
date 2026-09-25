@@ -72,9 +72,8 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", async () => {
-  const actual = await vi.importActual<typeof import("@ally-ui-mono/ui-shared")>(
-    "@ally-ui-mono/ui-shared",
-  );
+  const actual =
+    await vi.importActual<typeof import("@ally-ui-mono/ui-shared")>("@ally-ui-mono/ui-shared");
   return { ...actual, CustomImage: (props: any) => <img alt={props.alt} src={props.src} /> };
 });
 

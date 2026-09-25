@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  SkillGrowthKnowledgeAttempt,
-  SkillGrowthLearnerSession,
-  SkillTrendMix,
-} from "@types";
+import { SkillGrowthKnowledgeAttempt, SkillGrowthLearnerSession, SkillTrendMix } from "@types";
 
 import {
   MIN_LEARNERS_FOR_SHARE,
@@ -80,9 +76,7 @@ describe("trend mix", () => {
   });
 
   it("emits a zero rather than dropping a class, so segments never reorder", () => {
-    const series = buildTrendMixSeries([
-      { month: "2026-01", improving: 0, flat: 0, declining: 2 },
-    ]);
+    const series = buildTrendMixSeries([{ month: "2026-01", improving: 0, flat: 0, declining: 2 }]);
 
     expect(series).toHaveLength(3);
     expect(series.find(d => d.group === TREND_LABELS.improving)?.value).toBe(0);
@@ -166,10 +160,7 @@ describe("learner timeline", () => {
     ];
 
     // A hardcoded enum would have dropped one of these entirely.
-    expect(skillCoverageCategories(sessions)).toEqual([
-      "Listening Engagement",
-      "Learning",
-    ]);
+    expect(skillCoverageCategories(sessions)).toEqual(["Listening Engagement", "Learning"]);
   });
 
   it("emits null for a session missing a category, so the line shows a real gap", () => {

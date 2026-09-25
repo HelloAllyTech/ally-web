@@ -37,7 +37,10 @@ describe("buildCodingAgentTrend", () => {
   });
 
   it("keeps every bucket's pair, so a gap-filled zero-spend day still shows both series", () => {
-    const series = buildCodingAgentTrend([point({ bucket: "2024-06-10" }), point({ bucket: "2024-06-11" })]);
+    const series = buildCodingAgentTrend([
+      point({ bucket: "2024-06-10" }),
+      point({ bucket: "2024-06-11" }),
+    ]);
 
     expect(series).toHaveLength(4);
   });

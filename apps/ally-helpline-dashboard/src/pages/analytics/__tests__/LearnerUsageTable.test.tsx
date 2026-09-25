@@ -7,8 +7,7 @@ import { LearnerUsageRow } from "@types";
 const mockUseGetLearnerUsageTableQuery = vi.fn();
 
 vi.mock("@api", () => ({
-  useGetLearnerUsageTableQuery: (...args: unknown[]) =>
-    mockUseGetLearnerUsageTableQuery(...args),
+  useGetLearnerUsageTableQuery: (...args: unknown[]) => mockUseGetLearnerUsageTableQuery(...args),
 }));
 
 /**

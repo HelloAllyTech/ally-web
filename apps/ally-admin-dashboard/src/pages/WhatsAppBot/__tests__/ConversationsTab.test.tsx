@@ -94,23 +94,23 @@ vi.mock("@components", () => ({
   }) => {
     capturedColumns = columns;
     return (
-    <table>
-      <tbody>
-        {rows.map(row => (
-          <tr key={row.id} data-testid="row">
-            {columns.map(col => (
-              <td key={col.key}>{col.render ? col.render(row) : null}</td>
-            ))}
-            <td data-testid="actions">
-              {(actions ?? [])
-                .filter(action => !action.hidden?.(row))
-                .map(action => action.key)
-                .join(",")}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      <table>
+        <tbody>
+          {rows.map(row => (
+            <tr key={row.id} data-testid="row">
+              {columns.map(col => (
+                <td key={col.key}>{col.render ? col.render(row) : null}</td>
+              ))}
+              <td data-testid="actions">
+                {(actions ?? [])
+                  .filter(action => !action.hidden?.(row))
+                  .map(action => action.key)
+                  .join(",")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
   },
   ListToolbar: () => <div data-testid="toolbar" />,

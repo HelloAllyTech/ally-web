@@ -5,9 +5,7 @@ import { BugReportForm } from "../BugReportForm";
 
 describe("BugReportForm", () => {
   it("disables submit until something is typed", () => {
-    render(
-      <BugReportForm open onClose={vi.fn()} onSubmit={vi.fn()} onSuccess={vi.fn()} />,
-    );
+    render(<BugReportForm open onClose={vi.fn()} onSubmit={vi.fn()} onSuccess={vi.fn()} />);
     expect(screen.getByRole("button", { name: /send report/i })).toBeDisabled();
 
     fireEvent.change(screen.getByLabelText(/what were you trying to do/i), {

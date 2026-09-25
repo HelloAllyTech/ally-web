@@ -1,10 +1,4 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  renderHook,
-  waitFor,
-} from "@testing-library/react";
+import { render, screen, fireEvent, renderHook, waitFor } from "@testing-library/react";
 import { useForm, FormProvider } from "react-hook-form";
 import { vi } from "vitest";
 import { StatesEditor } from "../StatesEditor";
@@ -20,12 +14,7 @@ vi.mock("@hooks", () => ({
 const Wrapper = ({ id, label, formMethods, isMandatory }) => {
   return (
     <FormProvider {...formMethods}>
-      <StatesEditor
-        id={id}
-        label={label}
-        formMethods={formMethods}
-        isMandatory={isMandatory}
-      />
+      <StatesEditor id={id} label={label} formMethods={formMethods} isMandatory={isMandatory} />
     </FormProvider>
   );
 };
@@ -33,14 +22,7 @@ const Wrapper = ({ id, label, formMethods, isMandatory }) => {
 describe("StatesEditor", () => {
   it("should render the dialogue length dropdown", () => {
     const { result } = renderHook(() => useForm());
-    render(
-      <Wrapper
-        id="states"
-        label="States"
-        formMethods={result.current}
-        isMandatory={false}
-      />
-    );
+    render(<Wrapper id="states" label="States" formMethods={result.current} isMandatory={false} />);
 
     const dropdown = screen.getByTestId("dialogue-length-dropdown");
     expect(dropdown).toBeInTheDocument();
@@ -48,14 +30,7 @@ describe("StatesEditor", () => {
 
   it("should display the correct options in the dropdown", async () => {
     const { result } = renderHook(() => useForm());
-    render(
-      <Wrapper
-        id="states"
-        label="States"
-        formMethods={result.current}
-        isMandatory={false}
-      />
-    );
+    render(<Wrapper id="states" label="States" formMethods={result.current} isMandatory={false} />);
 
     const dropdown = screen.getByText("Select");
     fireEvent.click(dropdown);
@@ -72,14 +47,7 @@ describe("StatesEditor", () => {
     const { result } = renderHook(() => useForm());
     const setValue = vi.spyOn(result.current, "setValue");
 
-    render(
-      <Wrapper
-        id="states"
-        label="States"
-        formMethods={result.current}
-        isMandatory={false}
-      />
-    );
+    render(<Wrapper id="states" label="States" formMethods={result.current} isMandatory={false} />);
 
     const dropdown = screen.getByText("Select");
     fireEvent.click(dropdown);
@@ -87,10 +55,6 @@ describe("StatesEditor", () => {
     const shortOption = await screen.findByText("Short");
     fireEvent.click(shortOption);
 
-    expect(setValue).toHaveBeenCalledWith(
-      "states",
-      expect.any(Array),
-      expect.any(Object)
-    );
+    expect(setValue).toHaveBeenCalledWith("states", expect.any(Array), expect.any(Object));
   });
 });

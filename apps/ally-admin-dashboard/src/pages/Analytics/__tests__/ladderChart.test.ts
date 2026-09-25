@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  OrgEngagementResponse,
-  StickinessResponse,
-  UsageLadderResponse,
-} from "@types";
+import { OrgEngagementResponse, StickinessResponse, UsageLadderResponse } from "@types";
 
 import {
   buildAttainmentSeries,
@@ -195,9 +191,7 @@ describe("hasLadderData", () => {
   });
 });
 
-const stickiness = (
-  overrides: Partial<StickinessResponse> = {},
-): StickinessResponse => ({
+const stickiness = (overrides: Partial<StickinessResponse> = {}): StickinessResponse => ({
   qualifyingMinutes: 5,
   steps: [],
   beyondLastStep: 0,
@@ -300,9 +294,7 @@ describe("buildOrgActivitySeries", () => {
   it("emits the active count against the population, and the share separately", () => {
     const { counts, shares } = buildOrgActivitySeries(
       orgs({
-        activityTrend: [
-          { month: "2024-04-01", activeOrgs: 4, totalOrgs: 10, activeSharePct: 40 },
-        ],
+        activityTrend: [{ month: "2024-04-01", activeOrgs: 4, totalOrgs: 10, activeSharePct: 40 }],
       }),
     );
 
@@ -316,9 +308,7 @@ describe("buildOrgActivitySeries", () => {
   it("keeps a null share as null so the line breaks instead of hitting zero", () => {
     const { shares } = buildOrgActivitySeries(
       orgs({
-        activityTrend: [
-          { month: "2024-04-01", activeOrgs: 0, totalOrgs: 0, activeSharePct: null },
-        ],
+        activityTrend: [{ month: "2024-04-01", activeOrgs: 0, totalOrgs: 0, activeSharePct: null }],
       }),
     );
 

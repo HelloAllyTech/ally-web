@@ -103,13 +103,7 @@ describe("LifecycleBucketChips", () => {
 
   it("blocks clicks while a fresh page is in flight", () => {
     const { container } = render(
-      <LifecycleBucketChips
-        counts={counts()}
-        total={0}
-        value="all"
-        onChange={vi.fn()}
-        disabled
-      />,
+      <LifecycleBucketChips counts={counts()} total={0} value="all" onChange={vi.fn()} disabled />,
     );
 
     expect(container.firstChild).toHaveClass("pointer-events-none");

@@ -37,7 +37,9 @@ describe("ReportProblemModal", () => {
   });
 
   it("submits with silently-captured context and toasts + closes on success", async () => {
-    mockCreateBugReport.mockReturnValue({ unwrap: () => Promise.resolve({ id: "1", stage: "new" }) });
+    mockCreateBugReport.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: "1", stage: "new" }),
+    });
     const onClose = vi.fn();
     renderModal(onClose);
 

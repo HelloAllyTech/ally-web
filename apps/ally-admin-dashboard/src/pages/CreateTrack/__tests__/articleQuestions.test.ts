@@ -46,9 +46,7 @@ const form = (article: Partial<ArticleContent>): TrackFormValues =>
     description: "D",
     coverImageUrl: "https://example.com/c.png",
     isGlobal: false,
-    sections: [
-      { localId: "s1", title: "S", description: "", items: [articleItem(article)] },
-    ],
+    sections: [{ localId: "s1", title: "S", description: "", items: [articleItem(article)] }],
   }) as unknown as TrackFormValues;
 
 /** Just the messages — the node keys are the rail's business, not this suite's. */
@@ -64,9 +62,9 @@ describe("parseArticleQuestionMarkers", () => {
   });
 
   it("tolerates single quotes and extra attributes", () => {
-    expect(
-      parseArticleQuestionMarkers(`<div class="chip" data-ally-question='q1'></div>`),
-    ).toEqual(["q1"]);
+    expect(parseArticleQuestionMarkers(`<div class="chip" data-ally-question='q1'></div>`)).toEqual(
+      ["q1"],
+    );
   });
 
   it("de-duplicates a repeated placeholder", () => {
@@ -90,9 +88,7 @@ describe("removeArticleQuestionMarker", () => {
 
 describe("validateTrackForPublish — article questions", () => {
   it("accepts a placed, complete question", () => {
-    expect(messagesFor({ html: `<p>Body</p>${marker("q1")}`, questions: [mcq("q1")] })).toEqual(
-      [],
-    );
+    expect(messagesFor({ html: `<p>Body</p>${marker("q1")}`, questions: [mcq("q1")] })).toEqual([]);
   });
 
   it("rejects a question the author never placed", () => {
@@ -132,9 +128,9 @@ describe("validateTrackForPublish — article questions", () => {
 
   it("caps the number of questions", () => {
     const questions = Array.from({ length: 11 }, (_, i) => mcq(`q${i}`));
-    expect(
-      messagesFor({ html: questions.map(q => marker(q.id)).join(""), questions }),
-    ).toContain("Article: at most 10 questions");
+    expect(messagesFor({ html: questions.map(q => marker(q.id)).join(""), questions })).toContain(
+      "Article: at most 10 questions",
+    );
   });
 
   it("still requires a body for an article with no questions", () => {

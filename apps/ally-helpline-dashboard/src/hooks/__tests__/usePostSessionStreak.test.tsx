@@ -106,9 +106,7 @@ describe("usePostSessionStreak", () => {
 
     const { result, rerender } = renderHook(() => usePostSessionStreak(true));
 
-    expect(
-      mockUseGetPracticeStreakSummaryQuery.mock.calls.at(-1)?.[1]?.pollingInterval,
-    ).toBe(3500);
+    expect(mockUseGetPracticeStreakSummaryQuery.mock.calls.at(-1)?.[1]?.pollingInterval).toBe(3500);
 
     act(() => {
       vi.advanceTimersByTime(3500 * 5 + 1);
@@ -116,9 +114,7 @@ describe("usePostSessionStreak", () => {
     rerender();
 
     expect(result.current.streak).toBeNull();
-    expect(
-      mockUseGetPracticeStreakSummaryQuery.mock.calls.at(-1)?.[1]?.pollingInterval,
-    ).toBe(0);
+    expect(mockUseGetPracticeStreakSummaryQuery.mock.calls.at(-1)?.[1]?.pollingInterval).toBe(0);
   });
 
   it("latches, so a later refetch cannot change the number under the user", () => {

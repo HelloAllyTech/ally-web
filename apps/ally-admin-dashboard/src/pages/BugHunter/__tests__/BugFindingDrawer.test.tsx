@@ -168,9 +168,7 @@ describe("BugFindingDrawer — fix session", () => {
     fireEvent.click(screen.getByText("Put me on it"));
     fireEvent.click(screen.getByText("Start now"));
 
-    await waitFor(() =>
-      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }),
-    );
+    await waitFor(() => expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }));
   });
 
   it("starts the session immediately even when the bug has no repo yet — Bug Hunter classifies it, not the admin", async () => {
@@ -181,9 +179,7 @@ describe("BugFindingDrawer — fix session", () => {
     expect(screen.queryByTestId("repo-picker")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Start now"));
-    await waitFor(() =>
-      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }),
-    );
+    await waitFor(() => expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }));
   });
 
   it("hides the button while a session is already in flight", () => {
@@ -716,9 +712,7 @@ describe("BugFindingDrawer — stage", () => {
 
     fireEvent.click(screen.getByText("Back to automatic"));
 
-    await waitFor(() =>
-      expect(setStage).toHaveBeenCalledWith({ id: "finding-1", stage: null }),
-    );
+    await waitFor(() => expect(setStage).toHaveBeenCalledWith({ id: "finding-1", stage: null }));
   });
 });
 
@@ -842,7 +836,9 @@ describe("BugFindingDrawer — merging a green PR", () => {
     const { toast } = await import("sonner");
     mergeFinding.mockReturnValue({
       unwrap: () =>
-        Promise.reject({ data: { message: "Base branch was modified. Review and try the merge again." } }),
+        Promise.reject({
+          data: { message: "Base branch was modified. Review and try the merge again." },
+        }),
     });
     renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }));
 
@@ -857,10 +853,7 @@ describe("BugFindingDrawer — merging a green PR", () => {
   });
 
   it("hides it from a reader who cannot act", () => {
-    renderDrawer(
-      finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }),
-      false,
-    );
+    renderDrawer(finding({ status: BugFindingStatus.PR_OPENED, prUrl: "https://x/pull/1" }), false);
 
     expect(screen.queryByText("Merge it")).not.toBeInTheDocument();
   });
@@ -903,14 +896,16 @@ describe("BugFindingDrawer — confidence and regressions", () => {
     );
 
     expect(screen.getByText("Turned down: Real, but not worth fixing")).toBeInTheDocument();
-    expect(
-      screen.getByText("Cosmetic, and the screen is being replaced."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Cosmetic, and the screen is being replaced.")).toBeInTheDocument();
   });
 
   it("says how often a declined bug has been re-found, so a circular argument is visible", () => {
     renderDrawer(
-      finding({ status: BugFindingStatus.REJECTED, decisionReason: "not_a_bug", rediscoveredCount: 4 }),
+      finding({
+        status: BugFindingStatus.REJECTED,
+        decisionReason: "not_a_bug",
+        rediscoveredCount: 4,
+      }),
     );
 
     expect(screen.getByText(/I have found this again 4 time\(s\) since/)).toBeInTheDocument();

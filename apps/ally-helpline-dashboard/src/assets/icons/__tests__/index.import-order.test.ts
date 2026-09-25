@@ -23,7 +23,7 @@ describe("icons barrel import order", () => {
     const targetFile = path.resolve(__dirname, "../index.ts");
     const [result] = await eslint.lintFiles([targetFile]);
 
-    const importOrderErrors = result.messages.filter((message) => message.ruleId === "import/order");
+    const importOrderErrors = result.messages.filter(message => message.ruleId === "import/order");
     expect(importOrderErrors).toEqual([]);
   }, 30000);
 });

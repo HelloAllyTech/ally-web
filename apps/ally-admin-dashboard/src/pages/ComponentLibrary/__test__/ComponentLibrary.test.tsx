@@ -71,11 +71,7 @@ vi.mock("@components", () => ({
       </div>
     ) : null,
   DropdownField: ({ options, value, onChange }: any) => (
-    <select
-      data-testid="type-filter"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-    >
+    <select data-testid="type-filter" value={value} onChange={e => onChange(e.target.value)}>
       {options.map((option: any) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -208,7 +204,9 @@ describe("ComponentLibrary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPermissions.mockReturnValue(["edit:admin:track", "delete:admin:track"]);
-    mockDeleteComponentTemplates.mockReturnValue({ unwrap: () => Promise.resolve({ success: true }) });
+    mockDeleteComponentTemplates.mockReturnValue({
+      unwrap: () => Promise.resolve({ success: true }),
+    });
     (api.useGetComponentTemplatesQuery as ReturnType<typeof vi.fn>).mockReturnValue({
       data: { items: mockTemplates, total: mockTemplates.length },
       isLoading: false,

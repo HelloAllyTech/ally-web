@@ -123,9 +123,7 @@ describe("RoadmapFilterBar", () => {
 
     captured.dropdown.onApplyFilters({ source: [RoadmapOpportunitySource.CONSUMER] });
 
-    expect(handlers.onSourceFilterChange).toHaveBeenCalledWith([
-      RoadmapOpportunitySource.CONSUMER,
-    ]);
+    expect(handlers.onSourceFilterChange).toHaveBeenCalledWith([RoadmapOpportunitySource.CONSUMER]);
   });
 
   it("does not clear a facet the popover left out of its result", () => {

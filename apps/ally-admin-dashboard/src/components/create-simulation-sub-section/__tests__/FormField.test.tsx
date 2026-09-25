@@ -512,9 +512,9 @@ describe("FormField", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("radio-button-group-experienceMode-default-value")).toHaveTextContent(
-        "NONE",
-      );
+      expect(
+        screen.getByTestId("radio-button-group-experienceMode-default-value"),
+      ).toHaveTextContent("NONE");
     });
 
     it("wires config.onValueChange into RadioButtonGroup's onChange with formMethods", () => {

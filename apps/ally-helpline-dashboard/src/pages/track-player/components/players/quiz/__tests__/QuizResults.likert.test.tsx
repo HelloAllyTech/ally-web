@@ -102,7 +102,11 @@ describe("LikertScaleQuestion", () => {
 
   it("marks the chosen point as checked", () => {
     render(
-      <LikertScaleQuestion question={likert} state={{ ratings: { s1: "p1" } }} onChange={vi.fn()} />,
+      <LikertScaleQuestion
+        question={likert}
+        state={{ ratings: { s1: "p1" } }}
+        onChange={vi.fn()}
+      />,
     );
     expect(screen.getAllByRole("radio", { name: "Disagree" })[0]).toHaveAttribute(
       "aria-checked",

@@ -11,10 +11,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../..");
 const configPath = path.join(repoRoot, "eslint.config.mjs");
 
-const fileToCheck = path.join(
-  repoRoot,
-  "libs/ui-shared/src/lib/generic-table/HeaderTooltip.tsx",
-);
+const fileToCheck = path.join(repoRoot, "libs/ui-shared/src/lib/generic-table/HeaderTooltip.tsx");
 
 let eslint: ESLint;
 

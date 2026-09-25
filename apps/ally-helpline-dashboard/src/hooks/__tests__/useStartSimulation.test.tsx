@@ -169,10 +169,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
 
-    const { result } = renderHook(
-      () => useStartSimulation({ onError: mockOnError }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useStartSimulation({ onError: mockOnError }), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({
@@ -193,10 +190,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
 
-    const { result } = renderHook(
-      () => useStartSimulation({ onError: mockOnError }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useStartSimulation({ onError: mockOnError }), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({
@@ -204,9 +198,7 @@ describe("useStartSimulation", () => {
       });
     });
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "Roleplay v2 is not available for this account yet.",
-    );
+    expect(toast.error).toHaveBeenCalledWith("Roleplay v2 is not available for this account yet.");
   });
 
   it("should fall back to the generic 403 message for an unrecognized backend message", async () => {
@@ -219,10 +211,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
 
-    const { result } = renderHook(
-      () => useStartSimulation({ onError: mockOnError }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useStartSimulation({ onError: mockOnError }), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({

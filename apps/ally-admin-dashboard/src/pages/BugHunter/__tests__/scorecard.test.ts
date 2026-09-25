@@ -44,9 +44,9 @@ describe("runCostUsd", () => {
    * that is the one that reflects the invoice.
    */
   it("prefers the CLI's own cost over the cache-blind token estimate", () => {
-    expect(runCostUsd(run({ id: "a", totalTokenCostUsd: "9.5000", cliReportedCostUsd: 1.25 }))).toBe(
-      1.25,
-    );
+    expect(
+      runCostUsd(run({ id: "a", totalTokenCostUsd: "9.5000", cliReportedCostUsd: 1.25 })),
+    ).toBe(1.25);
   });
 
   it("falls back to the token estimate for runs closed before the CLI figure was captured", () => {

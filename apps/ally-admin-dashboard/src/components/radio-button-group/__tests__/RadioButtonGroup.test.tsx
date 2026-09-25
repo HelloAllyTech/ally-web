@@ -344,7 +344,11 @@ describe("RadioButtonGroup", () => {
       render(
         <TestWrapper defaultValues={{ experienceMode: "" }}>
           {(formMethods: any) => (
-            <RadioButtonGroup {...defaultProps} formMethods={formMethods} defaultValue="CHECKLIST" />
+            <RadioButtonGroup
+              {...defaultProps}
+              formMethods={formMethods}
+              defaultValue="CHECKLIST"
+            />
           )}
         </TestWrapper>,
       );
@@ -371,7 +375,11 @@ describe("RadioButtonGroup", () => {
       render(
         <TestWrapper defaultValues={{ experienceMode: "FEEDBACK" }}>
           {(formMethods: any) => (
-            <RadioButtonGroup {...defaultProps} formMethods={formMethods} defaultValue="CHECKLIST" />
+            <RadioButtonGroup
+              {...defaultProps}
+              formMethods={formMethods}
+              defaultValue="CHECKLIST"
+            />
           )}
         </TestWrapper>,
       );

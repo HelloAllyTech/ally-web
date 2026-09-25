@@ -83,7 +83,9 @@ describe("CohortRestrictionCell", () => {
 
   it("reads as Everyone when the item has no restrictions", () => {
     renderCell();
-    expect(screen.getByRole("button", { name: /Change who can see/ })).toHaveTextContent("Everyone");
+    expect(screen.getByRole("button", { name: /Change who can see/ })).toHaveTextContent(
+      "Everyone",
+    );
   });
 
   it("names the single group an item is limited to", () => {
@@ -95,7 +97,9 @@ describe("CohortRestrictionCell", () => {
 
   it("counts the groups when limited to more than one", () => {
     renderCell({ restrictedTo: ["cohort-a", "cohort-b"] });
-    expect(screen.getByRole("button", { name: /Change who can see/ })).toHaveTextContent("2 groups");
+    expect(screen.getByRole("button", { name: /Change who can see/ })).toHaveTextContent(
+      "2 groups",
+    );
   });
 
   it("sends the full selection, not a delta, and reports the reach while editing", async () => {
@@ -131,9 +135,7 @@ describe("CohortRestrictionCell", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() =>
-      expect(mockSetRestrictions).toHaveBeenCalledWith(
-        expect.objectContaining({ cohortIds: [] }),
-      ),
+      expect(mockSetRestrictions).toHaveBeenCalledWith(expect.objectContaining({ cohortIds: [] })),
     );
     expect(mockToastSuccess).toHaveBeenCalledWith("Crisis basics is now visible to everyone");
   });

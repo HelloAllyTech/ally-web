@@ -84,7 +84,9 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("../CallSummarySidebar", () => ({ default: () => <div data-testid="call-sidebar" /> }));
-vi.mock("../SimulationSummarySidebar", () => ({ default: () => <div data-testid="sim-sidebar" /> }));
+vi.mock("../SimulationSummarySidebar", () => ({
+  default: () => <div data-testid="sim-sidebar" />,
+}));
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -118,7 +120,7 @@ const jsonResponse = (body: unknown) =>
 
 const installFetchStub = () => {
   const stub = vi.fn(async (input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : (input as Request).url ?? String(input);
+    const url = typeof input === "string" ? input : ((input as Request).url ?? String(input));
     const path = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0];
     requestLog.push(path);
 
@@ -259,7 +261,9 @@ describe("UserLogsTable — call-logs request volume", () => {
     for (let i = 0; i < 5; i++) {
       await act(async () => {
         await store
-          .dispatch(updateCallSummary.initiate({ chatId: 1, data: { summary: { notes: `n${i}` } } }))
+          .dispatch(
+            updateCallSummary.initiate({ chatId: 1, data: { summary: { notes: `n${i}` } } }),
+          )
           .unwrap();
         await new Promise(resolve => setTimeout(resolve, 50));
       });
@@ -321,9 +325,11 @@ describe("UserLogsTable — call-logs request volume", () => {
       await new Promise(resolve => setTimeout(resolve, 100));
     });
 
-    const cachedRows = (Object.values((store.getState() as any).baseAPI.queries).find(
-      (entry: any) => entry?.endpointName === "getCallLogs",
-    ) as any)?.data?.data;
+    const cachedRows = (
+      Object.values((store.getState() as any).baseAPI.queries).find(
+        (entry: any) => entry?.endpointName === "getCallLogs",
+      ) as any
+    )?.data?.data;
     expect(cachedRows?.find((row: any) => row.id === 2)?.customFieldValues).toEqual([
       { fieldDefinitionId: "risk", value: "high" },
     ]);

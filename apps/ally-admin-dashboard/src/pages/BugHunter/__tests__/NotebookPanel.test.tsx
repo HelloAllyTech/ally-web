@@ -128,7 +128,9 @@ describe("NotebookPanel", () => {
       fireEvent.change(document.getElementById("bug-hunter-notebook-body")!, {
         target: { value: "x".repeat(601) },
       });
-      expect(screen.getByText("601 of 600 characters — trim it to the one lesson.")).toBeInTheDocument();
+      expect(
+        screen.getByText("601 of 600 characters — trim it to the one lesson."),
+      ).toBeInTheDocument();
       expect(screen.getByText("Add to notebook")).toBeDisabled();
     });
 

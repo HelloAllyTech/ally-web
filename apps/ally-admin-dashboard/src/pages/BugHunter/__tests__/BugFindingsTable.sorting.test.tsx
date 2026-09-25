@@ -128,9 +128,7 @@ const mount = (
 
 /** Row titles in the order they are rendered — what every sort assertion reads. */
 const titles = () =>
-  screen
-    .getAllByRole("button", { name: /^Open bug: / })
-    .map(button => button.textContent ?? "");
+  screen.getAllByRole("button", { name: /^Open bug: / }).map(button => button.textContent ?? "");
 
 const openFilters = () => {
   fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
@@ -212,13 +210,9 @@ describe("BugFindingsTable — sorting", () => {
    * handed the recipient the same rows in a different order, silently.
    */
   it("reads the sort out of the address bar, so a sorted view is linkable", () => {
-    mount(
-      [
-        finding({ id: "b", title: "Bravo" }),
-        finding({ id: "a", title: "Alpha" }),
-      ],
-      { url: "/?sort=title&dir=asc" },
-    );
+    mount([finding({ id: "b", title: "Bravo" }), finding({ id: "a", title: "Alpha" })], {
+      url: "/?sort=title&dir=asc",
+    });
     expect(titles()).toEqual(["Alpha", "Bravo"]);
   });
 });

@@ -19,9 +19,7 @@ import {
  * were already a percentage.
  */
 
-const week = (
-  overrides: Partial<BuilderScoreboardTrendWeek> = {},
-): BuilderScoreboardTrendWeek =>
+const week = (overrides: Partial<BuilderScoreboardTrendWeek> = {}): BuilderScoreboardTrendWeek =>
   ({
     weekStart: "2026-05-12T00:00:00.000Z",
     builds: 4,
@@ -37,9 +35,7 @@ const week = (
 describe("trend series", () => {
   it("states a merge rate as a percentage, not the 0–1 fraction on the wire", () => {
     // The API sends 0.75; plotting that raw would show a 75% week as 0.75%.
-    expect(mergeRateSeries([week()])).toEqual([
-      { group: "Merge rate", key: "12 May", value: 75 },
-    ]);
+    expect(mergeRateSeries([week()])).toEqual([{ group: "Merge rate", key: "12 May", value: 75 }]);
   });
 
   it("rounds cost and fix-run medians to something readable", () => {
@@ -82,9 +78,7 @@ describe("formatters", () => {
 });
 
 describe("sortScoreboardBuilds", () => {
-  const build = (
-    overrides: Partial<BuilderScoreboardBuild> = {},
-  ): BuilderScoreboardBuild =>
+  const build = (overrides: Partial<BuilderScoreboardBuild> = {}): BuilderScoreboardBuild =>
     ({
       sessionId: "s1",
       title: "A build",

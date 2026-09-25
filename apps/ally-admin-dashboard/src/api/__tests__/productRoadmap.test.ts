@@ -88,6 +88,7 @@ describe("moveRoadmapOpportunity onQueryStarted optimistic patch", () => {
       reducer: { [baseAPI.reducerPath]: baseAPI.reducer },
       middleware: getDefault => getDefault().concat(baseAPI.middleware),
     });
+    store.dispatch(baseAPI.util.resetApiState());
 
     vi.stubGlobal(
       "fetch",
@@ -118,7 +119,7 @@ describe("moveRoadmapOpportunity onQueryStarted optimistic patch", () => {
       productRoadmapAPI.util.upsertQueryData("getRoadmapBoard", boardArgs, board()),
     );
 
-    await store.dispatch(
+    const result = store.dispatch(
       productRoadmapAPI.endpoints.moveRoadmapOpportunity.initiate({
         opportunityId: "opp-1",
         groupBy: RoadmapBoardGroupBy.PRODUCT_GOAL,
@@ -126,12 +127,13 @@ describe("moveRoadmapOpportunity onQueryStarted optimistic patch", () => {
         boardArgs,
       }),
     );
+    await result;
 
     const cached = productRoadmapAPI.endpoints.getRoadmapBoard.select(boardArgs)(
       store.getState(),
     ).data;
 
     const moved = cached?.lanes.find(lane => lane.key === null)?.items[0];
-    expect(moved?.productGoal).toBe("");
+    expect(moved?.productGoal).toBe(null);
   });
 });

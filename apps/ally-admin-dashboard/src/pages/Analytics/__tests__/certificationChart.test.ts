@@ -66,7 +66,11 @@ describe("monthLabel", () => {
 describe("plottableCertificationMonths", () => {
   it("drops the in-progress month, which can only grow", () => {
     const data = response({
-      months: [month("2024-04-01", 1, 1), month("2024-05-01", 2, 3), month("2024-06-01", 0, 3, true)],
+      months: [
+        month("2024-04-01", 1, 1),
+        month("2024-05-01", 2, 3),
+        month("2024-06-01", 0, 3, true),
+      ],
     });
 
     expect(plottableCertificationMonths(data).map(m => m.month)).toEqual([
@@ -158,7 +162,11 @@ describe("certificationTakeaway", () => {
     const takeaway = certificationTakeaway(
       response({
         certified: 12,
-        months: [month("2024-04-01", 3, 9), month("2024-05-01", 3, 12), month("2024-06-01", 0, 12, true)],
+        months: [
+          month("2024-04-01", 3, 9),
+          month("2024-05-01", 3, 12),
+          month("2024-06-01", 0, 12, true),
+        ],
       }),
     );
 

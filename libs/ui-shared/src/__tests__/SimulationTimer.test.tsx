@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
-import { SimulationTimer } from '../lib/simulation/SimulationTimer';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act } from "@testing-library/react";
+import { SimulationTimer } from "../lib/simulation/SimulationTimer";
 
-describe('SimulationTimer', () => {
+describe("SimulationTimer", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -12,7 +12,7 @@ describe('SimulationTimer', () => {
     vi.useRealTimers();
   });
 
-  it('should call onWarning when the warning threshold is reached', () => {
+  it("should call onWarning when the warning threshold is reached", () => {
     const onWarningMock = vi.fn();
     const onTimeLimitMock = vi.fn();
     const startTime = new Date(Date.now() - (60 - 0.5) * 1000).toISOString(); // 59.5 seconds ago
@@ -24,7 +24,7 @@ describe('SimulationTimer', () => {
           onTimeLimit={onTimeLimitMock}
           startTime={startTime}
           timeLimit={60} // 1 minute in seconds
-        />
+        />,
       );
     });
 
@@ -35,7 +35,7 @@ describe('SimulationTimer', () => {
     expect(onTimeLimitMock).not.toHaveBeenCalled();
   });
 
-  it('should call onTimeLimit when the time limit is reached', () => {
+  it("should call onTimeLimit when the time limit is reached", () => {
     const onWarningMock = vi.fn();
     const onTimeLimitMock = vi.fn();
     const startTime = new Date(Date.now() - (60 + 10) * 1000).toISOString(); // 70 seconds ago
@@ -47,7 +47,7 @@ describe('SimulationTimer', () => {
           onTimeLimit={onTimeLimitMock}
           startTime={startTime}
           timeLimit={60} // 1 minute in seconds
-        />
+        />,
       );
     });
 

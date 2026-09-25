@@ -21,7 +21,12 @@ import {
 const UNASSIGNED = "Unassigned";
 const OTHER = "Other owners";
 
-const totals = (ideaVotes: number, bugVotes: number, ideas = 1, bugs = 1): RoadmapDeliveryTotals => ({
+const totals = (
+  ideaVotes: number,
+  bugVotes: number,
+  ideas = 1,
+  bugs = 1,
+): RoadmapDeliveryTotals => ({
   opportunities: ideas + bugs,
   ideaOpportunities: ideas,
   bugOpportunities: bugs,
@@ -252,9 +257,10 @@ describe("roadmapDeliveryTakeaway", () => {
   });
 
   it("drops the share when there is only one owner", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 60, bugVotes: 0 }])], [
-      "Ajey",
-    ]);
+    const data = response(
+      [month("2026-06-01", [{ owner: "Ajey", ideaVotes: 60, bugVotes: 0 }])],
+      ["Ajey"],
+    );
     const months = buildRoadmapDeliveryMonths(data, "all");
 
     expect(roadmapDeliveryTakeaway(months, ["Ajey"])).toBe("60 votes shipped across 1 month");
@@ -310,9 +316,10 @@ describe("roadmapDeliveryEmptyText", () => {
   });
 
   it("returns undefined while there is something to draw", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }])], [
-      "Ajey",
-    ]);
+    const data = response(
+      [month("2026-06-01", [{ owner: "Ajey", ideaVotes: 40, bugVotes: 0 }])],
+      ["Ajey"],
+    );
     const months = buildRoadmapDeliveryMonths(data, "all");
 
     expect(roadmapDeliveryEmptyText(data, months, "all")).toBeUndefined();
@@ -374,9 +381,10 @@ describe("partialMonth / partialFootnote", () => {
   });
 
   it("finds no open month when the axis ends in the past", () => {
-    const data = response([month("2026-06-01", [{ owner: "Ajey", ideaVotes: 5, bugVotes: 0 }])], [
-      "Ajey",
-    ]);
+    const data = response(
+      [month("2026-06-01", [{ owner: "Ajey", ideaVotes: 5, bugVotes: 0 }])],
+      ["Ajey"],
+    );
 
     expect(partialMonth(buildRoadmapDeliveryMonths(data, "all"))).toBeUndefined();
   });

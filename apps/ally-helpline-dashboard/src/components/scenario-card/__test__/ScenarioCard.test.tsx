@@ -104,7 +104,13 @@ describe("ScenarioCard", () => {
   it("should not render the completed badge on a pathway/case/course card", () => {
     // totalScenarios present ⇒ the card is a multi-item one, which shows its
     // own progress ring instead.
-    renderComponent({ isPathway: true, isComingSoon: false, attemptCount: 2, totalScenarios: 5, completedScenarios: 5 });
+    renderComponent({
+      isPathway: true,
+      isComingSoon: false,
+      attemptCount: 2,
+      totalScenarios: 5,
+      completedScenarios: 5,
+    });
     expect(screen.queryByText(/Completed ·/)).not.toBeInTheDocument();
   });
 

@@ -94,9 +94,7 @@ describe("PracticeStreakHeatmap", () => {
       render(<PracticeStreakHeatmap />);
 
       // 3 of 7 days toward Week One — both numbers are days.
-      expect(
-        screen.getByRole("img", { name: "3-day streak, 4 days to 7" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "3-day streak, 4 days to 7" })).toBeInTheDocument();
     });
 
     it("names the next badge and how far away it is", () => {
@@ -327,9 +325,7 @@ describe("PracticeStreakHeatmap", () => {
 
   describe("failure and staleness", () => {
     it("offers a retry when the query fails", () => {
-      mockUseGetPracticeStreakQuery.mockReturnValue(
-        queryResult(undefined, { isError: true }),
-      );
+      mockUseGetPracticeStreakQuery.mockReturnValue(queryResult(undefined, { isError: true }));
       render(<PracticeStreakHeatmap />);
 
       expect(screen.getByText("Couldn't load your practice streak.")).toBeInTheDocument();

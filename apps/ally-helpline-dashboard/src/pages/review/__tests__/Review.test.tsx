@@ -138,8 +138,8 @@ vi.mock("@hooks", async importOriginal => {
   return {
     ...actual,
     useUser: () => ({ permissions: mockPermissionsList }),
-  // useAnalytics reads the role from the Redux store; this suite renders without one.
-  useAnalytics: () => ({ track: vi.fn() }),
+    // useAnalytics reads the role from the Redux store; this suite renders without one.
+    useAnalytics: () => ({ track: vi.fn() }),
   };
 });
 

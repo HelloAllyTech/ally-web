@@ -17,9 +17,7 @@ import { BUG_FINDING_DECISION_NOTE_MAX_LENGTH, BugFindingDecisionReason } from "
 
 import { canSubmitDecline, DeclineReasonPicker } from "../DeclineReasonPicker";
 
-const mount = (
-  over: Partial<React.ComponentProps<typeof DeclineReasonPicker>> = {},
-) => {
+const mount = (over: Partial<React.ComponentProps<typeof DeclineReasonPicker>> = {}) => {
   const onReasonChange = vi.fn();
   const onNoteChange = vi.fn();
   render(
@@ -57,7 +55,9 @@ describe("DeclineReasonPicker", () => {
   it("explains which reasons count against the agent and which do not", () => {
     mount();
 
-    expect(screen.getByText("I misread the code. Tell me and I won't file it again.")).toBeInTheDocument();
+    expect(
+      screen.getByText("I misread the code. Tell me and I won't file it again."),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/I got this right — it just isn't worth the change/),
     ).toBeInTheDocument();

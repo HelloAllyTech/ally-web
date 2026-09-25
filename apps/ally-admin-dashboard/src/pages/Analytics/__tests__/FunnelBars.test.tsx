@@ -68,9 +68,7 @@ describe("FunnelBars", () => {
     // suppression must not blank the whole row.
     render(
       <FunnelBars
-        stages={[
-          { label: "Practised once", reached: 4, ofEnteredPct: null, ofPreviousPct: null },
-        ]}
+        stages={[{ label: "Practised once", reached: 4, ofEnteredPct: null, ofPreviousPct: null }]}
       />,
     );
 

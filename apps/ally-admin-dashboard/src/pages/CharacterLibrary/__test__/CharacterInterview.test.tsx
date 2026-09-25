@@ -93,7 +93,6 @@ vi.mock("react-router-dom", async importOriginal => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-
 const renderCharacterInterview = () =>
   render(
     <MemoryRouter>
@@ -108,13 +107,15 @@ describe("CharacterInterview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateSession.mockReturnValue({ unwrap: () => Promise.resolve({ id: "new-session" }) });
-    mockGetSession.mockReturnValue({ unwrap: () => Promise.resolve({ id: "session-123", status: "ACTIVE", messages: []}) });
+    mockGetSession.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: "session-123", status: "ACTIVE", messages: [] }),
+    });
 
     (api.useCreateCharacterInterviewSessionMutation as ReturnType<typeof vi.fn>).mockReturnValue([
-        mockCreateSession,
+      mockCreateSession,
     ]);
     (api.useLazyGetCharacterInterviewSessionQuery as ReturnType<typeof vi.fn>).mockReturnValue([
-        mockGetSession,
+      mockGetSession,
     ]);
   });
 

@@ -78,7 +78,7 @@ describe("SimulationTimer", () => {
         />,
       );
     }
-    
+
     // Total time advanced in loop is 12 seconds.
     // The warning should have been triggered when `timeLimit - timeElapsed <= 30`,
     // which is `10 - timeElapsed <= 30`, which is true for any positive elapsed time.

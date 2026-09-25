@@ -13,14 +13,14 @@ committed `.mcp.json`.
 
 You do not need to be asked and you do not need to wait for an engineer to hand you context.
 
-| Surface | Type | Who invokes it |
-|---|---|---|
-| `search_chunks` | tool — `query`, optional `max_results` (1–10, default 4) and `tags` | **you** |
-| `get_chunks` | tool — `ids` (1–20) | **you**, on ids from a search or a context block |
-| `list_tags` | tool — no arguments | **you** |
-| `/stacks:planning_context` | MCP **prompt**, arg `task_description` | the engineer, in chat |
+| Surface                    | Type                                                                | Who invokes it                                   |
+| -------------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| `search_chunks`            | tool — `query`, optional `max_results` (1–10, default 4) and `tags` | **you**                                          |
+| `get_chunks`               | tool — `ids` (1–20)                                                 | **you**, on ids from a search or a context block |
+| `list_tags`                | tool — no arguments                                                 | **you**                                          |
+| `/stacks:planning_context` | MCP **prompt**, arg `task_description`                              | the engineer, in chat                            |
 
-The prompt is not the entry point any more — it is the *human* one, for when an engineer wants the
+The prompt is not the entry point any more — it is the _human_ one, for when an engineer wants the
 context in front of them rather than in your working memory. It returns full chunk bodies for a whole
 task description. You use `search_chunks`.
 
@@ -32,15 +32,15 @@ If you have read that this library cannot be searched, that is stale: `search_ch
 Any point a decision about **how the product should behave** is being made — not only planning.
 The moments that most often get invented instead of retrieved:
 
-| Moment | Search? |
-|---|---|
-| Writing an implementation plan | Always — before the plan, not after. 2–4 queries over the task's distinct aspects |
-| An empty, loading, edge or failure state | Yes |
-| Naming a label, button or error message | Yes |
-| Deciding what a view shows vs. omits | Yes |
-| A threshold, limit, cadence or reward rule | Yes |
-| Reviewing a change for behaviour | Yes — query the behaviour, not the diff |
-| Rename, dependency bump, typo, test run | No |
+| Moment                                     | Search?                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------- |
+| Writing an implementation plan             | Always — before the plan, not after. 2–4 queries over the task's distinct aspects |
+| An empty, loading, edge or failure state   | Yes                                                                               |
+| Naming a label, button or error message    | Yes                                                                               |
+| Deciding what a view shows vs. omits       | Yes                                                                               |
+| A threshold, limit, cadence or reward rule | Yes                                                                               |
+| Reviewing a change for behaviour           | Yes — query the behaviour, not the diff                                           |
+| Rename, dependency bump, typo, test run    | No                                                                                |
 
 ## How
 
@@ -94,7 +94,7 @@ Name the **chunk title** inline where the guidance shaped a decision, so a revie
 
 ```markdown
 3. Ship the streak counter read-only in v1; no notifications until we have retention data.
-   (Stacks: *Gamification — Extrinsic Rewards and Motivation Crowding*)
+   (Stacks: _Gamification — Extrinsic Rewards and Motivation Crowding_)
 ```
 
 Cite only chunks you actually applied. If you searched and nothing was applicable, say so in one

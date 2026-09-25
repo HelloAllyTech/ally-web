@@ -149,6 +149,8 @@ describe("CourseLanguagePicker", () => {
       />,
     );
     openAndPick("हिंदी");
-    await waitFor(() => expect(mockToastError).toHaveBeenCalledWith("tracks2.language.changeFailed"));
+    await waitFor(() =>
+      expect(mockToastError).toHaveBeenCalledWith("tracks2.language.changeFailed"),
+    );
   });
 });

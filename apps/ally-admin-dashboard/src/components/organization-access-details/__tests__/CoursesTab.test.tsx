@@ -9,13 +9,12 @@ import { CoursesTab } from "../CoursesTab";
 // The cohort queries back the per-row group-targeting pill. Defaulted to an
 // empty tenant here so these tests keep asserting the tab itself; the pill has
 // its own test in CohortRestrictionCell.test.tsx.
-const { mockUseGetTracksQuery, mockUseGetCohortsQuery, mockUseGetCohortRestrictionsQuery } = vi.hoisted(
-  () => ({
+const { mockUseGetTracksQuery, mockUseGetCohortsQuery, mockUseGetCohortRestrictionsQuery } =
+  vi.hoisted(() => ({
     mockUseGetTracksQuery: vi.fn(),
     mockUseGetCohortsQuery: vi.fn(() => ({ data: undefined })),
     mockUseGetCohortRestrictionsQuery: vi.fn(() => ({ data: undefined })),
-  }),
-);
+  }));
 
 vi.mock("@api", () => ({
   useGetTracksQuery: mockUseGetTracksQuery,

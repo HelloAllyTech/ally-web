@@ -38,7 +38,11 @@ vi.mock("@api", () => ({
   useMarkAllBugHunterNotificationsReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   // The Notebook tab's own hooks. Empty rather than absent: mounted only when
   // that section is open, but the module mock has to supply them.
-  useGetBugHunterMemoryQuery: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false })),
+  useGetBugHunterMemoryQuery: vi.fn(() => ({
+    data: { items: [] },
+    isLoading: false,
+    isError: false,
+  })),
   useAddBugHunterMemoryMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useRetireBugHunterMemoryMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));

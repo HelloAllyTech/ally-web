@@ -16,11 +16,7 @@ import {
   weekLabel,
 } from "../shipVolumeChart";
 
-const week = (
-  weekStart: string,
-  repos: Record<string, [number, number]>,
-  partial = false,
-) => {
+const week = (weekStart: string, repos: Record<string, [number, number]>, partial = false) => {
   const entries = Object.entries(repos).map(([repo, [added, deleted]]) => ({
     repo,
     added,
@@ -81,7 +77,10 @@ describe("buildShipVolumeWeeks", () => {
   it("marks only the in-progress week on the axis, and never in the plain label", () => {
     const weeks = buildShipVolumeWeeks(
       response({
-        weeks: [week("2026-08-23", { "ally-be": [10, 5] }), week("2026-08-30", { "ally-be": [1, 1] }, true)],
+        weeks: [
+          week("2026-08-23", { "ally-be": [10, 5] }),
+          week("2026-08-30", { "ally-be": [1, 1] }, true),
+        ],
       }),
     );
 
@@ -99,7 +98,10 @@ describe("buildShipVolumeSeries", () => {
   it("emits an explicit zero for a repo absent from a week, so the stack stays aligned", () => {
     const weeks = buildShipVolumeWeeks(
       response({
-        weeks: [week("2026-08-23", { "ally-be": [10, 0] }), week("2026-08-30", { "ally-web": [5, 0] })],
+        weeks: [
+          week("2026-08-23", { "ally-be": [10, 0] }),
+          week("2026-08-30", { "ally-web": [5, 0] }),
+        ],
       }),
     );
 
@@ -120,7 +122,6 @@ describe("buildShipVolumeSeries", () => {
     expect(groups).toEqual(["ally-web", "ally-be"]);
   });
 });
-
 
 describe("buildShipVolumeScale", () => {
   // The bug this guards: hashing these seven names collides three pairs, and on
@@ -164,8 +165,11 @@ describe("shipVolumeTakeaway", () => {
     buildShipVolumeWeeks(
       response({
         weeks: churns.map((c, i) =>
-          week(`2026-06-${String(7 + i * 7).padStart(2, "0")}`, { "ally-be": [c, 0] },
-            partialLast && i === churns.length - 1),
+          week(
+            `2026-06-${String(7 + i * 7).padStart(2, "0")}`,
+            { "ally-be": [c, 0] },
+            partialLast && i === churns.length - 1,
+          ),
         ),
       }),
     );
@@ -346,7 +350,10 @@ describe("rollUpShipVolume", () => {
   });
 
   it("names quarters and years", () => {
-    expect(rollUpShipVolume(weeks, "quarter").map(q => q.plainLabel)).toEqual(["Q2 2026", "Q3 2026"]);
+    expect(rollUpShipVolume(weeks, "quarter").map(q => q.plainLabel)).toEqual([
+      "Q2 2026",
+      "Q3 2026",
+    ]);
     expect(rollUpShipVolume(weeks, "year").map(y => y.plainLabel)).toEqual(["2026"]);
   });
 });

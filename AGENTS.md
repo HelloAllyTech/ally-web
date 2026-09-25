@@ -44,18 +44,18 @@ something Ally-specific.
 
 ## What am I doing?
 
-| Task | Read first |
-|---|---|
-| Calling a new backend endpoint | RTK Query slice in `apps/<app>/src/api/` — don't hand-roll fetch |
-| Building a chart or dashboard | Stacks first (see above). The deprecated [Data Visualisation](https://tech.helloally.ai/#/wiki/product/data-visualisation.md) page still holds Ally-specific findings Stacks won't have — Carbon's chart-overflow behaviour, minimum group size for tenant-isolated metrics — so check it when Stacks comes back empty |
-| Adding analytics | [`docs/new-posthog-event-adding-guide.md`](docs/new-posthog-event-adding-guide.md), then register in [`docs/current-posthog-events-traking-list.md`](docs/current-posthog-events-traking-list.md) |
-| Shared component work | `libs/ui-shared/` — changing its public surface affects all three apps |
-| Translations | `apps/ally-helpline-dashboard/src/i18n/locales/`; backend side in [ally-be `docs/dynamic-i18n.md`](https://github.com/HelloAllyTech/ally-be/blob/main/docs/dynamic-i18n.md) |
-| Permission-gated UI | Gate on the `roles` **array** and permissions, never the legacy single `role` — see gotchas |
-| Tests | [`TESTING.md`](TESTING.md) |
-| CI / deploys | [`.github/WORKFLOWS.md`](.github/WORKFLOWS.md), [`.github/RELEASE_GUIDE.md`](.github/RELEASE_GUIDE.md) |
-| Docker on macOS | [`docs/colima.md`](docs/colima.md) |
-| Anything else | [`WIKI-ROUTING.md`](WIKI-ROUTING.md) — one line per wiki page, tells you which to fetch |
+| Task                           | Read first                                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calling a new backend endpoint | RTK Query slice in `apps/<app>/src/api/` — don't hand-roll fetch                                                                                                                                                                                                                                                       |
+| Building a chart or dashboard  | Stacks first (see above). The deprecated [Data Visualisation](https://tech.helloally.ai/#/wiki/product/data-visualisation.md) page still holds Ally-specific findings Stacks won't have — Carbon's chart-overflow behaviour, minimum group size for tenant-isolated metrics — so check it when Stacks comes back empty |
+| Adding analytics               | [`docs/new-posthog-event-adding-guide.md`](docs/new-posthog-event-adding-guide.md), then register in [`docs/current-posthog-events-traking-list.md`](docs/current-posthog-events-traking-list.md)                                                                                                                      |
+| Shared component work          | `libs/ui-shared/` — changing its public surface affects all three apps                                                                                                                                                                                                                                                 |
+| Translations                   | `apps/ally-helpline-dashboard/src/i18n/locales/`; backend side in [ally-be `docs/dynamic-i18n.md`](https://github.com/HelloAllyTech/ally-be/blob/main/docs/dynamic-i18n.md)                                                                                                                                            |
+| Permission-gated UI            | Gate on the `roles` **array** and permissions, never the legacy single `role` — see gotchas                                                                                                                                                                                                                            |
+| Tests                          | [`TESTING.md`](TESTING.md)                                                                                                                                                                                                                                                                                             |
+| CI / deploys                   | [`.github/WORKFLOWS.md`](.github/WORKFLOWS.md), [`.github/RELEASE_GUIDE.md`](.github/RELEASE_GUIDE.md)                                                                                                                                                                                                                 |
+| Docker on macOS                | [`docs/colima.md`](docs/colima.md)                                                                                                                                                                                                                                                                                     |
+| Anything else                  | [`WIKI-ROUTING.md`](WIKI-ROUTING.md) — one line per wiki page, tells you which to fetch                                                                                                                                                                                                                                |
 
 ## Repo shape
 

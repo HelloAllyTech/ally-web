@@ -13,10 +13,7 @@ const submitArticleQuestionAnswer = vi.fn();
 
 vi.mock("@api", () => ({
   useMarkArticleReadMutation: () => [markArticleRead, { isLoading: false }],
-  useSubmitArticleQuestionAnswerMutation: () => [
-    submitArticleQuestionAnswer,
-    { isLoading: false },
-  ],
+  useSubmitArticleQuestionAnswerMutation: () => [submitArticleQuestionAnswer, { isLoading: false }],
 }));
 
 vi.mock("@assets", () => ({
@@ -113,17 +110,13 @@ describe("ArticleItemPlayer — inline questions", () => {
     fireEvent.click(screen.getByRole("radio", { name: /Option B \(q1\)/ }));
     fireEvent.click(screen.getByRole("button", { name: "Check answer" }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/Incorrect/)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/Incorrect/)).toBeInTheDocument());
     expect(screen.getByText(/The correct answer is marked below/)).toBeInTheDocument();
     // The correct option carries the success styling even though it wasn't picked.
     expect(screen.getByRole("radio", { name: /Option A \(q1\)/ }).className).toContain(
       "border-success-500",
     );
-    screen
-      .getAllByRole("radio")
-      .forEach(option => expect(option).toBeDisabled());
+    screen.getAllByRole("radio").forEach(option => expect(option).toBeDisabled());
     expect(screen.queryByRole("button", { name: "Check answer" })).not.toBeInTheDocument();
   });
 
@@ -186,9 +179,7 @@ describe("ArticleItemPlayer — inline questions", () => {
     expect(screen.queryByRole("button", { name: "Check answer" })).not.toBeInTheDocument();
     screen.getAllByRole("radio").forEach(option => expect(option).toBeDisabled());
     // Nothing outstanding, so the footer is back to the ordinary read flow.
-    expect(
-      screen.queryByRole("button", { name: /Answer the question/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Answer the question/ })).not.toBeInTheDocument();
   });
 
   it("shows the author's explanation when one came back", async () => {

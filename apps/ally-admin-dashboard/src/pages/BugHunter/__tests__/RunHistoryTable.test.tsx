@@ -289,7 +289,10 @@ describe("RunHistoryTable — the Found count links to that sweep's bugs", () =>
   it("does not expand the run's event timeline as a side effect", () => {
     mockRuns([found("run-a", "ally-be", 4)]);
     getRun.mockReturnValue({
-      data: { id: "run-a", events: [{ id: "e", stage: "merged", summary: "detail of run-a", createdAt: "x" }] },
+      data: {
+        id: "run-a",
+        events: [{ id: "e", stage: "merged", summary: "detail of run-a", createdAt: "x" }],
+      },
       isLoading: false,
       isError: false,
     });

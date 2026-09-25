@@ -1199,9 +1199,21 @@ describe("Tab Navigation", () => {
       isLoading: false,
       refetch: vi.fn(),
     });
-    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenariosQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
     mockSearchParams.set("tab", "invalid-tab");
     mockSetSearchParams.mockClear();
 
@@ -1230,8 +1242,16 @@ describe("Tab Navigation", () => {
       isLoading: false,
       refetch: vi.fn(),
     });
-    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
 
     rerender(
       <TestWrapper>

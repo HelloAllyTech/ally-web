@@ -26,13 +26,7 @@ vi.mock("@api", () => {
  * Renders ToggleSection against a real `useForm` — no `reset()`, no
  * `defaultValues` — i.e. exactly the state a brand-new simulation is in.
  */
-const Harness = ({
-  name,
-  defaultValue,
-}: {
-  name: string;
-  defaultValue?: boolean;
-}) => {
+const Harness = ({ name, defaultValue }: { name: string; defaultValue?: boolean }) => {
   const formMethods = useForm({ mode: "onChange", reValidateMode: "onChange" });
   return (
     <>

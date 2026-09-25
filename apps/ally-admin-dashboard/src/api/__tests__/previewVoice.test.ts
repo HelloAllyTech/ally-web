@@ -36,6 +36,7 @@ beforeEach(() => {
     reducer: { [baseAPI.reducerPath]: baseAPI.reducer },
     middleware: getDefault => getDefault({ serializableCheck: false }).concat(baseAPI.middleware),
   });
+  store.dispatch(baseAPI.util.resetApiState());
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
@@ -54,41 +55,49 @@ afterEach(() => {
 
 describe("getPreviewVoice", () => {
   it("sends the audition line as ?text=", async () => {
-    await store.dispatch(
+    const result = store.dispatch(
       previewVoiceAPI.endpoints.getPreviewVoice.initiate({
         voiceId: "voice-1",
         text: "I'm managing fine.",
       }),
     );
 
+    await result;
+
     expect(requestedUrls[0]).toContain("/voice-preview/generate/voice-1");
     expect(sentText()).toBe("I'm managing fine.");
   });
 
   it("omits text entirely when there is no line to say", async () => {
-    await store.dispatch(
+    const result = store.dispatch(
       previewVoiceAPI.endpoints.getPreviewVoice.initiate({ voiceId: "voice-1" }),
     );
+
+    await result;
 
     expect(requestedUrls[0]).not.toContain("text=");
   });
 
   it("omits a whitespace-only line rather than sending it empty", async () => {
-    await store.dispatch(
+    const result = store.dispatch(
       previewVoiceAPI.endpoints.getPreviewVoice.initiate({ voiceId: "voice-1", text: "   " }),
     );
+
+    await result;
 
     // An empty `text` would make the voice say nothing at all.
     expect(requestedUrls[0]).not.toContain("text=");
   });
 
   it("trims the line, since the cap is server-side and counted after trimming", async () => {
-    await store.dispatch(
+    const result = store.dispatch(
       previewVoiceAPI.endpoints.getPreviewVoice.initiate({
         voiceId: "voice-1",
         text: "  Hello there.  ",
       }),
     );
+
+    await result;
 
     expect(sentText()).toBe("Hello there.");
   });

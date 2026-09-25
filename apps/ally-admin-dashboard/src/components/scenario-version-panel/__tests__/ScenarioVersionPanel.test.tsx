@@ -5,17 +5,13 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { ScenarioVersionPanel } from "../ScenarioVersionPanel";
 import { ScenarioVersionStatus, ScenarioVersionType, formatVersionLabel } from "@types";
 
-const {
-  mockUseGetScenarioVersionsQuery,
-  mockCreateVersion,
-  mockUpdateVersion,
-  mockDeleteVersion,
-} = vi.hoisted(() => ({
-  mockUseGetScenarioVersionsQuery: vi.fn(),
-  mockCreateVersion: vi.fn(),
-  mockUpdateVersion: vi.fn(),
-  mockDeleteVersion: vi.fn(),
-}));
+const { mockUseGetScenarioVersionsQuery, mockCreateVersion, mockUpdateVersion, mockDeleteVersion } =
+  vi.hoisted(() => ({
+    mockUseGetScenarioVersionsQuery: vi.fn(),
+    mockCreateVersion: vi.fn(),
+    mockUpdateVersion: vi.fn(),
+    mockDeleteVersion: vi.fn(),
+  }));
 
 vi.mock("@api", () => ({
   useGetScenarioVersionsQuery: (...args: any[]) => mockUseGetScenarioVersionsQuery(...args),
@@ -498,7 +494,9 @@ describe("ScenarioVersionPanel", () => {
 
       renderPanel();
 
-      expect(screen.getByText("No versions yet. Create one to start iterating.")).toBeInTheDocument();
+      expect(
+        screen.getByText("No versions yet. Create one to start iterating."),
+      ).toBeInTheDocument();
     });
 
     it("renders nothing and skips the query when closed", () => {

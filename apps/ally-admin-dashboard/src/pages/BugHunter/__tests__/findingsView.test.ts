@@ -33,7 +33,10 @@ const finding = (overrides: Partial<BugFinding> & { id: string }): BugFinding =>
     ...overrides,
   }) as unknown as BugFinding;
 
-const view = (findings: BugFinding[], overrides: Partial<Parameters<typeof buildFindingsView>[0]> = {}) =>
+const view = (
+  findings: BugFinding[],
+  overrides: Partial<Parameters<typeof buildFindingsView>[0]> = {},
+) =>
   buildFindingsView({
     findings,
     total: findings.length,
@@ -65,9 +68,9 @@ describe("filtering", () => {
 
   it("ignores case and surrounding whitespace, since a pasted repo name carries both", () => {
     const findings = [finding({ id: "a", title: "Terms Link Broken" })];
-    expect(view(findings, { filters: { ...EMPTY_FILTERS, search: "  TERMS  " } }).rows).toHaveLength(
-      1,
-    );
+    expect(
+      view(findings, { filters: { ...EMPTY_FILTERS, search: "  TERMS  " } }).rows,
+    ).toHaveLength(1);
   });
 
   it("filters by lifecycle bucket rather than by one status at a time", () => {
@@ -110,10 +113,11 @@ describe("filtering", () => {
       repos: ["ally-be", "ally-web"],
       severities: [BugFindingSeverity.HIGH],
     };
-    expect(view(findings, { filters }).rows.map(r => r.finding.id).sort()).toEqual([
-      "be-high",
-      "web-high",
-    ]);
+    expect(
+      view(findings, { filters })
+        .rows.map(r => r.finding.id)
+        .sort(),
+    ).toEqual(["be-high", "web-high"]);
   });
 
   it("treats an empty facet as no opinion rather than as matching nothing", () => {
@@ -299,8 +303,8 @@ describe("updatedAt", () => {
     // NaN would sort the row to an arbitrary place in the table instead of to
     // one end — a defect nobody reads as a date-parsing problem.
     const created = "2026-08-17T00:00:00.000Z";
-    expect(
-      updatedAt(finding({ id: "a", createdAt: created, updatedAt: "not a date" })),
-    ).toBe(new Date(created).getTime());
+    expect(updatedAt(finding({ id: "a", createdAt: created, updatedAt: "not a date" }))).toBe(
+      new Date(created).getTime(),
+    );
   });
 });

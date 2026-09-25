@@ -55,9 +55,9 @@ describe("deriveNavigationItems", () => {
     expect(
       deriveNavigationItems({ permissions: undefined, features: undefined, savedOrder: undefined }),
     ).toEqual([]);
-    expect(
-      deriveNavigationItems({ permissions: [], features: [], savedOrder: undefined }),
-    ).toEqual([]);
+    expect(deriveNavigationItems({ permissions: [], features: [], savedOrder: undefined })).toEqual(
+      [],
+    );
   });
 
   it("shows Product Roadmap for a user holding only VIEW_PRODUCT_ROADMAP", () => {

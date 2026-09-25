@@ -25,7 +25,9 @@ describe("root eslint config: scripts/check-color-literals.mjs", () => {
     const [result] = await eslint.lintFiles([fileToCheck]);
     const violations = result.messages
       .filter(message => message.ruleId === "no-console" || message.ruleId === "no-undef")
-      .map(message => `${path.relative(repoRoot, result.filePath)}:${message.line} ${message.message}`);
+      .map(
+        message => `${path.relative(repoRoot, result.filePath)}:${message.line} ${message.message}`,
+      );
 
     expect(violations).toEqual([]);
   }, 30000);

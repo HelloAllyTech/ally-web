@@ -37,9 +37,7 @@ const costPoint = (overrides: Partial<RoleplayCostPoint> = {}): RoleplayCostPoin
   ...overrides,
 });
 
-const costResponse = (
-  overrides: Partial<RoleplayCostResponse> = {},
-): RoleplayCostResponse => ({
+const costResponse = (overrides: Partial<RoleplayCostResponse> = {}): RoleplayCostResponse => ({
   range: "all",
   bucket: "month",
   window: {
@@ -94,21 +92,14 @@ describe("cost splits", () => {
 
   it("splits by service", () => {
     const series = buildCostByServiceSeries([costPoint()]);
-    expect(series.map(d => d.group)).toEqual([
-      "LLM",
-      "Speech-to-text",
-      "Text-to-speech",
-    ]);
+    expect(series.map(d => d.group)).toEqual(["LLM", "Speech-to-text", "Text-to-speech"]);
     expect(series.map(d => d.value)).toEqual([0.14, 0.01, 0]);
   });
 
   it("gives two splits of the same total, so a stack is exact either way", () => {
     const point = costPoint();
     const byArea = buildCostByAreaSeries([point]).reduce((s, d) => s + (d.value ?? 0), 0);
-    const byService = buildCostByServiceSeries([point]).reduce(
-      (s, d) => s + (d.value ?? 0),
-      0,
-    );
+    const byService = buildCostByServiceSeries([point]).reduce((s, d) => s + (d.value ?? 0), 0);
 
     expect(byArea).toBeCloseTo(byService, 6);
     expect(byArea).toBeCloseTo(point.attributableCostUsd, 6);
@@ -159,9 +150,7 @@ describe("attributableSharePct", () => {
 
   it("is null when nothing was spent, rather than 0%", () => {
     expect(
-      attributableSharePct(
-        costResponse({ totalAttributableCostUsd: 0, totalExcludedCostUsd: 0 }),
-      ),
+      attributableSharePct(costResponse({ totalAttributableCostUsd: 0, totalExcludedCostUsd: 0 })),
     ).toBeNull();
     expect(attributableSharePct(undefined)).toBeNull();
   });
@@ -169,9 +158,7 @@ describe("attributableSharePct", () => {
 
 /* -------------------------------------------------------------------------- */
 
-const sentimentPoint = (
-  overrides: Partial<QualitySentimentPoint> = {},
-): QualitySentimentPoint => ({
+const sentimentPoint = (overrides: Partial<QualitySentimentPoint> = {}): QualitySentimentPoint => ({
   bucket: "2024-05-01",
   avgCompositeScore: 72,
   evaluatedSessions: 30,
@@ -268,7 +255,11 @@ describe("sentiment series", () => {
 describe("quality index series", () => {
   it("plots the index line as null when no dimension covered the period, not zero", () => {
     const points = [
-      sentimentPoint({ bucket: "2024-04-01", qualityIndex: null, indexMissing: [...QUALITY_INDEX_DIMENSIONS] }),
+      sentimentPoint({
+        bucket: "2024-04-01",
+        qualityIndex: null,
+        indexMissing: [...QUALITY_INDEX_DIMENSIONS],
+      }),
       sentimentPoint({ bucket: "2024-05-01" }),
     ];
 
@@ -339,26 +330,26 @@ describe("correlationNote", () => {
   });
 
   it("reads a negative r as opposite directions", () => {
-    expect(
-      correlationNote(sentimentResponse({ correlation: -0.5, pairedBuckets: 4 })),
-    ).toMatch(/moderately in opposite directions/);
+    expect(correlationNote(sentimentResponse({ correlation: -0.5, pairedBuckets: 4 }))).toMatch(
+      /moderately in opposite directions/,
+    );
   });
 
   it("hedges a weak relationship rather than dressing it up", () => {
-    expect(
-      correlationNote(sentimentResponse({ correlation: 0.1, pairedBuckets: 5 })),
-    ).toMatch(/weakly together/);
+    expect(correlationNote(sentimentResponse({ correlation: 0.1, pairedBuckets: 5 }))).toMatch(
+      /weakly together/,
+    );
   });
 
   it("says why there is no coefficient when periods overlap too little", () => {
-    expect(
-      correlationNote(sentimentResponse({ correlation: null, pairedBuckets: 2 })),
-    ).toMatch(/Not enough overlapping periods/);
+    expect(correlationNote(sentimentResponse({ correlation: null, pairedBuckets: 2 }))).toMatch(
+      /Not enough overlapping periods/,
+    );
   });
 
   it("distinguishes 'too few' from 'none at all'", () => {
-    expect(
-      correlationNote(sentimentResponse({ correlation: null, pairedBuckets: 0 })),
-    ).toMatch(/No period has both/);
+    expect(correlationNote(sentimentResponse({ correlation: null, pairedBuckets: 0 }))).toMatch(
+      /No period has both/,
+    );
   });
 });

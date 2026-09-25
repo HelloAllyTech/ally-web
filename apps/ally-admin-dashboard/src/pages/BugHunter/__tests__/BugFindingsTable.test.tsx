@@ -57,7 +57,13 @@ vi.mock("@components", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Search: ({ id, labelText, value, onChange, placeholder }: any) => (
-    <input id={id} aria-label={labelText} placeholder={placeholder} value={value} onChange={onChange} />
+    <input
+      id={id}
+      aria-label={labelText}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+    />
   ),
   Select: ({ id, children, value, onChange, labelText }: any) => (
     <select id={id} aria-label={labelText} value={value} onChange={onChange}>

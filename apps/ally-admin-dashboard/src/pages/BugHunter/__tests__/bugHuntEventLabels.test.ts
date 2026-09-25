@@ -9,13 +9,11 @@ describe("BUG_HUNT_EVENT_STAGE_LABELS", () => {
   // with a stage that arrives as a plain string off the wire, so a stage
   // ally-be writes but this map has no entry for renders as an empty chip
   // rather than a type error. Every stage has to be covered here.
-  it.each(Object.values(BugHuntEventStage))("labels %s", (stage) => {
+  it.each(Object.values(BugHuntEventStage))("labels %s", stage => {
     expect(BUG_HUNT_EVENT_STAGE_LABELS[stage]).toBeTruthy();
   });
 
   it("labels a reversal, written when a dismissal is proven wrong", () => {
-    expect(BUG_HUNT_EVENT_STAGE_LABELS["reversed" as BugHuntEventStage]).toBe(
-      "Dismissal reversed",
-    );
+    expect(BUG_HUNT_EVENT_STAGE_LABELS["reversed" as BugHuntEventStage]).toBe("Dismissal reversed");
   });
 });

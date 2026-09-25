@@ -46,9 +46,9 @@ describe("deriveStreakState", () => {
   });
 
   it("is AT_RISK when a live streak has not been secured today", () => {
-    expect(
-      deriveStreakState(summary({ streakSecuredToday: false, currentStreak: 4 })),
-    ).toBe(StreakState.AT_RISK);
+    expect(deriveStreakState(summary({ streakSecuredToday: false, currentStreak: 4 }))).toBe(
+      StreakState.AT_RISK,
+    );
   });
 
   it("is AT_RISK even when the user has practised, if it was under the threshold", () => {

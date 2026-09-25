@@ -171,10 +171,7 @@ describe("BugFindingsTable — triage controls", () => {
   });
 
   it("filters by repo, offering only repos that are actually present", () => {
-    mount([
-      finding({ id: "a", repo: "ally-be" }),
-      finding({ id: "b", repo: "ally-web" }),
-    ]);
+    mount([finding({ id: "a", repo: "ally-be" }), finding({ id: "b", repo: "ally-web" })]);
 
     fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
     const panel = screen.getByRole("dialog", { name: "Filter bugs" });
@@ -212,10 +209,7 @@ describe("BugFindingsTable — triage controls", () => {
    * its rows.
    */
   it("shows an active facet as a pill that removes just that value", () => {
-    mount([
-      finding({ id: "a", repo: "ally-be" }),
-      finding({ id: "b", repo: "ally-web" }),
-    ]);
+    mount([finding({ id: "a", repo: "ally-be" }), finding({ id: "b", repo: "ally-web" })]);
 
     fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
     fireEvent.click(

@@ -152,9 +152,7 @@ describe("AgentProfileCard", () => {
 
     const doing = screen.getByText("I'm working on one fix right now.");
     const jobTitle = screen.getByText(/Software test engineer/);
-    expect(
-      doing.compareDocumentPosition(jobTitle) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(doing.compareDocumentPosition(jobTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("introduces itself only while off duty, since that is the one moment nothing else is on the page", () => {
@@ -250,9 +248,7 @@ describe("AgentProfileCard", () => {
 
       openSweep();
       fireEvent.click(screen.getByText("Start a sweep"));
-      expect(screen.getByTestId("confirm-popup")).toHaveTextContent(
-        "Start a sweep of ally-be?",
-      );
+      expect(screen.getByTestId("confirm-popup")).toHaveTextContent("Start a sweep of ally-be?");
       expect(triggerSweep).not.toHaveBeenCalled();
     });
 

@@ -1283,7 +1283,8 @@ describe("WeakPerformingMetricsTab turn conditions", () => {
   it("the tooltip button for turn conditions factors has an accessible label (factor.description)", () => {
     withConditions({});
     render(<WeakPerformingMetricsTab {...filters} />);
-    const expectedAccessibleName = "Wall-clock time from the learner finishing to the reply starting.";
+    const expectedAccessibleName =
+      "Wall-clock time from the learner finishing to the reply starting.";
     expect(screen.getByRole("button", { name: expectedAccessibleName })).toBeInTheDocument();
   });
 

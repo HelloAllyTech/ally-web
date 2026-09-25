@@ -70,7 +70,10 @@ vi.mock("@components", () => ({
   ActionConfirmationPopup: () => null,
   Button: ({ children }: { children?: React.ReactNode }) => <button>{children}</button>,
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
-  EntityTable: (props: { rows: { id: string; name: string }[]; onDelete?: (row: unknown) => void }) => {
+  EntityTable: (props: {
+    rows: { id: string; name: string }[];
+    onDelete?: (row: unknown) => void;
+  }) => {
     capturedTableProps.push(props);
     return (
       <ul>
@@ -86,7 +89,9 @@ vi.mock("@components", () => ({
   EntitySidePanel: () => null,
 }));
 
-vi.mock("@components/types", () => ({ ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" } }));
+vi.mock("@components/types", () => ({
+  ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
+}));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   InlineNotification: ({ title }: { title: string }) => <div role="alert">{title}</div>,

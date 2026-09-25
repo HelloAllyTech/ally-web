@@ -46,8 +46,18 @@ const asDisplayed = (iso: string) => new Date(iso).toLocaleDateString();
 // Labels deliberately differ from their section names ("Analytics" /
 // "Platform Config") so assertions on one can't accidentally match the other.
 const toggles = [
-  { key: "analytics", label: "View Analytics", description: "View analytics dashboards", enabled: true },
-  { key: "settings", label: "Manage Settings", description: "Manage platform settings", enabled: false },
+  {
+    key: "analytics",
+    label: "View Analytics",
+    description: "View analytics dashboards",
+    enabled: true,
+  },
+  {
+    key: "settings",
+    label: "Manage Settings",
+    description: "Manage platform settings",
+    enabled: false,
+  },
 ];
 
 // Mocking @components (with cellTypes) sidesteps the @constants ↔ @components
@@ -96,7 +106,12 @@ vi.mock("@components", () => ({
   // not visible text — visible text lives in the row's own <p>, and rendering
   // it twice would make text queries ambiguous.
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
-    <button role="switch" aria-checked={enabled} aria-label={label} onClick={() => onChange(!enabled)} />
+    <button
+      role="switch"
+      aria-checked={enabled}
+      aria-label={label}
+      onClick={() => onChange(!enabled)}
+    />
   ),
   AssignedOrganizations: () => (
     <div data-testid="assigned-organizations">Assigned Organizations</div>
@@ -109,7 +124,10 @@ vi.mock("@assets", () => ({
 }));
 
 vi.mock("@api", () => ({
-  useListPlatformAdminsQuery: () => ({ data: { data: platformAdmins, count: 2 }, isLoading: false }),
+  useListPlatformAdminsQuery: () => ({
+    data: { data: platformAdmins, count: 2 },
+    isLoading: false,
+  }),
   useListEligiblePlatformAdminsQuery: () => ({
     data: { data: candidates, count: 1 },
     isFetching: false,

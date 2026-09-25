@@ -4,7 +4,7 @@
 [wiki repo](https://github.com/helloallytech/helloallytech.github.io) from each page's
 frontmatter, and copied into every code repo.
 
-One line per page, so you can pick the right one *before* spending a fetch. Read the
+One line per page, so you can pick the right one _before_ spending a fetch. Read the
 page, not the section. Word counts distinguish a rule set from a reference.
 
 Fetch as `https://tech.helloally.ai/#/wiki/<path>`, or raw Markdown at `https://tech.helloally.ai/wiki/<path>`.

@@ -52,9 +52,7 @@ const baseDashboard: TrackProgressDashboard = {
   startedAt: "2026-08-01T00:00:00.000Z",
   completedAt: null,
   lastActivityAt: "2026-08-05T00:00:00.000Z",
-  sections: [
-    { id: "sec-1", title: "Section 1", order: 1, completedItems: 2, totalItems: 4 },
-  ],
+  sections: [{ id: "sec-1", title: "Section 1", order: 1, completedItems: 2, totalItems: 4 }],
   evaluatedRoleplaySessionCount: 0,
   averageCompositeScore: null,
   skillCategories: [],
@@ -175,7 +173,12 @@ describe("TrackProgress", () => {
         ...baseDashboard,
         evaluatedRoleplaySessionCount: 1,
         skillCategories: [
-          { category: "Listening Engagement", averagePercentage: 80, sampleSize: 1, classification: "insufficient_data" },
+          {
+            category: "Listening Engagement",
+            averagePercentage: 80,
+            sampleSize: 1,
+            classification: "insufficient_data",
+          },
         ],
         roleplaySessions: [
           {
@@ -200,7 +203,12 @@ describe("TrackProgress", () => {
         ...baseDashboard,
         evaluatedRoleplaySessionCount: 2,
         skillCategories: [
-          { category: "Listening Engagement", averagePercentage: 80, sampleSize: 2, classification: "demonstrated" },
+          {
+            category: "Listening Engagement",
+            averagePercentage: 80,
+            sampleSize: 2,
+            classification: "demonstrated",
+          },
         ],
         roleplaySessions: [
           {
@@ -262,8 +270,18 @@ describe("TrackProgress", () => {
         ...baseDashboard,
         evaluatedRoleplaySessionCount: 2,
         skillCategories: [
-          { category: "Listening Engagement", averagePercentage: 90, sampleSize: 2, classification: "demonstrated" },
-          { category: "Emotional Attunement", averagePercentage: 40, sampleSize: 2, classification: "needs_practice" },
+          {
+            category: "Listening Engagement",
+            averagePercentage: 90,
+            sampleSize: 2,
+            classification: "demonstrated",
+          },
+          {
+            category: "Emotional Attunement",
+            averagePercentage: 40,
+            sampleSize: 2,
+            classification: "needs_practice",
+          },
         ],
       },
       isLoading: false,
@@ -272,7 +290,9 @@ describe("TrackProgress", () => {
 
     render(<TrackProgress />);
 
-    const nudge = screen.getByText("tracks2.progressDashboard.practiceNudge(category:Emotional Attunement)");
+    const nudge = screen.getByText(
+      "tracks2.progressDashboard.practiceNudge(category:Emotional Attunement)",
+    );
     expect(nudge).toBeInTheDocument();
 
     screen.getByText("common.continue").click();

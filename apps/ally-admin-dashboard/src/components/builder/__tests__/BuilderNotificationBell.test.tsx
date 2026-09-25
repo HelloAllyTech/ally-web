@@ -58,13 +58,23 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("renders the bell icon when loaded", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [], unread: 0 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
     expect(screen.getByTestId("bell-icon")).toBeInTheDocument();
   });
 
   it("shows unread badge when there are unread notifications", () => {
-    queryResult = { data: { notifications: [notification()], unread: 3 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [notification()], unread: 3 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
     expect(screen.getByText("3")).toBeInTheDocument();
   });
@@ -81,7 +91,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("opens the popover when the bell is clicked", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [], unread: 0 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
 
     expect(screen.queryByText("No notifications")).toBeNull();
@@ -90,7 +105,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("closes the popover when the bell is clicked again", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [], unread: 0 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
 
     const bell = screen.getByRole("button", { name: /notifications/i });
@@ -101,7 +121,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("closes the popover when clicking outside the container", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [], unread: 0 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(
       <div>
         <BuilderNotificationBell />
@@ -117,7 +142,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("shows Mark all read button only when there are unread notifications", () => {
-    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [notification()], unread: 1 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("Mark all read")).toBeInTheDocument();
@@ -136,7 +166,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("calls markAllRead when the button is clicked", () => {
-    queryResult = { data: { notifications: [notification()], unread: 1 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [notification()], unread: 1 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     fireEvent.click(screen.getByText("Mark all read"));
@@ -159,7 +194,12 @@ describe("BuilderNotificationBell", () => {
   });
 
   it("shows No notifications empty state when there are no notifications", () => {
-    queryResult = { data: { notifications: [], unread: 0 }, isLoading: false, isError: false, refetch };
+    queryResult = {
+      data: { notifications: [], unread: 0 },
+      isLoading: false,
+      isError: false,
+      refetch,
+    };
     render(<BuilderNotificationBell />);
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
     expect(screen.getByText("No notifications")).toBeInTheDocument();

@@ -55,7 +55,9 @@ describe("buildPrecisionTrend", () => {
 });
 
 describe("buildSourceAccuracyBreakdown", () => {
-  const source = (over: Partial<BugAgentPerformanceSourceAccuracy> = {}): BugAgentPerformanceSourceAccuracy => ({
+  const source = (
+    over: Partial<BugAgentPerformanceSourceAccuracy> = {},
+  ): BugAgentPerformanceSourceAccuracy => ({
     source: "code_review",
     accuracy: null,
     filed: 0,
@@ -80,7 +82,9 @@ describe("buildSourceAccuracyBreakdown", () => {
 });
 
 describe("buildThroughputTrend", () => {
-  const week = (over: Partial<BugAgentPerformanceThroughputWeek> = {}): BugAgentPerformanceThroughputWeek => ({
+  const week = (
+    over: Partial<BugAgentPerformanceThroughputWeek> = {},
+  ): BugAgentPerformanceThroughputWeek => ({
     week: "2026-01-05",
     approvedToMergedRate: null,
     escalationRate: null,
@@ -95,7 +99,12 @@ describe("buildThroughputTrend", () => {
 
   it("emits only the rates that have a real denominator that week", () => {
     const series = buildThroughputTrend([
-      week({ week: "2026-01-05", approvedToMergedRate: 0.8, escalationRate: null, fallbackRate: 0.1 }),
+      week({
+        week: "2026-01-05",
+        approvedToMergedRate: 0.8,
+        escalationRate: null,
+        fallbackRate: 0.1,
+      }),
     ]);
 
     expect(series).toEqual([
@@ -106,7 +115,9 @@ describe("buildThroughputTrend", () => {
 });
 
 describe("buildSpeedTrend", () => {
-  const week = (over: Partial<BugAgentPerformanceSpeedWeek> = {}): BugAgentPerformanceSpeedWeek => ({
+  const week = (
+    over: Partial<BugAgentPerformanceSpeedWeek> = {},
+  ): BugAgentPerformanceSpeedWeek => ({
     week: "2026-01-05",
     filedToDecidedMedianHours: null,
     filedToMergedMedianHours: null,
@@ -139,7 +150,9 @@ describe("buildCostTrend", () => {
 });
 
 describe("buildReliabilityTrend", () => {
-  const week = (over: Partial<BugAgentPerformanceReliabilityWeek> = {}): BugAgentPerformanceReliabilityWeek => ({
+  const week = (
+    over: Partial<BugAgentPerformanceReliabilityWeek> = {},
+  ): BugAgentPerformanceReliabilityWeek => ({
     week: "2026-01-05",
     completionRate: null,
     fallbackRate: null,

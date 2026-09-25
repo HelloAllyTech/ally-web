@@ -29,9 +29,10 @@ describe("LevelIndicator", () => {
   it("clamps a progress value outside 0..1 rather than drawing past the circle", () => {
     const { rerender } = render(<LevelIndicator level={1} progress={5} ariaLabel="Level 1" />);
     const arcOffset = () =>
-      screen.getByTestId("level-indicator").querySelectorAll("circle")[1].getAttribute(
-        "stroke-dashoffset",
-      );
+      screen
+        .getByTestId("level-indicator")
+        .querySelectorAll("circle")[1]
+        .getAttribute("stroke-dashoffset");
 
     expect(Number(arcOffset())).toBe(0);
 
