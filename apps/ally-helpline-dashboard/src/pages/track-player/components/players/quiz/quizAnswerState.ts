@@ -19,6 +19,8 @@ export interface QuizAnswerState {
   blanks?: Record<string, string>;
   /** open_ended */
   text?: string;
+  /** likert_scale — statementId → scaleOptionId */
+  ratings?: Record<string, string>;
 }
 
 /** Default empty state for a question (ordering seeds the shuffled order). */
@@ -30,6 +32,8 @@ export const initialAnswerState = (question: SanitizedQuizQuestion): QuizAnswerS
       return { pairs: [] };
     case "fill_blank":
       return { blanks: {} };
+    case "likert_scale":
+      return { ratings: {} };
     default:
       return {};
   }
@@ -61,6 +65,14 @@ export const toAnswerInput = (
       };
     case "open_ended":
       return { ...base, text: state.text ?? "" };
+    case "likert_scale":
+      return {
+        ...base,
+        ratings: Object.entries(state.ratings ?? {}).map(([statementId, scaleOptionId]) => ({
+          statementId,
+          scaleOptionId,
+        })),
+      };
     default:
       return base;
   }
@@ -82,6 +94,9 @@ export const isAnswered = (question: SanitizedQuizQuestion, state: QuizAnswerSta
       return (question.blankIds ?? []).every(id => (state.blanks?.[id] ?? "").trim().length > 0);
     case "open_ended":
       return (state.text ?? "").trim().length > 0;
+    case "likert_scale":
+      // Every row, or the survey has holes nobody can tell from a neutral answer.
+      return (question.statements ?? []).every(s => !!state.ratings?.[s.id]);
     default:
       return false;
   }

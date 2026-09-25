@@ -207,7 +207,8 @@ export type QuizQuestionType =
   | "ordering"
   | "matching"
   | "fill_blank"
-  | "open_ended";
+  | "open_ended"
+  | "likert_scale";
 
 export interface QuizOption {
   id: string;
@@ -238,7 +239,14 @@ export interface SanitizedQuizQuestion {
   id: string;
   type: QuizQuestionType;
   prompt: string;
+  /** 0 for an ungraded question. */
   points: number;
+  /**
+   * false = answered but not scored (a survey or reflection question, or any
+   * Likert). Missing on payloads from before ungraded questions existed —
+   * treat as true.
+   */
+  graded?: boolean;
   /** Optional picture or clip shown above the answer controls. */
   media?: QuestionMedia;
   /** mcq_single / mcq_multi */
@@ -254,6 +262,10 @@ export interface SanitizedQuizQuestion {
   blankIds?: string[];
   /** open_ended */
   minWords?: number;
+  /** likert_scale — the rows to rate */
+  statements?: QuizOption[];
+  /** likert_scale — the shared scale, lowest point first */
+  scale?: QuizOption[];
 }
 
 export interface SanitizedQuiz {
@@ -263,6 +275,7 @@ export interface SanitizedQuiz {
     showExplanations: string;
   };
   questions: SanitizedQuizQuestion[];
+  /** Graded questions only — 0 means a survey, with no score to pass. */
   totalPoints: number;
 }
 
@@ -274,6 +287,8 @@ export interface QuizAnswerInput {
   pairs?: { leftId: string; rightId: string }[];
   blanks?: { blankId: string; answer: string }[];
   text?: string;
+  /** likert_scale — one scale point per statement */
+  ratings?: { statementId: string; scaleOptionId: string }[];
 }
 
 /**
@@ -308,21 +323,42 @@ export interface SubmitInterjectionAnswerResponse {
 
 export type QuizAttemptStatus = "GRADED" | "PENDING_GRADING";
 
+/**
+ * The answer key, as the results screen reveals it. Same field names as
+ * `QuizAnswerInput` so both render the same way; fill-blank carries every
+ * accepted answer rather than one.
+ */
+export interface QuizCorrectAnswer {
+  selectedOptionIds?: string[];
+  booleanAnswer?: boolean;
+  orderedItemIds?: string[];
+  pairs?: { leftId: string; rightId: string }[];
+  blanks?: { blankId: string; acceptedAnswers: string[] }[];
+}
+
 export interface QuizQuestionResult {
   questionId: string;
-  /** null = pending LLM grading */
+  /**
+   * null = pending LLM grading, OR an ungraded question with no answer key
+   * to be right or wrong against. Use `isPendingResult` to tell them apart.
+   */
   correct: boolean | null;
+  /** false = not scored. Missing on older attempts — treat as true. */
+  graded?: boolean;
   pointsAwarded: number;
   pointsPossible: number;
   explanation?: string;
   llmFeedback?: string;
+  /** Present only when there is a key and the trainer lets learners see it. */
+  correctAnswer?: QuizCorrectAnswer;
 }
 
 export interface QuizAttemptResult {
   attemptId: string;
   attemptNumber: number;
   status: QuizAttemptStatus;
-  scorePct: number;
+  /** null when the quiz has no graded questions — a survey has no score. */
+  scorePct: number | null;
   passed: boolean;
   passScore: number;
   attemptsUsed: number;

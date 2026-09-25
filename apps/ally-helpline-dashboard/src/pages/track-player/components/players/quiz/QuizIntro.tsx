@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { SanitizedQuiz } from "@types";
 
+import { isSurveyQuiz } from "./quizHelpers";
+
 interface QuizIntroProps {
   quiz: SanitizedQuiz;
   attemptsUsed: number;
@@ -17,6 +19,8 @@ export const QuizIntro: FC<QuizIntroProps> = ({ quiz, attemptsUsed, maxAttempts,
   const questionCount = quiz.questions.length;
   const attemptsLeft = maxAttempts === null ? null : Math.max(0, maxAttempts - attemptsUsed);
   const canStart = attemptsLeft === null || attemptsLeft > 0;
+  // Nothing graded means nothing to pass — a pass mark would only mislead.
+  const isSurvey = isSurveyQuiz(quiz.questions);
 
   return (
     <div className="flex h-full min-h-0 flex-col items-center justify-center px-6 py-10 text-center">
@@ -29,7 +33,11 @@ export const QuizIntro: FC<QuizIntroProps> = ({ quiz, attemptsUsed, maxAttempts,
 
       <div className="mt-4 flex flex-col gap-1.5 text-sm text-typography-700">
         <span>{t("tracks2.quiz.intro.questionCount", { count: questionCount })}</span>
-        <span>{t("tracks2.quiz.intro.passScore", { score: quiz.settings.passScore })}</span>
+        <span>
+          {isSurvey
+            ? t("tracks2.quiz.intro.notScored")
+            : t("tracks2.quiz.intro.passScore", { score: quiz.settings.passScore })}
+        </span>
         <span>
           {attemptsLeft === null
             ? t("tracks2.quiz.intro.unlimitedAttempts")
