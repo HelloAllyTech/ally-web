@@ -1,6 +1,5 @@
 import { FC } from "react";
 
-import DOMPurify from "dompurify";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +7,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ArrowRight } from "@assets";
 import { ROUTES } from "@constants";
 import { TrackDetail } from "@types";
+import { sanitizeHtml } from "@utils";
 
 interface TrackProgressHeaderProps {
   track: TrackDetail;
@@ -117,7 +117,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
           <div
             className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(track.description),
+              __html: sanitizeHtml(track.description),
             }}
           />
         )}

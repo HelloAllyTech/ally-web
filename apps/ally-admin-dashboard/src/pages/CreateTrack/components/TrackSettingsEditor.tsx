@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import { CustomImage, Tooltip } from "@ally-ui-mono/ui-shared";
 import { TooltipIcon, Trash } from "@assets";
-import { Button, RichTextEditor, ToggleSwitch } from "@components";
+import { Button, ToggleSwitch } from "@components";
+import { RichTextEditor } from "@components/rich-text-editor";
 import { ButtonVariant } from "@components/types";
 import { TrackFormValues } from "@types";
 
