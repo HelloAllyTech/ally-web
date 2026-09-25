@@ -43,9 +43,9 @@ const QuestionRow: FC<{
   const hasVerdict = result.correct !== null;
 
   const statusIcon = isPending ? (
-    <span className="h-4 w-4 rounded-full bg-warning-300" aria-hidden />
+    <span className="inline-block h-4 w-4 rounded-full bg-warning-300" aria-hidden />
   ) : !hasVerdict ? (
-    <span className="h-4 w-4 rounded-full bg-neutral-300" aria-hidden />
+    <span className="inline-block h-4 w-4 rounded-full bg-neutral-300" aria-hidden />
   ) : result.correct ? (
     <TickGreenBackground className="h-4 w-4" />
   ) : (
