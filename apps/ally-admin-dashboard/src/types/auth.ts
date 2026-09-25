@@ -583,126 +583,6 @@ export interface UsageLevelResponse {
   computedAt: string;
 }
 
-// Ally Certification attainment — mirrors CertificationResponseDto from
-// GET /api/v1/analytics/certification. The platform's hero metric: distinct
-// learners who have accumulated enough LIFETIME roleplay practice to hold a
-// level (L1 = 5,000 minutes), by the month they earned it and cumulatively.
-// All-time and month-grained; takes no window, because the threshold is a
-// lifetime total and a window would change the metric rather than narrow it.
-export interface CertificationLevel {
-  /** Stable id / series key, e.g. "L1". */
-  id: string;
-  /** Server-owned name, e.g. "L1 Ally Certified". */
-  label: string;
-  /** Lifetime roleplay minutes required, inclusive. */
-  minMinutes: number;
-}
-
-export interface CertificationPipelineBand {
-  /** Server-built label, e.g. "1,500–3,000 min". */
-  label: string;
-  minMinutes: number;
-  maxMinutes: number;
-  /** Fraction of the threshold this band starts at, 0–1. */
-  minFraction: number;
-  /** Uncertified learners currently in this band. */
-  learners: number;
-}
-
-export interface CertificationMonth {
-  /** First day of the month (yyyy-mm-01). */
-  month: string;
-  /** Learners whose lifetime minutes FIRST reached the threshold this month. */
-  newlyCertified: number;
-  /** Running total — monotonic, since a level is never lost. */
-  cumulativeCertified: number;
-  /** True for the current, unfinished month: more can still cross into it. */
-  partial: boolean;
-}
-
-export interface CertificationResponse {
-  /** Every level, lowest first. Only `level` is plotted today. */
-  levels: CertificationLevel[];
-  /** The level this response reports on. */
-  level: CertificationLevel;
-  /** Oldest first, gap-free; at least 12 months even if attainment is younger. */
-  months: CertificationMonth[];
-  /** First day of the current, incomplete month (yyyy-mm-01). */
-  currentMonth: string;
-  /** Learners holding the level right now — the headline figure. */
-  certified: number;
-  /** Every learner in scope, including those who have never practised. */
-  learners: number;
-  /** The not-yet-certified population by how far along it is, lowest first. */
-  pipeline: CertificationPipelineBand[];
-  /** Lifetime minutes of the furthest-along uncertified learner. Names nobody. */
-  nearestMinutes: number;
-  scoping: AnalyticsScoping;
-  computedAt: string;
-}
-
-// Learner usage ladder L1-L5 — mirrors UsageLadderResponseDto from
-// GET /api/v1/analytics/usage-ladder. Five rungs defined by LIFETIME roleplay
-// minutes (60 / 300 / 1,200 / 3,000 / 6,000), reached and never lost. One
-// response feeds four charts — attainment per period, cumulative holders, the
-// funnel, and the ladder itself — so they cannot disagree.
-//
-// IMPORTANT: this is a SEPARATE scale from the Ally Certification (one rung at
-// 5,000 lifetime minutes), which the top rung brackets. Never label a rung a
-// certification or put the two on one axis.
-export type UsageLadderGrain = "month" | "quarter";
-
-export interface UsageLadderLevel {
-  /** Stable id / series key, e.g. "L3". */
-  id: string;
-  /** Server-owned name, e.g. "L3 · 20 hours". */
-  label: string;
-  /** Lifetime roleplay minutes required, inclusive. */
-  minMinutes: number;
-}
-
-export interface UsageLadderPeriod {
-  /** First day of the period (yyyy-mm-dd). */
-  period: string;
-  /**
-   * Learners FIRST reaching each rung this period, index-aligned with `levels`.
-   * A learner who climbed several rungs at once appears in each series, so these
-   * must NEVER be stacked — a stack would imply they sum to a population.
-   */
-  newlyReached: number[];
-  /** Learners at or past each rung by the period's end. Monotonic. */
-  cumulative: number[];
-  /** True for the period containing today: still accruing, so leave it off plots. */
-  partial: boolean;
-}
-
-export interface UsageLadderFunnelStep {
-  /** "accounts" for the top row, else the level id. */
-  id: string;
-  label: string;
-  learners: number;
-  /** Conversion from the step above; null on the top row. */
-  ofPreviousPct: number | null;
-  /** Share of all accounts; null when there are none. */
-  ofTopPct: number | null;
-}
-
-export interface UsageLadderResponse {
-  grain: UsageLadderGrain;
-  /** Lowest rung first. Every per-level array is index-aligned with this. */
-  levels: UsageLadderLevel[];
-  /** Oldest first, gap-free. */
-  periods: UsageLadderPeriod[];
-  currentPeriod: string;
-  /** Nested funnel as of now: accounts, then each rung. */
-  funnel: UsageLadderFunnelStep[];
-  accounts: number;
-  /** The certification threshold, for captioning only. NOT a rung. */
-  certificationMinMinutes: number;
-  scoping: AnalyticsScoping;
-  computedAt: string;
-}
-
 // Practice stickiness — mirrors StickinessResponseDto from
 // GET /api/v1/analytics/practice-stickiness. Of the learners who practised once,
 // how many came back. A step is a DAY carrying >= `qualifyingMinutes` of
@@ -753,25 +633,8 @@ export interface QualifiedSessionsResponse {
 }
 
 // Org engagement — mirrors OrgEngagementResponseDto from
-// GET /api/v1/analytics/org-engagement. The org ladder is TOTAL practice minutes
-// summed across an org's learners, so it measures size as much as engagement —
-// caption it that way. `tenantId` is ignored by this endpoint: counting orgs
-// cannot be narrowed to one org.
-export interface OrgLadderLevel {
-  id: string;
-  label: string;
-  minMinutes: number;
-}
-
-export interface OrgFunnelStep {
-  /** "orgs" for the top row, else the level id. */
-  id: string;
-  label: string;
-  orgs: number;
-  ofPreviousPct: number | null;
-  ofTopPct: number | null;
-}
-
+// GET /api/v1/analytics/org-engagement. `tenantId` is ignored by this endpoint:
+// counting orgs cannot be narrowed to one org.
 export interface OrgActivityPoint {
   month: string;
   activeOrgs: number;
@@ -780,8 +643,7 @@ export interface OrgActivityPoint {
 }
 
 export interface OrgEngagementResponse {
-  levels: OrgLadderLevel[];
-  funnel: OrgFunnelStep[];
+  /** Non-test, non-deleted orgs on the platform. */
   orgs: number;
   /** The trailing window the headline covers. */
   activityDays: number;

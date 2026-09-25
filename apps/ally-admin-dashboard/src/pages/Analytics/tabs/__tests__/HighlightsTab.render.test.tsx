@@ -80,7 +80,7 @@ import { HighlightsTab } from "../HighlightsTab";
 const SUB_TABS: [label: string, marker: RegExp][] = [
   ["Priority", /Utilization actual versus goal/i],
   ["Platform", /North star/i],
-  ["Usage levels", /Activation — getting to a first session/i],
+  ["Usage", /Activation — getting to a first session/i],
   ["Skill growth", /Competency map/i],
   ["Curriculum", /Track drop-off by item format/i],
   ["Quality & sentiment", /Roleplay quality — median and spread/i],
@@ -126,7 +126,7 @@ describe("HighlightsTab", () => {
    * Measured (pre-Goals-sub-tab) at the cost of the eight original panels:
    * 1.4s for the initial Platform mount, then 0.2-1.4s per sub-tab on a quiet
    * machine, ~6s for the walk. The per-tab figures track panel size
-   * (Curriculum 0.2s, Orgs 0.5s, Usage levels 1.3s), so it is React rendering
+   * (Curriculum 0.2s, Orgs 0.5s, Usage 1.3s), so it is React rendering
    * five to ten charts' worth of tree each time and not any one bad component —
    * there is no hot spot to delete. Sharing a machine with the rest of the
    * project is what moves the number: the same walk takes 14-18s alongside one

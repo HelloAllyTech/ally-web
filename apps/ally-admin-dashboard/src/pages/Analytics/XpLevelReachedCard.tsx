@@ -62,9 +62,8 @@ const TITLE = "New Levels Reached per Period";
  * distinct from a stock reading of who holds each rung right now.
  *
  * Grouped bars, one series per level: nested, not stacked, because a learner
- * who crosses several levels in one period is counted once in EACH — see
- * `UsageLevelsSubTab`'s "New levels reached per period" for the same pattern
- * over a shorter L1-L5 ladder. L8-L10 reading as flat zero lines is EXPECTED
+ * who crosses several levels in one period is counted once in EACH. These XP
+ * levels are the only L-levels on Analytics. L8-L10 reading as flat zero lines is EXPECTED
  * here, not a bug: most of the platform sits at L1-L2 today.
  */
 export const XpLevelReachedCard = () => {
@@ -112,8 +111,8 @@ export const XpLevelReachedCard = () => {
   const caption =
     `Learners reaching each XP level for the FIRST time, one grouped bar per level per ` +
     `period. L1-L2 dominate today's population, so L8-L10 reading zero across the whole ` +
-    `axis is a fact about the platform's level curve, not missing data — see the ` +
-    `usage-ladder charts for the fuller L1-L5 picture. Platform-wide, no tenant filter. ` +
+    `axis is a fact about the platform's level curve, not missing data. ` +
+    `Platform-wide, no tenant filter. ` +
     `The current ${grainLabel(grain).toLowerCase()} is still accruing and is left off ` +
     `the plot.`;
 

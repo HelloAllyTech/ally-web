@@ -7,7 +7,6 @@ import {
   AnalyticsOverviewResponse,
   AnalyticsRange,
   BugAgentPerformanceResponse,
-  CertificationResponse,
   ChartPreference,
   ChartPreferencesResponse,
   CoachingLoopResponse,
@@ -49,8 +48,6 @@ import {
   StickinessResponse,
   TokenConsumptionResponse,
   TrackDropoffResponse,
-  UsageLadderGrain,
-  UsageLadderResponse,
   UsageLevelResponse,
   VoiceLatencyByScenarioResponse,
   VoiceLatencyResponse,
@@ -143,13 +140,6 @@ type CohortRetentionQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 /** Usage levels are fixed to 12 complete months + the current one, same reason. */
 type UsageLevelQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
-/**
- * Certification is all-time for a stronger reason than the other fixed-window
- * charts: the threshold is a LIFETIME total, so a window would not narrow the
- * metric, it would change it.
- */
-type CertificationQuery = Pick<AnalyticsWindowQuery, "tenantId">;
-
 /** Roleplay volume is a lifetime distribution; only the org filter applies. */
 type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
@@ -160,16 +150,6 @@ type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
  * month says more about the month than the competency.
  */
 type AllTimeAnalyticsQuery = Pick<AnalyticsWindowQuery, "tenantId">;
-
-/**
- * The usage ladder is all-time for the same reason as certification — its rungs
- * are LIFETIME minute totals — so it takes no window, only the grain its
- * attainment axis is drawn at. Month or quarter only: the lowest rung takes
- * weeks to reach, so a finer axis shows noise rather than trend.
- */
-type UsageLadderQuery = Pick<AnalyticsWindowQuery, "tenantId"> & {
-  grain?: UsageLadderGrain;
-};
 
 /** Stickiness is all-time: "did they ever come back" has no window. */
 type StickinessQuery = Pick<AnalyticsWindowQuery, "tenantId">;
@@ -253,17 +233,6 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
-    // Ally Certification attainment — the platform's hero metric. Takes ONLY
-    // `tenantId`: the threshold is a LIFETIME minute total, so a window param
-    // would truncate each learner's history, move their crossing later or hide
-    // it, and make the cumulative line fall — which it can never really do.
-    getCertification: builder.query<CertificationResponse, CertificationQuery>({
-      query: ({ tenantId } = {}) => ({
-        url: ApiEndpoints.ANALYTICS.CERTIFICATION,
-        method: HttpMethod.GET,
-        params: tenantId ? { tenantId } : {},
-      }),
-    }),
     // Cumulative platform XP over time, from the append-only xp_events ledger.
     // Takes the standard window params — `bucket` is the day/week/month/year
     // grain the chart's own control drives. On a narrowed window the server
@@ -287,20 +256,6 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: grain ? { grain } : {},
       }),
     }),
-    // Learner usage ladder L1-L5 by LIFETIME roleplay minutes. One response
-    // feeds four charts (attainment, cumulative holders, funnel, ladder), so
-    // they cannot disagree. Takes no window — the rungs are lifetime totals —
-    // only the grain of the attainment axis.
-    getUsageLadder: builder.query<UsageLadderResponse, UsageLadderQuery>({
-      query: ({ tenantId, grain } = {}) => ({
-        url: ApiEndpoints.ANALYTICS.USAGE_LADDER,
-        method: HttpMethod.GET,
-        params: {
-          ...(tenantId ? { tenantId } : {}),
-          ...(grain ? { grain } : {}),
-        },
-      }),
-    }),
     // Of the learners who practised once, how many came back. All-time by
     // construction: windowing it would report every recent signup as churned.
     getPracticeStickiness: builder.query<StickinessResponse, StickinessQuery>({
@@ -320,8 +275,8 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: windowParams(q),
       }),
     }),
-    // Org ladder funnel, "orgs active in the last X days", and a monthly
-    // activity trend. Platform-wide always: counting orgs cannot be narrowed to
+    // Org count, "orgs active in the last X days", and a monthly activity
+    // trend. Platform-wide always: counting orgs cannot be narrowed to
     // one org.
     getOrgEngagement: builder.query<OrgEngagementResponse, OrgEngagementQuery>({
       query: ({ activityDays } = {}) => ({
@@ -828,7 +783,6 @@ export const {
   useGetAnalyticsOverviewQuery,
   useGetAnalyticsHighlightsQuery,
   useGetCohortRetentionQuery,
-  useGetCertificationQuery,
   useGetUsageLevelsQuery,
   useGetRoleplayVolumeQuery,
   useGetRoadmapDeliveryQuery,
@@ -864,7 +818,6 @@ export const {
   useGetLearnerKpisQuery,
   useGetScenarioUsageQuery,
   useGetScribeAdoptionQuery,
-  useGetUsageLadderQuery,
   useGetPracticeStickinessQuery,
   useGetQualifiedSessionsQuery,
   useGetOrgEngagementQuery,

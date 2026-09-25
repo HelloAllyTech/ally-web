@@ -7,7 +7,7 @@ import {
 } from "@types";
 
 import { CATEGORICAL, CONTEXT, ColorScale, PALETTE } from "./chartScales";
-import { ChartDatum } from "./ladderChart";
+import { ChartDatum } from "./engagementChart";
 
 /**
  * Pure transforms for the unit-cost card and the quality-vs-sentiment card.
