@@ -167,7 +167,9 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
         </TabList>
 
         {active.blurb ? (
-          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-typography-500">{active.blurb}</p>
+          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-typography-500">
+            {active.blurb}
+          </p>
         ) : null}
 
         <TabPanels>

@@ -212,7 +212,11 @@ npm run test:ui-shared    # Shared UI library tests
 ### Linting & Formatting
 
 ```bash
-# Check for linting errors
+# Check for linting errors.
+# Also fails if the warning count rises above the `--max-warnings` ceiling in
+# package.json. Every warning in this repo is `react-hooks/exhaustive-deps`, so
+# that number is the size of the legacy dependency-array backlog: adding one
+# breaks the build. Lower the ceiling when you remove one; never raise it.
 npm run lint
 
 # Auto-fix linting errors
