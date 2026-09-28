@@ -20,6 +20,7 @@ import {
   Changelog,
   Sjt1,
   SjtEdit,
+  SjtReport1,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -50,6 +51,8 @@ const RouteLayout = () => {
           <Route path={ROUTES.SJT1} element={<Sjt1 />} />
           {/* Same page, every line editable in place — see SjtEdit */}
           <Route path={ROUTES.SJT1_EDIT} element={<SjtEdit />} />
+          {/* Teacher readiness report for school leadership — no nav, no sign-in */}
+          <Route path={ROUTES.SJT_REPORT1} element={<SjtReport1 />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}
