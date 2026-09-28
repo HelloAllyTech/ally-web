@@ -73,9 +73,12 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   id,
   isMandatory,
 }) => {
-  const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
-  const stateNames: { stateId: string; name: string }[] =
-    formMethods.watch(FORM_FIELD_IDS.STATE_NAMES) ?? [];
+  const watchedFormData: BehaviourRow[] | undefined = formMethods.watch(id);
+  const formData = useMemo(() => watchedFormData ?? [], [watchedFormData]);
+  const watchedStateNames: { stateId: string; name: string }[] | undefined = formMethods.watch(
+    FORM_FIELD_IDS.STATE_NAMES,
+  );
+  const stateNames = useMemo(() => watchedStateNames ?? [], [watchedStateNames]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [pendingRow, setPendingRow] = useState<{ category: string } | null>(null);
 
