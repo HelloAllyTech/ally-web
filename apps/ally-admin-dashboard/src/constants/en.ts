@@ -2953,6 +2953,11 @@ export const en = {
     drawerReleasingNotice:
       "I'm running release {tag} now. This page updates as it goes — a backend release takes around 15 minutes.",
     drawerReleasedNotice: "This is live in production as {tag}.",
+    // No tag: the release was cut from GitHub by a person, not from this tab,
+    // and the run does not say which version it shipped — so the banner says
+    // how it went live rather than printing "as —".
+    drawerReleasedOutOfBandNotice:
+      "This is live in production. It went out in a release somebody ran from GitHub after the fix merged — I didn't start that release. The run is linked below.",
     drawerReleaseFailedNotice:
       "Release {tag} went red. The fix is still merged to master — it just isn't deployed. Check the run, then ask me to retry.",
     drawerFixSessionFailedNotice: "The fix session failed. Start a new session to retry.",

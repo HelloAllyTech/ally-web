@@ -682,7 +682,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
           )}
           {finding.status === BugFindingStatus.RELEASED && (
             <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
-              {en.bugHunter.drawerReleasedNotice.replace("{tag}", finding.releaseTag ?? "—")}
+              {finding.releaseTag
+                ? en.bugHunter.drawerReleasedNotice.replace("{tag}", finding.releaseTag)
+                : en.bugHunter.drawerReleasedOutOfBandNotice}
             </p>
           )}
           {finding.status === BugFindingStatus.RELEASE_FAILED && (

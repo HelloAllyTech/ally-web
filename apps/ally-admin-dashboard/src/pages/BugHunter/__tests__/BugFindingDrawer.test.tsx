@@ -389,6 +389,21 @@ describe("BugFindingDrawer — release to production", () => {
     expect(screen.getByText(/live in production as v1\.4\.2/i)).toBeInTheDocument();
     expect(screen.getByText(/Released by user #7/)).toBeInTheDocument();
   });
+
+  it("says how it went live when a release run from GitHub shipped it, rather than printing a dash for the tag", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.RELEASED,
+        releaseTag: null,
+        releasedBy: null,
+        releasedAt: "2026-09-26",
+        releaseRunUrl: "https://github.com/helloallytech/ally-be/actions/runs/5150",
+      }),
+    );
+    expect(screen.getByText(/somebody ran from GitHub/i)).toBeInTheDocument();
+    expect(screen.queryByText(/live in production as/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Released by user/)).not.toBeInTheDocument();
+  });
 });
 
 describe("BugFindingDrawer — multi-repo plan", () => {
