@@ -240,7 +240,7 @@ const cellStyle = (v: number) => {
   const col = v >= 0 ? "var(--ready)" : "var(--need)";
   return {
     background: `color-mix(in srgb, ${col} ${Math.round(a * 80)}%, var(--surface))`,
-    ...(a > 0.55 ? { color: "#fff" } : {}),
+    ...(a > 0.55 ? { color: "var(--on-strong)" } : {}),
   };
 };
 

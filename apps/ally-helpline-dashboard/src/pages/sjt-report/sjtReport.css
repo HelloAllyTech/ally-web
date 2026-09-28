@@ -17,6 +17,8 @@
   --emg: #d6a03c;
   --need: #a63f39;
   --focus: #2b5cc8;
+  /* Text on a strongly tinted segment-table cell, in both themes. */
+  --on-strong: #ffffff;
   --serif: "Literata", Georgia, "Times New Roman", serif;
   --sans: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
