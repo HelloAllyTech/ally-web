@@ -24,6 +24,7 @@ vi.mock("@pages", () => ({
   Changelog: () => <div data-testid="changelog-page">Changelog Page</div>,
   Sjt1: () => <div data-testid="sjt1-page">SJT1 Page</div>,
   SjtEdit: () => <div data-testid="sjt1-edit-page">SJT1 Edit Page</div>,
+  SjtReport1: () => <div data-testid="sjt-report1-page">SJT Report 1 Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -76,6 +77,7 @@ vi.mock("@constants", () => ({
     CHANGELOG: "/blog/changelog",
     SJT1: "/SJT1",
     SJT1_EDIT: "/SJT1/edit",
+    SJT_REPORT1: "/sjtreport1",
   },
 }));
 
@@ -139,6 +141,15 @@ describe("RouteLayout", () => {
     renderWithRouter(<RouteLayout />);
 
     expect(screen.getByTestId("public-layout")).toBeInTheDocument();
+    expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
+  });
+
+  it("serves the readiness report publicly at /sjtreport1", () => {
+    window.history.pushState({}, "", "/sjtreport1");
+    renderWithRouter(<RouteLayout />);
+
+    expect(screen.getByTestId("public-layout")).toBeInTheDocument();
+    // Not behind the catch-all: a school leader opens it without signing in.
     expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
   });
 });

@@ -35,6 +35,9 @@ export const ROUTES = {
   // the page it edits, and harmless for that: edits live in the editor's own
   // browser and reach /SJT1 only by being exported and committed.
   SJT1_EDIT: "/SJT1/edit",
+  // Standalone public report for school leadership: teacher readiness across
+  // the five SJT skills, on sample data or a CSV read in the browser.
+  SJT_REPORT1: "/sjtreport1",
 
   // Private Routes
   HOME: "/",
