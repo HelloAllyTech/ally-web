@@ -6,6 +6,7 @@ import {
   BugFindingRef,
   BugFindingStage,
   BugHunterMetrics,
+  BugHunterOperationsMetrics,
   BugHunterMode,
   BugHunterModelSettings,
   BugHunterNotification,
@@ -201,6 +202,27 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
       // accuracy figures it just moved — the two are the same data read two
       // ways, and a panel that disagreed with the table above it would read
       // as a defect.
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
+    }),
+
+    /**
+     * The volume view beside `getBugHunterMetrics`: what gets filed each day,
+     * where it comes from, who raised it, and what the models cost. Same
+     * window argument, same tag — a triage decision moves a day's
+     * accepted/declined split, so the two panels must refresh together.
+     */
+    getBugHunterOperationsMetrics: builder.query<
+      BugHunterOperationsMetrics,
+      { days?: number } | void
+    >({
+      query: arg => {
+        const days = arg && typeof arg === "object" ? arg.days : undefined;
+        return {
+          url: ApiEndpoints.BUG_HUNTER.METRICS_OPERATIONS,
+          method: HttpMethod.GET,
+          params: days ? { days } : undefined,
+        };
+      },
       providesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
     }),
 
@@ -418,6 +440,7 @@ export const {
   useMergeBugFindingMutation,
   useReleaseBugFindingMutation,
   useGetBugHunterMetricsQuery,
+  useGetBugHunterOperationsMetricsQuery,
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,
   useMarkAllBugHunterNotificationsReadMutation,

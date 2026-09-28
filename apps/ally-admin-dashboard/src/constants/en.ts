@@ -3178,6 +3178,103 @@ export const en = {
     accuracyLoadFailed: "Couldn't load the accuracy figures.",
     accuracyHours: "{count}h",
     accuracyDays: "{count}d",
+
+    // ── the operations panel (GET /metrics/operations) ────────────────────
+    // Volume, day by day. Every count here is drawn beside the share of it
+    // that later held up, because a bar of "12 bugs found" on its own rewards
+    // a noisy finder exactly as much as a good one.
+    operationsTitle: "What I turn up, day by day",
+    operationsSubtitle:
+      "How many new bugs I file each day, where they come from, who raises them, and what the models cost me in tokens.",
+    operationsEmptyTitle: "Nothing filed in this window",
+    operationsEmptySubtitle: "Once a sweep files something, the days fill in here.",
+    operationsLoadFailed: "Couldn't load the day-by-day figures.",
+    operationsDayNote:
+      "Days are in UTC, the clock my sweeps run on — a night's work lands on the morning it finishes.",
+    operationsShowTable: "Show as table",
+    operationsHideTable: "Hide table",
+    operationsColDay: "Day",
+    operationsColTotal: "Total",
+    // Chart 1 — new bugs per day, with what became of them.
+    operationsFiledTitle: "New bugs I filed",
+    operationsFiledTooltip:
+      "Distinct bugs filed each day, from every source. When I find the same bug again I touch the existing row rather than filing a new one, so a re-discovery doesn't count twice. Coloured by where each bug stands today: accepted, declined, or still waiting on a decision.",
+    operationsFiledLegendAccepted: "Accepted",
+    operationsFiledLegendDeclined: "Declined",
+    operationsFiledLegendUndecided: "Undecided",
+    operationsFiledDay:
+      "{date} — {filed} filed: {accepted} accepted, {declined} declined, {undecided} undecided",
+    operationsAcceptedShare: "{share} of these were accepted",
+    operationsAcceptedShareNone: "None of these have been ruled on yet",
+    // Chart 2 — by source.
+    operationsBySourceTitle: "Where they came from",
+    operationsBySourceTooltip:
+      "The same bugs, split by the finder that raised them. A source that files a lot but is mostly declined is noise; the table view shows the accepted share per source.",
+    operationsBySourceDay: "{count} {source}",
+    operationsColSource: "Source",
+    operationsColFiled: "Filed",
+    operationsColAccepted: "Accepted",
+    operationsColDeclined: "Declined",
+    operationsColUndecided: "Undecided",
+    operationsColAcceptedShare: "Accepted share",
+    // Chart 2b — by how hard it was to spot. Derived, never stored: see
+    // BugHunterDifficulty.
+    operationsByDifficultyTitle: "How hard they were to spot",
+    operationsByDifficultyTooltip:
+      "Nothing on a bug says easy or hard, so this is worked out from what I had. Easy to spot: a failing test, a lint error or a recurring production error proved it — the tool output is the bug. Hard to spot: I inferred it from reading the code or the telemetry, and two verifiers had to agree. Reported: a person filed it, so I didn't spot it at all and it sits in neither bucket.",
+    operationsDifficultyEasy: "Easy to spot",
+    operationsDifficultyHard: "Hard to spot",
+    operationsDifficultyReported: "Reported by people",
+    operationsDifficultyDay: "{date} — {easy} easy, {hard} hard, {reported} reported",
+    operationsColDifficulty: "How it was found",
+    // Chart 3 — by reporter.
+    operationsByReporterTitle: "Who raises them",
+    operationsByReporterTooltip:
+      "Whether a bug came from me or from a person. Staff report through the roadmap; consumers through the in-app \u201cReport a problem\u201d form. Each bar shows its total, and how many of those were accepted.",
+    operationsReporterAgent: "Me",
+    operationsReporterStaff: "Staff",
+    operationsReporterConsumer: "Consumers",
+    operationsReporterDetail: "{accepted} accepted · {declined} declined",
+    // Chart 4 — tokens by day and trigger.
+    operationsTokensTitle: "Tokens I spent, by day",
+    operationsTokensTooltip:
+      "Input and output tokens for runs that started each day, split by what started them. In Works-solo mode a sweep finds and fixes in one run, so a sweep's tokens can't be split into finding and fixing — the honest split is by trigger.",
+    operationsTokensDay:
+      "{date} — {tokens} tokens ({input} in / {output} out) across {runs} {trigger} runs",
+    operationsTokensTotal: "{tokens} tokens · {cost} · {runs} runs",
+    operationsColTrigger: "Trigger",
+    operationsColTokens: "Tokens",
+    operationsColInput: "In",
+    operationsColOutput: "Out",
+    operationsColCost: "Cost",
+    operationsColRuns: "Runs",
+    // Chart 4b — how much code the sweeps were shown. The breadth proxy the
+    // tokens chart cannot be: tokens measure what the model read, this measures
+    // what it was GIVEN to read, and the two together say whether more spend
+    // bought more coverage or just more thinking.
+    operationsBreadthTitle: "How much code I was shown, by day",
+    operationsBreadthTooltip:
+      "Lines of code in scope for the sweeps that started each day — the diff I reviewed, or the whole tree on a deep sweep — as my sweeps report it after Discover. This is the breadth proxy: tokens say how much I read, this says how much I was given to read. Days before I started recording it show as not recorded, not as zero.",
+    operationsBreadthDay:
+      "{date} — {lines} lines across {files} files, {commits} commits, {runs} sweeps{deep}",
+    operationsBreadthDeep: " ({deep} read the whole repo)",
+    operationsBreadthNotRecorded: "{date} — not recorded",
+    operationsBreadthNoSweep: "{date} — no sweep",
+    operationsBreadthTotal:
+      "{lines} lines shown across {runs} sweeps · about {ratio} tokens per line",
+    operationsBreadthNone:
+      "None of these sweeps reported how much code they were shown yet. It arrives with the next completed sweep.",
+    operationsColLines: "Lines",
+    // Chart 5 — tokens by model.
+    operationsByModelTitle: "Tokens by model",
+    operationsByModelTooltip:
+      "Which models did the work, from the per-model usage the runner reports after each run. One run spends across several: the sweep on the default tier, hard fixes on the escalation tier. Cache reads are counted inside input tokens.",
+    operationsByModelDetail: "{input} in / {output} out · {runs} runs",
+    operationsByModelEmpty:
+      "No per-model usage reported yet. It arrives with the next completed run.",
+    operationsColModel: "Model",
+    operationsColProvider: "Provider",
+    operationsColCacheRead: "Cache reads",
     // ── Age / staleness column ─────────────────────────────────────
     findingColumnAge: "Age",
     findingColumnAgeTooltip:

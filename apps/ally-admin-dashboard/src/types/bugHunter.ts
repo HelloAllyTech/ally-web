@@ -540,6 +540,120 @@ export interface BugHunterMetrics {
   };
 }
 
+// ── Operations metrics (GET /metrics/operations) ───────────────────────────
+// The volume view beside BugHunterMetrics, which judges outcomes. Every
+// volume figure arrives paired with where that cohort stands now, so the panel
+// cannot draw a count without its acceptance share beside it.
+
+export type BugHunterReporter = "agent" | "staff" | "consumer";
+
+/**
+ * How hard a bug was to spot, derived server-side from `proven` + `source`:
+ * easy = tool output proved it; hard = the agent inferred it and verifiers had
+ * to agree; reported = a person filed it, so the agent spotted nothing.
+ */
+export type BugHunterDifficulty = "easy" | "hard" | "reported";
+
+export interface BugHunterOperationsOutcomes {
+  filed: number;
+  accepted: number;
+  declined: number;
+  undecided: number;
+}
+
+export interface BugHunterOperationsBreadth {
+  /** Runs that reported breadth at all. */
+  runs: number;
+  linesInScope: number;
+  filesInScope: number;
+  commits: number;
+  /** Runs that read the whole repo rather than the day's diff. */
+  deepRuns: number;
+}
+
+export interface BugHunterOperationsTokens {
+  runs: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+}
+
+export interface BugHunterOperationsDay {
+  /** YYYY-MM-DD in the database clock (UTC). */
+  date: string;
+  /** New findings filed that day — distinct bugs, child steps excluded. */
+  filed: number;
+  /** Of `filed`, now at a fix stage or beyond. */
+  accepted: number;
+  /** Of `filed`, now dismissed or rejected. */
+  declined: number;
+  /** Of `filed`, still new or pending approval. */
+  undecided: number;
+  /** `filed` by finding source; absent sources had none that day. */
+  bySource: Partial<Record<BugFindingSource, number>>;
+  /** `filed` by how hard it was to spot. Always all three keys. */
+  byDifficulty: Record<BugHunterDifficulty, BugHunterOperationsOutcomes>;
+  /** Tokens spent by runs that started that day, by trigger. */
+  tokens: Record<BugHuntTrigger, BugHunterOperationsTokens>;
+  /** Code scope shown to that day's sweeps. Null = not recorded (not zero). */
+  breadth: BugHunterOperationsBreadth | null;
+}
+
+export interface BugHunterOperationsDifficulty extends BugHunterOperationsOutcomes {
+  difficulty: BugHunterDifficulty;
+}
+
+export interface BugHunterOperationsSource {
+  source: BugFindingSource;
+  filed: number;
+  accepted: number;
+  declined: number;
+  undecided: number;
+}
+
+export interface BugHunterOperationsReporter {
+  reporter: BugHunterReporter;
+  filed: number;
+  accepted: number;
+  declined: number;
+}
+
+export interface BugHunterOperationsModel {
+  model: string;
+  provider: string;
+  runs: number;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+}
+
+export interface BugHunterOperationsMetrics {
+  windowDays: number;
+  since: string;
+  /** Every calendar day in the window, oldest first, zeros included. */
+  days: BugHunterOperationsDay[];
+  /** Window totals per source, most filed first. */
+  bySource: BugHunterOperationsSource[];
+  /** Always easy, hard, reported, in that order. */
+  byDifficulty: BugHunterOperationsDifficulty[];
+  /** Window breadth over every run that reported it, or null when none did. */
+  breadth: BugHunterOperationsBreadth | null;
+  /** Always all three reporters, zeros included. */
+  byReporter: BugHunterOperationsReporter[];
+  /** Window totals per model, most tokens first. Empty until CI has reported usage. */
+  tokensByModel: BugHunterOperationsModel[];
+  totals: {
+    filed: number;
+    accepted: number;
+    declined: number;
+    undecided: number;
+    inputTokens: number;
+    outputTokens: number;
+    costUsd: number;
+    runs: number;
+  };
+}
+
 // ── The notebook (agent memory) ────────────────────────────────────────────
 // ally-be src/agent-memory. Postgres is the system of record; search runs over a
 // derived Weaviate index. See docs/bug-hunter-memory-adr.md.
