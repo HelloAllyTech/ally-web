@@ -18,6 +18,7 @@ import {
   SPEED_SCALE,
   THROUGHPUT_SCALE,
 } from "./bugAgentPerformanceChart";
+import { BugHunterOperationsCards } from "./BugHunterOperationsCards";
 import {
   CHART_HEIGHT,
   ChartCard,
@@ -44,7 +45,8 @@ import { buildColorScale, formatPercent, formatUsd } from "./tokenChart";
  * figures already use, applied per week server-side — this tab does not
  * recompute anything the accuracy panel didn't already define correctly.
  */
-export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
+export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
+  const { query } = filters;
   const { data, isLoading, isError, refetch } = useGetBugAgentPerformanceQuery(query);
 
   const precisionWeekly = useMemo(() => data?.precision.weekly ?? [], [data]);
@@ -247,6 +249,19 @@ export const BugAgentPerformance = ({ query }: AnalyticsTabFilters) => {
           <LineChart data={reliabilityTrend} options={reliabilityOptions} />
         </ScrollableChart>
       </ChartCard>
+
+      {/* The rates above say whether Bug Hunter is any good; the counts below
+          say what it actually turned up, day by day. Separate cards rather
+          than more lines on the trends: volumes and rates share no axis. */}
+      <div className="pt-2">
+        <h3 className="text-sm font-semibold text-typography-900">What it turns up, day by day</h3>
+        <p className="text-xs text-typography-600">
+          Volume beside its acceptance share — how many bugs get filed, from where, how hard they
+          were to spot, who raises them, and what the models cost. Day-bucketed and UTC, from the
+          same page range mapped to a day count.
+        </p>
+      </div>
+      <BugHunterOperationsCards {...filters} />
     </div>
   );
 };
