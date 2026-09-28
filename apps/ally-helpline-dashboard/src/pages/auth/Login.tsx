@@ -99,14 +99,13 @@ export const Login: FunctionComponent = () => {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
       navigate(returnTo ?? "/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, navigate, user]);
+  }, [isAuthenticated, navigate, user, returnTo]);
 
   // A session-expiry logout (see `handleLogout` in `api/baseAPI.ts`) is a
   // hard redirect here with `sessionExpired=1` on the URL — surface why the
@@ -116,8 +115,7 @@ export const Login: FunctionComponent = () => {
     if (searchParams.get("sessionExpired") === "1") {
       toast.info(t("auth.login.sessionExpired"));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams, t]);
 
   useEffect(() => {
     if (generateOTPError) {
@@ -129,7 +127,7 @@ export const Login: FunctionComponent = () => {
       setLoginSection(LoginSection.OTP);
       setCountdown(RESEND_CODE_COUNTDOWN);
     }
-  }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
+  }, [isGenerateOTPSuccess, generateOTPError, generateOTPData, t]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -162,7 +160,7 @@ export const Login: FunctionComponent = () => {
         setIsOpenTermsAndAgreement(true);
       }
     })();
-  }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
+  }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData, navigate, t]);
 
   const updateLocalStorageAndNavigate = () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessTokenRef.current);
