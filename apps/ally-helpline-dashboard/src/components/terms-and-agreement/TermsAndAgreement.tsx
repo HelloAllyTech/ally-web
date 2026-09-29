@@ -62,7 +62,10 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
             .
           </div>
           <div className="pt-2 flex text-typography-700 font-primary justify-between items-center">
-            <div className="flex items-center gap-2 p-2">
+            <label
+              htmlFor="agreement_checkbox"
+              className="flex items-center gap-2 p-2 cursor-pointer"
+            >
               <input
                 type="checkbox"
                 id="agreement_checkbox"
@@ -70,7 +73,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
                 onChange={() => setAgreeCheck(prev => !prev)}
               />
               <span className="text-[13px] text-typography-900">{t("terms.agreeLabel")}</span>
-            </div>
+            </label>
             <Button
               className="w-[100px] h-[40px] font-semibold text-base font-tertiary"
               onClick={handleAgreeButtonClick}
