@@ -18,6 +18,7 @@ vi.mock("@assets", async importOriginal => {
 vi.mock("@api", () => ({
   useGetCharactersQuery: vi.fn(),
   useCreateCharacterMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useGetAvailableLanguagesQuery: vi.fn(() => ({ data: [] })),
 }));
 
 vi.mock("@hooks", async () => {
