@@ -118,7 +118,7 @@ export const baseQueryWithReauth: BaseQueryFn<
       // If there is no access token or refresh token, return the error
       if (!accessToken || !refreshToken) {
         handleLogout();
-        return result;
+        return new Promise(() => {});
       }
 
       try {
@@ -130,7 +130,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 
         if (!refreshResult.data) {
           handleLogout();
-          throw new Error("No refresh data received");
+          return new Promise(() => {});
         }
 
         const tokens = refreshResult.data as RefreshResponse;
@@ -149,7 +149,7 @@ export const baseQueryWithReauth: BaseQueryFn<
         // Handle refresh token failure (e.g., both tokens expired)
         handleLogout();
         logger.info(`Token refresh failed:, ${error}`);
-        return result;
+        return new Promise(() => {});
       }
     }
 
