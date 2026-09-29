@@ -97,9 +97,14 @@ export const Login: FunctionComponent = () => {
     }
   }, []);
 
+  // Mount-only on purpose: `checkAuth` (from useUser) is a new closure every
+  // render and, with no token, dispatches logout actions that re-render this
+  // page. Listing it as a dependency created an infinite synchronous render
+  // loop that blanked the whole app in production (2026-09-28).
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user) {
