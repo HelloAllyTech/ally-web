@@ -607,6 +607,73 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             </div>
           )}
 
+          {/* What the last failed session wrote for whoever retries. Its own
+              box, after the confidence/history evidence and before the actions:
+              the reader's next question after "how sure should I be" is
+              "what happened last time", and the answer decides whether
+              "Ask me to try again" is worth pressing. */}
+          {finding.postmortem && (
+            <div className="border border-amber-200 bg-amber-50 rounded p-3 flex flex-col gap-1.5">
+              <div className="flex items-center gap-1">
+                <p className="text-xs font-medium text-amber-800">
+                  {en.bugHunter.drawerPostmortemTitle}
+                </p>
+                <Tooltip label={en.bugHunter.drawerPostmortemTooltip} align="top">
+                  <button type="button" className="cursor-pointer inline-flex items-center">
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </div>
+              {finding.postmortem.recordedAt && (
+                <p className="text-[11px] text-typography-500">
+                  {en.bugHunter.drawerPostmortemRecorded.replace(
+                    "{date}",
+                    formatDateTime(finding.postmortem.recordedAt),
+                  )}
+                </p>
+              )}
+              {(finding.postmortem.attempts != null || finding.postmortem.failingCheck) && (
+                <p className="text-xs text-typography-700">
+                  {en.bugHunter.drawerPostmortemAttempts
+                    .replace("{count}", String(finding.postmortem.attempts ?? "?"))
+                    .replace("{check}", finding.postmortem.failingCheck ?? "")}
+                </p>
+              )}
+              {finding.postmortem.lastFailure && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerPostmortemLastFailure}
+                  value={finding.postmortem.lastFailure}
+                  mono
+                />
+              )}
+              {finding.postmortem.rootCauseHypothesis && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerPostmortemRootCause}
+                  value={finding.postmortem.rootCauseHypothesis}
+                />
+              )}
+              {finding.postmortem.whyItFailed && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerPostmortemWhyFailed}
+                  value={finding.postmortem.whyItFailed}
+                />
+              )}
+              {finding.postmortem.tryNext && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerPostmortemTryNext}
+                  value={finding.postmortem.tryNext}
+                  emphasis
+                />
+              )}
+              {finding.postmortem.repoGotcha && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerPostmortemGotcha}
+                  value={finding.postmortem.repoGotcha}
+                />
+              )}
+            </div>
+          )}
+
           {finding.prUrl && (
             <a
               href={finding.prUrl}
@@ -1059,3 +1126,27 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
     </SidePanel>
   );
 };
+
+/** One labelled line of the post-mortem box. `emphasis` marks the line written for the retry. */
+const PostmortemLine = ({
+  label,
+  value,
+  mono,
+  emphasis,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  emphasis?: boolean;
+}) => (
+  <div>
+    <p className="text-[11px] text-typography-500">{label}</p>
+    <p
+      className={`text-xs whitespace-pre-wrap ${mono ? "font-mono" : ""} ${
+        emphasis ? "text-typography-900 font-medium" : "text-typography-700"
+      }`}
+    >
+      {value}
+    </p>
+  </div>
+);

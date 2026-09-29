@@ -2818,6 +2818,21 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the post-mortem a failed fix session leaves behind ─────────────────
+    // Read by two audiences: the admin deciding whether to press "Ask me to
+    // try again", and (through the dossier) the session that retries. The
+    // labels name what each line is FOR, not the field it came from.
+    drawerPostmortemTitle: "Why my last fix session failed",
+    drawerPostmortemTooltip:
+      "I write this when I give up on a fix: what kept failing, what I think is really wrong, and what a retry should do differently. The next session reads it before it starts, so a retry doesn't repeat this one.",
+    drawerPostmortemRecorded: "From my session of {date}",
+    drawerPostmortemAttempts: "{count} attempt(s) · {check}",
+    drawerPostmortemLastFailure: "Last failure",
+    drawerPostmortemRootCause: "What I think is really wrong",
+    drawerPostmortemWhyFailed: "Why my fixes didn't hold",
+    drawerPostmortemTryNext: "What a retry should do differently",
+    drawerPostmortemGotcha: "A trap in this repo I hit (now in my notebook)",
+
     // ── confidence and regressions ─────────────────────────────────────────
     drawerConfidenceLabel: "How sure my checkers were",
     drawerConfidenceTooltip:

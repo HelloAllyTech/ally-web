@@ -377,6 +377,38 @@ describe("BugFindingDrawer — release to production", () => {
     expect(screen.getByText("Retry release")).toBeInTheDocument();
   });
 
+  it("shows what the last failed fix session wrote for the retry, leading with what to try next", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.FAILED,
+        postmortem: {
+          attempts: 2,
+          failingCheck: "full suite",
+          lastFailure: "queue.spec.ts: expected 3 jobs, received 2",
+          rootCauseHypothesis: "the reconnect hook fires before the subscriber is re-registered",
+          whyItFailed: "both fixes re-registered on connect, not on ready",
+          tryNext: "register the listener inside the ready callback",
+          repoGotcha: "scheduler specs need a live Redis on the runner",
+          recordedAt: "2026-09-26T02:10:00.000Z",
+          runId: "run-9",
+        },
+      }),
+    );
+    expect(screen.getByText("Why my last fix session failed")).toBeInTheDocument();
+    expect(screen.getByText("2 attempt(s) · full suite")).toBeInTheDocument();
+    expect(screen.getByText("queue.spec.ts: expected 3 jobs, received 2")).toBeInTheDocument();
+    expect(screen.getByText("What a retry should do differently")).toBeInTheDocument();
+    expect(screen.getByText("register the listener inside the ready callback")).toBeInTheDocument();
+    expect(screen.getByText(/A trap in this repo I hit/)).toBeInTheDocument();
+    // A failed bug still offers the retry, now with the reason beside it.
+    expect(screen.getByText("Ask me to try again")).toBeInTheDocument();
+  });
+
+  it("shows no post-mortem box for a bug no session has given up on", () => {
+    renderDrawer(finding({ status: BugFindingStatus.FAILED, postmortem: null }));
+    expect(screen.queryByText("Why my last fix session failed")).not.toBeInTheDocument();
+  });
+
   it("shows the shipped version once released", () => {
     renderDrawer(
       finding({

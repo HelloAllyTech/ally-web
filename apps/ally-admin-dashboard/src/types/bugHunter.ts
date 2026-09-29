@@ -258,6 +258,19 @@ export interface BugHuntEvent {
   createdAt: string;
 }
 
+/** Mirrors ally-be's FixPostmortemDto plus the two fields setStatus stamps on it. */
+export interface BugFixPostmortem {
+  attempts?: number;
+  failingCheck?: string;
+  lastFailure?: string;
+  rootCauseHypothesis?: string;
+  whyItFailed?: string;
+  tryNext?: string;
+  repoGotcha?: string;
+  recordedAt?: string;
+  runId?: string | null;
+}
+
 export interface BugFinding {
   id: string;
   runId: string | null;
@@ -309,6 +322,12 @@ export interface BugFinding {
   regressed: boolean;
   /** How many sweeps have re-found this bug since it was declined. */
   rediscoveredCount: number;
+  /**
+   * What the last failed fix session left behind, or null. Written by the
+   * fix protocol with `status: failed`; the next session reads it in its
+   * dossier and an admin reads it here before deciding whether to retry.
+   */
+  postmortem: BugFixPostmortem | null;
   /** GitHub Actions run doing the fixing. Null until the backend correlates the dispatch to a run. */
   sessionRunUrl: string | null;
   /** GitHub Actions run id for the fix session, once resolved. What "Stop fix session" cancels. */
