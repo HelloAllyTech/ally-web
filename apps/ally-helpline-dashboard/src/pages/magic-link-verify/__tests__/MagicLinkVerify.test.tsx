@@ -25,6 +25,7 @@ const {
   mockCheckAuth,
   mockToastError,
   mockToastSuccess,
+  mockUseVerifyMagicLinkMutation,
 } = vi.hoisted(() => ({
   mockVerifyMagicLink: vi.fn(),
   mockPutTermsAndAgreement: vi.fn(),
@@ -32,18 +33,11 @@ const {
   mockCheckAuth: vi.fn(),
   mockToastError: vi.fn(),
   mockToastSuccess: vi.fn(),
+  mockUseVerifyMagicLinkMutation: vi.fn(),
 }));
 
 vi.mock("@api", () => ({
-  useVerifyMagicLinkMutation: () => [
-    mockVerifyMagicLink,
-    {
-      isLoading: false,
-      isSuccess: false,
-      data: null,
-      error: null,
-    },
-  ],
+  useVerifyMagicLinkMutation: mockUseVerifyMagicLinkMutation,
   usePutTermsAndAgreementMutation: () => [
     mockPutTermsAndAgreement,
     {
@@ -138,6 +132,15 @@ describe("MagicLinkVerify Component", () => {
     localStorageMock.getItem.mockReturnValue(null);
     localStorageMock.setItem.mockImplementation(() => {});
     localStorageMock.removeItem.mockImplementation(() => {});
+    mockUseVerifyMagicLinkMutation.mockReturnValue([
+      mockVerifyMagicLink,
+      {
+        isLoading: false,
+        isSuccess: false,
+        data: null,
+        error: null,
+      },
+    ]);
   });
 
   afterEach(() => {
@@ -270,6 +273,30 @@ describe("MagicLinkVerify Component", () => {
           renderWithRouter(["/auth/verify?token=test-token"]);
         }
       }).not.toThrow();
+    });
+  });
+
+  /**
+   * TEST GROUP: Accessibility
+   */
+  describe("Accessibility", () => {
+    it("loading spinner should have accessibility attributes", () => {
+      mockUseVerifyMagicLinkMutation.mockReturnValue([
+        mockVerifyMagicLink,
+        {
+          isLoading: true,
+          isSuccess: false,
+          data: null,
+          error: null,
+        },
+      ]);
+
+      renderWithRouter(["/auth/verify?token=test-token"]);
+
+      const spinner = screen.getByRole("status");
+
+      expect(spinner).toBeInTheDocument();
+      expect(spinner).toHaveAttribute("aria-label", "Verifying your magic link...");
     });
   });
 });

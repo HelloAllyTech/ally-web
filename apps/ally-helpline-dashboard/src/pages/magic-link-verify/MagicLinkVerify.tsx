@@ -93,7 +93,11 @@ export const MagicLinkVerify: React.FC = () => {
           )}
           {!error && !isSuccess && isLoading && (
             <>
-              <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <div
+                className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"
+                role="status"
+                aria-label="Verifying your magic link..."
+              />
               <h2 className="text-2xl font-secondary text-typography-900">
                 Verifying your magic link...
               </h2>
