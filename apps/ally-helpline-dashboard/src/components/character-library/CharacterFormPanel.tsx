@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner";
 
 import { Button, TextArea, TextInput } from "@ally-ui-mono/ui-shared";
-import { useCreateCharacterMutation } from "@api";
+import { useCreateCharacterMutation, useGetAvailableLanguagesQuery } from "@api";
 import { ArrowLeft, CloseIcon } from "@assets";
 import {
   characterLibraryStrings as strings,
@@ -27,10 +27,12 @@ const emptyCharacter: CharacterData = {
   genderIdentity: "",
   sexualOrientation: "",
   characterProfileText: "",
-  languageCharacteristics: "",
-  linguisticStyleSamples: [],
+  languageCharacteristics: {},
+  linguisticStyleSamples: {},
   knowledgeSources: [],
 };
+
+type PerLanguageField = "languageCharacteristics" | "linguisticStyleSamples";
 
 /** The seven fields the backend rejects a create without. */
 const REQUIRED_FIELDS = [
@@ -155,6 +157,45 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
 
   const baseline = useMemo(() => initialCharacter || emptyCharacter, [initialCharacter]);
+
+  // Style note and dialect samples are per language (keyed by languages.id),
+  // so they sit behind one tab per language, the way admin's
+  // CharacterSidePanel lays them out.
+  const { data: catalogLanguages = [] } = useGetAvailableLanguagesQuery(
+    { active: true, hasVoices: true },
+    { skip: !isOpen },
+  );
+  const languageTabs = useMemo(() => {
+    const stored = new Set(
+      [
+        ...Object.keys(formData.languageCharacteristics ?? {}),
+        ...Object.keys(formData.linguisticStyleSamples ?? {}),
+      ].filter(Boolean),
+    );
+    const fromCatalog = catalogLanguages
+      .filter(language => language.language_id != null)
+      .map(language => ({ id: String(language.language_id), label: language.label }));
+    // A read-only view only has something to show for languages the
+    // character actually holds; the create form offers every language.
+    const offered = readOnly ? fromCatalog.filter(tab => stored.has(tab.id)) : fromCatalog;
+    // A language the character holds data for but the catalog no longer
+    // offers still gets a tab, so its lines stay visible rather than vanish.
+    const known = new Set(fromCatalog.map(tab => tab.id));
+    const retired = [...stored]
+      .filter(id => !known.has(id))
+      .map(id => ({ id, label: strings.unnamedLanguage(id) }));
+    return [...offered, ...retired];
+  }, [
+    catalogLanguages,
+    formData.languageCharacteristics,
+    formData.linguisticStyleSamples,
+    readOnly,
+  ]);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
+  const activeLanguageId =
+    selectedLanguageId && languageTabs.some(tab => tab.id === selectedLanguageId)
+      ? selectedLanguageId
+      : (languageTabs[0]?.id ?? null);
   const fieldRefs = useRef<Partial<Record<RequiredField, HTMLElement | null>>>({});
   // Focus goes back where it came from on close, rather than to the top of
   // the document.
@@ -164,6 +205,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
     if (!isOpen) return undefined;
     setFormData(baseline);
     setMissingFields(new Set());
+    setSelectedLanguageId(null);
     triggerRef.current = document.activeElement;
     // Land focus inside the panel on the first field, so keyboard and screen
     // reader users start in the dialog instead of behind it.
@@ -180,6 +222,18 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
       return next;
     });
   }, []);
+
+  /** Writes one language's value into a per-language map field. */
+  const setForActiveLanguage = useCallback(
+    (field: PerLanguageField, value: string | string[]) => {
+      if (!activeLanguageId) return;
+      setFormData(prev => ({
+        ...prev,
+        [field]: { ...(prev[field] ?? {}), [activeLanguageId]: value },
+      }));
+    },
+    [activeLanguageId],
+  );
 
   // Always false in readOnly: nothing on the form can change, so there is
   // never anything to discard, and closing should never prompt for it.
@@ -262,13 +316,23 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
         genderIdentity: formData.genderIdentity,
         sexualOrientation: formData.sexualOrientation,
         characterProfileText: formData.characterProfileText,
-        languageCharacteristics: formData.languageCharacteristics,
-        // Drop rows the admin added but never filled in, rather than sending
-        // the backend a title-less knowledge source (400) or a blank dialect
-        // sample it would just have to ignore.
-        linguisticStyleSamples: (formData.linguisticStyleSamples || []).filter(
-          sample => sample.trim() !== "",
+        // Per language: drop blank style notes and sample rows the admin
+        // added but never filled, and drop a language left with nothing.
+        languageCharacteristics: Object.fromEntries(
+          Object.entries(formData.languageCharacteristics ?? {}).filter(
+            ([, text]) => text.trim() !== "",
+          ),
         ),
+        linguisticStyleSamples: Object.fromEntries(
+          Object.entries(formData.linguisticStyleSamples ?? {})
+            .map(([languageId, samples]): [string, string[]] => [
+              languageId,
+              samples.filter(sample => sample.trim() !== ""),
+            ])
+            .filter(([, samples]) => samples.length > 0),
+        ),
+        // Drop knowledge sources with no title rather than sending the
+        // backend one it rejects (400).
         knowledgeSources: (formData.knowledgeSources || []).filter(
           source => source.title.trim() !== "",
         ),
@@ -451,27 +515,59 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
             />
           </Field>
 
-          <Field label={strings.languageStyle}>
-            <TextArea
-              id="character-language-characteristics"
-              labelText={strings.languageStyle}
-              hideLabel
-              value={formData.languageCharacteristics || ""}
-              onChange={e => handleFieldChange("languageCharacteristics", e.target.value)}
-              maxLength={1000}
-              placeholder={strings.enterLanguageStyle}
-              readOnly={readOnly}
-              rows={2}
-            />
-          </Field>
+          {activeLanguageId && (
+            <>
+              {languageTabs.length > 1 && (
+                <div
+                  role="tablist"
+                  aria-label={strings.languageTabs}
+                  className="flex flex-wrap gap-2 mb-4"
+                >
+                  {languageTabs.map(tab => {
+                    const isActive = tab.id === activeLanguageId;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setSelectedLanguageId(tab.id)}
+                        className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                          isActive
+                            ? "border-primary-500 text-primary-700 bg-primary-50"
+                            : "border-border-light text-typography-600 hover:text-typography-800"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
-          <Field label={strings.dialectSamples}>
-            <DialectSamplesField
-              samples={formData.linguisticStyleSamples || []}
-              onChange={samples => handleFieldChange("linguisticStyleSamples", samples)}
-              readOnly={readOnly}
-            />
-          </Field>
+              <Field label={strings.languageStyle}>
+                <TextArea
+                  id="character-language-characteristics"
+                  labelText={strings.languageStyle}
+                  hideLabel
+                  value={formData.languageCharacteristics?.[activeLanguageId] ?? ""}
+                  onChange={e => setForActiveLanguage("languageCharacteristics", e.target.value)}
+                  maxLength={1000}
+                  placeholder={strings.enterLanguageStyle}
+                  readOnly={readOnly}
+                  rows={2}
+                />
+              </Field>
+
+              <Field label={strings.dialectSamples}>
+                <DialectSamplesField
+                  samples={formData.linguisticStyleSamples?.[activeLanguageId] ?? []}
+                  onChange={samples => setForActiveLanguage("linguisticStyleSamples", samples)}
+                  readOnly={readOnly}
+                />
+              </Field>
+            </>
+          )}
 
           <Field label={strings.knowledgeSources}>
             <CharacterKnowledgeSourcesField

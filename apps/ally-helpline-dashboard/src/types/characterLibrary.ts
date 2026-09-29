@@ -29,9 +29,14 @@ export interface CharacterData {
   coverImageUrl?: string;
   coverVideoUrl?: string;
   characterProfileText?: string;
-  voiceId?: string;
-  languageCharacteristics?: string;
-  linguisticStyleSamples?: string[];
+  // Per language, keyed by languages.id — one voice, one style note and one
+  // set of sample lines for each language the character speaks (ally-be
+  // 91f95b8a). These were a single string/array before; the form still
+  // treating them that way crashed on every interview draft and every
+  // migrated row.
+  voices?: Record<string, string>;
+  languageCharacteristics?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   knowledgeSources?: CharacterKnowledgeSource[];
   createdAt?: string;
   updatedAt?: string;
