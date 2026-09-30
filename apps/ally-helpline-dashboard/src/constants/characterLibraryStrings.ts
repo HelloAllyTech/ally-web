@@ -105,5 +105,9 @@ export const characterInterviewStrings = {
   exitConfirmStay: "Stay",
   draftReadyToast: "Character draft ready — review it before saving",
   startOver: "Start over",
+  startOverConfirmTitle: "Start a new interview?",
+  startOverConfirmDescription:
+    "This conversation will be discarded and the agent will start a new character from scratch.",
+  startOverConfirmKeep: "Keep this one",
   reviewCharacter: "Review character",
 } as const;

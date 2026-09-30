@@ -66,6 +66,7 @@ export const CharacterInterview: React.FC = () => {
   const [draftCharacter, setDraftCharacter] = useState<CharacterData | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const [isStartOverConfirmOpen, setIsStartOverConfirmOpen] = useState(false);
   // Set true only for a brand-new session (never on resume) so the next
   // render's effect can fire the hidden kickoff message with a `sendMessage`
   // closure that actually sees the new `sessionId`.
@@ -86,8 +87,8 @@ export const CharacterInterview: React.FC = () => {
     }
   }, [createSession]);
 
-  const { messages, isStreaming, sendMessage, stop, hydrateMessages } = useCharacterInterviewStream(
-    {
+  const { messages, isStreaming, sendMessage, stop, hydrateMessages, resetMessages } =
+    useCharacterInterviewStream({
       sessionId,
       onCharacterDraft: draft => {
         setDraftCharacter(toDraftCharacter(draft));
@@ -96,8 +97,7 @@ export const CharacterInterview: React.FC = () => {
         toast.success(strings.draftReadyToast);
       },
       onSessionInvalid: startFreshSession,
-    },
-  );
+    });
 
   useEffect(() => {
     if (!canView || bootedRef.current) return;
@@ -191,11 +191,30 @@ export const CharacterInterview: React.FC = () => {
   };
 
   const confirmExit = () => {
-    // Leave the pinned session id in place — the session resumes from where
-    // it left off if the admin reopens the interview agent, same as a
-    // pinned session recovered after any other navigation away from here.
+    // Leaving drops the pinned session, as the dialog says it does. It used
+    // to keep it so the interview could resume, which contradicted "Your
+    // progress in this conversation will be lost" and left an admin whose
+    // session never produced a draft with no way to start a new one: every
+    // visit resumed the same stuck conversation.
     setIsExitConfirmOpen(false);
+    stop();
+    localStorage.removeItem(sessionStorageKey);
     navigate(ROUTES.CHARACTER_LIBRARY);
+  };
+
+  const confirmStartOver = async () => {
+    setIsStartOverConfirmOpen(false);
+    stop();
+    localStorage.removeItem(sessionStorageKey);
+    setDraftCharacter(null);
+    setIsReviewOpen(false);
+    resetMessages();
+    setBootFailed(false);
+    setIsBooting(true);
+    const freshId = await startFreshSession();
+    setIsBooting(false);
+    if (freshId) setNeedsKickoff(true);
+    else setBootFailed(true);
   };
 
   return (
@@ -210,6 +229,16 @@ export const CharacterInterview: React.FC = () => {
           {characterLibraryStrings.characters}
         </button>
         <h1 className="text-2xl text-typography-900 font-secondary">{strings.title}</h1>
+        {(hasProgress || draftCharacter) && (
+          <button
+            type="button"
+            onClick={() => setIsStartOverConfirmOpen(true)}
+            disabled={isBooting}
+            className="ml-auto text-sm text-typography-600 hover:text-typography-800 underline disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {strings.startOver}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto">
@@ -289,6 +318,19 @@ export const CharacterInterview: React.FC = () => {
         secondaryButtonText={strings.exitConfirmStay}
         secondaryButtonVariant={ButtonVariant.SECONDARY}
         onSecondaryButtonClick={() => setIsExitConfirmOpen(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={isStartOverConfirmOpen}
+        onClose={() => setIsStartOverConfirmOpen(false)}
+        title={{ normal: strings.startOverConfirmTitle, italic: "" }}
+        content={strings.startOverConfirmDescription}
+        buttonText={strings.startOver}
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={() => void confirmStartOver()}
+        secondaryButtonText={strings.startOverConfirmKeep}
+        secondaryButtonVariant={ButtonVariant.SECONDARY}
+        onSecondaryButtonClick={() => setIsStartOverConfirmOpen(false)}
       />
     </div>
   );
