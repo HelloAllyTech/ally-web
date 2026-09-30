@@ -26,6 +26,7 @@ const {
   mockUseGetScenarioCasesQuery,
   mockUseGetLearnTracksQuery,
   mockTrack,
+  mockUseProgressSummary,
 } = vi.hoisted(() => ({
   mockUseGetScenariosQuery: vi.fn(),
   mockUseGetScenarioPathwaysQuery: vi.fn(),
@@ -36,6 +37,13 @@ const {
     refetch: vi.fn(),
   })),
   mockTrack: vi.fn(),
+  // An org without levels, so every test outside "Progression strip" sees the streak
+  // widget it was written against.
+  mockUseProgressSummary: vi.fn(() => ({
+    summary: undefined,
+    canViewProgress: false,
+    isGateLoading: false,
+  })),
 }));
 
 vi.mock("@api", () => ({
@@ -116,8 +124,8 @@ const mockUseSimulationCredits = vi.fn();
 const mockUseUser = vi.fn();
 const mockUseAchievementBadgeModal = vi.fn();
 vi.mock("@hooks", () => ({
-  // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
-  useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
+  // Decides which progression strip heads the page — see the hoisted default.
+  useProgressSummary: () => mockUseProgressSummary(),
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,
@@ -201,6 +209,20 @@ vi.mock("@components", () => ({
       </div>
     );
   },
+  XpLevelCard: ({
+    summary,
+    onViewProgress,
+    className,
+  }: {
+    summary: { level: number };
+    onViewProgress?: () => void;
+    className?: string;
+  }) => (
+    <div data-testid="xp-level-card" className={className}>
+      Level {summary.level}
+      <button data-testid="xp-level-card-view" onClick={onViewProgress} />
+    </div>
+  ),
   ContinueLearningCard: ({ tracks }: { tracks: any[] }) => (
     <div data-testid="continue-learning-card">
       {tracks.length > 0 && <span>Continue Learning Card with tracks</span>}
@@ -1199,9 +1221,21 @@ describe("Tab Navigation", () => {
       isLoading: false,
       refetch: vi.fn(),
     });
-    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenariosQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
     mockSearchParams.set("tab", "invalid-tab");
     mockSetSearchParams.mockClear();
 
@@ -1230,8 +1264,16 @@ describe("Tab Navigation", () => {
       isLoading: false,
       refetch: vi.fn(),
     });
-    mockUseGetScenarioCasesQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
-    mockUseGetScenarioPathwaysQuery.mockReturnValue({ data: { data: [] }, isLoading: false, refetch: vi.fn() });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
 
     rerender(
       <TestWrapper>
@@ -1359,6 +1401,91 @@ describe("Tab Navigation", () => {
       expect(mockTrack).toHaveBeenCalledWith("roleplay.start_clicked", {
         entry_point: "streak_widget",
       });
+    });
+  });
+
+  describe("Progression strip", () => {
+    const SUMMARY = {
+      level: 3,
+      totalXp: 425,
+      xpIntoLevel: 165,
+      xpToNextLevel: 91,
+      nextLevelXp: 516,
+      progress: 0.64,
+      isMaxLevel: false,
+    };
+
+    // clearAllMocks keeps a return value set by an earlier test, so each test starts from
+    // the no-levels org explicitly.
+    beforeEach(() => {
+      mockUseProgressSummary.mockReturnValue({
+        summary: undefined,
+        canViewProgress: false,
+        isGateLoading: false,
+      });
+    });
+
+    const renderLearn = () =>
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+    it("leads with the XP level card, not the day streak, where the org has levels", () => {
+      mockUseProgressSummary.mockReturnValue({
+        summary: SUMMARY,
+        canViewProgress: true,
+        isGateLoading: false,
+      });
+      renderLearn();
+
+      expect(screen.getByTestId("xp-level-card")).toHaveTextContent("Level 3");
+      expect(screen.queryByTestId("practice-streak-heatmap")).toBeNull();
+    });
+
+    it("links the level card through to the Progress page", async () => {
+      mockUseProgressSummary.mockReturnValue({
+        summary: SUMMARY,
+        canViewProgress: true,
+        isGateLoading: false,
+      });
+      renderLearn();
+
+      await userEvent.click(screen.getByTestId("xp-level-card-view"));
+
+      expect(mockNavigate).toHaveBeenCalledWith("/progress");
+    });
+
+    it("keeps the streak widget for an org without levels, where it is the only system", () => {
+      renderLearn();
+
+      expect(screen.getByTestId("practice-streak-heatmap")).toBeInTheDocument();
+      expect(screen.queryByTestId("xp-level-card")).toBeNull();
+    });
+
+    it("renders neither while the org toggle resolves, so an XP org never flashes the streak", () => {
+      mockUseProgressSummary.mockReturnValue({
+        summary: undefined,
+        canViewProgress: false,
+        isGateLoading: true,
+      });
+      renderLearn();
+
+      expect(screen.queryByTestId("practice-streak-heatmap")).toBeNull();
+      expect(screen.queryByTestId("xp-level-card")).toBeNull();
+    });
+
+    it("does not fall back to the streak while an XP org's summary is still loading", () => {
+      mockUseProgressSummary.mockReturnValue({
+        summary: undefined,
+        canViewProgress: true,
+        isGateLoading: false,
+      });
+      renderLearn();
+
+      expect(screen.queryByTestId("practice-streak-heatmap")).toBeNull();
+      expect(screen.queryByTestId("xp-level-card")).toBeNull();
     });
   });
 });

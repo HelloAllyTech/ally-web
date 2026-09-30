@@ -75,6 +75,7 @@ import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
 import UserInfo from "./user-info";
+import { XpLevelCard } from "./xp-level-card";
 
 export {
   type AudioTranscriptSeekRequest,
@@ -133,6 +134,7 @@ export {
   TextField,
   TimePicker,
   LevelIndicator,
+  XpLevelCard,
   StreakPill,
   ToggleButtonGroup,
   UserInfo,

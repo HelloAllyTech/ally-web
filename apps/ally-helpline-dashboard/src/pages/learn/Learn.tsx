@@ -16,15 +16,17 @@ import {
   CreditsDisplay,
   PracticeStreakHeatmap,
   ScenarioCard,
+  XpLevelCard,
 } from "@components";
 import {
   ANALYTICS_EVENTS,
   ANALYTICS_PROPS,
   ROLEPLAY_ENTRY_POINT,
   Permissions,
+  ROUTES,
   buildTrackRoute,
 } from "@constants";
-import { useAnalytics, useUser } from "@hooks";
+import { useAnalytics, useProgressSummary, useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
@@ -56,6 +58,11 @@ export const Learn: FC = () => {
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const hasCasePermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS); // TODO: remove this skip when the feature flag is enabled
   const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    summary: progressSummary,
+    canViewProgress,
+    isGateLoading: isProgressGateLoading,
+  } = useProgressSummary();
 
   const {
     data: tracksData,
@@ -255,6 +262,34 @@ export const Learn: FC = () => {
     setSearchParams({ tab: TabId.SIMULATIONS });
   };
 
+  /**
+   * The progression strip above the catalogue.
+   *
+   * XP and levels are what learners are asked to engage with, so where the org has them
+   * this is the same level card the Progress page leads with — not the day streak, which
+   * put a second, unrelated number ("0", "Start a new streak") in the one spot a learner
+   * reads as "how am I doing". The streak card stays only for orgs without levels, where
+   * it is the sole progression system and so cannot be confused with another.
+   *
+   * Nothing renders while the org toggle resolves, so an XP org never flashes the streak
+   * card first. The summary shares the nav's cache entry, so this costs no request.
+   */
+  const renderProgressionStrip = () => {
+    if (isProgressGateLoading) return null;
+    if (!canViewProgress) {
+      return <PracticeStreakHeatmap className="mb-[24px]" onStartPractice={onStartPractice} />;
+    }
+    if (!progressSummary) return null;
+
+    return (
+      <XpLevelCard
+        summary={progressSummary}
+        onViewProgress={() => navigate(ROUTES.PROGRESS)}
+        className="mb-[24px]"
+      />
+    );
+  };
+
   const renderLoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
       {Array.from({ length: 6 }).map((_, index) => (
@@ -407,7 +442,7 @@ export const Learn: FC = () => {
 
   return (
     <div className="flex flex-col w-full bg-white p-[10px] pl-0 sm:p-[24px] font-tertiary">
-      <PracticeStreakHeatmap className="mb-[24px]" onStartPractice={onStartPractice} />
+      {renderProgressionStrip()}
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
     </div>
