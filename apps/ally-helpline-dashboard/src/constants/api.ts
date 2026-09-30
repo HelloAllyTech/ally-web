@@ -245,22 +245,10 @@ export const ApiEndpoints = {
   },
   SETTINGS: {
     GET_SUMMARY_SECTIONS: "/v1/settings/summary-sections",
-    // Same path is used for GET and PUT of the summary sections config.
-    SUMMARY_SECTIONS: "/v1/settings/summary-sections",
-    // GET (visible field ids) + PUT (hidden field ids) share this path.
-    SUMMARY_FIELDS: "/v1/settings/summary-fields",
     GET_CUSTOM_FIELD_TYPES: "/v1/settings/custom-field-types",
-    // GET (enabled type ids) + PUT (enabled type ids) share this path.
-    CUSTOM_FIELD_TYPES: "/v1/settings/custom-field-types",
     GET_CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
-    // GET + PUT boolean toggle share this path.
-    CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
     GET_SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
-    // GET + PUT boolean toggle share this path.
-    SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
     GET_SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
-    // GET + PUT boolean toggle share this path.
-    SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
   },
@@ -272,55 +260,6 @@ export const ApiEndpoints = {
   CHANGELOG: {
     // Public (ungated) changelog reads for the /blog/changelog page.
     GET_PUBLIC: "/v1/changelog/public",
-  },
-  TENANT: {
-    // Own-tenant endpoints — scoped server-side to the caller's JWT tenant.
-    // Never pass a tenantId; the backend resolves it from the token.
-    GET_SELF: "/v1/tenants/self",
-    UPDATE_SELF_SETTINGS: "/v1/tenants/self/settings",
-  },
-  // Access-management endpoints for the Org. Settings screen. These take the
-  // caller's OWN tenant id — the backend enforces own-tenant scoping (a tenant
-  // admin passing another tenant's id gets a 403). Mirrors the super-admin
-  // OrganizationDetail screen but restricted to the caller's tenant.
-  ORG_ACCESS: {
-    // Scenarios (Simulations tab). isAssignedToTenant flag present when
-    // tenantId is passed on the list call.
-    GET_SCENARIOS: "/v1/learn/admin-scenarios",
-    SCENARIO_TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/scenario/tenant/${tenantId}`,
-    // Scenario paths (Path tab).
-    GET_SCENARIO_PATHS: "/v1/learn/admin/scenario-paths",
-    PATH_TENANT_VISIBILITY: (tenantId: string) =>
-      `/v1/learn/admin/scenario-paths/tenant/${tenantId}`,
-    // Cases (Cases tab).
-    GET_CASES: "/v1/learn/admin/cases",
-    CASE_TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/cases/tenant/${tenantId}`,
-    // Badges (Badges tab). Assigned-to-tenant list carries an `enabled` flag.
-    GET_TENANT_BADGES: (tenantId: string) => `/v1/badges/tenants/${tenantId}`,
-    // POST assigns, DELETE unassigns; both take { badgeId, tenantIds }.
-    BADGES_TENANT_VISIBILITY: "/v1/badges/tenants",
-    // Courses / Track 2.0 (Courses tab). Same list+assign shape as scenarios;
-    // tenant ADMIN already holds view:admin:tracks + edit/delete:track-tenant
-    // (granted with the other access-management permissions), so this tab needed
-    // no backend work beyond the cohort layer.
-    GET_TRACKS: "/v1/learn/admin/tracks",
-    TRACK_TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
-  },
-  // Cohorts — a tenant's own MECE grouping of its users, and the per-cohort
-  // narrowing of content already assigned to the tenant.
-  //
-  // tenantId is a PATH segment on every route including the GETs, and must stay
-  // that way: OwnTenantScopeGuard on the backend resolves the target tenant from
-  // route params and the body only — never the query string — so a `?tenantId=`
-  // variant would be rejected outright for a tenant admin.
-  COHORTS: {
-    LIST: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}`,
-    CREATE: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}`,
-    UPDATE: (tenantId: string, cohortId: string) => `/v1/cohorts/tenant/${tenantId}/${cohortId}`,
-    DELETE: (tenantId: string, cohortId: string) => `/v1/cohorts/tenant/${tenantId}/${cohortId}`,
-    MEMBERS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/members`,
-    MOVE_MEMBERS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/members`,
-    RESTRICTIONS: (tenantId: string) => `/v1/cohorts/tenant/${tenantId}/restrictions`,
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",

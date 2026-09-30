@@ -67,9 +67,6 @@ vi.mock("@pages", () => ({
   AchievementsViewAll: () => (
     <div data-testid="achievements-view-all-page">Achievements View All Page</div>
   ),
-  OrganizationSettings: () => (
-    <div data-testid="organization-settings-page">Organization Settings Page</div>
-  ),
   CharacterLibrary: () => <div data-testid="character-library-page">Character Library Page</div>,
   CharacterInterview: () => (
     <div data-testid="character-interview-page">Character Interview Page</div>

@@ -27,7 +27,6 @@ import {
   Review,
   AchievementsViewAll,
   Progress,
-  OrganizationSettings,
   CharacterLibrary,
   CharacterInterview,
 } from "@pages";
@@ -288,8 +287,6 @@ const PrivateRouteLayout: FC = () => {
             />
           }
         />
-        {/* Access is enforced inside the page (ADMIN role + temporary allowlist). */}
-        <Route path={ROUTES.ORGANIZATION_SETTINGS} element={<OrganizationSettings />} />
         {/* Access is enforced inside the page: view:scenario-character permission
             AND the tenant's CHARACTER_LIBRARY_ENABLED org toggle (see
             useCanViewCharacterLibrary) — not a plain permission array. */}

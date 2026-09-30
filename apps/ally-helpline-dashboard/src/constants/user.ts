@@ -7,28 +7,6 @@ export const User = {
 };
 
 /**
- * Emails allowed to see the Organization Settings tab while the feature is in
- * alpha. Temporary allowlist — remove it (and the allowlist check in
- * canViewOrganizationSettings) once it rolls out to all admins.
- */
-export const ORG_SETTINGS_ALLOWED_EMAILS = [
-  "learner@example.com",
-  "sandeep.malhotra+internal@helloally.ai",
-];
-
-/**
- * Organization Settings is an ADMIN-role feature, temporarily gated to the
- * email allowlist above. To roll it out to every admin, drop the allowlist
- * check and keep only the role check.
- */
-export const canViewOrganizationSettings = (
-  user?: { email?: string; role?: UserRole } | null,
-): boolean =>
-  user?.role === UserRole.ADMIN &&
-  !!user?.email &&
-  ORG_SETTINGS_ALLOWED_EMAILS.includes(user.email);
-
-/**
  * The roles admin.helloally.ai actually admits at login. Kept deliberately
  * identical to the `allowedRoles` the admin console sends on every auth call
  * (ally-admin-dashboard `src/api/auth.ts`) — the whole point of the Ally Admin

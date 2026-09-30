@@ -7,7 +7,6 @@ import {
   ProgressLadderIcon,
   ReviewNavIcon,
   Badge,
-  ManageAccount,
   CharacterLibraryIcon,
 } from "@assets";
 
@@ -49,7 +48,6 @@ export const ROUTES = {
   STRESS_BUSTER: "/stress-buster",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
-  ORGANIZATION_SETTINGS: "/organization-settings",
   CHARACTER_LIBRARY: "/character-library",
   CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
   SUMMARY: "/summary/:chatId",
@@ -189,26 +187,13 @@ export const navBarOptions = [
     permissions: [] as Permissions[],
   },
   {
-    id: TabId.ORGANIZATION_SETTINGS,
-    title: "Org. Settings",
-    key: "nav.tabs.organizationSettings",
-    // Temporary "Testing" pill flagging that this tab is still gated/in-testing.
-    tagKey: "nav.tabs.organizationSettingsTag",
-    Icon: ManageAccount,
-    path: ROUTES.ORGANIZATION_SETTINGS,
-    activePages: [],
-    // Not permission-gated: visibility is decided by canViewOrganizationSettings
-    // (ADMIN role + temporary email allowlist), handled in NavSideBar.
-    permissions: [] as Permissions[],
-  },
-  {
     id: TabId.CHARACTER_LIBRARY,
     title: "Character Library",
     key: "nav.tabs.characterLibrary",
     Icon: CharacterLibraryIcon,
     path: ROUTES.CHARACTER_LIBRARY,
     activePages: [ROUTES.CHARACTER_LIBRARY_INTERVIEW],
-    // Not permission-array-gated (same escape hatch as Organization Settings):
+    // Not permission-array-gated (same escape hatch as Progress):
     // visibility needs the view:scenario-character permission AND the tenant's
     // CHARACTER_LIBRARY_ENABLED org toggle, so useCanViewCharacterLibrary
     // handles it in NavSideBar instead.

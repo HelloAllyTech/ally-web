@@ -12,8 +12,7 @@ import { useCanViewCharacterLibrary, useDebounce } from "@hooks";
 import { CharacterData } from "@types";
 
 // Import AccessDenied from its leaf module (not the @pages barrel) so this
-// page can live in the barrel without a self-referential import cycle —
-// mirrors OrganizationSettings.tsx's own note on the same pattern.
+// page can live in the barrel without a self-referential import cycle.
 import { AccessDenied } from "../access-denied/AccessDenied";
 
 const PAGE_LIMIT = 30;

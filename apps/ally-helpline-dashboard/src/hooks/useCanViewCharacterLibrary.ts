@@ -8,8 +8,8 @@ import { hasPermissions } from "@utils";
  * permission (granted to the ADMIN group by ally-be migration
  * 1905000000000-AddTenantScopedCharacterLibrary) AND the tenant's own
  * CHARACTER_LIBRARY_ENABLED org toggle, which only a platform admin can turn
- * on. Neither alone is enough — same reasoning as canViewOrganizationSettings,
- * which is why this isn't a plain `navBarOptions` permissions array.
+ * on. Neither alone is enough, which is why this isn't a plain `navBarOptions`
+ * permissions array.
  *
  * The toggle query is skipped when the base permission is already missing, so
  * most users never make this request at all.
