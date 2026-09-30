@@ -1,10 +1,7 @@
 import { FC, useEffect, useState } from "react";
 
-import { Link } from "react-router-dom";
-
 import { ChangelogEntry, useGetPublicChangelogQuery } from "@api";
 import { Ally } from "@assets";
-import { ROUTES } from "@constants";
 
 import { BlogFooter } from "./BlogFooter";
 import { CHANGELOG_DESCRIPTION, CHANGELOG_TITLE } from "./blogMeta";
@@ -72,12 +69,6 @@ export const Changelog: FC = () => {
           <Ally />
         </div>
         <header className="mb-12">
-          <Link
-            to={ROUTES.BLOG}
-            className="mb-6 inline-block text-sm text-[#928b7c] transition-colors hover:text-[#29261f]"
-          >
-            ← Blog
-          </Link>
           <h1 className="text-4xl sm:text-5xl">Changelog</h1>
           <p className="mt-4 text-[#565045]">{CHANGELOG_DESCRIPTION}</p>
         </header>
