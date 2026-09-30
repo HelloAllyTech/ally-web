@@ -68,7 +68,15 @@ const BUILDER_ENGINE_OPTIONS = [{ value: "opencode", text: "opencode (multi-prov
 const BUG_HUNTER_ENGINE_OPTIONS = [
   { value: "claude-code", text: "Claude Code" },
   { value: "gemini", text: "Gemini CLI (skips escalation)" },
+  // A multi-provider harness with Task-tool subagents, so Verify and
+  // escalation work on any vendor's model — the thing Gemini CLI cannot do.
+  // Builder already runs on it. Its model list is every model the other two
+  // engines offer, because it runs them all.
+  { value: "opencode", text: "OpenCode (any provider, keeps verification and escalation)" },
 ];
+
+/** Everything opencode can run: it is a harness over the same vendors, so both lists apply. */
+const OPENCODE_MODEL_OPTIONS = [...GEMINI_MODEL_OPTIONS, ...CLAUDE_CODE_MODEL_OPTIONS];
 
 /**
  * opencode is a harness rather than a vendor: it runs whichever provider it
@@ -80,8 +88,11 @@ const BUG_HUNTER_ENGINE_OPTIONS = [
  * Bug Hunter keeps its own engines and its own picker above; it is a separate
  * harness with a separate lifecycle.
  */
-const modelOptionsForEngine = (engine: string) =>
-  engine === "claude-code" ? CLAUDE_CODE_MODEL_OPTIONS : GEMINI_MODEL_OPTIONS;
+const modelOptionsForEngine = (engine: string) => {
+  if (engine === "claude-code") return CLAUDE_CODE_MODEL_OPTIONS;
+  if (engine === "opencode") return OPENCODE_MODEL_OPTIONS;
+  return GEMINI_MODEL_OPTIONS;
+};
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
   label,
@@ -226,9 +237,13 @@ const BugHunterModelSection: React.FC = () => {
                   value={draft.escalationModel}
                   onChange={event => set("escalationModel", event.target.value)}
                 >
-                  {CLAUDE_CODE_MODEL_OPTIONS.map(option => (
-                    <SelectItem key={option.value} value={option.value} text={option.text} />
-                  ))}
+                  {/* The escalation subagent runs on whatever the engine can
+                      run: Claude models on Claude Code, any of them on opencode. */}
+                  {(engine === "opencode" ? OPENCODE_MODEL_OPTIONS : CLAUDE_CODE_MODEL_OPTIONS).map(
+                    option => (
+                      <SelectItem key={option.value} value={option.value} text={option.text} />
+                    ),
+                  )}
                 </Select>
               </Field>
             )}

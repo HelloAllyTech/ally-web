@@ -71,6 +71,7 @@ export const BUG_FINDING_DECISION_REASON_HINTS: Record<BugFindingDecisionReason,
 const ENGINE_PROVIDER_LABELS: Record<string, string> = {
   "claude-code": "Claude",
   gemini: "Gemini",
+  opencode: "OpenCode",
 };
 
 /** "Claude · claude-sonnet-5", or null when either half hasn't been reported yet. */

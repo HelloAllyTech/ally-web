@@ -121,6 +121,28 @@ describe("AiModelsTab", () => {
     });
   });
 
+  it("switching Bug Hunter's engine to OpenCode keeps escalation live and offers every vendor's models", async () => {
+    render(<AiModelsTab />);
+
+    fireEvent.change(screen.getAllByLabelText("Engine")[0], { target: { value: "opencode" } });
+
+    // opencode has Task-tool subagents, so the escalation tier stays a real
+    // picker — the opposite of the Gemini case above.
+    const escalation = screen.getByLabelText("Escalation model");
+    expect(escalation).not.toBeDisabled();
+    const defaultModel = screen.getByLabelText("Default model") as HTMLSelectElement;
+    const offered = Array.from(defaultModel.options).map(option => option.value);
+    expect(offered).toEqual(expect.arrayContaining(["gemini-2.5-pro", "claude-sonnet-5"]));
+
+    fireEvent.click(screen.getAllByText("Save")[0]);
+
+    await vi.waitFor(() => {
+      expect(updateBugHunterSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ engine: "opencode", defaultModel: "gemini-2.5-flash" }),
+      );
+    });
+  });
+
   it("saves Builder's section without touching Bug Hunter's, clearing a blank tier to the platform default", async () => {
     render(<AiModelsTab />);
 
