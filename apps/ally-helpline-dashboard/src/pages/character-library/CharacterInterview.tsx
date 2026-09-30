@@ -25,7 +25,7 @@ import { useCanViewCharacterLibrary, useCharacterInterviewStream } from "@hooks"
 import { CharacterData } from "@types";
 
 // Import AccessDenied from its leaf module (not the @pages barrel) — same
-// import-cycle avoidance as CharacterLibrary.tsx / OrganizationSettings.tsx.
+// import-cycle avoidance as CharacterLibrary.tsx.
 import { AccessDenied } from "../access-denied/AccessDenied";
 
 const sessionStorageKey = LOCAL_STORAGE_KEYS.CHARACTER_INTERVIEW_SESSION_ID;

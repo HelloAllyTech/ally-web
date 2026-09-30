@@ -22,7 +22,6 @@
   "apps/ally-helpline-dashboard/src/components/leaderboard-list/LeaderboardList.tsx": 3,
   "apps/ally-helpline-dashboard/src/components/login-dialog/LoginDialog.tsx": 1,
   "apps/ally-helpline-dashboard/src/components/next-challenge-card/NextChallengeCard.tsx": 1,
-  "apps/ally-helpline-dashboard/src/components/organization-settings/OrgScribeSettings.tsx": 1,
   "apps/ally-helpline-dashboard/src/components/otp/OTP.tsx": 1,
   "apps/ally-helpline-dashboard/src/components/otp/__test__/OTP.test.tsx": 1,
   "apps/ally-helpline-dashboard/src/components/overall-score-meter/OverallScoreMeter.tsx": 2,

@@ -24,7 +24,6 @@ import {
   TabId,
   Permissions,
   TooltipLocation,
-  canViewOrganizationSettings,
   hasAllyAdminAccess,
   adminAppUrl,
 } from "@constants";
@@ -177,12 +176,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const { canView: canViewCharacterLibrary } = useCanViewCharacterLibrary();
   const { canView: canViewAnalytics } = useCanViewAnalytics();
   const permittedTabs = navBarOptions.filter(tab => {
-    // Organization Settings is gated by ADMIN role + a temporary email
-    // allowlist, not by a permission (see canViewOrganizationSettings).
-    if (tab.id === TabId.ORGANIZATION_SETTINGS) {
-      return canViewOrganizationSettings(user);
-    }
-
     // Character Library needs the view:scenario-character permission AND the
     // tenant's CHARACTER_LIBRARY_ENABLED org toggle — see useCanViewCharacterLibrary.
     if (tab.id === TabId.CHARACTER_LIBRARY) {
