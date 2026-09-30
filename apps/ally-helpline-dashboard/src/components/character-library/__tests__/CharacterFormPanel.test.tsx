@@ -15,7 +15,29 @@ vi.mock("@assets", async importOriginal => {
 const createCharacterMock = vi.fn();
 vi.mock("@api", () => ({
   useCreateCharacterMutation: () => [createCharacterMock, { isLoading: false }],
+  useGetAvailableLanguagesQuery: () => ({
+    data: [
+      { value: "en-IN", label: "English", language_id: 1 },
+      { value: "hi-IN", label: "Hindi", language_id: 2 },
+    ],
+  }),
 }));
+
+/** The shape the interview agent's save_character_draft hands the form. */
+const interviewDraft = {
+  id: "temp-1",
+  name: "Asha",
+  age: 34,
+  gender: "Female",
+  profession: "Teacher",
+  currentLocation: "Pune",
+  genderIdentity: "Cisgender",
+  sexualOrientation: "Heterosexual",
+  characterProfileText: "Backstory",
+  voices: { "1": "3f1c2a9e-1b2c-4d5e-8f90-123456789abc" },
+  languageCharacteristics: { "1": "Warm, measured", "2": "Hinglish" },
+  linguisticStyleSamples: { "1": ["Hello there"], "2": ["Kaise ho?", "  "] },
+};
 
 import { CharacterFormPanel } from "../CharacterFormPanel";
 
@@ -58,5 +80,46 @@ describe("CharacterFormPanel", () => {
     fireEvent.click(screen.getByText(/keep editing/i));
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByDisplayValue("Asha")).toBeInTheDocument();
+  });
+
+  it("opens an interview draft whose style and samples are per-language maps", () => {
+    // Regression: the form treated these as a flat string/array, so
+    // `samples.map` threw on the draft and the review drawer never appeared.
+    render(
+      <CharacterFormPanel
+        isOpen
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+        initialCharacter={interviewDraft}
+      />,
+    );
+
+    expect(screen.getByDisplayValue("Warm, measured")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Hello there")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Hindi" }));
+    expect(screen.getByDisplayValue("Hinglish")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Kaise ho?")).toBeInTheDocument();
+  });
+
+  it("saves style and samples as per-language maps, dropping blank lines", async () => {
+    createCharacterMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: "c1" }) });
+    const onSave = vi.fn();
+    render(
+      <CharacterFormPanel
+        isOpen
+        onClose={vi.fn()}
+        onSave={onSave}
+        initialCharacter={interviewDraft}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^save$/i }));
+
+    await vi.waitFor(() => expect(onSave).toHaveBeenCalled());
+    const payload = createCharacterMock.mock.calls.at(-1)?.[0];
+    expect(payload.languageCharacteristics).toEqual({ "1": "Warm, measured", "2": "Hinglish" });
+    expect(payload.linguisticStyleSamples).toEqual({ "1": ["Hello there"], "2": ["Kaise ho?"] });
+    expect(payload).not.toHaveProperty("id");
   });
 });

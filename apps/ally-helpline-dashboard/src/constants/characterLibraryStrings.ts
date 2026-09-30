@@ -26,6 +26,8 @@ export const characterLibraryStrings = {
   languageStyle: "Language style",
   enterLanguageStyle: "Describe the character's dialect, register, or code-mixing style",
   dialectSamples: "Dialect samples",
+  languageTabs: "Language",
+  unnamedLanguage: (id: string) => `Language ${id}`,
   dialectSamplePlaceholder: "Enter a sample line in the character's voice",
   addDialectSample: "Add dialect sample",
   dialectSampleLimit: "Maximum of 20 dialect samples — remove one to add another.",
