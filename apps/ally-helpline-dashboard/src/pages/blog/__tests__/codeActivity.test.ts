@@ -57,9 +57,8 @@ describe("addDays", () => {
 });
 
 describe("monthLabel", () => {
-  it("adds the year only on January or when asked", () => {
-    expect(monthLabel("2026-09-01")).not.toMatch(/2026/);
-    expect(monthLabel("2026-09-01", true)).toMatch(/2026/);
+  it("always carries the year, since the strip scrolls across years", () => {
+    expect(monthLabel("2026-09-01")).toMatch(/2026/);
     expect(monthLabel("2027-01-01")).toMatch(/2027/);
   });
 });

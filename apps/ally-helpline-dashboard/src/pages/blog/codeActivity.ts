@@ -74,14 +74,12 @@ export const formatDay = (date: string): string =>
   });
 
 /**
- * The label above a column: the month's name on its first day, with the year
- * on January or when `withYear` (the leftmost cell) is set; nothing otherwise.
+ * The label above a column where a month starts, always with its year — the
+ * strip scrolls back across years, and the leftmost loaded cell (the only
+ * other place a year could go) is usually scrolled out of sight.
  */
-export const monthLabel = (date: string, withYear = false): string => {
-  const d = asUtc(date);
-  const month = d.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
-  return withYear || d.getUTCMonth() === 0 ? `${month} ${d.getUTCFullYear()}` : month;
-};
+export const monthLabel = (date: string): string =>
+  asUtc(date).toLocaleDateString(undefined, { month: "short", year: "numeric", timeZone: "UTC" });
 
 export const isMonday = (date: string): boolean => asUtc(date).getUTCDay() === 1;
 

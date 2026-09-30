@@ -303,7 +303,7 @@ const DayCell: FC<{
       className="flex min-w-0 flex-col gap-1"
     >
       <span aria-hidden="true" className="h-4 whitespace-nowrap text-xs leading-4 text-[#928b7c]">
-        {showMonth ? monthLabel(day.date, isFirst) : ""}
+        {showMonth ? monthLabel(day.date) : ""}
       </span>
       <span
         aria-hidden="true"
