@@ -340,7 +340,8 @@
       "toNextLevel_other": "{{count}} XP to level {{level}}",
       "maxLevel": "You've reached the top level",
       "xpTotal_one": "{{count}} XP earned in total",
-      "xpTotal_other": "{{count}} XP earned in total"
+      "xpTotal_other": "{{count}} XP earned in total",
+      "viewProgress": "See your progress"
     },
     "stats": {
       "lifetimeMinutes": "Practice minutes",

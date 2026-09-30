@@ -28,7 +28,11 @@ vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
 }));
 
-vi.mock("@components", () => ({
+vi.mock("@components", async () => ({
+  // The real card: the hero assertions below are about what it says, and it imports
+  // LevelIndicator relatively, so the stub below does not reach it.
+  XpLevelCard: (await vi.importActual<any>("../../../components/xp-level-card/XpLevelCard"))
+    .default,
   FallbackUI: ({ mainMessage, button }: any) => (
     <div data-testid="fallback-ui">
       <span>{mainMessage}</span>

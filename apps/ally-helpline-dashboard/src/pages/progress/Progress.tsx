@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { useGetCurrentUserQuery, useGetProgressQuery } from "@api";
 import { NoResults } from "@assets";
-import { FallbackUI, LevelIndicator, PracticeStreakHeatmap } from "@components";
+import { FallbackUI, PracticeStreakHeatmap, XpLevelCard } from "@components";
 import { Permissions, ROUTES } from "@constants";
 import { usePracticeStreakSummary, useProgressSummary, useUser } from "@hooks";
 
@@ -89,67 +89,6 @@ export const Progress = () => {
       </h1>
     </div>
   );
-
-  /**
-   * Level, XP earned inside it, and what is left to the next one.
-   *
-   * At the top of the ladder the "N XP to level M" line would have nothing to point at,
-   * so it is replaced rather than left showing a null — a learner who finished the ladder
-   * should not see an empty target where their achievement belongs.
-   */
-  const renderHero = () => {
-    if (!progress) return null;
-
-    return (
-      <section
-        className="mt-4 rounded-xl border border-border-light bg-background-tertiary p-5"
-        data-testid="progress-hero"
-      >
-        <div className="flex items-center gap-4">
-          <LevelIndicator
-            level={progress.level}
-            progress={progress.progress}
-            isMaxLevel={progress.isMaxLevel}
-            ariaLabel={t("progress.a11y.level", {
-              level: progress.level,
-              xp: progress.totalXp,
-            })}
-            className="scale-150"
-          />
-          <div className="ml-2 flex-1">
-            <div className="font-secondary text-lg text-typography-900">
-              {t("progress.hero.level", { level: progress.level })}
-            </div>
-            <div className="mt-1 text-sm text-typography-600" data-testid="progress-next-level">
-              {progress.isMaxLevel
-                ? t("progress.hero.maxLevel")
-                : t("progress.hero.toNextLevel", {
-                    count: progress.xpToNextLevel ?? 0,
-                    level: progress.level + 1,
-                  })}
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="mt-4 h-2 w-full overflow-hidden rounded-full bg-primary-50"
-          role="progressbar"
-          aria-valuenow={Math.round(progress.progress * 100)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={t("progress.a11y.levelBar", { level: progress.level })}
-        >
-          <div
-            className="h-full rounded-full bg-primary-500 transition-[width] duration-500 ease-out"
-            style={{ width: `${Math.round(progress.progress * 100)}%` }}
-          />
-        </div>
-        <div className="mt-2 text-xs tabular-nums text-typography-600">
-          {t("progress.hero.xpTotal", { count: progress.totalXp })}
-        </div>
-      </section>
-    );
-  };
 
   const renderStats = () => {
     if (!progress) return null;
@@ -251,7 +190,7 @@ export const Progress = () => {
 
     return (
       <>
-        {renderHero()}
+        {progress && <XpLevelCard summary={progress} className="mt-4" />}
         {renderStats()}
         <PracticeStreakHeatmap className="mt-6" onStartPractice={handleStartPractice} />
         {renderRankPeek()}
