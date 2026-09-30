@@ -24,3 +24,4 @@ export * from "./changelog";
 export * from "./bugReport";
 export * from "./characterLibrary";
 export * from "./characterInterview";
+export * from "./productUpdates";

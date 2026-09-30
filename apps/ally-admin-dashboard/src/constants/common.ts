@@ -312,6 +312,13 @@ export const ApiEndpoints = {
     UNPUBLISH_BLOG: (id: string) => `/v1/blog/${id}/unpublish`,
     UPLOAD_IMAGE_URL: "/v1/blog/upload-url",
   },
+  PRODUCT_UPDATES: {
+    LIST: "/v1/product-updates",
+    STATUS: "/v1/product-updates/status",
+    RUN: "/v1/product-updates/run",
+    GET: (id: string) => `/v1/product-updates/${id}`,
+    UPDATE: (id: string) => `/v1/product-updates/${id}`,
+  },
   PRODUCT_ROADMAP: {
     OPPORTUNITIES: "/v1/product-roadmap/opportunities",
     /**
@@ -701,6 +708,7 @@ export const ROUTES = {
   // Fully public, no-login gallery of the centralised design-system components.
   DESIGN_SYSTEM: "/designsystem",
   BLOG: "/blog",
+  PRODUCT_UPDATES: "/product-updates",
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
   BUG_HUNTER: "/bug-hunter",
@@ -843,6 +851,8 @@ export const TAG_TYPES = {
   // Course discussion moderation. Also registered in baseApi.ts's `tagTypes`.
   COURSE_DISCUSSION: "courseDiscussion",
   BLOGS: "blogs",
+  // Product updates. Also registered in baseApi.ts's `tagTypes`.
+  PRODUCT_UPDATES: "productUpdates",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
   // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions
   // so a toggle-editor save doesn't force an unrelated re-render elsewhere.

@@ -90,6 +90,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.BLOG,
   },
   {
+    id: SIDEBAR_ITEMS.PRODUCT_UPDATES,
+    label: en.productUpdates.title,
+    path: ROUTES.PRODUCT_UPDATES,
+  },
+  {
     id: SIDEBAR_ITEMS.PRODUCT_ROADMAP,
     label: "Product Roadmap",
     path: ROUTES.PRODUCT_ROADMAP,
@@ -273,6 +278,10 @@ export const deriveNavigationItems = ({
             return permissions!.includes(Permissions.VIEW_I18N_TRANSLATIONS);
           case SIDEBAR_ITEMS.BLOG:
             return permissions!.includes(Permissions.VIEW_BLOGS);
+          // Permission-gated like Blog, on the edit grant: this page corrects and hides
+          // what the automation published. Not in buildSidebarItemFeatureKeyMap.
+          case SIDEBAR_ITEMS.PRODUCT_UPDATES:
+            return permissions!.includes(Permissions.EDIT_BLOG);
           // Permission-gated, deliberately NOT feature-toggle-gated: viewing and
           // voting on the roadmap are meant to reach a wider group than the
           // manage surface, so the tab must stay out of the feature-key map.
