@@ -4,6 +4,7 @@ import { AverageRatingCard } from "../AverageRatingCard";
 import { BugHunterVolumeCard } from "../BugHunterVolumeCard";
 import { ScrollNoteContext } from "../chartKit";
 import { CumulativeUsersCard } from "../CumulativeUsersCard";
+import { FoundationalSkillsCard } from "../FoundationalSkillsCard";
 import { GoalsXpCard } from "../GoalsXpCard";
 import { NewUsersCard } from "../NewUsersCard";
 import { NewVsReturningUsersCard } from "../NewVsReturningUsersCard";
@@ -65,6 +66,10 @@ import { XpPerMinuteCard } from "../XpPerMinuteCard";
  *  - `XpPerMinuteCard` — new (AAQ-165): all XP per roleplay minute, stacked by
  *    XP source. Sits directly under `RoleplayMinutesCard` because it divides by
  *    the same minutes; opens on All time.
+ *  - `FoundationalSkillsCard` — new (AAQ-166): learners' foundational helping
+ *    skills by practice volume, scored against one fixed rubric independent of
+ *    every scenario's competencies. The scenario-specific counterpart is the
+ *    Skill growth sub-tab.
  *
  * Each relocated card lost the page-level filter its old tab offered (a
  * tenant filter for Practice minutes, a language filter for voice latency) —
@@ -82,6 +87,7 @@ export const GoalsTab = () => (
       <XpPerMinuteCard />
       <RoleplayVoiceLatencyCard />
       <RoleplayQualityCard />
+      <FoundationalSkillsCard />
       <SatisfactionMixCard />
       <AverageRatingCard />
       <ActiveUsersXpCard />

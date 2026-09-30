@@ -468,6 +468,9 @@ export const ApiEndpoints = {
     // different grain — a separate top-level name would invite a second
     // definition of an evaluated session.
     SKILL_GROWTH_LEARNERS: "/v1/analytics/skill-growth/learners",
+    // Scenario-independent counterpart to skill-growth: one fixed rubric scored
+    // on fixed amounts of each learner's own speech (Priority tab, AAQ-166).
+    FOUNDATIONAL_SKILLS: "/v1/analytics/foundational-skills",
     QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
     COMPETENCY_MAP: "/v1/analytics/competency-map",
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",
