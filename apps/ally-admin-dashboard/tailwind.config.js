@@ -41,6 +41,25 @@ module.exports = {
         "4xl": ["32px", { lineHeight: "44px" }], // 4X large - hero titles, main headers
       },
       colors: {
+        /*
+         * Mirrors the consumer app's tailwind.config.ts, where the changelog
+         * heatmap uses these. Unused in this console today; defined so a
+         * shared component naming them resolves in both apps.
+         *
+         * Heat levels for the changelog's code-activity heatmap: level 0 is a
+         * day with no changes, then a one-hue ramp around the blog's terracotta
+         * accent, light to dark. A sequential data ramp — each step encodes a
+         * magnitude — so it must not re-theme. Checked with the dataviz ordinal
+         * validator against gray-50 (the blog's page ground): monotone
+         * lightness, visible steps, and the lightest step clears 2:1 against it.
+         */
+        activity: {
+          0: "#EDE9E1",
+          1: "#FC8F6C",
+          2: "#D76F4C",
+          3: "#B34F2C",
+          4: "#8F2D02",
+        },
         // Badge — the shared ui-shared/lib/badge component's three variants.
         // These are the exact literals Badge.tsx hardcoded before W4, lifted
         // into tokens unchanged so this console renders identically; the

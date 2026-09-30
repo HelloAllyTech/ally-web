@@ -260,6 +260,8 @@ export const ApiEndpoints = {
   CHANGELOG: {
     // Public (ungated) changelog reads for the /blog/changelog page.
     GET_PUBLIC: "/v1/changelog/public",
+    // Lines changed per day across the Ally repos — the heatmap on that page.
+    GET_PUBLIC_CODE_ACTIVITY: "/v1/changelog/public/code-activity",
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",

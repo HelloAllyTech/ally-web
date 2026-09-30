@@ -134,6 +134,21 @@ export default {
           alarm: "rgb(var(--color-tone-alarm) / <alpha-value>)",
         },
         /*
+         * Heat levels for the changelog's code-activity heatmap: level 0 is a
+         * day with no changes, then a one-hue ramp around the blog's terracotta
+         * accent, light to dark. A sequential data ramp — each step encodes a
+         * magnitude — so it must not re-theme. Checked with the dataviz ordinal
+         * validator against gray-50 (the blog's page ground): monotone
+         * lightness, visible steps, and the lightest step clears 2:1 against it.
+         */
+        activity: {
+          0: "#EDE9E1",
+          1: "#FC8F6C",
+          2: "#D76F4C",
+          3: "#B34F2C",
+          4: "#8F2D02",
+        },
+        /*
          * Status — a categorical palette in the warm family.
          *
          * Chips across this app encode three different things: a semantic state
