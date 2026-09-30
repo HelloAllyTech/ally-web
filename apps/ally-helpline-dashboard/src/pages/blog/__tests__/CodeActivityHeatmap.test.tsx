@@ -81,8 +81,8 @@ describe("CodeActivityHeatmap", () => {
 
     const busy = screen.getAllByRole("listitem").find(li => li.dataset.date === "2026-09-15")!;
     const quiet = screen.getAllByRole("listitem").find(li => li.dataset.date === "2026-09-14")!;
-    expect(within(busy).getByTestId("code-activity-cell")).toHaveStyle({ backgroundColor: "#B34F2C" });
-    expect(within(quiet).getByTestId("code-activity-cell")).toHaveStyle({ backgroundColor: "#EDE9E1" });
+    expect(within(busy).getByTestId("code-activity-cell")).toHaveClass("bg-activity-3");
+    expect(within(quiet).getByTestId("code-activity-cell")).toHaveClass("bg-activity-0");
   });
 
   it("reads a day out on hover", async () => {

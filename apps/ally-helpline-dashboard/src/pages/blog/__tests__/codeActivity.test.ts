@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  CODE_ACTIVITY_COLOURS,
+  CODE_ACTIVITY_LEVEL_CLASSES,
   activityLevel,
   addDays,
   isMonday,
@@ -32,7 +32,7 @@ describe("activityLevel", () => {
   });
 
   it("has a colour for every level", () => {
-    expect(CODE_ACTIVITY_COLOURS).toHaveLength(activityLevel(Number.MAX_SAFE_INTEGER) + 1);
+    expect(CODE_ACTIVITY_LEVEL_CLASSES).toHaveLength(activityLevel(Number.MAX_SAFE_INTEGER) + 1);
   });
 });
 

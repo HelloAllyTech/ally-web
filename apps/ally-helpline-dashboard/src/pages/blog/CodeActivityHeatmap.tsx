@@ -11,7 +11,7 @@ import {
 import { CodeActivityDay, useLazyGetPublicCodeActivityQuery } from "@api";
 
 import {
-  CODE_ACTIVITY_COLOURS,
+  CODE_ACTIVITY_LEVEL_CLASSES,
   CODE_ACTIVITY_PAGE_DAYS,
   activityLevel,
   addDays,
@@ -43,7 +43,7 @@ const LOAD_OLDER_WITHIN = 0.35;
 const COLUMNS_CLASS = "[grid-auto-columns:max(20px,calc((100%-116px)/30))]";
 
 const NAV_BUTTON_CLASS =
-  "rounded px-1.5 py-0.5 text-[#565045] transition-colors hover:text-[#29261f] disabled:cursor-default disabled:text-[#928b7c]/50";
+  "rounded px-1.5 py-0.5 text-gray-700 transition-colors hover:text-gray-900 disabled:cursor-default disabled:text-gray-500/50";
 
 /**
  * Lines changed per day across Ally's code, as a one-row heatmap at the top of
@@ -177,7 +177,7 @@ export const CodeActivityHeatmap: FC = () => {
           <h2 id="code-activity-title" className="text-xl">
             Lines of code changed
           </h2>
-          <p className="mt-1 text-sm text-[#565045]">
+          <p className="mt-1 text-sm text-gray-700">
             Lines added plus lines removed across all of Ally&rsquo;s code, per day (UTC).
           </p>
         </div>
@@ -185,7 +185,7 @@ export const CodeActivityHeatmap: FC = () => {
       </div>
 
       {state === "unavailable" ? (
-        <p className="text-sm text-[#565045]">Code activity isn&rsquo;t available right now.</p>
+        <p className="text-sm text-gray-700">Code activity isn&rsquo;t available right now.</p>
       ) : state === "initial" ? (
         <Skeleton />
       ) : (
@@ -198,7 +198,7 @@ export const CodeActivityHeatmap: FC = () => {
             onBlur={() => setActiveDate(null)}
             tabIndex={0}
             aria-label="Lines changed per day. Use the arrow keys to move between days."
-            className="overflow-x-auto pb-2 [scrollbar-width:thin] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#29261f]/30"
+            className="overflow-x-auto pb-2 [scrollbar-width:thin] focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30"
           >
             <ol className={`grid grid-flow-col gap-1 ${COLUMNS_CLASS}`}>
               {days.map((day, i) => (
@@ -214,13 +214,13 @@ export const CodeActivityHeatmap: FC = () => {
           </div>
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm">
-            <p aria-live="polite" className="text-[#565045]">
+            <p aria-live="polite" className="text-gray-700">
               {active ? (
                 <>
-                  <span className="text-[#29261f]">{formatDay(active.date)}</span>
+                  <span className="text-gray-900">{formatDay(active.date)}</span>
                   {active.partial && " (today, so far)"} · {formatLines(active.churn)} lines changed
                   {active.churn > 0 && (
-                    <span className="text-[#928b7c]">
+                    <span className="text-gray-500">
                       {" "}
                       (+{formatLines(active.added)} / −{formatLines(active.deleted)})
                     </span>
@@ -228,20 +228,20 @@ export const CodeActivityHeatmap: FC = () => {
                 </>
               ) : (
                 <>
-                  <span className="text-[#29261f]">{formatLines(recentTotal)}</span> lines changed
-                  in the last {CODE_ACTIVITY_PAGE_DAYS} days
+                  <span className="text-gray-900">{formatLines(recentTotal)}</span> lines changed in
+                  the last {CODE_ACTIVITY_PAGE_DAYS} days
                 </>
               )}
             </p>
             <div className="flex items-center gap-2">
-              {state === "older" && <span className="text-[#928b7c]">Loading older days…</span>}
+              {state === "older" && <span className="text-gray-500">Loading older days…</span>}
               {state === "olderError" && (
-                <span className="text-[#565045]">
+                <span className="text-gray-700">
                   Couldn&rsquo;t load older days.{" "}
                   <button
                     type="button"
                     onClick={() => oldestDate && void load(addDays(oldestDate, -1))}
-                    className="underline underline-offset-2 hover:text-[#29261f]"
+                    className="underline underline-offset-2 hover:text-gray-900"
                   >
                     Try again
                   </button>
@@ -267,7 +267,7 @@ export const CodeActivityHeatmap: FC = () => {
           </div>
 
           {incomplete && (
-            <p className="mt-2 text-xs text-[#928b7c]">
+            <p className="mt-2 text-xs text-gray-500">
               Some of our code couldn&rsquo;t be read just now, so these totals may be lower than
               the real figure.
             </p>
@@ -289,9 +289,9 @@ const DayCell: FC<{
   // name would land on top of it a few cells later.
   const showMonth = dayOfMonth === 1 || (isFirst && dayOfMonth <= 24);
   const ring = isActive
-    ? "ring-2 ring-[#29261f] ring-offset-1 ring-offset-[#FAF9F5]"
+    ? "ring-2 ring-gray-900 ring-offset-1 ring-offset-gray-50"
     : day.partial
-      ? "ring-1 ring-[#928b7c] ring-offset-1 ring-offset-[#FAF9F5]"
+      ? "ring-1 ring-gray-500 ring-offset-1 ring-offset-gray-50"
       : "";
 
   return (
@@ -302,16 +302,15 @@ const DayCell: FC<{
       onClick={onActivate}
       className="flex min-w-0 flex-col gap-1"
     >
-      <span aria-hidden="true" className="h-4 whitespace-nowrap text-xs leading-4 text-[#928b7c]">
+      <span aria-hidden="true" className="h-4 whitespace-nowrap text-xs leading-4 text-gray-500">
         {showMonth ? monthLabel(day.date) : ""}
       </span>
       <span
         aria-hidden="true"
         data-testid="code-activity-cell"
-        className={`aspect-square w-full rounded ${ring}`}
-        style={{ backgroundColor: CODE_ACTIVITY_COLOURS[activityLevel(day.churn)] }}
+        className={`aspect-square w-full rounded ${CODE_ACTIVITY_LEVEL_CLASSES[activityLevel(day.churn)]} ${ring}`}
       />
-      <span aria-hidden="true" className="h-3 text-center text-[10px] leading-3 text-[#928b7c]">
+      <span aria-hidden="true" className="h-3 text-center text-[10px] leading-3 text-gray-500">
         {isMonday(day.date) ? dayOfMonth : ""}
       </span>
     </li>
@@ -319,16 +318,15 @@ const DayCell: FC<{
 };
 
 const Legend: FC = () => (
-  <div className="flex items-center gap-1.5 text-xs text-[#928b7c]">
+  <div className="flex items-center gap-1.5 text-xs text-gray-500">
     <span>Less</span>
-    {CODE_ACTIVITY_COLOURS.map((colour, level) => (
+    {CODE_ACTIVITY_LEVEL_CLASSES.map((levelClass, level) => (
       <span
-        key={colour}
+        key={levelClass}
         title={levelRangeLabel(level)}
         aria-label={levelRangeLabel(level)}
         role="img"
-        className="h-3 w-3 rounded-sm"
-        style={{ backgroundColor: colour }}
+        className={`h-3 w-3 rounded-sm ${levelClass}`}
       />
     ))}
     <span>More</span>
@@ -342,8 +340,7 @@ const Skeleton: FC = () => (
         <div key={i} className="flex flex-col gap-1">
           <span className="h-4" />
           <span
-            className="aspect-square w-full animate-pulse rounded"
-            style={{ backgroundColor: CODE_ACTIVITY_COLOURS[0] }}
+            className={`aspect-square w-full animate-pulse rounded ${CODE_ACTIVITY_LEVEL_CLASSES[0]}`}
           />
           <span className="h-3" />
         </div>

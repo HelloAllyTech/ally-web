@@ -19,17 +19,16 @@ export const CODE_ACTIVITY_PAGE_DAYS = 30;
 export const CODE_ACTIVITY_LEVEL_FLOORS = [1, 3_000, 10_000, 25_000] as const;
 
 /**
- * Empty cell, then a one-hue ramp around the blog's terracotta accent
- * (#D97757), light to dark. Checked with the dataviz ordinal validator against
- * the page surface #FAF9F5: monotone lightness, visible gaps between steps,
- * and the lightest step clears 2:1 against the page.
+ * Background class per heat level, 0 (no changes) to 4. The colours are the
+ * `activity` tokens in tailwind.config.ts, where the ramp and its validation
+ * are documented. Full class names, so Tailwind's scanner finds them.
  */
-export const CODE_ACTIVITY_COLOURS = [
-  "#EDE9E1",
-  "#FC8F6C",
-  "#D76F4C",
-  "#B34F2C",
-  "#8F2D02",
+export const CODE_ACTIVITY_LEVEL_CLASSES = [
+  "bg-activity-0",
+  "bg-activity-1",
+  "bg-activity-2",
+  "bg-activity-3",
+  "bg-activity-4",
 ] as const;
 
 export const activityLevel = (churn: number): number => {
