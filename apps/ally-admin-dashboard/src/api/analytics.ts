@@ -34,6 +34,7 @@ import {
   RoadmapDeliveryResponse,
   RoleplayCostResponse,
   RoleplaySessionCostResponse,
+  XpPerMinuteResponse,
   RoleplayVolumeResponse,
   ScenarioUsageResponse,
   ScribeAdoptionResponse,
@@ -302,6 +303,15 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getRoleplaySessionCost: builder.query<RoleplaySessionCostResponse, AnalyticsWindowQuery>({
       query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.ROLEPLAY_SESSION_COST,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // All XP per roleplay minute, split by XP source (Highlights → Priority):
+    // the non-roleplay share is the learning-portfolio mix.
+    getXpPerMinute: builder.query<XpPerMinuteResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.XP_PER_MINUTE,
         method: HttpMethod.GET,
         params: windowParams(q),
       }),
@@ -834,6 +844,7 @@ export const {
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,
   useGetRoleplaySessionCostQuery,
+  useGetXpPerMinuteQuery,
   useGetCodingAgentCostQuery,
   useGetFixSessionEngineCostQuery,
   useGetBugAgentPerformanceQuery,

@@ -764,6 +764,46 @@ export interface RoleplaySessionCostResponse {
   computedAt: string;
 }
 
+// XP earned per minute of roleplay — mirrors XpPerMinuteResponseDto from
+// GET /api/v1/analytics/xp-per-minute. ALL XP (the xp_events ledger) over
+// roleplay minutes only (user_daily_scores, same as Roleplay Minutes), split by
+// the XP source that paid it over the one shared denominator.
+export type XpSourceGroup = "roleplay" | "tracks" | "community" | "consistency" | "other";
+
+export type XpSourceGroups = Record<XpSourceGroup, number | null>;
+
+export interface XpSourceGroupDef {
+  key: XpSourceGroup;
+  label: string;
+  description: string;
+}
+
+export interface XpPerMinuteTotals {
+  xp: number;
+  minutes: number;
+  /** null when no roleplay minutes were recorded — a ratio with no denominator. */
+  xpPerMinute: number | null;
+  /** Roleplay-sourced XP as a % of all XP; null when no XP was awarded. */
+  roleplaySharePct: number | null;
+  xpBySource: XpSourceGroups;
+  /** Sums to `xpPerMinute`; all null over zero minutes. */
+  perMinuteBySource: XpSourceGroups;
+}
+
+export interface XpPerMinutePoint extends XpPerMinuteTotals {
+  bucket: string;
+}
+
+export interface XpPerMinuteResponse {
+  bucket: AnalyticsBucket;
+  window: AnalyticsWindow;
+  sources: XpSourceGroupDef[];
+  points: XpPerMinutePoint[];
+  overall: XpPerMinuteTotals;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Bug Hunter + Builder AI cost — mirrors CodingAgentCostResponseDto from
 // GET /api/v1/analytics/coding-agent-cost. NOT `llm_usage.service` (both
 // features write `service: 'llm'`) — the discriminator is `task`. Every

@@ -16,6 +16,7 @@ import { SatisfactionMixCard } from "../SatisfactionMixCard";
 import { ShipVolumeCard } from "../ShipVolumeCard";
 import { XpByTenantCard } from "../XpByTenantCard";
 import { XpLevelReachedCard } from "../XpLevelReachedCard";
+import { XpPerMinuteCard } from "../XpPerMinuteCard";
 
 /**
  * Highlights → Goals: leadership's "are we on pace" charts in one place,
@@ -61,6 +62,9 @@ import { XpLevelReachedCard } from "../XpLevelReachedCard";
  *  - `RoleplaySessionCostCard` — new (AAQ-157): AI cost per minute of roleplay,
  *    costed per SESSION and stacked by component. Not the Unit economics
  *    cost-per-10-minutes chart, which buckets each call by when it ran.
+ *  - `XpPerMinuteCard` — new (AAQ-165): all XP per roleplay minute, stacked by
+ *    XP source. Sits directly under `RoleplayMinutesCard` because it divides by
+ *    the same minutes; opens on All time.
  *
  * Each relocated card lost the page-level filter its old tab offered (a
  * tenant filter for Practice minutes, a language filter for voice latency) —
@@ -75,6 +79,7 @@ export const GoalsTab = () => (
     <div className="flex flex-col gap-4">
       <GoalsXpCard />
       <RoleplayMinutesCard />
+      <XpPerMinuteCard />
       <RoleplayVoiceLatencyCard />
       <RoleplayQualityCard />
       <SatisfactionMixCard />
