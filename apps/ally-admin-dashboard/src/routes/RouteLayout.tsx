@@ -30,6 +30,7 @@ import {
   TranslationManagement,
   TooltipManagement,
   BlogManagement,
+  ProductUpdates,
   AILab,
   ProductRoadmap,
   Settings,
@@ -390,6 +391,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_BLOGS]}>
               <BlogManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.PRODUCT_UPDATES}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_BLOG]}>
+              <ProductUpdates />
             </PrivateLayout>
           }
         />

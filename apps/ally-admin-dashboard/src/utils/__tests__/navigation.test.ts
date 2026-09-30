@@ -55,9 +55,9 @@ describe("deriveNavigationItems", () => {
     expect(
       deriveNavigationItems({ permissions: undefined, features: undefined, savedOrder: undefined }),
     ).toEqual([]);
-    expect(
-      deriveNavigationItems({ permissions: [], features: [], savedOrder: undefined }),
-    ).toEqual([]);
+    expect(deriveNavigationItems({ permissions: [], features: [], savedOrder: undefined })).toEqual(
+      [],
+    );
   });
 
   it("shows Product Roadmap for a user holding only VIEW_PRODUCT_ROADMAP", () => {
@@ -81,6 +81,32 @@ describe("deriveNavigationItems", () => {
       savedOrder: undefined,
     });
     expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.PRODUCT_ROADMAP);
+  });
+
+  it("shows Product updates right after Blog for a holder of EDIT_BLOG", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_BLOG, Permissions.VIEW_BLOGS],
+      features: [],
+      savedOrder: undefined,
+    });
+    const ids = result.map(i => i.id);
+    expect(ids).toEqual([SIDEBAR_ITEMS.BLOG, SIDEBAR_ITEMS.PRODUCT_UPDATES]);
+    expect(result[1].path).toBe(ROUTES.PRODUCT_UPDATES);
+  });
+
+  it("hides Product updates without EDIT_BLOG, even with VIEW_BLOGS or every feature toggle", () => {
+    expect(
+      deriveNavigationItems({
+        permissions: [Permissions.VIEW_BLOGS],
+        features: ALL_FEATURE_GATED_KEYS,
+        savedOrder: undefined,
+      }).map(i => i.id),
+    ).not.toContain(SIDEBAR_ITEMS.PRODUCT_UPDATES);
+    expect(
+      deriveNavigationItems({ permissions: [], features: [], savedOrder: undefined }).map(
+        i => i.id,
+      ),
+    ).not.toContain(SIDEBAR_ITEMS.PRODUCT_UPDATES);
   });
 
   it("filters permission-gated items to those the user can access", () => {

@@ -94,6 +94,7 @@ export const SIDEBAR_ITEMS = {
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   BLOG: "blog",
+  PRODUCT_UPDATES: "product-updates",
   AI_LAB: "ai-lab",
   SETTINGS: "settings",
   LOGS: "logs",

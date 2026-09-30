@@ -28,6 +28,7 @@ export * from "./tracks";
 export * from "./componentTemplates";
 export * from "./courseDiscussion";
 export * from "./blog";
+export * from "./productUpdates";
 export * from "./aiLab";
 export * from "./builder";
 export * from "./evaluatorPortal";

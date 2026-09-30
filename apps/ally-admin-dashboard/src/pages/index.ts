@@ -24,6 +24,7 @@ export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
 export * from "./Blog/Blog";
+export * from "./ProductUpdates/ProductUpdates";
 export * from "./AILab";
 export * from "./Evaluate";
 export * from "./Settings/Settings";
