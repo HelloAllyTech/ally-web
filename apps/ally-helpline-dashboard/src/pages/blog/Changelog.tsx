@@ -5,6 +5,7 @@ import { Ally } from "@assets";
 
 import { BlogFooter } from "./BlogFooter";
 import { CHANGELOG_DESCRIPTION, CHANGELOG_TITLE } from "./blogMeta";
+import { CodeActivityHeatmap } from "./CodeActivityHeatmap";
 import { usePageMeta } from "./usePageMeta";
 
 const PAGE_SIZE = 100;
@@ -72,6 +73,8 @@ export const Changelog: FC = () => {
           <h1 className="text-4xl sm:text-5xl">Changelog</h1>
           <p className="mt-4 text-[#565045]">{CHANGELOG_DESCRIPTION}</p>
         </header>
+
+        <CodeActivityHeatmap />
 
         {isInitialLoad ? (
           <p className="text-[#565045]">Loading…</p>
