@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -66,6 +66,7 @@ export const CharacterInterview: React.FC = () => {
   const [draftCharacter, setDraftCharacter] = useState<CharacterData | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const [isStartOverConfirmOpen, setIsStartOverConfirmOpen] = useState(false);
   // Set true only for a brand-new session (never on resume) so the next
   // render's effect can fire the hidden kickoff message with a `sendMessage`
   // closure that actually sees the new `sessionId`.
@@ -86,18 +87,44 @@ export const CharacterInterview: React.FC = () => {
     }
   }, [createSession]);
 
-  const { messages, isStreaming, sendMessage, stop, hydrateMessages } = useCharacterInterviewStream(
-    {
-      sessionId,
-      onCharacterDraft: draft => {
-        setDraftCharacter(toDraftCharacter(draft));
-        setIsReviewOpen(true);
-        localStorage.removeItem(sessionStorageKey);
-        toast.success(strings.draftReadyToast);
-      },
-      onSessionInvalid: startFreshSession,
+  /** Opens a finished draft for review — live, recovered, or resumed. */
+  const openDraft = useCallback((draft: Partial<CharacterData>) => {
+    setDraftCharacter(toDraftCharacter(draft));
+    setIsReviewOpen(true);
+    localStorage.removeItem(sessionStorageKey);
+    toast.success(strings.draftReadyToast);
+  }, []);
+
+  /**
+   * The server can finish a turn — and save the draft — after the browser's
+   * connection to it has already broken: production logged "Character
+   * interview draft saved" for sessions whose admin was looking at "The
+   * interview stream failed". The draft then sat on a COMPLETED session that
+   * nothing ever opened. Ask the server whether that happened.
+   */
+  const recoverSavedDraft = useCallback(
+    async (id: string): Promise<boolean> => {
+      try {
+        const session = await getSession(id).unwrap();
+        if (session.status === "COMPLETED" && session.draftCharacter) {
+          openDraft(session.draftCharacter);
+          return true;
+        }
+      } catch {
+        // Nothing to recover from; the caller shows the original failure.
+      }
+      return false;
     },
+    [getSession, openDraft],
   );
+
+  const { messages, isStreaming, sendMessage, stop, hydrateMessages, resetMessages } =
+    useCharacterInterviewStream({
+      sessionId,
+      onCharacterDraft: openDraft,
+      onSessionInvalid: startFreshSession,
+      onStreamFailed: () => (sessionId ? recoverSavedDraft(sessionId) : Promise.resolve(false)),
+    });
 
   useEffect(() => {
     if (!canView || bootedRef.current) return;
@@ -113,6 +140,16 @@ export const CharacterInterview: React.FC = () => {
           if (session.status === "ACTIVE") {
             setSessionId(session.id);
             hydrateMessages(session.messages ?? []);
+            setIsBooting(false);
+            return;
+          }
+          // Finished while nobody was watching (the stream broke before its
+          // character_draft frame arrived): show the draft rather than
+          // discarding it for a fresh session.
+          if (session.status === "COMPLETED" && session.draftCharacter) {
+            setSessionId(session.id);
+            hydrateMessages(session.messages ?? []);
+            openDraft(session.draftCharacter);
             setIsBooting(false);
             return;
           }
@@ -139,6 +176,17 @@ export const CharacterInterview: React.FC = () => {
     setNeedsKickoff(false);
     void sendMessage("Let's begin.", undefined, true);
   }, [needsKickoff, sessionId, isBooting, sendMessage]);
+
+  // Voice questions offer one option per voice (id = voice id, label =
+  // "Name — Language"), so the answered cards are where the review form gets
+  // a name for the voice it is about to save.
+  const voiceLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    for (const message of messages) {
+      for (const option of message.question?.options ?? []) labels[option.id] = option.label;
+    }
+    return labels;
+  }, [messages]);
 
   useEffect(() => {
     const node = scrollRef.current;
@@ -180,11 +228,30 @@ export const CharacterInterview: React.FC = () => {
   };
 
   const confirmExit = () => {
-    // Leave the pinned session id in place — the session resumes from where
-    // it left off if the admin reopens the interview agent, same as a
-    // pinned session recovered after any other navigation away from here.
+    // Leaving drops the pinned session, as the dialog says it does. It used
+    // to keep it so the interview could resume, which contradicted "Your
+    // progress in this conversation will be lost" and left an admin whose
+    // session never produced a draft with no way to start a new one: every
+    // visit resumed the same stuck conversation.
     setIsExitConfirmOpen(false);
+    stop();
+    localStorage.removeItem(sessionStorageKey);
     navigate(ROUTES.CHARACTER_LIBRARY);
+  };
+
+  const confirmStartOver = async () => {
+    setIsStartOverConfirmOpen(false);
+    stop();
+    localStorage.removeItem(sessionStorageKey);
+    setDraftCharacter(null);
+    setIsReviewOpen(false);
+    resetMessages();
+    setBootFailed(false);
+    setIsBooting(true);
+    const freshId = await startFreshSession();
+    setIsBooting(false);
+    if (freshId) setNeedsKickoff(true);
+    else setBootFailed(true);
   };
 
   return (
@@ -199,6 +266,16 @@ export const CharacterInterview: React.FC = () => {
           {characterLibraryStrings.characters}
         </button>
         <h1 className="text-2xl text-typography-900 font-secondary">{strings.title}</h1>
+        {(hasProgress || draftCharacter) && (
+          <button
+            type="button"
+            onClick={() => setIsStartOverConfirmOpen(true)}
+            disabled={isBooting}
+            className="ml-auto text-sm text-typography-600 hover:text-typography-800 underline disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {strings.startOver}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto">
@@ -264,6 +341,7 @@ export const CharacterInterview: React.FC = () => {
         onClose={() => setIsReviewOpen(false)}
         onSave={() => navigate(ROUTES.CHARACTER_LIBRARY)}
         initialCharacter={draftCharacter}
+        voiceLabels={voiceLabels}
       />
 
       <ConfirmationDialog
@@ -277,6 +355,19 @@ export const CharacterInterview: React.FC = () => {
         secondaryButtonText={strings.exitConfirmStay}
         secondaryButtonVariant={ButtonVariant.SECONDARY}
         onSecondaryButtonClick={() => setIsExitConfirmOpen(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={isStartOverConfirmOpen}
+        onClose={() => setIsStartOverConfirmOpen(false)}
+        title={{ normal: strings.startOverConfirmTitle, italic: "" }}
+        content={strings.startOverConfirmDescription}
+        buttonText={strings.startOver}
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={() => void confirmStartOver()}
+        secondaryButtonText={strings.startOverConfirmKeep}
+        secondaryButtonVariant={ButtonVariant.SECONDARY}
+        onSecondaryButtonClick={() => setIsStartOverConfirmOpen(false)}
       />
     </div>
   );

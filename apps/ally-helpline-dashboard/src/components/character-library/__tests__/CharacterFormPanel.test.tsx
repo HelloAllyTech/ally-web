@@ -121,5 +121,25 @@ describe("CharacterFormPanel", () => {
     expect(payload.languageCharacteristics).toEqual({ "1": "Warm, measured", "2": "Hinglish" });
     expect(payload.linguisticStyleSamples).toEqual({ "1": ["Hello there"], "2": ["Kaise ho?"] });
     expect(payload).not.toHaveProperty("id");
+    // The voice the admin chose in the interview is kept, not dropped.
+    expect(payload.voices).toEqual({ "1": "3f1c2a9e-1b2c-4d5e-8f90-123456789abc" });
+  });
+
+  it("shows the interview's chosen voice by name on the language it was chosen for", () => {
+    render(
+      <CharacterFormPanel
+        isOpen
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+        initialCharacter={interviewDraft}
+        voiceLabels={{ "3f1c2a9e-1b2c-4d5e-8f90-123456789abc": "Anushka — English" }}
+      />,
+    );
+
+    expect(screen.getByText("Anushka — English")).toBeInTheDocument();
+
+    // Hindi has no voice in this draft, so no voice row is shown there.
+    fireEvent.click(screen.getByRole("tab", { name: "Hindi" }));
+    expect(screen.queryByText("Anushka — English")).not.toBeInTheDocument();
   });
 });

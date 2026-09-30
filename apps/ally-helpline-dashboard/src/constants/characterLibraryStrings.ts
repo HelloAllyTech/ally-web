@@ -23,6 +23,7 @@ export const characterLibraryStrings = {
   close: "Close",
   voice: "Voice",
   selectVoice: "Select voice",
+  voiceSelected: "Voice selected",
   languageStyle: "Language style",
   enterLanguageStyle: "Describe the character's dialect, register, or code-mixing style",
   dialectSamples: "Dialect samples",
@@ -104,5 +105,9 @@ export const characterInterviewStrings = {
   exitConfirmStay: "Stay",
   draftReadyToast: "Character draft ready — review it before saving",
   startOver: "Start over",
+  startOverConfirmTitle: "Start a new interview?",
+  startOverConfirmDescription:
+    "This conversation will be discarded and the agent will start a new character from scratch.",
+  startOverConfirmKeep: "Keep this one",
   reviewCharacter: "Review character",
 } as const;
