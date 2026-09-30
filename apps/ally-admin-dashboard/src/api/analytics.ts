@@ -65,6 +65,7 @@ import {
   BugHunterVolumeQuery,
   BugHunterVolumeResponse,
 } from "../pages/Analytics/bugHunterVolumeChart";
+import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
 import { XpByTenantQuery, XpByTenantResponse } from "../pages/Analytics/xpByTenantChart";
 import {
   XpLevelReachedQuery,
@@ -630,6 +631,14 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     }),
     // Score by Nth completed session — the efficacy curve. All-time: an ordinal
     // is a position in a learner's history, not a date.
+    // No params: all-time and platform-wide by design (the axis is practice
+    // volume, and Priority has no page filters).
+    getFoundationalSkills: builder.query<FoundationalSkillsResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS,
+        method: HttpMethod.GET,
+      }),
+    }),
     getSkillGrowth: builder.query<SkillGrowthResponse, AllTimeAnalyticsQuery>({
       query: ({ tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.SKILL_GROWTH,
@@ -828,6 +837,7 @@ export const {
   useGetCompletionRateQuery,
   useGetLanguageMixQuery,
   useGetSkillGrowthQuery,
+  useGetFoundationalSkillsQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
