@@ -36,7 +36,10 @@ vi.mock("@components/character-interview", () => ({
   ChatComposer: () => null,
   ChatMessage: () => null,
 }));
-vi.mock("@components/character-library", () => ({ CharacterFormPanel: () => null }));
+vi.mock("@components/character-library", () => ({
+  CharacterFormPanel: (props: { isOpen: boolean; initialCharacter?: { name: string } | null }) =>
+    props.isOpen ? <div data-testid="review-drawer">{props.initialCharacter?.name}</div> : null,
+}));
 
 const sendMessageMock = vi.fn();
 const stopMock = vi.fn();
@@ -117,5 +120,25 @@ describe("CharacterInterview", () => {
     await waitFor(() =>
       expect(sendMessageMock).toHaveBeenCalledWith("Let's begin.", undefined, true),
     );
+  });
+
+  it("opens the saved draft when the pinned session finished while nobody was watching", async () => {
+    // Production: the stream broke, the server still saved the draft, and the
+    // next visit threw the COMPLETED session away for a fresh one.
+    getSessionMock.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          id: "stuck-session",
+          status: "COMPLETED",
+          draftCharacter: { name: "Aarav" },
+          messages: [],
+        }),
+    });
+
+    renderPage();
+
+    expect(await screen.findByTestId("review-drawer")).toHaveTextContent("Aarav");
+    expect(createSessionMock).not.toHaveBeenCalled();
+    expect(localStorage.getItem(key)).toBeNull();
   });
 });

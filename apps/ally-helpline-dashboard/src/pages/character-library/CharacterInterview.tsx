@@ -87,16 +87,43 @@ export const CharacterInterview: React.FC = () => {
     }
   }, [createSession]);
 
+  /** Opens a finished draft for review — live, recovered, or resumed. */
+  const openDraft = useCallback((draft: Partial<CharacterData>) => {
+    setDraftCharacter(toDraftCharacter(draft));
+    setIsReviewOpen(true);
+    localStorage.removeItem(sessionStorageKey);
+    toast.success(strings.draftReadyToast);
+  }, []);
+
+  /**
+   * The server can finish a turn — and save the draft — after the browser's
+   * connection to it has already broken: production logged "Character
+   * interview draft saved" for sessions whose admin was looking at "The
+   * interview stream failed". The draft then sat on a COMPLETED session that
+   * nothing ever opened. Ask the server whether that happened.
+   */
+  const recoverSavedDraft = useCallback(
+    async (id: string): Promise<boolean> => {
+      try {
+        const session = await getSession(id).unwrap();
+        if (session.status === "COMPLETED" && session.draftCharacter) {
+          openDraft(session.draftCharacter);
+          return true;
+        }
+      } catch {
+        // Nothing to recover from; the caller shows the original failure.
+      }
+      return false;
+    },
+    [getSession, openDraft],
+  );
+
   const { messages, isStreaming, sendMessage, stop, hydrateMessages, resetMessages } =
     useCharacterInterviewStream({
       sessionId,
-      onCharacterDraft: draft => {
-        setDraftCharacter(toDraftCharacter(draft));
-        setIsReviewOpen(true);
-        localStorage.removeItem(sessionStorageKey);
-        toast.success(strings.draftReadyToast);
-      },
+      onCharacterDraft: openDraft,
       onSessionInvalid: startFreshSession,
+      onStreamFailed: () => (sessionId ? recoverSavedDraft(sessionId) : Promise.resolve(false)),
     });
 
   useEffect(() => {
@@ -113,6 +140,16 @@ export const CharacterInterview: React.FC = () => {
           if (session.status === "ACTIVE") {
             setSessionId(session.id);
             hydrateMessages(session.messages ?? []);
+            setIsBooting(false);
+            return;
+          }
+          // Finished while nobody was watching (the stream broke before its
+          // character_draft frame arrived): show the draft rather than
+          // discarding it for a fresh session.
+          if (session.status === "COMPLETED" && session.draftCharacter) {
+            setSessionId(session.id);
+            hydrateMessages(session.messages ?? []);
+            openDraft(session.draftCharacter);
             setIsBooting(false);
             return;
           }

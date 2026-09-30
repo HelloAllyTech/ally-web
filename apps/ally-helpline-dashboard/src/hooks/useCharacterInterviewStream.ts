@@ -165,6 +165,12 @@ interface UseCharacterInterviewStreamOptions {
    * resolve with its id; the turn is then transparently replayed against it.
    */
   onSessionInvalid?: () => Promise<string | null>;
+  /**
+   * Called when a turn's connection fails. Resolve `true` if the turn in fact
+   * completed server-side (e.g. the draft was saved and the caller has opened
+   * it); the failure is then not shown.
+   */
+  onStreamFailed?: () => Promise<boolean>;
 }
 
 /**
@@ -178,6 +184,7 @@ export const useCharacterInterviewStream = ({
   onCharacterDraft,
   onDone,
   onSessionInvalid,
+  onStreamFailed,
 }: UseCharacterInterviewStreamOptions) => {
   const [messages, setMessages] = useState<CharacterInterviewChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -438,11 +445,16 @@ export const useCharacterInterviewStream = ({
           patchAssistantMessage(assistantId, { streaming: false, interrupted: true });
         } else if (!sessionLost && !refused) {
           logger.error(`[Character Interview] ${error}`);
-          patchAssistantMessage(assistantId, {
-            streaming: false,
-            error: strings.streamFailed,
-          });
-          toast.error(strings.streamFailed);
+          const recovered = onStreamFailed ? await onStreamFailed().catch(() => false) : false;
+          if (recovered) {
+            patchAssistantMessage(assistantId, { streaming: false });
+          } else {
+            patchAssistantMessage(assistantId, {
+              streaming: false,
+              error: strings.streamFailed,
+            });
+            toast.error(strings.streamFailed);
+          }
         }
       } finally {
         abortRef.current = null;
@@ -458,7 +470,7 @@ export const useCharacterInterviewStream = ({
         aborted: controller.signal.aborted,
       };
     },
-    [fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
+    [fetchStreamWithReauth, flushTokens, handleEvent, onStreamFailed, patchAssistantMessage],
   );
 
   /**

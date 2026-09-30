@@ -1,10 +1,14 @@
 import "@constants";
 
-import { describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { characterInterviewStrings } from "@constants";
 
-import { mapServerMessagesToFeed } from "../useCharacterInterviewStream";
+import {
+  mapServerMessagesToFeed,
+  useCharacterInterviewStream,
+} from "../useCharacterInterviewStream";
 
 describe("mapServerMessagesToFeed", () => {
   it("shows a turn that failed mid-flight instead of rendering it as silence", () => {
@@ -36,5 +40,47 @@ describe("mapServerMessagesToFeed", () => {
 
   it("still skips an empty assistant row that did not fail", () => {
     expect(mapServerMessagesToFeed([{ id: "a1", role: "assistant", content: "" }])).toEqual([]);
+  });
+});
+
+describe("useCharacterInterviewStream — a broken connection", () => {
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const failOnce = () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("network error"));
+  };
+
+  it("shows no failure when the caller finds the turn completed server-side", async () => {
+    failOnce();
+    const onStreamFailed = vi.fn().mockResolvedValue(true);
+    const { result } = renderHook(() =>
+      useCharacterInterviewStream({ sessionId: "s1", onStreamFailed }),
+    );
+
+    await act(async () => {
+      await result.current.sendMessage("Looks right — create the character");
+    });
+
+    expect(onStreamFailed).toHaveBeenCalledTimes(1);
+    expect(result.current.messages.some(message => message.error)).toBe(false);
+  });
+
+  it("still shows the failure when nothing was completed", async () => {
+    failOnce();
+    const { result } = renderHook(() =>
+      useCharacterInterviewStream({
+        sessionId: "s1",
+        onStreamFailed: vi.fn().mockResolvedValue(false),
+      }),
+    );
+
+    await act(async () => {
+      await result.current.sendMessage("Looks right — create the character");
+    });
+
+    expect(result.current.messages.at(-1)?.error).toBe(characterInterviewStrings.streamFailed);
   });
 });
