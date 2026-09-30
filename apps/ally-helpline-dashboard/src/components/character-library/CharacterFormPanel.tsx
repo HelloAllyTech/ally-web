@@ -127,6 +127,12 @@ interface CharacterFormPanelProps {
    * nothing here for them to change.
    */
   readOnly?: boolean;
+  /**
+   * Display names for voice ids, keyed by voice id. The interview page builds
+   * this from the voice questions the admin answered, since a tenant ADMIN
+   * cannot read the voice catalog (`view:scenario-voices`) to look names up.
+   */
+  voiceLabels?: Record<string, string>;
 }
 
 /**
@@ -137,10 +143,11 @@ interface CharacterFormPanelProps {
  * app only ever creates a new row or shows an existing one read-only — it
  * never offers an affordance the backend would reject.
  *
- * Voice selection and cover image/video are intentionally left out of this
- * first pass — they call additional endpoints (scenario voices, file-upload
- * URL signing) whose permission gates for a tenant ADMIN haven't been
- * verified yet. Add them once that's confirmed.
+ * Voice is shown and saved but never picked here: a tenant ADMIN cannot read
+ * the voice catalog (`view:scenario-voices`), so the only voices this form
+ * holds are the ones the admin chose in the interview. Cover image/video are
+ * left out too — file-upload URL signing's gate for a tenant ADMIN hasn't
+ * been verified yet.
  */
 export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   isOpen,
@@ -148,6 +155,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   onSave,
   initialCharacter,
   readOnly = false,
+  voiceLabels = {},
 }) => {
   const [formData, setFormData] = useState<CharacterData>(initialCharacter || emptyCharacter);
   const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
@@ -168,6 +176,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   const languageTabs = useMemo(() => {
     const stored = new Set(
       [
+        ...Object.keys(formData.voices ?? {}),
         ...Object.keys(formData.languageCharacteristics ?? {}),
         ...Object.keys(formData.linguisticStyleSamples ?? {}),
       ].filter(Boolean),
@@ -187,6 +196,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
     return [...offered, ...retired];
   }, [
     catalogLanguages,
+    formData.voices,
     formData.languageCharacteristics,
     formData.linguisticStyleSamples,
     readOnly,
@@ -333,6 +343,12 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
         ),
         // Drop knowledge sources with no title rather than sending the
         // backend one it rejects (400).
+        // The voice the admin chose per language in the interview. Before
+        // this was sent, a character built by interview was saved with no
+        // voice at all, despite the admin having picked one.
+        voices: Object.fromEntries(
+          Object.entries(formData.voices ?? {}).filter(([, voiceId]) => Boolean(voiceId)),
+        ),
         knowledgeSources: (formData.knowledgeSources || []).filter(
           source => source.title.trim() !== "",
         ),
@@ -543,6 +559,14 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
                     );
                   })}
                 </div>
+              )}
+
+              {formData.voices?.[activeLanguageId] && (
+                <Field label={strings.voice}>
+                  <span className="text-base text-typography-800">
+                    {voiceLabels[formData.voices[activeLanguageId]] ?? strings.voiceSelected}
+                  </span>
+                </Field>
               )}
 
               <Field label={strings.languageStyle}>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -140,6 +140,17 @@ export const CharacterInterview: React.FC = () => {
     void sendMessage("Let's begin.", undefined, true);
   }, [needsKickoff, sessionId, isBooting, sendMessage]);
 
+  // Voice questions offer one option per voice (id = voice id, label =
+  // "Name — Language"), so the answered cards are where the review form gets
+  // a name for the voice it is about to save.
+  const voiceLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    for (const message of messages) {
+      for (const option of message.question?.options ?? []) labels[option.id] = option.label;
+    }
+    return labels;
+  }, [messages]);
+
   useEffect(() => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
@@ -264,6 +275,7 @@ export const CharacterInterview: React.FC = () => {
         onClose={() => setIsReviewOpen(false)}
         onSave={() => navigate(ROUTES.CHARACTER_LIBRARY)}
         initialCharacter={draftCharacter}
+        voiceLabels={voiceLabels}
       />
 
       <ConfirmationDialog

@@ -23,6 +23,7 @@ export const characterLibraryStrings = {
   close: "Close",
   voice: "Voice",
   selectVoice: "Select voice",
+  voiceSelected: "Voice selected",
   languageStyle: "Language style",
   enterLanguageStyle: "Describe the character's dialect, register, or code-mixing style",
   dialectSamples: "Dialect samples",
