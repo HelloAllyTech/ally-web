@@ -30,6 +30,7 @@ import { useSetVotes } from "./useSetVotes";
 import { RoadmapAdvancedFilterValues } from "./utils/filters";
 import { RoadmapEffortFilterValue } from "./utils/filterSelection";
 import { pageRange } from "./utils/paging";
+import { personName } from "./utils/people";
 import {
   isConsumerSourced,
   SOURCE_BADGE_STYLE,
@@ -309,9 +310,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                       {opportunity.commentCount > 0 && (
                         <span> · {opportunity.commentCount} comments</span>
                       )}
-                      {opportunity.creator && (
-                        <span> · {opportunity.creator.name || opportunity.creator.email}</span>
-                      )}
+                      {opportunity.creator && <span> · {personName(opportunity.creator)}</span>}
                     </div>
                   </TableCell>
 

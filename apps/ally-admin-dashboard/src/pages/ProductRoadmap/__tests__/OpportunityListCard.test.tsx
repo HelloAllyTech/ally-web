@@ -74,3 +74,41 @@ describe("OpportunityListCard queue rank tooltip", () => {
     expect(rankBadge.getAttribute("title")).not.toMatch(/total votes/i);
   });
 });
+
+describe("OpportunityListCard poster", () => {
+  const renderCard = (overrides: Partial<RoadmapOpportunity>, isQueue = true) =>
+    render(
+      <OpportunityListCard
+        opportunity={opportunity(overrides)}
+        maxScore={100}
+        isQueue={isQueue}
+        canVote={false}
+        onSetVotes={vi.fn()}
+        onOpen={vi.fn()}
+      />,
+    );
+
+  it("names the person who posted it on a queue card", () => {
+    const { getByText } = renderCard({
+      creator: { id: 7, email: "asha@example.com", name: "Asha Rao" },
+    });
+    expect(getByText("Posted by Asha Rao")).toBeTruthy();
+  });
+
+  it("shows a name built from the email, never the email, when the account has no name", () => {
+    const { getByText, queryByText } = renderCard({
+      creator: { id: 7, email: "asha.rao@example.com", name: "" },
+    });
+    expect(getByText("Posted by Asha Rao")).toBeTruthy();
+    expect(queryByText(/@/)).toBeNull();
+  });
+
+  it("keeps the poster in the Filed line outside the queue, not as a second mention", () => {
+    const { queryByText } = renderCard(
+      { creator: { id: 7, email: "asha@example.com", name: "Asha Rao" } },
+      false,
+    );
+    expect(queryByText(/Posted by/)).toBeNull();
+    expect(queryByText(/Asha Rao/)).toBeTruthy();
+  });
+});

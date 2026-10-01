@@ -35,6 +35,7 @@ import { hasFeature } from "@utils";
 import { RankBreakdownPanel } from "./RankBreakdown";
 import { ReferenceImagesField } from "./ReferenceImagesField";
 import { monthKeyOf, monthLabel, shiftMonthKey } from "./utils/monthBoard";
+import { personName } from "./utils/people";
 import { sameReferenceImages } from "./utils/referenceImages";
 import { EFFORT_LABEL, STAGE_LABEL } from "./utils/stages";
 
@@ -557,7 +558,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                       <ul className="flex flex-col gap-0.5">
                         {voters.map(voter => (
                           <li key={voter.userId} className="flex justify-between gap-3">
-                            <span>{voter.name || voter.email || "Unknown user"}</span>
+                            <span>{personName(voter)}</span>
                             <span className="tabular-nums">{voter.votes}</span>
                           </li>
                         ))}
@@ -571,7 +572,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   </span>
                 </Tooltip>{" "}
                 · <span className="tabular-nums">{opportunity.myVotes}</span> yours · Filed by{" "}
-                {opportunity.creator?.name || opportunity.creator?.email || "Unknown user"}
+                {personName(opportunity.creator)}
               </div>
             )}
           </div>
