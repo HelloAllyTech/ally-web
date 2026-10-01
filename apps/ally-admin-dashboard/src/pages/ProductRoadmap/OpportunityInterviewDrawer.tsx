@@ -125,7 +125,9 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
    */
   useEffect(() => {
     feedRef.current?.scrollTo?.({ top: feedRef.current.scrollHeight });
-  }, [messages, isThinking, draft]);
+    // `duplicates` too: matches arrive after the draft, below it, and a "this may already
+    // exist" the admin has to scroll to find is one they file past.
+  }, [messages, isThinking, draft, duplicates]);
 
   /** Check the draft — and only the draft — against what is already on the board. */
   useEffect(() => {
