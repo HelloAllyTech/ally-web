@@ -18,7 +18,6 @@ import {
   axisLabel,
   formatDay,
   formatLines,
-  levelRangeLabel,
   mergeDays,
   sumChurn,
 } from "./codeActivity";
@@ -171,16 +170,13 @@ export const CodeActivityHeatmap: FC = () => {
 
   return (
     <section aria-labelledby="code-activity-title" className="mb-8">
-      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <div className="flex flex-wrap items-baseline gap-x-2">
-          <h2 id="code-activity-title" className="text-base text-gray-900">
-            Lines of code changed
-          </h2>
-          <p className="text-xs text-gray-600">
-            added plus removed, across all of Ally&rsquo;s code, per day (UTC)
-          </p>
-        </div>
-        {state !== "unavailable" && <Legend />}
+      <div className="mb-2 flex flex-wrap items-baseline gap-x-2">
+        <h2 id="code-activity-title" className="text-base text-gray-900">
+          Lines of code changed
+        </h2>
+        <p className="text-xs text-gray-600">
+          added plus removed, across all of Ally&rsquo;s code, per day (UTC)
+        </p>
       </div>
 
       {state === "unavailable" ? (
@@ -312,22 +308,6 @@ const DayCell: FC<{
     </li>
   );
 };
-
-const Legend: FC = () => (
-  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-    <span>Less</span>
-    {CODE_ACTIVITY_LEVEL_CLASSES.map((levelClass, level) => (
-      <span
-        key={levelClass}
-        title={levelRangeLabel(level)}
-        aria-label={levelRangeLabel(level)}
-        role="img"
-        className={`h-2.5 w-2.5 ${levelClass}`}
-      />
-    ))}
-    <span>More</span>
-  </div>
-);
 
 const Skeleton: FC = () => (
   <div aria-label="Loading code activity" role="status" className="pb-1">

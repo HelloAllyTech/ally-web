@@ -39,18 +39,6 @@ export const activityLevel = (churn: number): number => {
   return level;
 };
 
-const compact = (n: number) => (n >= 1000 ? `${n / 1000}k` : String(n));
-
-/** What each legend swatch covers, e.g. "3k–10k lines". */
-export const levelRangeLabel = (level: number): string => {
-  if (level === 0) return "No changes";
-  const floors = CODE_ACTIVITY_LEVEL_FLOORS;
-  const lo = floors[level - 1];
-  const hi = floors[level];
-  if (hi === undefined) return `${compact(lo)}+ lines`;
-  return `${compact(lo)}–${compact(hi)} lines`;
-};
-
 // The browser's own locale, as the changelog's date headings below use.
 export const formatLines = (n: number): string => n.toLocaleString();
 

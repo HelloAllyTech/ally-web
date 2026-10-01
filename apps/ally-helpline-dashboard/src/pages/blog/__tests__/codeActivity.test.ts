@@ -6,7 +6,6 @@ import {
   addDays,
   axisLabel,
   isMonday,
-  levelRangeLabel,
   mergeDays,
   monthLabel,
   sumChurn,
@@ -34,18 +33,6 @@ describe("activityLevel", () => {
 
   it("has a colour for every level", () => {
     expect(CODE_ACTIVITY_LEVEL_CLASSES).toHaveLength(activityLevel(Number.MAX_SAFE_INTEGER) + 1);
-  });
-});
-
-describe("levelRangeLabel", () => {
-  it("names each legend swatch's range", () => {
-    expect([0, 1, 2, 3, 4].map(levelRangeLabel)).toEqual([
-      "No changes",
-      "1–3k lines",
-      "3k–10k lines",
-      "10k–25k lines",
-      "25k+ lines",
-    ]);
   });
 });
 
