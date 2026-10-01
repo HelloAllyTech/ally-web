@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { ComposedModal, ModalBody, ModalFooter, ImageUpload } from "@ally-ui-mono/ui-shared";
+import { ActionDialogFooter, ComposedModal, ModalBody, ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";
 
 import { profileSettingsProps } from "./types";
@@ -66,17 +66,15 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
           </div>
         </div>
       </ModalBody>
-      <ModalFooter>
-        <div className="w-full flex items-center justify-center gap-2">
-          <Button fullWidth onClick={onClose} variant={ButtonVariant.SECONDARY}>
-            {t("profile.settings.cancel")}
-          </Button>
+      <ActionDialogFooter>
+        <Button onClick={onClose} variant={ButtonVariant.SECONDARY} className="flex-1">
+          {t("profile.settings.cancel")}
+        </Button>
 
-          <Button fullWidth onClick={onButtonClick} variant={ButtonVariant.PRIMARY}>
-            {t("profile.settings.done")}
-          </Button>
-        </div>
-      </ModalFooter>
+        <Button onClick={onButtonClick} variant={ButtonVariant.PRIMARY} className="flex-1">
+          {t("profile.settings.done")}
+        </Button>
+      </ActionDialogFooter>
     </ComposedModal>
   );
 };

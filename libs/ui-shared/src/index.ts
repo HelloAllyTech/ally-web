@@ -1,3 +1,4 @@
+import { ActionDialogFooter } from "./lib/action-dialog-footer/ActionDialogFooter";
 import { FEATURE_FLAGS_MAP } from "./featureFlag";
 import { AutoExpandableTextarea } from "./lib/auto-expandable-textarea";
 import Badge from "./lib/badge";
@@ -82,6 +83,7 @@ export type { DeviceOs } from "./lib/bug-report-form/detectDeviceOs";
 export { detectDeviceOs } from "./lib/bug-report-form/detectDeviceOs";
 
 export {
+  ActionDialogFooter,
   Badge,
   ButtonGroup,
   ChipGroup,

@@ -217,6 +217,7 @@
 .cds--actionable-notification,
 .cds--toast-notification {
   border-radius: 12px;
+  overflow: hidden;
 }
 
 .cds--tag,
