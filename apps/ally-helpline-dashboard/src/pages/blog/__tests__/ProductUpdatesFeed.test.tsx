@@ -126,7 +126,7 @@ describe("ProductUpdatesFeed", () => {
     fireEvent.click(card.getByRole("button", { name: "Copy link" }));
 
     expect(writeText).toHaveBeenCalledWith(
-      `${window.location.origin}/blog/changelog#2026-09-29-characters-pause-more-naturally`,
+      `${window.location.origin}/blog/changelog#${update({}).slug}`,
     );
     expect(await card.findByRole("button", { name: "Link copied" })).toBeInTheDocument();
   });
