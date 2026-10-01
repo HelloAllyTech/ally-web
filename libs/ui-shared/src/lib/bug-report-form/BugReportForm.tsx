@@ -12,10 +12,10 @@ import {
   InlineLoading,
   InlineNotification,
   ModalBody,
-  ModalFooter,
   ModalHeader,
   TextArea,
 } from "../../primitives";
+import { ActionDialogFooter } from "../action-dialog-footer/ActionDialogFooter";
 
 /**
  * Matches ally-be's `ROADMAP_LIMITS.DESCRIPTION_MAX` (src/product-roadmap/constants/
@@ -154,14 +154,14 @@ export const BugReportForm: FC<BugReportFormProps> = ({
           />
         )}
       </ModalBody>
-      <ModalFooter>
-        <Button kind="secondary" onClick={handleClose} disabled={submitting}>
+      <ActionDialogFooter>
+        <Button kind="secondary" onClick={handleClose} disabled={submitting} className="flex-1">
           {labels.cancel}
         </Button>
-        <Button onClick={handleSubmit} disabled={!canSubmit}>
+        <Button onClick={handleSubmit} disabled={!canSubmit} className="flex-1">
           {submitting ? <InlineLoading description={labels.submitting} /> : labels.submit}
         </Button>
-      </ModalFooter>
+      </ActionDialogFooter>
     </ComposedModal>
   );
 };

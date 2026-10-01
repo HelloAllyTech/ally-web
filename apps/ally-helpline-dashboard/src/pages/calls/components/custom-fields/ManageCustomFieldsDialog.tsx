@@ -6,10 +6,10 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
+  ActionDialogFooter,
   ComposedModal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   IconButton,
   Loading,
   InlineLoading,
@@ -50,14 +50,14 @@ const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
           {t("customFields.deleteDesc", { name: field?.name })}
         </p>
       </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={onCancel}>
+      <ActionDialogFooter>
+        <Button variant="secondary" onClick={onCancel} className="flex-1">
           {t("customFields.cancel")}
         </Button>
-        <Button onClick={onConfirm} disabled={isDeleting}>
+        <Button onClick={onConfirm} disabled={isDeleting} className="flex-1">
           {isDeleting ? <InlineLoading /> : t("customFields.delete")}
         </Button>
-      </ModalFooter>
+      </ActionDialogFooter>
     </ComposedModal>
   );
 };
@@ -216,14 +216,14 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
             </div>
           )}
         </ModalBody>
-        <ModalFooter>
-          <div className="flex justify-between w-full">
-            <Button onClick={() => setIsAddOpen(true)}>{t("customFields.addField")}</Button>
-            <Button variant="secondary" onClick={onClose}>
-              {t("customFields.close")}
-            </Button>
-          </div>
-        </ModalFooter>
+        <ActionDialogFooter>
+          <Button onClick={() => setIsAddOpen(true)} className="flex-1">
+            {t("customFields.addField")}
+          </Button>
+          <Button variant="secondary" onClick={onClose} className="flex-1">
+            {t("customFields.close")}
+          </Button>
+        </ActionDialogFooter>
       </ComposedModal>
 
       <ConfirmDeleteDialog

@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  ActionDialogFooter,
   ComposedModal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   TextInput,
   Select,
   SelectItem,
@@ -337,19 +337,21 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
         )}
       </ModalBody>
 
-      <ModalFooter>
-        <Button variant="secondary" onClick={handleClose}>
+      <ActionDialogFooter>
+        <Button variant="secondary" onClick={handleClose} className="flex-1">
           {t("customFields.cancel")}
         </Button>
         {step === 1 && !isEditing && (
-          <Button onClick={() => setStep(2)}>{t("customFields.next")}</Button>
+          <Button onClick={() => setStep(2)} className="flex-1">
+            {t("customFields.next")}
+          </Button>
         )}
         {step === 2 && (
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving} className="flex-1">
             {isSaving ? <InlineLoading /> : t("customFields.save")}
           </Button>
         )}
-      </ModalFooter>
+      </ActionDialogFooter>
     </ComposedModal>
   );
 };
