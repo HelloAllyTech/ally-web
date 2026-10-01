@@ -7,11 +7,13 @@ import { SkeletonText, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useCreateRoadmapOpportunityMutation,
   useGetRoadmapReadinessCriteriaQuery,
+  useRoadmapAiDuplicatesMutation,
   useRoadmapOpportunityInterviewTurnMutation,
 } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
+  RoadmapDuplicateMatch,
   RoadmapInterviewDraft,
   RoadmapInterviewGate,
   RoadmapInterviewMessage,
@@ -24,22 +26,30 @@ interface OpportunityInterviewDrawerProps {
   onClose: () => void;
   /** Hands the filed opportunity to the page, which opens the normal drawer on it. */
   onCreated: (id: string) => void;
+  /** "Upvote this instead" — closes this and opens the existing opportunity's drawer. */
+  onOpenExisting: (id: string) => void;
 }
 
 /**
- * The GUIDED way to file an opportunity: an interview that asks one question at a time, then
- * hands over a draft.
+ * "New opportunity" — the ONLY way to file one from the board: an interview that asks one
+ * question at a time, then hands over a draft.
  *
- * WHY THIS EXISTS ALONGSIDE AddOpportunityDrawer. That drawer is a blank box plus a checklist you
- * run yourself — it tells you what is wrong after you have written something. Most half-formed
- * ideas fail the same four ways (no named user, a theme rather than a moment, a build with no
- * stated benefit, a solution standing in for an outcome), and a checklist that reports those
- * after the fact asks the filer to do the reframing alone. This surface does the reframing in
- * conversation, one question per turn.
+ * WHY AN INTERVIEW RATHER THAN A FORM. The blank form this replaced was a text box plus a
+ * checklist you ran yourself — it told you what was wrong after you had written something. Most
+ * half-formed ideas fail the same four ways (no named user, a theme rather than a moment, a build
+ * with no stated benefit, a solution standing in for an outcome), and a checklist that reports
+ * those after the fact asks the filer to do the reframing alone. This surface does the reframing
+ * in conversation, one question per turn. The form, its "Check readiness" grader and its
+ * manager-only override were retired with it; there is no way past the gate but meeting it.
  *
  * IT GRADES THE FILING GATE'S OWN CRITERIA. The checklist below is `GET ai/readiness/criteria` —
- * the same five items the blank form grades and `POST /opportunities` enforces — so a completed
- * interview cannot produce a draft the gate then refuses. See RoadmapAiService.interviewTurn.
+ * the same five items `POST /opportunities` enforces — so a completed interview cannot produce a
+ * draft the gate then refuses. See RoadmapAiService.interviewTurn.
+ *
+ * THE DUPLICATE CHECK RUNS ON THE DRAFT, not on each answer. Answers are fragments of an idea and
+ * would match on vocabulary; the draft is the thing that would land on the board. It is
+ * best-effort and never blocks filing — `ai/duplicates` answers `{matches: []}` when ally-ai is
+ * unreachable — because a dead vector service must not stop anyone filing an idea.
  *
  * STATE IS EPHEMERAL, by design for an experiment: no session table, no resume. The transcript
  * lives here and rides on every turn, which is why closing mid-interview asks first.
@@ -52,6 +62,7 @@ interface OpportunityInterviewDrawerProps {
 export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProps> = ({
   onClose,
   onCreated,
+  onOpenExisting,
 }) => {
   const [messages, setMessages] = useState<RoadmapInterviewMessage[]>([]);
   const [gates, setGates] = useState<RoadmapInterviewGate[]>([]);
@@ -60,10 +71,12 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
   const [input, setInput] = useState("");
   const [turnFailed, setTurnFailed] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
+  const [duplicates, setDuplicates] = useState<RoadmapDuplicateMatch[]>([]);
 
   const { data: checklist } = useGetRoadmapReadinessCriteriaQuery();
   const [takeTurn, { isLoading: isThinking }] = useRoadmapOpportunityInterviewTurnMutation();
   const [createOpportunity, { isLoading: isFiling }] = useCreateRoadmapOpportunityMutation();
+  const [checkDuplicates, { isLoading: isCheckingDuplicates }] = useRoadmapAiDuplicatesMutation();
 
   const feedRef = useRef<HTMLDivElement>(null);
   /**
@@ -72,6 +85,11 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
    * double-invoke it opens two interviews and the admin reads two different first questions.
    */
   const openedRef = useRef(false);
+  /**
+   * Request-id guard: "Keep talking" can replace the draft while the previous draft's duplicate
+   * check is still in flight, and the older, slower answer must not land on the newer draft.
+   */
+  const duplicateRequestId = useRef(0);
 
   /** One turn: send the transcript as it will be on the server, then fold the answer in. */
   const runTurn = async (next: RoadmapInterviewMessage[]) => {
@@ -107,7 +125,28 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
    */
   useEffect(() => {
     feedRef.current?.scrollTo?.({ top: feedRef.current.scrollHeight });
-  }, [messages, isThinking, draft]);
+    // `duplicates` too: matches arrive after the draft, below it, and a "this may already
+    // exist" the admin has to scroll to find is one they file past.
+  }, [messages, isThinking, draft, duplicates]);
+
+  /** Check the draft — and only the draft — against what is already on the board. */
+  useEffect(() => {
+    const id = ++duplicateRequestId.current;
+    // Functional so a draft-less turn does not re-render over an already-empty list.
+    setDuplicates(current => (current.length ? [] : current));
+    if (!draft) return;
+    checkDuplicates({
+      description: draft.description,
+      productGoal: draft.productGoal ?? undefined,
+    })
+      .unwrap()
+      .then(result => {
+        if (id === duplicateRequestId.current) setDuplicates(result.matches ?? []);
+      })
+      .catch(() => {
+        // Best-effort by contract: a failed duplicate check must not interrupt filing.
+      });
+  }, [draft, checkDuplicates]);
 
   const send = () => {
     const trimmed = input.trim();
@@ -160,7 +199,7 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
       >
         <header className="border-border-light flex items-start justify-between gap-3 border-b p-4">
           <div className="min-w-0">
-            <h2 className="text-typography-primary text-lg">New opportunity, guided</h2>
+            <h2 className="text-typography-primary text-lg">New opportunity</h2>
             <p className="text-typography-700 text-xs">
               A few questions, then a draft you can edit. Nothing is filed until you say so.
             </p>
@@ -179,7 +218,7 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
           The checklist is PINNED, not buried at the end of the scroll. It is the only thing on
           screen that says how much is left, and an interview whose end you cannot see is one
           people abandon halfway. Labels come from the readiness endpoint so this surface and the
-          blank form cannot drift apart on wording.
+          filing gate cannot drift apart on wording.
         */}
         <section className="border-border-light bg-background-secondary border-b px-4 py-3">
           <div className="mb-2 flex items-baseline justify-between">
@@ -276,6 +315,31 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
               <p className="text-typography-secondary text-xs">
                 Filing opens it for review, where every edit saves itself.
               </p>
+            </section>
+          )}
+
+          {/* A status line rather than a spinner or a blocking state: filing never waits on it. */}
+          {!!draft && isCheckingDuplicates && (
+            <p className="text-typography-secondary text-xs">checking for duplicates…</p>
+          )}
+
+          {/* Below the draft, so it is read against the text it was matched on, and above the
+              footer's File button — the last thing seen before filing a second copy of an idea
+              should be the first copy. */}
+          {!!draft && duplicates.length > 0 && (
+            <section className="border-border-light flex flex-col gap-2 border p-3">
+              <h3 className="text-typography-primary text-sm">This may already exist</h3>
+              <ul className="flex flex-col gap-2">
+                {duplicates.map(match => (
+                  <li key={match.id} className="text-sm">
+                    <div className="text-typography-900">{match.description}</div>
+                    <div className="text-typography-secondary text-xs">{match.reason}</div>
+                    <Button variant={ButtonVariant.TEXT} onClick={() => onOpenExisting(match.id)}>
+                      Upvote this instead →
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
         </div>

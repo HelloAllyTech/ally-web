@@ -23,7 +23,6 @@ import {
   RoadmapEligibleOwner,
   RoadmapOpportunityEffort,
   RoadmapReadinessChecklist,
-  RoadmapReadinessReport,
   RoadmapTaxonomyItem,
   RoadmapViewState,
   SetAllocationResponse,
@@ -236,19 +235,13 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
          */
         referenceImages?: RoadmapReferenceImage[];
         /**
-         * The `token` from this draft's readiness check, verbatim.
+         * The `readinessToken` the guided interview minted for this draft, verbatim.
          *
          * This is what makes the checklist a real gate: the server verifies that the draft being
          * filed is the draft that was graded, and refuses a tampered, expired or stale one with a
-         * 400. Absent means ungated for one release — see the drawer for why it can be missing.
+         * 400.
          */
         readinessToken?: string;
-        /**
-         * File despite failing readiness items. The backend answers 403 unless the caller holds
-         * edit:admin:product-roadmap AND the product_roadmap_manage toggle, so this is the
-         * server-side half of the drawer's override toggle rather than a hint to it.
-         */
-        readinessOverride?: boolean;
       }
     >({
       query: body => ({
@@ -794,18 +787,6 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
       query: () => ({ url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS_CRITERIA }),
     }),
 
-    /** Grade a draft against that checklist. Every item must pass before filing is allowed. */
-    checkRoadmapReadiness: builder.mutation<
-      RoadmapReadinessReport,
-      { description: string; productGoal?: string }
-    >({
-      query: body => ({
-        url: ApiEndpoints.PRODUCT_ROADMAP.AI_READINESS,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
-
     roadmapAiDuplicates: builder.mutation<
       { matches: RoadmapDuplicateMatch[] },
       { description: string; productGoal?: string }
@@ -933,7 +914,6 @@ export const {
   useDeleteRoadmapSavedViewMutation,
   useSetRoadmapViewOrderMutation,
   useGetRoadmapReadinessCriteriaQuery,
-  useCheckRoadmapReadinessMutation,
   useRoadmapAiDuplicatesMutation,
   useRoadmapAiClassifyMutation,
   useRoadmapAiSummariseMutation,

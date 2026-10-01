@@ -368,7 +368,6 @@ export const ApiEndpoints = {
     VIEW_BY_ID: (id: string) => `/v1/product-roadmap/views/${id}`,
     VIEW_PIN: (id: string) => `/v1/product-roadmap/views/${id}/pin`,
     VIEW_TAB_ORDER: "/v1/product-roadmap/views/tab-order",
-    AI_READINESS: "/v1/product-roadmap/ai/readiness",
     AI_READINESS_CRITERIA: "/v1/product-roadmap/ai/readiness/criteria",
     AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",

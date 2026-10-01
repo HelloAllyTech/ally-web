@@ -1,12 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-import {
-  BugReportIcon,
-  LightbulbGuidedIcon,
-  LightbulbIcon,
-  RoadmapSettingsIcon,
-  TriangleIcon,
-} from "@icons";
+import { BugReportIcon, LightbulbGuidedIcon, RoadmapSettingsIcon, TriangleIcon } from "@icons";
 import { useSearchParams } from "react-router-dom";
 
 import { CarbonDropdown, Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -32,7 +26,6 @@ import {
   RoadmapViewState,
 } from "@types";
 
-import { AddOpportunityDrawer } from "./AddOpportunityDrawer";
 import { BugsTab } from "./BugsTab";
 import { BuilderSessionDrawer } from "./BuilderSessionDrawer";
 import { InterviewsTab } from "./InterviewsTab";
@@ -202,8 +195,7 @@ export const ProductRoadmap: React.FC = () => {
   const [sortBy, setSortBy] =
     useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("composite");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  /** The guided interview (the spark-bulb icon). Manage-gated; see the header button. */
+  /** The guided interview — the only way to file an opportunity from this page. */
   const [isInterviewOpen, setIsInterviewOpen] = useState(false);
   const [isReportBugOpen, setIsReportBugOpen] = useState(false);
   /**
@@ -845,43 +837,31 @@ export const ProductRoadmap: React.FC = () => {
             align="bottom" on both because a tooltip pointing up from the page header renders
             off-screen — the same reason the coin readout's does.
 
-            Order and gating are unchanged: new-opportunity first (the common case) and
-            VOTE-gated; report-a-bug second and deliberately ungated, since filing a bug is not
-            voting and the endpoint behind it accepts any logged-in user.
+            New-opportunity first (the common case) and VOTE-gated, the tier that may file;
+            report-a-bug second and deliberately ungated, since filing a bug is not voting and
+            the endpoint behind it accepts any logged-in user.
+
+            There is ONE new-opportunity door, and it is the guided interview. The blank form
+            with its run-it-yourself readiness check and manager override was retired: the
+            interview grades the same five criteria as it goes, so it reaches a fileable draft
+            without the filer doing the reframing alone, and two doors to one act made people
+            pick before they knew which they needed.
           */}
           {canVote && (
             <Tooltip label="New opportunity" align="bottom">
               <button
                 type="button"
                 aria-label="New opportunity"
-                onClick={() => setIsAddOpen(true)}
+                onClick={() => setIsInterviewOpen(true)}
                 className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
               >
-                {/* A lightbulb, not a plus: every opportunity is badged "Idea", and the plus
-                    said "add a row" where this says what kind of thing gets added.
+                {/* A bulb, not a plus: every opportunity is badged "Idea", and the plus said
+                    "add a row" where this says what kind of thing gets added. The spark on it is
+                    the interview — the only way to file one now that the blank form is gone.
 
                     The Material Symbol rather than Carbon's `Idea`. Carbon icons are filled
                     paths with no weight to turn down, so beside a `wght 100` symbol they read
                     as a heavier family — which is exactly what this row looked like. */}
-                <LightbulbIcon size={20} />
-              </button>
-            </Tooltip>
-          )}
-
-          {/*
-            The GUIDED door, immediately right of the blank one so the pair reads as two ways
-            into the same act rather than two features. Manage-gated while the interview is
-            experimental — see the route's docblock in roadmap-admin.controller.ts — so most
-            people who can file still see exactly one way to do it.
-          */}
-          {canManage && (
-            <Tooltip label="New opportunity, guided" align="bottom">
-              <button
-                type="button"
-                aria-label="New opportunity, guided by an interview"
-                onClick={() => setIsInterviewOpen(true)}
-                className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
-              >
                 <LightbulbGuidedIcon size={20} />
               </button>
             </Tooltip>
@@ -1060,7 +1040,7 @@ export const ProductRoadmap: React.FC = () => {
           canVote={canVote}
           canManage={canManage}
           onOpenOpportunity={openOpportunity}
-          onAddClick={() => setIsAddOpen(true)}
+          onAddClick={() => setIsInterviewOpen(true)}
           window={monthWindow}
           onWindowChange={setMonthWindow}
           layoutToggle={
@@ -1104,7 +1084,7 @@ export const ProductRoadmap: React.FC = () => {
           canVote={canVote}
           canManage={canManage}
           onOpenOpportunity={openOpportunity}
-          onAddClick={() => setIsAddOpen(true)}
+          onAddClick={() => setIsInterviewOpen(true)}
           offset={offset}
           pageSize={PAGE_SIZE}
           layoutToggle={layoutToggle}
@@ -1148,7 +1128,7 @@ export const ProductRoadmap: React.FC = () => {
           canVote={canVote}
           canManage={canManage}
           onOpenOpportunity={openOpportunity}
-          onAddClick={() => setIsAddOpen(true)}
+          onAddClick={() => setIsInterviewOpen(true)}
           loaded={data?.items.length ?? 0}
           onLoadMore={() => setListLoaded(current => current + FEED_PAGE_SIZE)}
           layoutToggle={layoutToggle}
@@ -1178,18 +1158,6 @@ export const ProductRoadmap: React.FC = () => {
         />
       )}
 
-      {isAddOpen && (
-        <AddOpportunityDrawer
-          goals={goals ?? []}
-          canManage={canManage}
-          onClose={() => setIsAddOpen(false)}
-          onOpenExisting={id => {
-            setIsAddOpen(false);
-            openOpportunity(id);
-          }}
-        />
-      )}
-
       {/*
         The interview hands over by FILING, then closing itself and opening the normal drawer on
         what it filed — which is where review and editing happen, because that drawer already
@@ -1200,6 +1168,10 @@ export const ProductRoadmap: React.FC = () => {
         <OpportunityInterviewDrawer
           onClose={() => setIsInterviewOpen(false)}
           onCreated={id => {
+            setIsInterviewOpen(false);
+            openOpportunity(id);
+          }}
+          onOpenExisting={id => {
             setIsInterviewOpen(false);
             openOpportunity(id);
           }}

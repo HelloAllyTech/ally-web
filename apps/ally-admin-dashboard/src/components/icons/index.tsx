@@ -372,12 +372,10 @@ export const VerticalAlignTopIcon = materialSymbol("vertical_align_top");
  * Both names MUST stay in index.html's `icon_names` subset. The font is requested with an
  * explicit glyph list, so a symbol missing from it renders as its own name in words.
  */
-export const LightbulbIcon = materialSymbol("lightbulb");
 /**
- * The GUIDED way to file an opportunity — a bulb with a spark on it, sitting next to the plain
- * bulb that opens the blank form. Deliberately the same family as `lightbulb` so the pair reads
- * as two doors into one thing rather than two unrelated actions; the spark is what says this one
- * is the assisted door. Material's own name for the glyph is "tips_and_updates".
+ * "New opportunity" — a bulb with a spark on it, which opens the guided interview, the only way
+ * to file one. Material's own name for the glyph is "tips_and_updates". The plain `lightbulb`
+ * that used to sit beside it opened the retired blank form and was removed with it.
  */
 export const LightbulbGuidedIcon = materialSymbol("tips_and_updates");
 export const BugReportIcon = materialSymbol("bug_report");
@@ -395,7 +393,7 @@ export const TriangleIcon = materialSymbol("change_history");
  * Thin-line glyphs for the roadmap Queue's collapsed toolbar controls.
  *
  * Material Symbols rather than the Carbon `Filter` / `Flag` / `SortAscending` already exported
- * above, for the reason given on LightbulbIcon: Carbon draws filled paths with no weight to turn
+ * above, for the reason given on LightbulbGuidedIcon: Carbon draws filled paths with no weight to turn
  * down, and this toolbar sits under a header row drawn at `wght 100`.
  *
  * BackArrowIcon is the collapse affordance, NOT navigation — it returns an expanded control to
@@ -416,7 +414,7 @@ export const BuilderAgentIcon = materialSymbol("auto_awesome");
  * The roadmap's admin drawer — product goals, strategy & ranking, merge and split.
  *
  * A Material Symbol, not the Carbon `Settings` exported above, because this sits in the roadmap
- * header beside LightbulbIcon and BugReportIcon: Carbon draws filled paths with no weight to turn
+ * header beside LightbulbGuidedIcon and BugReportIcon: Carbon draws filled paths with no weight to turn
  * down, so a Carbon gear lands visibly heavier than the `wght 100` symbols either side of it.
  *
  * REPLACES StrategyRankIcon (`materialSymbol("balance")`), which was removed rather than left

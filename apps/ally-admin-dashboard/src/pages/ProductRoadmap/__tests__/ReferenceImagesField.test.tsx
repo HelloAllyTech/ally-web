@@ -23,7 +23,8 @@ const { presign, put } = spies;
 const toastError = spies.toastError;
 
 vi.mock("@api", () => ({
-  // Stable across renders, for the reason spelled out in AddOpportunityDrawer.test.tsx.
+  // Stable across renders: a fresh trigger per render would change the identity of a hook
+  // dependency and re-run effects that close over it.
   useGetRoadmapReferenceImageUploadUrlMutation: () => [spies.presign, { isLoading: false }],
 }));
 vi.mock("@icons", () => ({
