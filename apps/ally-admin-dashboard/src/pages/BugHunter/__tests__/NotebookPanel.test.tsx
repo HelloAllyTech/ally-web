@@ -8,10 +8,6 @@ const addEntry = vi.fn();
 const retireEntry = vi.fn();
 
 vi.mock("@api", () => ({
-  // SweepPanel is imported for its repo list; its hook and the store util the
-  // API index exports have to exist on the mock even though nothing calls them.
-  baseAPI: { util: { invalidateTags: vi.fn() } },
-  useTriggerBugHuntSweepMutation: () => [vi.fn(), { isLoading: false }],
   useGetBugHunterMemoryQuery: (...args: unknown[]) => getMemory(...args),
   useAddBugHunterMemoryMutation: () => [addEntry, { isLoading: false }],
   useRetireBugHunterMemoryMutation: () => [retireEntry, { isLoading: false }],
@@ -35,11 +31,18 @@ vi.mock("@components/action-confirmation-popup", () => ({
   ),
 }));
 vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Button: ({ children, onClick, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled}>
+  Button: ({ children, onClick, disabled, iconDescription }: any) => (
+    <button onClick={onClick} disabled={disabled} aria-label={iconDescription}>
       {children}
     </button>
   ),
+  SidePanel: ({ open, title, children }: any) =>
+    open ? (
+      <div data-testid="side-panel">
+        <h2>{title}</h2>
+        {children}
+      </div>
+    ) : null,
   Select: ({ id, labelText, value, onChange, children }: any) => (
     <label>
       {labelText}
@@ -123,8 +126,23 @@ describe("NotebookPanel", () => {
   });
 
   describe("adding an entry", () => {
+    // The form is behind a "+" beside the repo filter (2026-10-01): nothing
+    // about adding is on screen until it is asked for.
+    const openForm = () => fireEvent.click(screen.getByLabelText("Add an entry"));
+
+    it("keeps the form in a side panel until the plus is pressed", () => {
+      renderPanel([]);
+      expect(screen.queryByTestId("side-panel")).not.toBeInTheDocument();
+      expect(screen.queryByText("Add to notebook")).not.toBeInTheDocument();
+
+      openForm();
+      expect(screen.getByTestId("side-panel")).toBeInTheDocument();
+      expect(screen.getByText("Add to notebook")).toBeInTheDocument();
+    });
+
     it("refuses an entry over 600 characters and says by how much", () => {
       renderPanel([]);
+      openForm();
       fireEvent.change(document.getElementById("bug-hunter-notebook-body")!, {
         target: { value: "x".repeat(601) },
       });
@@ -132,8 +150,9 @@ describe("NotebookPanel", () => {
       expect(screen.getByText("Add to notebook")).toBeDisabled();
     });
 
-    it("sends the trimmed body, the chosen repo, split tags and the pin", async () => {
+    it("sends the trimmed body, the chosen repo, split tags and the pin, then closes the panel", async () => {
       renderPanel([]);
+      openForm();
       fireEvent.change(document.getElementById("bug-hunter-notebook-body")!, {
         target: { value: "  A lesson.  " },
       });
@@ -154,10 +173,12 @@ describe("NotebookPanel", () => {
           pinned: true,
         }),
       );
+      await waitFor(() => expect(screen.queryByTestId("side-panel")).not.toBeInTheDocument());
     });
 
     it("sends an empty repos list for a platform-wide entry", async () => {
       renderPanel([]);
+      openForm();
       fireEvent.change(document.getElementById("bug-hunter-notebook-body")!, {
         target: { value: "everywhere" },
       });
@@ -183,7 +204,7 @@ describe("NotebookPanel", () => {
 
   it("is read-only without the toggle: no form, no retire button, and says why", () => {
     renderPanel([entry()], false);
-    expect(screen.queryByText("Add to notebook")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Add an entry")).not.toBeInTheDocument();
     expect(screen.queryByText("Retire")).not.toBeInTheDocument();
     expect(screen.getByText(/adding and retiring needs the Bug Hunter toggle/)).toBeInTheDocument();
   });

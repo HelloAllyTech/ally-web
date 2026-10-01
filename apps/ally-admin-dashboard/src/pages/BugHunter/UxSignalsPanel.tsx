@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import { InlineNotification, Tile } from "@ally-ui-mono/ui-shared";
+import { InlineNotification } from "@ally-ui-mono/ui-shared";
 import { baseAPI, useGetUxSignalScansQuery, useScanUxSignalsMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -45,6 +45,13 @@ const fill = (template: string, values: Record<string, string | number>): string
  * second place to learn and a second approve/reject flow to keep consistent with
  * the first. So the only thing that needs a home is the trigger, and the page
  * where most of its output lands is where someone would look for it.
+ *
+ * ## Why it is one line
+ *
+ * It used to be a tile with a heading, a paragraph explaining the feature and
+ * the last-scan line under it. On 2026-10-01 it was cut to a single row — name,
+ * last scan, button — because the paragraph was read once and then scrolled
+ * past every day on the way to the table. The About tab still explains it.
  *
  * ## Why the last scan is stated rather than just the button
  *
@@ -182,25 +189,22 @@ export const UxSignalsPanel: FC = () => {
   const completed = result?.status === UxSignalScanStatus.COMPLETED;
 
   return (
-    <Tile className="flex min-w-0 flex-col gap-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-typography-primary text-base font-medium">{strings.title}</h3>
-          <p className="text-typography-700 mt-1 text-sm">{strings.description}</p>
-          <p className="text-typography-600 mt-1 text-xs">{lastScanLine()}</p>
-        </div>
-        <Button
-          variant={ButtonVariant.SECONDARY}
-          onClick={runScan}
-          disabled={isBusy}
-          /* The wait is ~2 minutes of detector queries plus one triage call, and
-             it outlives this page — the label says what is happening, the
-             tooltip says it keeps going if you leave. */
-          title={strings.scanTooltip}
-        >
-          {isBusy ? strings.scanning : strings.scanNow}
-        </Button>
-      </div>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded border border-border-light bg-white px-3 py-2">
+      <span className="text-sm font-medium text-typography-900">{strings.title}</span>
+      <span className="text-xs text-typography-600 min-w-0 flex-1 basis-[14rem]">
+        {lastScanLine()}
+      </span>
+      <Button
+        variant={ButtonVariant.SECONDARY}
+        onClick={runScan}
+        disabled={isBusy}
+        /* The wait is ~2 minutes of detector queries plus one triage call, and
+           it outlives this page — the label says what is happening, the
+           tooltip says it keeps going if you leave. */
+        title={strings.scanTooltip}
+      >
+        {isBusy ? strings.scanning : strings.scanNow}
+      </Button>
 
       {/* Zero counts are a real, successful result — a quiet week, or everything
           found was already filed. Saying so plainly is what stops the next
@@ -239,7 +243,7 @@ export const UxSignalsPanel: FC = () => {
                   reason: result.error ?? strings.scanUnknownReason,
                 })
           }
-          className="max-w-full"
+          className="basis-full max-w-full"
         />
       )}
 
@@ -253,9 +257,9 @@ export const UxSignalsPanel: FC = () => {
           onCloseButtonClick={() => setStartError(null)}
           title=""
           subtitle={startError}
-          className="max-w-full"
+          className="basis-full max-w-full"
         />
       )}
-    </Tile>
+    </div>
   );
 };

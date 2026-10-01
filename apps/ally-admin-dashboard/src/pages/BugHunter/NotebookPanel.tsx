@@ -1,8 +1,9 @@
 import { FC, useMemo, useState } from "react";
 
+import { Add } from "@icons";
 import { toast } from "sonner";
 
-import { Button, Select, SelectItem, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Button, Select, SelectItem, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useAddBugHunterMemoryMutation,
   useGetBugHunterMemoryQuery,
@@ -15,7 +16,7 @@ import { en } from "@constants";
 import { BUG_HUNTER_MEMORY_BODY_MAX, BugHunterMemoryEntry } from "@types";
 import { formatDate } from "@utils";
 
-import { SWEEPABLE_REPOS } from "./SweepPanel";
+import { BUG_HUNTER_REPOS } from "./repos";
 
 /** The `Select` value that means "no repo filter: platform-wide entries only". */
 const ALL_REPOS = "__all__";
@@ -40,9 +41,13 @@ export interface NotebookPanelProps {
  * Retiring rather than deleting, because an entry the curator merged others
  * into is provenance for those, and because "we decided this was wrong" is
  * itself worth keeping.
+ *
+ * The form opens from a "+" beside the repo filter and lives in a side panel
+ * (2026-10-01). It used to sit expanded under the list on every visit, which
+ * put a four-field form on a page people mostly come to read.
  */
 export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
-  const [repo, setRepo] = useState<string>(SWEEPABLE_REPOS[0]);
+  const [repo, setRepo] = useState<string>(BUG_HUNTER_REPOS[0]);
   const { data, isLoading, isError } = useGetBugHunterMemoryQuery(
     repo === ALL_REPOS ? { limit: 100 } : { repo, limit: 100 },
   );
@@ -50,10 +55,11 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
   const [retireEntry, { isLoading: isRetiring }] = useRetireBugHunterMemoryMutation();
 
   const [body, setBody] = useState("");
-  const [scope, setScope] = useState<string>(SWEEPABLE_REPOS[0]);
+  const [scope, setScope] = useState<string>(BUG_HUNTER_REPOS[0]);
   const [tags, setTags] = useState("");
   const [pinned, setPinned] = useState(false);
   const [retiring, setRetiring] = useState<BugHunterMemoryEntry | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const trimmed = body.trim();
   const tooLong = trimmed.length > BUG_HUNTER_MEMORY_BODY_MAX;
@@ -75,6 +81,7 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
       setBody("");
       setTags("");
       setPinned(false);
+      setAdding(false);
     } catch {
       toast.error(en.bugHunter.notebookAddFailed);
     }
@@ -104,18 +111,30 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
         </div>
       </div>
 
-      <div className="mt-4 w-[220px]">
-        <Select
-          id="bug-hunter-notebook-repo"
-          labelText={en.bugHunter.notebookRepoLabel}
-          value={repo}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRepo(e.target.value)}
-        >
-          {SWEEPABLE_REPOS.map(name => (
-            <SelectItem key={name} value={name} text={name} />
-          ))}
-          <SelectItem value={ALL_REPOS} text={en.bugHunter.notebookRepoAll} />
-        </Select>
+      <div className="mt-4 flex items-end justify-between gap-3">
+        <div className="w-[220px]">
+          <Select
+            id="bug-hunter-notebook-repo"
+            labelText={en.bugHunter.notebookRepoLabel}
+            value={repo}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRepo(e.target.value)}
+          >
+            {BUG_HUNTER_REPOS.map(name => (
+              <SelectItem key={name} value={name} text={name} />
+            ))}
+            <SelectItem value={ALL_REPOS} text={en.bugHunter.notebookRepoAll} />
+          </Select>
+        </div>
+        {canTriage && (
+          <Button
+            size="md"
+            kind="primary"
+            hasIconOnly
+            renderIcon={Add}
+            iconDescription={en.bugHunter.notebookAddTitle}
+            onClick={() => setAdding(true)}
+          />
+        )}
       </div>
 
       <div className="mt-4 border border-border-light rounded">
@@ -180,12 +199,18 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
         )}
       </div>
 
-      {canTriage ? (
-        <div className="mt-6 rounded-lg border border-border-light bg-neutral-50 p-4">
-          <h3 className="text-sm font-semibold text-typography-900">
-            {en.bugHunter.notebookAddTitle}
-          </h3>
-          <p className="text-xs text-typography-600 mt-1">
+      {!canTriage && (
+        <p className="mt-4 text-xs text-typography-500">{en.bugHunter.notebookReadOnly}</p>
+      )}
+
+      {canTriage && adding && (
+        <SidePanel
+          open
+          onClose={() => setAdding(false)}
+          title={en.bugHunter.notebookAddTitle}
+          className="w-[28rem]"
+        >
+          <p className="text-xs text-typography-600">
             {en.bugHunter.notebookAddHint.replace("{max}", String(BUG_HUNTER_MEMORY_BODY_MAX))}
           </p>
 
@@ -196,57 +221,53 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
               placeholder={en.bugHunter.notebookAddPlaceholder}
               value={body}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value)}
-              rows={4}
+              rows={5}
               invalid={tooLong}
               invalidText={en.bugHunter.notebookAddTooLong
                 .replace("{length}", String(trimmed.length))
                 .replace("{max}", String(BUG_HUNTER_MEMORY_BODY_MAX))}
             />
 
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="w-[200px]">
-                <Select
-                  id="bug-hunter-notebook-scope"
-                  labelText={en.bugHunter.notebookAddRepoLabel}
-                  value={scope}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setScope(e.target.value)}
-                >
-                  {SWEEPABLE_REPOS.map(name => (
-                    <SelectItem key={name} value={name} text={name} />
-                  ))}
-                  <SelectItem value={ALL_REPOS} text={en.bugHunter.notebookAddRepoAll} />
-                </Select>
-              </div>
+            <Select
+              id="bug-hunter-notebook-scope"
+              labelText={en.bugHunter.notebookAddRepoLabel}
+              value={scope}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setScope(e.target.value)}
+            >
+              {BUG_HUNTER_REPOS.map(name => (
+                <SelectItem key={name} value={name} text={name} />
+              ))}
+              <SelectItem value={ALL_REPOS} text={en.bugHunter.notebookAddRepoAll} />
+            </Select>
 
-              <label className="flex flex-col gap-1 text-xs text-typography-700 flex-1 min-w-[220px]">
-                {en.bugHunter.notebookAddTagsLabel}
-                <input
-                  type="text"
-                  value={tags}
-                  onChange={e => setTags(e.target.value)}
-                  placeholder={en.bugHunter.notebookAddTagsPlaceholder}
-                  className="h-10 rounded border border-border-light bg-white px-3 text-sm text-typography-900"
-                  aria-label={en.bugHunter.notebookAddTagsLabel}
-                />
-              </label>
+            <label className="flex flex-col gap-1 text-xs text-typography-700">
+              {en.bugHunter.notebookAddTagsLabel}
+              <input
+                type="text"
+                value={tags}
+                onChange={e => setTags(e.target.value)}
+                placeholder={en.bugHunter.notebookAddTagsPlaceholder}
+                className="h-10 rounded border border-border-light bg-white px-3 text-sm text-typography-900"
+                aria-label={en.bugHunter.notebookAddTagsLabel}
+              />
+            </label>
 
-              <label className="inline-flex items-center gap-2 text-sm text-typography-700 cursor-pointer pb-2.5">
-                <input
-                  type="checkbox"
-                  checked={pinned}
-                  onChange={e => setPinned(e.target.checked)}
-                  className="cursor-pointer"
-                />
-                {en.bugHunter.notebookAddPinLabel}
-                <Tooltip label={en.bugHunter.notebookAddPinTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
-                    <TooltipIcon />
-                  </button>
-                </Tooltip>
-              </label>
-            </div>
+            <label className="inline-flex items-center gap-2 text-sm text-typography-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={pinned}
+                onChange={e => setPinned(e.target.checked)}
+                className="cursor-pointer"
+              />
+              {en.bugHunter.notebookAddPinLabel}
+              <Tooltip label={en.bugHunter.notebookAddPinTooltip} align="top">
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
+            </label>
 
-            <div>
+            <div className="flex gap-2">
               <Button
                 size="md"
                 kind="primary"
@@ -255,11 +276,12 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
               >
                 {isAdding ? en.bugHunter.notebookAddButtonBusy : en.bugHunter.notebookAddButton}
               </Button>
+              <Button size="md" kind="ghost" onClick={() => setAdding(false)}>
+                {en.bugHunter.cancel}
+              </Button>
             </div>
           </div>
-        </div>
-      ) : (
-        <p className="mt-4 text-xs text-typography-500">{en.bugHunter.notebookReadOnly}</p>
+        </SidePanel>
       )}
 
       {retiring && (

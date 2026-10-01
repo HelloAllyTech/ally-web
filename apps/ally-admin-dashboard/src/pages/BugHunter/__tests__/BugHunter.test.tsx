@@ -15,7 +15,6 @@ vi.mock("@api", () => ({
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
-  useTriggerBugHuntSweepMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useGetBugHuntRunQuery: vi.fn(),
   useGetBugFindingsQuery: vi.fn(),
   useGetBugFindingQuery: vi.fn(),
@@ -30,12 +29,6 @@ vi.mock("@api", () => ({
   // mounted by the Performance section and every case here is about which
   // sections render, not about the figures.
   useGetBugHunterMetricsQuery: vi.fn(() => ({ data: undefined, isLoading: false, isError: false })),
-  useGetBugHunterNotificationsQuery: vi.fn(() => ({
-    data: { items: [], unreadCount: 0 },
-    isLoading: false,
-  })),
-  useMarkBugHunterNotificationReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
-  useMarkAllBugHunterNotificationsReadMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   // The Notebook tab's own hooks. Empty rather than absent: mounted only when
   // that section is open, but the module mock has to supply them.
   useGetBugHunterMemoryQuery: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false })),
@@ -266,7 +259,6 @@ describe("BugHunter", () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
-    expect(screen.getByText(/Software test engineer/)).toBeInTheDocument();
   });
 
   it("renders every About-me question, so a reader can find them before putting it on duty", () => {
@@ -390,7 +382,7 @@ describe("BugHunter", () => {
   // The queue is the reason the page was re-ordered: the old layout could state
   // "4 bugs are waiting on your call" on the card and offer no way to act on any
   // of them, two screens above the table where those four were hiding.
-  it("puts what it needs from you above the bugs table, once anything is blocked", () => {
+  it("has no queue and no inbox on the work tab: decisions live in the table", () => {
     mockSettingsQuery({
       data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
     });
@@ -417,30 +409,17 @@ describe("BugHunter", () => {
       </MemoryRouter>,
     );
 
-    const queue = screen.getByText("What I need from you");
-    const bugs = screen.getByText("Bugs I'm tracking");
-    expect(queue.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("says nothing at all about decisions on a quiet day", () => {
-    mockSettingsQuery({
-      data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
-    });
-    render(
-      <MemoryRouter>
-        <BugHunter />
-      </MemoryRouter>,
-    );
-
-    // An always-present section headed "What I need from you" saying "nothing"
-    // trains a reader to skip the region where the urgent thing later appears.
+    // Both sections came off the page on 2026-10-01: the queue duplicated the
+    // table's Needs-you bucket and the drawer, the inbox duplicated the queue.
     expect(screen.queryByText("What I need from you")).not.toBeInTheDocument();
+    expect(screen.queryByText("Messages from Bug Hunter")).not.toBeInTheDocument();
+    expect(screen.getByText("Bugs I'm tracking")).toBeInTheDocument();
   });
 
   // The section the page was missing: every other surface here is a record of
   // something, and the agent's live work had no page-level home beyond one
   // sentence on the card.
-  it("puts what it is doing right now between your blocked work and the bugs table", () => {
+  it("puts what it is doing right now above the bugs table", () => {
     mockSettingsQuery({
       data: { mode: BugHunterMode.AI, updatedBy: 7, updatedAt: "2026-08-01T00:00:00.000Z" },
     });
@@ -479,11 +458,9 @@ describe("BugHunter", () => {
       </MemoryRouter>,
     );
 
-    const queue = screen.getByText("What I need from you");
     const live = screen.getByText("On it right now");
     const bugs = screen.getByText("Bugs I'm tracking");
 
-    expect(queue.compareDocumentPosition(live) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(live.compareDocumentPosition(bugs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

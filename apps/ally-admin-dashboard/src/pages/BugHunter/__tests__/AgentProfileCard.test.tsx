@@ -14,7 +14,6 @@ vi.mock("@api", () => ({
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugFindingsQuery: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
-  useTriggerBugHuntSweepMutation: vi.fn(),
 }));
 
 vi.mock("@assets", () => ({
@@ -69,7 +68,6 @@ import { BugFinding, BugFindingStatus, BugHunterMode, BugHuntRunStatus } from "@
 import { AgentProfileCard } from "../AgentProfileCard";
 
 const updateSettings = vi.fn(() => ({ unwrap: () => Promise.resolve({}) }));
-const triggerSweep = vi.fn(() => ({ unwrap: () => Promise.resolve({ id: "run-1" }) }));
 
 const mockSettings = (mode = BugHunterMode.OFF, overrides: Record<string, unknown> = {}) => {
   (api.useGetBugHunterSettingsQuery as any).mockReturnValue({
@@ -106,20 +104,19 @@ describe("AgentProfileCard", () => {
       updateSettings,
       { isLoading: false },
     ]);
-    (api.useTriggerBugHuntSweepMutation as any).mockReturnValue([
-      triggerSweep,
-      { isLoading: false },
-    ]);
   });
 
-  it("introduces Bug Hunter as a person with a job, not a feature", () => {
+  it("leads with the name and the avatar, and nothing else about who it is", () => {
     render(<AgentProfileCard />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
-    expect(screen.getByText(/Software test engineer/)).toBeInTheDocument();
+    // The job title lives in the avatar's label for a screen reader, not on
+    // screen: role, team and the introduction came off the card on 2026-10-01.
     expect(
       screen.getByRole("img", { name: /Bug Hunter, Software test engineer/ }),
     ).toBeInTheDocument();
+    expect(screen.queryByText(/Software test engineer/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/I read the Ally repos every night/)).not.toBeInTheDocument();
   });
 
   it("says what it is doing, in its own voice, from the state of the work", () => {
@@ -138,33 +135,6 @@ describe("AgentProfileCard", () => {
 
     expect(screen.getByText("Working")).toBeInTheDocument();
     expect(screen.getByText("I'm sweeping ally-be right now.")).toBeInTheDocument();
-  });
-
-  // The four workload numbers moved off this card and became the bugs table's
-  // filter chips — see LifecycleBucketChips. What the card owes a reader now is
-  // ordering: the sentence about what it is doing has to come above the line
-  // about what its job title is, because only one of those is worth reading
-  // twice a day.
-  it("puts what it is doing above what its job title is", () => {
-    mockSettings(BugHunterMode.AI);
-    mockFindings([{ id: "f-1", status: BugFindingStatus.FIXING }]);
-    render(<AgentProfileCard />);
-
-    const doing = screen.getByText("I'm working on one fix right now.");
-    const jobTitle = screen.getByText(/Software test engineer/);
-    expect(
-      doing.compareDocumentPosition(jobTitle) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("introduces itself only while off duty, since that is the one moment nothing else is on the page", () => {
-    const { unmount } = render(<AgentProfileCard />);
-    expect(screen.getByText(/I read the Ally repos every night/)).toBeInTheDocument();
-    unmount();
-
-    mockSettings(BugHunterMode.AI);
-    render(<AgentProfileCard />);
-    expect(screen.queryByText(/I read the Ally repos every night/)).not.toBeInTheDocument();
   });
 
   it("starts on the mode the backend actually has", () => {
@@ -224,86 +194,11 @@ describe("AgentProfileCard", () => {
     expect(screen.queryByTestId("mode-switcher")).not.toBeInTheDocument();
   });
 
-  // ── Sweeping on demand ───────────────────────────────────────────────────
-  // The card has always claimed Bug Hunter works "whenever you ask". Until this
-  // control existed, nothing could ask: there was no cron, and the only route
-  // that opened a run was api-key-only.
-  // Opens the sweep disclosure. The controls fold now: they are an action taken
-  // rarely and they carried two paragraphs of explanation, where the
-  // working-style switcher is a state worth reading at a glance and stays open.
-  // See SweepPanel.tsx.
-  const openSweep = () => fireEvent.click(screen.getByText("Sweep a repo now"));
+  it("offers no on-demand sweep: sweeps are scheduled, and the button came off the card", () => {
+    mockSettings(BugHunterMode.MANUAL);
+    render(<AgentProfileCard />);
 
-  describe("asking for a sweep", () => {
-    it("keeps the sweep controls folded until asked for, so they cost no space when unused", () => {
-      mockSettings(BugHunterMode.MANUAL);
-      render(<AgentProfileCard />);
-
-      expect(screen.queryByText("Start a sweep")).not.toBeInTheDocument();
-      openSweep();
-      expect(screen.getByText("Start a sweep")).toBeInTheDocument();
-    });
-
-    it("asks before starting one, and starts nothing until confirmed", () => {
-      mockSettings(BugHunterMode.MANUAL);
-      render(<AgentProfileCard />);
-
-      openSweep();
-      fireEvent.click(screen.getByText("Start a sweep"));
-      expect(screen.getByTestId("confirm-popup")).toHaveTextContent(
-        "Start a sweep of ally-be?",
-      );
-      expect(triggerSweep).not.toHaveBeenCalled();
-    });
-
-    it("sweeps the repo the admin picked, not always the first one", async () => {
-      mockSettings(BugHunterMode.MANUAL);
-      render(<AgentProfileCard />);
-
-      openSweep();
-      fireEvent.change(screen.getByLabelText("Sweep a repo"), {
-        target: { value: "ally-ai-learn" },
-      });
-      fireEvent.click(screen.getByText("Start a sweep"));
-      fireEvent.click(screen.getByText("Start it"));
-
-      await waitFor(() =>
-        expect(triggerSweep).toHaveBeenCalledWith({ repo: "ally-ai-learn", deep: false }),
-      );
-    });
-
-    it("passes the deep flag only when asked, since it costs much more", async () => {
-      mockSettings(BugHunterMode.AI);
-      render(<AgentProfileCard />);
-
-      openSweep();
-      fireEvent.click(screen.getByLabelText("Read the whole repo"));
-      fireEvent.click(screen.getByText("Start a sweep"));
-      fireEvent.click(screen.getByText("Start it"));
-
-      await waitFor(() =>
-        expect(triggerSweep).toHaveBeenCalledWith({ repo: "ally-be", deep: true }),
-      );
-    });
-
-    it("cannot be pressed while Bug Hunter is off duty", () => {
-      // The backend refuses too, recording a skipped run — this just avoids
-      // offering an action that cannot happen.
-      mockSettings(BugHunterMode.OFF);
-      render(<AgentProfileCard />);
-
-      openSweep();
-      expect(screen.getByText("Start a sweep")).toBeDisabled();
-    });
-
-    it("is hidden entirely when settings failed to load", () => {
-      mockSettings(BugHunterMode.OFF, { data: undefined, isError: true });
-      render(<AgentProfileCard />);
-
-      // Not just the controls: the disclosure that would reveal them is gone
-      // too, so there is no affordance suggesting a sweep is available.
-      expect(screen.queryByText("Sweep a repo now")).not.toBeInTheDocument();
-      expect(screen.queryByText("Start a sweep")).not.toBeInTheDocument();
-    });
+    expect(screen.queryByText("Sweep a repo now")).not.toBeInTheDocument();
+    expect(screen.queryByText("Start a sweep")).not.toBeInTheDocument();
   });
 });

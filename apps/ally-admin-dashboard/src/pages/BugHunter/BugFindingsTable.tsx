@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Launch } from "@icons";
 import { toast } from "sonner";
 
 import {
@@ -354,7 +355,6 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
     sort: sortKey,
     direction: sortDirection,
     pageSize,
-    density,
     setBug,
     setBucket,
     setSearch,
@@ -368,7 +368,6 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
     setDuplicatesOnly,
     toggleSort,
     setPageSize,
-    setDensity,
     clearFilters,
   } = useBugHunterUrlState();
 
@@ -822,7 +821,10 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
     togglePage,
   ]);
 
-  const rowPadding = density === "compact" ? "py-1.5" : "py-2.5";
+  // One row height. The comfortable/compact toggle came off the toolbar on
+  // 2026-10-01 along with the "Keyboard" button; compact is what everyone had
+  // switched to, and `?` still opens the shortcut sheet.
+  const rowPadding = "py-1.5";
 
   return (
     <div id={BUG_FINDINGS_TABLE_ANCHOR_ID} className="scroll-mt-4">
@@ -832,44 +834,6 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
             {en.bugHunter.findingsTitle}
           </h2>
           <p className="text-xs text-typography-600">{en.bugHunter.findingsSubtitle}</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Density is a preference, but a shareable one — it rides in the URL
-              with the filters rather than in local storage, so a link carries
-              the whole view. The visible "Rows" label that used to sit beside
-              this pair is gone: the two options name themselves, and it was a
-              third piece of text in a corner already holding two controls. */}
-          <div
-            className="flex rounded border border-border-light overflow-hidden"
-            role="group"
-            aria-label={en.bugHunter.densityLabel}
-          >
-            {(["comfortable", "compact"] as const).map(option => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={density === option}
-                onClick={() => setDensity(option)}
-                className={`px-2 py-1 text-[11px] cursor-pointer ${
-                  density === option
-                    ? "bg-neutral-100 text-typography-900 font-medium"
-                    : "bg-white text-typography-600 hover:bg-neutral-50"
-                }`}
-              >
-                {option === "comfortable"
-                  ? en.bugHunter.densityComfortable
-                  : en.bugHunter.densityCompact}
-              </button>
-            ))}
-          </div>
-
-          {/* The discoverability half of the keyboard work — see
-              KeyboardShortcutSheet on why a hint plus a sheet, and not a
-              tooltip on a button. */}
-          <Button size="sm" kind="ghost" onClick={onShowShortcuts}>
-            {en.bugHunter.shortcutsButton}
-          </Button>
         </div>
       </div>
 
@@ -1379,10 +1343,12 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                             href={finding.prUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-primary-600 underline"
+                            className="inline-flex items-center text-primary-600 hover:text-primary-800"
+                            aria-label={en.bugHunter.viewPr}
+                            title={en.bugHunter.viewPr}
                             onClick={e => e.stopPropagation()}
                           >
-                            {en.bugHunter.viewPr}
+                            <Launch className="h-4 w-4" aria-hidden="true" />
                           </a>
                         ) : (
                           "—"
@@ -1458,9 +1424,8 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
               window notice and a shortcuts hint as three paragraphs of
               micro-copy under every table — permanent chrome that said nothing
               new after the first read. The count and the window caveat are one
-              sentence now, and the shortcuts hint is gone: there is a "Keyboard"
-              button at the top of this section and `?` opens the same sheet from
-              anywhere on the page. */}
+              sentence now, and the shortcuts hint is gone: `?` opens the
+              shortcut sheet from anywhere on the page. */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <p className="text-xs text-typography-600" aria-live="polite">
               {view.matched === 1

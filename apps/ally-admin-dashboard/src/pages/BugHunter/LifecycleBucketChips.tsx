@@ -35,7 +35,7 @@ const bucketLabels = (): Record<LifecycleBucket, string> => ({
  * that has told you nothing about which to look at. This is Stacks' *Dynamic
  * visibility scaling tied to information urgency* — quiet the signal when
  * normal, amplify it when it needs acting on — and it is what lets the
- * `NeedsYouQueue` below stay the only coloured region on the page.
+ * the live board below stay the only coloured region on the page.
  */
 const OCCUPIED_STYLES: Partial<Record<LifecycleBucket, string>> = {
   needs_you: "border-orange-300 bg-orange-50 text-orange-800",

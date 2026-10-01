@@ -9,7 +9,7 @@ vi.mock("@api", () => ({
   useGetBugHuntRunQuery: (...args: unknown[]) => useGetBugHuntRunQuery(...(args as [])),
 }));
 
-// See NeedsYouQueue's note: @constants reads `cellTypes` off this barrel at
+// See BugFindingsTable's note: @constants reads `cellTypes` off this barrel at
 // module-eval time. The avatar is imported by its own path and stays real.
 vi.mock("@components", () => ({ cellTypes: {} }));
 

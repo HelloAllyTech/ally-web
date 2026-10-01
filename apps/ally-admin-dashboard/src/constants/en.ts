@@ -2371,8 +2371,6 @@ export const en = {
   },
   uxSignals: {
     title: "UX Signals",
-    description:
-      "Reads the last seven days of product telemetry, then files what looks broken as a bug below and what looks like a missed opportunity into Analytics \u2192 Suggestions. Nothing is fixed or filed to the roadmap without your decision.",
     scanNow: "Scan now",
     scanning: "Scanning telemetry\u2026",
     scanTooltip:
@@ -2420,33 +2418,7 @@ export const en = {
     // where the fault is.
     agentName: "Bug Hunter",
     agentRole: "Software test engineer",
-    agentTeam: "Ally platform · ally-be, ally-web, ally-ai, ally-ai-learn, ally-mobile",
     agentHours: "Nightly sweep, plus whenever you ask",
-    // The "whenever you ask" half of agentHours, which until now was not true:
-    // nothing could ask.
-    sweepLabel: "Sweep a repo",
-    sweepButton: "Start a sweep",
-    sweepButtonBusy: "Starting…",
-    sweepDeepLabel: "Read the whole repo",
-    sweepDeepTooltip:
-      "By default a sweep only reads what changed in the last day. Reading everything finds more, costs considerably more, and is worth doing occasionally rather than nightly.",
-    sweepTooltip:
-      "Bug Hunter sweeps every repo overnight. Use this when you would rather not wait — for instance just after a release, or when someone has reported something you want chased down now.",
-    sweepConfirmTitle: "Start a sweep of {repo}?",
-    sweepConfirmBody:
-      "Bug Hunter will run that repo's tests, review recent changes, read production errors and check reported bugs. In Works-solo mode it may also open pull requests. It never deploys anything.",
-    sweepConfirm: "Start it",
-    sweepStarted: "Bug Hunter is sweeping {repo}.",
-    sweepFailed: "Could not start the sweep.",
-    // Pressing it while off duty is not an error — the backend records the
-    // skipped run — so say what happened rather than showing a failure.
-    sweepSkipped: "Bug Hunter is off duty, so nothing was swept.",
-    // The sweep controls fold behind this. See SweepPanel.tsx for why these
-    // fold and the working-style switcher does not.
-    sweepPanelShow: "Sweep a repo now",
-    sweepPanelHide: "Hide sweep controls",
-    agentIntro:
-      "I read the Ally repos every night, reproduce what I find with a failing test, fix it and open the PR. When a call isn't mine to make, I stop and ask you.",
     agentStatusOffDuty: "Off duty",
     agentStatusOffDutyDetail:
       "I'm not picking anything up. Nightly sweeps and fix sessions are both paused until you put me back on.",
@@ -2539,7 +2511,6 @@ export const en = {
     modeConfirm: "Confirm",
     cancel: "Cancel",
     updateFailed: "Couldn't update the setting. Try again.",
-    lastChangedBy: "Working style last set by user #{userId}",
     // Links to the shared Model Settings hub (see `en.modelSettings`) rather
     // than a Bug-Hunter-only page — Builder's model tiers live there too.
     settingsLink: "Model settings",
@@ -2868,16 +2839,7 @@ export const en = {
     drawerAnswerFailed: "Couldn't send that answer. Try again.",
     drawerAnsweredBy: "Answered by user #{userId}",
     drawerDecidedBy: "Decided by user #{userId}",
-    // ── Messages (Bug Hunter's only channel) ─────────────────────────────────
-    inboxTitle: "Messages from Bug Hunter",
     inboxWaitingOnYou: "{count} waiting on you",
-    inboxNothingBlocked: "Nothing blocked — just updates",
-    inboxAllClear: "Nothing new",
-    inboxMarkAllRead: "Mark all read",
-    inboxEmpty: "Nothing yet. I post here when I need an answer, hit a problem, or ship something.",
-    notificationLevelActionNeeded: "Needs you",
-    notificationLevelProblem: "Problem",
-    notificationLevelInfo: "Update",
     // ── The notebook ─────────────────────────────────────────────────────────
     notebookTitle: "My notebook",
     notebookIntro:
@@ -3237,9 +3199,6 @@ export const en = {
     quickApproveConfirm: "Approve it",
     quickRejectConfirm: "Reject it",
     quickActionNotApplicable: "That doesn't apply to this bug from where it is.",
-    densityLabel: "Row height",
-    densityComfortable: "Comfortable",
-    densityCompact: "Compact",
     // ── Bulk triage ─────────────────────────────────────────────
     bulkBarLabel: "Bulk decisions",
     bulkSelectedOne: "1 bug selected",
@@ -3274,8 +3233,6 @@ export const en = {
     bulkPartial: "{done} done. {failed} didn't go through: {titles}.",
     bulkPartialMore: "{done} done. {failed} didn't go through: {titles}, and {rest} more.",
     bulkAllFailed: "None of those went through, so nothing changed.",
-    // ── Keyboard ───────────────────────────────────────────────
-    shortcutsButton: "Keyboard",
     shortcutsTitle: "Keyboard shortcuts",
     shortcutsIntro:
       "For working the list without reaching for the mouse. These apply whenever the bugs table is on screen and you aren't typing into a field.",

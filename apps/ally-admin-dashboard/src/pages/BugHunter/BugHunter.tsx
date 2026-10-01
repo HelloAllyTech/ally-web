@@ -18,9 +18,7 @@ import { BugFindingsTable } from "./BugFindingsTable";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { KeyboardShortcutSheet } from "./KeyboardShortcutSheet";
 import { LiveWorkBoard } from "./LiveWorkBoard";
-import { NeedsYouQueue } from "./NeedsYouQueue";
 import { NotebookPanel } from "./NotebookPanel";
-import { NotificationInbox } from "./NotificationInbox";
 import { RunHistoryTable } from "./RunHistoryTable";
 import { UxSignalsPanel } from "./UxSignalsPanel";
 
@@ -59,16 +57,21 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
  *
  * ## The sections, and what each is for
  *
- * **Work** (default) — the reviewer's surface, in the order the old page
- * established, which was right and is unchanged:
+ * **Work** (default) — the reviewer's surface:
  *
- * - `NeedsYouQueue` — your unfinished work, with the buttons on it. Absent when
- *   there is none, which is what keeps it the one coloured region on the page.
  * - `LiveWorkBoard` — what it is doing this minute, and what finished in the
- *   last few seconds. Absent when nothing is moving, for the same reason.
- * - `NotificationInbox` — everything it has said to you, collapsed to a line.
+ *   last few seconds. Absent when nothing is moving, so on a quiet night the
+ *   table is the first thing under the card.
+ * - `UxSignalsPanel` — one line and a button; absent without its toggle.
  * - `BugFindingsTable` — every bug it knows about: filterable, sortable,
- *   searchable, selectable, and workable from the keyboard.
+ *   searchable, selectable, and workable from the keyboard. Its "Needs you"
+ *   bucket, the drawer and the bulk bar are where decisions happen.
+ *
+ * Two sections came off this tab on 2026-10-01 at the product head's request:
+ * the "What I need from you" queue, whose cards duplicated the table's Needs-you
+ * bucket and the drawer, and the "Messages from Bug Hunter" inbox, whose
+ * action-needed items were the same bugs again. The sidebar badge still counts
+ * unread notifications, and run-level messages remain readable in the shift log.
  *
  * **Performance** — the governor's surface, in the order the question is
  * actually asked: `AgentScorecard` (what it has cost), then `AccuracyPanel`
@@ -98,8 +101,9 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
  * become a third thing that hook writes on a screen that has no sections.
  *
  * The shortcut sheet's open flag is the one genuinely page-level piece of
- * `useState` left: `?` should raise it whether the reader's attention is on the
- * table or on the queue.
+ * `useState` left: `?` raises it from anywhere on the page. The button that
+ * used to open it came off the table's toolbar with the row-height toggle;
+ * the key is the only way in now, on purpose.
  */
 
 /** The three sections, and the `?section=` values that address them. */
@@ -118,7 +122,7 @@ export const BugHunter: FC = () => {
   // Already in flight from the profile card with identical args, so both of
   // these read the same RTK Query cache entries rather than adding requests.
   // Kept here because the layout decision below depends on the mode, and the
-  // queue needs the findings.
+  // live board needs the findings.
   const { data: settings } = useGetBugHunterSettingsQuery();
   const { data: findingsData } = useGetBugFindingsQuery(
     { status: "all", limit: 100 },
@@ -198,29 +202,19 @@ export const BugHunter: FC = () => {
 
       <div className="mt-6 shrink-0">
         {/* `showCount={false}`: the shared strip renders a literal "0" beside
-            any tab without a count, and none of these three is a countable
+            any tab without a count, and none of these is a countable
             collection. What needs a human is already loud on the card above and
-            on the queue below. */}
+            in the table's Needs-you bucket below. */}
         <Tabs items={tabItems} activeId={section} onChange={setSection} showCount={false} />
       </div>
 
       {section === SECTION.work && (
         <>
-          {/* Renders null when nothing is blocked, so this is a no-op margin on
-              a quiet day rather than an empty section with a heading over it. */}
-          <div className="mt-6 shrink-0 empty:mt-0">
-            <NeedsYouQueue findings={findings} onOpen={setBug} />
-          </div>
-
           {/* Present tense, and the agent's own move rather than yours. Renders
-              null when nothing is in flight, so like the queue above it this is
-              a no-op margin on a quiet night. */}
+              null when nothing is in flight, so this is a no-op margin on a
+              quiet night and the table sits directly under the card. */}
           <div className="mt-6 shrink-0 empty:mt-0">
             <LiveWorkBoard findings={findings} onOpen={setBug} />
-          </div>
-
-          <div className="mt-6 shrink-0">
-            <NotificationInbox onOpenFinding={setBug} />
           </div>
 
           {/* Directly above the table its bug-shaped output lands in, which is

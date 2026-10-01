@@ -37,7 +37,6 @@ const Probe: FC = () => {
           sort: state.sort,
           direction: state.direction,
           pageSize: state.pageSize,
-          density: state.density,
         })}
       </p>
       <p data-testid="has-filters">{String(hasFilterParams(state))}</p>
@@ -64,8 +63,6 @@ const Probe: FC = () => {
       <button onClick={() => state.toggleSort("discovered")}>sort discovered</button>
       <button onClick={() => state.setPageSize(100)}>page size 100</button>
       <button onClick={() => state.setPageSize(20)}>page size 20</button>
-      <button onClick={() => state.setDensity("compact")}>compact</button>
-      <button onClick={() => state.setDensity("comfortable")}>comfortable</button>
       <button onClick={() => state.clearFilters()}>clear filters</button>
       <button onClick={() => navigate(-1)}>back</button>
     </div>
@@ -100,14 +97,13 @@ describe("reading the query string", () => {
       sort: "discovered",
       direction: "desc",
       pageSize: 20,
-      density: "comfortable",
     });
     expect(screen.getByTestId("has-filters").textContent).toBe("false");
   });
 
   it("reads a whole view out of a link", () => {
     mount(
-      `/?bug=abc&bucket=problem&q=terms&run=run-a&repo=ally-be,ally-web&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.CODE_REVIEW}&status=${BugFindingStatus.NEW}&age=stale&dup=1&sort=severity&dir=asc&size=50&density=compact`,
+      `/?bug=abc&bucket=problem&q=terms&run=run-a&repo=ally-be,ally-web&sev=${BugFindingSeverity.HIGH}&src=${BugFindingSource.CODE_REVIEW}&status=${BugFindingStatus.NEW}&age=stale&dup=1&sort=severity&dir=asc&size=50`,
     );
     expect(parsed()).toEqual({
       bug: "abc",
@@ -124,7 +120,6 @@ describe("reading the query string", () => {
       sort: "severity",
       direction: "asc",
       pageSize: 50,
-      density: "compact",
     });
     expect(screen.getByTestId("has-filters").textContent).toBe("true");
   });
@@ -135,7 +130,7 @@ describe("reading the query string", () => {
    * broken — and the page is not the place to complain about a mistyped link.
    */
   it("falls back to the default for a value that isn't in the enum", () => {
-    mount("/?bucket=urgent&sev=critical&src=telepathy&age=eternal&size=7&sort=vibes&density=cosy");
+    mount("/?bucket=urgent&sev=critical&src=telepathy&age=eternal&size=7&sort=vibes");
     const state = parsed();
     expect(state.bucket).toBe("all");
     expect(state.severities).toEqual([]);
@@ -143,7 +138,6 @@ describe("reading the query string", () => {
     expect(state.age).toBe("all");
     expect(state.pageSize).toBe(20);
     expect(state.sort).toBe("discovered");
-    expect(state.density).toBe("comfortable");
   });
 
   /**
@@ -206,20 +200,6 @@ describe("writing the query string", () => {
     expect(search()).toBe("");
   });
 
-  it("writes density only when it isn't the default", () => {
-    mount();
-    fireEvent.click(screen.getByText("compact"));
-    expect(search()).toBe("?density=compact");
-
-    fireEvent.click(screen.getByText("comfortable"));
-    expect(search()).toBe("");
-  });
-
-  /**
-   * Back closes the drawer and lands you where you were — the behaviour anyone
-   * who has used a mail client expects, and the reason this is worth doing at
-   * the router rather than with a useState.
-   */
   it("pushes history when a bug is opened, so Back closes the drawer", () => {
     mount("/?bucket=problem");
     fireEvent.click(screen.getByText("open bug"));
@@ -304,7 +284,7 @@ describe("writing the query string", () => {
 
   it("clears the filters and nothing else", () => {
     mount(
-      `/?bug=abc&bucket=problem&q=terms&repo=ally-be&sev=${BugFindingSeverity.HIGH}&age=stale&dup=1&sort=title&dir=asc&density=compact`,
+      `/?bug=abc&bucket=problem&q=terms&repo=ally-be&sev=${BugFindingSeverity.HIGH}&age=stale&dup=1&sort=title&dir=asc`,
     );
     fireEvent.click(screen.getByText("clear filters"));
 
@@ -315,12 +295,11 @@ describe("writing the query string", () => {
     expect(state.severities).toEqual([]);
     expect(state.age).toBe("all");
     expect(state.duplicatesOnly).toBe(false);
-    // The open bug, the sort and the density preference are not filters —
-    // none of them changes which bugs are on the page.
+    // The open bug and the sort are not filters — neither changes which bugs
+    // are on the page.
     expect(state.bug).toBe("abc");
     expect(state.sort).toBe("title");
     expect(state.direction).toBe("asc");
-    expect(state.density).toBe("compact");
   });
 
   /**

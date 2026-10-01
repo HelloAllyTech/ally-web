@@ -104,13 +104,7 @@ export const BUG_HUNTER_PARAM = {
   direction: "dir",
   /** Rows per page. */
   pageSize: "size",
-  density: "density",
 } as const;
-
-/** How tall a table row is. A preference, but a shareable one — it belongs in the same place as the rest. */
-export type TableDensity = "comfortable" | "compact";
-
-const DENSITIES: TableDensity[] = ["comfortable", "compact"];
 
 /**
  * Rows per page.
@@ -202,7 +196,6 @@ export interface BugHunterUrlState {
   sort: SortKey;
   direction: SortDirection;
   pageSize: PageSize;
-  density: TableDensity;
 }
 
 export interface BugHunterUrlActions {
@@ -243,8 +236,7 @@ export interface BugHunterUrlActions {
   /** Flips the current column, or moves to a new one at its natural direction. */
   toggleSort: (key: SortKey) => void;
   setPageSize: (size: PageSize) => void;
-  setDensity: (density: TableDensity) => void;
-  /** Drops every filter but leaves the open bug, the sort and the density preference alone. */
+  /** Drops every filter but leaves the open bug and the sort alone. */
   clearFilters: () => void;
 }
 
@@ -273,7 +265,6 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const state = useMemo<BugHunterUrlState>(() => {
-    const rawDensity = searchParams.get(BUG_HUNTER_PARAM.density);
     const rawSort = searchParams.get(BUG_HUNTER_PARAM.sort);
     const sort = rawSort && SORT_VALUES.has(rawSort) ? (rawSort as SortKey) : "discovered";
     const rawDirection = searchParams.get(BUG_HUNTER_PARAM.direction);
@@ -311,9 +302,6 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
       pageSize: (PAGE_SIZES as readonly number[]).includes(rawSize)
         ? (rawSize as PageSize)
         : DEFAULT_PAGE_SIZE,
-      density: DENSITIES.includes(rawDensity as TableDensity)
-        ? (rawDensity as TableDensity)
-        : "comfortable",
     };
   }, [searchParams]);
 
@@ -328,7 +316,7 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
    * the *same tick* clobber each other. `setSearchParams`' functional form
    * looks like it should compose the way `useState`'s does, and it does not —
    * each call navigates, and the second one's `current` is still the params
-   * from before the first. Setting density and a bucket in one synchronous
+   * from before the first. Setting a page size and a bucket in one synchronous
    * burst therefore keeps only the bucket.
    *
    * That is survivable rather than fixed, because nothing here writes twice in
@@ -468,13 +456,6 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     [write],
   );
 
-  // "comfortable" is the default, so it is written as a removal — see `write`.
-  const setDensity = useCallback(
-    (density: TableDensity) =>
-      write({ [BUG_HUNTER_PARAM.density]: density === "comfortable" ? null : density }),
-    [write],
-  );
-
   const clearFilters = useCallback(
     () =>
       write({
@@ -508,7 +489,6 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     setSort,
     toggleSort,
     setPageSize,
-    setDensity,
     clearFilters,
   };
 };

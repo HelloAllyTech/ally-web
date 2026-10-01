@@ -11,7 +11,7 @@ import { formatDateTime } from "@utils";
 /**
  * What Builder has said to you, near the top of mission control.
  *
- * Ports the Bug Hunter inbox pattern (see `pages/BugHunter/NotificationInbox`)
+ * Ports the Bug Hunter inbox pattern (retired from that page on 2026-10-01)
  * to a simpler notification shape: Builder's rows carry only a `kind` and a
  * message, not Bug Hunter's action-needed/problem/info severity split, so
  * there is one visual style per row rather than three. `readAt` still drives

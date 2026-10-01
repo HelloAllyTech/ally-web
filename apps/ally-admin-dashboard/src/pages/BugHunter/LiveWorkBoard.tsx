@@ -34,8 +34,8 @@ import { stageFromFindingStatus } from "./pipelineStage";
  *
  * ## The gap this fills
  *
- * Read the rest of the page and every section is a record. `NeedsYouQueue` is
- * your blocked work. `NotificationInbox` is what it has already told you.
+ * Read the rest of the page and every section is a record. The table's
+ * Needs-you bucket is your blocked work. The shift log is what it has done.
  * `BugFindingsTable` is the inventory. `AgentScorecard` and `RunHistoryTable`
  * are the ledger. The agent's own work-in-progress had one page-level
  * representation — the profile card's sentence "I'm working on 3 fixes right
@@ -52,7 +52,7 @@ import { stageFromFindingStatus } from "./pipelineStage";
  *
  * ## It renders nothing when nothing is moving
  *
- * Same discipline as `NeedsYouQueue`, and it matters more here. A live board
+ * Same discipline the old Needs-you queue had, and it matters more here. A live board
  * that is present-but-empty on a quiet night — "0 in flight", an empty rail, a
  * spinner spinning over nothing — is a section that manufactures the
  * *appearance* of activity, which is the one thing `agentPersona.ts`'s third

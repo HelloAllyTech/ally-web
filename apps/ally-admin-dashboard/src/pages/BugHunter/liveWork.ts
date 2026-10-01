@@ -9,8 +9,8 @@ import { PIPELINE_STAGES, stageFromFindingStatus } from "./pipelineStage";
  *
  * ## Why this exists at all
  *
- * Every other section of the tab is a record: `NeedsYouQueue` is your blocked
- * work, `NotificationInbox` is what it has already told you, `BugFindingsTable`
+ * Every other section of the tab is a record: the table's Needs-you bucket is
+ * your blocked work, the shift log is what it has done, `BugFindingsTable`
  * is the inventory, `AgentScorecard` and `RunHistoryTable` are the ledger. None
  * of them is present tense. The agent's own work-in-progress had exactly one
  * page-level representation — the sentence "I'm working on 3 fixes right now" on
@@ -62,7 +62,7 @@ export const LIVE_WORK_LINGER_MS = 20_000;
 /**
  * How many in-flight rows show before the rest collapse behind a "show all".
  *
- * Same number as `NeedsYouQueue`'s, for the same reason: three rows is what
+ * Three rows, the number the old Needs-you queue settled on: three rows is what
  * fits under the card without pushing the bugs table off a 1000×600 viewport,
  * and a genuine pile-up of eleven concurrent fix sessions is a real state that
  * should not turn a live board back into a list to scroll.

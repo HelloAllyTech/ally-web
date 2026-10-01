@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 
+import { Launch } from "@icons";
 import { toast } from "sonner";
 
 import { Button, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
@@ -679,9 +680,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
               href={finding.prUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-primary-600 underline"
+              className="inline-flex items-center gap-1 self-start text-sm text-primary-600 hover:text-primary-800"
+              aria-label={en.bugHunter.viewPr}
+              title={en.bugHunter.viewPr}
             >
-              {en.bugHunter.viewPr}
+              <Launch className="h-4 w-4" aria-hidden="true" />
             </a>
           )}
 
@@ -718,9 +721,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                             href={step.prUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs text-primary-600 underline"
+                            className="inline-flex items-center text-primary-600 hover:text-primary-800"
+                            aria-label={en.bugHunter.viewPr}
+                            title={en.bugHunter.viewPr}
                           >
-                            {en.bugHunter.viewPr}
+                            <Launch className="h-3.5 w-3.5" aria-hidden="true" />
                           </a>
                         )}
                         {step.sessionRunUrl && (

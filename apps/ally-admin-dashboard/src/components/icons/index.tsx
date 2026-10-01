@@ -40,6 +40,7 @@ import {
   Split as CSplit,
   Merge as CMerge,
   Bullhorn as CBullhorn,
+  Launch as CLaunch,
   Link as CLink,
   SortAscending as CSortAscending,
   SortDescending as CSortDescending,
@@ -168,6 +169,8 @@ export const Badge = createCarbonIcon(CBadge);
 export const Bolt = createCarbonIcon(CFlash);
 export const Book = createCarbonIcon(CBook);
 export const Branch = createCarbonIcon(CBranch);
+/** "Opens elsewhere" — the icon a link to GitHub wears instead of a "View PR" label. */
+export const Launch = createCarbonIcon(CLaunch);
 export const Calendar = createCarbonIcon(CCalendar);
 export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);

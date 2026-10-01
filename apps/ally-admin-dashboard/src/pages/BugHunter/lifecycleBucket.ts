@@ -213,7 +213,7 @@ export const ACTIONABLE_BUCKETS: LifecycleBucket[] = ["needs_you", "problem"];
 export const isActionableBucket = (bucket: LifecycleBucket): boolean =>
   ACTIONABLE_BUCKETS.includes(bucket);
 
-/** Findings whose next move belongs to a human, newest first — what `NeedsYouQueue` renders. */
+/** Findings whose next move belongs to a human, newest first — the "Needs you" bucket. */
 export const actionableFindings = (findings: BugFinding[]): BugFinding[] =>
   findings
     .filter(finding => isActionableBucket(bucketOfStatus(finding.status)))
