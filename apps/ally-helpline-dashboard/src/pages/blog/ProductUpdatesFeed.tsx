@@ -6,9 +6,9 @@ import {
   KIND_LABELS,
   SURFACE_FILTERS,
   SURFACE_LABELS,
-  formatWeek,
-  groupByWeek,
-} from "./productUpdateWeeks";
+  formatDay,
+  groupByDay,
+} from "./productUpdateDays";
 
 const PAGE_SIZE = 30;
 
@@ -41,9 +41,9 @@ const UpdateCard: FC<{ update: PublicProductUpdate }> = ({ update }) => (
 
 /**
  * The public list of product updates: one entry per change a person would
- * recognise, grouped by the week it went live, newest first. New and improved
- * things get a card each; a week's fixes share one short list, so a busy week
- * of small repairs doesn't bury the week's real news.
+ * recognise, grouped by the day it went live, newest first. New and improved
+ * things get a card each; a day's fixes share one short list, so a busy day
+ * of small repairs doesn't bury the day's real news.
  *
  * Everything here is already live in production — the backend only serves an
  * update once every change in it has shipped.
@@ -73,7 +73,7 @@ export const ProductUpdatesFeed: FC = () => {
     setUpdates([]);
   };
 
-  const groups = groupByWeek(updates);
+  const groups = groupByDay(updates);
   const hasMore = updates.length < (data?.count ?? 0);
   const isInitialLoad = isFetching && offset === 0;
   const surfaceLabel = surface ? SURFACE_LABELS[surface] : null;
@@ -133,7 +133,7 @@ export const ProductUpdatesFeed: FC = () => {
         <div className="flex flex-col gap-12">
           {groups.map(group => (
             <div key={group.key}>
-              <h2 className="mb-4 text-xl">{formatWeek(group.weekStart)}</h2>
+              <h2 className="mb-4 text-xl">{formatDay(group.key)}</h2>
               {group.highlights.length > 0 && (
                 <div className="flex flex-col gap-4">
                   {group.highlights.map(update => (

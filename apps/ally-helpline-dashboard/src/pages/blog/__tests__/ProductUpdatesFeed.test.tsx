@@ -39,7 +39,7 @@ describe("ProductUpdatesFeed", () => {
     mockUseGetPublicProductUpdatesQuery.mockReset();
   });
 
-  it("shows a week's highlights as cards and its fixes as one list", () => {
+  it("shows a day's highlights as cards and its fixes as one list", () => {
     respond([
       update({}),
       update({
@@ -47,6 +47,7 @@ describe("ProductUpdatesFeed", () => {
         slug: "fix-sign-in",
         kind: "fixed",
         title: "The sign-in page no longer goes blank",
+        liveAt: "2026-09-30T03:00:00Z",
         summary: "Signing in works again on every browser.",
         surfaces: ["web_app"],
       }),
@@ -54,7 +55,8 @@ describe("ProductUpdatesFeed", () => {
 
     render(<ProductUpdatesFeed />);
 
-    expect(screen.getByRole("heading", { name: /Week of/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /30.*2026/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Week of/)).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Characters pause more naturally before they reply" }),
     ).toBeInTheDocument();
