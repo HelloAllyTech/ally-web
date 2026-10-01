@@ -42,7 +42,8 @@ export const BlogHeader: FC<BlogHeaderProps> = ({ containerClassName = "max-w-6x
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            aria-hidden="true"
+            role="img"
+            aria-label="Search"
           >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
