@@ -3,8 +3,8 @@ import { hasFeature } from "@utils";
 
 /**
  * Whether this reader gets the roadmap's manage affordances: stage transitions, editing or
- * deleting anyone's opportunity, the goal taxonomy, split/merge, month-board lane moves, opening
- * a Builder session, pinning a view for everyone.
+ * deleting anyone's opportunity, the goal taxonomy, split/merge, month-board lane moves, pinning
+ * a view for everyone. NOT opening a card in Builder — see canOpenRoadmapBuilder.
  *
  * BOTH halves, in the order ally-be checks them. Every manage endpoint carries
  * `@RequireFeatureToggle(PRODUCT_ROADMAP_MANAGE, { permissions: [EDIT_PRODUCT_ROADMAP] })` — the
@@ -27,3 +27,20 @@ export const canManageRoadmap = (
   // Empty when the toggle fetch failed (see useUser) — so this fails closed to a read-only
   // board rather than open to controls that cannot work.
   hasFeature(features, FeatureToggleKey.PRODUCT_ROADMAP_MANAGE);
+
+/**
+ * Whether this reader gets "Open in Builder Agent" on an opportunity.
+ *
+ * Builder access, NOT roadmap management — the same pair ally-be's
+ * `POST opportunities/:id/builder-session` checks: the BUILDER toggle AND EDIT_BUILDER. It used
+ * to ride `canManageRoadmap`, which meant a curator without Builder saw an icon that could only
+ * 403, and nobody could be given the Builder hand-off without also getting the whole board.
+ *
+ * Fails closed the same way: an empty `features` (toggle fetch failed) hides the icon.
+ */
+export const canOpenRoadmapBuilder = (
+  permissions: string[] | undefined,
+  features: string[] | undefined,
+): boolean =>
+  !!permissions?.includes(Permissions.EDIT_BUILDER) &&
+  hasFeature(features, FeatureToggleKey.BUILDER);

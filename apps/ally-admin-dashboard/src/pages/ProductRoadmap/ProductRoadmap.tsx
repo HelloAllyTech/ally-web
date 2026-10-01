@@ -47,7 +47,7 @@ import { RoadmapSortControl } from "./RoadmapSortControl";
 import { SavedViewTabs } from "./SavedViewTabs";
 import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
 import { useSavedViews } from "./useSavedViews";
-import { canManageRoadmap } from "./utils/access";
+import { canManageRoadmap, canOpenRoadmapBuilder } from "./utils/access";
 import { seedForHandle } from "./utils/builder";
 import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
 import { RoadmapEffortFilterValue } from "./utils/filterSelection";
@@ -142,7 +142,9 @@ enum RoadmapTab {
  *   VIEW  — reach the tab and read everything. The route gate.
  *   VOTE  — file an opportunity, cast votes, comment, keep saved views.
  *   EDIT  — manage: stages, editing/deleting anyone's opportunity, taxonomy, split/merge,
- *           month-board lane moves, opening a Builder session, pinning views.
+ *           month-board lane moves, pinning views.
+ * Opening a card in Builder is NOT a manage affordance: it follows Builder access (the BUILDER
+ * toggle + EDIT_BUILDER) — see `canOpenBuilder` below.
  * VIEW and VOTE come from the permission set every platform admin carries. EDIT is the
  * permission AND the `product_roadmap_manage` feature toggle — see `canManage` below. Every
  * manage affordance is hidden behind that flag, and the backend rejects it independently, so
@@ -162,6 +164,8 @@ export const ProductRoadmap: React.FC = () => {
    * permission alone stopped meaning anything, and for the fail-closed rule.
    */
   const canManage = canManageRoadmap(permissions, features);
+  /** Builder access, independent of canManage — see canOpenRoadmapBuilder. */
+  const canOpenBuilder = canOpenRoadmapBuilder(permissions, features);
   /**
    * Whether the Bugs tab exists for this reader.
    *
@@ -1210,6 +1214,7 @@ export const ProductRoadmap: React.FC = () => {
           goals={goals ?? []}
           canVote={canVote}
           canManage={canManage}
+          hasBuilderAccess={canOpenBuilder}
           onOpenBuilderSession={handle =>
             openBuilderSession(handle.sessionId, seedForHandle(handle))
           }
