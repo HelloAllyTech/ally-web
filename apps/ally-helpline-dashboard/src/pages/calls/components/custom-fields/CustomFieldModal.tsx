@@ -40,25 +40,26 @@ interface CustomFieldModalProps {
   editingField?: CustomFieldDefinition;
 }
 
-const EDIT_PERMISSION_LABELS: Record<CustomFieldEditPermission, string> = {
-  [CustomFieldEditPermission.ADMIN_ONLY]: "Admin only",
-  [CustomFieldEditPermission.COUNSELLOR_ONLY]: "Counsellor only",
-  [CustomFieldEditPermission.BOTH]: "Admin and counsellor",
-};
-
-const TYPE_LABELS: Record<CustomFieldType, string> = {
-  [CustomFieldType.SINGLE_SELECT]: "Single Select",
-  [CustomFieldType.MULTI_SELECT]: "Multi Select",
-  [CustomFieldType.DATE]: "Date",
-  [CustomFieldType.TEXT]: "Text",
-  [CustomFieldType.NUMBER]: "Number",
-  [CustomFieldType.BOOLEAN]: "Yes / No",
-};
-
 const TYPES_WITH_OPTIONS = [CustomFieldType.SINGLE_SELECT, CustomFieldType.MULTI_SELECT];
 
 const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingField }) => {
+  const { t } = useTranslation();
   const isEditing = Boolean(editingField);
+
+  const EDIT_PERMISSION_LABELS: Record<CustomFieldEditPermission, string> = {
+    [CustomFieldEditPermission.ADMIN_ONLY]: t("customFields.editPermissions.adminOnly"),
+    [CustomFieldEditPermission.COUNSELLOR_ONLY]: t("customFields.editPermissions.counsellorOnly"),
+    [CustomFieldEditPermission.BOTH]: t("customFields.editPermissions.both"),
+  };
+
+  const TYPE_LABELS: Record<CustomFieldType, string> = {
+    [CustomFieldType.SINGLE_SELECT]: t("customFields.types.singleSelect"),
+    [CustomFieldType.MULTI_SELECT]: t("customFields.types.multiSelect"),
+    [CustomFieldType.DATE]: t("customFields.types.date"),
+    [CustomFieldType.TEXT]: t("customFields.types.text"),
+    [CustomFieldType.NUMBER]: t("customFields.types.number"),
+    [CustomFieldType.BOOLEAN]: t("customFields.types.boolean"),
+  };
 
   const [step, setStep] = useState<1 | 2>(isEditing ? 2 : 1);
   const [selectedType, setSelectedType] = useState<CustomFieldType>(
@@ -75,7 +76,6 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
   const [showInTable, setShowInTable] = useState<boolean>(editingField?.showInTable ?? true);
   const [filterable, setFilterable] = useState<boolean>(editingField?.filterable ?? true);
 
-  const { t } = useTranslation();
   const sections = useMemo(() => getSummarySections(t), [t]);
   const { data: enabledTypes } = useGetEnabledCustomFieldTypesQuery();
 
@@ -179,7 +179,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
 
   return (
     <ComposedModal open={open} onClose={handleClose} size="sm">
-      <ModalHeader title={isEditing ? "Edit custom field" : "Add custom field"} />
+      <ModalHeader title={isEditing ? t("customFields.editTitle") : t("customFields.addTitle")} />
 
       <ModalBody>
         {step === 1 && (
@@ -187,7 +187,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
             <RadioButtonGroup
               name="custom-field-type"
               orientation="vertical"
-              legendText="Select field type"
+              legendText={t("customFields.selectFieldType")}
               valueSelected={selectedType}
               onChange={value => setSelectedType(value as CustomFieldType)}
             >
@@ -206,32 +206,34 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
           <div className="flex flex-col gap-4 py-2">
             <TextInput
               id="cf-name"
-              labelText="Field name"
+              labelText={t("customFields.fieldName")}
               value={name}
               onChange={e => setName(e.target.value)}
               maxLength={100}
-              placeholder="Field name"
+              placeholder={t("customFields.fieldNamePlaceholder")}
             />
 
             {TYPES_WITH_OPTIONS.includes(selectedType) && (
               <div>
-                <p className="text-sm font-medium text-typography-700 mb-2">Options</p>
+                <p className="text-sm font-medium text-typography-700 mb-2">
+                  {t("customFields.options")}
+                </p>
                 <div className="flex flex-col gap-2">
                   {options.map((opt, idx) => (
                     <div key={opt.id} className="flex items-center gap-2">
                       <div className="flex-1">
                         <TextInput
                           id={`cf-option-${opt.id}`}
-                          labelText={`Option ${idx + 1}`}
+                          labelText={`${t("customFields.options")} ${idx + 1}`}
                           hideLabel
                           value={opt.label}
                           onChange={e => handleOptionLabelChange(opt.id, e.target.value)}
-                          placeholder={`Option ${idx + 1}`}
+                          placeholder={`${t("customFields.optionPlaceholder")} ${idx + 1}`}
                           maxLength={100}
                         />
                       </div>
                       <IconButton
-                        label="Move up"
+                        label={t("customFields.moveUp")}
                         kind="ghost"
                         size="sm"
                         onClick={() => handleMoveOption(idx, "up")}
@@ -240,7 +242,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                         <ArrowUp />
                       </IconButton>
                       <IconButton
-                        label="Move down"
+                        label={t("customFields.moveDown")}
                         kind="ghost"
                         size="sm"
                         onClick={() => handleMoveOption(idx, "down")}
@@ -249,7 +251,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                         <ArrowDown />
                       </IconButton>
                       <IconButton
-                        label="Delete option"
+                        label={t("customFields.deleteOption")}
                         kind="ghost"
                         size="sm"
                         onClick={() => handleDeleteOption(opt.id)}
@@ -266,18 +268,18 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                   className="mt-2 flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700"
                 >
                   <Add />
-                  Add option
+                  {t("customFields.addOption")}
                 </button>
               </div>
             )}
 
             <Select
               id="cf-section"
-              labelText="Section"
+              labelText={t("customFields.section")}
               value={sectionKey}
               onChange={e => setSectionKey(e.target.value)}
             >
-              <SelectItem value="" text="Select section" />
+              <SelectItem value="" text={t("customFields.selectSection")} />
               {sections.map(section => (
                 <SelectItem key={section.key} value={section.key} text={section.title} />
               ))}
@@ -285,7 +287,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
 
             <Select
               id="cf-edit-permission"
-              labelText="Who can edit"
+              labelText={t("customFields.whoCanEdit")}
               value={editPermission}
               onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
             >
@@ -296,16 +298,18 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
 
             <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-typography-700">Show as table column</p>
+                <p className="text-sm font-medium text-typography-700">
+                  {t("customFields.showAsTableColumn")}
+                </p>
                 <p className="text-xs text-typography-400">
-                  Field will appear as a column in session logs
+                  {t("customFields.showAsTableColumnDesc")}
                 </p>
               </div>
               <CarbonToggle
                 id="cf-show-in-table"
                 size="sm"
                 hideLabel
-                labelText="Show as table column"
+                labelText={t("customFields.showAsTableColumn")}
                 toggled={showInTable}
                 onToggle={checked => setShowInTable(checked)}
               />
@@ -313,16 +317,18 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
 
             <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-typography-700">Allow filtering</p>
+                <p className="text-sm font-medium text-typography-700">
+                  {t("customFields.allowFiltering")}
+                </p>
                 <p className="text-xs text-typography-400">
-                  Field can be used to filter session logs
+                  {t("customFields.allowFilteringDesc")}
                 </p>
               </div>
               <CarbonToggle
                 id="cf-filterable"
                 size="sm"
                 hideLabel
-                labelText="Allow filtering"
+                labelText={t("customFields.allowFiltering")}
                 toggled={filterable}
                 onToggle={checked => setFilterable(checked)}
               />
@@ -333,12 +339,14 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
 
       <ModalFooter>
         <Button variant="secondary" onClick={handleClose}>
-          Cancel
+          {t("customFields.cancel")}
         </Button>
-        {step === 1 && !isEditing && <Button onClick={() => setStep(2)}>Next</Button>}
+        {step === 1 && !isEditing && (
+          <Button onClick={() => setStep(2)}>{t("customFields.next")}</Button>
+        )}
         {step === 2 && (
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <InlineLoading /> : "Save"}
+            {isSaving ? <InlineLoading /> : t("customFields.save")}
           </Button>
         )}
       </ModalFooter>

@@ -79,6 +79,7 @@
       "label": "செயலி மொழி",
       "selectorAria": "மொழி தேர்வாளர்"
     },
+    "notifications": "",
     "tabs": {
       "learn": "கற்றுக்கொள்",
       "review": "மதிப்பீடு",
@@ -89,7 +90,9 @@
       "roleplayLogs": "ரோல்பிளே பதிவுங்கள்",
       "statistics": "புள்ளியியல்",
       "search": "தேடு",
-      "allyAdmin": "Ally நிர்வாகம்"
+      "allyAdmin": "Ally நிர்வாகம்",
+      "characterLibrary": "",
+      "progress": ""
     },
     "logout": {
       "title": {
@@ -99,6 +102,71 @@
       "content": "நீங்கள் வெளியேற விரும்புகிறீர்களா? மீண்டும் உள்நுழைய நீங்கள் பாதுகாப்பான OTP ஐ உள்ளிட வேண்டும்.",
       "button": "என் Ally கணக்கை விட்டு வெளியேறவும் மற்றும் பூட்டவும்"
     }
+  },
+  "characterLibrary": {
+    "name": "",
+    "namePlaceholder": "",
+    "age": "",
+    "agePlaceholder": "",
+    "gender": "",
+    "genderPlaceholder": "",
+    "profession": "",
+    "professionPlaceholder": "",
+    "currentLocation": "",
+    "currentLocationPlaceholder": "",
+    "genderIdentity": "",
+    "genderIdentityPlaceholder": "",
+    "sexualOrientation": "",
+    "sexualOrientationPlaceholder": "",
+    "backstory": "",
+    "backstoryPlaceholder": "",
+    "saving": ""
+  },
+  "customFields": {
+    "editTitle": "",
+    "addTitle": "",
+    "selectFieldType": "",
+    "fieldName": "",
+    "fieldNamePlaceholder": "",
+    "options": "",
+    "optionPlaceholder": "",
+    "moveUp": "",
+    "moveDown": "",
+    "deleteOption": "",
+    "addOption": "",
+    "section": "",
+    "selectSection": "",
+    "whoCanEdit": "",
+    "showAsTableColumn": "",
+    "showAsTableColumnDesc": "",
+    "allowFiltering": "",
+    "allowFilteringDesc": "",
+    "cancel": "",
+    "next": "",
+    "save": "",
+    "editPermissions": {
+      "adminOnly": "",
+      "counsellorOnly": "",
+      "both": ""
+    },
+    "types": {
+      "singleSelect": "",
+      "multiSelect": "",
+      "date": "",
+      "text": "",
+      "number": "",
+      "boolean": ""
+    },
+    "deleteTitle": "",
+    "deleteDesc": "",
+    "delete": "",
+    "manageTitle": "",
+    "noFields": "",
+    "hideFromTable": "",
+    "showInTable": "",
+    "edit": "",
+    "addField": "",
+    "close": ""
   },
   "community": {
     "title": "குழு",
@@ -157,11 +225,13 @@
       "momentum": "உத்வேகம்",
       "contribution": "பங்களிப்பு",
       "resonance": "அதிர்வு",
+      "ascent": "",
       "tooltip": {
         "journey": "சிமுலேஷன் நிமிடங்களை நிறைவு செய்வதன் மூலம் இது பெறப்படுகிறது. நிறைவு செய்யப்பட்ட சிமுலேஷன் நேரம் மட்டுமே கணக்கில் எடுத்துக்கொள்ளப்படும்.",
         "momentum": "தொடர்ச்சியை உருவாக்க, தினமும் குறைந்தது ஒரு Role Play பயிற்சியை நிறைவு செய்யுங்கள். ஒரு நாள் தவறினால், உங்கள் தொடர்ச்சி மீட்டமைக்கப்படும்.",
         "contribution": "மற்றவர்களின் அமர்வுகளில் நீங்கள் சேர்க்கும் கருத்துகள் மற்றும் எதிர்வினைகளின் எண்ணிக்கை. உங்கள் சொந்த அமர்வுகளில் நடைபெறும் செயல்பாடுகள் இதில் சேர்க்கப்படாது",
-        "resonance": "மற்ற மதிப்பீட்டாளர்கள் உங்கள் அமர்வுகளில் கருத்து தெரிவிக்கும் அல்லது எதிர்வினை அளிக்கும் போது பெறப்படும். உங்கள் சொந்த செயல்கள் உங்கள் அமர்வுகளில் சேர்க்கப்படவில்லை."
+        "resonance": "மற்ற மதிப்பீட்டாளர்கள் உங்கள் அமர்வுகளில் கருத்து தெரிவிக்கும் அல்லது எதிர்வினை அளிக்கும் போது பெறப்படும். உங்கள் சொந்த செயல்கள் உங்கள் அமர்வுகளில் சேர்க்கப்படவில்லை.",
+        "ascent": ""
       }
     }
   },
@@ -170,6 +240,7 @@
       "greetingLine1": "ஹே,",
       "greetingLine2": "{{app}}க்கு வரவேற்கிறோம்",
       "subtitle": "தொடர்வதற்காக உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்",
+      "back": "",
       "email": {
         "label": "மின்னஞ்சல்",
         "placeholder": "உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்",
@@ -201,14 +272,26 @@
         "generateOtp": "OTP உருவாக்குவதில் தோல்வி. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
         "verifyOtp": "OTP ஐ சரிபார்ப்பதில் தோல்வி. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
         "agreeTerms": "விதிமுறைகள் மற்றும் நிபந்தனைகளை ஒப்புக்கொள்வதில் தோல்வி"
-      }
+      },
+      "sessionExpired": ""
     }
   },
   "user": {
     "creditUsage": "கிரெடிட் பயன்பாடு",
     "logout": "வெளியேறு",
     "profileAlt": "சுயவிவரம்",
-    "dataPolicy": "தரவியல் கொள்கை"
+    "dataPolicy": "தரவியல் கொள்கை",
+    "reportProblem": ""
+  },
+  "bugReport": {
+    "success": "",
+    "rateLimited": "",
+    "genericError": "",
+    "prompt": "",
+    "placeholder": "",
+    "submit": "",
+    "submitting": "",
+    "cancel": ""
   },
   "learn": {
     "tabs": {
@@ -273,8 +356,8 @@
       "completed_other": "நிறைவு · {{count}}×",
       "completedAria_one": "ஒருமுறை நிறைவு",
       "completedAria_other": "{{count}} முறை நிறைவு",
-      "simulationsCount": "{{count}} சிமுலேஷன்",
-      "simulationsCount_plural": "{{count}} சிமுலேஷன்கள்",
+      "simulationsCount_one": "",
+      "simulationsCount_other": "",
       "ariaLabel": "தேர்வு செய்யவும் {{title}} காட்சி",
       "type": {
         "pathway": "பாதை",
@@ -317,6 +400,40 @@
       }
     },
     "evaluationChecklist": "மதிப்பீட்டு சரிபார்ப்பு பட்டியல்"
+  },
+  "progress": {
+    "title": "",
+    "hero": {
+      "level": "",
+      "toNextLevel_one": "",
+      "toNextLevel_other": "",
+      "maxLevel": "",
+      "xpTotal_one": "",
+      "xpTotal_other": "",
+      "viewProgress": ""
+    },
+    "stats": {
+      "lifetimeMinutes": "",
+      "sessions": "",
+      "trackItems": "",
+      "currentStreak": "",
+      "weeklyConsistency": ""
+    },
+    "rank": {
+      "line": ""
+    },
+    "badges": {
+      "link": ""
+    },
+    "errors": {
+      "title": "",
+      "description": ""
+    },
+    "a11y": {
+      "level": "",
+      "levelBar": "",
+      "navLevel": ""
+    }
   },
   "practiceStreak": {
     "title": "பயிற்சித் தொடர்",
@@ -404,6 +521,18 @@
       "nextBadge_other": "{{badge}} அடைய இன்னும் {{count}} நாட்கள்"
     }
   },
+  "analytics": {
+    "title": "அமர்வு பகுப்பாய்வு",
+    "dashboardTitle": "மெட்டாபேஸ் டாஷ்போர்ட்",
+    "types": {
+      "callLogs": "உண்மையான அழைப்பு பதிவுகள்",
+      "simulations": "சிமுலேஷன்கள்",
+      "org": "அமைப்பு பகுப்பாய்வு"
+    },
+    "empty": {
+      "description": "இன்னும் எந்த டாஷ்போர்ட்களும் கிடைக்கவில்லை. தயவுசெய்து உங்கள் நிர்வாகியுடன் தொடர்பு கொள்ளவும்."
+    }
+  },
   "organizationMetrics": {
     "subtitle": "தேர்ந்தெடுத்த காலத்தில் நிறுவனம் முழுவதன் பயன்பாடு",
     "ranges": {
@@ -451,25 +580,102 @@
       "noAccess": "நிறுவன அளவீடுகள் நிறுவன நிர்வாகிகளுக்கு மட்டுமே கிடைக்கும்.",
       "retry": "மீண்டும் முயற்சிக்கவும்",
       "empty": "இந்த காலத்திற்கு தரவு இல்லை",
-      "notEnoughData": "இன்னும் போதுமான தரவு இல்லை"
+      "notEnoughData": "இன்னும் போதுமான தரவு இல்லை",
+      "reorderFailed": ""
     },
+    "dragHandleLabel": "",
     "mostUsedSimulations": {
       "title": "அதிகம் பயிற்சி செய்யப்பட்ட சிமுலேஷன்கள்",
       "caption": "தேர்ந்தெடுத்த காலத்தில் நிறைவு செய்யப்பட்ட அமர்வுகளின் அடிப்படையில் சிறந்த சூழ்நிலைகள்",
       "sessions_one": "{{count}} அமர்வு",
       "sessions_other": "{{count}} அமர்வுகள்"
-    }
-  },
-  "analytics": {
-    "title": "அமர்வு பகுப்பாய்வு",
-    "dashboardTitle": "மெட்டாபேஸ் டாஷ்போர்ட்",
-    "types": {
-      "callLogs": "உண்மையான அழைப்பு பதிவுகள்",
-      "simulations": "சிமுலேஷன்கள்",
-      "org": "அமைப்பு பகுப்பாய்வு"
     },
-    "empty": {
-      "description": "இன்னும் எந்த டாஷ்போர்ட்களும் கிடைக்கவில்லை. தயவுசெய்து உங்கள் நிர்வாகியுடன் தொடர்பு கொள்ளவும்."
+    "learnerUsage": {
+      "title": "",
+      "caption": "",
+      "exportCsv": "",
+      "errorTitle": "",
+      "errorSubtitle": "",
+      "emptyTitle": "",
+      "emptyDescription": "",
+      "status": {
+        "active": "",
+        "atRisk": "",
+        "dormant": "",
+        "neverStarted": ""
+      },
+      "columns": {
+        "name": "",
+        "email": "",
+        "status": "",
+        "lastPracticeSession": "",
+        "signupDate": "",
+        "roleplaySessionsStarted": "",
+        "roleplaySessionsCompleted": "",
+        "totalPracticeMinutes": "",
+        "coursesStartedAssigned": "",
+        "coursesAssigned": "",
+        "coursesStarted": "",
+        "coursesCompleted": "",
+        "lastActive": "",
+        "level": "",
+        "totalXp": "",
+        "roleplaySessions": "",
+        "avgScore": "",
+        "itemsCompletedPct": "",
+        "quizzes": "",
+        "readWatch": "",
+        "reflection": "",
+        "pointsPerMinute": ""
+      },
+      "daysAgo": "",
+      "today": "",
+      "levelShort": "",
+      "tooltips": {
+        "status": "",
+        "lastActive": "",
+        "level": "",
+        "totalXp": "",
+        "roleplaySessions": "",
+        "totalPracticeMinutes": "",
+        "pointsPerMinute": "",
+        "itemsCompletedPct": "",
+        "quizzes": "",
+        "readWatch": "",
+        "reflection": "",
+        "coursesCompleted": ""
+      }
+    },
+    "courseUsage": {
+      "title": "",
+      "caption": "",
+      "exportCsv": "",
+      "errorTitle": "",
+      "errorSubtitle": "",
+      "emptyTitle": "",
+      "emptyDescription": "",
+      "inProgressCell": "",
+      "status": {
+        "active": "",
+        "archived": ""
+      },
+      "columns": {
+        "title": "",
+        "status": "",
+        "totalItems": "",
+        "assigned": "",
+        "started": "",
+        "atLeast50": "",
+        "completed100": "",
+        "completionTime": "",
+        "avgCompletionDays": "",
+        "medianCompletionDays": "",
+        "avgScore": "",
+        "inProgress": "",
+        "inProgressActive": "",
+        "inProgressStalled": "",
+        "lastEnrollmentAt": ""
+      }
     }
   },
   "suspended": {
@@ -551,6 +757,10 @@
       "title": "அமர்வு மிக விரைவில் முடிந்தது",
       "description": "அர்த்தமுள்ள கருத்தை வழங்க எங்களுக்கு கூடுதல் தொடர்பு தரவு தேவை."
     },
+    "technicalInterruption": {
+      "title": "",
+      "description": ""
+    },
     "feedback": {
       "noData": "தரவு எதுவும் கிடைக்கவில்லை",
       "dialog": {
@@ -562,7 +772,13 @@
           "4": "ஆம்",
           "5": "நிச்சயமாக",
           "tags": {
-            "1": ["மோசமானது", "பயனற்றது", "மிகவும் கெட்டது", "ஏமாற்றமானது", "உதவியற்றது"],
+            "1": [
+              "மோசமானது",
+              "பயனற்றது",
+              "மிகவும் கெட்டது",
+              "ஏமாற்றமானது",
+              "உதவியற்றது"
+            ],
             "2": [
               "சராசரிக்கும் குறைவானது",
               "பலவீனமானது",
@@ -570,8 +786,20 @@
               "போதுமானதில்லை",
               "மேம்பாடு தேவை"
             ],
-            "3": ["நடுநிலையானது", "பரவாயில்லை", "சராசரி", "மிதமானது", "ஏற்கத்தக்கது"],
-            "4": ["நல்லது", "உதவியானது", "திருப்திகரமானது", "பயனுள்ளது", "பயனுடையது"],
+            "3": [
+              "நடுநிலையானது",
+              "பரவாயில்லை",
+              "சராசரி",
+              "மிதமானது",
+              "ஏற்கத்தக்கது"
+            ],
+            "4": [
+              "நல்லது",
+              "உதவியானது",
+              "திருப்திகரமானது",
+              "பயனுள்ளது",
+              "பயனுடையது"
+            ],
             "5": [
               "சிறந்தது",
               "அற்புதமானது",
@@ -611,6 +839,10 @@
       "generating": "ஆலி உங்கள் டீப்ரீஃப்பை எழுதிக்கொண்டிருக்கிறார்…",
       "generatingHint": "இதற்கு பொதுவாக சில நிமிடங்கள் ஆகும்.",
       "failed": "இந்த அமர்வுக்கான டீப்ரீஃப்பை ஆலியால் எழுத முடியவில்லை.",
+      "stillWorking": "",
+      "checkAgain": "",
+      "checkingAgain": "",
+      "notAvailable": "",
       "momentLabel": "இந்தத் தருணத்தைப் பார்க்கவும்",
       "momentNotFound": "அந்தத் தருணத்திற்குச் செல்ல முடியவில்லை — அதற்குப் பதிலாக முழு டிரான்ஸ்கிரிப்ட் இங்கே உள்ளது.",
       "section": {
@@ -1050,16 +1282,21 @@
         "unsupported": "இந்த உலாவியில் ஒலிப் பதிவு ஆதரிக்கப்படவில்லை.",
         "noSpeech": "எங்களால் எந்தப் பேச்சையும் கேட்க முடியவில்லை. மீண்டும் பதிவு செய்ய முயற்சி செய்.",
         "generateError": "பதிவிலிருந்து குறிப்புகளை உருவாக்க முடியவில்லை. மீண்டும் முயற்சி செய்.",
-        "generated": "உங்கள் பதிவிலிருந்து குறிப்புகள் உருவாக்கப்பட்டன",
+        "generated_one": "",
+        "generated_other": "",
         "nothingExtracted": "ஒலியை உரையாக மாற்றினோம், ஆனால் அதிலிருந்து எந்தப் புலத்தையும் நிரப்ப முடியவில்லை.",
+        "cancel": "",
+        "timeout": "",
+        "backToForm": "",
+        "tryAgain": "",
         "processing": {
           "transcribing": "உங்கள் பதிவு உரையாக மாற்றப்படுகிறது…",
           "extracting": "குறிப்பின் விவரங்கள் பிரித்தெடுக்கப்படுகின்றன…",
           "populating": "புலங்கள் நிரப்பப்படுகின்றன…"
         },
+        "stillWorking": "இன்னும் வேலை நடந்து கொண்டிருக்கிறது — வழக்கத்தை விட அதிக நேரம் ஆகிறது. காத்திருக்கலாம், அல்லது ரத்து செய்து படிவத்தை நீங்களே நிரப்பலாம்.",
         "extractionFailed": "நீங்கள் சொன்னது சேமிக்கப்பட்டது, ஆனால் அதிலிருந்து புலங்களை நிரப்ப முடியவில்லை. கீழே நிரப்பவும், அல்லது மீண்டும் பதிவு செய்யவும்.",
-        "notEnabled": "உங்கள் நிறுவனத்திற்கு குரல் குறிப்புகள் இயக்கப்படவில்லை. அவற்றை இயக்க நிர்வாகியிடம் கேட்கவும்.",
-        "stillWorking": "இன்னும் வேலை நடந்து கொண்டிருக்கிறது — வழக்கத்தை விட அதிக நேரம் ஆகிறது. காத்திருக்கலாம், அல்லது ரத்து செய்து படிவத்தை நீங்களே நிரப்பலாம்."
+        "notEnabled": "உங்கள் நிறுவனத்திற்கு குரல் குறிப்புகள் இயக்கப்படவில்லை. அவற்றை இயக்க நிர்வாகியிடம் கேட்கவும்."
       }
     },
     "table": {
@@ -1089,7 +1326,11 @@
       "callEmptyTitle": "அழைப்பு பதிவுகள் எதுவும் காணப்படவில்லை",
       "callEmptyDesc": "ஃபில்டர்களை சரிசெய்ய முயற்சிக்கவும் அல்லது பக்கத்தை புதுப்பிக்கவும்",
       "simEmptyTitle": "சிமுலேஷன் பதிவுகள் எதுவும் காணப்படவில்லை",
-      "simEmptyDesc": "ஃபில்டர்களை சரிசெய்ய முயற்சிக்கவும் அல்லது பக்கத்தை புதுப்பிக்கவும்"
+      "simEmptyDesc": "ஃபில்டர்களை சரிசெய்ய முயற்சிக்கவும் அல்லது பக்கத்தை புதுப்பிக்கவும்",
+      "callErrorTitle": "",
+      "callErrorDesc": "",
+      "simErrorTitle": "",
+      "simErrorDesc": ""
     },
     "status": {
       "processing": "செயலாக்கம்",
@@ -1224,6 +1465,14 @@
     "supervisorEmptyState": "உங்கள் மேற்பார்வையாளர் கவனித்துக் கொண்டிருக்கிறார் — பயனுள்ள ஒன்று இருக்கும்போது குறிப்புகள் இங்கு தோன்றும்.",
     "supervisorAiLabel": "AI-உருவாக்கியது",
     "supervisorAiTooltip": "ஆலி ஒரு AI மேற்பார்வையாளர். இது நேரடியாகக் கேட்டுக்கொண்டிருக்கிறது, உரையாடலின் போது இந்தக் குறிப்புகளை தானாகவே அனுப்புகிறது, ஒரு நபர் அல்ல.",
+    "connectionFailedTitle": "",
+    "connectionFailedMessage": "",
+    "agentNotJoinedTitle": "",
+    "agentNotJoinedMessage": "",
+    "retryConnection": "",
+    "exitSimulation": "",
+    "reconnecting": "",
+    "missedSupervisorHints": "",
     "turnIndicator": {
       "speaking": "பேசுகிறது...",
       "listening": "கேட்கிறது...",
@@ -1340,12 +1589,48 @@
   },
   "tracks2": {
     "breadcrumb": "கற்றுக்கொள்",
+    "language": {
+      "readingIn": "",
+      "change": "",
+      "title": "",
+      "subtitle": "",
+      "changeFailed": "",
+      "fallback": {
+        "VIDEO_NOT_LOCALISED": "",
+        "SCENARIO_NOT_TRANSLATED": "",
+        "CASE_NOT_TRANSLATED": ""
+      }
+    },
     "coursesTitle": "பாடநெறிகள்",
     "progress": "{{total}} இல் {{completed}}",
     "trackCompleted": "பாடநெறி நிறைவடைந்தது",
     "lockedTooltip": "இதைத் திறக்க முந்தைய உருப்படிகளை நிறைவு செய்",
     "notFound": "இந்தப் பாடநெறி கிடைக்கவில்லை",
     "backToLearn": "கற்றுக்கொள் பக்கத்திற்குத் திரும்பு",
+    "viewProgress": "",
+    "progressDashboard": {
+      "title": "",
+      "tapHint": "",
+      "notFound": "",
+      "feedbackHeading": "",
+      "feedbackSubheading_one": "",
+      "feedbackSubheading_other": "",
+      "feedbackEmpty": "",
+      "scoreTrendAlt": "",
+      "latestScore": "",
+      "latestFeedbackHeading": "",
+      "readFullFeedback": "",
+      "practiceNudge": "",
+      "sessionsHeading": "",
+      "sessionScore": "",
+      "sessionPending": "",
+      "untitledSession": "",
+      "classification": {
+        "demonstrated": "",
+        "needs_practice": "",
+        "insufficient_data": ""
+      }
+    },
     "status": {
       "completed": "நிறைவு",
       "inProgress": "நடைபெறுகிறது"
@@ -1363,7 +1648,14 @@
       "prompts_other": "{{count}} தூண்டுகோள்கள்",
       "roleplay": "ரோல் பிளே",
       "minScore": "மதிப்பெண் {{score}}+",
-      "case": "வழக்கு ஆய்வு"
+      "case": "வழக்கு ஆய்வு",
+      "annotationTranscript": "",
+      "annotationDocument": "",
+      "lines": "",
+      "lines_other": "",
+      "labels": "",
+      "labels_other": "",
+      "game": ""
     },
     "continueLearning": {
       "label": "கற்றலைத் தொடர்"
@@ -1375,7 +1667,10 @@
       "finish": "முடி",
       "overallProgress": "{{pct}}% நிறைவு",
       "loadFailed": "இந்த உருப்படியை ஏற்ற முடியவில்லை. மீண்டும் முயற்சி செய்.",
-      "retry": "மீண்டும் முயற்சி செய்"
+      "trackLoadFailed": "",
+      "trackLoadFailedDescription": "",
+      "retry": "மீண்டும் முயற்சி செய்",
+      "reviewItem": ""
     },
     "celebration": {
       "sectionCompleteTitle": "பிரிவு நிறைவடைந்தது!",
@@ -1389,11 +1684,34 @@
     "article": {
       "markRead": "படித்ததாகக் குறி",
       "read": "படித்தாயிற்று",
-      "keepReading": "தொடர படித்துக்கொண்டே இரு"
+      "keepReading": "தொடர படித்துக்கொண்டே இரு",
+      "increaseFontSize": "",
+      "decreaseFontSize": "",
+      "answerQuestionToContinue": "",
+      "answerQuestionsToContinue": "",
+      "question": {
+        "title": "",
+        "submit": "",
+        "correct": "",
+        "incorrect": "",
+        "correctAnswerIs": "",
+        "answeredHint": "",
+        "progress": ""
+      }
     },
     "video": {
       "markWatched": "பார்த்ததாகக் குறி",
-      "watched": "பார்த்தாயிற்று"
+      "watched": "பார்த்தாயிற்று",
+      "loadFailed": "",
+      "openExternally": "",
+      "interjection": {
+        "title": "",
+        "submit": "",
+        "continue": "",
+        "correct": "",
+        "incorrect": "",
+        "pending": ""
+      }
     },
     "journal": {
       "submit": "சமர்ப்பி",
@@ -1410,6 +1728,7 @@
       "openCase": "வழக்கைத் திற",
       "replay": "மீண்டும் செய்",
       "completed": "நிறைவு",
+      "completedOn": "",
       "language": "மொழி"
     },
     "quiz": {
@@ -1436,6 +1755,9 @@
         "false": "தவறு",
         "orderPrompt": "இவற்றைச் சரியான வரிசையில் அமை",
         "matchPrompt": "இடதுபுறத்தில் ஒரு உருப்படியைத் தட்டு, பிறகு வலதுபுறத்தில் அதற்கு இணையானதைத் தட்டு",
+        "dragHandle": "",
+        "moveUp": "",
+        "moveDown": "",
         "wordCount": "{{count}} / {{min}} சொற்கள்",
         "aiGraded": "இந்த விடை AI ஆல் மதிப்பிடப்படுகிறது",
         "ratePrompt": "ஒவ்வொரு கூற்றையும் மதிப்பிடுங்கள்",
@@ -1473,6 +1795,163 @@
         "openVideo": "வீடியோவைத் திறக்கவும்",
         "videoTitle": "கேள்வியின் வீடியோ"
       }
+    },
+    "annotation": {
+      "labels": "",
+      "instructions": "",
+      "instructionsNoPenalty": "",
+      "markedCount": "",
+      "markedCount_other": "",
+      "submit": "",
+      "markSomethingFirst": "",
+      "tryAgain": "",
+      "attemptsLeft": "",
+      "attemptsLeft_other": "",
+      "passed": "",
+      "notYet": "",
+      "keyHidden": "",
+      "tally": {
+        "found": "",
+        "found_other": "",
+        "missed": "",
+        "missed_other": "",
+        "notHere": "",
+        "notHere_other": ""
+      }
+    },
+    "game": {
+      "frameTitle": "",
+      "controlsByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "lastScoreByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "bestScoreByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "optional": "",
+      "loadFailed": "",
+      "loadFailedDescription": "",
+      "frameStrings": {
+        "MEMORY_MATCH": {
+          "moves": "",
+          "restart": "",
+          "wonTitle": "",
+          "wonDetail": "",
+          "playAgain": "",
+          "cardLabel": ""
+        },
+        "SNAKE": {
+          "score": "",
+          "best": "",
+          "restart": "",
+          "gameOver": ""
+        },
+        "CUB_N_PUP": {
+          "levels": "",
+          "close": "",
+          "nextLevel": "",
+          "solved": "",
+          "tutorial": "",
+          "hintDragToStar": "",
+          "hintRotate": "",
+          "hintFree": "",
+          "hintPivot": "",
+          "hintRotateLink": ""
+        },
+        "SPROUT": {
+          "pickerLabel": "",
+          "plantSUCCULENT": "",
+          "plantMARIGOLD": "",
+          "plantFERN": "",
+          "plantTOMATO": "",
+          "visitorsLabel": "",
+          "hintStart": "",
+          "aimSoil": "",
+          "aimLeaves": "",
+          "aimAway": "",
+          "stateDry": "",
+          "stateGood": "",
+          "stateWet": "",
+          "stage0": "",
+          "stage1": "",
+          "stage2": "",
+          "stage3": "",
+          "stage4": "",
+          "stage5": "",
+          "leafDropped": "",
+          "leafScorched": "",
+          "bloomed": "",
+          "plantAnother": "",
+          "visitorArrived": "",
+          "visitorBEE": "",
+          "visitorBUTTERFLY": "",
+          "visitorLADYBIRD": ""
+        }
+      }
+    },
+    "discussion": {
+      "title": "",
+      "titleWithCount": "",
+      "emptyTitle": "",
+      "emptyBody": "",
+      "placeholder": "",
+      "replyPlaceholder": "",
+      "editLabel": "",
+      "post": "",
+      "reply": "",
+      "edit": "",
+      "delete": "",
+      "save": "",
+      "cancel": "",
+      "charCount": "",
+      "edited": "",
+      "editedByModerator": "",
+      "deletedByAuthor": "",
+      "unknownAuthor": "",
+      "you": "",
+      "justNow": "",
+      "timeAgo": "",
+      "discussionLocked": "",
+      "threadLocked": "",
+      "threadLockedBadge": "",
+      "lockThread": "",
+      "unlockThread": "",
+      "lockDiscussion": "",
+      "unlockDiscussion": "",
+      "loadFailed": "",
+      "retry": "",
+      "actionFailed": "",
+      "deleteTitle": "",
+      "deleteTitleItalic": "",
+      "deleteModeratorBody": "",
+      "deleteWithRepliesBody": "",
+      "deleteBody": ""
     }
+  },
+  "errorBoundary": {
+    "pageTitle": "",
+    "pageMessage": "",
+    "panelTitle": "",
+    "panelMessage": "",
+    "tryAgain": "",
+    "reloadPage": "",
+    "detailLabel": ""
   }
 }

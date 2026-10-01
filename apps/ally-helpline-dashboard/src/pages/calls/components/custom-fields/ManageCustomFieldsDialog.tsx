@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { ArrowDown, ArrowUp, Edit, Table, TrashCan } from "@carbon/icons-react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -39,25 +40,27 @@ const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
   onConfirm,
   onCancel,
   isDeleting,
-}) => (
-  <ComposedModal open={Boolean(field)} onClose={onCancel} size="xs" danger>
-    <ModalHeader title="Delete custom field?" />
-    <ModalBody>
-      <p className="text-sm text-typography-600">
-        Deleting <span className="font-medium">"{field?.name}"</span> will hide it from all call
-        logs. Existing values will not be removed.
-      </p>
-    </ModalBody>
-    <ModalFooter>
-      <Button variant="secondary" onClick={onCancel}>
-        Cancel
-      </Button>
-      <Button onClick={onConfirm} disabled={isDeleting}>
-        {isDeleting ? <InlineLoading /> : "Delete"}
-      </Button>
-    </ModalFooter>
-  </ComposedModal>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <ComposedModal open={Boolean(field)} onClose={onCancel} size="xs" danger>
+      <ModalHeader title={t("customFields.deleteTitle")} />
+      <ModalBody>
+        <p className="text-sm text-typography-600">
+          {t("customFields.deleteDesc", { name: field?.name })}
+        </p>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="secondary" onClick={onCancel}>
+          {t("customFields.cancel")}
+        </Button>
+        <Button onClick={onConfirm} disabled={isDeleting}>
+          {isDeleting ? <InlineLoading /> : t("customFields.delete")}
+        </Button>
+      </ModalFooter>
+    </ComposedModal>
+  );
+};
 
 interface ManageCustomFieldsDialogProps {
   open: boolean;
@@ -74,6 +77,7 @@ const TYPE_LABELS: Record<CustomFieldType, string> = {
 };
 
 const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onClose }) => {
+  const { t } = useTranslation();
   const { permissions } = useSelector((state: RootState) => state.user);
   const canManage = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
 
@@ -134,14 +138,16 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
   return (
     <>
       <ComposedModal open={open} onClose={onClose} size="sm">
-        <ModalHeader title="Manage custom fields" />
+        <ModalHeader title={t("customFields.manageTitle")} />
         <ModalBody>
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loading withOverlay={false} />
             </div>
           ) : definitions.length === 0 ? (
-            <p className="text-sm text-typography-500 text-center py-6">No custom fields yet.</p>
+            <p className="text-sm text-typography-500 text-center py-6">
+              {t("customFields.noFields")}
+            </p>
           ) : (
             <div className="flex flex-col divide-y divide-gray-100">
               {definitions.map((field, index) => (
@@ -155,7 +161,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                   <div className="flex gap-1 items-center">
                     <div className="flex flex-col">
                       <IconButton
-                        label="Move up"
+                        label={t("customFields.moveUp")}
                         kind="ghost"
                         size="sm"
                         onClick={() => handleMove(index, "up")}
@@ -164,7 +170,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                         <ArrowUp />
                       </IconButton>
                       <IconButton
-                        label="Move down"
+                        label={t("customFields.moveDown")}
                         kind="ghost"
                         size="sm"
                         onClick={() => handleMove(index, "down")}
@@ -174,7 +180,11 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                       </IconButton>
                     </div>
                     <IconButton
-                      label={field.showInTable ? "Hide from table" : "Show in table"}
+                      label={
+                        field.showInTable
+                          ? t("customFields.hideFromTable")
+                          : t("customFields.showInTable")
+                      }
                       align="top"
                       kind="ghost"
                       size="sm"
@@ -185,7 +195,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                       />
                     </IconButton>
                     <IconButton
-                      label="Edit"
+                      label={t("customFields.edit")}
                       kind="ghost"
                       size="sm"
                       onClick={() => setFieldToEdit(field)}
@@ -193,7 +203,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                       <Edit />
                     </IconButton>
                     <IconButton
-                      label="Delete"
+                      label={t("customFields.delete")}
                       kind="ghost"
                       size="sm"
                       onClick={() => setFieldToDelete(field)}
@@ -208,9 +218,9 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
         </ModalBody>
         <ModalFooter>
           <div className="flex justify-between w-full">
-            <Button onClick={() => setIsAddOpen(true)}>+ Add field</Button>
+            <Button onClick={() => setIsAddOpen(true)}>{t("customFields.addField")}</Button>
             <Button variant="secondary" onClick={onClose}>
-              Close
+              {t("customFields.close")}
             </Button>
           </div>
         </ModalFooter>
