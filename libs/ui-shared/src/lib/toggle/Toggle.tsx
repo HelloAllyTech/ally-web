@@ -4,6 +4,8 @@ import { FC, useRef, useState } from "react";
 
 interface ToggleProps {
   label?: string;
+  /** Keep `label` as the group's accessible name only, e.g. inside a table cell. */
+  hideLabel?: boolean;
   items: {
     label: string;
     value: string;
@@ -12,7 +14,7 @@ interface ToggleProps {
   initialValue?: string;
 }
 
-const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
+const Toggle: FC<ToggleProps> = ({ label, hideLabel, items, initialValue, onChange }) => {
   const [selectedValue, setSelectedValueIndex] = useState(
     initialValue ? items.findIndex(item => item.value === initialValue) : 0,
   );
@@ -56,7 +58,7 @@ const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
 
   return (
     <div className="flex flex-col gap-2 w-fit">
-      {label && <div>{label}</div>}
+      {label && !hideLabel && <div>{label}</div>}
       <div
         role="radiogroup"
         aria-label={label}

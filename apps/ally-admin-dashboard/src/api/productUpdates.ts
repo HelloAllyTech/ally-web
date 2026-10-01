@@ -144,13 +144,39 @@ export const productUpdatesAPI = baseAPI.injectEndpoints({
     ),
     updateProductUpdate: builder.mutation<
       ProductUpdate,
-      { id: string; data: UpdateProductUpdateBody }
+      {
+        id: string;
+        data: UpdateProductUpdateBody;
+        /**
+         * The table's query args, to move the row before the server answers (the audience
+         * toggle). Must be the SAME memoised object the table subscribes with, or the patch
+         * lands on a cache entry nobody is rendering.
+         */
+        listArgs?: GetProductUpdatesParams;
+      }
     >({
       query: ({ id, data }) => ({
         url: ApiEndpoints.PRODUCT_UPDATES.UPDATE(id),
         method: HttpMethod.PATCH,
         body: data,
       }),
+      onQueryStarted: async ({ id, data, listArgs }, { dispatch, queryFulfilled }) => {
+        if (!listArgs) return;
+        const patch = dispatch(
+          productUpdatesAPI.util.updateQueryData("getProductUpdates", listArgs, draft => {
+            const row = draft.updates.find(update => update.id === id);
+            if (!row) return;
+            Object.assign(row, data);
+            // The server's definition: public, live and not hidden.
+            row.isPublic = row.audience === "public" && !row.hidden && Boolean(row.liveAt);
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
       invalidatesTags: [TAG_TYPES.PRODUCT_UPDATES],
     }),
   }),

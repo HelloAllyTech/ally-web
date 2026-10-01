@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { Edit } from "@icons";
+import { toast } from "sonner";
 
 import {
   Checkbox,
@@ -13,6 +14,7 @@ import {
   TableHeader,
   TableRow,
   Tag,
+  Toggle,
 } from "@ally-ui-mono/ui-shared";
 import {
   ProductUpdate,
@@ -20,6 +22,7 @@ import {
   ProductUpdateKind,
   ProductUpdateStatusFilter,
   ProductUpdateSurface,
+  useUpdateProductUpdateMutation,
 } from "@api";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -37,36 +40,51 @@ const KIND_TAG_TYPE: Record<ProductUpdateKind, "blue" | "teal" | "purple"> = {
   fixed: "purple",
 };
 
-const AudienceTag: FC<{ update: ProductUpdate }> = ({ update }) => {
-  const t = en.productUpdates.audienceTag;
-  if (update.hidden) {
-    return (
-      <Tag type="gray" size="sm">
-        {t.hidden}
-      </Tag>
-    );
-  }
-  if (update.audience === "public") {
-    return update.isPublic ? (
-      <Tag type="green" size="sm">
-        {t.public}
-      </Tag>
-    ) : (
-      <Tag type="cyan" size="sm">
-        {t.publicWaiting}
-      </Tag>
-    );
-  }
+/**
+ * Public / Internal, switchable in the row without opening the panel. Saving it locks the
+ * audience, so the automation never flips it back. Clicks and keys stay in the cell: they must
+ * not also open the side panel.
+ */
+const AudienceCell: FC<{
+  update: ProductUpdate;
+  onChange: (update: ProductUpdate, audience: ProductUpdateAudience) => void;
+}> = ({ update, onChange }) => {
+  const t = en.productUpdates;
+  const note = update.hidden
+    ? t.audienceTag.hidden
+    : update.audience === "public" && !update.liveAt
+      ? t.audienceTag.waiting
+      : null;
   return (
-    <Tag type="cool-gray" size="sm">
-      {t.internal}
-    </Tag>
+    <div
+      className="flex flex-col gap-1"
+      onClick={e => e.stopPropagation()}
+      onKeyDown={e => e.stopPropagation()}
+      role="presentation"
+    >
+      <Toggle
+        // Uncontrolled: remount when the saved value changes (or a failed save reverts it).
+        key={update.audience}
+        label={t.audienceToggle.label(update.title)}
+        hideLabel
+        items={[
+          { value: "public", label: t.audienceTag.public },
+          { value: "internal", label: t.audienceTag.internal },
+        ]}
+        initialValue={update.audience}
+        onChange={value => {
+          if (value !== update.audience) onChange(update, value as ProductUpdateAudience);
+        }}
+      />
+      {note && <span className="text-xs text-typography-700">{note}</span>}
+    </div>
   );
 };
 
 export const ProductUpdates: FC = () => {
   const t = en.productUpdates;
   const {
+    params,
     updates,
     total,
     isLoading,
@@ -96,6 +114,20 @@ export const ProductUpdates: FC = () => {
   } = useProductUpdates();
 
   const [selected, setSelected] = useState<ProductUpdate | null>(null);
+  const [saveUpdate] = useUpdateProductUpdateMutation();
+
+  const changeAudience = async (update: ProductUpdate, value: ProductUpdateAudience) => {
+    const result = await saveUpdate({
+      id: update.id,
+      data: { audience: value },
+      listArgs: params,
+    });
+    if ("error" in result && result.error) {
+      toast.error(t.toasts.audienceFailed);
+      return;
+    }
+    toast.success(t.toasts.audienceSaved(t.audienceTag[value]));
+  };
 
   return (
     <div className="h-full font-primary flex flex-col">
@@ -235,7 +267,7 @@ export const ProductUpdates: FC = () => {
                     </div>
                   </TableCell>
                   <TableCell className="py-3 pr-4">
-                    <AudienceTag update={update} />
+                    <AudienceCell update={update} onChange={changeAudience} />
                   </TableCell>
                   <TableCell className="py-3 pr-4">
                     {update.surfaces.map(s => t.surfaceLabels[s] ?? s).join(", ") || "—"}
