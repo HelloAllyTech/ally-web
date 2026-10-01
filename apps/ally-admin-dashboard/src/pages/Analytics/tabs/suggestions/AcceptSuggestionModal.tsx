@@ -36,11 +36,10 @@ interface AcceptSuggestionModalProps {
 /**
  * Review a suggestion, then file it.
  *
- * A sibling of ProductRoadmap's AddOpportunityDrawer rather than a reuse of it: that
- * component takes no initial values, hardwires the create mutation, and its
- * duplicate panel navigates into the roadmap drawer — which is the wrong exit from
- * an Analytics tab. The form pieces are the same on purpose, so filing from here
- * and filing from the board feel like one action.
+ * Its own form rather than a reuse of the roadmap's filing surface: the board files
+ * through the guided interview (OpportunityInterviewDrawer), which starts from an
+ * empty conversation, and its duplicate panel navigates into the roadmap drawer —
+ * which is the wrong exit from an Analytics tab.
  *
  * The model's draft is prefilled and fully editable. That is the point of the
  * step: what reaches the board is what a person agreed to, not what a model wrote,
