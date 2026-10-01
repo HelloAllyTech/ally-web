@@ -22,58 +22,52 @@ export const KIND_LABELS: Record<ProductUpdateKind, string> = {
   fixed: "Fixed",
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /**
- * The Sunday, 00:00 UTC, that starts the week `iso` falls in.
+ * The UTC calendar day `iso` falls in, as `YYYY-MM-DD`.
  *
- * UTC and Sunday-anchored on purpose: the code-activity heatmap above the
- * feed buckets days in UTC, and the admin ship-volume chart uses Sunday UTC
- * weeks, so all three agree at a week boundary.
+ * UTC on purpose: the code-activity heatmap above the feed buckets days in
+ * UTC, so a day heading here and a cell there always mean the same day.
  */
-export const weekStartUtc = (iso: string): Date => {
-  const date = new Date(iso);
-  const midnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  return new Date(midnight - date.getUTCDay() * DAY_MS);
-};
+export const dayKeyUtc = (iso: string): string => new Date(iso).toISOString().slice(0, 10);
 
-export type WeekGroup = {
+export type DayGroup = {
+  /** `YYYY-MM-DD`, UTC. */
   key: string;
-  weekStart: Date;
   /** New before improved: what people can now do leads, what got better follows. */
   highlights: PublicProductUpdate[];
-  /** A week's fixes are listed together rather than given a card each. */
+  /** A day's fixes are listed together rather than given a card each. */
   fixes: PublicProductUpdate[];
 };
 
 const KIND_ORDER: Record<ProductUpdateKind, number> = { new: 0, improved: 1, fixed: 2 };
 
 /**
- * Groups a newest-first feed into weeks, newest week first. Within a week
- * the feed's own order (newest live date first) is kept inside each kind.
+ * Groups a newest-first feed by the day each update went live, newest day
+ * first. Within a day the feed's own order (newest live time first) is kept
+ * inside each kind.
  */
-export const groupByWeek = (updates: PublicProductUpdate[]): WeekGroup[] => {
-  const groups = new Map<string, WeekGroup>();
+export const groupByDay = (updates: PublicProductUpdate[]): DayGroup[] => {
+  const groups = new Map<string, DayGroup>();
   for (const update of updates) {
-    const weekStart = weekStartUtc(update.liveAt);
-    const key = weekStart.toISOString().slice(0, 10);
-    const group = groups.get(key) ?? { key, weekStart, highlights: [], fixes: [] };
+    const key = dayKeyUtc(update.liveAt);
+    const group = groups.get(key) ?? { key, highlights: [], fixes: [] };
     if (update.kind === "fixed") group.fixes.push(update);
     else group.highlights.push(update);
     groups.set(key, group);
   }
   return [...groups.values()]
-    .sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
+    .sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0))
     .map(group => ({
       ...group,
       highlights: [...group.highlights].sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]),
     }));
 };
 
-export const formatWeek = (weekStart: Date): string =>
-  `Week of ${weekStart.toLocaleDateString(undefined, {
+/** "30 September 2026" (in the reader's locale), for a `YYYY-MM-DD` UTC day key. */
+export const formatDay = (key: string): string =>
+  new Date(`${key}T00:00:00Z`).toLocaleDateString(undefined, {
     day: "numeric",
     month: "long",
     year: "numeric",
     timeZone: "UTC",
-  })}`;
+  });
