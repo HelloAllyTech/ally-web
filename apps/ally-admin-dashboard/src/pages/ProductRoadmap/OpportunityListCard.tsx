@@ -4,6 +4,7 @@ import { RoadmapVoteBudget, RoadmapOpportunity } from "@types";
 
 import { RankScore } from "./RankBreakdown";
 import { monthLabel } from "./utils/monthBoard";
+import { personName } from "./utils/people";
 import { priorityBorderColour } from "./utils/priorityColour";
 import {
   isConsumerSourced,
@@ -142,13 +143,14 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
         {!!body && <p className="text-typography-secondary line-clamp-2 text-sm">{body}</p>}
 
         {/*
-          A QUEUE card carries: rank, description, product goal, owner, planned month, total
-          votes and your votes — rank and total votes together in the left column, your votes in
-          the control on the right, and this row for goal, owner and month. Stage is dropped because the queue is defined as exactly the three
-          working stages, so the badge only ever says one of three things and never changes what
-          you would do about the card. Owner, source, filed date, comment count and author are
-          dropped for the same reason — the queue is for deciding what is next, and everything
-          else is available one click away in the drawer.
+          A QUEUE card carries: rank, description, product goal, owner, planned month, who posted
+          it, total votes and your votes — rank and total votes together in the left column, your
+          votes in the control on the right, and this row for goal, owner, month and poster. Stage
+          is dropped because the queue is defined as exactly the three working stages, so the
+          badge only ever says one of three things and never changes what you would do about the
+          card. Source, filed date and comment count are dropped for the same reason — the queue
+          is for deciding what is next, and everything else is available one click away in the
+          drawer.
 
           Outside the queue this is a general-purpose list card and keeps the full set.
         */}
@@ -195,6 +197,21 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
             // the month board's lane headings use, so a card and its lane cannot disagree.
             <span className={MONTH_CHIP_STYLE}>{monthLabel(opportunity.plannedMonth)}</span>
           )}
+          {/*
+            Who posted it, queue-only — the non-queue card has it in its "Filed …" line below.
+            Plain text, NOT a fourth chip: owner (who will build it) and poster (who asked for it)
+            are different people with different roles, and two purple-ish name chips side by side
+            would be read as the same kind of fact. "Posted by" says which one this is.
+
+            Always set: ally-be resolves every row's creator and falls back to "Unknown user"
+            when the account is gone, so there is no empty case to hide. Never the email — see
+            personName for accounts with a blank name.
+          */}
+          {isQueueCard && opportunity.creator && (
+            <span className="text-typography-secondary truncate">
+              Posted by {personName(opportunity.creator)}
+            </span>
+          )}
           {!isQueueCard && !!opportunity.owner && (
             <span className="text-typography-secondary truncate">· {opportunity.owner}</span>
           )}
@@ -221,9 +238,7 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
           <div className="text-typography-secondary text-xs">
             Filed {new Date(opportunity.createdAt).toISOString().slice(0, 10)}
             {opportunity.commentCount > 0 && <span> · {opportunity.commentCount} comments</span>}
-            {opportunity.creator && (
-              <span> · {opportunity.creator.name || opportunity.creator.email}</span>
-            )}
+            {opportunity.creator && <span> · {personName(opportunity.creator)}</span>}
           </div>
         )}
       </div>
