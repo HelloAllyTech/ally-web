@@ -110,47 +110,53 @@ export const FileUpload = ({
   const requiredErrorMessage = isMandatory ? `${label} is required` : false;
 
   // Validation
-  const validateFileType = (file: File): boolean => {
-    if (fileType === FILE_TYPE.IMAGE) {
-      if (![imageTypes.JPEG, imageTypes.PNG].includes(file.type)) {
-        const errorMessage = en.errors.fileMustBeJPEGOrPNG;
+  const validateFileType = useCallback(
+    (file: File): boolean => {
+      if (fileType === FILE_TYPE.IMAGE) {
+        if (![imageTypes.JPEG, imageTypes.PNG].includes(file.type)) {
+          const errorMessage = en.errors.fileMustBeJPEGOrPNG;
+          setError(id, { type: "manual", message: errorMessage });
+          toast.error(errorMessage);
+          return false;
+        }
+      } else if (fileType === FILE_TYPE.VIDEO) {
+        if (!file.type.startsWith("video/")) {
+          const errorMessage = en.errors.fileMustBeVideo;
+          setError(id, { type: "manual", message: errorMessage });
+          toast.error(errorMessage);
+          return false;
+        }
+      }
+      return true;
+    },
+    [fileType, id, setError],
+  );
+
+  const validateFileSize = useCallback(
+    (file: File): boolean => {
+      const maxFileSize =
+        fileType === FILE_TYPE.IMAGE ? FILE_SIZE_LIMITS.IMAGE : FILE_SIZE_LIMITS.VIDEO;
+      const maxFileSizeLabel =
+        fileType === FILE_TYPE.IMAGE
+          ? en.simulation.imageMaxSizeLabel
+          : en.simulation.videoMaxSizeLabel;
+
+      if (file.size > maxFileSize) {
+        const errorMessage = `File must be under ${maxFileSizeLabel}.`;
         setError(id, { type: "manual", message: errorMessage });
         toast.error(errorMessage);
         return false;
       }
-    } else if (fileType === FILE_TYPE.VIDEO) {
-      if (!file.type.startsWith("video/")) {
-        const errorMessage = en.errors.fileMustBeVideo;
-        setError(id, { type: "manual", message: errorMessage });
-        toast.error(errorMessage);
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const validateFileSize = (file: File): boolean => {
-    const maxFileSize =
-      fileType === FILE_TYPE.IMAGE ? FILE_SIZE_LIMITS.IMAGE : FILE_SIZE_LIMITS.VIDEO;
-    const maxFileSizeLabel =
-      fileType === FILE_TYPE.IMAGE
-        ? en.simulation.imageMaxSizeLabel
-        : en.simulation.videoMaxSizeLabel;
-
-    if (file.size > maxFileSize) {
-      const errorMessage = `File must be under ${maxFileSizeLabel}.`;
-      setError(id, { type: "manual", message: errorMessage });
-      toast.error(errorMessage);
-      return false;
-    }
-    return true;
-  };
+      return true;
+    },
+    [fileType, id, setError],
+  );
 
   const handleFileValidation = useCallback(
     (file: File): boolean => {
       return validateFileType(file) && validateFileSize(file);
     },
-    [id, setError, fileType],
+    [validateFileType, validateFileSize],
   );
 
   // Upload handlers

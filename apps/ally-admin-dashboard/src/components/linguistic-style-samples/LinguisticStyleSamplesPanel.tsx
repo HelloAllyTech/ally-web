@@ -9,6 +9,8 @@ import { LanguageTabPanel } from "../language-tab-panel";
 import { DEFAULT_SAMPLE_COUNT, type LanguageOption } from "./scenarioLanguageUtils";
 import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
 
+const EMPTY_SAMPLES = {};
+
 interface LinguisticStyleSamplesPanelProps {
   id?: string;
   label?: string;
@@ -30,7 +32,7 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
   const { setValue, control } = formMethods;
   const { languagesToShow, isLoading } = useScenarioLanguagesToShow(formMethods);
 
-  const linguisticStyleSamples = useWatch({ control, name: id }) ?? {};
+  const linguisticStyleSamples = useWatch({ control, name: id }) ?? EMPTY_SAMPLES;
 
   const activeLanguageId = useMemo(() => {
     if (

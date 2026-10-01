@@ -23,6 +23,8 @@ import {
   timeBarOpts,
 } from "./chartKit";
 
+const EMPTY_POINTS = [];
+
 const asOfStamp = (computedAt?: string): string | undefined => {
   if (!computedAt) return undefined;
   const d = new Date(computedAt);
@@ -58,7 +60,7 @@ export const BugHunterVolumeCard = () => {
   const { data, isLoading, isError, refetch } = useGetBugHunterVolumeQuery({ bucket: grain });
   const [expanded, setExpanded] = useState(false);
 
-  const allPoints = data?.points ?? [];
+  const allPoints = data?.points ?? EMPTY_POINTS;
   const inProgressBucket = data?.window.inProgressBucket;
   const plottedPoints = useMemo(
     () => withoutInProgress(allPoints, p => p.bucket, inProgressBucket),

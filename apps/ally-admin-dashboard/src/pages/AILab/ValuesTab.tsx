@@ -19,6 +19,8 @@ import { AiLabErrorState } from "./AiLabErrorState";
 import { LabSidePanel, LabField } from "./LabSidePanel";
 import { LabTable, LabTableColumn } from "./LabTable";
 
+const EMPTY_VARIABLES = [];
+
 const EMPTY_FORM = { variableId: "", label: "", value: "" };
 
 export const ValuesTab: React.FC = () => {
@@ -30,7 +32,7 @@ export const ValuesTab: React.FC = () => {
 
   // Full variable list drives the picker (and gates creation when empty).
   const { data: variablesData } = useGetLabVariablesQuery({ limit: 500 });
-  const variables = variablesData?.items ?? [];
+  const variables = variablesData?.items ?? EMPTY_VARIABLES;
   const hasVariables = variables.length > 0;
 
   const [createValue] = useCreateLabValueMutation();

@@ -12,6 +12,8 @@ import { LanguageTabPanel } from "../language-tab-panel";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
+const EMPTY_TRANSLATION_REMINDERS = {};
+
 // Reminders are a free-form, arbitrary-length bullet list (unlike Opening
 // Dialogues' fixed 5-slot grid), so each language tab is backed by a single
 // raw newline-joined string kept as-typed — same convention as the primary
@@ -54,7 +56,7 @@ export const RemindersPanel: FC<RemindersPanelProps> = ({
   const translationReminders =
     (useWatch({ control, name: TRANSLATION_REMINDERS_FIELD }) as
       | Record<string, string>
-      | undefined) ?? {};
+      | undefined) ?? EMPTY_TRANSLATION_REMINDERS;
 
   const scenarioLanguageTabs = useMemo(() => {
     const catalog = catalogLanguages as LanguageOption[];

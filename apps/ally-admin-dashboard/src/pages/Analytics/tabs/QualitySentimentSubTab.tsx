@@ -58,6 +58,8 @@ import {
   qualityIndexCoverageNotes,
 } from "../unitCostChart";
 
+const EMPTY_COVERAGE = [];
+
 /**
  * Three windowed series, each with its own saved window and grain.
  *
@@ -227,7 +229,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   const qualityLine = useMemo(() => buildQualityIndexSeries(points), [points]);
   const quality = useMemo(() => [...qualityAreas, ...qualityLine], [qualityAreas, qualityLine]);
 
-  const coverage = data?.indexCoverage ?? [];
+  const coverage = data?.indexCoverage ?? EMPTY_COVERAGE;
   const fullyCalibrated = isIndexFullyCalibrated(coverage);
   const coverageNotes = useMemo(() => qualityIndexCoverageNotes(coverage), [coverage]);
 

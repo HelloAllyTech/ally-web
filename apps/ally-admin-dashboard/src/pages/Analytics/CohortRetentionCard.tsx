@@ -19,6 +19,8 @@ import {
   totalCohortLearners,
 } from "./cohortChart";
 
+const EMPTY_THRESHOLDS = [];
+
 /** Carbon's `cds--tile` background — what the pinned cohort column sits on. */
 const PINNED_BG = "bg-[#f4f4f4]";
 
@@ -91,7 +93,7 @@ export const CohortRetentionCard = ({ tenantId }: { tenantId?: string }) => {
   const [thresholdIdx, setThresholdIdx] = useState(0);
   const [view, setView] = useState<"grid" | "curves">("grid");
 
-  const thresholds = data?.thresholds ?? [];
+  const thresholds = data?.thresholds ?? EMPTY_THRESHOLDS;
   const items = useMemo(
     () => thresholds.map((minutes, id) => ({ id, minutes, label: thresholdLabel(minutes) })),
     [thresholds],

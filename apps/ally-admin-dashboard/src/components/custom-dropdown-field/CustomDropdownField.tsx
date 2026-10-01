@@ -41,11 +41,11 @@ export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
     } else if (defaultOption === null) {
       setSelectedOption(null);
     }
-  }, [defaultOption?.value, defaultOption?.label]);
+  }, [defaultOption]);
 
   useEffect(() => {
     if (isOpen) handleSearchTextChange?.("");
-  }, [isOpen]);
+  }, [isOpen, handleSearchTextChange]);
 
   const handleSelect = (option: { value: string; label: string }) => {
     setSelectedOption(option);

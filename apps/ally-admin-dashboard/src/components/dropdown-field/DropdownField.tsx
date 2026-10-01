@@ -41,7 +41,7 @@ export const DropdownField: React.FC<DropdownFieldProps & { "data-testid"?: stri
   useEffect(() => {
     if (isOpen) handleSearchTextChange?.("");
     if (!isOpen) onClose?.();
-  }, [isOpen]);
+  }, [isOpen, handleSearchTextChange, onClose]);
 
   const handleSelect = (field: any, value: string) => {
     if (allowDeselect && field.value === value) {

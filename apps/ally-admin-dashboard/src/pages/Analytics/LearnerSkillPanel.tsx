@@ -19,6 +19,8 @@ import {
   skillCoverageScale,
 } from "./skillGrowthChart";
 
+const DEFAULT_DOMAIN: [number, number] = [0, 100];
+
 /**
  * One learner's skill timeline, in a slide-over.
  *
@@ -73,7 +75,7 @@ export const LearnerSkillPanel = ({
     [data?.knowledgeAttempts],
   );
 
-  const domain = data?.scoreDomain ?? [0, 100];
+  const domain = data?.scoreDomain ?? DEFAULT_DOMAIN;
 
   const compositeOpts = useMemo(
     () =>

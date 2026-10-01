@@ -448,21 +448,24 @@ export const Competency: React.FC<CompetencyProps> = ({
     return rows;
   };
 
-  const writeSelection = (next: CompetencyType[], rows: BehaviourRow[]) => {
-    // Record the baseline BEFORE the writes, so the watch/effect that fires
-    // next sees a matching baseline and doesn't read our own population as a
-    // hand edit.
-    baselineRef.current = {
-      selectionKey: selectionKeyOf(next),
-      signature: signatureOf(tableBehaviourKeys(rows)),
-    };
-    formMethods.setValue(FORM_FIELD_IDS.COMPETENCIES, next, { shouldDirty: true });
-    // The scalar mirrors the first entry: the Copilot wizard and this field's
-    // own required-validation both read one competency.
-    fieldRef.current?.onChange(next[0]?.id ?? "");
-    formMethods.setValue(FORM_FIELD_IDS.COMPETENCY, next[0] ?? "");
-    formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, rows, { shouldDirty: true });
-  };
+  const writeSelection = useCallback(
+    (next: CompetencyType[], rows: BehaviourRow[]) => {
+      // Record the baseline BEFORE the writes, so the watch/effect that fires
+      // next sees a matching baseline and doesn't read our own population as a
+      // hand edit.
+      baselineRef.current = {
+        selectionKey: selectionKeyOf(next),
+        signature: signatureOf(tableBehaviourKeys(rows)),
+      };
+      formMethods.setValue(FORM_FIELD_IDS.COMPETENCIES, next, { shouldDirty: true });
+      // The scalar mirrors the first entry: the Copilot wizard and this field's
+      // own required-validation both read one competency.
+      fieldRef.current?.onChange(next[0]?.id ?? "");
+      formMethods.setValue(FORM_FIELD_IDS.COMPETENCY, next[0] ?? "");
+      formMethods.setValue(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, rows, { shouldDirty: true });
+    },
+    [formMethods],
+  );
 
   /**
    * Adds competencies to the selection, appending each one's behaviour rows.
@@ -561,7 +564,7 @@ export const Competency: React.FC<CompetencyProps> = ({
   // in-sync baseline under the same selection — i.e. a genuine ×/+ edit. A
   // bare selection change only re-establishes the baseline and never forks, so
   // opening a saved scenario is inert.
-  const syncSelectionFromTable = async () => {
+  const syncSelectionFromTable = useCallback(async () => {
     if (isSyncingRef.current) return;
 
     // Read the table and the selection LIVE rather than from the watched
@@ -728,7 +731,15 @@ export const Competency: React.FC<CompetencyProps> = ({
     } finally {
       isSyncingRef.current = false;
     }
-  };
+  }, [
+    formMethods,
+    writeSelection,
+    mappings,
+    createCompetency,
+    setCompetencyBehaviours,
+    deleteCompetency,
+    setMappings,
+  ]);
 
   useEffect(() => {
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -738,7 +749,7 @@ export const Competency: React.FC<CompetencyProps> = ({
     return () => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
-  }, [behaviourRows, watchedSelection, primaryCompetency, mappings]);
+  }, [behaviourRows, watchedSelection, primaryCompetency, mappings, syncSelectionFromTable]);
 
   // --- inline rename / delete of the user's own custom competencies --------
   const startRename = (competency: CompetencyType) => {
