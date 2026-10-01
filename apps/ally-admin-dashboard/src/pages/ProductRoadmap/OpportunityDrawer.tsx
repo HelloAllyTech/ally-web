@@ -77,6 +77,11 @@ interface OpportunityDrawerProps {
   goals: RoadmapTaxonomyItem[];
   canVote: boolean;
   canManage: boolean;
+  /**
+   * Builder access (BUILDER toggle + EDIT_BUILDER) — gates the "Open in Builder Agent" icon on
+   * its own, independent of `canManage`. See canOpenRoadmapBuilder.
+   */
+  hasBuilderAccess: boolean;
   onClose: () => void;
 }
 
@@ -105,6 +110,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   goals,
   canVote,
   canManage,
+  hasBuilderAccess,
   onClose,
 }) => {
   const navigate = useNavigate();
@@ -319,8 +325,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       const handle = await openBuilderSession({ opportunityId }).unwrap();
       onOpenBuilderSession(handle);
     } catch (error) {
-      // 403 here is its own thing: the caller manages the roadmap but has no Builder access,
-      // which is a grant someone has to make, not a retry.
+      // 403 here is its own thing: the icon only shows with Builder access, so this is access
+      // revoked since the page loaded — a grant someone has to make, not a retry.
       const status = (error as { status?: number })?.status;
       toast.error(
         status === 403
@@ -459,7 +465,10 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     ? "Opening…"
     : !draft.description.trim()
       ? // The description IS the brief, so there is nothing to open with until it has one.
-        "Add a description first — it becomes the agent's brief"
+        // Only a manager can write one, so a Builder user without manage is told who can.
+        canManage
+        ? "Add a description first — it becomes the agent's brief"
+        : "This opportunity has no description yet — a roadmap manager needs to add one first"
       : opportunity?.builderSessionId
         ? "Resume in Builder Agent — reopens the existing interview, the brief is already in it"
         : "Open in Builder Agent — starts a PRD interview seeded with this description and notes";
@@ -596,7 +605,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               Disabling it properly would hide exactly the text someone needs when they cannot
               press it.
             */}
-            {canManage && !!opportunity && !isBug && (
+            {hasBuilderAccess && !!opportunity && !isBug && (
               <Tooltip label={builderHint} align="bottom">
                 <button
                   type="button"
