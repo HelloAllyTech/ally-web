@@ -104,6 +104,7 @@ export function useProductUpdates() {
   const rangeEnd = Math.min(offset + PRODUCT_UPDATES_PAGE_SIZE, total);
 
   return {
+    params,
     updates,
     total,
     isLoading,

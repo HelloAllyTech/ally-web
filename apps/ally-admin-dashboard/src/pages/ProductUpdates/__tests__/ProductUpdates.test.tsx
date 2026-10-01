@@ -181,21 +181,87 @@ describe("ProductUpdates page", () => {
     it("labels audience, waiting and edited state per row", () => {
       renderPage();
       const rowOf = (title: string) => screen.getByText(title).closest("tr") as HTMLElement;
+      const selectedAudience = (title: string) =>
+        within(
+          within(rowOf(title)).getByRole("radiogroup", { name: `Audience for “${title}”` }),
+        ).getByRole("radio", { checked: true });
 
-      expect(within(rowOf("Voice roleplays start faster")).getByText("Public")).toBeInTheDocument();
+      expect(selectedAudience("Voice roleplays start faster")).toHaveTextContent("Public");
+      expect(selectedAudience("Scribe notes export")).toHaveTextContent("Public");
+      expect(selectedAudience("Internal cleanup")).toHaveTextContent("Internal");
       expect(
-        within(rowOf("Scribe notes export")).getByText("Public — waiting"),
+        within(rowOf("Scribe notes export")).getByText("Waiting on release"),
       ).toBeInTheDocument();
+      expect(
+        within(rowOf("Voice roleplays start faster")).queryByText("Waiting on release"),
+      ).not.toBeInTheDocument();
       expect(within(rowOf("Scribe notes export")).getByText("Waiting")).toBeInTheDocument();
       expect(within(rowOf("Scribe notes export")).getByText("Edited")).toBeInTheDocument();
-      expect(within(rowOf("Internal cleanup")).getByText("Internal")).toBeInTheDocument();
-      expect(within(rowOf("Hidden thing")).getByText("Hidden")).toBeInTheDocument();
+      expect(
+        within(rowOf("Hidden thing")).getByText("Hidden from the changelog"),
+      ).toBeInTheDocument();
       expect(
         within(rowOf("Voice roleplays start faster")).queryByText("Edited"),
       ).not.toBeInTheDocument();
       expect(
         within(rowOf("Voice roleplays start faster")).getByText("Web app, Mobile app"),
       ).toBeInTheDocument();
+    });
+
+    it("switches an update to Internal from the row without opening the panel", async () => {
+      renderPage();
+      const row = screen.getByText("Voice roleplays start faster").closest("tr") as HTMLElement;
+
+      fireEvent.click(within(row).getByRole("radio", { name: "Internal" }));
+
+      await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+      expect(mockSave).toHaveBeenCalledWith({
+        id: "u-1",
+        data: { audience: "internal" },
+        listArgs: lastQueryArgs(),
+      });
+      await waitFor(() =>
+        expect(mockToast.success).toHaveBeenCalledWith(
+          "Audience set to Internal. The automation won't change it back.",
+        ),
+      );
+      expect(screen.queryByLabelText("Public summary")).not.toBeInTheDocument();
+    });
+
+    it("switches an internal update to Public", async () => {
+      renderPage();
+      const row = screen.getByText("Internal cleanup").closest("tr") as HTMLElement;
+
+      fireEvent.click(within(row).getByRole("radio", { name: "Public" }));
+
+      await waitFor(() =>
+        expect(mockSave).toHaveBeenCalledWith(
+          expect.objectContaining({ id: "u-3", data: { audience: "public" } }),
+        ),
+      );
+    });
+
+    it("saves nothing when the current audience is clicked again", () => {
+      renderPage();
+      const row = screen.getByText("Voice roleplays start faster").closest("tr") as HTMLElement;
+
+      fireEvent.click(within(row).getByRole("radio", { name: "Public" }));
+
+      expect(mockSave).not.toHaveBeenCalled();
+      expect(screen.queryByLabelText("Public summary")).not.toBeInTheDocument();
+    });
+
+    it("toasts an error when the audience change fails", async () => {
+      mockSave.mockResolvedValueOnce({ error: { status: 500 } });
+      renderPage();
+      const row = screen.getByText("Voice roleplays start faster").closest("tr") as HTMLElement;
+
+      fireEvent.click(within(row).getByRole("radio", { name: "Internal" }));
+
+      await waitFor(() =>
+        expect(mockToast.error).toHaveBeenCalledWith("Could not change the audience. Try again."),
+      );
+      expect(mockToast.success).not.toHaveBeenCalled();
     });
 
     it("shows the no-updates empty state without filters", () => {

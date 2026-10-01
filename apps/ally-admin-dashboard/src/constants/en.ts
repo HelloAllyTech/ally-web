@@ -4012,7 +4012,7 @@ export const en = {
   productUpdates: {
     title: "Product updates",
     description:
-      "What the changelog automation wrote from recent merges. Public updates go on the public changelog as soon as they're live. Anything you edit here is never rewritten automatically.",
+      "What the changelog automation wrote from recent merges. Updates are public by default and go on the public changelog as soon as they're live; switch one to Internal to keep it off. Anything you edit here is never rewritten automatically.",
     status: {
       schedule: "Schedule",
       scheduleOn: "On",
@@ -4035,6 +4035,9 @@ export const en = {
       runFailed: "Could not start a run.",
       saved: "Saved. Edited fields won't be rewritten automatically.",
       saveFailed: "Could not save this update.",
+      audienceSaved: (audience: string) =>
+        `Audience set to ${audience}. The automation won't change it back.`,
+      audienceFailed: "Could not change the audience. Try again.",
     },
     filters: {
       search: "Search",
@@ -4080,9 +4083,12 @@ export const en = {
     },
     audienceTag: {
       public: "Public",
-      publicWaiting: "Public — waiting",
-      hidden: "Hidden",
       internal: "Internal",
+      waiting: "Waiting on release",
+      hidden: "Hidden from the changelog",
+    },
+    audienceToggle: {
+      label: (title: string) => `Audience for “${title}”`,
     },
     kindLabels: {
       new: "New",
