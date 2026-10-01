@@ -61,6 +61,11 @@ export const ReportProblemModal: FC<ReportProblemModalProps> = ({ open, onClose 
       onSuccess={handleSuccess}
       labels={{
         title: t("user.reportProblem"),
+        prompt: t("bugReport.prompt"),
+        placeholder: t("bugReport.placeholder"),
+        submit: t("bugReport.submit"),
+        submitting: t("bugReport.submitting"),
+        cancel: t("bugReport.cancel"),
         rateLimitedError: t("bugReport.rateLimited"),
         genericError: t("bugReport.genericError"),
       }}

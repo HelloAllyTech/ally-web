@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Button, TextArea, TextInput } from "@ally-ui-mono/ui-shared";
@@ -157,6 +158,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
   readOnly = false,
   voiceLabels = {},
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CharacterData>(initialCharacter || emptyCharacter);
   const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
   // Empty until the admin actually tries to save, so a half-filled form isn't
@@ -404,24 +406,24 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
         </div>
 
         <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
-          <Field label="Name" required error={errorFor("name")}>
+          <Field label={t("characterLibrary.name")} required error={errorFor("name")}>
             <TextInput
               id="character-name"
-              labelText="Name"
+              labelText={t("characterLibrary.name")}
               hideLabel
               ref={(node: HTMLInputElement | null) => {
                 fieldRefs.current.name = node;
               }}
               value={formData.name}
               onChange={e => handleFieldChange("name", e.target.value)}
-              placeholder="Enter name"
+              placeholder={t("characterLibrary.namePlaceholder")}
               invalid={missingFields.has("name")}
               readOnly={readOnly}
               className="w-full"
             />
           </Field>
 
-          <Field label="Age" required error={errorFor("age")}>
+          <Field label={t("characterLibrary.age")} required error={errorFor("age")}>
             <input
               type="number"
               ref={node => {
@@ -436,10 +438,10 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
                 const parsed = Number.parseInt(raw, 10);
                 handleFieldChange("age", Number.isNaN(parsed) ? "" : parsed);
               }}
-              placeholder="0"
+              placeholder={t("characterLibrary.agePlaceholder")}
               min="0"
               max="150"
-              aria-label="Age"
+              aria-label={t("characterLibrary.age")}
               aria-invalid={missingFields.has("age") || undefined}
               readOnly={readOnly}
               // Matches the underline every sibling field has; this one used
@@ -453,79 +455,91 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
             />
           </Field>
 
-          <Field label="Gender" required error={errorFor("gender")}>
+          <Field label={t("characterLibrary.gender")} required error={errorFor("gender")}>
             <NativeSelect
               value={formData.gender}
               onChange={value => handleFieldChange("gender", value)}
               options={GENDER_OPTIONS}
-              placeholder="Select gender"
-              ariaLabel="Gender"
+              placeholder={t("characterLibrary.genderPlaceholder")}
+              ariaLabel={t("characterLibrary.gender")}
               invalid={missingFields.has("gender")}
               disabled={readOnly}
             />
           </Field>
 
-          <Field label="Profession" required error={errorFor("profession")}>
+          <Field label={t("characterLibrary.profession")} required error={errorFor("profession")}>
             <TextInput
               id="character-profession"
-              labelText="Profession"
+              labelText={t("characterLibrary.profession")}
               hideLabel
               value={formData.profession || ""}
               onChange={e => handleFieldChange("profession", e.target.value)}
-              placeholder="Enter profession"
+              placeholder={t("characterLibrary.professionPlaceholder")}
               invalid={missingFields.has("profession")}
               readOnly={readOnly}
               className="w-full"
             />
           </Field>
 
-          <Field label="Current location" required error={errorFor("currentLocation")}>
+          <Field
+            label={t("characterLibrary.currentLocation")}
+            required
+            error={errorFor("currentLocation")}
+          >
             <TextInput
               id="character-current-location"
-              labelText="Current location"
+              labelText={t("characterLibrary.currentLocation")}
               hideLabel
               value={formData.currentLocation}
               onChange={e => handleFieldChange("currentLocation", e.target.value)}
-              placeholder="Enter current location"
+              placeholder={t("characterLibrary.currentLocationPlaceholder")}
               invalid={missingFields.has("currentLocation")}
               readOnly={readOnly}
               className="w-full"
             />
           </Field>
 
-          <Field label="Gender identity" required error={errorFor("genderIdentity")}>
+          <Field
+            label={t("characterLibrary.genderIdentity")}
+            required
+            error={errorFor("genderIdentity")}
+          >
             <NativeSelect
               value={formData.genderIdentity}
               onChange={value => handleFieldChange("genderIdentity", value)}
               options={GENDER_IDENTITY_OPTIONS}
-              placeholder="Select gender identity"
-              ariaLabel="Gender identity"
+              placeholder={t("characterLibrary.genderIdentityPlaceholder")}
+              ariaLabel={t("characterLibrary.genderIdentity")}
               invalid={missingFields.has("genderIdentity")}
               disabled={readOnly}
             />
           </Field>
 
-          <Field label="Sexual orientation" required error={errorFor("sexualOrientation")}>
+          <Field
+            label={t("characterLibrary.sexualOrientation")}
+            required
+            error={errorFor("sexualOrientation")}
+          >
             <NativeSelect
               value={formData.sexualOrientation}
               onChange={value => handleFieldChange("sexualOrientation", value)}
               options={SEXUAL_ORIENTATION_OPTIONS}
-              placeholder="Select sexual orientation"
-              ariaLabel="Sexual orientation"
+              placeholder={t("characterLibrary.sexualOrientationPlaceholder")}
+              ariaLabel={t("characterLibrary.sexualOrientation")}
               invalid={missingFields.has("sexualOrientation")}
               disabled={readOnly}
             />
           </Field>
 
-          <Field label="Character Backstory">
+          <Field label={t("characterLibrary.backstory")}>
             <TextArea
               id="character-backstory"
-              labelText="Character Backstory"
+              labelText={t("characterLibrary.backstory")}
               hideLabel
               value={formData.characterProfileText || ""}
               onChange={e => handleFieldChange("characterProfileText", e.target.value)}
               maxLength={2500}
-              placeholder="Enter character backstory"
+              placeholder={t("characterLibrary.backstoryPlaceholder")}
               readOnly={readOnly}
               rows={3}
             />
@@ -617,7 +631,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
                 disabled={isCreating}
                 className="min-w-[120px]"
               >
-                {isCreating ? "Saving..." : strings.save}
+                {isCreating ? t("characterLibrary.saving") : strings.save}
               </Button>
               <Button
                 kind="secondary"
