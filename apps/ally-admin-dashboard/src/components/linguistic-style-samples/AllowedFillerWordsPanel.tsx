@@ -17,6 +17,8 @@ import {
 } from "./scenarioLanguageUtils";
 import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
 
+const EMPTY_FILLER_WORDS = {};
+
 interface AllowedFillerWordsPanelProps {
   formMethods: any;
   /** View Details mode: language tabs stay navigable, tags aren't editable. */
@@ -34,8 +36,9 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
   const { setValue, control } = formMethods;
   const { languagesToShow, isLoading } = useScenarioLanguagesToShow(formMethods);
 
-  const allowedFillerWords =
-    (useWatch({ control, name: ALLOWED_FILLER_WORDS_FIELD }) as Record<string, string[]>) ?? {};
+  const allowedFillerWords: Record<string, string[]> =
+    (useWatch({ control, name: ALLOWED_FILLER_WORDS_FIELD }) as Record<string, string[]>) ??
+    EMPTY_FILLER_WORDS;
 
   useEffect(() => {
     setFillerHintNamesByLang(prev => {

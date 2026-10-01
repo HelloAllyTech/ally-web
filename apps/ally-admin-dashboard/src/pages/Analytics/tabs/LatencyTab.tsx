@@ -65,6 +65,9 @@ import {
   latencyBucketTitle,
 } from "../latencyChart";
 
+const EMPTY_POINTS = [];
+const EMPTY_RELIABILITY_POINTS = [];
+
 /**
  * This tab has a page-level date-range filter already (not a per-chart one), so
  * one shared control here drives all 14 time-series cards from a single grain.
@@ -185,7 +188,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     refetch: refetchReliability,
   } = useGetAgentJoinReliabilityQuery(scopedQuery);
 
-  const points = data?.points ?? [];
+  const points = data?.points ?? EMPTY_POINTS;
   const axisTitle = useMemo(() => latencyBucketTitle(data?.bucket), [data]);
   const historySeries = useMemo(() => buildVoiceLatencySeries(points, "transcript"), [points]);
   const liveTurns = useMemo(() => countVoiceLatencyTurns(points, "pipeline"), [points]);
@@ -411,7 +414,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     [startAxisTitle],
   );
 
-  const reliabilityPoints = reliabilityData?.points ?? [];
+  const reliabilityPoints = reliabilityData?.points ?? EMPTY_RELIABILITY_POINTS;
   const reliabilityAxisTitle = useMemo(
     () => reliabilityBucketTitle(reliabilityData?.bucket),
     [reliabilityData],

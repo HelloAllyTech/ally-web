@@ -29,6 +29,8 @@ import {
 import { RubricsEditor } from "./RubricsEditor";
 import { TagsInput } from "./TagsInput";
 
+const EMPTY_TEST_CASES = [];
+
 interface TestCaseFormState {
   type: AgentTestCaseType;
   title: string;
@@ -66,7 +68,7 @@ export const AgentTestCases: FC = () => {
   const [form, setForm] = useState<TestCaseFormState>(EMPTY_FORM);
   const [testCasePendingDelete, setTestCasePendingDelete] = useState<AgentTestCase | null>(null);
 
-  const testCases = data?.data ?? [];
+  const testCases = data?.data ?? EMPTY_TEST_CASES;
   const isPanelOpen = editing !== undefined;
   const isSaving = isCreating || isUpdating;
   const canSave = form.title.trim().length > 0;

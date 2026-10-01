@@ -13,6 +13,8 @@ import { RichTextEditor } from "../rich-text-editor";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
+const EMPTY_TRANSLATION_DESCRIPTION = {};
+
 const TRANSLATION_DESCRIPTION_FIELD = "translationDescription" as const;
 const PRIMARY_LANGUAGE_FIELD = "challengeDescriptionPrimaryLanguageId" as const;
 
@@ -57,7 +59,7 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
   const translationDescription =
     (useWatch({ control, name: TRANSLATION_DESCRIPTION_FIELD }) as
       | Record<string, string>
-      | undefined) ?? {};
+      | undefined) ?? EMPTY_TRANSLATION_DESCRIPTION;
 
   const scenarioLanguageTabs = useMemo(() => {
     const catalog = catalogLanguages as LanguageOption[];

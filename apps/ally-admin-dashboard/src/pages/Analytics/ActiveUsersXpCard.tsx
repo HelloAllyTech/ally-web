@@ -24,6 +24,8 @@ import {
   timeBarOpts,
 } from "./chartKit";
 
+const EMPTY_POINTS = [];
+
 const asOfStamp = (computedAt?: string): string | undefined => {
   if (!computedAt) return undefined;
   const d = new Date(computedAt);
@@ -56,7 +58,7 @@ export const ActiveUsersXpCard = () => {
   const { data, isLoading, isError, refetch } = useGetActiveUsersXpQuery({ bucket: grain });
   const [expanded, setExpanded] = useState(false);
 
-  const allPoints = data?.points ?? [];
+  const allPoints = data?.points ?? EMPTY_POINTS;
   const inProgressBucket = data?.window.inProgressBucket;
   const plottedPoints = useMemo(
     () => withoutInProgress(allPoints, p => p.bucket, inProgressBucket),

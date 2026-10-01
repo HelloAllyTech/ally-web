@@ -132,7 +132,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   useEffect(() => {
     if (isReadOnly) return;
     debouncedUpdate();
-  }, [formData]);
+  }, [formData, debouncedUpdate, isReadOnly]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {

@@ -23,6 +23,8 @@ import {
   orgStatus,
 } from "./testingChart";
 
+const EMPTY_BUCKETS = [];
+
 /**
  * The account-management agenda: one row per customer organisation, ordered by
  * how long it has been quiet.
@@ -55,7 +57,7 @@ export const OrgHealthCard = ({
   onRetry: () => void;
 }) => {
   const rows = data?.orgs ?? [];
-  const buckets = data?.trendBuckets ?? [];
+  const buckets = data?.trendBuckets ?? EMPTY_BUCKETS;
 
   const axisLabel = useMemo(() => {
     if (buckets.length === 0) return "";

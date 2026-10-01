@@ -55,6 +55,13 @@ const formFieldNames = {
   CHARACTER_PROFILE_TEXT: "Character Backstory",
 };
 
+// Media fields are intentionally excluded from character comparison:
+// they can differ between the simulation and character (simulation-level overrides)
+const mediaFieldIds = [formFieldIds.COVER_IMAGE_URL, formFieldIds.COVER_VIDEO_URL];
+const comparableFieldIds = Object.values(formFieldIds).filter(
+  fieldId => !mediaFieldIds.includes(fieldId),
+);
+
 export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> = ({
   id,
   formMethods,
@@ -159,13 +166,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     isPersonaFieldVisible(formFieldIds.GENDER_IDENTITY, genderIdentityLookup) ||
     isPersonaFieldVisible(formFieldIds.SEXUAL_ORIENTATION, sexualOrientationLookup) ||
     isPersonaFieldVisible(formFieldIds.CHARACTER_PROFILE_TEXT, characterProfileTextLookup);
-
-  // Media fields are intentionally excluded from character comparison:
-  // they can differ between the simulation and character (simulation-level overrides)
-  const mediaFieldIds = [formFieldIds.COVER_IMAGE_URL, formFieldIds.COVER_VIDEO_URL];
-  const comparableFieldIds = Object.values(formFieldIds).filter(
-    fieldId => !mediaFieldIds.includes(fieldId),
-  );
 
   // Voice, language characteristics and linguistic style samples are keyed by
   // language on BOTH sides now, so they merge across every language the
@@ -363,6 +363,8 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     selectedCharacterId,
     getValues,
     handleCharacterSelect,
+    id,
+    setValue,
   ]);
 
   const getDisplayLabel = () => {

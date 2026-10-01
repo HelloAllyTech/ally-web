@@ -24,6 +24,8 @@ import {
   peakActiveLearners,
 } from "./highlightsChart";
 
+const EMPTY_POINTS = [];
+
 type ChartId = "minutes";
 
 const TITLE = "Roleplay Minutes";
@@ -59,7 +61,7 @@ export const RoleplayMinutesCard = () => {
   );
   const [expanded, setExpanded] = useState(false);
 
-  const points = data?.practiceMinutes ?? [];
+  const points = data?.practiceMinutes ?? EMPTY_POINTS;
   const inProgress = data?.window.inProgressBucket;
   const plotted = useMemo(
     () => withoutInProgress(points, p => p.bucket, inProgress),

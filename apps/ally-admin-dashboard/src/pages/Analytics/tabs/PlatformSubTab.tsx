@@ -85,6 +85,12 @@ import {
 } from "../testingChart";
 import { UsageLevelCard } from "../UsageLevelCard";
 
+const EMPTY_SIMS_POINTS = [];
+const EMPTY_CSAT_POINTS = [];
+const EMPTY_COST_POINTS = [];
+const EMPTY_XP_POINTS = [];
+const EMPTY_TOTAL_COST_POINTS = [];
+
 const SubHeading = ({ children }: { children: string }) => (
   <h2 className="text-xs font-medium uppercase tracking-wide text-typography-500 mt-8 mb-3">
     {children}
@@ -399,21 +405,21 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // `withoutInProgress` strips the still-accruing period from what is PLOTTED
   // only. The detail tables below read the full arrays and flag that row.
 
-  const simsPoints = simsQ.data?.simulationsCompleted ?? [];
+  const simsPoints = simsQ.data?.simulationsCompleted ?? EMPTY_SIMS_POINTS;
   const simsInProgress = simsQ.data?.window.inProgressBucket;
   const sims = useMemo(
     () => buildSimulationsSeries(withoutInProgress(simsPoints, p => p.bucket, simsInProgress)),
     [simsPoints, simsInProgress],
   );
 
-  const csatPoints = csatQ.data?.csatTrend ?? [];
+  const csatPoints = csatQ.data?.csatTrend ?? EMPTY_CSAT_POINTS;
   const csatInProgress = csatQ.data?.window.inProgressBucket;
   const csat = useMemo(
     () => buildCsatTrendSeries(withoutInProgress(csatPoints, p => p.bucket, csatInProgress)),
     [csatPoints, csatInProgress],
   );
 
-  const costPoints = costPerSimQ.data?.costPerSim ?? [];
+  const costPoints = costPerSimQ.data?.costPerSim ?? EMPTY_COST_POINTS;
   const costInProgress = costPerSimQ.data?.window.inProgressBucket;
   const costPerSim = useMemo(
     () => buildCostPerSimSeries(withoutInProgress(costPoints, p => p.bucket, costInProgress)),
@@ -421,7 +427,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   );
   const unpriced = useMemo(() => totalUnpricedCalls(costPoints), [costPoints]);
 
-  const xpPoints = xpGrowthQ.data?.points ?? [];
+  const xpPoints = xpGrowthQ.data?.points ?? EMPTY_XP_POINTS;
   const xpInProgress = xpGrowthQ.data?.window.inProgressBucket;
   const cumulativeXp = useMemo(
     () => buildCumulativeXpSeries(withoutInProgress(xpPoints, p => p.bucket, xpInProgress)),
@@ -435,7 +441,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     return complete.length > 0 ? complete[complete.length - 1] : undefined;
   }, [xpPoints, xpInProgress]);
 
-  const totalCostPoints = totalCostQ.data?.costPerSim ?? [];
+  const totalCostPoints = totalCostQ.data?.costPerSim ?? EMPTY_TOTAL_COST_POINTS;
   const totalCostInProgress = totalCostQ.data?.window.inProgressBucket;
   const totalCost = useMemo(
     () =>

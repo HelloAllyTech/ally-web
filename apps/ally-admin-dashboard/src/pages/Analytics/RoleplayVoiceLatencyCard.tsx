@@ -19,6 +19,8 @@ import {
   countVoiceLatencyTurns,
 } from "./latencyChart";
 
+const EMPTY_POINTS = [];
+
 type ChartId = "latency";
 
 const TITLE = "Roleplay Voice Latency";
@@ -111,7 +113,7 @@ export const RoleplayVoiceLatencyCard = () => {
   );
   const [expanded, setExpanded] = useState(false);
 
-  const points = data?.points ?? [];
+  const points = data?.points ?? EMPTY_POINTS;
   const axisTitle = bucketTitle(grain);
   const series = useMemo(() => buildVoiceLatencySeries(points, "pipeline"), [points]);
   const [visible, setVisible] = useState<string[]>(DEFAULT_VISIBLE);

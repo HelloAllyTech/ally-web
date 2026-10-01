@@ -29,6 +29,8 @@ import { RunDetailDrawer } from "./RunDetailDrawer";
 import { RunResultsDrawer } from "./RunResultsDrawer";
 import { RunStatusBadge } from "./RunStatusBadge";
 
+const EMPTY_RUNS = [];
+
 /** Bulk-selection eligibility: a run can only be bulk-selected alongside others of the same kind. */
 type BulkKind = "unpublished" | "published";
 const rowBulkKind = (run: LabRun): BulkKind | null => {
@@ -66,7 +68,7 @@ export const RunsTab: React.FC = () => {
     { search: search || undefined, limit: RUNS_PAGE_SIZE, offset },
     { pollingInterval: pollInterval },
   );
-  const runs = data?.items ?? [];
+  const runs = data?.items ?? EMPTY_RUNS;
   const total = data?.count ?? 0;
   const canPrev = offset > 0;
   const canNext = offset + RUNS_PAGE_SIZE < total;

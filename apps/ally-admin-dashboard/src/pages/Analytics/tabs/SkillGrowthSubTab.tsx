@@ -51,6 +51,8 @@ import {
   suppressedCompetencies,
 } from "../testingChart";
 
+const DEFAULT_DOMAIN: [number, number] = [0, 100];
+
 const PAGE_SIZE = 20;
 
 const SORT_ITEMS: { id: NonNullable<SkillGrowthLearnersQuery["sort"]>; label: string }[] = [
@@ -119,7 +121,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
 
   const data = growth.data;
   const mix = data?.trendMix;
-  const domain = data?.scoreDomain ?? [0, 100];
+  const domain = data?.scoreDomain ?? DEFAULT_DOMAIN;
 
   const curveSeries = useMemo(
     () => buildSkillGrowthSeries(data?.ordinals ?? [], variant),
