@@ -416,6 +416,8 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   onSaveSection={handleSaveSection}
                   sessionTitle={session.title}
                   repos={session.repos ?? []}
+                  createdByName={session.createdByName}
+                  transcript={messages}
                 />
               </ErrorBoundary>
             </CollapsibleAside>
@@ -499,6 +501,8 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   onSaveSection={handleSaveSection}
                   sessionTitle={session.title}
                   repos={session.repos ?? []}
+                  createdByName={session.createdByName}
+                  transcript={messages}
                 />
               </ErrorBoundary>
               <div className="border-t border-neutral-200 p-3">{startBuildAction}</div>
