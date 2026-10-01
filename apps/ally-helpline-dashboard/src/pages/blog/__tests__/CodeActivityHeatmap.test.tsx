@@ -147,7 +147,7 @@ describe("CodeActivityHeatmap", () => {
 
     render(<CodeActivityHeatmap />);
 
-    expect(await screen.findByText(/totals may be lower than the real figure/)).toBeInTheDocument();
+    expect(await screen.findByText(/the real figure may be higher/)).toBeInTheDocument();
   });
 
   it("does not draw an empty strip when nothing could be read at all", async () => {

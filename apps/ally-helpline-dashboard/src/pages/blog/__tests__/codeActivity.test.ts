@@ -4,8 +4,8 @@ import {
   CODE_ACTIVITY_LEVEL_CLASSES,
   activityLevel,
   addDays,
+  axisLabel,
   isMonday,
-  levelRangeLabel,
   mergeDays,
   monthLabel,
   sumChurn,
@@ -33,18 +33,6 @@ describe("activityLevel", () => {
 
   it("has a colour for every level", () => {
     expect(CODE_ACTIVITY_LEVEL_CLASSES).toHaveLength(activityLevel(Number.MAX_SAFE_INTEGER) + 1);
-  });
-});
-
-describe("levelRangeLabel", () => {
-  it("names each legend swatch's range", () => {
-    expect([0, 1, 2, 3, 4].map(levelRangeLabel)).toEqual([
-      "No changes",
-      "1–3k lines",
-      "3k–10k lines",
-      "10k–25k lines",
-      "25k+ lines",
-    ]);
   });
 });
 
@@ -80,5 +68,49 @@ describe("mergeDays", () => {
     expect(merged.map(d => d.date)).toEqual(["2026-09-01", "2026-09-02", "2026-09-03"]);
     expect(merged[1].churn).toBe(6);
     expect(sumChurn(merged)).toBe(14);
+  });
+});
+
+describe("axisLabel", () => {
+  // 2026-09-28 is a Monday; 2026-10-05 is the next.
+  const run = (from: string, count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      date: new Date(Date.parse(`${from}T00:00:00Z`) + i * 864e5).toISOString().slice(0, 10),
+    }));
+
+  it("names the month on the 1st and dates each Monday", () => {
+    const days = run("2026-09-20", 20);
+    const labels = days.map((_, i) => axisLabel(days, i));
+    const at = (date: string) => labels[days.findIndex(day => day.date === date)];
+
+    expect(at("2026-09-20")?.kind).toBe("month");
+    expect(at("2026-09-21")).toBeNull();
+    expect(at("2026-09-28")).toEqual({ kind: "day", text: "28" });
+    expect(at("2026-10-01")?.kind).toBe("month");
+    expect(at("2026-10-05")).toEqual({ kind: "day", text: "5" });
+    expect(at("2026-10-06")).toBeNull();
+  });
+
+  it("drops a Monday's date that would sit under a month name", () => {
+    // 1 June 2026 is a Monday: its cell names the month instead of the date.
+    // The strip starts on 3 August, a Monday, named as the leftmost cell.
+    const june = run("2026-05-30", 12);
+    const juneLabels = june.map((_, i) => axisLabel(june, i));
+    expect(juneLabels[0]).toBeNull();
+    expect(juneLabels[2]).toEqual({ kind: "month", text: expect.any(String) });
+    expect(juneLabels.filter(label => label?.kind === "day").map(label => label?.text)).toEqual([
+      "8",
+    ]);
+
+    // 2 August is the leftmost cell and named; Monday 3 August sits under it.
+    const days = run("2026-08-02", 9);
+    const labels = days.map((_, i) => axisLabel(days, i));
+    expect(labels[0]?.kind).toBe("month");
+    expect(labels.filter(label => label?.kind === "day").map(label => label?.text)).toEqual(["10"]);
+  });
+
+  it("leaves the leftmost cell unnamed late in a month", () => {
+    const days = run("2026-09-26", 3);
+    expect(axisLabel(days, 0)).toBeNull();
   });
 });

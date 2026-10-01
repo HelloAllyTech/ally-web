@@ -15,12 +15,10 @@ import {
   CODE_ACTIVITY_PAGE_DAYS,
   activityLevel,
   addDays,
+  axisLabel,
   formatDay,
   formatLines,
-  isMonday,
-  levelRangeLabel,
   mergeDays,
-  monthLabel,
   sumChurn,
 } from "./codeActivity";
 
@@ -171,17 +169,14 @@ export const CodeActivityHeatmap: FC = () => {
   const active = activeDate ? days.find(day => day.date === activeDate) : undefined;
 
   return (
-    <section aria-labelledby="code-activity-title" className="mb-12">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div>
-          <h2 id="code-activity-title" className="text-xl">
-            Lines of code changed
-          </h2>
-          <p className="mt-1 text-sm text-gray-700">
-            Lines added plus lines removed across all of Ally&rsquo;s code, per day (UTC).
-          </p>
-        </div>
-        {state !== "unavailable" && <Legend />}
+    <section aria-labelledby="code-activity-title" className="mb-8">
+      <div className="mb-2 flex flex-wrap items-baseline gap-x-2">
+        <h2 id="code-activity-title" className="text-base text-gray-900">
+          Lines of code changed
+        </h2>
+        <p className="text-xs text-gray-600">
+          added plus removed, across all of Ally&rsquo;s code, per day (UTC)
+        </p>
       </div>
 
       {state === "unavailable" ? (
@@ -198,14 +193,14 @@ export const CodeActivityHeatmap: FC = () => {
             onBlur={() => setActiveDate(null)}
             tabIndex={0}
             aria-label="Lines changed per day. Use the arrow keys to move between days."
-            className="overflow-x-auto pb-2 [scrollbar-width:thin] focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30"
+            className="overflow-x-auto pb-1 [scrollbar-width:thin] focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/30"
           >
             <ol className={`grid grid-flow-col gap-1 ${COLUMNS_CLASS}`}>
               {days.map((day, i) => (
                 <DayCell
                   key={day.date}
                   day={day}
-                  isFirst={i === 0}
+                  label={axisLabel(days, i)}
                   isActive={day.date === activeDate}
                   onActivate={() => setActiveDate(day.date)}
                 />
@@ -213,7 +208,7 @@ export const CodeActivityHeatmap: FC = () => {
             </ol>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm">
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-sm">
             <p aria-live="polite" className="text-gray-700">
               {active ? (
                 <>
@@ -230,6 +225,12 @@ export const CodeActivityHeatmap: FC = () => {
                 <>
                   <span className="text-gray-900">{formatLines(recentTotal)}</span> lines changed in
                   the last {CODE_ACTIVITY_PAGE_DAYS} days
+                  {incomplete && (
+                    <span className="text-xs text-gray-500">
+                      {" "}
+                      · some code couldn&rsquo;t be read, so the real figure may be higher
+                    </span>
+                  )}
                 </>
               )}
             </p>
@@ -265,13 +266,6 @@ export const CodeActivityHeatmap: FC = () => {
               </button>
             </div>
           </div>
-
-          {incomplete && (
-            <p className="mt-2 text-xs text-gray-500">
-              Some of our code couldn&rsquo;t be read just now, so these totals may be lower than
-              the real figure.
-            </p>
-          )}
         </>
       )}
     </section>
@@ -280,14 +274,10 @@ export const CodeActivityHeatmap: FC = () => {
 
 const DayCell: FC<{
   day: CodeActivityDay;
-  isFirst: boolean;
+  label: ReturnType<typeof axisLabel>;
   isActive: boolean;
   onActivate: () => void;
-}> = ({ day, isFirst, isActive, onActivate }) => {
-  const dayOfMonth = Number(day.date.slice(8));
-  // A month name on the 1st, and on the leftmost cell unless the next month's
-  // name would land on top of it a few cells later.
-  const showMonth = dayOfMonth === 1 || (isFirst && dayOfMonth <= 24);
+}> = ({ day, label, isActive, onActivate }) => {
   const ring = isActive
     ? "ring-2 ring-gray-900 ring-offset-1 ring-offset-gray-50"
     : day.partial
@@ -302,46 +292,29 @@ const DayCell: FC<{
       onClick={onActivate}
       className="flex min-w-0 flex-col gap-1"
     >
-      <span aria-hidden="true" className="h-4 whitespace-nowrap text-xs leading-4 text-gray-500">
-        {showMonth ? monthLabel(day.date) : ""}
-      </span>
       <span
         aria-hidden="true"
         data-testid="code-activity-cell"
-        className={`aspect-square w-full rounded ${CODE_ACTIVITY_LEVEL_CLASSES[activityLevel(day.churn)]} ${ring}`}
+        className={`h-5 w-full ${CODE_ACTIVITY_LEVEL_CLASSES[activityLevel(day.churn)]} ${ring}`}
       />
-      <span aria-hidden="true" className="h-3 text-center text-[10px] leading-3 text-gray-500">
-        {isMonday(day.date) ? dayOfMonth : ""}
+      <span
+        aria-hidden="true"
+        className={`h-3 whitespace-nowrap text-[10px] leading-3 text-gray-500 ${
+          label?.kind === "day" ? "text-center" : ""
+        }`}
+      >
+        {label?.text ?? ""}
       </span>
     </li>
   );
 };
 
-const Legend: FC = () => (
-  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-    <span>Less</span>
-    {CODE_ACTIVITY_LEVEL_CLASSES.map((levelClass, level) => (
-      <span
-        key={levelClass}
-        title={levelRangeLabel(level)}
-        aria-label={levelRangeLabel(level)}
-        role="img"
-        className={`h-3 w-3 rounded-sm ${levelClass}`}
-      />
-    ))}
-    <span>More</span>
-  </div>
-);
-
 const Skeleton: FC = () => (
-  <div aria-label="Loading code activity" role="status" className="pb-2">
+  <div aria-label="Loading code activity" role="status" className="pb-1">
     <div className={`grid grid-flow-col gap-1 ${COLUMNS_CLASS}`}>
       {Array.from({ length: CODE_ACTIVITY_PAGE_DAYS }, (_, i) => (
         <div key={i} className="flex flex-col gap-1">
-          <span className="h-4" />
-          <span
-            className={`aspect-square w-full animate-pulse rounded ${CODE_ACTIVITY_LEVEL_CLASSES[0]}`}
-          />
+          <span className={`h-5 w-full animate-pulse ${CODE_ACTIVITY_LEVEL_CLASSES[0]}`} />
           <span className="h-3" />
         </div>
       ))}

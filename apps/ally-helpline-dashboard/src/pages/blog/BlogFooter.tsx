@@ -51,7 +51,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
           rel="noreferrer"
           className="transition-colors hover:text-[#29261f]"
         >
-          helloally.ai
+          About Ally
         </a>
       </nav>
     </div>

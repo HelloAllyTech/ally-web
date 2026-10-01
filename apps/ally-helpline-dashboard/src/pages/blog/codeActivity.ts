@@ -39,18 +39,6 @@ export const activityLevel = (churn: number): number => {
   return level;
 };
 
-const compact = (n: number) => (n >= 1000 ? `${n / 1000}k` : String(n));
-
-/** What each legend swatch covers, e.g. "3k–10k lines". */
-export const levelRangeLabel = (level: number): string => {
-  if (level === 0) return "No changes";
-  const floors = CODE_ACTIVITY_LEVEL_FLOORS;
-  const lo = floors[level - 1];
-  const hi = floors[level];
-  if (hi === undefined) return `${compact(lo)}+ lines`;
-  return `${compact(lo)}–${compact(hi)} lines`;
-};
-
 // The browser's own locale, as the changelog's date headings below use.
 export const formatLines = (n: number): string => n.toLocaleString();
 
@@ -81,6 +69,37 @@ export const monthLabel = (date: string): string =>
   asUtc(date).toLocaleDateString(undefined, { month: "short", year: "numeric", timeZone: "UTC" });
 
 export const isMonday = (date: string): boolean => asUtc(date).getUTCDay() === 1;
+
+/**
+ * Cells a month name runs across ("Oct 2026" is wider than a day's cell). A
+ * Monday's date within this many cells after a month name is left out rather
+ * than printed on top of it.
+ */
+const MONTH_LABEL_SPAN = 3;
+
+/** True where the strip names a month: on the 1st, and on the leftmost cell
+ * unless the next month's name would land on top of it a few cells later. */
+const namesMonth = (days: { date: string }[], i: number): boolean => {
+  const dayOfMonth = Number(days[i].date.slice(8));
+  return dayOfMonth === 1 || (i === 0 && dayOfMonth <= 24);
+};
+
+/**
+ * The one line of text under a day's cell: the month's name where a month is
+ * named, a Monday's date otherwise, else nothing. One row for both keeps the
+ * strip short.
+ */
+export const axisLabel = (
+  days: { date: string }[],
+  i: number,
+): { kind: "month" | "day"; text: string } | null => {
+  if (namesMonth(days, i)) return { kind: "month", text: monthLabel(days[i].date) };
+  if (!isMonday(days[i].date)) return null;
+  for (let back = 1; back < MONTH_LABEL_SPAN && i - back >= 0; back++) {
+    if (namesMonth(days, i - back)) return null;
+  }
+  return { kind: "day", text: String(Number(days[i].date.slice(8))) };
+};
 
 /**
  * Folds a newly loaded page into the days already shown, oldest first. Keyed
