@@ -24,18 +24,18 @@ type BlogHeaderProps = {
  * locally it stays on the dev server instead of jumping to production.
  */
 export const BlogHeader: FC<BlogHeaderProps> = ({ containerClassName = "max-w-6xl", search }) => (
-  <header className="sticky top-0 z-20 border-b border-[#29261f]/10 bg-[#FAF9F5]/95 backdrop-blur">
+  <header className="sticky top-0 z-20 border-b border-gray-900/10 bg-gray-50/95 backdrop-blur">
     <div
       className={`mx-auto flex w-full ${containerClassName} flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4`}
     >
-      <Link to={ROUTES.BLOG} aria-label={BLOG_NAME} className="order-1 shrink-0 text-[#29261f]">
+      <Link to={ROUTES.BLOG} aria-label={BLOG_NAME} className="order-1 shrink-0 text-gray-900">
         <BuildingAlly role="img" aria-hidden="true" className="h-6 w-auto sm:h-7" />
       </Link>
 
       {search && (
         <div className="relative order-3 basis-full sm:order-2 sm:mx-auto sm:max-w-md sm:flex-1 sm:basis-auto">
           <svg
-            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#928b7c]"
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -53,14 +53,14 @@ export const BlogHeader: FC<BlogHeaderProps> = ({ containerClassName = "max-w-6x
             onChange={event => search.onChange(event.target.value)}
             placeholder="Search posts"
             aria-label="Search posts"
-            className="w-full rounded-lg border border-[#29261f]/15 bg-white py-2 pl-10 pr-3 text-sm text-[#29261f] placeholder:text-[#928b7c] focus:border-[#29261f]/40 focus:outline-none"
+            className="w-full rounded-lg border border-gray-900/15 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-900/40 focus:outline-none"
           />
         </div>
       )}
 
       <a
         href="/"
-        className="order-2 ml-auto shrink-0 rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3d3a34] sm:order-3"
+        className="order-2 ml-auto shrink-0 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 transition-colors hover:bg-gray-800 sm:order-3"
       >
         Try Ally
       </a>
