@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { Bell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useGetUnreadNotificationCountQuery } from "@api";
 
@@ -18,6 +19,7 @@ interface NotificationBellProps {
  * approach as the unread-review badge) + a click-away notification panel.
  */
 const NotificationBell: FC<NotificationBellProps> = ({ isExpanded }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -43,13 +45,13 @@ const NotificationBell: FC<NotificationBellProps> = ({ isExpanded }) => {
         data-testid="notification-bell"
         className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors text-gray-700"
         onClick={() => setIsOpen(open => !open)}
-        aria-label="Notifications"
+        aria-label={t("nav.notifications")}
       >
         <span className="relative">
           <Bell size={20} />
           {(unread?.count ?? 0) > 0 && <NotificationBadge count={unread!.count} />}
         </span>
-        {isExpanded && <span className="text-sm">Notifications</span>}
+        {isExpanded && <span className="text-sm">{t("nav.notifications")}</span>}
       </button>
 
       {isOpen && (

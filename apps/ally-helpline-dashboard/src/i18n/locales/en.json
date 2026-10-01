@@ -79,6 +79,7 @@
       "label": "App language",
       "selectorAria": "Language selector"
     },
+    "notifications": "Notifications",
     "tabs": {
       "learn": "Learn",
       "review": "Review",
@@ -101,6 +102,71 @@
       "content": "Are you sure you want to log out? You will need to enter secure OTP to login again.",
       "button": "Logout & lock my Ally account"
     }
+  },
+  "characterLibrary": {
+    "name": "Name",
+    "namePlaceholder": "Enter name",
+    "age": "Age",
+    "agePlaceholder": "0",
+    "gender": "Gender",
+    "genderPlaceholder": "Select gender",
+    "profession": "Profession",
+    "professionPlaceholder": "Enter profession",
+    "currentLocation": "Current location",
+    "currentLocationPlaceholder": "Enter current location",
+    "genderIdentity": "Gender identity",
+    "genderIdentityPlaceholder": "Select gender identity",
+    "sexualOrientation": "Sexual orientation",
+    "sexualOrientationPlaceholder": "Select sexual orientation",
+    "backstory": "Character Backstory",
+    "backstoryPlaceholder": "Enter character backstory",
+    "saving": "Saving..."
+  },
+  "customFields": {
+    "editTitle": "Edit custom field",
+    "addTitle": "Add custom field",
+    "selectFieldType": "Select field type",
+    "fieldName": "Field name",
+    "fieldNamePlaceholder": "Field name",
+    "options": "Options",
+    "optionPlaceholder": "Option",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "deleteOption": "Delete option",
+    "addOption": "Add option",
+    "section": "Section",
+    "selectSection": "Select section",
+    "whoCanEdit": "Who can edit",
+    "showAsTableColumn": "Show as table column",
+    "showAsTableColumnDesc": "Field will appear as a column in session logs",
+    "allowFiltering": "Allow filtering",
+    "allowFilteringDesc": "Field can be used to filter session logs",
+    "cancel": "Cancel",
+    "next": "Next",
+    "save": "Save",
+    "editPermissions": {
+      "adminOnly": "Admin only",
+      "counsellorOnly": "Counsellor only",
+      "both": "Admin and counsellor"
+    },
+    "types": {
+      "singleSelect": "Single Select",
+      "multiSelect": "Multi Select",
+      "date": "Date",
+      "text": "Text",
+      "number": "Number",
+      "boolean": "Yes / No"
+    },
+    "deleteTitle": "Delete custom field?",
+    "deleteDesc": "Deleting \"{{name}}\" will hide it from all call logs. Existing values will not be removed.",
+    "delete": "Delete",
+    "manageTitle": "Manage custom fields",
+    "noFields": "No custom fields yet.",
+    "hideFromTable": "Hide from table",
+    "showInTable": "Show in table",
+    "edit": "Edit",
+    "addField": "+ Add field",
+    "close": "Close"
   },
   "community": {
     "title": "Community",
@@ -220,7 +286,12 @@
   "bugReport": {
     "success": "Thanks — we've got your report.",
     "rateLimited": "You've submitted a few reports recently — please try again in a bit.",
-    "genericError": "Something went wrong sending that. Please try again."
+    "genericError": "Something went wrong sending that. Please try again.",
+    "prompt": "What were you trying to do?",
+    "placeholder": "Describe what you were doing when the problem happened",
+    "submit": "Send report",
+    "submitting": "Sending…",
+    "cancel": "Cancel"
   },
   "learn": {
     "tabs": {

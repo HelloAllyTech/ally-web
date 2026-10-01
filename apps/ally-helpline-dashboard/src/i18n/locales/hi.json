@@ -79,6 +79,7 @@
       "label": "ॲप की भाषा",
       "selectorAria": "भाषा चुनें"
     },
+    "notifications": "",
     "tabs": {
       "learn": "सीखें",
       "review": "मूल्यांकन करें",
@@ -89,7 +90,9 @@
       "roleplayLogs": "भूमिका निभाने के लॉग",
       "statistics": "आँकड़े",
       "search": "खोजें",
-      "allyAdmin": "Ally एडमिन"
+      "allyAdmin": "Ally एडमिन",
+      "characterLibrary": "",
+      "progress": ""
     },
     "logout": {
       "title": {
@@ -99,6 +102,71 @@
       "content": "क्या आप वाकई लॉगआउट करना चाहते हैं? दोबारा लॉगिन करने के लिए आपको सुरक्षा OTP दर्ज करना होगा।",
       "button": "लॉगआउट करके मेरा Ally अकाउंट लॉक करें"
     }
+  },
+  "characterLibrary": {
+    "name": "",
+    "namePlaceholder": "",
+    "age": "",
+    "agePlaceholder": "",
+    "gender": "",
+    "genderPlaceholder": "",
+    "profession": "",
+    "professionPlaceholder": "",
+    "currentLocation": "",
+    "currentLocationPlaceholder": "",
+    "genderIdentity": "",
+    "genderIdentityPlaceholder": "",
+    "sexualOrientation": "",
+    "sexualOrientationPlaceholder": "",
+    "backstory": "",
+    "backstoryPlaceholder": "",
+    "saving": ""
+  },
+  "customFields": {
+    "editTitle": "",
+    "addTitle": "",
+    "selectFieldType": "",
+    "fieldName": "",
+    "fieldNamePlaceholder": "",
+    "options": "",
+    "optionPlaceholder": "",
+    "moveUp": "",
+    "moveDown": "",
+    "deleteOption": "",
+    "addOption": "",
+    "section": "",
+    "selectSection": "",
+    "whoCanEdit": "",
+    "showAsTableColumn": "",
+    "showAsTableColumnDesc": "",
+    "allowFiltering": "",
+    "allowFilteringDesc": "",
+    "cancel": "",
+    "next": "",
+    "save": "",
+    "editPermissions": {
+      "adminOnly": "",
+      "counsellorOnly": "",
+      "both": ""
+    },
+    "types": {
+      "singleSelect": "",
+      "multiSelect": "",
+      "date": "",
+      "text": "",
+      "number": "",
+      "boolean": ""
+    },
+    "deleteTitle": "",
+    "deleteDesc": "",
+    "delete": "",
+    "manageTitle": "",
+    "noFields": "",
+    "hideFromTable": "",
+    "showInTable": "",
+    "edit": "",
+    "addField": "",
+    "close": ""
   },
   "community": {
     "title": "समुदाय",
@@ -157,11 +225,13 @@
       "momentum": "गति",
       "contribution": "योगदान",
       "resonance": "अनुनाद",
+      "ascent": "",
       "tooltip": {
         "journey": "यह सिमुलेशन के मिनट पूरे करने के बाद प्राप्त होता है। यहाँ केवल पूरा किया गया सिमुलेशन समय ही मान्य होगा।",
         "momentum": "लगातार स्ट्रीक बनाने के लिए हर दिन कम से कम एक “रोल प्ले” पूरा करें। लेकिन यदि एक भी दिन छूट गया, तो आपकी स्ट्रीक रीसेट हो जाएगी।",
         "contribution": "अन्य यूज़र्स के सेशन्स पर आपने जो टिप्पणियाँ और प्रतिक्रियाएँ दी हैं, उनकी गणना करें। आपके अपने सेशन्स से संबंधित इंटरॲक्शन इसमें शामिल नहीं किए जाते।",
-        "resonance": "जब अन्य समीक्षक आपके सेशन्स पर टिप्पणी या प्रतिक्रिया देते हैं, तब यह प्राप्त होता है । आपके अपने सेशन्स पर आपकी स्वयं की गतिविधियाँ इसमें शामिल नहीं होतीं।"
+        "resonance": "जब अन्य समीक्षक आपके सेशन्स पर टिप्पणी या प्रतिक्रिया देते हैं, तब यह प्राप्त होता है । आपके अपने सेशन्स पर आपकी स्वयं की गतिविधियाँ इसमें शामिल नहीं होतीं।",
+        "ascent": ""
       }
     }
   },
@@ -170,6 +240,7 @@
       "greetingLine1": "नमस्कार,",
       "greetingLine2": "{{app}} में आपका स्वागत है",
       "subtitle": "आगे बढ़ने के लिए अपना ईमेल ॲड्रेस दर्ज करें",
+      "back": "",
       "email": {
         "label": "ईमेल",
         "placeholder": "अपना ईमेल ॲड्रेस दर्ज करें",
@@ -201,14 +272,26 @@
         "generateOtp": "OTP बनाने में समस्या आ रही है। कृपया फिर से प्रयास करें।",
         "verifyOtp": "OTP सत्यापित करने में समस्या आ रही है। कृपया फिर से प्रयास करें।",
         "agreeTerms": "नियम और शर्तों से सहमत नहीं हैं"
-      }
+      },
+      "sessionExpired": ""
     }
   },
   "user": {
     "creditUsage": "उपयोग किए गए क्रेडिट्स",
     "logout": "लॉगआउट",
     "profileAlt": "प्रोफाइल",
-    "dataPolicy": "डेटा संबंधी नीति"
+    "dataPolicy": "डेटा संबंधी नीति",
+    "reportProblem": ""
+  },
+  "bugReport": {
+    "success": "",
+    "rateLimited": "",
+    "genericError": "",
+    "prompt": "",
+    "placeholder": "",
+    "submit": "",
+    "submitting": "",
+    "cancel": ""
   },
   "learn": {
     "tabs": {
@@ -273,8 +356,8 @@
       "completed_other": "पूर्ण · {{count}}×",
       "completedAria_one": "एक बार पूर्ण",
       "completedAria_other": "{{count}} बार पूर्ण",
-      "simulationsCount": "{{count}} सिम्युलेशन / सिम्युलेशन्स",
-      "simulationsCount_plural": "{{count}} सिम्युलेशन / सिम्युलेशन्स",
+      "simulationsCount_one": "",
+      "simulationsCount_other": "",
       "ariaLabel": "{{title}} सिनारियो चुनें",
       "type": {
         "pathway": "मार्ग",
@@ -317,6 +400,40 @@
       }
     },
     "evaluationChecklist": "मूल्यांकन चेकलिस्ट"
+  },
+  "progress": {
+    "title": "",
+    "hero": {
+      "level": "",
+      "toNextLevel_one": "",
+      "toNextLevel_other": "",
+      "maxLevel": "",
+      "xpTotal_one": "",
+      "xpTotal_other": "",
+      "viewProgress": ""
+    },
+    "stats": {
+      "lifetimeMinutes": "",
+      "sessions": "",
+      "trackItems": "",
+      "currentStreak": "",
+      "weeklyConsistency": ""
+    },
+    "rank": {
+      "line": ""
+    },
+    "badges": {
+      "link": ""
+    },
+    "errors": {
+      "title": "",
+      "description": ""
+    },
+    "a11y": {
+      "level": "",
+      "levelBar": "",
+      "navLevel": ""
+    }
   },
   "practiceStreak": {
     "title": "अभ्यास स्ट्रीक",
@@ -404,6 +521,18 @@
       "nextBadge_other": "{{badge}} तक {{count}} दिन और"
     }
   },
+  "analytics": {
+    "title": "सेशन का विश्लेषण",
+    "dashboardTitle": "मेटाबेस डॅशबोर्ड",
+    "types": {
+      "callLogs": "वास्तविक कॉल लॉग",
+      "simulations": "सिमुलेशन्स",
+      "org": "ऑर्गनाइज़ेशन मेट्रिक्स (Organization Metrics)”"
+    },
+    "empty": {
+      "description": "फिलहाल कोई डॅशबोर्ड उपलब्ध नहीं है। कृपया अपने एडमिन से संपर्क करें।"
+    }
+  },
   "organizationMetrics": {
     "subtitle": "चुनी गई समयावधि में पूरे संगठन का उपयोग",
     "ranges": {
@@ -460,18 +589,93 @@
       "caption": "चुनी गई अवधि में पूरे किए गए सेशन के आधार पर टॉप सिनेरियो",
       "sessions_one": "{{count}} सेशन",
       "sessions_other": "{{count}} सेशन"
-    }
-  },
-  "analytics": {
-    "title": "सेशन का विश्लेषण",
-    "dashboardTitle": "मेटाबेस डॅशबोर्ड",
-    "types": {
-      "callLogs": "वास्तविक कॉल लॉग",
-      "simulations": "सिमुलेशन्स",
-      "org": "ऑर्गनाइज़ेशन मेट्रिक्स (Organization Metrics)”"
     },
-    "empty": {
-      "description": "फिलहाल कोई डॅशबोर्ड उपलब्ध नहीं है। कृपया अपने एडमिन से संपर्क करें।"
+    "learnerUsage": {
+      "title": "",
+      "caption": "",
+      "exportCsv": "",
+      "errorTitle": "",
+      "errorSubtitle": "",
+      "emptyTitle": "",
+      "emptyDescription": "",
+      "status": {
+        "active": "",
+        "atRisk": "",
+        "dormant": "",
+        "neverStarted": ""
+      },
+      "columns": {
+        "name": "",
+        "email": "",
+        "status": "",
+        "lastPracticeSession": "",
+        "signupDate": "",
+        "roleplaySessionsStarted": "",
+        "roleplaySessionsCompleted": "",
+        "totalPracticeMinutes": "",
+        "coursesStartedAssigned": "",
+        "coursesAssigned": "",
+        "coursesStarted": "",
+        "coursesCompleted": "",
+        "lastActive": "",
+        "level": "",
+        "totalXp": "",
+        "roleplaySessions": "",
+        "avgScore": "",
+        "itemsCompletedPct": "",
+        "quizzes": "",
+        "readWatch": "",
+        "reflection": "",
+        "pointsPerMinute": ""
+      },
+      "daysAgo": "",
+      "today": "",
+      "levelShort": "",
+      "tooltips": {
+        "status": "",
+        "lastActive": "",
+        "level": "",
+        "totalXp": "",
+        "roleplaySessions": "",
+        "totalPracticeMinutes": "",
+        "pointsPerMinute": "",
+        "itemsCompletedPct": "",
+        "quizzes": "",
+        "readWatch": "",
+        "reflection": "",
+        "coursesCompleted": ""
+      }
+    },
+    "courseUsage": {
+      "title": "",
+      "caption": "",
+      "exportCsv": "",
+      "errorTitle": "",
+      "errorSubtitle": "",
+      "emptyTitle": "",
+      "emptyDescription": "",
+      "inProgressCell": "",
+      "status": {
+        "active": "",
+        "archived": ""
+      },
+      "columns": {
+        "title": "",
+        "status": "",
+        "totalItems": "",
+        "assigned": "",
+        "started": "",
+        "atLeast50": "",
+        "completed100": "",
+        "completionTime": "",
+        "avgCompletionDays": "",
+        "medianCompletionDays": "",
+        "avgScore": "",
+        "inProgress": "",
+        "inProgressActive": "",
+        "inProgressStalled": "",
+        "lastEnrollmentAt": ""
+      }
     }
   },
   "suspended": {
@@ -553,6 +757,10 @@
       "title": "सेशन बहुत जल्दी समाप्त हो गया",
       "description": "अर्थपूर्ण प्रतिक्रिया प्राप्त करने के लिए हमें अधिक संवाद वाला डेटा चाहिए।"
     },
+    "technicalInterruption": {
+      "title": "",
+      "description": ""
+    },
     "feedback": {
       "noData": "डेटा नहीं मिला",
       "dialog": {
@@ -564,11 +772,41 @@
           "4": "हाँ",
           "5": "बिल्कुल",
           "tags": {
-            "1": ["खराब", "सहायक नहीं", "बहुत बुरा", "निराशाजनक", "अनुपयोगी"],
-            "2": ["औसत से कम", "कमज़ोर", "असंतोषजनक", "अपर्याप्त", "सुधार की ज़रूरत"],
-            "3": ["तटस्थ", "ठीक है", "औसत", "मध्यम", "स्वीकार्य"],
-            "4": ["अच्छा", "सहायक", "संतोषजनक", "प्रभावी", "उपयोगी"],
-            "5": ["उत्कृष्ट", "अद्भुत", "बहुत उपयोगी", "शानदार", "अत्यंत प्रभावी"]
+            "1": [
+              "खराब",
+              "सहायक नहीं",
+              "बहुत बुरा",
+              "निराशाजनक",
+              "अनुपयोगी"
+            ],
+            "2": [
+              "औसत से कम",
+              "कमज़ोर",
+              "असंतोषजनक",
+              "अपर्याप्त",
+              "सुधार की ज़रूरत"
+            ],
+            "3": [
+              "तटस्थ",
+              "ठीक है",
+              "औसत",
+              "मध्यम",
+              "स्वीकार्य"
+            ],
+            "4": [
+              "अच्छा",
+              "सहायक",
+              "संतोषजनक",
+              "प्रभावी",
+              "उपयोगी"
+            ],
+            "5": [
+              "उत्कृष्ट",
+              "अद्भुत",
+              "बहुत उपयोगी",
+              "शानदार",
+              "अत्यंत प्रभावी"
+            ]
           }
         }
       }
@@ -601,6 +839,10 @@
       "generating": "Ally आपकी डीब्रीफ़ लिख रहा है…",
       "generatingHint": "इसमें आमतौर पर कुछ पल लगते हैं।",
       "failed": "Ally इस सेशन के लिए डीब्रीफ़ नहीं लिख सका।",
+      "stillWorking": "",
+      "checkAgain": "",
+      "checkingAgain": "",
+      "notAvailable": "",
       "momentLabel": "यह पल देखें",
       "momentNotFound": "हम उस पल तक नहीं पहुँच सके — इसके बजाय पूरा ट्रांसक्रिप्ट यहाँ है।",
       "section": {
@@ -1040,16 +1282,21 @@
         "unsupported": "इस ब्राउज़र में ऑडियो रिकॉर्डिंग समर्थित नहीं है।",
         "noSpeech": "हमें कोई आवाज़ सुनाई नहीं दी। कृपया फिर से रिकॉर्ड करें।",
         "generateError": "रिकॉर्डिंग से नोट्स तैयार नहीं किए जा सके। कृपया पुनः प्रयास करें।",
-        "generated": "आपकी रिकॉर्डिंग से नोट्स तैयार हो गए",
+        "generated_one": "",
+        "generated_other": "",
         "nothingExtracted": "हमने ऑडियो को टेक्स्ट में बदल दिया, लेकिन उससे कोई फ़ील्ड नहीं भरी जा सकी।",
+        "cancel": "",
+        "timeout": "",
+        "backToForm": "",
+        "tryAgain": "",
         "processing": {
           "transcribing": "आपकी रिकॉर्डिंग को टेक्स्ट में बदला जा रहा है…",
           "extracting": "नोट का विवरण निकाला जा रहा है…",
           "populating": "फ़ील्ड भरी जा रही हैं…"
         },
+        "stillWorking": "अब भी काम चल रहा है — इसमें सामान्य से ज़्यादा समय लग रहा है। आप प्रतीक्षा कर सकते हैं, या रद्द करके फ़ॉर्म स्वयं भर सकते हैं।",
         "extractionFailed": "आपने जो बोला वह सहेज लिया गया है, लेकिन उससे फ़ील्ड नहीं भरे जा सके। कृपया नीचे भरें, या दोबारा रिकॉर्ड करें।",
-        "notEnabled": "आपके संगठन के लिए वॉइस नोट चालू नहीं हैं। कृपया प्रशासक से इन्हें चालू करने को कहें।",
-        "stillWorking": "अब भी काम चल रहा है — इसमें सामान्य से ज़्यादा समय लग रहा है। आप प्रतीक्षा कर सकते हैं, या रद्द करके फ़ॉर्म स्वयं भर सकते हैं।"
+        "notEnabled": "आपके संगठन के लिए वॉइस नोट चालू नहीं हैं। कृपया प्रशासक से इन्हें चालू करने को कहें।"
       }
     },
     "table": {
@@ -1079,7 +1326,11 @@
       "callEmptyTitle": "कोई कॉल लॉग नहीं मिला",
       "callEmptyDesc": "फ़िल्टर एडजस्ट करने का प्रयास करें या पेज रिफ्रेश करें।",
       "simEmptyTitle": "कोई सिम्युलेशन लॉग नहीं मिला",
-      "simEmptyDesc": "फ़िल्टर एडजस्ट करने का प्रयास करें या पेज रिफ्रेश करें।"
+      "simEmptyDesc": "फ़िल्टर एडजस्ट करने का प्रयास करें या पेज रिफ्रेश करें।",
+      "callErrorTitle": "",
+      "callErrorDesc": "",
+      "simErrorTitle": "",
+      "simErrorDesc": ""
     },
     "status": {
       "processing": "प्रोसेस हो रहा है",
@@ -1214,6 +1465,14 @@
     "supervisorEmptyState": "आपके सुपरवाइज़र सुन रहे हैं — जब कुछ काम की बात होगी, नोट यहाँ दिखेंगे।",
     "supervisorAiLabel": "AI-जनित",
     "supervisorAiTooltip": "Ally एक AI सुपरवाइज़र है। यह लाइव सुन रहा है और बातचीत के दौरान अपने आप ये नोट भेजता है, कोई व्यक्ति नहीं।",
+    "connectionFailedTitle": "",
+    "connectionFailedMessage": "",
+    "agentNotJoinedTitle": "",
+    "agentNotJoinedMessage": "",
+    "retryConnection": "",
+    "exitSimulation": "",
+    "reconnecting": "",
+    "missedSupervisorHints": "",
     "turnIndicator": {
       "speaking": "बोल रहें है...",
       "listening": "सुन रहें है...",
@@ -1330,12 +1589,48 @@
   },
   "tracks2": {
     "breadcrumb": "सीखें",
+    "language": {
+      "readingIn": "",
+      "change": "",
+      "title": "",
+      "subtitle": "",
+      "changeFailed": "",
+      "fallback": {
+        "VIDEO_NOT_LOCALISED": "",
+        "SCENARIO_NOT_TRANSLATED": "",
+        "CASE_NOT_TRANSLATED": ""
+      }
+    },
     "coursesTitle": "कोर्स",
     "progress": "{{total}} में से {{completed}}",
     "trackCompleted": "कोर्स पूर्ण हुआ",
     "lockedTooltip": "इसे अनलॉक करने के लिए पिछले आइटम पूरे करें",
     "notFound": "यह कोर्स नहीं मिला",
     "backToLearn": "सीखें पर वापस",
+    "viewProgress": "",
+    "progressDashboard": {
+      "title": "",
+      "tapHint": "",
+      "notFound": "",
+      "feedbackHeading": "",
+      "feedbackSubheading_one": "",
+      "feedbackSubheading_other": "",
+      "feedbackEmpty": "",
+      "scoreTrendAlt": "",
+      "latestScore": "",
+      "latestFeedbackHeading": "",
+      "readFullFeedback": "",
+      "practiceNudge": "",
+      "sessionsHeading": "",
+      "sessionScore": "",
+      "sessionPending": "",
+      "untitledSession": "",
+      "classification": {
+        "demonstrated": "",
+        "needs_practice": "",
+        "insufficient_data": ""
+      }
+    },
     "status": {
       "completed": "पूर्ण",
       "inProgress": "जारी है"
@@ -1353,7 +1648,14 @@
       "prompts_other": "{{count}} प्रॉम्प्ट",
       "roleplay": "रोल प्ले",
       "minScore": "स्कोर {{score}}+",
-      "case": "केस स्टडी"
+      "case": "केस स्टडी",
+      "annotationTranscript": "",
+      "annotationDocument": "",
+      "lines": "",
+      "lines_other": "",
+      "labels": "",
+      "labels_other": "",
+      "game": ""
     },
     "continueLearning": {
       "label": "सीखना जारी रखें"
@@ -1365,7 +1667,10 @@
       "finish": "समाप्त करें",
       "overallProgress": "{{pct}}% पूर्ण",
       "loadFailed": "यह आइटम लोड नहीं हो सका। कृपया पुनः प्रयास करें।",
-      "retry": "पुनः प्रयास करें"
+      "trackLoadFailed": "",
+      "trackLoadFailedDescription": "",
+      "retry": "पुनः प्रयास करें",
+      "reviewItem": ""
     },
     "celebration": {
       "sectionCompleteTitle": "सेक्शन पूरा हुआ!",
@@ -1379,11 +1684,34 @@
     "article": {
       "markRead": "पढ़ा हुआ चिह्नित करें",
       "read": "पढ़ लिया",
-      "keepReading": "आगे बढ़ने के लिए पढ़ते रहें"
+      "keepReading": "आगे बढ़ने के लिए पढ़ते रहें",
+      "increaseFontSize": "",
+      "decreaseFontSize": "",
+      "answerQuestionToContinue": "",
+      "answerQuestionsToContinue": "",
+      "question": {
+        "title": "",
+        "submit": "",
+        "correct": "",
+        "incorrect": "",
+        "correctAnswerIs": "",
+        "answeredHint": "",
+        "progress": ""
+      }
     },
     "video": {
       "markWatched": "देखा हुआ चिह्नित करें",
-      "watched": "देख लिया"
+      "watched": "देख लिया",
+      "loadFailed": "",
+      "openExternally": "",
+      "interjection": {
+        "title": "",
+        "submit": "",
+        "continue": "",
+        "correct": "",
+        "incorrect": "",
+        "pending": ""
+      }
     },
     "journal": {
       "submit": "सबमिट करें",
@@ -1400,6 +1728,7 @@
       "openCase": "केस खोलें",
       "replay": "फिर से करें",
       "completed": "पूर्ण",
+      "completedOn": "",
       "language": "भाषा"
     },
     "quiz": {
@@ -1426,6 +1755,9 @@
         "false": "ग़लत",
         "orderPrompt": "इन्हें सही क्रम में लगाएँ",
         "matchPrompt": "बाईं ओर का कोई आइटम चुनें, फिर दाईं ओर उसका मिलान चुनें",
+        "dragHandle": "",
+        "moveUp": "",
+        "moveDown": "",
         "wordCount": "{{count}} / {{min}} शब्द",
         "aiGraded": "इस उत्तर का मूल्यांकन AI करता है",
         "ratePrompt": "हर कथन को रेट करें",
@@ -1463,6 +1795,163 @@
         "openVideo": "वीडियो खोलें",
         "videoTitle": "प्रश्न का वीडियो"
       }
+    },
+    "annotation": {
+      "labels": "",
+      "instructions": "",
+      "instructionsNoPenalty": "",
+      "markedCount": "",
+      "markedCount_other": "",
+      "submit": "",
+      "markSomethingFirst": "",
+      "tryAgain": "",
+      "attemptsLeft": "",
+      "attemptsLeft_other": "",
+      "passed": "",
+      "notYet": "",
+      "keyHidden": "",
+      "tally": {
+        "found": "",
+        "found_other": "",
+        "missed": "",
+        "missed_other": "",
+        "notHere": "",
+        "notHere_other": ""
+      }
+    },
+    "game": {
+      "frameTitle": "",
+      "controlsByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "lastScoreByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "bestScoreByGame": {
+        "TREX_RUNNER": "",
+        "TIC_TAC_TOE": "",
+        "MEMORY_MATCH": "",
+        "CUB_N_PUP": "",
+        "SNAKE": "",
+        "SPROUT": ""
+      },
+      "optional": "",
+      "loadFailed": "",
+      "loadFailedDescription": "",
+      "frameStrings": {
+        "MEMORY_MATCH": {
+          "moves": "",
+          "restart": "",
+          "wonTitle": "",
+          "wonDetail": "",
+          "playAgain": "",
+          "cardLabel": ""
+        },
+        "SNAKE": {
+          "score": "",
+          "best": "",
+          "restart": "",
+          "gameOver": ""
+        },
+        "CUB_N_PUP": {
+          "levels": "",
+          "close": "",
+          "nextLevel": "",
+          "solved": "",
+          "tutorial": "",
+          "hintDragToStar": "",
+          "hintRotate": "",
+          "hintFree": "",
+          "hintPivot": "",
+          "hintRotateLink": ""
+        },
+        "SPROUT": {
+          "pickerLabel": "",
+          "plantSUCCULENT": "",
+          "plantMARIGOLD": "",
+          "plantFERN": "",
+          "plantTOMATO": "",
+          "visitorsLabel": "",
+          "hintStart": "",
+          "aimSoil": "",
+          "aimLeaves": "",
+          "aimAway": "",
+          "stateDry": "",
+          "stateGood": "",
+          "stateWet": "",
+          "stage0": "",
+          "stage1": "",
+          "stage2": "",
+          "stage3": "",
+          "stage4": "",
+          "stage5": "",
+          "leafDropped": "",
+          "leafScorched": "",
+          "bloomed": "",
+          "plantAnother": "",
+          "visitorArrived": "",
+          "visitorBEE": "",
+          "visitorBUTTERFLY": "",
+          "visitorLADYBIRD": ""
+        }
+      }
+    },
+    "discussion": {
+      "title": "",
+      "titleWithCount": "",
+      "emptyTitle": "",
+      "emptyBody": "",
+      "placeholder": "",
+      "replyPlaceholder": "",
+      "editLabel": "",
+      "post": "",
+      "reply": "",
+      "edit": "",
+      "delete": "",
+      "save": "",
+      "cancel": "",
+      "charCount": "",
+      "edited": "",
+      "editedByModerator": "",
+      "deletedByAuthor": "",
+      "unknownAuthor": "",
+      "you": "",
+      "justNow": "",
+      "timeAgo": "",
+      "discussionLocked": "",
+      "threadLocked": "",
+      "threadLockedBadge": "",
+      "lockThread": "",
+      "unlockThread": "",
+      "lockDiscussion": "",
+      "unlockDiscussion": "",
+      "loadFailed": "",
+      "retry": "",
+      "actionFailed": "",
+      "deleteTitle": "",
+      "deleteTitleItalic": "",
+      "deleteModeratorBody": "",
+      "deleteWithRepliesBody": "",
+      "deleteBody": ""
     }
+  },
+  "errorBoundary": {
+    "pageTitle": "",
+    "pageMessage": "",
+    "panelTitle": "",
+    "panelMessage": "",
+    "tryAgain": "",
+    "reloadPage": "",
+    "detailLabel": ""
   }
 }
