@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { PublicProductUpdate } from "@api";
 
-import { dayKeyUtc, formatDay, groupByDay } from "../productUpdateDays";
+import { dayKeyUtc, daySummary, formatDay, groupByDay } from "../productUpdateDays";
 
 const update = (
   id: string,
@@ -65,5 +65,32 @@ describe("formatDay", () => {
     const label = formatDay("2026-09-30");
     expect(label).toMatch(/30.*2026/);
     expect(label).not.toMatch(/week/i);
+  });
+});
+
+describe("daySummary", () => {
+  it("counts each kind, leaving out the ones a day has none of", () => {
+    const [day] = groupByDay([
+      update("a", "2026-09-30T10:00:00Z", "new"),
+      update("b", "2026-09-30T09:00:00Z", "new"),
+      update("c", "2026-09-30T08:00:00Z", "fixed"),
+      update("d", "2026-09-30T07:00:00Z", "fixed"),
+      update("e", "2026-09-30T06:00:00Z", "fixed"),
+    ]);
+    expect(daySummary(day)).toBe("2 new · 3 fixes");
+  });
+
+  it("says fix, not fixes, for one", () => {
+    const [day] = groupByDay([update("a", "2026-09-30T10:00:00Z", "fixed")]);
+    expect(daySummary(day)).toBe("1 fix");
+  });
+
+  it("lists new, then improved, then fixes", () => {
+    const [day] = groupByDay([
+      update("a", "2026-09-30T10:00:00Z", "fixed"),
+      update("b", "2026-09-30T09:00:00Z", "improved"),
+      update("c", "2026-09-30T08:00:00Z", "new"),
+    ]);
+    expect(daySummary(day)).toBe("1 new · 1 improved · 1 fix");
   });
 });

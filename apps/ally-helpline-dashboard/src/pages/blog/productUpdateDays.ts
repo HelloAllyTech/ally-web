@@ -63,6 +63,22 @@ export const groupByDay = (updates: PublicProductUpdate[]): DayGroup[] => {
     }));
 };
 
+/**
+ * What a day holds, for its heading: "2 new · 1 improved · 3 fixes". Kinds the
+ * day has none of are left out, so a quiet day reads "1 fix", not "0 new · …".
+ */
+export const daySummary = (group: DayGroup): string => {
+  const counts: Record<ProductUpdateKind, number> = { new: 0, improved: 0, fixed: 0 };
+  for (const update of [...group.highlights, ...group.fixes]) counts[update.kind] += 1;
+  return [
+    counts.new && `${counts.new} new`,
+    counts.improved && `${counts.improved} improved`,
+    counts.fixed && `${counts.fixed} ${counts.fixed === 1 ? "fix" : "fixes"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+};
+
 /** "30 September 2026" (in the reader's locale), for a `YYYY-MM-DD` UTC day key. */
 export const formatDay = (key: string): string =>
   new Date(`${key}T00:00:00Z`).toLocaleDateString(undefined, {
