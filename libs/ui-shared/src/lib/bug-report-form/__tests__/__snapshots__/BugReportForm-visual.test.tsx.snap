@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BugReportForm-visual > renders the modal footer correctly 1`] = `
+<div
+  aria-busy="false"
+  class="cds--modal-footer cds--btn-set"
+>
+  <div
+    class="flex gap-4 items-center w-full"
+  >
+    <button
+      class="flex-1 cds--btn cds--btn--secondary"
+      type="button"
+    >
+      Cancel
+    </button>
+    <button
+      class="flex-1 cds--btn cds--btn--primary cds--btn--disabled"
+      disabled=""
+      type="button"
+    >
+      Send report
+    </button>
+  </div>
+</div>
+`;

@@ -10,6 +10,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ComposedModal: ({ children, open }: any) => (open ? <div role="dialog">{children}</div> : null),
   ModalBody: ({ children, className }: any) => <div className={className}>{children}</div>,
   ModalFooter: ({ children }: any) => <div>{children}</div>,
+  ActionDialogFooter: ({ children }: any) => <div>{children}</div>,
 }));
 
 vi.mock("@assets", () => ({
