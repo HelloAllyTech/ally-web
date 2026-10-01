@@ -118,7 +118,7 @@ export const baseQueryWithReauth: BaseQueryFn<
       // If there is no access token or refresh token, return the error
       if (!accessToken || !refreshToken) {
         handleLogout();
-        return new Promise(() => {});
+        return result;
       }
 
       try {
