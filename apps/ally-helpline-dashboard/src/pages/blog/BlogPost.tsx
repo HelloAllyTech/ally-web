@@ -4,10 +4,10 @@ import { Link, useParams } from "react-router-dom";
 
 import { RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useGetPublicBlogBySlugQuery } from "@api";
-import { Ally } from "@assets";
-import { ALLY_URL } from "@constants";
+import { ROUTES } from "@constants";
 
 import { BlogFooter } from "./BlogFooter";
+import { BlogHeader } from "./BlogHeader";
 import {
   BLOG_INDEX_DESCRIPTION,
   BLOG_INDEX_TITLE,
@@ -52,23 +52,14 @@ export const BlogPost: FC = () => {
 
   return (
     <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#29261f]">
-      <div className="mx-auto w-full max-w-6xl px-6 pt-8">
-        <div className="flex items-center justify-between">
-          <Ally />
-          <a
-            href={ALLY_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg bg-[#29261f] px-4 py-2 text-sm font-medium text-[#FAF9F5] transition-colors hover:bg-[#3d3a34]"
-          >
-            Try Ally
-          </a>
-        </div>
-      </div>
+      <BlogHeader />
 
       <div className="mx-auto w-full max-w-2xl flex-1 px-6 pb-16 pt-12">
-        <Link to="/blog" className="text-sm text-[#928b7c] transition-colors hover:text-[#29261f]">
-          ← Blog
+        <Link
+          to={ROUTES.BLOG}
+          className="text-sm text-[#928b7c] transition-colors hover:text-[#29261f]"
+        >
+          ← All posts
         </Link>
 
         {isFetching ? (
@@ -81,7 +72,6 @@ export const BlogPost: FC = () => {
           <article className="mt-8">
             <header>
               <p className="text-sm text-[#928b7c]">
-                {post.category && <span>{post.category} · </span>}
                 {formatDate(post.publishedAt ?? post.createdAt)}
               </p>
               <h1 className="mt-4 text-4xl leading-[1.15] sm:text-5xl">{post.title}</h1>
@@ -112,12 +102,13 @@ export const BlogPost: FC = () => {
             {post.tags?.length > 0 && (
               <div className="mt-12 flex flex-wrap gap-2 border-t border-[#29261f]/10 pt-6">
                 {post.tags.map(tag => (
-                  <span
+                  <Link
                     key={tag}
-                    className="rounded-full border border-[#29261f]/10 bg-white px-3 py-1 text-sm text-[#565045]"
+                    to={`${ROUTES.BLOG}?tag=${encodeURIComponent(tag)}`}
+                    className="rounded-full border border-[#29261f]/10 bg-white px-3 py-1 text-sm text-[#565045] transition-colors hover:border-[#29261f]/30 hover:text-[#29261f]"
                   >
                     #{tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}

@@ -33,6 +33,7 @@ import Badge from "./badge.svg?react";
 import Bolt from "./bolt.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
+import BuildingAlly from "./building-ally.svg?react";
 import BulbIcon from "./bulb-icon.svg?react";
 import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
@@ -183,6 +184,7 @@ export {
   BoxBreathingBottomGradient,
   Bolt,
   BoxBreathingTopGradient,
+  BuildingAlly,
   BulbIcon,
   Call,
   CallAttend,

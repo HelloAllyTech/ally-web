@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 
 import { ALLY_PRIVACY_POLICY_URL, ALLY_TERMS_URL, ALLY_URL, ROUTES } from "@constants";
 
+import { BLOG_NAME } from "./blogMeta";
+
 /**
  * Shared footer for the public /blog pages. Holds the secondary navigation the
  * header used to carry (the changelog link in particular), so the header stays
@@ -22,7 +24,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
       <p>© {new Date().getFullYear()} Ally</p>
       <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <Link to={ROUTES.BLOG} className="transition-colors hover:text-[#29261f]">
-          Blog
+          {BLOG_NAME}
         </Link>
         <Link to={ROUTES.CHANGELOG} className="transition-colors hover:text-[#29261f]">
           Changelog

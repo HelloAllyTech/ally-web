@@ -11,7 +11,7 @@ export interface BlogPost {
   tldr?: string | null;
   body?: string | null;
   tags: string[];
-  category?: string | null;
+  coverColor: string;
   authorName?: string | null;
   headerImageUrl?: string | null;
   status: BlogStatus;
@@ -28,7 +28,6 @@ export interface GetBlogsResponse {
 export interface GetBlogsQuery {
   search?: string;
   status?: BlogStatus;
-  category?: string;
   limit?: number;
   offset?: number;
   sortBy?: string;
@@ -41,7 +40,7 @@ export interface UpsertBlogRequest {
   tldr?: string;
   body?: string;
   tags?: string[];
-  category?: string;
+  coverColor?: string;
   authorName?: string;
   headerImageUrl?: string;
   status?: BlogStatus;
