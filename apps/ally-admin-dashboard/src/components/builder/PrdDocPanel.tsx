@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
-import { BuilderPrdDocument, BuilderPrdReadiness } from "@types";
+import { BuilderChatMessage, BuilderPrdDocument, BuilderPrdReadiness } from "@types";
 import { asAgentText, asAgentTextList } from "@utils";
 
 import { downloadPrdMarkdown, downloadPrdPdf, PrdExportMeta } from "./prdExport";
@@ -71,6 +71,10 @@ interface PrdDocPanelProps {
   sessionTitle?: string;
   /** Recorded in the exported file's header, so a PRD names its own repos. */
   repos?: string[];
+  /** The PDF's "Built by" line. */
+  createdByName?: string | null;
+  /** The interview feed — exported as the PDF's transcript appendix only. */
+  transcript?: BuilderChatMessage[];
 }
 
 /**
@@ -92,6 +96,8 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
   onSaveSection,
   sessionTitle = "",
   repos = [],
+  createdByName = null,
+  transcript,
 }) => {
   const strings = en.builder.prd;
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -175,7 +181,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
     const meta: PrdExportMeta = { sessionTitle, repos, versionNumber };
     try {
       if (format === "pdf") {
-        downloadPrdPdf(prd, meta);
+        downloadPrdPdf(prd, { ...meta, createdByName, transcript });
       } else {
         downloadPrdMarkdown(prd, meta);
       }

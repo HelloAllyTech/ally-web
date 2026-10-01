@@ -223,6 +223,8 @@ export interface BuilderSessionDetail extends BuilderSession {
   prd: BuilderPrdDocument;
   prdVersionNumber: number;
   readiness: BuilderPrdReadiness;
+  /** Display name of the admin who started the session (email when blank). */
+  createdByName?: string | null;
 }
 
 /* ── Builds ─────────────────────────────────────────────────────────────── */

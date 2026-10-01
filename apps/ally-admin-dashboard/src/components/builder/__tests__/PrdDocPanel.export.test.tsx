@@ -68,6 +68,8 @@ const prd = {
   openQuestions: [],
 } as unknown as BuilderPrdDocument;
 
+const transcript = [{ id: "m1", role: "user" as const, content: "Add a banner toggle" }];
+
 const renderPanel = (editable = true) =>
   render(
     <PrdDocPanel
@@ -78,11 +80,13 @@ const renderPanel = (editable = true) =>
       onSaveSection={vi.fn()}
       sessionTitle="Per-tenant toggles"
       repos={["ally-be"]}
+      createdByName="Asha Rao"
+      transcript={transcript}
     />,
   );
 
 describe("PrdDocPanel export", () => {
-  it("downloads a PDF, carrying the session's repos and version into the file", () => {
+  it("downloads a PDF, carrying the repos, version, author and transcript into the file", () => {
     downloadPrdPdf.mockClear();
     renderPanel();
 
@@ -92,16 +96,22 @@ describe("PrdDocPanel export", () => {
       sessionTitle: "Per-tenant toggles",
       repos: ["ally-be"],
       versionNumber: 4,
+      createdByName: "Asha Rao",
+      transcript,
     });
   });
 
-  it("downloads Markdown", () => {
+  it("downloads Markdown without the transcript, which belongs to the PDF only", () => {
     downloadPrdMarkdown.mockClear();
     renderPanel();
 
     fireEvent.click(screen.getByText("Download as Markdown (.md)"));
 
-    expect(downloadPrdMarkdown).toHaveBeenCalledTimes(1);
+    expect(downloadPrdMarkdown).toHaveBeenCalledWith(prd, {
+      sessionTitle: "Per-tenant toggles",
+      repos: ["ally-be"],
+      versionNumber: 4,
+    });
   });
 
   /**

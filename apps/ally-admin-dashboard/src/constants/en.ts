@@ -3410,6 +3410,34 @@ export const en = {
         dataModel: "Data model",
         api: "API",
         pageLabel: (page: number, total: number) => `Page ${page} of ${total}`,
+        // The PDF's cover block — label/value rows under the logo.
+        details: {
+          prdName: "PRD name",
+          date: "Date",
+          builtBy: "Built by",
+          version: "Version",
+          repos: "Repos",
+        },
+        // When the creator's account is gone or the server didn't say.
+        unknownAuthor: "Unknown admin",
+        // PDF only: the interview that produced the PRD, kept as the record of
+        // who decided what. The build never reads it — it works from the PRD.
+        transcript: {
+          heading: "Interview transcript",
+          intro:
+            "The full Builder conversation that produced this PRD — every question asked and how it was answered. Included for the record; the build works from the PRD above, not from this transcript.",
+          empty: "No conversation recorded yet.",
+          builder: "Builder",
+          question: (n: number) => `Builder · Question ${n}`,
+          whyAsked: (rationale: string) => `Why it was asked: ${rationale}`,
+          options: "Options offered",
+          recommended: "recommended",
+          chosen: "chosen",
+          answerBy: (name: string) => `${name} · Answer`,
+          notAnswered: "Not answered.",
+          failedTurn: (message: string) => `This turn failed: ${message}`,
+          interrupted: "Stopped before it finished.",
+        },
       },
     },
 
