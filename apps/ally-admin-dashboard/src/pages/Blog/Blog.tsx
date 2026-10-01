@@ -101,7 +101,7 @@ export const BlogManagement: React.FC = () => {
         tldr: emptyToUndefined(values.tldr),
         body: emptyToUndefined(values.body),
         tags: values.tags,
-        category: emptyToUndefined(values.category),
+        coverColor: values.coverColor,
         authorName: emptyToUndefined(values.authorName),
         headerImageUrl: emptyToUndefined(values.headerImageUrl),
         status: (publish ? "PUBLISHED" : "DRAFT") as BlogStatus,
@@ -184,7 +184,7 @@ export const BlogManagement: React.FC = () => {
           <TableHead className="bg-background-secondary text-typography-600">
             <TableRow>
               <TableHeader className="px-4 py-3 font-medium">Title</TableHeader>
-              <TableHeader className="px-4 py-3 font-medium">Category</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium">Tags</TableHeader>
               <TableHeader className="px-4 py-3 font-medium">Status</TableHeader>
               <TableHeader className="px-4 py-3 font-medium">Published</TableHeader>
               <TableHeader className="px-4 py-3 font-medium">Updated</TableHeader>
@@ -209,7 +209,7 @@ export const BlogManagement: React.FC = () => {
                   )}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-typography-700">
-                  {blog.category || "—"}
+                  <div className="line-clamp-1 max-w-xs">{blog.tags?.join(", ") || "—"}</div>
                 </TableCell>
                 <TableCell className="px-4 py-3">
                   <span

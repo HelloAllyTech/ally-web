@@ -5,7 +5,7 @@ import { blogPostTitle, excerptFromHtml } from "../blogMeta";
 describe("blogPostTitle", () => {
   it("suffixes the post title so browser tabs identify the site", () => {
     expect(blogPostTitle("Introducing Ally Learning Tracks")).toBe(
-      "Introducing Ally Learning Tracks | Ally Blog",
+      "Introducing Ally Learning Tracks | Building Ally",
     );
   });
 });

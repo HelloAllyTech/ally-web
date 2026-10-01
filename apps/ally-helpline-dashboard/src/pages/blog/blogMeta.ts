@@ -2,16 +2,19 @@
 
 export const BLOG_SITE_NAME = "Ally";
 
-export const BLOG_INDEX_TITLE = `Blog | ${BLOG_SITE_NAME}`;
+/** The blog's name — its wordmark in the header, and the browser-tab title. */
+export const BLOG_NAME = "Building Ally";
 
-/** Mirrors the subtitle rendered on the index, so the two can't drift apart. */
+export const BLOG_INDEX_TITLE = BLOG_NAME;
+
+/** Meta description only — the index no longer renders a subtitle. */
 export const BLOG_INDEX_DESCRIPTION = "Product updates, research and news from the Ally team.";
 
 export const CHANGELOG_TITLE = `Changelog | ${BLOG_SITE_NAME}`;
 
 export const CHANGELOG_DESCRIPTION = "Every update we've shipped, in plain language.";
 
-export const blogPostTitle = (postTitle: string) => `${postTitle} | ${BLOG_SITE_NAME} Blog`;
+export const blogPostTitle = (postTitle: string) => `${postTitle} | ${BLOG_NAME}`;
 
 const MAX_EXCERPT_LENGTH = 200;
 

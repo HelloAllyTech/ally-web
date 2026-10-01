@@ -255,6 +255,7 @@ export const ApiEndpoints = {
   BLOG: {
     // Public (ungated) blog reads for the /blog pages.
     GET_PUBLIC_BLOGS: "/v1/blog/public",
+    GET_PUBLIC_BLOG_TAGS: "/v1/blog/public/tags",
     GET_PUBLIC_BLOG_BY_SLUG: (slug: string) => `/v1/blog/public/${slug}`,
   },
   CHANGELOG: {

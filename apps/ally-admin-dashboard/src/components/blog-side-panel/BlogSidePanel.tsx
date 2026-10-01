@@ -16,9 +16,9 @@ export interface BlogFormValues {
   tldr: string;
   body: string;
   tags: string[];
-  category: string;
   authorName: string;
   headerImageUrl: string;
+  coverColor: string;
 }
 
 interface BlogSidePanelProps {
@@ -39,15 +39,29 @@ const ACCEPTED_IMAGE_TYPES = [
 ];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // keep in sync with the backend cap
 
+// Fills the public blog shows in place of a header image: the blog's four warm
+// cover tones, plus its clay accent and umber text colour. The first is the
+// default — keep it in sync with BLOG_DEFAULT_COVER_COLOR in ally-be.
+export const BLOG_COVER_COLORS = [
+  { value: "#8B9A6D", name: "Sage" },
+  { value: "#D8CFC0", name: "Stone" },
+  { value: "#B9A489", name: "Sand" },
+  { value: "#E4D7BC", name: "Parchment" },
+  { value: "#D97757", name: "Clay" },
+  { value: "#565045", name: "Umber" },
+] as const;
+
+const DEFAULT_COVER_COLOR = BLOG_COVER_COLORS[0].value;
+
 const EMPTY_FORM: BlogFormValues = {
   title: "",
   slug: "",
   tldr: "",
   body: "",
   tags: [],
-  category: "",
   authorName: "",
   headerImageUrl: "",
+  coverColor: DEFAULT_COVER_COLOR,
 };
 
 const toForm = (blog: BlogPost | null): BlogFormValues =>
@@ -58,9 +72,9 @@ const toForm = (blog: BlogPost | null): BlogFormValues =>
         tldr: blog.tldr ?? "",
         body: blog.body ?? "",
         tags: blog.tags ?? [],
-        category: blog.category ?? "",
         authorName: blog.authorName ?? "",
         headerImageUrl: blog.headerImageUrl ?? "",
+        coverColor: blog.coverColor || DEFAULT_COVER_COLOR,
       }
     : { ...EMPTY_FORM };
 
@@ -246,18 +260,6 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
             />
           </Field>
 
-          <Field label="Category">
-            <TextInput
-              id="blog-category"
-              labelText="Category"
-              hideLabel
-              value={form.category}
-              onChange={e => setField("category", e.target.value)}
-              placeholder="e.g. Product Updates"
-              className="w-full"
-            />
-          </Field>
-
           <Field label="Author name" hint="Shown as the byline on the public post.">
             <TextInput
               id="blog-author-name"
@@ -332,9 +334,11 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
                   className="h-20 w-32 object-cover rounded-md border border-border-light"
                 />
               ) : (
-                <div className="h-20 w-32 rounded-md border border-dashed border-border-light flex items-center justify-center text-xs text-typography-400">
-                  No image
-                </div>
+                <div
+                  aria-hidden="true"
+                  className="h-20 w-32 border border-border-light"
+                  style={{ backgroundColor: form.coverColor }}
+                />
               )}
               <div className="flex flex-col gap-2">
                 <label className="cursor-pointer text-sm text-primary-600 hover:underline">
@@ -361,6 +365,34 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
                   </button>
                 )}
               </div>
+            </div>
+          </Field>
+
+          <Field
+            label="Cover colour"
+            hint="Fills the cover on the blog when the post has no header image."
+          >
+            <div role="radiogroup" aria-label="Cover colour" className="flex flex-wrap gap-2">
+              {BLOG_COVER_COLORS.map(({ value, name }) => {
+                const isSelected = form.coverColor.toLowerCase() === value.toLowerCase();
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    aria-label={name}
+                    title={name}
+                    onClick={() => setField("coverColor", value)}
+                    className={`h-8 w-8 border transition-shadow ${
+                      isSelected
+                        ? "border-typography-900 ring-2 ring-typography-900 ring-offset-2"
+                        : "border-border-light hover:ring-2 hover:ring-border-light hover:ring-offset-1"
+                    }`}
+                    style={{ backgroundColor: value }}
+                  />
+                );
+              })}
             </div>
           </Field>
 
