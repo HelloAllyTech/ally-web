@@ -1,4 +1,5 @@
 import { ApiEndpoints } from "@constants";
+
 import { baseAPI } from "./baseAPI";
 
 export const trackAPI = baseAPI.injectEndpoints({
