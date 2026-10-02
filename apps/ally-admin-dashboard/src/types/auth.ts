@@ -1394,8 +1394,10 @@ export interface VoiceLatencyPoint {
    * (`openerBridge: true`; ally-ai-learn v1.48.0+).
    */
   firstAudioOpenerBridgeTurns: number;
-  /** Turns whose first audio was a predictive interim reply. */
+  /** Turns whose first audio was the legacy interim reply (and unlabelled older interim turns). */
   firstAudioInterimTurns: number;
+  /** Turns whose first audio was the delivery plan's bridge line on its own. */
+  firstAudioBridgeTurns: number;
   /** Turns whose first audio was the real reply (nothing masked it). */
   firstAudioReplyTurns: number;
   /**
@@ -1408,8 +1410,10 @@ export interface VoiceLatencyPoint {
   avgFirstAudioFillerMs: number | null;
   /** Mean time-to-first-voice (ms) for opener-bridge turns; null if none. */
   avgFirstAudioOpenerBridgeMs: number | null;
-  /** Mean time-to-first-voice (ms) for interim-first turns; null if none. */
+  /** Mean time-to-first-voice (ms) for legacy-interim-first turns; null if none. */
   avgFirstAudioInterimMs: number | null;
+  /** Mean time-to-first-voice (ms) for bridge-line-first turns; null if none. */
+  avgFirstAudioBridgeMs: number | null;
   /** Mean time-to-first-voice (ms) for reply-first turns; null if none. */
   avgFirstAudioReplyMs: number | null;
   /**
@@ -1449,6 +1453,7 @@ export interface VoiceLatencyByVoiceModelRow {
   fillerTurns: number;
   openerBridgeTurns: number;
   interimTurns: number;
+  bridgeTurns: number;
   replyTurns: number;
   /** No first-audio source recorded — never assumed unmasked. */
   unknownTurns: number;

@@ -224,7 +224,18 @@ export const FIRST_AUDIO_GROUPS = {
    * a rise in bridges read as a rise in filler coverage.
    */
   openerBridge: "Opener + bridge",
-  interim: "Interim reply",
+  /**
+   * The delivery plan's bridge line played on its own (ally-ai-learn
+   * v1.49.1+, `interimSource: "bridge"`). The agent records it as an interim,
+   * but it is the new system's line, not the legacy interim reply, and the
+   * point of the split is to see which of the two is doing the masking.
+   */
+  bridge: "Bridge line",
+  /**
+   * The legacy predictive interim reply, plus interim turns recorded before
+   * the agent labelled them (the backend keeps those here rather than guess).
+   */
+  interim: "Interim (legacy)",
   reply: "The reply itself",
   unknown: "Not recorded",
 };
@@ -243,6 +254,9 @@ export const FIRST_AUDIO_SCALE: ColorScale = {
   [FIRST_AUDIO_GROUPS.filler]: PALETTE.teal,
   [FIRST_AUDIO_GROUPS.openerBridge]: PALETTE.darkTeal,
   [FIRST_AUDIO_GROUPS.interim]: PALETTE.purple,
+  // The bridge line is the interim's sibling (same slot, new system), so it
+  // takes the interim's darker hue, mirroring filler/opener-bridge.
+  [FIRST_AUDIO_GROUPS.bridge]: PALETTE.indigo,
   [FIRST_AUDIO_GROUPS.reply]: STAT.avg,
   [FIRST_AUDIO_GROUPS.unknown]: CONTEXT.faint,
 };
@@ -253,7 +267,7 @@ const firstAudioBuckets = (points: VoiceLatencyPoint[]) =>
     .filter(point => point.source === "pipeline")
     .map(point => ({
       point,
-      // Denominator is the sum of the five mutually-exclusive counts rather
+      // Denominator is the sum of the six mutually-exclusive counts rather
       // than `turns`: they partition the bucket by construction (the backend
       // excludes opener bridges from the filler count), so summing them cannot
       // produce shares that fail to reach 100%.
@@ -261,6 +275,7 @@ const firstAudioBuckets = (points: VoiceLatencyPoint[]) =>
         point.firstAudioFillerTurns +
         point.firstAudioOpenerBridgeTurns +
         point.firstAudioInterimTurns +
+        point.firstAudioBridgeTurns +
         point.firstAudioReplyTurns +
         point.firstAudioUnknownTurns,
     }))
@@ -273,8 +288,8 @@ const shareOf = (count: number, total: number) => Math.round((1000 * count) / to
  * Share of each bucket's turns by what spoke first, as a 100%-stacked bar.
  *
  * Emitted group-by-group in stack order (Carbon takes stack order from first
- * appearance), reading bottom-to-top: the unmasked reply, then the three kinds
- * of masking speech (interim, thinking filler, opener bridge — the bridge sits
+ * appearance), reading bottom-to-top: the unmasked reply, then the four kinds
+ * of masking speech (legacy interim, bridge line, thinking filler, opener bridge — the bridge sits
  * directly on its filler sibling), then the unrecorded remainder LAST. "Not
  * recorded" sits on top on purpose — its size is an artefact of when
  * instrumentation landed, and putting it at the bottom would shift the real
@@ -287,6 +302,7 @@ export function buildFirstAudioMixSeries(points: VoiceLatencyPoint[]): LatencyDa
     [
       [FIRST_AUDIO_GROUPS.reply, (p: VoiceLatencyPoint) => p.firstAudioReplyTurns],
       [FIRST_AUDIO_GROUPS.interim, (p: VoiceLatencyPoint) => p.firstAudioInterimTurns],
+      [FIRST_AUDIO_GROUPS.bridge, (p: VoiceLatencyPoint) => p.firstAudioBridgeTurns],
       [FIRST_AUDIO_GROUPS.filler, (p: VoiceLatencyPoint) => p.firstAudioFillerTurns],
       [FIRST_AUDIO_GROUPS.openerBridge, (p: VoiceLatencyPoint) => p.firstAudioOpenerBridgeTurns],
       [FIRST_AUDIO_GROUPS.unknown, (p: VoiceLatencyPoint) => p.firstAudioUnknownTurns],
@@ -307,6 +323,7 @@ const VOICE_MODEL_SPLIT: readonly (readonly [
 ])[] = [
   [FIRST_AUDIO_GROUPS.reply, r => r.replyTurns],
   [FIRST_AUDIO_GROUPS.interim, r => r.interimTurns],
+  [FIRST_AUDIO_GROUPS.bridge, r => r.bridgeTurns],
   [FIRST_AUDIO_GROUPS.filler, r => r.fillerTurns],
   [FIRST_AUDIO_GROUPS.openerBridge, r => r.openerBridgeTurns],
   [FIRST_AUDIO_GROUPS.unknown, r => r.unknownTurns],
@@ -409,6 +426,7 @@ export function buildFirstAudioLatencySeries(points: VoiceLatencyPoint[]): Laten
           [FIRST_AUDIO_GROUPS.filler, point.avgFirstAudioFillerMs],
           [FIRST_AUDIO_GROUPS.openerBridge, point.avgFirstAudioOpenerBridgeMs],
           [FIRST_AUDIO_GROUPS.interim, point.avgFirstAudioInterimMs],
+          [FIRST_AUDIO_GROUPS.bridge, point.avgFirstAudioBridgeMs],
           [FIRST_AUDIO_GROUPS.reply, point.avgFirstAudioReplyMs],
         ] as const
       ).flatMap(([group, ms]) =>
@@ -459,12 +477,13 @@ export function countFirstAudioTurns(points: VoiceLatencyPoint[]): number {
         point.firstAudioFillerTurns +
         point.firstAudioOpenerBridgeTurns +
         point.firstAudioInterimTurns +
+        point.firstAudioBridgeTurns +
         point.firstAudioReplyTurns,
       0,
     );
 }
 
-/** Live turns whose first audio was masking speech (filler, opener bridge or interim). */
+/** Live turns whose first audio was masking speech (filler, opener bridge, bridge line or interim). */
 export function countMaskedTurns(points: VoiceLatencyPoint[]): number {
   return points
     .filter(point => point.source === "pipeline")
@@ -473,7 +492,8 @@ export function countMaskedTurns(points: VoiceLatencyPoint[]): number {
         sum +
         point.firstAudioFillerTurns +
         point.firstAudioOpenerBridgeTurns +
-        point.firstAudioInterimTurns,
+        point.firstAudioInterimTurns +
+        point.firstAudioBridgeTurns,
       0,
     );
 }

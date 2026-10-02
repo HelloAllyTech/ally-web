@@ -592,7 +592,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           underneath. */}
       <ChartCard
         title="What the learner heard first"
-        caption="Share of turns fronted by a thinking filler, an opener's bridge line, an interim reply, or the reply itself."
+        caption="Share of turns fronted by a thinking filler, a bridge line (after an opener or on its own), the legacy interim reply, or the reply itself."
         source={firstAudioSource}
         loading={isLoading && !data}
         error={isError}
@@ -1000,7 +1000,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           open={expanded === "firstAudioMix"}
           onClose={() => setExpanded(null)}
           title="What the learner heard first"
-          caption="Share of turns fronted by a thinking filler, an opener's bridge line, an interim reply, or the reply itself."
+          caption="Share of turns fronted by a thinking filler, a bridge line (after an opener or on its own), the legacy interim reply, or the reply itself."
           source={firstAudioSource}
           table={seriesTable(firstAudioMixSeries, axisTitle)}
           exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
