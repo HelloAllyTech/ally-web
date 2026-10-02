@@ -24,6 +24,12 @@ const i18nInit = i18n
       kn: { translation: kn },
     },
     fallbackLng: DEFAULT_FALLBACK_LNG,
+    // An empty value is a missing value. The sync script writes "" for a key it
+    // could not translate (no OpenAI key on the runner), and i18next's default
+    // is to show that "" as the translation — which is how 385 strings per
+    // language went blank in Marathi on 2026-10-01 instead of falling back to
+    // English. With this off, a blank falls through to the fallback language.
+    returnEmptyString: false,
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
     interpolation: {
       escapeValue: false, // React already escapes by default

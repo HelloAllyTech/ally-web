@@ -261,7 +261,6 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         data-testid="simulation-notification-dialog"
         title={{
           normal: t("learn.scenario.preStart.titleNormal"),
-          italic: t("learn.scenario.preStart.titleItalic"),
         }}
         isOpen={showNotification}
         onClose={handleNotificationClose}

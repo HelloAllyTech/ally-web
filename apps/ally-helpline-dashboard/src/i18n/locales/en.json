@@ -323,7 +323,6 @@
       "startAria": "Start role play",
       "preStart": {
         "titleNormal": "Before you get started",
-        "titleItalic": "",
         "button": "Start Session",
         "content": "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
       },
@@ -772,11 +771,41 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
-            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
-            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
-            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
-            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+            "1": [
+              "Poor",
+              "Not helpful",
+              "Very bad",
+              "Disappointing",
+              "Unhelpful"
+            ],
+            "2": [
+              "Below average",
+              "Lacking",
+              "Unsatisfying",
+              "Weak",
+              "Needs improvement"
+            ],
+            "3": [
+              "Neutral",
+              "Okay",
+              "Average",
+              "Moderate",
+              "Acceptable"
+            ],
+            "4": [
+              "Good",
+              "Helpful",
+              "Satisfying",
+              "Effective",
+              "Worthwhile"
+            ],
+            "5": [
+              "Excellent",
+              "Amazing",
+              "Highly useful",
+              "Outstanding",
+              "Very effective"
+            ]
           }
         }
       }

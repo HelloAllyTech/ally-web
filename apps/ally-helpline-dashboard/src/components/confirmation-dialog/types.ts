@@ -7,7 +7,8 @@ export interface ConfirmationDialogProps {
   onClose: () => void;
   title: {
     normal: string;
-    italic: string;
+    /** Optional emphasised tail of the title. Omit it rather than passing "". */
+    italic?: string;
   };
   icon?: FC<SVGProps<SVGSVGElement>>;
   content?: string;

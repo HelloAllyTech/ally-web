@@ -403,7 +403,6 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         isOpen={showNotification}
         title={{
           normal: t("learn.scenario.preStart.titleNormal"),
-          italic: t("learn.scenario.preStart.titleItalic"),
         }}
         content={t("learn.scenario.preStart.content")}
         buttonText={t("learn.scenario.preStart.button")}
