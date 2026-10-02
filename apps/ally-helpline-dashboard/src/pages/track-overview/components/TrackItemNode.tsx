@@ -3,8 +3,8 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
-import { Lock, TickGreenBackground } from "@assets";
-import { TrackTypeIcon, getTrackItemMeta } from "@components";
+import { InfoIcon, Lock, TickGreenBackground } from "@assets";
+import { Tooltip, TrackTypeIcon, getTrackItemMeta } from "@components";
 import { TrackDetailItem, TrackItemStatus } from "@types";
 
 interface TrackItemNodeProps {
@@ -92,6 +92,11 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="flex items-center gap-2">
             <span className="truncate text-base font-medium text-typography-900">{item.title}</span>
+            {item.hasCriteriaHistory && (
+              <Tooltip label="This item's requirements have been updated since the course began.">
+                <InfoIcon className="w-4 h-4 text-typography-500" />
+              </Tooltip>
+            )}
             <StateChip item={item} isNext={isNext} />
           </span>
           <span className="text-xs text-typography-700">{getTrackItemMeta(item, t)}</span>

@@ -181,6 +181,7 @@ export const ApiEndpoints = {
     TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
     MEDIA_UPLOAD_URL: "/v1/learn/admin/tracks/media/upload-url",
     MEDIA: "/v1/learn/admin/tracks/media",
+    ITEMS: "/v1/learn/admin/items",
     // Per-language course translation.
     TRANSLATIONS: (id: string) => `/v1/learn/admin/tracks/${id}/translations`,
     TRANSLATE: (id: string) => `/v1/learn/admin/tracks/${id}/translations/translate`,

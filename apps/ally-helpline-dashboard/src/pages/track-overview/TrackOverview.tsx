@@ -9,6 +9,7 @@ import {
   useGetLearnTrackDetailQuery,
   useGetTrackLanguagesQuery,
   useLazyGetNextTrackItemQuery,
+  useReevaluateProgressMutation,
   useSetTrackLanguageMutation,
 } from "@api";
 import { ROUTES, buildTrackItemRoute } from "@constants";
@@ -43,6 +44,7 @@ export const TrackOverview: FC = () => {
   const [enrollTrack] = useEnrollTrackMutation();
   const [getNextItem] = useLazyGetNextTrackItemQuery();
   const [setTrackLanguage] = useSetTrackLanguageMutation();
+  const [reevaluateProgress] = useReevaluateProgressMutation();
 
   // Enrollments created before the web sent a language have none saved, so
   // the overview reads in the app language while the player — which only
@@ -52,6 +54,12 @@ export const TrackOverview: FC = () => {
     { trackId },
     { skip: !trackId || !track?.enrolled },
   );
+  useEffect(() => {
+    if (track?.enrolled && track.trackEnrollmentId) {
+      reevaluateProgress(track.trackEnrollmentId);
+    }
+  }, [track?.trackEnrollmentId, track?.enrolled, reevaluateProgress]);
+
   useEffect(() => {
     if (!track?.enrolled || !languagesData || languagesData.selectedLanguageCode) return;
     const reading = track.languageCode;

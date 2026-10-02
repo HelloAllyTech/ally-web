@@ -94,6 +94,7 @@ export interface TrackDetailItem {
   scenarioId: number | null;
   caseId: string | null;
   completionCriteria: TrackCompletionCriteria | null;
+  hasCriteriaHistory?: boolean;
   contentMeta: TrackItemContentMeta | null;
   status: TrackItemStatus;
   startedAt: string | null;

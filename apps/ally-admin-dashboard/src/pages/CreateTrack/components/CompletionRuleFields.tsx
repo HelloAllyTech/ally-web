@@ -1,8 +1,9 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Modal, Tooltip } from "@ally-ui-mono/ui-shared";
+import { useGetCompletedLearnersCountQuery, useGetCriteriaHistoryQuery } from "@api/track";
 import { TooltipIcon } from "@assets";
 import { DEFAULT_VIDEO_WATCH_PCT, MAX_VIDEO_WATCH_PCT, MIN_VIDEO_WATCH_PCT } from "@constants";
 import { TrackFormValues, TrackItemType } from "@types";
@@ -31,7 +32,13 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
   disabled = false,
 }) => {
   const { control } = useFormContext<TrackFormValues>();
-  const base = `sections.${sectionIndex}.items.${itemIndex}.completionCriteria` as const;
+  const base = `sections.${sectionIndex}.items.${itemIndex}` as const;
+  const itemId = useWatch({ control, name: `${base}.serverId` });
+
+  const { data: completedCountData } = useGetCompletedLearnersCountQuery(itemId, { skip: !itemId });
+  const { data: criteriaHistoryData } = useGetCriteriaHistoryQuery(itemId, { skip: !itemId });
+
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   const toNumberOrUndefined = (raw: string): number | undefined => {
     if (raw === "") return undefined;
@@ -48,9 +55,29 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
     return null;
   }
 
+  const completedLearnersCount = completedCountData?.count ?? 0;
+
   return (
     <div className="border-t border-border-light pt-4 mt-4">
-      <p className="text-sm font-semibold text-typography-900 mb-3">Completion rule</p>
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-sm font-semibold text-typography-900">Completion rule</p>
+        {criteriaHistoryData && criteriaHistoryData.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="text-xs text-primary-600 hover:text-primary-700"
+          >
+            View History
+          </button>
+        )}
+      </div>
+
+      {completedLearnersCount > 0 && (
+        <p className="text-xs text-typography-500 mb-3">
+          {completedLearnersCount} learners have completed this item and will not be affected by
+          these changes.
+        </p>
+      )}
 
       {type === TrackItemType.ROLEPLAY && (
         <div className="flex flex-col gap-1">
@@ -62,7 +89,6 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
               <input
                 type="number"
                 min={0}
-                disabled={disabled}
                 className={numberInput}
                 value={field.value ?? ""}
                 onChange={event => field.onChange(toNumberOrUndefined(event.target.value))}
@@ -104,7 +130,6 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
                     min={MIN_VIDEO_WATCH_PCT}
                     max={MAX_VIDEO_WATCH_PCT}
                     step={1}
-                    disabled={disabled}
                     className="flex-1 accent-primary-500"
                     value={value}
                     onChange={event => field.onChange(Number(event.target.value))}
@@ -127,7 +152,6 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
               <input
                 type="number"
                 min={0}
-                disabled={disabled}
                 className={numberInput}
                 value={field.value ?? ""}
                 onChange={event => field.onChange(toNumberOrUndefined(event.target.value))}
@@ -143,6 +167,24 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
           Journals are complete once every required prompt has a response.
         </span>
       )}
+      <Modal
+        title="Completion Criteria History"
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+      >
+        <div className="flex flex-col gap-4">
+          {criteriaHistoryData?.map((entry, index) => (
+            <div key={index} className="text-sm">
+              <p>
+                Changed by: {entry.updatedBy?.name ?? "Unknown"} on{" "}
+                {new Date(entry.updatedAt).toLocaleString()}
+              </p>
+              <p>From: {JSON.stringify(entry.oldValue)}</p>
+              <p>To: {JSON.stringify(entry.newValue)}</p>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -249,6 +249,7 @@ export const baseAPI = createApi({
     // Track 2.0 learner resources
     TAG_TYPES.LEARN_TRACKS,
     TAG_TYPES.LEARN_TRACK_DETAIL,
+    TAG_TYPES.TrackDetail,
     TAG_TYPES.LEARN_TRACK_NEXT,
     TAG_TYPES.CHARACTER_LIBRARY,
     // Practice streak. Must be registered here as well as used in

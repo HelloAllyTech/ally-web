@@ -132,6 +132,7 @@ export const TAG_TYPES = {
   // Track 2.0 learner resources
   LEARN_TRACKS: "LearnTracks",
   LEARN_TRACK_DETAIL: "LearnTrackDetail",
+  TrackDetail: "TrackDetail",
   LEARN_TRACK_NEXT: "LearnTrackNext",
   // Course discussions (per-item thread). Also registered in baseAPI.ts's
   // `tagTypes` — an unregistered tag makes invalidatesTags a silent no-op.
