@@ -1384,8 +1384,16 @@ export interface VoiceLatencyPoint {
   // What the learner heard first. avgMs/p50Ms/p95Ms measure time to the agent's
   // FIRST audio, which is a thinking-filler or interim reply when one played —
   // so these counts are what keeps "we got faster" apart from "we masked more".
-  /** Turns whose first audio was a thinking-filler. */
+  /**
+   * Turns whose first audio was a thinking-filler. Excludes opener-bridge turns
+   * (also recorded as 'filler'), so the split never counts a turn twice.
+   */
   firstAudioFillerTurns: number;
+  /**
+   * Turns whose first audio was a filler played as an opener's bridge line
+   * (`openerBridge: true`; ally-ai-learn v1.48.0+).
+   */
+  firstAudioOpenerBridgeTurns: number;
   /** Turns whose first audio was a predictive interim reply. */
   firstAudioInterimTurns: number;
   /** Turns whose first audio was the real reply (nothing masked it). */
@@ -1396,8 +1404,10 @@ export interface VoiceLatencyPoint {
    * into 'reply' — those turns may have been masked and there is no way to tell.
    */
   firstAudioUnknownTurns: number;
-  /** Mean time-to-first-voice (ms) for filler-first turns; null if none. */
+  /** Mean time-to-first-voice (ms) for filler-first turns, bridges excluded; null if none. */
   avgFirstAudioFillerMs: number | null;
+  /** Mean time-to-first-voice (ms) for opener-bridge turns; null if none. */
+  avgFirstAudioOpenerBridgeMs: number | null;
   /** Mean time-to-first-voice (ms) for interim-first turns; null if none. */
   avgFirstAudioInterimMs: number | null;
   /** Mean time-to-first-voice (ms) for reply-first turns; null if none. */
@@ -1422,6 +1432,30 @@ export interface VoiceLatencyByLanguageRow {
   p95Ms: number;
   /** Mean pure STT finalization time (ms); null when unpopulated for this window. */
   avgSttFinalizeMs: number | null;
+}
+
+/**
+ * The first-audio split for one TTS voice model over the whole window (no time
+ * bucketing), live pipeline, same language filter as `points`. Generative voices
+ * (e.g. `elevenlabs/eleven_v3`) cannot play spoken masking, so their turns are
+ * all reply-first — a voice-mix shift moves the headline without the pipeline
+ * changing.
+ */
+export interface VoiceLatencyByVoiceModelRow {
+  /** `metadata.ttsModel` ("provider/model"), or 'unknown' when unrecorded. */
+  ttsModel: string;
+  turns: number;
+  /** Thinking-filler-first turns, opener bridges excluded. */
+  fillerTurns: number;
+  openerBridgeTurns: number;
+  interimTurns: number;
+  replyTurns: number;
+  /** No first-audio source recorded — never assumed unmasked. */
+  unknownTurns: number;
+  /** Median time to the first audio of any kind (ms); null with no turns. */
+  p50FirstAudioMs: number | null;
+  /** Median time to the REAL reply (ms), instrumented turns only; null when none. */
+  p50ReplyLatencyMs: number | null;
 }
 
 /**
@@ -1451,6 +1485,8 @@ export interface VoiceLatencyResponse {
   points: VoiceLatencyPoint[];
   /** Live-pipeline latency by language, independent of the `language` filter. */
   byLanguage: VoiceLatencyByLanguageRow[];
+  /** First-audio split per TTS voice model, honouring the `language` filter. */
+  byVoiceModel: VoiceLatencyByVoiceModelRow[];
   /** The All-time KPI figure — see {@link VoiceLatencyOverall}. */
   overall: VoiceLatencyOverall;
 }

@@ -4,6 +4,7 @@ import {
   StartLatencyPoint,
   VoiceLatencyByLanguageRow,
   VoiceLatencyByScenarioRow,
+  VoiceLatencyByVoiceModelRow,
   VoiceLatencyPoint,
   VoiceLatencySessionRow,
 } from "@types";
@@ -11,9 +12,11 @@ import {
 import {
   CACHE_HIT_RATE_GROUP,
   FIRST_AUDIO_GROUPS,
+  FIRST_AUDIO_SCALE,
   LATENCY_GROUPS,
   START_LATENCY_GROUPS,
   START_TOTAL_GROUPS,
+  buildFirstAudioByVoiceModelSeries,
   buildFirstAudioLatencySeries,
   buildFirstAudioMixSeries,
   buildLlmTtftSeries,
@@ -25,11 +28,14 @@ import {
   buildVoiceLatencyByScenarioBars,
   buildVoiceLatencySeries,
   buildVoiceLatencySessionSeries,
+  buildVoiceModelTable,
   countFirstAudioTurns,
   countMaskedTurns,
   countStartLatencySessions,
   countVoiceLatencyTurns,
+  countVoiceModelTurns,
   latencyBucketTitle,
+  orderVoiceModelRows,
 } from "../latencyChart";
 
 const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
@@ -44,10 +50,12 @@ const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   p95LlmTtftMs: null,
   avgCacheHitRatePct: null,
   firstAudioFillerTurns: 0,
+  firstAudioOpenerBridgeTurns: 0,
   firstAudioInterimTurns: 0,
   firstAudioReplyTurns: 0,
   firstAudioUnknownTurns: 0,
   avgFirstAudioFillerMs: null,
+  avgFirstAudioOpenerBridgeMs: null,
   avgFirstAudioInterimMs: null,
   avgFirstAudioReplyMs: null,
   avgReplyLatencyMs: null,
@@ -504,8 +512,55 @@ describe("first-audio split", () => {
       FIRST_AUDIO_GROUPS.reply,
       FIRST_AUDIO_GROUPS.interim,
       FIRST_AUDIO_GROUPS.filler,
+      FIRST_AUDIO_GROUPS.openerBridge,
       FIRST_AUDIO_GROUPS.unknown,
     ]);
+  });
+
+  describe("opener + bridge", () => {
+    // The backend already EXCLUDES bridges from firstAudioFillerTurns, so the
+    // five counts partition the bucket.
+    const bridged = point({
+      turns: 20,
+      firstAudioFillerTurns: 6,
+      firstAudioOpenerBridgeTurns: 4,
+      firstAudioInterimTurns: 4,
+      firstAudioReplyTurns: 4,
+      firstAudioUnknownTurns: 2,
+      avgFirstAudioFillerMs: 480,
+      avgFirstAudioOpenerBridgeMs: 350,
+    });
+
+    it("is its own band, not folded into the thinking filler, and the stack still sums to 100", () => {
+      const series = buildFirstAudioMixSeries([bridged]);
+      const byGroup = Object.fromEntries(series.map(d => [d.group, d.value]));
+
+      expect(byGroup[FIRST_AUDIO_GROUPS.filler]).toBe(30);
+      expect(byGroup[FIRST_AUDIO_GROUPS.openerBridge]).toBe(20);
+      expect(series.reduce((sum, d) => sum + d.value, 0)).toBe(100);
+    });
+
+    it("has a colour of its own, distinct from the filler's", () => {
+      expect(FIRST_AUDIO_GROUPS.openerBridge).toBe("Opener + bridge");
+      expect(FIRST_AUDIO_SCALE[FIRST_AUDIO_GROUPS.openerBridge]).toBeDefined();
+      expect(FIRST_AUDIO_SCALE[FIRST_AUDIO_GROUPS.openerBridge]).not.toBe(
+        FIRST_AUDIO_SCALE[FIRST_AUDIO_GROUPS.filler],
+      );
+    });
+
+    it("gets its own mean time-to-first-voice line", () => {
+      const byGroup = Object.fromEntries(
+        buildFirstAudioLatencySeries([bridged]).map(d => [d.group, d.value]),
+      );
+
+      expect(byGroup[FIRST_AUDIO_GROUPS.openerBridge]).toBe(0.35);
+      expect(byGroup[FIRST_AUDIO_GROUPS.filler]).toBe(0.48);
+    });
+
+    it("counts as instrumented and as masked", () => {
+      expect(countFirstAudioTurns([bridged])).toBe(18);
+      expect(countMaskedTurns([bridged])).toBe(14);
+    });
   });
 
   it("omits a bucket with no turns rather than drawing an empty 100% stack", () => {
@@ -557,5 +612,106 @@ describe("buildReplyLatencySeries", () => {
     // Null here means "we cannot say", and a 0s reply would be a lie the
     // reader has no way to spot.
     expect(buildReplyLatencySeries([point({ avgReplyLatencyMs: null })])).toEqual([]);
+  });
+});
+
+describe("first-audio split by voice model", () => {
+  const row = (over: Partial<VoiceLatencyByVoiceModelRow>): VoiceLatencyByVoiceModelRow => ({
+    ttsModel: "cartesia/sonic-2",
+    turns: 0,
+    fillerTurns: 0,
+    openerBridgeTurns: 0,
+    interimTurns: 0,
+    replyTurns: 0,
+    unknownTurns: 0,
+    p50FirstAudioMs: null,
+    p50ReplyLatencyMs: null,
+    ...over,
+  });
+
+  const masked = row({
+    ttsModel: "cartesia/sonic-2",
+    turns: 100,
+    fillerTurns: 50,
+    openerBridgeTurns: 10,
+    interimTurns: 20,
+    replyTurns: 20,
+    p50FirstAudioMs: 900,
+    p50ReplyLatencyMs: 3200,
+  });
+  // A generative voice can't play spoken masking: all reply-first.
+  const generative = row({
+    ttsModel: "elevenlabs/eleven_v3",
+    turns: 40,
+    replyTurns: 40,
+    p50FirstAudioMs: 3400,
+    p50ReplyLatencyMs: 3400,
+  });
+  const unrecorded = row({
+    ttsModel: "unknown",
+    turns: 500,
+    unknownTurns: 500,
+    p50FirstAudioMs: 2000,
+  });
+
+  it("orders busiest first with 'unknown' always last, dropping empty rows", () => {
+    const ordered = orderVoiceModelRows([unrecorded, generative, masked, row({ ttsModel: "x" })]);
+
+    expect(ordered.map(r => r.ttsModel)).toEqual([
+      "cartesia/sonic-2",
+      "elevenlabs/eleven_v3",
+      "unknown",
+    ]);
+  });
+
+  it("stacks each model to 100% in the same group order as the per-bucket split", () => {
+    const series = buildFirstAudioByVoiceModelSeries([generative, masked]);
+
+    expect(Array.from(new Set(series.map(d => d.group)))).toEqual([
+      FIRST_AUDIO_GROUPS.reply,
+      FIRST_AUDIO_GROUPS.interim,
+      FIRST_AUDIO_GROUPS.filler,
+      FIRST_AUDIO_GROUPS.openerBridge,
+      FIRST_AUDIO_GROUPS.unknown,
+    ]);
+    const forModel = (model: string) =>
+      Object.fromEntries(series.filter(d => d.key === model).map(d => [d.group, d.value]));
+
+    expect(forModel("cartesia/sonic-2")).toMatchObject({
+      [FIRST_AUDIO_GROUPS.filler]: 50,
+      [FIRST_AUDIO_GROUPS.openerBridge]: 10,
+      [FIRST_AUDIO_GROUPS.interim]: 20,
+      [FIRST_AUDIO_GROUPS.reply]: 20,
+    });
+    expect(forModel("elevenlabs/eleven_v3")[FIRST_AUDIO_GROUPS.reply]).toBe(100);
+  });
+
+  it("tabulates shares and the two medians in seconds, blank where the backend had nothing", () => {
+    const table = buildVoiceModelTable([unrecorded, masked]);
+
+    expect(table.columns).toEqual([
+      "Voice model",
+      "Turns",
+      "The reply itself %",
+      "Interim reply %",
+      "Thinking filler %",
+      "Opener + bridge %",
+      "Not recorded %",
+      "p50 first voice (s)",
+      "p50 real reply (s)",
+    ]);
+    expect(table.rows).toEqual([
+      ["cartesia/sonic-2", 100, 20, 20, 50, 10, 0, 0.9, 3.2],
+      ["unknown", 500, 0, 0, 0, 0, 100, 2, null],
+    ]);
+  });
+
+  it("counts every turn the split covers, unrecorded ones included", () => {
+    expect(countVoiceModelTurns([masked, generative, unrecorded])).toBe(640);
+  });
+
+  it("is empty with no rows", () => {
+    expect(buildFirstAudioByVoiceModelSeries([])).toEqual([]);
+    expect(buildVoiceModelTable([]).rows).toEqual([]);
   });
 });

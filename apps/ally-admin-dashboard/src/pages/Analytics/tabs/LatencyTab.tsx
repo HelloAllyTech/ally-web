@@ -50,6 +50,7 @@ import {
   LATENCY_STAT_SCALE,
   START_SEGMENT_SCALE,
   START_TOTAL_SCALE,
+  buildFirstAudioByVoiceModelSeries,
   buildFirstAudioLatencySeries,
   buildFirstAudioMixSeries,
   buildLlmTtftSeries,
@@ -59,9 +60,11 @@ import {
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
   buildVoiceLatencySeries,
+  buildVoiceModelTable,
   countFirstAudioTurns,
   countStartLatencySessions,
   countVoiceLatencyTurns,
+  countVoiceModelTurns,
   latencyBucketTitle,
 } from "../latencyChart";
 
@@ -207,6 +210,15 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const firstAudioLatencySeries = useMemo(() => buildFirstAudioLatencySeries(points), [points]);
   const replyLatencySeries = useMemo(() => buildReplyLatencySeries(points), [points]);
   const firstAudioTurns = useMemo(() => countFirstAudioTurns(points), [points]);
+  // The same split per TTS voice model. Generative voices can't play spoken
+  // masking, so a voice-mix shift moves the headline with no pipeline change.
+  // `?? []` because a backend predating byVoiceModel simply omits it.
+  const voiceModelRows = useMemo(() => data?.byVoiceModel ?? [], [data]);
+  const voiceModelSeries = useMemo(
+    () => buildFirstAudioByVoiceModelSeries(voiceModelRows),
+    [voiceModelRows],
+  );
+  const voiceModelTurns = useMemo(() => countVoiceModelTurns(voiceModelRows), [voiceModelRows]);
   // The quality half of the filler story. The mix chart above says how much of
   // the window was masked; these say whether the masking was any good.
   const fillerFindingSeries = useMemo(() => buildFillerFindingSeries(fillerData), [fillerData]);
@@ -269,6 +281,19 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         domain: [0, 100],
       }),
     [axisTitle],
+  );
+
+  // Same scale, domain and stack order as the per-bucket split above, so a
+  // band means the same thing on both; only the x-axis changes.
+  const voiceModelOptions = useMemo(
+    () =>
+      stackedBarOpts({
+        leftTitle: "Percent of turns",
+        bottomTitle: "Voice model",
+        colorScale: FIRST_AUDIO_SCALE,
+        domain: [0, 100],
+      }),
+    [],
   );
 
   // Same threshold as the headline chart: this is the same measure, split by
@@ -496,6 +521,16 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     asOf: asOf(data?.window),
   });
 
+  // n is every live turn the per-model split covers, unrecorded ones included —
+  // unlike firstAudioSource, the unknown band is part of this chart's body.
+  const voiceModelSource = buildSource({
+    derivation: "Live pipeline turn metrics, first-audio source per TTS voice model",
+    window: `${voiceWindow}${languageNote}`,
+    n: voiceModelTurns,
+    nUnit: "turns",
+    asOf: asOf(data?.window),
+  });
+
   const replyLatencySource = buildSource({
     derivation:
       "Live pipeline turn metrics, user speech end to the real reply " +
@@ -557,7 +592,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           underneath. */}
       <ChartCard
         title="What the learner heard first"
-        caption="Share of turns fronted by a thinking filler, an interim reply, or the reply itself."
+        caption="Share of turns fronted by a thinking filler, an opener's bridge line, an interim reply, or the reply itself."
         source={firstAudioSource}
         loading={isLoading && !data}
         error={isError}
@@ -571,6 +606,35 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
       >
         <ScrollableChart data={firstAudioMixSeries}>
           <StackedBarChart data={firstAudioMixSeries} options={firstAudioMixOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      {/* The split above, per TTS voice model over the whole window. Generative
+          voices (e.g. elevenlabs/eleven_v3) can't play spoken masking, so all
+          their turns are reply-first: when the voice mix shifts toward them
+          the time-to-first-voice trend rises with no pipeline change. The
+          detail view carries each model's p50 first voice vs p50 real reply. */}
+      <ChartCard
+        title="Heard first, by voice model"
+        caption={
+          "The same split per voice model, whole window. Voices that can't play " +
+          "spoken masking are all reply-first, so a shift in the voice mix " +
+          "shows up here rather than as an unexplained latency regression. " +
+          "Expand for each model's median time to first voice and to the real reply."
+        }
+        source={voiceModelSource}
+        loading={isLoading && !data}
+        error={isError}
+        onRetry={refetch}
+        onExpand={() => setExpanded("firstAudioByVoiceModel")}
+        errorTitle="Couldn't load the split by voice model"
+        errorSubtitle="There was a problem fetching turn-latency metrics."
+        empty={!isLoading && voiceModelSeries.length === 0}
+        emptyText="No live turns in this range"
+        chartId="AAQ-167"
+      >
+        <ScrollableChart data={voiceModelSeries}>
+          <StackedBarChart data={voiceModelSeries} options={voiceModelOptions} />
         </ScrollableChart>
       </ChartCard>
 
@@ -936,7 +1000,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           open={expanded === "firstAudioMix"}
           onClose={() => setExpanded(null)}
           title="What the learner heard first"
-          caption="Share of turns fronted by a thinking filler, an interim reply, or the reply itself."
+          caption="Share of turns fronted by a thinking filler, an opener's bridge line, an interim reply, or the reply itself."
           source={firstAudioSource}
           table={seriesTable(firstAudioMixSeries, axisTitle)}
           exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
@@ -946,6 +1010,23 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
                 data={firstAudioMixSeries}
                 options={{ ...firstAudioMixOptions, height }}
               />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "firstAudioByVoiceModel" && (
+        <ChartDetailModal
+          open={expanded === "firstAudioByVoiceModel"}
+          onClose={() => setExpanded(null)}
+          title="Heard first, by voice model"
+          caption="Share of each voice model's turns by what spoke first, with its median time to first voice and to the real reply. 'unknown' is turns recorded before the agent logged a voice model."
+          source={voiceModelSource}
+          table={buildVoiceModelTable(voiceModelRows)}
+          exportContext={[`Window: ${voiceWindow}`]}
+          render={({ height }) => (
+            <ScrollableChart data={voiceModelSeries}>
+              <StackedBarChart data={voiceModelSeries} options={{ ...voiceModelOptions, height }} />
             </ScrollableChart>
           )}
         />
