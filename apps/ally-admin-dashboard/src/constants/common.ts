@@ -477,6 +477,8 @@ export const ApiEndpoints = {
     // Scenario-independent counterpart to skill-growth: one fixed rubric scored
     // on fixed amounts of each learner's own speech (Priority tab, AAQ-166).
     FOUNDATIONAL_SKILLS: "/v1/analytics/foundational-skills",
+    FOUNDATIONAL_SKILLS_PROGRESS: "/v1/analytics/foundational-skills/progress",
+    FOUNDATIONAL_SKILLS_LEARNERS: "/v1/analytics/foundational-skills/learners",
     QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
     COMPETENCY_MAP: "/v1/analytics/competency-map",
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",

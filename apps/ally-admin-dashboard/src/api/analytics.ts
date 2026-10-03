@@ -66,6 +66,10 @@ import {
   BugHunterVolumeResponse,
 } from "../pages/Analytics/bugHunterVolumeChart";
 import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
+import {
+  FoundationalSkillsLearnersResponse,
+  FoundationalSkillsProgressResponse,
+} from "../pages/Analytics/foundationalSkillsProgressChart";
 import { XpByTenantQuery, XpByTenantResponse } from "../pages/Analytics/xpByTenantChart";
 import {
   XpLevelReachedQuery,
@@ -639,6 +643,27 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    // The Highlights → Skills sub-tab: one balanced panel of learners (their
+    // first `cuts` cuts all scored). Omitting `cuts` lets the server pick its
+    // default panel, so the first paint never guesses a size nobody offers.
+    getFoundationalSkillsProgress: builder.query<
+      FoundationalSkillsProgressResponse,
+      { cuts?: number }
+    >({
+      query: ({ cuts } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_PROGRESS,
+        method: HttpMethod.GET,
+        params: cuts ? { cuts } : {},
+      }),
+    }),
+    // One learner's scored cuts, for the Skills tab's per-person panel.
+    getFoundationalSkillsLearner: builder.query<FoundationalSkillsLearnersResponse, number>({
+      query: userId => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_LEARNERS,
+        method: HttpMethod.GET,
+        params: { userId, minCut: 1, limit: 1 },
+      }),
+    }),
     getSkillGrowth: builder.query<SkillGrowthResponse, AllTimeAnalyticsQuery>({
       query: ({ tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.SKILL_GROWTH,
@@ -838,6 +863,8 @@ export const {
   useGetLanguageMixQuery,
   useGetSkillGrowthQuery,
   useGetFoundationalSkillsQuery,
+  useGetFoundationalSkillsProgressQuery,
+  useGetFoundationalSkillsLearnerQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
