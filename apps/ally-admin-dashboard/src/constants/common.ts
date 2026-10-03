@@ -954,6 +954,7 @@ export enum TooltipLocation {
   THINKING_FILLER = "thinking_filler",
   COMFORT_AUDIO = "comfort_audio",
   TRIM_HISTORY = "trim_history",
+  FHS_BENCHMARK = "fhs_benchmark",
   CONTINUOUS_BACKCHANNELING = "continuous_backchanneling",
   INTERIM_REPLY = "interim_reply",
   // Edit Simulation → Basic Settings (other toggles). Seeded blank + inactive;

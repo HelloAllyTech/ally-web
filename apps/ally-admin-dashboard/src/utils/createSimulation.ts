@@ -224,6 +224,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     videoActorAvatarId: (data?.metadata as any)?.videoActorAvatarId ?? "",
     videoActorProvider: (data?.metadata as any)?.videoActorProvider ?? undefined,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
+    fhsBenchmark: data?.metadata?.fhsBenchmark ?? false,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,

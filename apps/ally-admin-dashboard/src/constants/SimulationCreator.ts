@@ -237,6 +237,7 @@ export const FORM_FIELD_IDS = {
   VIDEO_ACTOR_AVATAR_ID: "videoActorAvatarId",
   VIDEO_ACTOR_PROVIDER: "videoActorProvider",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
+  FHS_BENCHMARK: "fhsBenchmark",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
@@ -1094,6 +1095,18 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
+      },
+      {
+        // Marks this scenario as the fixed foundational-skills benchmark: every
+        // completed session of it is scored on its own, so each learner can be
+        // compared with themselves on the SAME scenario before and after
+        // practice (Analytics → Highlights → Helping skills, AAQ-189).
+        id: "fhsBenchmark",
+        label: "Foundational skills benchmark",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        tooltipLocation: TooltipLocation.FHS_BENCHMARK,
       },
       {
         id: "continuousBackchanneling",
