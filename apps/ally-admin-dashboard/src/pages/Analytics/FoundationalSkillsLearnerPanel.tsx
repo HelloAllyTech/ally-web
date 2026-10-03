@@ -192,7 +192,11 @@ export const FoundationalSkillsLearnerPanel = ({
                       ? [
                           ...new Set(
                             (c.sessions ?? []).map(
-                              sn => sn.scenarioTitle ?? `Scenario #${sn.scenarioId ?? "?"}`,
+                              sn =>
+                                sn.scenarioTitle ??
+                                (sn.scenarioId !== null
+                                  ? `Scenario #${sn.scenarioId}`
+                                  : "unknown scenario"),
                             ),
                           ),
                         ].join(" · ")

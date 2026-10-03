@@ -93,7 +93,7 @@ const SORT_ITEMS: { id: SortKey; label: string }[] = [
 const bandOpts = (leftTitle: string, colorScale: ColorScale, domain: [number, number]) =>
   lineOpts({
     leftTitle,
-    bottomTitle: "Cut (5,000 characters each; * = warm-up)",
+    bottomTitle: "Cut (* = warm-up)",
     colorScale,
     domain,
     legend: false,
@@ -289,10 +289,13 @@ export const FoundationalSkillsSubTab = () => {
     () => buildOpportunity(skills, data?.measuredLearners ?? 0),
     [skills, data?.measuredLearners],
   );
-  const profile = useMemo(
+  const profileAll = useMemo(
     () => behaviourProfile(behaviours, profileKind),
     [behaviours, profileKind],
   );
+  // Rows whose shares were withheld (under the floor) would only print dashes.
+  const profile = profileAll.filter(bh => bh.everPct !== null);
+  const profileHidden = profileAll.length - profile.length;
   const moves = useMemo(() => credibleMoves(behaviours), [behaviours]);
   const trendMix = useMemo(() => (data ? buildTrendMix(data.trend) : []), [data]);
   const learnerRows = useMemo(() => sortLearners(data?.learners ?? [], sort), [data, sort]);
@@ -766,7 +769,11 @@ export const FoundationalSkillsSubTab = () => {
           <div className="xl:col-span-2">
             <ChartCard
               title="Behaviour profile"
-              caption={`Share of ALL measured learners showing each behaviour at least once — in their first slice (grey) and in any slice (blue) — among those whose practice gave the skill a chance. Shares over fewer than ${floor} learners are left out.`}
+              caption={`Share of ALL measured learners showing each behaviour at least once — in their first slice (grey) and in any slice (blue) — among those whose practice gave the skill a chance.${
+                profileHidden
+                  ? ` ${profileHidden} behaviour(s) with fewer than ${floor} learners who had a chance are not shown.`
+                  : ""
+              }`}
               source={everyoneSource}
               {...common}
               empty={!loading && profile.length === 0}
@@ -1123,10 +1130,10 @@ export const FoundationalSkillsSubTab = () => {
                         </button>
                       </td>
                       <td className="py-2 pr-3 tabular-nums">{r.cutsReached}</td>
-                      <td className="py-2 pr-3 tabular-nums text-typography-500">
+                      <td className="whitespace-nowrap py-2 pr-3 tabular-nums text-typography-500">
                         {level(r.earlyComposite)} → {level(r.lateComposite)}
                       </td>
-                      <td className="py-2 pr-3 tabular-nums">
+                      <td className="whitespace-nowrap py-2 pr-3 tabular-nums">
                         {signed(r.change)}{" "}
                         <span className="text-xs text-typography-500">
                           {r.beyondNoise
