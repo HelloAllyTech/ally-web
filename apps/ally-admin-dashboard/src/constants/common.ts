@@ -479,6 +479,7 @@ export const ApiEndpoints = {
     FOUNDATIONAL_SKILLS: "/v1/analytics/foundational-skills",
     FOUNDATIONAL_SKILLS_PROGRESS: "/v1/analytics/foundational-skills/progress",
     FOUNDATIONAL_SKILLS_LEARNERS: "/v1/analytics/foundational-skills/learners",
+    FOUNDATIONAL_SKILLS_BENCHMARK: "/v1/analytics/foundational-skills/benchmark",
     QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
     COMPETENCY_MAP: "/v1/analytics/competency-map",
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",
@@ -953,6 +954,7 @@ export enum TooltipLocation {
   THINKING_FILLER = "thinking_filler",
   COMFORT_AUDIO = "comfort_audio",
   TRIM_HISTORY = "trim_history",
+  FHS_BENCHMARK = "fhs_benchmark",
   CONTINUOUS_BACKCHANNELING = "continuous_backchanneling",
   INTERIM_REPLY = "interim_reply",
   // Edit Simulation → Basic Settings (other toggles). Seeded blank + inactive;

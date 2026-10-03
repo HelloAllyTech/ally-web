@@ -303,6 +303,7 @@ describe("createSimulation utils", () => {
         videoActorEnabled: false,
         videoActorAvatarId: "",
         historyTrimEnabled: true,
+        fhsBenchmark: false,
         continuousBackchanneling: false,
         currentState: false,
         checklistType: "GUIDED",

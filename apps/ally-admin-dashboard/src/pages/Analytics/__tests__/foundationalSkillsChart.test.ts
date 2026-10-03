@@ -185,10 +185,19 @@ describe("foundationalSkillsTable", () => {
       "2.40",
       "2.20",
       "+0.20",
+      "—", // no pairedChangeCi on the fixture
       "30.0%",
       "2.50 (n=40)",
       "n=6",
     ]);
-    expect(table.rows[1]).toEqual(["Cut 2", 8, "—", 8, "—", "—", "—", "—", "—", "—"]);
+    expect(table.rows[1]).toEqual(["Cut 2", 8, "—", 8, "—", "—", "—", "—", "—", "—", "—"]);
+  });
+
+  it("adds the paired change interval and names the baseline cut", () => {
+    const data = response([cut(3, { pairedChange: 0.05, pairedChangeCi: [-0.08, 0.19] })]);
+    const table = foundationalSkillsTable({ ...data, baselineCut: 2 });
+    expect(table.columns).toContain("Paired, cut 2");
+    expect(table.columns).toContain("Paired change 95% CI");
+    expect(table.rows[0]).toContain("-0.08 to +0.19");
   });
 });

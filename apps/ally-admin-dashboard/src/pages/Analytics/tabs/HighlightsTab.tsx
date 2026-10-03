@@ -47,11 +47,12 @@ const SUB_TABS: SubTabDef[] = [
     // of the 14 foundational helping skills practice is moving, and for whom.
     // Distinct from "Skill growth" below, which reads each scenario's own judge
     // score; this reads one fixed rubric that every scenario is scored against.
+    // Labelled "Helping skills" (not "Skills") so the two never read as the same.
     // All-time and platform-wide like Priority, so no page filters reach it.
     id: "helping-skills",
-    label: "Skills",
+    label: "Helping skills",
     blurb:
-      "Is practice moving the 14 foundational helping skills? The same learners compared start to now — overall, skill by skill, behaviour by behaviour, and person by person.",
+      "Is practice moving the 14 foundational helping skills, scored on one fixed rubric whatever the scenario? The same learners start to now — with how precise the measure is, what helpers do, safety, a same-scenario benchmark, and who to coach.",
     render: () => <FoundationalSkillsSubTab />,
   },
   {
@@ -78,7 +79,7 @@ const SUB_TABS: SubTabDef[] = [
     id: "skills",
     label: "Skill growth",
     blurb:
-      "Does practice make people better? The learning curve, how many individuals improved against their own baseline, which competencies the practice lands on, and any one learner's history.",
+      "Does practice raise each scenario's own judge score? The learning curve, how many individuals improved against their own baseline, which competencies the practice lands on, and any one learner's history. (For the fixed 14-skill rubric, see Helping skills.)",
     render: f => <SkillGrowthSubTab {...f} />,
   },
   {

@@ -147,6 +147,7 @@ export interface SimulationInput {
   videoActorAvatarId?: string;
   videoActorProvider?: string;
   historyTrimEnabled?: boolean;
+  fhsBenchmark?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   currentState?: boolean;
@@ -269,6 +270,7 @@ export interface GetSimulationByIdResponse {
     videoActorAvatarId?: string;
     videoActorProvider?: string;
     historyTrimEnabled?: boolean;
+    fhsBenchmark?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
     currentState?: boolean;

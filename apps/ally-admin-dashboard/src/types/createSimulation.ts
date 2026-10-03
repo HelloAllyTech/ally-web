@@ -42,6 +42,8 @@ export type FormData = {
   videoActorAvatarId?: string;
   videoActorProvider?: string;
   historyTrimEnabled?: boolean;
+  /** Score every session of this scenario as the foundational-skills benchmark. */
+  fhsBenchmark?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   temperature?: number;
