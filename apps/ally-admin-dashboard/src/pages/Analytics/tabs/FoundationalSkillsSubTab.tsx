@@ -1016,7 +1016,7 @@ export const FoundationalSkillsSubTab = () => {
           chartId="AAQ-189"
         >
           {b && b.learners.length > 0 && (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <BenchmarkSlope data={b} />
                 {b.summary.change === null && (
@@ -1027,14 +1027,16 @@ export const FoundationalSkillsSubTab = () => {
                 )}
               </div>
               <ChangeWhiskers
-                rows={b.skills.map(s => ({
-                  key: s.skill,
-                  label: s.name,
-                  change: s.change,
-                  ci: s.changeCi,
-                  n: s.pairedLearners,
-                  detectable: s.detectable,
-                }))}
+                rows={b.skills
+                  .filter(s => s.pairedLearners > 0)
+                  .map(s => ({
+                    key: s.skill,
+                    label: s.name,
+                    change: s.change,
+                    ci: s.changeCi,
+                    n: s.pairedLearners,
+                    detectable: s.detectable,
+                  }))}
               />
             </div>
           )}
