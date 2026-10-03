@@ -25,6 +25,7 @@ import {
   pct,
   signed,
   skillChangeTakeaway,
+  skillsByTier,
   tierTakeaway,
   transitionsTakeaway,
   trendTakeaway,
@@ -128,7 +129,8 @@ describe("foundational skills progress transforms", () => {
       ],
       0.1,
     );
-    expect(data.map(d => d.group)).toEqual(["Verbal", "Hope", "Goal-setting"]);
+    // Carbon draws the first horizontal category at the bottom: biggest gain last = on top.
+    expect(data.map(d => d.group)).toEqual(["Goal-setting", "Hope", "Verbal"]);
     expect(scale).toEqual({
       Verbal: DIRECTION_SCALE[DIRECTION.up],
       Hope: DIRECTION_SCALE[DIRECTION.held],
@@ -143,8 +145,8 @@ describe("foundational skills progress transforms", () => {
       skill("verbal", { improved: 9, unchanged: 12, declined: 3 }),
       skill("confidentiality", { pairedLearners: 0, improved: 0, unchanged: 0, declined: 0 }),
     ]);
-    expect([...new Set(series.map(p => p.key))]).toEqual(["Verbal", "Goal-setting"]);
-    expect(series.slice(0, 3).map(p => [p.group, p.value])).toEqual([
+    expect([...new Set(series.map(p => p.key))]).toEqual(["Goal-setting", "Verbal"]);
+    expect(series.slice(-3).map(p => [p.group, p.value])).toEqual([
       [DIRECTION.up, 9],
       [DIRECTION.held, 12],
       [DIRECTION.down, 3],
@@ -177,12 +179,23 @@ describe("foundational skills progress transforms", () => {
     expect(ceilingSkills([stuck, skill("verbal")]).map(s => s.skill)).toEqual(["rapport"]);
   });
 
-  it("sorts opportunity from most to least tested", () => {
+  it("groups skills by tier without reordering within a tier", () => {
+    const ordered = skillsByTier([
+      skill("goals", { tier: "support" }),
+      skill("coping", { tier: "understand" }),
+      skill("verbal", { tier: "engage" }),
+      skill("feedback", { tier: "support" }),
+      skill("family", { tier: "understand" }),
+    ]);
+    expect(ordered.map(s => s.skill)).toEqual(["verbal", "coping", "family", "goals", "feedback"]);
+  });
+
+  it("puts the most-tested skill at the top", () => {
     const series = buildOpportunity([
       skill("harm", { opportunityPct: 4.8 }),
       skill("verbal", { opportunityPct: 100 }),
     ]);
-    expect(series.map(p => p.key)).toEqual(["Verbal", "Harm & safety"]);
+    expect(series.map(p => p.key)).toEqual(["Harm & safety", "Verbal"]);
   });
 
   it("picks the biggest behaviour moves either way and reads a falling unhelpful one as good", () => {

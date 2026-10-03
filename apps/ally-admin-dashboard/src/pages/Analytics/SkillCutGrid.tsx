@@ -1,5 +1,13 @@
 import { levelCellStyle } from "./foundationalSkillsProgressChart";
 
+/** The four shading bins, as the legend names them. */
+const LEGEND: { label: string; sample: number }[] = [
+  { label: "below 1.75", sample: 1.5 },
+  { label: "1.75–2.49", sample: 2 },
+  { label: "2.50–3.24", sample: 3 },
+  { label: "3.25 and up", sample: 3.5 },
+];
+
 export interface SkillCutGridCell {
   value: number | null;
   /** Shown on hover: the n behind the cell, or why it is blank. */
@@ -83,6 +91,23 @@ export const SkillCutGrid = ({
           })}
         </tbody>
       </table>
+      <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-typography-500">
+        <span>Level:</span>
+        {LEGEND.map(l => {
+          const style = levelCellStyle(l.sample);
+          return (
+            <span key={l.label} className="flex items-center gap-1">
+              <span
+                aria-hidden
+                className="inline-block h-3 w-4 rounded-sm"
+                style={{ background: style.background }}
+              />
+              {l.label}
+            </span>
+          );
+        })}
+        <span>· — not enough to say</span>
+      </div>
     </div>
   );
 };

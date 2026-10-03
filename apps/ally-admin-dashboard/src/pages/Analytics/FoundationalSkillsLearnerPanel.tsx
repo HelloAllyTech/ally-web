@@ -13,6 +13,7 @@ import {
   cutLabel,
   learnerName,
   signed,
+  skillsByTier,
 } from "./foundationalSkillsProgressChart";
 import { SkillCutGrid } from "./SkillCutGrid";
 
@@ -76,7 +77,11 @@ export const FoundationalSkillsLearnerPanel = ({
     .filter(r => r.items.length > 0);
 
   const byCut = useMemo(() => new Map(cuts.map(c => [c.cut, c])), [cuts]);
-  const rows = skills.map(s => ({ key: s.skill, label: s.name, group: TIER_LABELS[s.tier] }));
+  const rows = skillsByTier(skills).map(s => ({
+    key: s.skill,
+    label: s.name,
+    group: TIER_LABELS[s.tier],
+  }));
 
   return (
     <SidePanel
@@ -101,7 +106,7 @@ export const FoundationalSkillsLearnerPanel = ({
             <p className="text-sm font-medium text-typography-900">
               {cuts.length} scored cut{cuts.length === 1 ? "" : "s"}
               {learner.changeSinceFirstCut !== null &&
-                ` · ${signed(learner.changeSinceFirstCut)} since cut 1`}
+                ` · ${signed(learner.changeSinceFirstCut)} from cut 1 to cut ${learner.cutsReached}`}
             </p>
             <p className="text-xs leading-relaxed text-typography-500">
               Each cut is 5,000 characters of this learner's own roleplay speech, scored 1–4 on the

@@ -176,6 +176,23 @@ export const SKILL_SHORT: Record<string, string> = {
 
 export const skillShort = (key: string): string => SKILL_SHORT[key] ?? key;
 
+const TIER_ORDER: FhsTier[] = ["engage", "understand", "support"];
+
+/**
+ * Skills grouped by tier (engage → understand → support), rubric order within
+ * a tier. The rubric itself interleaves tiers, so a list grouped under tier
+ * headings would otherwise repeat a heading.
+ */
+export const skillsByTier = <T extends { tier: FhsTier }>(skills: T[]): T[] =>
+  TIER_ORDER.flatMap(tier => skills.filter(s => s.tier === tier));
+
+/**
+ * Carbon draws the FIRST category of a horizontal bar chart at the BOTTOM of
+ * the axis. Every builder below orders its rows top-to-bottom as a reader
+ * scans them, then hands Carbon the reverse.
+ */
+const topDown = <T>(rows: T[]): T[] => [...rows].reverse();
+
 export const TIER_LABELS: Record<FhsTier, string> = {
   engage: "Engage",
   understand: "Understand",
@@ -345,7 +362,7 @@ export const directionOf = (
   change >= band ? DIRECTION.up : change <= -band ? DIRECTION.down : DIRECTION.held;
 
 /**
- * Per-skill paired change, biggest gain first (AAQ-174). Carbon colours a
+ * Per-skill paired change, biggest gain at the top (AAQ-174). Carbon colours a
  * simple bar by its `group`, which here is the skill — so the scale is built per
  * render, mapping each skill to the colour of its direction. Withheld skills
  * are left out of the bars and named by {@link withheldSkills}.
@@ -358,7 +375,7 @@ export const buildSkillChange = (
     .filter((s): s is FhsProgressSkill & { change: number } => s.change !== null)
     .sort((a, b) => b.change - a.change);
   return {
-    data: shown.map(s => ({
+    data: topDown(shown).map(s => ({
       group: skillShort(s.skill),
       key: skillShort(s.skill),
       value: s.change,
@@ -376,24 +393,25 @@ export const withheldSkills = (skills: FhsProgressSkill[]): FhsProgressSkill[] =
 
 /**
  * Learners whose own level rose / held / fell on each skill (AAQ-175). Counts,
- * never withheld — a count of people hides nobody. Most net movers first.
+ * never withheld — a count of people hides nobody. Most net improvers at the top.
  */
 export const buildWhoMoved = (skills: FhsProgressSkill[]): Point[] =>
-  skills
-    .filter(s => s.pairedLearners > 0)
-    .sort((a, b) => b.improved - b.declined - (a.improved - a.declined))
-    .flatMap(s => [
-      { group: DIRECTION.up, key: skillShort(s.skill), value: s.improved },
-      { group: DIRECTION.held, key: skillShort(s.skill), value: s.unchanged },
-      { group: DIRECTION.down, key: skillShort(s.skill), value: s.declined },
-    ]);
+  topDown(
+    skills
+      .filter(s => s.pairedLearners > 0)
+      .sort((a, b) => b.improved - b.declined - (a.improved - a.declined)),
+  ).flatMap(s => [
+    { group: DIRECTION.up, key: skillShort(s.skill), value: s.improved },
+    { group: DIRECTION.held, key: skillShort(s.skill), value: s.unchanged },
+    { group: DIRECTION.down, key: skillShort(s.skill), value: s.declined },
+  ]);
 
 /**
  * Share of a window's assessments at each level, per skill (AAQ-177). Skills
  * below the floor are dropped from the bars and named in the caption.
  */
 export const buildLevelMix = (skills: FhsProgressSkill[], window: "early" | "late"): Point[] =>
-  skills.flatMap(s => {
+  topDown(skillsByTier(skills)).flatMap(s => {
     const mix = s.levelMix[window];
     if (!mix.levels || mix.assessments === 0) return [];
     return mix.levels.map((count, i) => ({
@@ -421,17 +439,15 @@ export const ceilingSkills = (skills: FhsProgressSkill[]): FhsProgressSkill[] =>
     );
   });
 
-/** How often practice gives a chance to show each skill, most-tested first (AAQ-178). */
+/** How often practice gives a chance to show each skill, most-tested at the top (AAQ-178). */
 export const buildOpportunity = (skills: FhsProgressSkill[]): Point[] =>
-  [...skills]
-    .sort((a, b) => (b.opportunityPct ?? 0) - (a.opportunityPct ?? 0))
-    .map(s => ({
-      group: OPPORTUNITY_SERIES,
-      key: skillShort(s.skill),
-      value: s.opportunityPct,
-      name: s.name,
-      cuts: s.opportunityCuts,
-    }));
+  topDown([...skills].sort((a, b) => (b.opportunityPct ?? 0) - (a.opportunityPct ?? 0))).map(s => ({
+    group: OPPORTUNITY_SERIES,
+    key: skillShort(s.skill),
+    value: s.opportunityPct,
+    name: s.name,
+    cuts: s.opportunityCuts,
+  }));
 
 /**
  * The behaviours that moved most, either way (AAQ-179). For an unhelpful

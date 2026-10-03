@@ -56,6 +56,7 @@ import {
   pct,
   signed,
   skillChangeTakeaway,
+  skillsByTier,
   tierTakeaway,
   transitionsTakeaway,
   trendTakeaway,
@@ -264,7 +265,7 @@ export const FoundationalSkillsSubTab = () => {
   const levelMix = useMemo(() => buildLevelMix(skills, levelWindow), [skills, levelWindow]);
   const opportunity = useMemo(() => buildOpportunity(skills), [skills]);
   const movers = useMemo(
-    () => behaviourMovers(behaviours, behaviourKind, 12),
+    () => behaviourMovers(behaviours, behaviourKind, 8),
     [behaviours, behaviourKind],
   );
   const transitions = useMemo(
@@ -280,7 +281,11 @@ export const FoundationalSkillsSubTab = () => {
   const ceilings = ceilingSkills(skills);
   const mixWithheld = levelMixWithheld(skills, levelWindow);
   const skillName = useMemo(() => new Map(skills.map(s => [s.skill, s.name])), [skills]);
-  const gridRows = skills.map(s => ({ key: s.skill, label: s.name, group: TIER_LABELS[s.tier] }));
+  const gridRows = skillsByTier(skills).map(s => ({
+    key: s.skill,
+    label: s.name,
+    group: TIER_LABELS[s.tier],
+  }));
 
   const asOf = asOfStamp(data?.computedAt);
   const panelSource = buildSource({
@@ -304,7 +309,7 @@ export const FoundationalSkillsSubTab = () => {
     () =>
       lineOpts({
         leftTitle: "Average level (1–4)",
-        bottomTitle: "Cut (5,000 characters of their own speech)",
+        bottomTitle: "Cut (5,000 characters each)",
         colorScale: TIER_SCALE,
         domain: [1, 4],
         extra: {
