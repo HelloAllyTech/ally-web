@@ -5,6 +5,7 @@ import { Tab, TabList, TabPanel, TabPanels, CarbonTabs as Tabs } from "@ally-ui-
 import { AnalyticsTabFilters } from "../analyticsFilters";
 import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
 import { CurriculumSubTab } from "./CurriculumSubTab";
+import { FoundationalSkillsSubTab } from "./FoundationalSkillsSubTab";
 import { GoalsTab } from "./GoalsTab";
 import { OrgEngagementSubTab } from "./OrgEngagementSubTab";
 import { PlatformSubTab } from "./PlatformSubTab";
@@ -40,6 +41,18 @@ const SUB_TABS: SubTabDef[] = [
     label: "Priority",
     blurb: "",
     render: () => <GoalsTab />,
+  },
+  {
+    // Next to Priority because it is the deep-dive behind AAQ-166 there: which
+    // of the 14 foundational helping skills practice is moving, and for whom.
+    // Distinct from "Skill growth" below, which reads each scenario's own judge
+    // score; this reads one fixed rubric that every scenario is scored against.
+    // All-time and platform-wide like Priority, so no page filters reach it.
+    id: "helping-skills",
+    label: "Skills",
+    blurb:
+      "Is practice moving the 14 foundational helping skills? The same learners compared start to now — overall, skill by skill, behaviour by behaviour, and person by person.",
+    render: () => <FoundationalSkillsSubTab />,
   },
   {
     // The former Highlights tab in full — KPI strip, growth,
