@@ -67,6 +67,7 @@ import {
 } from "../pages/Analytics/bugHunterVolumeChart";
 import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
 import {
+  FoundationalSkillsBenchmarkResponse,
   FoundationalSkillsLearnersResponse,
   FoundationalSkillsProgressResponse,
 } from "../pages/Analytics/foundationalSkillsProgressChart";
@@ -637,10 +638,15 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // is a position in a learner's history, not a date.
     // No params: all-time and platform-wide by design (the axis is practice
     // volume, and Priority has no page filters).
-    getFoundationalSkills: builder.query<FoundationalSkillsResponse, void>({
-      query: () => ({
+    // `baselineCut: 2` compares with cut 2, treating cut 1 as a warm-up.
+    getFoundationalSkills: builder.query<
+      FoundationalSkillsResponse,
+      { baselineCut?: 1 | 2 } | void
+    >({
+      query: arg => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS,
         method: HttpMethod.GET,
+        params: arg && arg.baselineCut === 2 ? { baselineCut: 2 } : {},
       }),
     }),
     // The Highlights → Skills sub-tab: one balanced panel of learners (their
@@ -648,12 +654,22 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // default panel, so the first paint never guesses a size nobody offers.
     getFoundationalSkillsProgress: builder.query<
       FoundationalSkillsProgressResponse,
-      { cuts?: number }
+      { cuts?: number; baselineFrom?: 1 | 2 }
     >({
-      query: ({ cuts } = {}) => ({
+      query: ({ cuts, baselineFrom } = {}) => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_PROGRESS,
         method: HttpMethod.GET,
-        params: cuts ? { cuts } : {},
+        params: {
+          ...(cuts ? { cuts } : {}),
+          ...(baselineFrom === 2 ? { baselineFrom: 2 } : {}),
+        },
+      }),
+    }),
+    // Same scenario before and after, per learner (the benchmark pipeline).
+    getFoundationalSkillsBenchmark: builder.query<FoundationalSkillsBenchmarkResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_BENCHMARK,
+        method: HttpMethod.GET,
       }),
     }),
     // One learner's scored cuts, for the Skills tab's per-person panel.
@@ -865,6 +881,7 @@ export const {
   useGetFoundationalSkillsQuery,
   useGetFoundationalSkillsProgressQuery,
   useGetFoundationalSkillsLearnerQuery,
+  useGetFoundationalSkillsBenchmarkQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 import { LineChart } from "@carbon/charts-react";
 
+import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetFoundationalSkillsQuery } from "@api";
 
 import { ChartDetailModal } from "./ChartDetailModal";
@@ -9,8 +10,8 @@ import { ChartCard, ScrollableChart, buildSource, lineOpts } from "./chartKit";
 import {
   FHS_DOMAIN,
   FHS_GROUPS,
-  FHS_SCALE,
   buildFoundationalSkillsSeries,
+  fhsScale,
   hasPlottedPoint,
   foundationalSkillsEmptyText,
   foundationalSkillsTable,
@@ -42,13 +43,23 @@ const labelAbove = (datum: Record<string, unknown>): boolean =>
  * would only measure who practised inside it. Platform-wide, like every Priority
  * card. The second line is the survivorship control — see foundationalSkillsChart.
  */
+const BASELINE_ITEMS: { id: 1 | 2; label: string }[] = [
+  { id: 1, label: "Compare with cut 1" },
+  { id: 2, label: "Compare with cut 2 (skip warm-up)" },
+];
+
 export const FoundationalSkillsCard = () => {
-  const { data, isLoading, isError, refetch } = useGetFoundationalSkillsQuery();
+  // Cut 1 behaves like a warm-up on production data (feedback-seeking and
+  // unhelpful behaviour both step once between cut 1 and cut 2), so the reader
+  // can choose cut 2 as the baseline and see what practice did after it.
+  const [baselineCut, setBaselineCut] = useState<1 | 2>(1);
+  const { data, isLoading, isError, refetch } = useGetFoundationalSkillsQuery({ baselineCut });
   const [expanded, setExpanded] = useState(false);
 
+  const base = data?.baselineCut ?? baselineCut;
   const cuts = useMemo(() => data?.cuts ?? [], [data]);
-  const series = useMemo(() => buildFoundationalSkillsSeries(cuts), [cuts]);
-  const takeaway = foundationalSkillsTakeaway(cuts);
+  const series = useMemo(() => buildFoundationalSkillsSeries(cuts, base), [cuts, base]);
+  const takeaway = foundationalSkillsTakeaway(cuts, base);
   const table = useMemo(() => foundationalSkillsTable(data), [data]);
 
   const opts = useMemo(
@@ -56,7 +67,7 @@ export const FoundationalSkillsCard = () => {
       lineOpts({
         leftTitle: "Average score (1–4)",
         bottomTitle: "Cut (5,000 characters of the learner's own speech each)",
-        colorScale: FHS_SCALE,
+        colorScale: fhsScale(base),
         domain: FHS_DOMAIN,
         legend: true,
         extra: {
@@ -68,7 +79,7 @@ export const FoundationalSkillsCard = () => {
           },
         },
       }),
-    [],
+    [base],
   );
 
   const loading = isLoading && !data;
@@ -79,9 +90,10 @@ export const FoundationalSkillsCard = () => {
     "cut 1 is their first 5,000 characters, cut 2 the next, whatever scenarios filled them. Every slice is " +
     "scored 1–4 on the foundational helping skills a transcript can show (non-verbal is excluded), skipping " +
     "any skill the slice gave no opportunity for. The blue line is the average at each cut, with n learners " +
-    'beside each point ("At this cut"); the grey line ("Their cut 1") is those same learners at their own first cut ' +
-    "(learners whose first cut could not be scored drop out of that comparison), so the gap is real " +
-    "change rather than a change in who kept practising. 1 = an unhelpful behaviour, 2 = no unhelpful behaviour but not every basic skill (none or some), " +
+    `beside each point ("At this cut"); the grey line ("Their cut ${base}") is those same learners at their own cut ${base} ` +
+    `(learners whose cut ${base} could not be scored drop out of that comparison), so the gap is change ` +
+    "within the same people rather than a change in who kept practising. The takeaway gives its 95% interval: a gap " +
+    "whose interval includes zero is not distinguishable from noise. 1 = an unhelpful behaviour, 2 = no unhelpful behaviour but not every basic skill (none or some), " +
     "3 = all basic skills, 4 = basic plus advanced.";
 
   const source = buildSource({
@@ -132,6 +144,22 @@ export const FoundationalSkillsCard = () => {
         empty={!loading && !hasPlottedPoint(series)}
         emptyText={foundationalSkillsEmptyText(data)}
         onExpand={() => setExpanded(true)}
+        controls={
+          <Dropdown
+            id="fhs-baseline-cut"
+            size="sm"
+            type="inline"
+            label="Baseline"
+            titleText=""
+            hideLabel
+            items={BASELINE_ITEMS}
+            itemToString={(i: (typeof BASELINE_ITEMS)[number]) => i?.label ?? ""}
+            selectedItem={BASELINE_ITEMS.find(i => i.id === baselineCut)}
+            onChange={({ selectedItem }: { selectedItem: (typeof BASELINE_ITEMS)[number] }) =>
+              selectedItem && setBaselineCut(selectedItem.id)
+            }
+          />
+        }
         chartId="AAQ-166"
       >
         {chart()}

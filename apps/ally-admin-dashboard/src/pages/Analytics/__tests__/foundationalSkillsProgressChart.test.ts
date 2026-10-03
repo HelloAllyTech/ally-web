@@ -1,269 +1,289 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  DIRECTION,
-  DIRECTION_SCALE,
   FhsProgressBehaviour,
   FhsProgressCut,
   FhsProgressSkill,
   LEVEL_LABELS,
-  OVERALL,
+  OPPORTUNITY_LABELS,
   SKILL_SHORT,
-  behaviourMovers,
-  buildDose,
+  behaviourProfile,
+  buildCompositeBand,
   buildLevelMix,
   buildOpportunity,
-  buildSkillChange,
-  buildTierSeries,
-  buildTransitions,
   buildTrendMix,
-  buildWhoMoved,
-  ceilingSkills,
-  levelCellStyle,
-  levelMixWithheld,
-  panelOptionLabel,
-  pct,
+  changeColor,
+  changeVerdict,
+  ciText,
+  compositeTakeaway,
+  credibleMoves,
+  cutAxisLabel,
+  depthStages,
+  pValue,
+  selfHarmSummary,
   signed,
-  skillChangeTakeaway,
+  skillChangeRows,
   skillsByTier,
-  tierTakeaway,
-  transitionsTakeaway,
+  testedMoves,
   trendTakeaway,
-  windowLabel,
-  withheldSkills,
+  unhelpfulTakeaway,
+  whiskerExtent,
 } from "../foundationalSkillsProgressChart";
+import { CONTEXT, PALETTE } from "../chartScales";
+
+const change = { n: 24, up: 10, down: 6, tied: 8, signP: 0.45 };
 
 const skill = (key: string, extra: Partial<FhsProgressSkill> = {}): FhsProgressSkill => ({
   skill: key,
   name: `${key} full name`,
   tier: "engage",
-  pairedLearners: 24,
+  measurability: "measurable",
   earlyAvg: 2,
-  lateAvg: 2,
-  change: 0,
-  improved: 0,
-  unchanged: 24,
-  declined: 0,
+  lateAvg: 2.1,
+  change: 0.1,
+  ci: [-0.1, 0.3],
+  detectable: false,
+  ...change,
   levelMix: {
     early: { assessments: 40, levels: [10, 20, 8, 2] },
     late: { assessments: 40, levels: [5, 20, 10, 5] },
   },
   opportunityCuts: 100,
   opportunityPct: 50,
+  learnersWithOpportunity: 60,
+  learnersWithTwoPlus: 40,
   ...extra,
 });
 
-const cut = (
-  k: number,
-  composite: number | null,
-  tiers: [number, number, number],
-): FhsProgressCut => ({
+const cut = (k: number, composite: number | null, ci: [number, number] | null): FhsProgressCut => ({
   cut: k,
   learners: 24,
   composite,
+  compositeCi: ci,
   unhelpfulPct: 25,
-  tiers: [
-    { tier: "engage", learners: 24, avgLevel: tiers[0] },
-    { tier: "understand", learners: 24, avgLevel: tiers[1] },
-    { tier: "support", learners: 24, avgLevel: tiers[2] },
-  ],
+  unhelpfulCi: [10, 40],
+  tiers: [],
   skills: [],
 });
 
 const behaviour = (
   code: string,
-  kind: FhsProgressBehaviour["kind"],
-  changePts: number | null,
+  extra: Partial<FhsProgressBehaviour> = {},
 ): FhsProgressBehaviour => ({
   code,
   skill: code.split(".")[0],
-  kind,
+  kind: "basic",
   text: `text of ${code}`,
   pairedLearners: 24,
-  earlyPct: changePts === null ? null : 50,
-  latePct: changePts === null ? null : 50 + changePts,
-  changePts,
+  earlyPct: 50,
+  latePct: 60,
+  changePts: 10,
+  gained: 5,
+  lost: 3,
+  signP: 0.7,
+  q: 0.9,
+  credible: false,
+  firstSliceLearners: 70,
+  firstSlicePct: 40,
+  everLearners: 74,
+  everPct: 80,
+  ...extra,
 });
 
-describe("foundational skills progress transforms", () => {
-  it("keeps every axis label within Carbon's 14-character tick budget", () => {
-    for (const label of [...Object.values(SKILL_SHORT), ...LEVEL_LABELS]) {
+describe("helping skills progress transforms", () => {
+  it("keeps every axis label within Carbon's 14-character budget", () => {
+    for (const label of [
+      ...Object.values(SKILL_SHORT),
+      ...LEVEL_LABELS,
+      ...Object.values(OPPORTUNITY_LABELS),
+    ]) {
       expect(label.length).toBeLessThanOrEqual(14);
     }
-    expect(Object.keys(SKILL_SHORT)).toHaveLength(14);
+    expect(cutAxisLabel(1)).toBe("Cut 1 *");
+    expect(cutAxisLabel(12)).toBe("Cut 12");
   });
 
-  it("formats signed deltas with a real minus and no negative zero", () => {
+  it("formats signed values, intervals and p-values for reading", () => {
     expect(signed(0.345)).toBe("+0.34");
     expect(signed(-0.28)).toBe("−0.28");
     expect(signed(-0.001)).toBe("0.00");
-    expect(signed(null)).toBe("—");
-    expect(signed(12, 0)).toBe("+12");
-    expect(pct(25)).toBe("25%");
-    expect(pct(33.3)).toBe("33.3%");
-    expect(pct(null)).toBe("—");
+    expect(ciText([-0.06, 0.09])).toBe("−0.06 to +0.09");
+    expect(ciText(null)).toBe("—");
+    expect(pValue(0.0004)).toBe("p<0.001");
+    expect(pValue(0.541)).toBe("p=0.54");
   });
 
-  it("names windows the way the captions use them", () => {
-    expect(windowLabel([1, 2])).toBe("cuts 1–2");
-    expect(windowLabel([3])).toBe("cut 3");
-    expect(windowLabel([])).toBe("");
-    expect(panelOptionLabel({ cuts: 5, learners: 24 })).toBe("First 5 cuts · 24 learners");
-    expect(panelOptionLabel({ cuts: 9, learners: 1 })).toBe("First 9 cuts · 1 learner");
-  });
-
-  it("draws overall plus three tiers per cut, carrying nulls as gaps", () => {
-    const series = buildTierSeries([cut(1, 2.25, [2.4, 2.1, 2.3]), cut(2, null, [2.5, 2.1, 2.2])]);
-    expect(series).toHaveLength(8);
-    expect(series[0]).toMatchObject({ group: OVERALL, key: "Cut 1", value: 2.25 });
-    expect(series.find(p => p.group === OVERALL && p.key === "Cut 2")?.value).toBeNull();
-  });
-
-  it("orders skill change by gain and colours each bar by its direction", () => {
-    const { data, scale } = buildSkillChange(
-      [
-        skill("goals", { change: -0.28 }),
-        skill("verbal", { change: 0.33 }),
-        skill("hope", { change: 0.05 }),
-        skill("harm", { change: null }),
-      ],
-      0.1,
+  it("says no detectable change unless the server says detectable", () => {
+    expect(changeVerdict({ change: 0.13, detectable: false, n: 24 })).toBe("no detectable change");
+    expect(changeVerdict({ change: 0.5, detectable: true, n: 24 })).toBe("detectably up");
+    expect(changeVerdict({ change: -0.5, detectable: true, n: 24 })).toBe("detectably down");
+    expect(changeVerdict({ change: null, detectable: false, n: 3 })).toBe(
+      "too few learners (n = 3)",
     );
-    // Carbon draws the first horizontal category at the bottom: biggest gain last = on top.
-    expect(data.map(d => d.group)).toEqual(["Goal-setting", "Hope", "Verbal"]);
-    expect(scale).toEqual({
-      Verbal: DIRECTION_SCALE[DIRECTION.up],
-      Hope: DIRECTION_SCALE[DIRECTION.held],
-      "Goal-setting": DIRECTION_SCALE[DIRECTION.down],
-    });
-    expect(withheldSkills([skill("harm", { change: null })])).toHaveLength(1);
+    expect(changeColor({ change: 0.4, detectable: false })).toBe(CONTEXT.line);
+    expect(changeColor({ change: 0.4, detectable: true })).toBe(PALETTE.green);
+    expect(changeColor({ change: -0.4, detectable: true })).toBe(PALETTE.red);
   });
 
-  it("stacks who moved per skill, most net improvers first, skipping unpaired skills", () => {
-    const series = buildWhoMoved([
-      skill("goals", { improved: 2, unchanged: 10, declined: 8 }),
-      skill("verbal", { improved: 9, unchanged: 12, declined: 3 }),
-      skill("confidentiality", { pairedLearners: 0, improved: 0, unchanged: 0, declined: 0 }),
+  it("builds a bounded band, leaving withheld cuts as gaps without a band", () => {
+    const band = buildCompositeBand([cut(1, 2.25, [2.15, 2.35]), cut(2, null, null)]);
+    expect(band[0]).toMatchObject({ key: "Cut 1 *", value: 2.25, min: 2.15, max: 2.35 });
+    expect(band[1]).toMatchObject({ key: "Cut 2", value: null });
+    expect(band[1]).not.toHaveProperty("min");
+  });
+
+  it("splits measurable skills (by change) from the ones the measure cannot move", () => {
+    const { measurable, notMeasurable } = skillChangeRows([
+      skill("goals", { change: -0.04 }),
+      skill("verbal", { change: 0.13 }),
+      skill("rapport", { measurability: "capped" }),
+      skill("harm", { measurability: "rare", change: null }),
     ]);
-    expect([...new Set(series.map(p => p.key))]).toEqual(["Goal-setting", "Verbal"]);
-    expect(series.slice(-3).map(p => [p.group, p.value])).toEqual([
-      [DIRECTION.up, 9],
-      [DIRECTION.held, 12],
-      [DIRECTION.down, 3],
-    ]);
+    expect(measurable.map(s => s.skill)).toEqual(["verbal", "goals"]);
+    expect(notMeasurable.map(s => s.skill)).toEqual(["rapport", "harm"]);
   });
 
-  it("turns level counts into shares per window and drops withheld skills", () => {
-    const skills = [
-      skill("verbal"),
-      skill("harm", {
-        levelMix: {
-          early: { assessments: 6, levels: null },
-          late: { assessments: 4, levels: null },
-        },
-      }),
-    ];
-    const late = buildLevelMix(skills, "late");
-    expect(late.map(p => p.value)).toEqual([12.5, 50, 25, 12.5]);
-    expect(late[0]).toMatchObject({ group: LEVEL_LABELS[0], key: "Verbal", count: 5 });
-    expect(levelMixWithheld(skills, "early").map(s => s.skill)).toEqual(["harm"]);
+  it("sizes the whisker axis to the widest interval, at least ±0.5", () => {
+    expect(whiskerExtent([{ change: 0.1, ci: [-0.2, 0.3] }])).toBe(0.5);
+    expect(whiskerExtent([{ change: 0.1, ci: [-0.6, 0.7] }])).toBe(0.75);
   });
 
-  it("flags a skill stuck at one level in both windows as a ceiling", () => {
-    const stuck = skill("rapport", {
-      levelMix: {
-        early: { assessments: 40, levels: [0, 40, 0, 0] },
-        late: { assessments: 38, levels: [1, 37, 0, 0] },
-      },
-    });
-    expect(ceilingSkills([stuck, skill("verbal")]).map(s => s.skill)).toEqual(["rapport"]);
-  });
-
-  it("groups skills by tier without reordering within a tier", () => {
+  it("groups by tier without reordering within a tier", () => {
     const ordered = skillsByTier([
       skill("goals", { tier: "support" }),
       skill("coping", { tier: "understand" }),
       skill("verbal", { tier: "engage" }),
-      skill("feedback", { tier: "support" }),
-      skill("family", { tier: "understand" }),
     ]);
-    expect(ordered.map(s => s.skill)).toEqual(["verbal", "coping", "family", "goals", "feedback"]);
+    expect(ordered.map(s => s.skill)).toEqual(["verbal", "coping", "goals"]);
   });
 
-  it("puts the most-tested skill at the top", () => {
-    const series = buildOpportunity([
-      skill("harm", { opportunityPct: 4.8 }),
-      skill("verbal", { opportunityPct: 100 }),
-    ]);
-    expect(series.map(p => p.key)).toEqual(["Harm & safety", "Verbal"]);
-  });
-
-  it("picks the biggest behaviour moves either way and reads a falling unhelpful one as good", () => {
-    const movers = behaviourMovers(
+  it("draws level mix shares top-down by tier, dropping withheld skills", () => {
+    const series = buildLevelMix(
       [
-        behaviour("verbal.b1", "basic", 30),
-        behaviour("goals.u1", "unhelpful", 12),
-        behaviour("verbal.u1", "unhelpful", -20),
-        behaviour("hope.a1", "advanced", 0),
-        behaviour("harm.u1", "unhelpful", null),
+        skill("verbal"),
+        skill("harm", {
+          levelMix: {
+            early: { assessments: 4, levels: null },
+            late: { assessments: 3, levels: null },
+          },
+        }),
       ],
-      "all",
+      "late",
     );
-    expect(movers.map(m => [m.code, m.good])).toEqual([
-      ["verbal.b1", true],
-      ["verbal.u1", true],
-      ["goals.u1", false],
-    ]);
-    expect(behaviourMovers(movers, "unhelpful").map(m => m.code)).toEqual([
-      "verbal.u1",
-      "goals.u1",
+    expect(series.map(p => p.value)).toEqual([12.5, 50, 25, 12.5]);
+    expect(series[0]).toMatchObject({ group: LEVEL_LABELS[0], key: "Verbal" });
+  });
+
+  it("counts learners with 2+, 1 and no chances, fewest-chances on top", () => {
+    const series = buildOpportunity(
+      [skill("verbal"), skill("harm", { learnersWithOpportunity: 28, learnersWithTwoPlus: 13 })],
+      74,
+    );
+    // Carbon draws the first horizontal category at the bottom: verbal (40 with 2+) first, harm last = on top.
+    expect([...new Set(series.map(p => p.key))]).toEqual(["Verbal", "Harm & safety"]);
+    expect(series.slice(3).map(p => [p.group, p.value])).toEqual([
+      [OPPORTUNITY_LABELS.two, 13],
+      [OPPORTUNITY_LABELS.one, 15],
+      [OPPORTUNITY_LABELS.none, 46],
     ]);
   });
 
-  it("drops empty slices from the donuts and keeps buckets with no average", () => {
-    expect(buildTransitions({ stopped: 4, persisted: 2, started: 0, never: 18 })).toEqual([
-      { group: "Stopped", value: 4 },
-      { group: "Never showed", value: 18 },
-      { group: "Still showing", value: 2 },
-    ]);
-    expect(
-      buildTrendMix({ improving: 5, steady: 10, declining: 0, tooEarly: 40 }).map(p => p.group),
-    ).toEqual(["Improving", "Holding steady", "Too early to say"]);
-    expect(buildDose([{ label: "4–5 cuts", learners: 9, avgChange: null }])[0]).toMatchObject({
-      key: "4–5 cuts",
-      value: null,
-      learners: 9,
-    });
-  });
-
-  it("writes takeaways only when there is something honest to say", () => {
-    expect(
-      skillChangeTakeaway([skill("verbal", { change: 0.33 }), skill("goals", { change: -0.28 })]),
-    ).toBe("Biggest gain: verbal full name (+0.33). Biggest drop: goals full name (−0.28).");
-    expect(skillChangeTakeaway([skill("verbal", { change: null })])).toBeUndefined();
-
-    const byCut = [
-      cut(1, 2.2, [2.4, 2.1, 2.4]),
-      cut(2, 2.2, [2.4, 2.1, 2.4]),
-      cut(3, 2.3, [2.6, 2.1, 2.3]),
-      cut(4, 2.3, [2.6, 2.1, 2.3]),
+  it("profiles one kind of behaviour most-shown first, and lists only credible moves", () => {
+    const bs = [
+      behaviour("verbal.b1", { everPct: 98 }),
+      behaviour("goals.b1", { everPct: 60 }),
+      behaviour("verbal.u1", { kind: "unhelpful", everPct: 10 }),
+      behaviour("feedback.b1", { credible: true, changePts: 30, q: 0.01 }),
+      behaviour("hope.b1", { signP: null, q: null }),
     ];
-    expect(tierTakeaway(byCut, { early: [1, 2], late: [3, 4] })).toBe(
-      "Engage moved most (+0.20); Support least (−0.10).",
-    );
-    expect(transitionsTakeaway({ stopped: 4, persisted: 2, started: 1, never: 17 })).toBe(
-      "4 of 24 stopped showing an unhelpful behaviour; 1 started.",
-    );
-    expect(transitionsTakeaway({ stopped: 0, persisted: 0, started: 0, never: 0 })).toBeUndefined();
-    expect(trendTakeaway({ improving: 3, steady: 20, declining: 3, tooEarly: 48 }, 4)).toBe(
-      "Of 26 learners with 4+ cuts, 3 improving and 3 declining against their own start.",
-    );
+    expect(behaviourProfile(bs, "basic").map(b => b.code)).toEqual([
+      "verbal.b1",
+      "feedback.b1",
+      "hope.b1",
+      "goals.b1",
+    ]);
+    expect(credibleMoves(bs).map(b => b.code)).toEqual(["feedback.b1"]);
+    expect(testedMoves(bs)).toBe(4);
   });
 
-  it("darkens grid cells with level and keeps text readable on dark cells", () => {
-    expect(levelCellStyle(null).background).toBe("transparent");
-    expect(levelCellStyle(1.2).color).not.toBe("#ffffff");
-    expect(levelCellStyle(3.6).color).toBe("#ffffff");
-    expect(levelCellStyle(2.0).background).not.toBe(levelCellStyle(3.0).background);
+  it("turns depth into funnel stages and trend into donut slices", () => {
+    expect(
+      depthStages([
+        { atLeast: 1, learners: 74 },
+        { atLeast: 10, learners: 9 },
+      ]),
+    ).toEqual([
+      { label: "1+ cut", reached: 74, terminal: false },
+      { label: "10+ cuts", reached: 9, terminal: true },
+    ]);
+    expect(
+      buildTrendMix({ improving: 1, steady: 25, declining: 0, tooEarly: 48 }).map(p => p.group),
+    ).toEqual(["Improving", "Within noise", "Too early to say"]);
+  });
+
+  it("writes takeaways that carry the interval and the verdict", () => {
+    const summary = {
+      cohortLearners: 24,
+      earlyComposite: 2.3,
+      lateComposite: 2.32,
+      composite: {
+        n: 24,
+        change: 0.02,
+        ci: [-0.06, 0.09] as [number, number],
+        up: 14,
+        down: 10,
+        tied: 0,
+        signP: 0.541,
+        detectable: false,
+      },
+      unhelpful: {
+        earlyPct: 58.3,
+        latePct: 41.7,
+        changePts: -16.7,
+        ciPts: [-45.8, 12.5] as [number, number],
+        stopped: 9,
+        started: 5,
+        persisted: 5,
+        never: 5,
+        signP: 0.424,
+        detectable: false,
+      },
+      skills: {
+        detectableUp: 0,
+        detectableDown: 0,
+        noDetectableChange: 10,
+        tooFewLearners: 0,
+        notMeasurable: 4,
+      },
+    };
+    expect(compositeTakeaway(summary)).toBe(
+      "+0.02 on a 1–4 scale (95% CI −0.06 to +0.09; 14 up, 10 down, p=0.54): no detectable change.",
+    );
+    expect(unhelpfulTakeaway(summary.unhelpful)).toBe(
+      "−17 points (95% CI −46 to +13): 9 stopped, 5 started, 5 still, 5 never — no detectable change.",
+    );
+    expect(trendTakeaway({ improving: 1, steady: 25, declining: 0, tooEarly: 48 }, 4)).toBe(
+      "Of 26 learners with 4+ cuts, 1 moved up and 0 down by more than slice-to-slice noise; 25 are within it.",
+    );
+    expect(
+      selfHarmSummary({
+        learnersWithCue: 28,
+        cutsWithCue: 45,
+        cutsFollowedUp: 19,
+        cutsMissed: 17,
+        cutsAmbiguous: 9,
+        cutsWithAdvanced: 12,
+        cutsWithOtherUnhelpful: 0,
+        learnersFollowedFirst: 12,
+        learnersMissedFirst: 10,
+        learnersAmbiguousFirst: 6,
+        repeatLearners: 12,
+        repeatBetter: 2,
+        repeatWorse: 3,
+        repeatSame: 7,
+      }),
+    ).toBe(
+      "28 learners met a simulated self-harm cue in 45 slices. The first time, 12 followed it up, 10 missed it and 6 were unclear.",
+    );
   });
 });

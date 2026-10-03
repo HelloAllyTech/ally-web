@@ -6,8 +6,10 @@ import { InlineNotification, SidePanel, SkeletonPlaceholder } from "@ally-ui-mon
 import { useGetFoundationalSkillsLearnerQuery } from "@api";
 
 import { CHART_HEIGHT, ScrollableChart, lineOpts, single } from "./chartKit";
+import { PALETTE } from "./chartScales";
 import {
   FhsProgressBehaviour,
+  FhsProgressLearner,
   FhsProgressSkill,
   TIER_LABELS,
   cutLabel,
@@ -31,11 +33,14 @@ const COMPOSITE = "Overall score";
  */
 export const FoundationalSkillsLearnerPanel = ({
   learnerId,
+  row,
   skills,
   behaviours,
   onClose,
 }: {
   learnerId: number | null;
+  /** The learner's panel row (coaching flags, noise band), when they are in the panel. */
+  row?: FhsProgressLearner | null;
   /** Rubric skills, in display order (from the progress response). */
   skills: FhsProgressSkill[];
   /** Behaviour code → text, so codes read as sentences. */
@@ -139,6 +144,63 @@ export const FoundationalSkillsLearnerPanel = ({
                   : { value: null, title: "No opportunity for this skill in this cut" };
               }}
             />
+          </section>
+
+          {row && row.flags.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h4 className="text-sm font-medium text-typography-900">Coaching flags</h4>
+              <p className="text-xs text-typography-500">
+                Any safety behaviour, and any other unhelpful behaviour seen in two or more cuts.
+                AI-judge coding: check the transcript before coaching on it.
+              </p>
+              <ul className="flex flex-col gap-1.5 text-xs">
+                {row.flags.map(f => (
+                  <li key={f.code} className="flex items-start gap-2">
+                    <span
+                      className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: f.kind === "safety" ? PALETTE.red : PALETTE.orange }}
+                      aria-hidden
+                    />
+                    <span className="text-typography-700">
+                      {f.kind === "safety" ? "Safety: " : ""}
+                      {f.text}{" "}
+                      <span className="text-typography-500">
+                        (cuts {f.cuts.join(", ")}
+                        {f.recent ? "; still in their latest cuts" : ""})
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="flex flex-col gap-2">
+            <h4 className="text-sm font-medium text-typography-900">Scenarios in each cut</h4>
+            <p className="text-xs text-typography-500">
+              Different scenarios give different chances at each skill, which is why single cuts are
+              noisy.
+            </p>
+            <ul className="flex flex-col gap-1 text-xs">
+              {cuts.map(c => (
+                <li key={c.cut} className="flex gap-3">
+                  <span className="w-12 shrink-0 font-medium tabular-nums text-typography-700">
+                    {cutLabel(c.cut)}
+                  </span>
+                  <span className="text-typography-600">
+                    {(c.sessions ?? []).length
+                      ? [
+                          ...new Set(
+                            (c.sessions ?? []).map(
+                              sn => sn.scenarioTitle ?? `Scenario #${sn.scenarioId ?? "?"}`,
+                            ),
+                          ),
+                        ].join(" · ")
+                      : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </section>
 
           <section className="flex flex-col gap-2">

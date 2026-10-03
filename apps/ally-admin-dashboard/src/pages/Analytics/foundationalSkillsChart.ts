@@ -35,6 +35,8 @@ export interface FoundationalSkillsCut {
   /** The paired set's average at their cut 1. */
   baselineAvgScore: number | null;
   pairedChange: number | null;
+  /** 95% interval of `pairedChange`; null below the sample floor. */
+  pairedChangeCi?: [number, number] | null;
   unhelpfulPct: number | null;
   skills: FoundationalSkillsCutSkill[];
 }
@@ -42,6 +44,8 @@ export interface FoundationalSkillsCut {
 export interface FoundationalSkillsResponse {
   rubricVersion: string;
   cutSizeLearnerChars: number;
+  /** The cut each learner is compared with: 1, or 2 to treat cut 1 as a warm-up. */
+  baselineCut?: number;
   minSampleSize: number;
   scoreDomain: [number, number];
   skills: FoundationalSkillsSkill[];
@@ -66,10 +70,15 @@ export const FHS_GROUPS = {
   baseline: "Their cut 1",
 } as const;
 
-export const FHS_SCALE: ColorScale = {
+/** The baseline line's legend name for the chosen comparison cut. */
+export const baselineGroup = (baselineCut = 1): string => `Their cut ${baselineCut}`;
+
+export const fhsScale = (baselineCut = 1): ColorScale => ({
   [FHS_GROUPS.average]: PALETTE.blue,
-  [FHS_GROUPS.baseline]: PALETTE.gray,
-};
+  [baselineGroup(baselineCut)]: PALETTE.gray,
+});
+
+export const FHS_SCALE: ColorScale = fhsScale(1);
 
 /** The score axis is fixed, so a small wobble cannot fill the chart. */
 export const FHS_DOMAIN: [number, number] = [1, 4];
@@ -93,7 +102,10 @@ export type FhsDatum = {
  * next). Withheld cuts after the last plotted one are trimmed; their counts
  * reach the reader through the detail table and the takeaway.
  */
-export const buildFoundationalSkillsSeries = (cuts: FoundationalSkillsCut[]): FhsDatum[] => {
+export const buildFoundationalSkillsSeries = (
+  cuts: FoundationalSkillsCut[],
+  baselineCut = 1,
+): FhsDatum[] => {
   const lastPlotted = cuts.reduce((last, c) => (c.avgScore !== null ? c.cut : last), 0);
   const shown = cuts.filter(c => c.cut <= lastPlotted);
   return [
@@ -104,7 +116,7 @@ export const buildFoundationalSkillsSeries = (cuts: FoundationalSkillsCut[]): Fh
       learners: c.learners,
     })),
     ...shown.map(c => ({
-      group: FHS_GROUPS.baseline,
+      group: baselineGroup(baselineCut),
       key: cutLabel(c.cut),
       value: c.avgScore === null ? null : c.baselineAvgScore,
     })),
@@ -127,9 +139,12 @@ export const formatChange = (v: number | null | undefined): string =>
  * numbers and the change are all about the same learners. Never the last point
  * against the first point, which mixes two different groups.
  */
-export const foundationalSkillsTakeaway = (cuts: FoundationalSkillsCut[]): string | null => {
+export const foundationalSkillsTakeaway = (
+  cuts: FoundationalSkillsCut[],
+  baselineCut = 1,
+): string | null => {
   const comparable = cuts.filter(
-    c => c.cut > 1 && c.pairedChange !== null && c.pairedAvgScore !== null,
+    c => c.cut > baselineCut && c.pairedChange !== null && c.pairedAvgScore !== null,
   );
   const last = comparable[comparable.length - 1];
   if (!last) return null;
@@ -137,11 +152,17 @@ export const foundationalSkillsTakeaway = (cuts: FoundationalSkillsCut[]): strin
   const tail = thinner.length
     ? ` Later cuts have fewer than the minimum learners and are in the table only.`
     : "";
-  return `By cut ${last.cut}, the ${last.baselineLearners.toLocaleString()} learners who got there with a scored first cut average ${formatScore(
+  const ci = last.pairedChangeCi;
+  const verdict = ci
+    ? ci[0] > 0 || ci[1] < 0
+      ? ` (95% CI ${formatChange(ci[0])} to ${formatChange(ci[1])}).`
+      : ` (95% CI ${formatChange(ci[0])} to ${formatChange(ci[1])}): not distinguishable from noise.`
+    : ".";
+  return `By cut ${last.cut}, the ${last.baselineLearners.toLocaleString()} learners who got there with a scored cut ${baselineCut} average ${formatScore(
     last.pairedAvgScore,
-  )}, ${formatChange(last.pairedChange)} on their own first cut (${formatScore(
+  )}, ${formatChange(last.pairedChange)} on their own cut ${baselineCut} (${formatScore(
     last.baselineAvgScore,
-  )}).${tail}`;
+  )})${verdict}${tail}`;
 };
 
 /** Why the plot is empty, in the reader's terms, given what the server reports. */
@@ -170,6 +191,7 @@ export const foundationalSkillsTable = (
   data: FoundationalSkillsResponse | undefined,
 ): { columns: string[]; rows: (string | number)[][] } => {
   const skills = data?.skills ?? [];
+  const base = data?.baselineCut ?? 1;
   return {
     columns: [
       "Cut",
@@ -177,8 +199,9 @@ export const foundationalSkillsTable = (
       "Average (1–4)",
       "Paired learners",
       "Paired, this cut",
-      "Paired, cut 1",
+      `Paired, cut ${base}`,
       "Paired change",
+      "Paired change 95% CI",
       "With an unhelpful behaviour",
       ...skills.map(s => s.name),
     ],
@@ -192,6 +215,9 @@ export const foundationalSkillsTable = (
         formatScore(c.pairedAvgScore),
         formatScore(c.baselineAvgScore),
         formatChange(c.pairedChange),
+        c.pairedChangeCi
+          ? `${formatChange(c.pairedChangeCi[0])} to ${formatChange(c.pairedChangeCi[1])}`
+          : "—",
         c.unhelpfulPct === null ? "—" : `${c.unhelpfulPct.toFixed(1)}%`,
         ...skills.map(s => {
           const cell = bySkill.get(s.skill);
