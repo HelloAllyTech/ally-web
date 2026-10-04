@@ -4,6 +4,7 @@ import { Tab, TabList, TabPanel, TabPanels, CarbonTabs as Tabs } from "@ally-ui-
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
 import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
+import { CourseImpactSubTab } from "./CourseImpactSubTab";
 import { CurriculumSubTab } from "./CurriculumSubTab";
 import { FoundationalSkillsSubTab } from "./FoundationalSkillsSubTab";
 import { GoalsTab } from "./GoalsTab";
@@ -92,6 +93,17 @@ const SUB_TABS: SubTabDef[] = [
     blurb:
       "What learners practise and what they finish: completion by item format, the language mix, and the most- and least-used scenarios.",
     render: f => <CurriculumSubTab {...f} />,
+  },
+  {
+    // Straight after Curriculum: that panel asks what learners finish, this one
+    // asks whether finishing it made them better. Read on the Helping skills
+    // rubric, so every course is on one scale whatever its scenarios. All-time
+    // with its own org filter, like Helping skills, so no page filters reach it.
+    id: "course-impact",
+    label: "Course impact",
+    blurb:
+      "Did each course leave its learners better at the 14 helping skills? Each learner's practice before starting against their practice after finishing, on one fixed rubric — with who each course can measure, skill by skill, and harmful habits.",
+    render: () => <CourseImpactSubTab />,
   },
   {
     id: "quality",
