@@ -3,10 +3,15 @@ import { useMemo } from "react";
 import { LineChart } from "@carbon/charts-react";
 
 import { InlineNotification, SidePanel, SkeletonPlaceholder } from "@ally-ui-mono/ui-shared";
-import { useGetFoundationalSkillsLearnerQuery } from "@api";
+import {
+  useGetFoundationalSkillsBehavioursQuery,
+  useGetFoundationalSkillsLearnerQuery,
+} from "@api";
 
 import { CHART_HEIGHT, ScrollableChart, lineOpts, single } from "./chartKit";
+import { ChartIdBadge } from "./chartKit";
 import { PALETTE } from "./chartScales";
+import { countText, trackabilityLabel } from "./foundationalSkillsHabits";
 import {
   FhsProgressBehaviour,
   FhsProgressLearner,
@@ -51,6 +56,29 @@ export const FoundationalSkillsLearnerPanel = ({
     skip: learnerId === null,
   });
   const learner = data?.learners[0];
+  // One learner's every behaviour (group figures still over everyone), fetched
+  // only when the panel opens.
+  const habitsQ = useGetFoundationalSkillsBehavioursQuery(
+    { userId: learnerId as number },
+    { skip: learnerId === null },
+  );
+  const habitDefs = useMemo(
+    () => new Map((habitsQ.data?.behaviours ?? []).map(b => [b.code, b])),
+    [habitsQ.data],
+  );
+  const myHabits = useMemo(() => {
+    const mine = habitsQ.data?.learners[0];
+    if (!mine) return { comparable: false, rows: [] as NonNullable<typeof mine>["behaviours"] };
+    const rows = mine.behaviours
+      .filter(x => habitDefs.get(x.code)?.kind !== "unhelpful")
+      .sort(
+        (a, b) =>
+          (b.clear ? 1 : 0) - (a.clear ? 1 : 0) ||
+          (habitDefs.get(b.code)?.icc ?? -1) - (habitDefs.get(a.code)?.icc ?? -1),
+      )
+      .slice(0, 15);
+    return { comparable: mine.comparable, rows };
+  }, [habitsQ.data, habitDefs]);
   const cuts = useMemo(() => learner?.cuts ?? [], [learner]);
 
   const series = useMemo(
@@ -144,6 +172,68 @@ export const FoundationalSkillsLearnerPanel = ({
                   : { value: null, title: "No opportunity for this skill in this cut" };
               }}
             />
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h4 className="flex items-center gap-2 text-sm font-medium text-typography-900">
+              Habits, start vs now <ChartIdBadge id="AAQ-192" />
+            </h4>
+            <p className="text-xs text-typography-500">
+              How often this learner showed each helpful behaviour where they had the chance, first
+              half of their practice vs last half. A change is called clear only when it passes an
+              exact test — rare with a handful of slices. Most person-specific habits first.
+            </p>
+            {habitsQ.isFetching ? (
+              <SkeletonPlaceholder className="analytics-chart-skeleton" />
+            ) : habitsQ.isError ? (
+              <p className="text-xs text-typography-500">Habits could not be loaded.</p>
+            ) : myHabits.rows.length === 0 ? (
+              <p className="text-xs text-typography-500">No helpful behaviour observed yet.</p>
+            ) : (
+              <table className="w-full text-xs">
+                <thead className="text-left text-typography-500">
+                  <tr>
+                    <th className="py-1 pr-3 font-medium">Behaviour</th>
+                    <th className="py-1 pr-3 font-medium">All</th>
+                    {myHabits.comparable && <th className="py-1 pr-3 font-medium">Start → now</th>}
+                    <th className="py-1 font-medium" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {myHabits.rows.map(x => {
+                    const d = habitDefs.get(x.code);
+                    return (
+                      <tr key={x.code} className="border-t border-[#f0f0f0] align-top">
+                        <td className="py-1 pr-3">
+                          <span className="text-typography-800">{d?.text ?? x.code}</span>
+                          {d && (
+                            <span className="block text-[11px] text-typography-500">
+                              {trackabilityLabel(d)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1 pr-3 tabular-nums">{countText(x.all)}</td>
+                        {myHabits.comparable && (
+                          <td className="whitespace-nowrap py-1 pr-3 tabular-nums">
+                            {countText(x.start)} → {countText(x.now)}
+                          </td>
+                        )}
+                        <td className="whitespace-nowrap py-1">
+                          {x.clear && (
+                            <span
+                              className="font-medium"
+                              style={{ color: x.clear === "adopted" ? PALETTE.green : PALETTE.red }}
+                            >
+                              {x.clear === "adopted" ? "▲ adopted" : "▼ dropped"}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </section>
 
           {row && row.flags.length > 0 && (

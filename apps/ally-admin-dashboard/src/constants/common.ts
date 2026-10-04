@@ -480,6 +480,7 @@ export const ApiEndpoints = {
     FOUNDATIONAL_SKILLS_PROGRESS: "/v1/analytics/foundational-skills/progress",
     FOUNDATIONAL_SKILLS_LEARNERS: "/v1/analytics/foundational-skills/learners",
     FOUNDATIONAL_SKILLS_BENCHMARK: "/v1/analytics/foundational-skills/benchmark",
+    FOUNDATIONAL_SKILLS_BEHAVIOURS: "/v1/analytics/foundational-skills/behaviours",
     QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
     COMPETENCY_MAP: "/v1/analytics/competency-map",
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",
