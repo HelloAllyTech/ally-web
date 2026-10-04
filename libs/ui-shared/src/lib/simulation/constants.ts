@@ -26,3 +26,19 @@ export const DIFFICULTY_STATE_SCORE_MAP: Record<DifficultyLevel, StateScoreConfi
     { stateId: "4", scoreRange: { min: 200 } },
   ],
 };
+
+/**
+ * How a roleplay is conducted, as ally-be's start/preview responses and the
+ * session record spell it. VOICE is the default and what an absent value
+ * means; TEXT is a text-chat roleplay (same room, audio off).
+ */
+export const INTERACTION_MODE = {
+  VOICE: "VOICE",
+  TEXT: "TEXT",
+} as const;
+
+export type InteractionMode = (typeof INTERACTION_MODE)[keyof typeof INTERACTION_MODE];
+
+/** True only for an explicit TEXT; anything else is a voice session. */
+export const isTextChatSession = (roomData?: { interactionMode?: string } | null): boolean =>
+  roomData?.interactionMode === INTERACTION_MODE.TEXT;

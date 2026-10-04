@@ -523,4 +523,72 @@ describe("useStartSimulation", () => {
       },
     );
   });
+
+  describe("text-chat roleplays", () => {
+    const textData = {
+      scenarioSession: { id: "session-txt", startedAt: "2024-01-01T00:00:00Z" },
+      scenario: { id: 7, title: "Late-night chat", interactionMode: "TEXT" },
+      accessToken: { token: "token-txt", serverUrl: "wss://lk" },
+    };
+
+    it("asks for a text chat and opens the chat screen the server confirmed", async () => {
+      mockStartSimulationMutation.mockResolvedValue({ data: textData, error: null });
+      const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+      await act(async () => {
+        await result.current.startSimulation({
+          params: { scenarioId: 7, languageId: 1, interactionMode: "TEXT" },
+        });
+      });
+
+      expect(mockStartSimulationMutation).toHaveBeenCalledWith({
+        scenarioId: 7,
+        languageId: 1,
+        platform: "web",
+        interactionMode: "TEXT",
+      });
+      const roomData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) ?? "{}");
+      expect(roomData.interactionMode).toBe("TEXT");
+    });
+
+    it("sends no mode for a voice start, keeping the request as it was", async () => {
+      mockStartSimulationMutation.mockResolvedValue({
+        data: { ...textData, scenario: { id: 7, title: "Call" } },
+        error: null,
+      });
+      const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+      await act(async () => {
+        await result.current.startSimulation({
+          params: { scenarioId: 7, languageId: 1, interactionMode: "VOICE" },
+        });
+      });
+
+      expect(mockStartSimulationMutation).toHaveBeenCalledWith({
+        scenarioId: 7,
+        languageId: 1,
+        platform: "web",
+      });
+      const roomData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) ?? "{}");
+      expect(roomData.interactionMode).toBe("VOICE");
+    });
+
+    it("shows the text-chat gate's own message, which points back to voice", async () => {
+      const message =
+        "This roleplay is not available as a text chat. You can still start it as a voice call.";
+      mockStartSimulationMutation.mockResolvedValue({
+        data: null,
+        error: { data: { statusCode: 403, message } },
+      });
+      const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+      await act(async () => {
+        await result.current.startSimulation({
+          params: { scenarioId: 7, interactionMode: "TEXT" },
+        });
+      });
+
+      expect(toast.error).toHaveBeenCalledWith(message);
+    });
+  });
 });

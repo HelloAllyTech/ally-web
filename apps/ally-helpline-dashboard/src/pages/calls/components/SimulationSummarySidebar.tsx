@@ -235,6 +235,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
                 agentName={summary?.scenario?.metadata?.name}
                 originalLanguageCode={originalLanguageCode}
                 className=" px-4 pt-[10px]"
+                hasRecording={summary?.interactionMode !== "TEXT"}
               />
             ),
           },

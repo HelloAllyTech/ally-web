@@ -11,6 +11,8 @@ export { SessionProgress } from "./SessionProgress";
 export { SessionSidebar } from "./SessionSidebar";
 export { SupervisorNotes } from "./SupervisorNotes";
 export { SessionTimeBar } from "./SessionTimeBar";
+export { TextChatPanel } from "./TextChatPanel";
+export * from "./useTextChat";
 export * from "./utils";
 export * from "./types";
 export * from "./constants";

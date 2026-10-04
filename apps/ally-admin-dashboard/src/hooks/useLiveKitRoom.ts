@@ -246,7 +246,10 @@ export const useLiveKitRoom = (
         };
         checkAgentJoined();
 
-        await room.localParticipant.setMicrophoneEnabled(true);
+        // A text-chat preview runs the room typed both ways; never open the mic.
+        if (roomData?.interactionMode !== "TEXT") {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        }
 
         const isPreview =
           id && typeof id === "string" && (isPreviewRoom?.(id) ?? id.startsWith("preview-"));

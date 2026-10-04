@@ -20,15 +20,22 @@ vi.mock("@livekit/components-react", () => ({
   RoomContext: { Provider: ({ children }: any) => children },
 }));
 
+const interfaceProps = vi.hoisted(() => ({ current: null as any }));
+const controlsProps = vi.hoisted(() => ({ current: null as any }));
+
 vi.mock("../SimulationInterface", () => ({
   RoomStatus: { AGENT_JOINED: "AGENT_JOINED" },
-  SimulationInterface: (props: any) => (
-    <div data-testid="simulation-interface" data-max-time-seconds={props.maxTimeSeconds} />
-  ),
+  SimulationInterface: (props: any) => {
+    interfaceProps.current = props;
+    return <div data-testid="simulation-interface" data-max-time-seconds={props.maxTimeSeconds} />;
+  },
 }));
 
 vi.mock("../SimulationControls", () => ({
-  SimulationControls: () => <div data-testid="simulation-controls" />,
+  SimulationControls: (props: any) => {
+    controlsProps.current = props;
+    return <div data-testid="simulation-controls" />;
+  },
 }));
 
 // The client auto-end fires this long after the limit (SimulationTimer's grace).
@@ -105,5 +112,68 @@ describe("SimulationPage session time limit", () => {
 
     advanceSeconds(2);
     expect(onEndSimulation).toHaveBeenCalled();
+  });
+});
+
+describe("SimulationPage text-chat roleplay", () => {
+  const makeRoom = () => ({
+    localParticipant: { identity: "learner-1", sendText: vi.fn() },
+    remoteParticipants: new Map(),
+    registerTextStreamHandler: vi.fn(),
+    unregisterTextStreamHandler: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+  });
+
+  beforeEach(() => {
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    interfaceProps.current = null;
+    controlsProps.current = null;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("never asks for the microphone, and has no mute or pause", () => {
+    const query = vi.fn().mockResolvedValue({ state: "prompt" });
+    Object.defineProperty(navigator, "permissions", { value: { query }, configurable: true });
+    const room = makeRoom();
+
+    renderPage({
+      room,
+      roomData: { title: "Scenario", interactionMode: "TEXT", pauseEnabled: true },
+    });
+
+    expect(query).not.toHaveBeenCalled();
+    expect(interfaceProps.current).toEqual(
+      expect.objectContaining({ isTextChat: true, isMicrophoneGranted: true }),
+    );
+    expect(interfaceProps.current.textChat).toEqual(
+      expect.objectContaining({ messages: [], send: expect.any(Function) }),
+    );
+    expect(controlsProps.current).toEqual(
+      expect.objectContaining({ showMuteButton: false, onPauseClick: undefined }),
+    );
+    // Listening from the page, before the chat panel exists.
+    expect(room.registerTextStreamHandler).toHaveBeenCalledWith(
+      "lk.transcription",
+      expect.any(Function),
+    );
+  });
+
+  it("leaves a voice session exactly as it was", () => {
+    const query = vi.fn().mockResolvedValue({ state: "granted" });
+    Object.defineProperty(navigator, "permissions", { value: { query }, configurable: true });
+    const room = makeRoom();
+
+    renderPage({ room, roomData: { title: "Scenario", pauseEnabled: true } });
+
+    expect(query).toHaveBeenCalled();
+    expect(interfaceProps.current.isTextChat).toBe(false);
+    expect(controlsProps.current.showMuteButton).toBe(true);
+    expect(controlsProps.current.onPauseClick).toEqual(expect.any(Function));
+    expect(room.registerTextStreamHandler).not.toHaveBeenCalled();
   });
 });

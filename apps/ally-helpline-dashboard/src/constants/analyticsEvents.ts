@@ -185,6 +185,8 @@ export const ANALYTICS_PROPS = {
   ENTRY_POINT: "entry_point",
   ITEM_ID: "item_id",
   ITEM_NAME: "item_name",
+  // VOICE | TEXT. Sent only on sessions where text chat was on offer.
+  INTERACTION_MODE: "interaction_mode",
   PATHWAY_ID: "pathway_id",
   PATHWAY_NAME: "pathway_name",
   SIMULATION_COUNT: "simulation_count",

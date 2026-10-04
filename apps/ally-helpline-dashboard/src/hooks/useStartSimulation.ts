@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import type { InteractionMode } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
@@ -15,6 +16,8 @@ interface StartSimulationParams {
   /** Track 2.0: link this session to a track item progress row. */
   trackItemProgressId?: string;
   languageId?: number;
+  /** TEXT opens a text-chat roleplay. Omitted (or VOICE) is a voice call. */
+  interactionMode?: InteractionMode;
 }
 
 interface SimulationMetadata {
@@ -69,6 +72,7 @@ export const useStartSimulation = (
         caseSessionItemId,
         trackItemProgressId,
         languageId,
+        interactionMode,
       } = params;
       const dataParams: {
         scenarioId: number;
@@ -77,11 +81,19 @@ export const useStartSimulation = (
         trackItemProgressId?: string;
         languageId?: number;
         platform: "web" | "mobile-ios" | "mobile-android";
+        interactionMode?: InteractionMode;
       } = {
         scenarioId,
         languageId,
         platform: "web",
       };
+
+      // Only a text chat is sent explicitly: a voice start stays the exact
+      // request it has always been, so nothing changes for it. A literal, not
+      // ui-shared's INTERACTION_MODE: suites mock that package wholesale.
+      if (interactionMode === "TEXT") {
+        dataParams.interactionMode = "TEXT";
+      }
 
       if (scenarioPathSessionItemId?.length > 0) {
         dataParams.scenarioPathSessionItemId = scenarioPathSessionItemId;
@@ -146,6 +158,9 @@ export const useStartSimulation = (
             liveTabEnabled: scenario?.liveTabEnabled !== false,
             stateNames: scenario?.stateNames || [],
             difficultyLevel: scenario?.difficultyLevel,
+            // Which session screen to open. The server's answer, not the
+            // request: it is what the agent was actually dispatched as.
+            interactionMode: scenario?.interactionMode ?? "VOICE",
           }),
         );
 
@@ -179,6 +194,10 @@ export const useStartSimulation = (
           const knownGateMessages = [
             "Roleplay v2 is not currently enabled.",
             "Roleplay v2 is not available for this account yet.",
+            // Text-chat gate (org switch off, or the roleplay doesn't offer
+            // it). Both name the way forward: start it as a voice call.
+            "Text chat roleplays are not switched on for your organisation. You can still start this roleplay as a voice call.",
+            "This roleplay is not available as a text chat. You can still start it as a voice call.",
           ];
           const backendMessage = errorData.data?.message;
           toast.error(

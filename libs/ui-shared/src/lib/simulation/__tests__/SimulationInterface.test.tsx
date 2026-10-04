@@ -35,6 +35,17 @@ vi.mock("../UserCallCard", () => ({
   ),
 }));
 
+vi.mock("../TextChatPanel", () => ({
+  TextChatPanel: (props: any) => (
+    <div
+      data-testid="text-chat-panel"
+      data-client-name={props.clientName}
+      data-typing={String(props.isClientTyping)}
+      data-disabled={String(props.disabled)}
+    />
+  ),
+}));
+
 const baseProps = {
   roomStatus: RoomStatus.AGENT_JOINED,
   roomData: {},
@@ -173,6 +184,50 @@ describe("SimulationInterface", () => {
       expect(screen.getByTestId("simulation-actor-video")).toBeInTheDocument();
       expect(screen.getByTestId("user-call-card-remote")).toBeInTheDocument();
       expect(screen.getByTestId("simulation-pip-self-view")).toBeInTheDocument();
+    });
+  });
+
+  describe("text-chat roleplay", () => {
+    const textChat = { messages: [], isClientTyping: false, send: vi.fn(), retry: vi.fn() };
+    const textProps = {
+      ...baseProps,
+      isTextChat: true,
+      textChat,
+      roomData: { remoteParticipant: { name: "Asha" } },
+    };
+
+    it("puts the chat where the call cards were, with no audio renderer", () => {
+      render(<SimulationInterface {...textProps} />);
+      skipCountdown();
+
+      expect(screen.getByTestId("text-chat-panel")).toHaveAttribute("data-client-name", "Asha");
+      expect(screen.queryByTestId("user-call-card-remote")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("simulation-pip-self-view")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("room-audio-renderer")).not.toBeInTheDocument();
+    });
+
+    it("shows the client typing on the worker's own thinking signal too", () => {
+      render(<SimulationInterface {...textProps} agentTurnStatus="thinking" />);
+      skipCountdown();
+
+      expect(screen.getByTestId("text-chat-panel")).toHaveAttribute("data-typing", "true");
+    });
+
+    it("locks the composer while ending the session", () => {
+      render(<SimulationInterface {...textProps} isEndingSession />);
+      skipCountdown();
+
+      expect(screen.getByTestId("text-chat-panel")).toHaveAttribute("data-disabled", "true");
+    });
+
+    it("never mentions the microphone while connecting", () => {
+      render(<SimulationInterface {...textProps} roomStatus={RoomStatus.CONNECTING} />);
+      skipCountdown();
+
+      expect(
+        screen.getByText("Your conversation will appear here as soon as it opens."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/microphone/i)).not.toBeInTheDocument();
     });
   });
 });

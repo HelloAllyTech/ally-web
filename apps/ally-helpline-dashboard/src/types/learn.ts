@@ -1,3 +1,4 @@
+import type { InteractionMode } from "@ally-ui-mono/ui-shared";
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
 import { Citation, Thread, LanguageOption } from "@types";
 
@@ -90,6 +91,14 @@ export interface Scenario {
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];
   completion?: ScenarioCompletion | null;
+  /**
+   * Scenario detail only: this learner may start the roleplay as a text chat
+   * (their org has text-chat roleplays on AND the scenario offers it). A UI
+   * hint — the start endpoint re-checks both. Absent means voice only.
+   */
+  textChatAvailable?: boolean;
+  /** Start response only: which session screen to open. Absent means VOICE. */
+  interactionMode?: InteractionMode;
 }
 
 export interface ScenarioSession {
@@ -173,6 +182,8 @@ export interface StartSimulationInput {
   trackItemProgressId?: string;
   languageCode?: string;
   platform?: SessionPlatform;
+  /** Omitted for a voice call, which is what the backend assumes. */
+  interactionMode?: InteractionMode;
 }
 
 export interface StartSimulationResponse {
@@ -252,6 +263,8 @@ export interface SimulationSummary {
   startedAt: string;
   endedAt: string;
   score: number | null;
+  /** VOICE or TEXT. Absent on sessions served before text chat existed. */
+  interactionMode?: InteractionMode;
   metadata: {
     sessionName: string;
     languageId?: number;

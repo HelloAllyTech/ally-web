@@ -1143,4 +1143,63 @@ describe("Scenario Component", () => {
       expect(mockTrack).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("Text chat", () => {
+    const renderScenario = () =>
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+    it("offers no choice when text chat is not available to this learner", () => {
+      renderScenario();
+
+      expect(screen.queryByTestId("interaction-mode-picker")).not.toBeInTheDocument();
+    });
+
+    it("lets the learner start the roleplay as a text chat when it is available", async () => {
+      mockUseGetScenarioQuery.mockReturnValue({
+        data: { ...mockScenario, textChatAvailable: true },
+        isSuccess: true,
+        isLoading: false,
+      });
+      renderScenario();
+
+      expect(screen.getByTestId("interaction-mode-picker")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("radio", { name: "Text chat" }));
+      fireEvent.click(screen.getByTestId("start-simulation-btn"));
+
+      await waitFor(() =>
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          expect.objectContaining({
+            params: expect.objectContaining({ scenarioId: 123, interactionMode: "TEXT" }),
+          }),
+        ),
+      );
+      expect(mockTrack).toHaveBeenCalledWith(
+        "roleplay.start_clicked",
+        expect.objectContaining({ interaction_mode: "TEXT" }),
+      );
+    });
+
+    it("keeps voice as the default even where text chat is offered", async () => {
+      mockUseGetScenarioQuery.mockReturnValue({
+        data: { ...mockScenario, textChatAvailable: true },
+        isSuccess: true,
+        isLoading: false,
+      });
+      renderScenario();
+
+      fireEvent.click(screen.getByTestId("start-simulation-btn"));
+
+      await waitFor(() =>
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          expect.objectContaining({
+            params: expect.objectContaining({ interactionMode: "VOICE" }),
+          }),
+        ),
+      );
+    });
+  });
 });

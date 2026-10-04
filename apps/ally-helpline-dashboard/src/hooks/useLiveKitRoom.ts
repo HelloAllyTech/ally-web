@@ -53,6 +53,11 @@ const CONNECTION_STATE = {
   CONNECTED: "connected",
 } as const;
 
+// Funnel events carry the mode only for a text chat, so a voice session's
+// payload is exactly what it was before text chat existed.
+const interactionModeProps = (isTextChat: boolean): Record<string, string> =>
+  isTextChat ? { [ANALYTICS_PROPS.INTERACTION_MODE]: "TEXT" } : {};
+
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
   endSessionButtonRef: any,
@@ -109,9 +114,14 @@ export const useLiveKitRoom = (
    * therefore close over the first render's values, so they are mirrored here —
    * the same trick the audio timer already uses for `getRoomName` above.
    */
-  const sessionIdsRef = useRef<{ simulationId: string | null; scenarioId: string | null }>({
+  const sessionIdsRef = useRef<{
+    simulationId: string | null;
+    scenarioId: string | null;
+    isTextChat: boolean;
+  }>({
     simulationId: null,
     scenarioId: null,
+    isTextChat: false,
   });
 
   // Diagnostic only: measures how long after the agent joins the learner can
@@ -131,10 +141,15 @@ export const useLiveKitRoom = (
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
+  // A text-chat roleplay: same room and agent, typed both ways, so the
+  // microphone is never opened. A literal rather than ui-shared's constant —
+  // this hook's suites mock that package wholesale.
+  const isTextChat = roomData?.interactionMode === "TEXT";
 
   sessionIdsRef.current = {
     simulationId: id ?? null,
     scenarioId: roomData?.scenarioId ?? null,
+    isTextChat,
   };
 
   const updateAgentTurnStatus = useCallback((status: AgentTurnStatus) => {
@@ -242,6 +257,7 @@ export const useLiveKitRoom = (
     captureEvent(ANALYTICS_EVENTS.SIMULATION_STARTED, {
       [ANALYTICS_PROPS.SIMULATION_ID]: sessionIdsRef.current.simulationId,
       [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
+      ...interactionModeProps(sessionIdsRef.current.isTextChat),
     });
     if (silentGraceTimerRef.current) {
       clearTimeout(silentGraceTimerRef.current);
@@ -359,6 +375,7 @@ export const useLiveKitRoom = (
       [ANALYTICS_PROPS.SCENARIO_ID]: sessionIdsRef.current.scenarioId,
       duration_seconds: Math.round((Date.now() - startedAt) / 1000),
       ended_by_learner: Boolean(endSessionButtonRef.current),
+      ...interactionModeProps(sessionIdsRef.current.isTextChat),
     });
   }, []);
 
@@ -535,8 +552,12 @@ export const useLiveKitRoom = (
           });
         }
 
-        await room.localParticipant.setMicrophoneEnabled(true);
-        logger.info("Microphone enabled");
+        if (isTextChat) {
+          logger.info("Text-chat roleplay: microphone left off");
+        } else {
+          await room.localParticipant.setMicrophoneEnabled(true);
+          logger.info("Microphone enabled");
+        }
 
         // Reset last event timestamp on a fresh connection
         lastEventTimestampRef.current = null;

@@ -29,6 +29,16 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   );
 
   const [selectedLanguageLabel, setSelectedLanguageLabel] = useState<string>("");
+  // Only for a roleplay that offers text chat; every other preview is the
+  // voice call it always was, with no extra control.
+  const offersTextChat = simulation.textChatEnabled === true;
+  const [previewMode, setPreviewMode] = useState<"VOICE" | "TEXT">("VOICE");
+  // Read lazily, and only when there is a choice to offer: the strings are
+  // irrelevant to every other preview (and to suites that mock @constants).
+  const modeOptions = useMemo(
+    () => (offersTextChat ? [en.simulation.previewMode.voice, en.simulation.previewMode.text] : []),
+    [offersTextChat],
+  );
 
   useEffect(() => {
     if (!languageOptions.length) {
@@ -96,6 +106,9 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         stateNames: stateNames || [],
         difficultyLevel: scenario?.difficultyLevel || "",
         useDirectAgentDispatch: useDirectAgentDispatch ?? false,
+        // What the server actually started, so the preview opens the chat
+        // screen only for a room the agent runs as text.
+        interactionMode: response.interactionMode ?? "VOICE",
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));
@@ -119,6 +132,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         ...(shouldLoadLanguages && {
           languageId: selectedLanguageId || languageOptions[0]?.language_id,
         }),
+        ...(offersTextChat && previewMode === "TEXT" && { interactionMode: "TEXT" as const }),
       }).unwrap();
       if (response) onStartSimulationSuccess(response);
     } catch (error: any) {
@@ -138,6 +152,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           ...(shouldLoadLanguages && {
             languageId: selectedLanguageId || languageOptions[0]?.language_id,
           }),
+          ...(offersTextChat && previewMode === "TEXT" && { interactionMode: "TEXT" as const }),
         }).unwrap();
         onStartSimulationSuccess(retry);
       }
@@ -152,24 +167,46 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   };
 
   const renderAdditionalContent = useCallback(() => {
-    if (!(shouldLoadLanguages && languageOptions.length > 0)) return null;
+    const showLanguages = shouldLoadLanguages && languageOptions.length > 0;
+    if (!showLanguages && !offersTextChat) return null;
 
     return (
       <div className="w-full flex justify-start">
-        <div className="flex flex-col">
-          <div className="relative w-48">
-            <DropdownField
-              options={languageOptions.map(option => option.label)}
-              value={selectedLanguageLabel || languageOptions[0]?.label || ""}
-              onChange={handleLanguageChange}
-              label=""
-              valueClassName="font-primary text-base text-typography-700"
-            />
-          </div>
+        <div className="flex flex-row flex-wrap gap-3">
+          {showLanguages && (
+            <div className="relative w-48">
+              <DropdownField
+                options={languageOptions.map(option => option.label)}
+                value={selectedLanguageLabel || languageOptions[0]?.label || ""}
+                onChange={handleLanguageChange}
+                label=""
+                valueClassName="font-primary text-base text-typography-700"
+              />
+            </div>
+          )}
+          {offersTextChat && (
+            <div className="relative w-48" data-testid="preview-mode-select">
+              <DropdownField
+                options={modeOptions}
+                value={previewMode === "TEXT" ? modeOptions[1] : modeOptions[0]}
+                onChange={label => setPreviewMode(label === modeOptions[1] ? "TEXT" : "VOICE")}
+                label=""
+                valueClassName="font-primary text-base text-typography-700"
+              />
+            </div>
+          )}
         </div>
       </div>
     );
-  }, [handleLanguageChange, languageOptions, selectedLanguageLabel, shouldLoadLanguages]);
+  }, [
+    handleLanguageChange,
+    languageOptions,
+    selectedLanguageLabel,
+    shouldLoadLanguages,
+    offersTextChat,
+    previewMode,
+    modeOptions,
+  ]);
 
   return (
     <>

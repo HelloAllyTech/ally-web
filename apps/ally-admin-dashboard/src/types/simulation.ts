@@ -339,6 +339,8 @@ export interface CreateSimulationResponse {
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
   useDirectAgentDispatch?: boolean;
+  /** Preview only: what the room was started as. Absent means VOICE. */
+  interactionMode?: "VOICE" | "TEXT";
   scenario?: {
     id?: string;
     title?: string;

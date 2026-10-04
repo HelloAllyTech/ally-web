@@ -49,6 +49,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
     hideWhenUnused,
     accordion,
     tooltipLocation,
+    tooltip,
     aiGenerate,
     onValueChange,
   } = config;
@@ -208,6 +209,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
               name={id}
               formMethods={formMethods}
               tooltipLocation={tooltipLocation}
+              tooltip={tooltip}
               defaultValue={defaultValue === true}
             />
           </div>

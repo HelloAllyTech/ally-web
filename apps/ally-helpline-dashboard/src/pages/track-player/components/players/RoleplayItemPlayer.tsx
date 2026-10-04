@@ -7,6 +7,10 @@ import { DropdownField, RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioCaseDetailsQuery, useGetScenarioQuery, useGetScenariosQuery } from "@api";
 import { ArrowDownFilled, PlayIcon, Refresh, TickGreenBackground } from "@assets";
 import { ScenarioCard } from "@components";
+import {
+  InteractionModePicker,
+  useInteractionModePreference,
+} from "@components/interaction-mode-picker/InteractionModePicker";
 import { useStartSimulation } from "@hooks";
 import {
   ACTIVE_TRACK_CONTEXT_KEY,
@@ -55,6 +59,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   const { startSimulation, isStarting } = useStartSimulation();
   const [logExpanded, setLogExpanded] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
+  const [preferredMode, setPreferredMode] = useInteractionModePreference();
 
   const isCase = payload.type === "CASE";
   const scenarioId = payload.type === "ROLEPLAY" ? payload.scenarioId : 0;
@@ -100,6 +105,10 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
     setSelectedLanguage(availableLanguages?.find(lang => lang.label === label) || null);
   };
 
+  // Same rule as the standalone scenario page: a choice only where the org and
+  // this roleplay both offer text chat, otherwise the voice start it always was.
+  const textChatAvailable = !isCase && scenario?.textChatAvailable === true;
+
   const coverImage = isCase ? caseDetails?.coverImageUrl : scenario?.coverImageUrl;
   // The full brief, rendered under the card. The card itself clamps its blurb
   // to two lines and drops it entirely when trigger warnings are present, so
@@ -120,6 +129,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
         scenarioId: payload.scenarioId,
         trackItemProgressId: payload.trackItemProgressId,
         languageId: selectedLanguage?.language_id,
+        ...(textChatAvailable && { interactionMode: preferredMode }),
       },
       metadata: { title: item.title, coverImageUrl: undefined },
     });
@@ -203,6 +213,15 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
             valueClassName="text-typography-900 font-primary"
           />
         </div>
+      )}
+
+      {textChatAvailable && (
+        <InteractionModePicker
+          className="mt-6 w-full max-w-sm text-left"
+          value={preferredMode}
+          onChange={setPreferredMode}
+          disabled={isStarting}
+        />
       )}
 
       <div className="mt-6 flex items-center gap-3">

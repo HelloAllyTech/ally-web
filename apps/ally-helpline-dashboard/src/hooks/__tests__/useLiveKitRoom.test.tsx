@@ -91,6 +91,7 @@ vi.mock("@constants/analyticsEvents", () => ({
   ANALYTICS_PROPS: {
     SIMULATION_ID: "simulation_id",
     SCENARIO_ID: "scenario_id",
+    INTERACTION_MODE: "interaction_mode",
   },
 }));
 
@@ -356,5 +357,51 @@ describe("useLiveKitRoom", () => {
         }),
       );
     });
+  });
+
+  describe("text-chat roleplay", () => {
+    beforeEach(() => {
+      localStorage.setItem("room_data", JSON.stringify({ ...ROOM_DATA, interactionMode: "TEXT" }));
+    });
+
+    it("joins the room without ever opening the microphone", async () => {
+      renderHook(() => useLiveKitRoom(handleDisconnect, endSessionButtonRef));
+
+      await waitForConnection();
+
+      expect(mockRoom.connect).toHaveBeenCalled();
+      expect(mockRoom.localParticipant.setMicrophoneEnabled).not.toHaveBeenCalledWith(true);
+    });
+
+    it("tags the practice funnel as a text chat", async () => {
+      renderHook(() => useLiveKitRoom(handleDisconnect, endSessionButtonRef));
+      await waitForConnection();
+
+      await act(async () => {
+        roomEventHandlers.get("participantConnected")?.();
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(captureEvent).toHaveBeenCalledWith(
+        "simulation_started",
+        expect.objectContaining({ interaction_mode: "TEXT" }),
+      );
+    });
+  });
+
+  it("leaves a voice session's funnel events without a mode", async () => {
+    renderHook(() => useLiveKitRoom(handleDisconnect, endSessionButtonRef));
+    await waitForConnection();
+
+    await act(async () => {
+      roomEventHandlers.get("participantConnected")?.();
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(mockRoom.localParticipant.setMicrophoneEnabled).toHaveBeenCalledWith(true);
+    expect(captureEvent).toHaveBeenCalledWith(
+      "simulation_started",
+      expect.not.objectContaining({ interaction_mode: expect.anything() }),
+    );
   });
 });

@@ -23,6 +23,10 @@ import {
   CreditInfo,
 } from "@components";
 import {
+  InteractionModePicker,
+  useInteractionModePreference,
+} from "@components/interaction-mode-picker/InteractionModePicker";
+import {
   ANALYTICS_EVENTS,
   ANALYTICS_PROPS,
   LANGUAGE_CHANGE_SOURCE,
@@ -69,6 +73,7 @@ export const Scenario: FC = () => {
   const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
   const [isPeerDrawerOpen, setIsPeerDrawerOpen] = useState<boolean>(false);
+  const [preferredMode, setPreferredMode] = useInteractionModePreference();
 
   const {
     data: scenario,
@@ -118,6 +123,13 @@ export const Scenario: FC = () => {
       [ANALYTICS_PROPS.HAS_COMPLETED_BEFORE]: (scenario.completion?.attemptCount ?? 0) > 0,
     });
   }, [scenario, track]);
+
+  // Text chat is offered only when the learner's org and this roleplay both
+  // allow it (the backend decides, and re-checks on start). Otherwise the
+  // remembered preference is ignored and the start is the voice call it has
+  // always been.
+  const textChatAvailable = scenario?.textChatAvailable === true;
+  const interactionMode = textChatAvailable ? preferredMode : "VOICE";
 
   const [endSimulation] = useEndSimulationMutation();
 
@@ -201,6 +213,9 @@ export const Scenario: FC = () => {
       params: {
         scenarioId: id,
         languageId: selectedLanguage?.language_id,
+        // Only where the learner had the choice; otherwise the start request
+        // is the voice one it has always been.
+        ...(textChatAvailable && { interactionMode }),
       },
       metadata: {
         title: scenario?.title,
@@ -216,6 +231,9 @@ export const Scenario: FC = () => {
       [ANALYTICS_PROPS.ENTRY_POINT]: ROLEPLAY_ENTRY_POINT.SIMULATION,
       [ANALYTICS_PROPS.ITEM_ID]: String(id),
       [ANALYTICS_PROPS.ITEM_NAME]: scenario?.title,
+      // Only where there was a choice to make, so the event is unchanged for
+      // every learner who never sees the picker.
+      ...(textChatAvailable && { [ANALYTICS_PROPS.INTERACTION_MODE]: interactionMode }),
     });
     // TODO: update authorization check
     if (!isAuthenticated()) {
@@ -301,6 +319,14 @@ export const Scenario: FC = () => {
                     />
                   </div>
                 </div>
+              )}
+              {textChatAvailable && (
+                <InteractionModePicker
+                  className="w-full sm:w-80 self-start"
+                  value={interactionMode}
+                  onChange={setPreferredMode}
+                  disabled={isStartingSimulation}
+                />
               )}
               {/* flex-1 min-h-0 gives the card the remaining space in this
                   column (after the dropdown above it) as a real bound, so the

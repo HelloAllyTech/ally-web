@@ -87,6 +87,19 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: (props: any) => <img data-testid="custom-image" {...props} />,
   DropdownField: ({ options, value, onChange, valueClassName }: any) => (
     <div className="w-full relative">
+      {/* Test handle for choosing an option; invisible to the assertions below. */}
+      <select
+        data-testid="dropdown-select"
+        value={value}
+        onChange={e => onChange?.(e.target.value)}
+        hidden
+      >
+        {options?.map((option: string) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
       <div className="w-full flex gap-2 items-center">
         <span className={valueClassName}>{value}</span>
         <svg
@@ -184,6 +197,7 @@ vi.mock("@constants", () => ({
       startSession: "Start Session",
       starting: "Starting...",
       scenario: "Scenario",
+      previewMode: { voice: "Voice call", text: "Text chat" },
     },
     notification: {
       beforeYouGetStarted: "Before you get started",
@@ -488,6 +502,65 @@ describe("SimulationPreview", () => {
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("text chat", () => {
+    const startPreview = async () => {
+      const [, startButton] = screen.getAllByRole("button");
+      fireEvent.click(startButton);
+      await waitFor(() => expect(screen.getByTestId("notification-popup")).toBeInTheDocument());
+      fireEvent.click(within(screen.getByTestId("notification-popup")).getByText("Start Session"));
+      await waitFor(() => expect(navigateMock).toHaveBeenCalledTimes(1));
+    };
+
+    it("offers no mode choice for a roleplay that does not offer text chat", () => {
+      render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+      expect(screen.queryByTestId("preview-mode-select")).not.toBeInTheDocument();
+    });
+
+    it("previews a text-chat roleplay as a chat when the author picks it", async () => {
+      scenarioPreviewTrigger.mockImplementation(() => ({
+        unwrap: () => Promise.resolve({ ...createSuccessResponse(), interactionMode: "TEXT" }),
+      }));
+      render(
+        <SimulationPreview
+          simulation={{ ...simulation, textChatEnabled: true }}
+          isOpen
+          onClose={vi.fn()}
+        />,
+      );
+      const setItemSpy = vi.spyOn(window.localStorage, "setItem");
+
+      const modeSelect = within(screen.getByTestId("preview-mode-select")).getByTestId(
+        "dropdown-select",
+      );
+      fireEvent.change(modeSelect, { target: { value: "Text chat" } });
+      await startPreview();
+
+      expect(scenarioPreviewTrigger).toHaveBeenCalledWith(
+        expect.objectContaining({ scenarioId: 42, interactionMode: "TEXT" }),
+      );
+      const stored = JSON.parse((setItemSpy.mock.calls[0] as [string, string])[1]);
+      expect(stored.interactionMode).toBe("TEXT");
+    });
+
+    it("keeps voice the default, sending no mode", async () => {
+      scenarioPreviewTrigger.mockImplementation(() => ({
+        unwrap: () => Promise.resolve(createSuccessResponse()),
+      }));
+      render(
+        <SimulationPreview
+          simulation={{ ...simulation, textChatEnabled: true }}
+          isOpen
+          onClose={vi.fn()}
+        />,
+      );
+
+      await startPreview();
+
+      expect(scenarioPreviewTrigger.mock.calls[0][0]).not.toHaveProperty("interactionMode");
     });
   });
 });

@@ -42,6 +42,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   agentName,
   originalLanguageCode = "en",
   focusMessage,
+  hasRecording = true,
 }) => {
   const { t } = useTranslation();
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
@@ -82,7 +83,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     languageCode: transcriptLanguage === originalLanguageCode ? undefined : transcriptLanguage,
   });
 
-  const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
+  const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId }, { skip: !hasRecording });
 
   const transcriptQueryBusy = isTranscriptFetching || isTranscriptLoading;
 

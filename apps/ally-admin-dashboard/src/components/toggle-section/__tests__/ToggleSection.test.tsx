@@ -8,6 +8,8 @@ import { ToggleSection } from "../ToggleSection";
 // drags in the whole RTK Query base API (and, via the @constants barrel, the
 // configured store). These tests only care about the switch's value, so the
 // endpoint is stubbed and the two API slices the store wires up are faked.
+const mockActiveTooltips = vi.hoisted(() => ({ current: [] as any[] }));
+
 vi.mock("@api", () => {
   const apiSliceStub = (reducerPath: string) => ({
     reducerPath,
@@ -16,7 +18,7 @@ vi.mock("@api", () => {
     injectEndpoints: () => ({}),
   });
   return {
-    useGetActiveTooltipsQuery: () => ({ data: [] }),
+    useGetActiveTooltipsQuery: () => ({ data: mockActiveTooltips.current }),
     baseAPI: apiSliceStub("baseAPI"),
     evaluatorAPI: apiSliceStub("evaluatorAPI"),
   };
@@ -26,13 +28,7 @@ vi.mock("@api", () => {
  * Renders ToggleSection against a real `useForm` — no `reset()`, no
  * `defaultValues` — i.e. exactly the state a brand-new simulation is in.
  */
-const Harness = ({
-  name,
-  defaultValue,
-}: {
-  name: string;
-  defaultValue?: boolean;
-}) => {
+const Harness = ({ name, defaultValue }: { name: string; defaultValue?: boolean }) => {
   const formMethods = useForm({ mode: "onChange", reValidateMode: "onChange" });
   return (
     <>
@@ -84,5 +80,42 @@ describe("ToggleSection default value (create path — form never reset)", () =>
 
     expect(isOn()).toBe(false);
     expect(screen.getByTestId("raw-value").textContent).toBe("false");
+  });
+});
+
+describe("ToggleSection tooltip", () => {
+  const TooltipHarness = (props: { tooltipLocation?: string; tooltip?: string }) => {
+    const formMethods = useForm();
+    return (
+      <ToggleSection
+        label="Offer as text chat"
+        name="textChatEnabled"
+        formMethods={formMethods}
+        {...props}
+      />
+    );
+  };
+
+  it("shows the engineer-written fallback when no authored tooltip is active", () => {
+    mockActiveTooltips.current = [];
+    render(<TooltipHarness tooltipLocation="text_chat_enabled" tooltip="Typed both ways." />);
+
+    expect(screen.getByText("Typed both ways.")).toBeInTheDocument();
+  });
+
+  it("lets an authored, active tooltip take over from the fallback", () => {
+    mockActiveTooltips.current = [{ location: "text_chat_enabled", tipText: "Authored copy." }];
+    render(<TooltipHarness tooltipLocation="text_chat_enabled" tooltip="Typed both ways." />);
+
+    expect(screen.getByText("Authored copy.")).toBeInTheDocument();
+    expect(screen.queryByText("Typed both ways.")).not.toBeInTheDocument();
+    mockActiveTooltips.current = [];
+  });
+
+  it("renders no tooltip at all when neither exists", () => {
+    mockActiveTooltips.current = [];
+    render(<TooltipHarness tooltipLocation="text_chat_enabled" />);
+
+    expect(screen.queryByRole("button", { name: "" })).toBeNull();
   });
 });
