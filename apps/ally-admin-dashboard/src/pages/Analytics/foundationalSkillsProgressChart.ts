@@ -441,6 +441,29 @@ export const changeVerdict = (c: {
 export const panelOptionLabel = (o: { cuts: number; learners: number }): string =>
   `First ${o.cuts} cuts · ${o.learners} learner${o.learners === 1 ? "" : "s"}`;
 
+/** The org filter's "no filter" id: every non-test org. */
+export const ALL_ORGS = "";
+
+/**
+ * Items for the tab's org filter: "All orgs" first (the default), then every
+ * live org by name. Test orgs are left out — the server excludes them from
+ * every figure here, so picking one could only ever show an empty tab.
+ */
+export const orgFilterItems = (
+  tenants: readonly {
+    id: string;
+    name: string;
+    isTestOrganization?: boolean;
+    deletedAt?: string | null;
+  }[],
+): { id: string; label: string }[] => [
+  { id: ALL_ORGS, label: "All orgs" },
+  ...tenants
+    .filter(t => !t.isTestOrganization && !t.deletedAt)
+    .map(t => ({ id: t.id, label: t.name }))
+    .sort((a, b) => a.label.localeCompare(b.label)),
+];
+
 /* -------------------------------------------------------------------------- */
 /* Series                                                                     */
 /* -------------------------------------------------------------------------- */

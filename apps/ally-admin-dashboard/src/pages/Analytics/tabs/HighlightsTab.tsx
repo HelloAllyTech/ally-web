@@ -48,7 +48,8 @@ const SUB_TABS: SubTabDef[] = [
     // Distinct from "Skill growth" below, which reads each scenario's own judge
     // score; this reads one fixed rubric that every scenario is scored against.
     // Labelled "Helping skills" (not "Skills") so the two never read as the same.
-    // All-time and platform-wide like Priority, so no page filters reach it.
+    // All-time like Priority, so no page filters reach it; it opens on all orgs
+    // and carries its own org filter.
     id: "helping-skills",
     label: "Helping skills",
     blurb:

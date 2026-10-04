@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ALL_ORGS,
   FhsProgressBehaviour,
   FhsProgressCut,
   FhsProgressSkill,
@@ -19,6 +20,7 @@ import {
   credibleMoves,
   cutAxisLabel,
   depthStages,
+  orgFilterItems,
   pValue,
   selfHarmSummary,
   signed,
@@ -285,5 +287,25 @@ describe("helping skills progress transforms", () => {
     ).toBe(
       "28 learners met a simulated self-harm cue in 45 slices. The first time, 12 followed it up, 10 missed it and 6 were unclear.",
     );
+  });
+});
+
+describe("orgFilterItems", () => {
+  it("opens on all orgs, then lists live, non-test orgs by name", () => {
+    const items = orgFilterItems([
+      { id: "z", name: "Zeta Health", isTestOrganization: false, deletedAt: null },
+      { id: "qa", name: "QA sandbox", isTestOrganization: true, deletedAt: null },
+      { id: "gone", name: "Gone Org", isTestOrganization: false, deletedAt: "2026-01-01" },
+      { id: "a", name: "Alpha Care", isTestOrganization: false, deletedAt: null },
+    ]);
+    expect(items).toEqual([
+      { id: ALL_ORGS, label: "All orgs" },
+      { id: "a", label: "Alpha Care" },
+      { id: "z", label: "Zeta Health" },
+    ]);
+  });
+
+  it("still offers all orgs when the org list could not be read", () => {
+    expect(orgFilterItems([])).toEqual([{ id: ALL_ORGS, label: "All orgs" }]);
   });
 });
