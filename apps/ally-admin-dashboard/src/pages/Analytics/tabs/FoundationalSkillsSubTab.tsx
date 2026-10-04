@@ -5,6 +5,7 @@ import { AreaChart, DonutChart, StackedBarChart } from "@carbon/charts-react";
 
 import { CarbonDropdown as Dropdown, InlineNotification } from "@ally-ui-mono/ui-shared";
 import {
+  useGetFoundationalSkillsBehavioursQuery,
   useGetFoundationalSkillsBenchmarkQuery,
   useGetFoundationalSkillsProgressQuery,
 } from "@api";
@@ -15,6 +16,13 @@ import { ChangeWhiskers } from "../ChangeWhiskers";
 import { ChartDetailModal } from "../ChartDetailModal";
 import { ChartCard, KpiTile, ScrollableChart, buildSource, donutOpts, lineOpts } from "../chartKit";
 import { CONTEXT, ColorScale, PALETTE } from "../chartScales";
+import {
+  HABIT_FILTER_LABELS,
+  HabitFilter,
+  habitRows,
+  habitsTakeaway,
+  trackabilityLabel,
+} from "../foundationalSkillsHabits";
 import { FoundationalSkillsLearnerPanel } from "../FoundationalSkillsLearnerPanel";
 import {
   BEHAVIOUR_KIND_LABELS,
@@ -57,6 +65,7 @@ import {
   windowLabel,
 } from "../foundationalSkillsProgressChart";
 import { FunnelBars } from "../FunnelBars";
+import { HabitGrid } from "../HabitGrid";
 import { SkillCutGrid } from "../SkillCutGrid";
 
 const SKILL_ROWS_HEIGHT = "440px";
@@ -261,12 +270,21 @@ export const FoundationalSkillsSubTab = () => {
   const [page, setPage] = useState(0);
   const [openLearner, setOpenLearner] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [habitFilter, setHabitFilter] = useState<HabitFilter>("trackable");
+  const [gridAll, setGridAll] = useState(false);
 
   const { data, isLoading, isFetching, isError, refetch } = useGetFoundationalSkillsProgressQuery({
     cuts,
     baselineFrom: baseline === "2" ? 2 : 1,
   });
   const bench = useGetFoundationalSkillsBenchmarkQuery();
+  const habits = useGetFoundationalSkillsBehavioursQuery();
+  const hb = habits.data;
+  const habitCommon = {
+    loading: habits.isLoading && !hb,
+    error: habits.isError,
+    onRetry: habits.refetch,
+  };
 
   const loading = isLoading && !data;
   const common = { loading, error: isError, onRetry: refetch };
@@ -523,6 +541,113 @@ export const FoundationalSkillsSubTab = () => {
         </div>
       </ChartCard>
 
+      <Section
+        title="Habits"
+        blurb="What each helper habitually does, and whether that changed against their own start. Behaviours are the measure that can follow a person: a habit like introducing yourself is far more consistent within a person than the 1–4 skill levels further down, which read as context."
+      >
+        <div className="grid grid-cols-1 gap-4">
+          <ChartCard
+            wide
+            title="Habits adopted and dropped"
+            caption={
+              hb
+                ? `Each learner with ${hb.thresholds.minCuts}+ slices, their last half of practice against their first half: how often they showed the behaviour where they had the chance. The bar is the group's average change ± 95% interval, coloured only when it survives a correction for testing every behaviour at once (q ≤ ${hb.thresholds.groupQ}). Under each behaviour: how person-specific it is (ICC) — one that is not a personal habit cannot show anyone changing.`
+                : "Each learner against their own start."
+            }
+            source={buildSource({
+              derivation: "Behaviour rates from stored, quote-checked behaviour codes",
+              window: "All time",
+              n: hb?.comparableLearners,
+              nUnit: "learners with enough practice",
+              asOf: asOfStamp(hb?.computedAt),
+            })}
+            takeaway={hb ? habitsTakeaway(hb) : undefined}
+            {...habitCommon}
+            errorSubtitle="The behaviour-rate endpoint did not respond — it may not be deployed yet."
+            empty={
+              !habitCommon.loading && !!hb && habitRows(hb.behaviours, habitFilter).length === 0
+            }
+            emptyText={`Not enough learners with ${hb?.thresholds.minCuts ?? 4}+ slices to compare yet`}
+            controls={
+              <InlinePicker
+                id="fhs-habit-filter"
+                label="Behaviours"
+                items={(Object.keys(HABIT_FILTER_LABELS) as HabitFilter[]).map(id => ({
+                  id,
+                  label: HABIT_FILTER_LABELS[id],
+                }))}
+                selected={habitFilter}
+                onChange={setHabitFilter}
+              />
+            }
+            onExpand={() => setExpanded("habits")}
+            chartId="AAQ-190"
+          >
+            {hb && (
+              <ChangeWhiskers
+                decimals={0}
+                unit=" pts"
+                rows={habitRows(hb.behaviours, habitFilter).map(b => ({
+                  key: b.code,
+                  label: b.text,
+                  sublabel: `${skillName.get(b.skill) ?? b.skill} · ${b.kind} · ${trackabilityLabel(b)} · ${b.change.startPct?.toFixed(0)}% → ${b.change.nowPct?.toFixed(0)}%${
+                    b.change.learnersAdopted || b.change.learnersDropped
+                      ? ` · clearly adopted by ${b.change.learnersAdopted}, dropped by ${b.change.learnersDropped}`
+                      : ""
+                  }`,
+                  change: b.change.changePts,
+                  ci: b.change.ciPts,
+                  n: b.change.n,
+                  detectable: b.change.credible,
+                }))}
+              />
+            )}
+          </ChartCard>
+
+          <ChartCard
+            wide
+            title="Habit grid"
+            caption={
+              hb
+                ? `${gridAll ? "Every measured learner" : `Learners with ${hb.thresholds.minCuts}+ slices`} × the ${hb.gridCodes.length} most person-specific helpful habits: how often each learner did it where they had the chance (e.g. 3/7 slices). ▲ / ▼ marks a change against their own start that clears an exact test (p ≤ ${hb.thresholds.learnerP}) — deliberately hard with a handful of slices. Rows are by amount of practice, not by score.`
+                : "Learners × their habits."
+            }
+            source={buildSource({
+              derivation: "Each learner's own rate per habit",
+              window: "All time",
+              n: hb ? (gridAll ? hb.measuredLearners : hb.comparableLearners) : undefined,
+              nUnit: "learners",
+              asOf: asOfStamp(hb?.computedAt),
+            })}
+            {...habitCommon}
+            errorSubtitle="The behaviour-rate endpoint did not respond — it may not be deployed yet."
+            empty={!habitCommon.loading && !!hb && hb.gridCodes.length === 0}
+            emptyText="No behaviour is a clear personal habit yet — it needs 20+ learners with repeat chances"
+            controls={
+              <InlinePicker
+                id="fhs-grid-scope"
+                label="Learners"
+                items={[
+                  { id: "comparable", label: "Enough practice to compare" },
+                  { id: "all", label: "Every measured learner" },
+                ]}
+                selected={gridAll ? "all" : "comparable"}
+                onChange={id => setGridAll(id === "all")}
+              />
+            }
+            chartId="AAQ-191"
+          >
+            {hb && (
+              <HabitGrid
+                data={hb}
+                learners={hb.learners.filter(l => gridAll || l.comparable)}
+                onOpen={setOpenLearner}
+              />
+            )}
+          </ChartCard>
+        </div>
+      </Section>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiTile
           label="Overall score, start → now"
@@ -575,7 +700,7 @@ export const FoundationalSkillsSubTab = () => {
 
       <Section
         title="Overall"
-        blurb="The whole skill set as one score, and how often an unhelpful behaviour appears, cut by cut for the same learners — with the 95% band each point could plausibly sit in."
+        blurb="Context, not the headline: the whole skill set as one 1–4 score, and how often an unhelpful behaviour appears, cut by cut for the same learners — with the 95% band each point could plausibly sit in. Levels carry little person signal; habits above are the better measure."
       >
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <ChartCard
@@ -1357,6 +1482,56 @@ export const FoundationalSkillsSubTab = () => {
         }}
         exportContext={exportContext}
         exportFilename="helping-skills-benchmark"
+      />
+
+      <ChartDetailModal
+        open={expanded === "habits"}
+        onClose={() => setExpanded(null)}
+        title="Habits adopted and dropped"
+        caption="Every rubric behaviour: overall rate, how person-specific it is, and learners' own start vs now with the group's 95% interval, sign test and Benjamini–Hochberg q-value."
+        render={() => null}
+        table={{
+          columns: [
+            "Behaviour",
+            "Skill",
+            "Kind",
+            "Learners with a chance",
+            "Rate %",
+            "ICC",
+            "Personal habit",
+            "Compared learners",
+            "Start %",
+            "Now %",
+            "Change (pts)",
+            "95% CI",
+            "Sign test",
+            "q",
+            "Credible",
+            "Clearly adopted",
+            "Clearly dropped",
+          ],
+          rows: (hb?.behaviours ?? []).map(b => [
+            b.text,
+            skillName.get(b.skill) ?? b.skill,
+            b.kind,
+            b.learnersWithChance,
+            b.ratePct,
+            b.icc,
+            b.trackable ? "Yes" : "No",
+            b.change.n,
+            b.change.startPct,
+            b.change.nowPct,
+            b.change.changePts,
+            b.change.ciPts ? `${b.change.ciPts[0]} to ${b.change.ciPts[1]}` : "—",
+            b.change.signP,
+            b.change.q,
+            b.change.credible ? "Yes" : "No",
+            b.change.learnersAdopted,
+            b.change.learnersDropped,
+          ]),
+        }}
+        exportContext={[hb?.provenance.note ?? "", hb?.provenance.derivation ?? ""]}
+        exportFilename="helping-skills-habits"
       />
 
       <FoundationalSkillsLearnerPanel

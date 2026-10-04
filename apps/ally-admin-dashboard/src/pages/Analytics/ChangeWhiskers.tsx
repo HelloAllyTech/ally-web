@@ -26,9 +26,15 @@ export interface WhiskerRow {
 export const ChangeWhiskers = ({
   rows,
   emptyLabel = "too few learners",
+  decimals = 2,
+  unit = "",
 }: {
   rows: WhiskerRow[];
   emptyLabel?: string;
+  /** Decimals for values and axis ends (0 for percentage points). */
+  decimals?: number;
+  /** Suffix after the change, e.g. " pts". */
+  unit?: string;
 }) => {
   const extent = whiskerExtent(rows);
   const x = (v: number) => `${((v + extent) / (2 * extent)) * 100}%`;
@@ -37,9 +43,9 @@ export const ChangeWhiskers = ({
       <div className="mb-1 grid grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] gap-3 text-[11px] text-typography-500">
         <span />
         <span className="flex justify-between tabular-nums">
-          <span>{signed(-extent)}</span>
+          <span>{signed(-extent, decimals)}</span>
           <span>0</span>
-          <span>{signed(extent)}</span>
+          <span>{signed(extent, decimals)}</span>
         </span>
         <span>change [95% CI] · n</span>
       </div>
@@ -83,7 +89,8 @@ export const ChangeWhiskers = ({
                 </span>
               ) : (
                 <>
-                  {signed(r.change)} <span className="text-typography-500">[{ciText(r.ci)}]</span> ·{" "}
+                  {signed(r.change, decimals)}
+                  {unit} <span className="text-typography-500">[{ciText(r.ci, decimals)}]</span> ·{" "}
                   {r.n}
                 </>
               )}

@@ -66,6 +66,7 @@ import {
   BugHunterVolumeResponse,
 } from "../pages/Analytics/bugHunterVolumeChart";
 import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
+import { FoundationalSkillsBehavioursResponse } from "../pages/Analytics/foundationalSkillsHabits";
 import {
   FoundationalSkillsBenchmarkResponse,
   FoundationalSkillsLearnersResponse,
@@ -665,6 +666,19 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    // Behaviour rates ("habits"): the measure that can follow a person. The
+    // list carries each learner's habit-grid behaviours; `userId` returns one
+    // learner with every behaviour they had a chance at.
+    getFoundationalSkillsBehaviours: builder.query<
+      FoundationalSkillsBehavioursResponse,
+      { userId?: number } | void
+    >({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_BEHAVIOURS,
+        method: HttpMethod.GET,
+        params: arg && arg.userId ? { userId: arg.userId } : {},
+      }),
+    }),
     // Same scenario before and after, per learner (the benchmark pipeline).
     getFoundationalSkillsBenchmark: builder.query<FoundationalSkillsBenchmarkResponse, void>({
       query: () => ({
@@ -882,6 +896,7 @@ export const {
   useGetFoundationalSkillsProgressQuery,
   useGetFoundationalSkillsLearnerQuery,
   useGetFoundationalSkillsBenchmarkQuery,
+  useGetFoundationalSkillsBehavioursQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
