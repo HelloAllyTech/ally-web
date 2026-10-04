@@ -88,7 +88,7 @@ export const HabitGrid = ({
                         {x ? countText(x.all) : "—"}
                         {arrow && (
                           <span
-                            className="ml-0.5 font-semibold"
+                            className="ml-1 inline-block rounded-sm bg-white px-0.5 text-[10px] font-semibold leading-none"
                             style={{ color: x?.clear === "adopted" ? PALETTE.green : PALETTE.red }}
                           >
                             {arrow}
