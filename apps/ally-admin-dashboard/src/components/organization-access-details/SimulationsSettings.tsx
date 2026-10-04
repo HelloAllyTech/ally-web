@@ -11,6 +11,8 @@ import {
   useUpdateCharacterLibraryEnabledMutation,
   useGetProgressDashboardEnabledQuery,
   useUpdateProgressDashboardEnabledMutation,
+  useGetTextChatRoleplayEnabledQuery,
+  useUpdateTextChatRoleplayEnabledMutation,
 } from "@src/api";
 import { TooltipIcon } from "@src/assets";
 import { ToggleSwitch } from "@src/components/toggle-switch";
@@ -82,6 +84,33 @@ const SimulationsSettings = ({
       }).unwrap();
     } catch (error: any) {
       setLocalProgressDashboardEnabled(!next);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  // Org-level text-chat roleplays switch. Same shape again: a `preference`
+  // row, off by default. It only opens the door — each roleplay still has to
+  // offer text chat itself (Simulation Studio), and voice stays available.
+  const { data: textChatRoleplayEnabled } = useGetTextChatRoleplayEnabledQuery(organizationId);
+  const [updateTextChatRoleplayEnabled] = useUpdateTextChatRoleplayEnabledMutation();
+  const [localTextChatRoleplayEnabled, setLocalTextChatRoleplayEnabled] = useState(false);
+
+  useEffect(() => {
+    if (textChatRoleplayEnabled !== undefined) {
+      setLocalTextChatRoleplayEnabled(textChatRoleplayEnabled);
+    }
+  }, [textChatRoleplayEnabled]);
+
+  const handleTextChatRoleplayToggle = async () => {
+    const next = !localTextChatRoleplayEnabled;
+    setLocalTextChatRoleplayEnabled(next);
+    try {
+      await updateTextChatRoleplayEnabled({
+        tenantId: organizationId,
+        enabled: next,
+      }).unwrap();
+    } catch (error: any) {
+      setLocalTextChatRoleplayEnabled(!next);
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
     }
   };
@@ -224,6 +253,30 @@ const SimulationsSettings = ({
           />
           <span className="text-sm text-typography-900 font-normal">
             {localProgressDashboardEnabled ? en.common.enabled : en.common.disabled}
+          </span>
+        </div>
+      </div>
+
+      <div
+        data-testid="text-chat-roleplay-setting"
+        className="flex h-9 flex-row justify-between items-center font-primary"
+      >
+        <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
+          {en.userManagement.textChatRoleplayEnabled}
+          <Tooltip label={en.userManagement.textChatRoleplayEnabledHint} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <ToggleSwitch
+            enabled={localTextChatRoleplayEnabled}
+            onChange={handleTextChatRoleplayToggle}
+            label={en.userManagement.textChatRoleplayEnabled}
+          />
+          <span className="text-sm text-typography-900 font-normal">
+            {localTextChatRoleplayEnabled ? en.common.enabled : en.common.disabled}
           </span>
         </div>
       </div>

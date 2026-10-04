@@ -248,6 +248,7 @@ export const ApiEndpoints = {
     CUSTOM_FIELDS_ENABLED: `/v1/settings/custom-fields-enabled`,
     CHARACTER_LIBRARY_ENABLED: `/v1/settings/character-library-enabled`,
     PROGRESS_DASHBOARD_ENABLED: `/v1/settings/progress-dashboard-enabled`,
+    TEXT_CHAT_ROLEPLAY_ENABLED: `/v1/settings/text-chat-roleplay-enabled`,
     SCRIBE_NOTE_CREATION_ENABLED: `/v1/settings/scribe-note-creation-enabled`,
     SCRIBE_VOICE_NOTE_ENABLED: `/v1/settings/scribe-voice-note-enabled`,
     CUSTOM_FIELD_DEFINITIONS: `/v1/custom-fields/definitions`,
@@ -811,6 +812,7 @@ export const TAG_TYPES = {
   CUSTOM_FIELDS_ENABLED: "customFieldsEnabled",
   CHARACTER_LIBRARY_ENABLED: "characterLibraryEnabled",
   PROGRESS_DASHBOARD_ENABLED: "progressDashboardEnabled",
+  TEXT_CHAT_ROLEPLAY_ENABLED: "textChatRoleplayEnabled",
   SCRIBE_NOTE_CREATION_ENABLED: "scribeNoteCreationEnabled",
   SCRIBE_VOICE_NOTE_ENABLED: "scribeVoiceNoteEnabled",
   CUSTOM_FIELD_DEFINITIONS: "customFieldDefinitions",
@@ -981,6 +983,9 @@ export enum TooltipLocation {
   // feedback suits a novice but breaks the pressure a confident learner
   // practises for, so it is a per-roleplay judgement call.
   SUPERVISOR_NOTES_ENABLED = "supervisor_notes_enabled",
+  // Offer the roleplay as a text chat too (opt-in). The field also carries a
+  // static fallback tooltip, so this row is optional.
+  TEXT_CHAT_ENABLED = "text_chat_enabled",
   // Learner-facing Live events tab. Unlike supervisor notes above,
   // this is on by default (opt-out) — only an explicit false hides it.
   LIVE_TAB_ENABLED = "live_tab_enabled",

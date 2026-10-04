@@ -18,6 +18,11 @@ interface ToggleSectionProps {
    */
   tooltipLocation?: string;
   /**
+   * Static fallback text, used only when no active data-driven tooltip matches
+   * `tooltipLocation`. Superadmin-authored copy always wins.
+   */
+  tooltip?: string;
+  /**
    * Initial value used when the form holds nothing for this field yet — i.e. a
    * brand-new record, where no response has been `reset()` in. Mirrors
    * SliderField. Without it the controller starts `undefined`, so a field
@@ -34,6 +39,7 @@ export const ToggleSection = ({
   name,
   formMethods,
   tooltipLocation,
+  tooltip: fallbackTooltip,
   defaultValue,
 }: ToggleSectionProps) => {
   const {
@@ -51,7 +57,7 @@ export const ToggleSection = ({
     skip: !tooltipLocation,
   });
   const tooltip = tooltipLocation ? tooltips.find(t => t.location === tooltipLocation) : undefined;
-  const tooltipTitle = tooltip?.tipText ?? "";
+  const tooltipTitle = tooltip?.tipText || fallbackTooltip || "";
 
   return (
     <div className="flex justify-between items-center py-2 w-full">

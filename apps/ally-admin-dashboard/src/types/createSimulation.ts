@@ -80,6 +80,11 @@ export type FormData = {
   pauseEnabled?: boolean;
   /** Live in-session coaching hints in the learner's Supervisor sidebar tab. Opt-in. */
   supervisorNotesEnabled?: boolean;
+  /**
+   * Also offer this roleplay as a text chat (typed both ways). Opt-in; learners
+   * see it only where their org has text-chat roleplays switched on.
+   */
+  textChatEnabled?: boolean;
   /** Learner-facing Live events tab. Opt-out — only an explicit false hides it. */
   liveTabEnabled?: boolean;
   optGuardrails?: boolean;
@@ -450,6 +455,13 @@ export interface FormFieldConfig {
    * Manage Tooltips. Currently consumed by toggle fields (ToggleSection).
    */
   tooltipLocation?: string;
+  /**
+   * Engineer-written fallback tooltip text, shown when no active data-driven
+   * tooltip exists for `tooltipLocation` (or none is set). Lets a new toggle
+   * explain itself from day one without seeding a Manage Tooltips row; an
+   * authored tooltip still takes precedence once it is switched on.
+   */
+  tooltip?: string;
 }
 
 export interface FieldGroupType {
@@ -534,6 +546,12 @@ export type SimulationPreviewType = {
   triggerWarnings?: triggerWarning[];
   status: SimulationStatus;
   availableLanguages?: ScenarioLanguage[] | null;
+  /**
+   * The roleplay offers text chat, so the preview lets the author try it as
+   * one. Absent (e.g. previews opened from the Studio list) means voice only,
+   * exactly as before.
+   */
+  textChatEnabled?: boolean;
 };
 
 export interface SimulationPreviewProps {

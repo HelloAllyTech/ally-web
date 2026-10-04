@@ -648,15 +648,22 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     scenarioPreview: builder.mutation<
       any,
-      { scenarioId: number; languageId?: number; scenarioVersionId?: string }
+      {
+        scenarioId: number;
+        languageId?: number;
+        scenarioVersionId?: string;
+        /** Sent only for a text-chat preview; a voice preview's body is unchanged. */
+        interactionMode?: "VOICE" | "TEXT";
+      }
     >({
-      query: ({ scenarioId, languageId, scenarioVersionId }) => ({
+      query: ({ scenarioId, languageId, scenarioVersionId, interactionMode }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PREVIEW,
         method: HttpMethod.POST,
         body: {
           scenarioId,
           languageId,
           ...(scenarioVersionId && { scenarioVersionId }),
+          ...(interactionMode === "TEXT" && { interactionMode }),
         },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],

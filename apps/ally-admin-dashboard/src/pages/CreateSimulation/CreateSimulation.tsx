@@ -1243,6 +1243,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         triggerWarnings: formData.triggerWarningIds,
         status: adminSimulationByIdData?.status || SimulationStatus.DRAFT,
         availableLanguages: scenarioAvailableLanguages,
+        textChatEnabled: formData.textChatEnabled === true,
       };
 
       setPreviewSimulation(simulation);

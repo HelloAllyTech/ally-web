@@ -25,6 +25,8 @@ import {
   SimulationTimer,
   SimulationScoreMeter,
   getSimulationEvents,
+  INTERACTION_MODE,
+  isTextChatSession,
 } from "./lib/simulation";
 import { SimulationDetailsModal } from "./lib/simulation-details-modal";
 import SkeletonLoader from "./lib/skeleton-loader";
@@ -46,7 +48,12 @@ export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./typ
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
-export type { SimulationTranslations, TurnIndicatorTranslations } from "./lib/simulation";
+export type {
+  SimulationTranslations,
+  TurnIndicatorTranslations,
+  TextChatTranslations,
+  InteractionMode,
+} from "./lib/simulation";
 export type {
   ProgressVideoPlayerProps,
   ProgressVideoPlayerProgress,
@@ -109,6 +116,8 @@ export {
   SimulationTimer,
   SimulationScoreMeter,
   getSimulationEvents,
+  INTERACTION_MODE,
+  isTextChatSession,
   SimulationDetailsModal,
   FEATURE_FLAGS_MAP,
   ImageUpload,

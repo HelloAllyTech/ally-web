@@ -62,6 +62,21 @@ export const Simulation = () => {
     exitSimulation: t("simulationPage.exitSimulation"),
     reconnecting: t("simulationPage.reconnecting"),
     missedSupervisorHints: t("simulationPage.missedSupervisorHints"),
+    // Read only by a text-chat roleplay; a voice session never renders them.
+    textChat: {
+      panelLabel: t("simulationPage.textChat.panelLabel"),
+      inChat: t("simulationPage.textChat.inChat"),
+      typing: t("simulationPage.textChat.typing"),
+      emptyState: t("simulationPage.textChat.emptyState"),
+      inputLabel: t("simulationPage.textChat.inputLabel"),
+      placeholder: t("simulationPage.textChat.placeholder"),
+      send: t("simulationPage.textChat.send"),
+      notSent: t("simulationPage.textChat.notSent"),
+      retry: t("simulationPage.textChat.retry"),
+      charactersLeft: t("simulationPage.textChat.charactersLeft"),
+      you: t("simulationPage.textChat.you"),
+      connectingHint: t("simulationPage.textChat.connectingHint"),
+    },
     turnIndicator: {
       speaking: t("simulationPage.turnIndicator.speaking"),
       listening: t("simulationPage.turnIndicator.listening"),

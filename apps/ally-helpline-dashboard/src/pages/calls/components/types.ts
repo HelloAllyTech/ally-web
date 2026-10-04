@@ -142,6 +142,11 @@ export interface SimulationTranscriptTabProps {
    * pretending the jump worked.
    */
   focusMessage?: TranscriptFocusRequest | null;
+  /**
+   * False for a text-chat roleplay: there is no recording, so none is
+   * requested and no player is offered. Default true (every voice session).
+   */
+  hasRecording?: boolean;
 }
 
 export interface AudioUploadDialogProps {

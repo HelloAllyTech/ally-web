@@ -7,11 +7,13 @@ import { motion } from "framer-motion";
 import { RoomEvent } from "livekit-client";
 import { toast } from "sonner";
 
+import { isTextChatSession } from "./constants";
 import { SessionTimeBar } from "./SessionTimeBar";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
+import { useTextChat } from "./useTextChat";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
 const MICROPHONE_STATE = {
   GRANTED: "granted",
@@ -134,8 +136,24 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
   useWakeLock(sessionId);
 
+  // A text-chat roleplay is this same page with the call card swapped for a
+  // chat and the microphone left alone. The chat state lives here rather than
+  // in the panel so the client's first message is caught even if it arrives
+  // during the countdown, before the panel mounts.
+  const isTextChat = isTextChatSession(roomData);
+  const textChat = useTextChat(room, isTextChat);
+
   useEffect(() => {
     startAudio.current?.play();
+
+    return () => {
+      endAudio.current?.pause();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Never ask a learner who is about to type for their microphone.
+    if (isTextChat) return;
 
     const checkMicrophonePermission = async () => {
       try {
@@ -155,11 +173,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     };
 
     checkMicrophonePermission();
-
-    return () => {
-      endAudio.current?.pause();
-    };
-  }, []);
+  }, [isTextChat]);
 
   useEffect(() => {
     if (roomStatus === RoomStatus.AGENT_JOINED) startAudio.current?.pause();
@@ -454,7 +468,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistMode={checklistMode}
           agentTurnStatus={agentTurnStatus} // ← add this
           checklistItems={checklistItems}
-          isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
+          isMicrophoneGranted={isTextChat || microphonePermission === MICROPHONE_STATE.GRANTED}
+          isTextChat={isTextChat}
+          textChat={textChat}
+          isEndingSession={isEndingSession}
           onEnableMicrophone={onEnableMicrophone}
           connectionError={connectionError}
           agentJoinTimedOut={agentJoinTimedOut}
@@ -490,7 +507,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         // Show the pause control only when: it is a real billed session (not
         // admin preview) AND the scenario has pause explicitly enabled. Opt-in
         // default — only an explicit `true` shows it (missing/false → hidden).
-        onPauseClick={!isPreview && roomData?.pauseEnabled === true ? onTogglePause : undefined}
+        // A text chat has no audio to gate, so never a pause control there.
+        onPauseClick={
+          !isPreview && !isTextChat && roomData?.pauseEnabled === true ? onTogglePause : undefined
+        }
+        showMuteButton={!isTextChat}
         translations={translations}
       />
 

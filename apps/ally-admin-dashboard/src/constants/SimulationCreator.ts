@@ -963,6 +963,18 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         tooltipLocation: TooltipLocation.SUPERVISOR_NOTES_ENABLED,
       },
       {
+        id: "textChatEnabled",
+        label: "Offer as text chat",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        // The static `tooltip` shows until a Manage Tooltips row for this
+        // location is authored and switched on, which then takes over.
+        tooltipLocation: TooltipLocation.TEXT_CHAT_ENABLED,
+        tooltip:
+          "Lets learners choose to type instead of speak in this roleplay, with the same character, events and scoring. It only appears for organisations with text chat roleplays switched on, and voice stays available.",
+      },
+      {
         id: "liveTabEnabled",
         label: "Live events tab",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,

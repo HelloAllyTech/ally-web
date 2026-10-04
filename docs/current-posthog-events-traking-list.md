@@ -42,6 +42,11 @@ Currently Tracked Events Reference
 | `SIMULATION_COMPLETED`    | `simulation_completed`    | Room disconnected after a real start. Carries `duration_seconds` and `ended_by_learner`, which separates a finished practice from one that dropped | `hooks/useLiveKitRoom.ts` (`onRoomDisconnect`) |
 | `SIMULATION_CREDITS_USED` | `simulation_credits_used` | Credits consumed            | — |
 
+A **text-chat** roleplay adds `interaction_mode: "TEXT"` to `simulation_started` and
+`simulation_completed`. Voice sessions send no `interaction_mode` at all, so their payload is
+unchanged and "absent" reads as voice — filter text sessions with `interaction_mode = TEXT`
+rather than `!= VOICE`.
+
 ### Audio
 
 | Constant                 | Event Name               | Description           |
@@ -109,6 +114,11 @@ page or behind the streak CTA. Both ids are sent as strings, so the numeric scen
 stringified. The streak CTA reports even when no active scenario exists to jump to, in which
 case it sends `entry_point` alone: the tap is the intent, and dropping it would flatter the
 widget's conversion rate.
+
+Where the learner was offered a choice between a voice call and a text chat (their org has
+text-chat roleplays on and the roleplay offers it), `roleplay.start_clicked` also sends
+`interaction_mode` (`VOICE` or `TEXT`) from the simulation page. Everywhere else the property
+is absent, which keeps it a measure of what people choose when they can.
 
 `case.opened`, `pathway.opened` and `simulation.opened` do **not** yet send `skill_area` — the
 spec marks it PROPOSED — UNCONFIRMED and none of the detail endpoints return such a field. Add

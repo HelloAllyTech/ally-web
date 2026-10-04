@@ -363,6 +363,31 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PROGRESS_DASHBOARD_ENABLED],
     }),
 
+    /**
+     * Org-level text-chat roleplays switch: learners may run a roleplay by
+     * typing, for scenarios that also offer it. Same shape as the Learner
+     * Progress pair above — a `preference` row, off by default.
+     */
+    getTextChatRoleplayEnabled: builder.query<boolean, string | void>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.TEXT_CHAT_ROLEPLAY_ENABLED,
+        params: tenantId ? { tenantId } : undefined,
+      }),
+      providesTags: [TAG_TYPES.TEXT_CHAT_ROLEPLAY_ENABLED],
+    }),
+
+    updateTextChatRoleplayEnabled: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabled: boolean }
+    >({
+      query: ({ tenantId, enabled }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.TEXT_CHAT_ROLEPLAY_ENABLED,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.TEXT_CHAT_ROLEPLAY_ENABLED],
+    }),
+
     getScribeNoteCreationEnabled: builder.query<boolean, string>({
       query: tenantId => ({
         url: ApiEndpoints.USER_MANAGEMENT.SCRIBE_NOTE_CREATION_ENABLED,
@@ -516,6 +541,8 @@ export const {
   useUpdateCharacterLibraryEnabledMutation,
   useGetProgressDashboardEnabledQuery,
   useUpdateProgressDashboardEnabledMutation,
+  useGetTextChatRoleplayEnabledQuery,
+  useUpdateTextChatRoleplayEnabledMutation,
   useGetScribeNoteCreationEnabledQuery,
   useUpdateScribeNoteCreationEnabledMutation,
   useGetScribeVoiceNoteEnabledQuery,

@@ -58,6 +58,9 @@ vi.mock("@hooks", () => ({
 
 vi.mock("@utils", () => ({
   getFormattedDateTime: () => "Jan 1, 2026",
+  // The voice/text picker renders the shared segmented control, which joins
+  // its classes with this.
+  cn: (...classes: unknown[]) => classes.filter(Boolean).join(" "),
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -205,5 +208,43 @@ describe("RoleplayItemPlayer — language selection", () => {
     renderPlayer();
 
     expect(screen.queryByTestId("language-dropdown")).not.toBeInTheDocument();
+  });
+
+  describe("text chat", () => {
+    beforeEach(() => {
+      localStorage.clear();
+      mockStartSimulation.mockClear();
+      mockCatalogLanguages([ENGLISH]);
+    });
+
+    it("offers no choice and starts a plain voice roleplay when text chat is unavailable", async () => {
+      mockScenario();
+      renderPlayer();
+
+      expect(screen.queryByTestId("interaction-mode-picker")).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText("Start roleplay"));
+
+      await waitFor(() => expect(mockStartSimulation).toHaveBeenCalled());
+      expect(mockStartSimulation.mock.calls[0][0].params).not.toHaveProperty("interactionMode");
+    });
+
+    it("starts the track's roleplay as a text chat when the learner picks it", async () => {
+      mockScenario({ textChatAvailable: true });
+      renderPlayer();
+
+      fireEvent.click(screen.getByRole("radio", { name: "Text chat" }));
+      fireEvent.click(screen.getByText("Start roleplay"));
+
+      await waitFor(() =>
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          expect.objectContaining({
+            params: expect.objectContaining({
+              trackItemProgressId: "progress-1",
+              interactionMode: "TEXT",
+            }),
+          }),
+        ),
+      );
+    });
   });
 });

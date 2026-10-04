@@ -252,6 +252,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     // Same opt-in shape: a roleplay saved before live supervisor notes existed
     // hydrates as off, which is also the intended default for new ones.
     supervisorNotesEnabled: (data?.metadata as any)?.supervisorNotesEnabled === true,
+    // Opt-in, same shape: a roleplay saved before text chat existed hydrates
+    // as voice-only, which is what it is.
+    textChatEnabled: (data?.metadata as any)?.textChatEnabled === true,
     // Opt-out toggle, unlike pauseEnabled/supervisorNotesEnabled above: missing
     // or undefined keeps the Live tab shown, only an explicit false hides it.
     liveTabEnabled: (data?.metadata as any)?.liveTabEnabled ?? true,

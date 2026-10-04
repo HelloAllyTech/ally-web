@@ -121,6 +121,18 @@ describe("useLiveKitRoom connection lifetime", () => {
     expect(mockRoom.localParticipant.setMicrophoneEnabled).toHaveBeenCalledWith(true);
   });
 
+  it("never opens the microphone for a text-chat preview", async () => {
+    localStorage.setItem(
+      "previewRoomData",
+      JSON.stringify({ ...ROOM_DATA, interactionMode: "TEXT" }),
+    );
+    renderHook(() => useLiveKitRoom(() => undefined, endSessionButtonRef));
+    await settleConnect();
+
+    expect(mockRoom.connect).toHaveBeenCalledTimes(1);
+    expect(mockRoom.localParticipant.setMicrophoneEnabled).not.toHaveBeenCalledWith(true);
+  });
+
   it("does not disconnect when the component re-renders", async () => {
     // An inline arrow per render is what the real call site passes, and is
     // exactly what made the effect churn.

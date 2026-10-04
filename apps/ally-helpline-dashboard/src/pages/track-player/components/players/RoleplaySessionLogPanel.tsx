@@ -73,6 +73,7 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
                 sessionId={sessionId}
                 agentName={summary?.scenario?.metadata?.name}
                 originalLanguageCode={originalLanguageCode}
+                hasRecording={summary?.interactionMode !== "TEXT"}
               />
             ),
           },

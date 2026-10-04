@@ -321,6 +321,13 @@
       "shareCopied": "Scenario link copied to clipboard!",
       "scenarioLabel": "Situation",
       "startAria": "Start role play",
+      "mode": {
+        "label": "How would you like to practice?",
+        "voice": "Voice call",
+        "text": "Text chat",
+        "voiceHint": "Talk it through out loud, like a helpline call.",
+        "textHint": "Type back and forth, like a chat helpline."
+      },
       "preStart": {
         "titleNormal": "Before you get started",
         "button": "Start Session",
@@ -1472,6 +1479,20 @@
     "exitSimulation": "Leave this session",
     "reconnecting": "Reconnecting…",
     "missedSupervisorHints": "Some supervisor hints may not have reached you",
+    "textChat": {
+      "panelLabel": "Text chat",
+      "inChat": "In the chat",
+      "typing": "typing…",
+      "emptyState": "You're connected. Send a message to start the conversation.",
+      "inputLabel": "Your message",
+      "placeholder": "Type a message…",
+      "send": "Send",
+      "notSent": "Not sent",
+      "retry": "Retry",
+      "charactersLeft": "characters left",
+      "you": "You",
+      "connectingHint": "Your conversation will appear here as soon as it opens."
+    },
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",

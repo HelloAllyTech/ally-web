@@ -23,6 +23,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
   isPaused,
   pausedOffsetMs,
   onPauseClick,
+  showMuteButton = true,
   translations,
 }) => {
   return (
@@ -57,6 +58,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         onMuteClick={onMuteSimulation}
         onFocusButtonClick={onFocusButtonClick}
         onPauseClick={onPauseClick}
+        showMuteButton={showMuteButton}
         translations={translations}
       />
       <div

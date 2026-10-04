@@ -38,6 +38,27 @@ export interface TurnIndicatorTranslations {
   paused: string;
 }
 
+/**
+ * Copy for a text-chat roleplay's conversation panel. Every key is optional and
+ * has an English fallback at the render site (TextChatPanel), so the admin
+ * preview and any host that has not translated them still render.
+ */
+export interface TextChatTranslations {
+  panelLabel?: string;
+  inChat?: string;
+  typing?: string;
+  emptyState?: string;
+  inputLabel?: string;
+  placeholder?: string;
+  send?: string;
+  notSent?: string;
+  retry?: string;
+  charactersLeft?: string;
+  you?: string;
+  /** Replaces the call screen's microphone line while a chat is connecting. */
+  connectingHint?: string;
+}
+
 export interface SimulationTranslations {
   mute: string;
   unmute: string;
@@ -94,6 +115,8 @@ export interface SimulationTranslations {
   exitSimulation?: string;
   reconnecting?: string;
   missedSupervisorHints?: string;
+  /** Text-chat roleplays only. Optional, like every addition above. */
+  textChat?: TextChatTranslations;
   turnIndicator: TurnIndicatorTranslations;
 }
 
@@ -259,6 +282,7 @@ export interface SimulationControlsProps {
   onMuteClick: () => void;
   onFocusButtonClick: () => void;
   onPauseClick?: () => void;
+  showMuteButton?: boolean;
   translations?: Pick<
     SimulationTranslations,
     "mute" | "unmute" | "pause" | "resume" | "focus" | "focused" | "endSession"
@@ -285,6 +309,8 @@ export interface BottomSectionProps {
   isPaused?: boolean;
   pausedOffsetMs?: number;
   onPauseClick?: () => void;
+  /** False for a text chat: there is no microphone to mute. Default true. */
+  showMuteButton?: boolean;
   translations?: SimulationTranslations;
 }
 

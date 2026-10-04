@@ -176,6 +176,7 @@ export const PostSimulationSummary: FC = () => {
                 agentName={summary?.scenario?.metadata?.name}
                 originalLanguageCode={originalLanguageCode}
                 focusMessage={momentRequest}
+                hasRecording={summary?.interactionMode !== "TEXT"}
               />
             ),
           },

@@ -202,6 +202,10 @@ export const en = {
   },
   simulation: {
     untitledRoleplay: "Untitled Roleplay",
+    previewMode: {
+      voice: "Voice call",
+      text: "Text chat",
+    },
     autosaving: "Saving…",
     draftAutosaved: "Draft autosaved",
     autosaveFailed: "Couldn’t save — click Save to retry",
@@ -842,6 +846,9 @@ export const en = {
     progressDashboardEnabled: "Enable Learner Progress",
     progressDashboardEnabledHint:
       "Shows learners in this organisation their XP, level, and badges on a personal Progress screen, plus a level widget elsewhere in the app. Off by default for every new organisation.",
+    textChatRoleplayEnabled: "Enable text chat roleplays",
+    textChatRoleplayEnabledHint:
+      "Lets learners in this organisation practise a roleplay by typing instead of speaking, as on a text helpline. Only roleplays that offer text chat (set per roleplay in Simulation Studio) show the option, and voice stays available. Off by default for every organisation.",
     engagementReminderEnabled: "Enable engagement reminders",
     engagementReminderEnabledHint:
       "Sends an automated in-app + push nudge to learners in this organisation who've been inactive for a threshold number of days, on a cooldown so the same learner isn't reminded repeatedly. Off by default for every new organisation.",

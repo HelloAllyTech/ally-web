@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { ActorVideo } from "./ActorVideo";
 import { SessionSidebar } from "./SessionSidebar";
+import { TextChatPanel } from "./TextChatPanel";
 import { TurnState } from "./TurnIndicator";
 import {
   SimulationEventType,
@@ -22,6 +23,7 @@ import {
   SessionSidebarExtraTab,
 } from "./types";
 import { UserCallCard } from "./UserCallCard";
+import { TextChatController } from "./useTextChat";
 import { FEATURE_FLAGS_MAP } from "../../featureFlag";
 
 export enum RoomStatus {
@@ -94,6 +96,15 @@ export interface SimulationInterfaceProps {
   startTime?: string;
   maxTimeSeconds?: number;
   translations?: SimulationTranslations;
+  /**
+   * Text-chat roleplay: the call cards are replaced by a chat panel driven by
+   * `textChat`, and nothing here touches audio. Default false — every voice
+   * session renders exactly as before.
+   */
+  isTextChat?: boolean;
+  textChat?: TextChatController;
+  /** The learner has ended the session; the chat composer locks. */
+  isEndingSession?: boolean;
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
@@ -126,6 +137,9 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   startTime,
   maxTimeSeconds,
   translations,
+  isTextChat = false,
+  textChat,
+  isEndingSession = false,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -247,14 +261,35 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
       // content is the monologue should still get somewhere to put it.
       (sidebarExtraTabs?.length ?? 0) > 0);
 
+  // The chat takes the call cards' place in the middle column; the sidebar,
+  // header, timer and controls around it are the voice session's own.
+  const renderTextChat = () => (
+    <TextChatPanel
+      messages={textChat?.messages ?? []}
+      isClientTyping={
+        // Either signal is enough: LiveKit's agent-state attribute, or the
+        // worker's own thinking marker on the events channel.
+        (textChat?.isClientTyping ?? false) || agentTurnStatus === "thinking"
+      }
+      onSend={text => textChat?.send(text)}
+      onRetry={id => textChat?.retry(id)}
+      clientName={roomData?.remoteParticipant?.name}
+      clientAvatarUrl={roomData?.remoteParticipant?.coverImageUrl}
+      disabled={isEndingSession || isReconnecting}
+      translations={translations?.textChat}
+    />
+  );
+
   const renderConnectedContent = () => (
     <>
       {/* Not mounted until roomStatus/countdown both clear (see isCountingDown
           below): this is the earliest point the learner should be able to
           hear the agent. If the agent starts speaking mid-countdown, its
           opening words are inaudible rather than played early — a deliberate
-          trade so the countdown can't be skipped by a fast agent join. */}
-      <RoomAudioRenderer />
+          trade so the countdown can't be skipped by a fast agent join. A text
+          chat has nothing to hear, and its early messages are held by the
+          page-level chat state instead. */}
+      {!isTextChat && <RoomAudioRenderer />}
       <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
         {showSidebar && (
           <div
@@ -284,46 +319,55 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           </div>
         )}
 
-        <div
-          data-testid="simulation-middle-column"
-          className="order-1 relative flex-1 min-w-0 h-full min-h-[240px]"
-        >
-          <UserCallCard
-            userData={{
-              name: roomData?.remoteParticipant?.name,
-              coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
-            }}
-            isSpeaking={remoteParticipant?.isSpeaking}
-            turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
-            turnIndicatorTranslations={translations?.turnIndicator}
-          />
-          {/* Mounted only for a roleplay that opted in, so the track
+        {isTextChat ? (
+          <div
+            data-testid="simulation-middle-column"
+            className="order-1 relative flex-1 min-w-0 h-full min-h-[320px]"
+          >
+            {renderTextChat()}
+          </div>
+        ) : (
+          <div
+            data-testid="simulation-middle-column"
+            className="order-1 relative flex-1 min-w-0 h-full min-h-[240px]"
+          >
+            <UserCallCard
+              userData={{
+                name: roomData?.remoteParticipant?.name,
+                coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
+              }}
+              isSpeaking={remoteParticipant?.isSpeaking}
+              turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
+              turnIndicatorTranslations={translations?.turnIndicator}
+            />
+            {/* Mounted only for a roleplay that opted in, so the track
               subscription inside it never runs for anyone else. Absolutely
               positioned over the card above (z-10) and under the self-view
               below (z-20), and it renders null until a track actually
               publishes — so an audio-only fallback simply leaves the card
               showing, with nothing for the learner to notice. */}
-          {videoActorEnabled && <ActorVideo />}
-          {/* Learner's own self-view: a small inlaid picture-in-picture bubble
+            {videoActorEnabled && <ActorVideo />}
+            {/* Learner's own self-view: a small inlaid picture-in-picture bubble
               over the AI card, like a WhatsApp/Zoom video call, rather than an
               equal-size card of its own. */}
-          <div
-            data-testid="simulation-pip-self-view"
-            className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-44 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
-          >
-            <UserCallCard
-              userData={{
-                name: roomData?.localParticipant?.name || "You",
-                coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
-              }}
-              isSpeaking={localParticipant.isSpeaking}
-              isMuted={isMuted}
-              turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
-              turnIndicatorTranslations={translations?.turnIndicator}
-              compact
-            />
+            <div
+              data-testid="simulation-pip-self-view"
+              className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-44 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
+            >
+              <UserCallCard
+                userData={{
+                  name: roomData?.localParticipant?.name || "You",
+                  coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
+                }}
+                isSpeaking={localParticipant.isSpeaking}
+                isMuted={isMuted}
+                turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
+                turnIndicatorTranslations={translations?.turnIndicator}
+                compact
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
@@ -370,8 +414,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         <span className="font-medium italic">{connectingText}</span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
-        {translations?.microphonePrompt ??
-          "To start the simulation, please allow us to use your microphone."}
+        {isTextChat
+          ? (translations?.textChat?.connectingHint ??
+            "Your conversation will appear here as soon as it opens.")
+          : (translations?.microphonePrompt ??
+            "To start the simulation, please allow us to use your microphone.")}
       </p>
     </div>
   );

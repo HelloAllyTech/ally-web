@@ -19,6 +19,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
   onMuteClick,
   onFocusButtonClick,
   onPauseClick,
+  showMuteButton = true,
   translations,
 }) => {
   const buttonList = [
@@ -28,7 +29,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       // Pause is a superset of mute — disable mic toggle while paused.
       isDisabled: isEndingSession || isPaused,
       leftIcon: isMuted ? <MicOff /> : <MicOn />,
-      show: true,
+      show: showMuteButton,
       text: isMuted ? (translations?.unmute ?? "Unmute") : (translations?.mute ?? "Mute"),
       testId: "simulation-controls-mute-button",
     },
