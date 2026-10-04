@@ -653,16 +653,18 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // The Highlights → Skills sub-tab: one balanced panel of learners (their
     // first `cuts` cuts all scored). Omitting `cuts` lets the server pick its
     // default panel, so the first paint never guesses a size nobody offers.
+    // `tenantId` narrows to one org (the tab's own org filter); omitted = all.
     getFoundationalSkillsProgress: builder.query<
       FoundationalSkillsProgressResponse,
-      { cuts?: number; baselineFrom?: 1 | 2 }
+      { cuts?: number; baselineFrom?: 1 | 2; tenantId?: string }
     >({
-      query: ({ cuts, baselineFrom } = {}) => ({
+      query: ({ cuts, baselineFrom, tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_PROGRESS,
         method: HttpMethod.GET,
         params: {
           ...(cuts ? { cuts } : {}),
           ...(baselineFrom === 2 ? { baselineFrom: 2 } : {}),
+          ...(tenantId ? { tenantId } : {}),
         },
       }),
     }),
@@ -671,19 +673,26 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // learner with every behaviour they had a chance at.
     getFoundationalSkillsBehaviours: builder.query<
       FoundationalSkillsBehavioursResponse,
-      { userId?: number } | void
+      { userId?: number; tenantId?: string } | void
     >({
       query: arg => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_BEHAVIOURS,
         method: HttpMethod.GET,
-        params: arg && arg.userId ? { userId: arg.userId } : {},
+        params: {
+          ...(arg && arg.userId ? { userId: arg.userId } : {}),
+          ...(arg && arg.tenantId ? { tenantId: arg.tenantId } : {}),
+        },
       }),
     }),
     // Same scenario before and after, per learner (the benchmark pipeline).
-    getFoundationalSkillsBenchmark: builder.query<FoundationalSkillsBenchmarkResponse, void>({
-      query: () => ({
+    getFoundationalSkillsBenchmark: builder.query<
+      FoundationalSkillsBenchmarkResponse,
+      { tenantId?: string } | void
+    >({
+      query: arg => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_BENCHMARK,
         method: HttpMethod.GET,
+        params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
       }),
     }),
     // One learner's scored cuts, for the Skills tab's per-person panel.

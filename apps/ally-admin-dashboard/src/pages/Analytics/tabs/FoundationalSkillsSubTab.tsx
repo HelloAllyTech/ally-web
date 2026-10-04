@@ -8,6 +8,7 @@ import {
   useGetFoundationalSkillsBehavioursQuery,
   useGetFoundationalSkillsBenchmarkQuery,
   useGetFoundationalSkillsProgressQuery,
+  useGetTenantsQuery,
 } from "@api";
 
 import { asOfStamp } from "../analyticsFilters";
@@ -25,6 +26,7 @@ import {
 } from "../foundationalSkillsHabits";
 import { FoundationalSkillsLearnerPanel } from "../FoundationalSkillsLearnerPanel";
 import {
+  ALL_ORGS,
   BEHAVIOUR_KIND_LABELS,
   COMPOSITE_SCALE,
   FhsBehaviourKind,
@@ -52,6 +54,7 @@ import {
   learnerName,
   level,
   levelMixWithheld,
+  orgFilterItems,
   panelOptionLabel,
   pct,
   pValue,
@@ -70,6 +73,8 @@ import { SkillCutGrid } from "../SkillCutGrid";
 
 const SKILL_ROWS_HEIGHT = "440px";
 const PAGE_SIZE = 20;
+/** Every org in one page, like the other admin org pickers. */
+const TENANT_PAGE_SIZE = 200;
 
 type PanelOption = { cuts: number; learners: number };
 type WindowKey = "early" | "late";
@@ -169,7 +174,9 @@ const InlinePicker = <T extends { id: string; label: string }>({
     size="sm"
     type="inline"
     label={label}
-    titleText=""
+    // Visually hidden, but it names the control: without it a screen reader
+    // announces only the selected item ("All orgs"), never what it picks.
+    titleText={label}
     hideLabel
     items={items}
     itemToString={(i: T) => i?.label ?? ""}
@@ -258,10 +265,15 @@ const sortLearners = (rows: FhsProgressLearner[], sort: SortKey): FhsProgressLea
  *    change, because it compares the SAME scenario ("Measure true customer
  *    outcomes, not vanity metrics").
  *
- * Self against self only; nothing ranks learners. All-time and platform-wide
- * like Priority, so no page filters reach it.
+ * Self against self only; nothing ranks learners. All-time, so no page filters
+ * reach it. It opens on every org; its own org filter narrows every section to
+ * one (the server scopes each cut and benchmark session by its session's
+ * tenant, and applies the same floors, so a small org reads as withheld rather
+ * than as a noisy number). The per-person panel is not narrowed: it is one
+ * learner's whole history.
  */
 export const FoundationalSkillsSubTab = () => {
+  const [tenantId, setTenantId] = useState<string>(ALL_ORGS);
   const [cuts, setCuts] = useState<number | undefined>(undefined);
   const [baseline, setBaseline] = useState<"1" | "2">("1");
   const [levelWindow, setLevelWindow] = useState<WindowKey>("late");
@@ -273,12 +285,29 @@ export const FoundationalSkillsSubTab = () => {
   const [habitFilter, setHabitFilter] = useState<HabitFilter>("trackable");
   const [gridAll, setGridAll] = useState(false);
 
+  // A failed or forbidden org list leaves only "All orgs" — the tab still works.
+  const { data: tenantData } = useGetTenantsQuery({ limit: TENANT_PAGE_SIZE });
+  const orgItems = useMemo(() => orgFilterItems(tenantData?.data ?? []), [tenantData]);
+  const orgName = tenantId ? orgItems.find(o => o.id === tenantId)?.label : undefined;
+  const allTime = orgName ? `All time · ${orgName} only` : "All time";
+  const org = tenantId ? { tenantId } : {};
+
+  const pickOrg = (id: string) => {
+    setTenantId(id);
+    // Another org has its own panels: let the server pick its default size
+    // rather than carry over one this org may not offer.
+    setCuts(undefined);
+    setPage(0);
+    setOpenLearner(null);
+  };
+
   const { data, isLoading, isFetching, isError, refetch } = useGetFoundationalSkillsProgressQuery({
     cuts,
     baselineFrom: baseline === "2" ? 2 : 1,
+    ...org,
   });
-  const bench = useGetFoundationalSkillsBenchmarkQuery();
-  const habits = useGetFoundationalSkillsBehavioursQuery();
+  const bench = useGetFoundationalSkillsBenchmarkQuery(org);
+  const habits = useGetFoundationalSkillsBehavioursQuery(org);
   const hb = habits.data;
   const habitCommon = {
     loading: habits.isLoading && !hb,
@@ -334,7 +363,7 @@ export const FoundationalSkillsSubTab = () => {
   const asOf = asOfStamp(data?.computedAt);
   const panelSource = buildSource({
     derivation: `Same learners throughout; ${startNow}`,
-    window: "All time",
+    window: allTime,
     n: panelN,
     nUnit: "learners",
     extra: data
@@ -344,7 +373,7 @@ export const FoundationalSkillsSubTab = () => {
   });
   const everyoneSource = buildSource({
     derivation: "Every measured learner",
-    window: "All time",
+    window: allTime,
     n: data?.measuredLearners,
     nUnit: "learners measured",
     asOf,
@@ -428,9 +457,17 @@ export const FoundationalSkillsSubTab = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* The panel and the baseline: which learners and which cuts every comparison uses. */}
+      {/* The org, the panel and the baseline: whose practice, which learners and which cuts every comparison uses. */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-medium text-typography-900">Org:</span>
+          <InlinePicker
+            id="fhs-org"
+            label="Org"
+            items={orgItems}
+            selected={tenantId}
+            onChange={pickOrg}
+          />
           <span className="text-sm font-medium text-typography-900">
             Compare the same learners:
           </span>
@@ -556,7 +593,7 @@ export const FoundationalSkillsSubTab = () => {
             }
             source={buildSource({
               derivation: "Behaviour rates from stored, quote-checked behaviour codes",
-              window: "All time",
+              window: allTime,
               n: hb?.comparableLearners,
               nUnit: "learners with enough practice",
               asOf: asOfStamp(hb?.computedAt),
@@ -614,7 +651,7 @@ export const FoundationalSkillsSubTab = () => {
             }
             source={buildSource({
               derivation: "Each learner's own rate per habit",
-              window: "All time",
+              window: allTime,
               n: hb ? (gridAll ? hb.measuredLearners : hb.comparableLearners) : undefined,
               nUnit: "learners",
               asOf: asOfStamp(hb?.computedAt),
@@ -1115,7 +1152,7 @@ export const FoundationalSkillsSubTab = () => {
           }
           source={buildSource({
             derivation: "Same scenario, same judge, same rubric",
-            window: "All time",
+            window: allTime,
             n: b?.summary.learners,
             nUnit: "paired learners",
             asOf: asOfStamp(b?.computedAt),
@@ -1361,7 +1398,7 @@ export const FoundationalSkillsSubTab = () => {
         open={expanded === "skills"}
         onClose={() => setExpanded(null)}
         title="Skill by skill, start → now"
-        caption={`Paired over the panel (${startNow}), with 95% intervals and sign tests. Mix counts are skill assessments at levels 1/2/3/4. "Tested" and "chances" are platform-wide.`}
+        caption={`Paired over the panel (${startNow}), with 95% intervals and sign tests. Mix counts are skill assessments at levels 1/2/3/4. "Tested" and "chances" are over every measured learner${orgName ? ` in ${orgName}` : ""}.`}
         source={panelSource}
         render={() => null}
         table={skillTable}
