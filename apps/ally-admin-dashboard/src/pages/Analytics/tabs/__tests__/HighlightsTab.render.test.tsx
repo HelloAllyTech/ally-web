@@ -83,6 +83,7 @@ const SUB_TABS: [label: string, marker: RegExp][] = [
   ["Usage", /Activation — getting to a first session/i],
   ["Skill growth", /Competency map/i],
   ["Curriculum", /Track drop-off by item format/i],
+  ["Course impact", /Helping skills before and after, by course/i],
   ["Quality & sentiment", /Roleplay quality — median and spread/i],
   ["Coaching & support", /Sessions shared for review/i],
   ["Orgs", /Orgs by avg practice minutes per learner/i],

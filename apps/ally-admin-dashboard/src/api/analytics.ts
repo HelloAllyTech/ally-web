@@ -65,6 +65,7 @@ import {
   BugHunterVolumeQuery,
   BugHunterVolumeResponse,
 } from "../pages/Analytics/bugHunterVolumeChart";
+import { CourseImpactQuery, CourseImpactResponse } from "../pages/Analytics/courseImpactChart";
 import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
 import { FoundationalSkillsBehavioursResponse } from "../pages/Analytics/foundationalSkillsHabits";
 import {
@@ -695,6 +696,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
       }),
     }),
+    // Helping skills before vs after each course; `trackId` adds one course skill by skill.
+    getCourseImpact: builder.query<CourseImpactResponse, CourseImpactQuery | void>({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.COURSE_IMPACT,
+        method: HttpMethod.GET,
+        params: {
+          ...(arg && arg.tenantId ? { tenantId: arg.tenantId } : {}),
+          ...(arg && arg.trackId ? { trackId: arg.trackId } : {}),
+        },
+      }),
+    }),
     // One learner's scored cuts, for the Skills tab's per-person panel.
     getFoundationalSkillsLearner: builder.query<FoundationalSkillsLearnersResponse, number>({
       query: userId => ({
@@ -906,6 +918,7 @@ export const {
   useGetFoundationalSkillsLearnerQuery,
   useGetFoundationalSkillsBenchmarkQuery,
   useGetFoundationalSkillsBehavioursQuery,
+  useGetCourseImpactQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
