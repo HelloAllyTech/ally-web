@@ -6,7 +6,7 @@ import {
   BugFindingStatus,
 } from "@types";
 
-import { bucketOfStatus, LIFECYCLE_BUCKETS } from "./lifecycleBucket";
+import { bucketOfStatus, isOpenBucket, LIFECYCLE_BUCKETS } from "./lifecycleBucket";
 import { ageInDays, STALENESS_DAYS } from "./triage";
 
 import type { BucketFilter } from "./LifecycleBucketChips";
@@ -194,7 +194,7 @@ export interface FindingsFilters {
 }
 
 export const EMPTY_FILTERS: FindingsFilters = {
-  bucket: "all",
+  bucket: "open",
   search: "",
   repos: [],
   severities: [],
@@ -206,7 +206,9 @@ export const EMPTY_FILTERS: FindingsFilters = {
 };
 
 export const hasActiveFilters = (filters: FindingsFilters): boolean =>
-  filters.bucket !== "all" ||
+  // "open" is the default view and "all" is the escape hatch from it; neither
+  // narrows the list in a way "Clear filters" should have to undo.
+  (filters.bucket !== "open" && filters.bucket !== "all") ||
   filters.search.trim() !== "" ||
   filters.repos.length > 0 ||
   filters.severities.length > 0 ||
@@ -328,7 +330,11 @@ const applyFilters = (
   const needle = filters.search.trim().toLowerCase();
 
   return findings.filter(finding => {
-    if (filters.bucket !== "all" && bucketOfStatus(finding.status) !== filters.bucket) return false;
+    if (filters.bucket === "open") {
+      if (!isOpenBucket(bucketOfStatus(finding.status))) return false;
+    } else if (filters.bucket !== "all" && bucketOfStatus(finding.status) !== filters.bucket) {
+      return false;
+    }
     if (!passesFacet(filters.repos, finding.repo)) return false;
     if (!passesFacet(filters.severities, finding.severity)) return false;
     if (!passesFacet(filters.sources, finding.source)) return false;

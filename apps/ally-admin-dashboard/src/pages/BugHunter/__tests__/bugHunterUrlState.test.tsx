@@ -46,6 +46,7 @@ const Probe: FC = () => {
       <button onClick={() => state.setSearch("all")}>search all</button>
       <button onClick={() => state.setBucket("needs_you")}>bucket needs_you</button>
       <button onClick={() => state.setBucket("all")}>bucket all</button>
+      <button onClick={() => state.setBucket("open")}>bucket open</button>
       <button onClick={() => state.setRun("run-a")}>scope run-a</button>
       <button onClick={() => state.setRun(null)}>scope none</button>
       <button onClick={() => state.setSeverities([BugFindingSeverity.HIGH])}>severity high</button>
@@ -84,7 +85,8 @@ describe("reading the query string", () => {
     mount();
     expect(parsed()).toEqual({
       bug: null,
-      bucket: "all",
+      // The open pipeline, not everything: Live and Closed are archive rows.
+      bucket: "open",
       run: null,
       search: "",
       repos: [],
@@ -129,10 +131,24 @@ describe("reading the query string", () => {
    * "all" rather than reaching a filter that then matches nothing and looks
    * broken — and the page is not the place to complain about a mistyped link.
    */
+  it('reads ?bucket=all as "everything", the one way to see Live and Closed with the rest', () => {
+    mount("/?bucket=all");
+    expect(parsed().bucket).toBe("all");
+    expect(screen.getByTestId("has-filters").textContent).toBe("false");
+  });
+
+  it("writes the bucket only when it is not the open default", () => {
+    mount();
+    fireEvent.click(screen.getByText("bucket needs_you"));
+    expect(search()).toBe("?bucket=needs_you");
+    fireEvent.click(screen.getByText("bucket all"));
+    expect(search()).toBe("?bucket=all");
+  });
+
   it("falls back to the default for a value that isn't in the enum", () => {
     mount("/?bucket=urgent&sev=critical&src=telepathy&age=eternal&size=7&sort=vibes");
     const state = parsed();
-    expect(state.bucket).toBe("all");
+    expect(state.bucket).toBe("open");
     expect(state.severities).toEqual([]);
     expect(state.sources).toEqual([]);
     expect(state.age).toBe("all");
@@ -196,7 +212,8 @@ describe("writing the query string", () => {
     fireEvent.click(screen.getByText("bucket needs_you"));
     expect(search()).toBe("?bucket=needs_you");
 
-    fireEvent.click(screen.getByText("bucket all"));
+    // "open" is the bucket's default now; "all" is a real choice and stays.
+    fireEvent.click(screen.getByText("bucket open"));
     expect(search()).toBe("");
   });
 
@@ -289,7 +306,7 @@ describe("writing the query string", () => {
     fireEvent.click(screen.getByText("clear filters"));
 
     const state = parsed();
-    expect(state.bucket).toBe("all");
+    expect(state.bucket).toBe("open");
     expect(state.search).toBe("");
     expect(state.repos).toEqual([]);
     expect(state.severities).toEqual([]);
@@ -317,7 +334,7 @@ describe("writing the query string", () => {
     expect(state.run).toBe("run-a");
     // "The 10 that sweep found" intersected with a leftover severity filter is
     // an answer to a question nobody asked, next to a log still saying 10.
-    expect(state.bucket).toBe("all");
+    expect(state.bucket).toBe("open");
     expect(state.search).toBe("");
     expect(state.repos).toEqual([]);
     expect(state.severities).toEqual([]);

@@ -34,6 +34,7 @@ describe("LifecycleBucketChips", () => {
     );
 
     [
+      "Open",
       "Everything",
       "Needs your call",
       "Went red",
@@ -43,6 +44,20 @@ describe("LifecycleBucketChips", () => {
       "Live",
       "Closed",
     ].forEach(label => expect(screen.getByText(label)).toBeInTheDocument());
+  });
+
+  it("opens on the open pipeline and sums it: Open is the five working buckets, Everything adds Live and Closed", () => {
+    render(
+      <LifecycleBucketChips
+        counts={counts({ needs_you: 2, in_review: 3, shipped: 40, closed: 55 })}
+        total={100}
+        value="open"
+        onChange={vi.fn()}
+      />,
+    );
+    expect(within(screen.getByText("Open").closest("button")!).getByText("5")).toBeInTheDocument();
+    expect(within(screen.getByText("Everything").closest("button")!).getByText("100")).toBeInTheDocument();
+    expect(screen.getByText("Open").closest("button")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("sets the filter to the bucket that was clicked", () => {
