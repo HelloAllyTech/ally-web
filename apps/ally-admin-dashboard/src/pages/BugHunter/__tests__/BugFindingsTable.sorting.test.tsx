@@ -150,16 +150,11 @@ describe("BugFindingsTable — sorting", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("sorts by status in lifecycle order rather than alphabetically", () => {
-    // `?bucket=all`: the table opens on the open pipeline, and a Released row
-    // is exactly what that default hides.
-    mount(
-      [
-        finding({ id: "shipped", status: BugFindingStatus.RELEASED }),
-        finding({ id: "blocked", status: BugFindingStatus.NEEDS_INPUT }),
-        finding({ id: "queued", status: BugFindingStatus.APPROVED }),
-      ],
-      { url: "/?bucket=all" },
-    );
+    mount([
+      finding({ id: "shipped", status: BugFindingStatus.RELEASED }),
+      finding({ id: "blocked", status: BugFindingStatus.NEEDS_INPUT }),
+      finding({ id: "queued", status: BugFindingStatus.APPROVED }),
+    ]);
 
     fireEvent.click(screen.getByRole("button", { name: /^Status/ }));
 

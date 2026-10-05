@@ -66,7 +66,7 @@ import {
   updatedAt,
   wasTouchedSinceDiscovery,
 } from "./findingsView";
-import { bucketCountsFromStatuses, countByBucket } from "./lifecycleBucket";
+import { countByBucket } from "./lifecycleBucket";
 import { LifecycleBucketChips } from "./LifecycleBucketChips";
 import {
   ageInDays,
@@ -632,15 +632,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
     [findings, data?.count, filters, sortKey, sortDirection, page, pageSize],
   );
 
-  // The chips describe the whole set, not the window: the server's per-status
-  // totals when it sent them, the loaded rows only as a fallback. "Everything
-  // 100 · Closed 100" on a table whose window was a hundred rows is what this
-  // replaces.
-  const counts = useMemo(
-    () => bucketCountsFromStatuses(data?.countsByStatus) ?? countByBucket(findings),
-    [data?.countsByStatus, findings],
-  );
-  const chipTotal = data?.countsByStatus ? (data.count ?? findings.length) : findings.length;
+  const counts = useMemo(() => countByBucket(findings), [findings]);
   const facetCounts = useMemo(() => buildFacetCounts(findings), [findings]);
   const available = useMemo(
     () => ({
@@ -990,7 +982,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
       <div className="mb-3">
         <LifecycleBucketChips
           counts={counts}
-          total={chipTotal}
+          total={findings.length}
           value={bucket}
           onChange={setBucket}
           disabled={isLoading}

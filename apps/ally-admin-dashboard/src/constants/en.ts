@@ -2456,7 +2456,6 @@ export const en = {
     // "In progress" and "In review" keep the workload tiles' exact wording on
     // purpose — the numbers moved, the vocabulary shouldn't.
     bucketGroupLabel: "Filter bugs by what needs to happen next",
-    bucketOpen: "Open",
     bucketAll: "Everything",
     bucketNeedsYou: "Needs your call",
     // Not "Failed": the bucket holds a failed fix and a failed release, and the

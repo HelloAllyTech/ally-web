@@ -400,14 +400,7 @@ export interface BugFindingDetail extends BugFinding {
 
 export interface ListBugFindingsResponse {
   items: BugFinding[];
-  /** Total rows matching the request's filters (not the loaded window). */
   count: number;
-  /**
-   * Rows per status over the same filters, ignoring the status filter and the
-   * page. What the lifecycle chips count, so "Everything 100" cannot mean "the
-   * hundred rows loaded so far".
-   */
-  countsByStatus?: Record<string, number>;
 }
 
 export interface ListBugFindingsQuery {

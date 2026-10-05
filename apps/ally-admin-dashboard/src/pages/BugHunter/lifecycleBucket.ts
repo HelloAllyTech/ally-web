@@ -175,44 +175,6 @@ export const statusesInBucket = (bucket: LifecycleBucket): BugFindingStatus[] =>
 
 export type BucketCounts = Record<LifecycleBucket, number>;
 
-/**
- * The buckets that are still somebody's work — everything but Live and
- * Closed. The table opens on these: a finished bug is an archive row, and a
- * list that starts with a hundred of them is a list a reader scrolls past.
- */
-export const OPEN_BUCKETS: LifecycleBucket[] = [
-  "needs_you",
-  "problem",
-  "queued",
-  "in_flight",
-  "in_review",
-];
-
-export const isOpenBucket = (bucket: LifecycleBucket): boolean => OPEN_BUCKETS.includes(bucket);
-
-/** Sum of the open buckets — the "Open" chip's count. */
-export const openTotal = (counts: BucketCounts): number =>
-  OPEN_BUCKETS.reduce((sum, bucket) => sum + counts[bucket], 0);
-
-/**
- * Bucket counts from the server's per-status totals, so the chips describe
- * the whole set rather than the hundred rows loaded so far. Unknown status
- * strings are ignored rather than thrown on: a newer backend may know a status
- * this build does not.
- */
-export const bucketCountsFromStatuses = (
-  countsByStatus: Record<string, number> | undefined,
-): BucketCounts | null => {
-  if (!countsByStatus) return null;
-  const counts = emptyBucketCounts();
-  const known = new Set<string>(Object.values(BugFindingStatus));
-  Object.entries(countsByStatus).forEach(([status, n]) => {
-    if (!known.has(status)) return;
-    counts[bucketOfStatus(status as BugFindingStatus)] += n;
-  });
-  return counts;
-};
-
 /** Zeroed counts, so a caller can render a stable chip row before any data lands. */
 export const emptyBucketCounts = (): BucketCounts =>
   LIFECYCLE_BUCKETS.reduce((counts, bucket) => {

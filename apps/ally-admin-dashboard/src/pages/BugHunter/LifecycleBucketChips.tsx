@@ -4,13 +4,10 @@ import { motion, useReducedMotion } from "framer-motion";
 
 import { en } from "@constants";
 
-import { BucketCounts, LIFECYCLE_BUCKETS, LifecycleBucket, openTotal } from "./lifecycleBucket";
+import { BucketCounts, LIFECYCLE_BUCKETS, LifecycleBucket } from "./lifecycleBucket";
 
-/**
- * What the filter can be set to: one bucket, the open pipeline (the default:
- * every bucket but Live and Closed), or everything.
- */
-export type BucketFilter = LifecycleBucket | "open" | "all";
+/** What the filter can be set to: one bucket, or everything. */
+export type BucketFilter = LifecycleBucket | "all";
 
 /**
  * Read inside a function, never at module scope.
@@ -51,9 +48,8 @@ const EMPTY_STYLE = "border-border-light bg-white text-typography-500";
 const SELECTED_RING = "ring-2 ring-primary-500 ring-offset-1";
 
 export interface LifecycleBucketChipsProps {
-  /** Per-bucket totals over the whole set when the server supplied them, else over the loaded window. */
   counts: BucketCounts;
-  /** Total findings over the same scope as `counts` — the "Everything" chip's count. */
+  /** Total findings in the loaded window — the "Everything" chip's count. */
   total: number;
   value: BucketFilter;
   onChange: (value: BucketFilter) => void;
@@ -100,17 +96,13 @@ export const LifecycleBucketChips: FC<LifecycleBucketChipsProps> = ({
   const shouldReduceMotion = useReducedMotion();
   const labels = bucketLabels();
 
-  // Open first, because it is the default and the sum of the five chips after
-  // it; Live and Closed next as the two finished groups; Everything last as
-  // the escape hatch. The row still sums: Open + Live + Closed = Everything.
   const chips: { key: BucketFilter; label: string; count: number }[] = [
-    { key: "open", label: en.bugHunter.bucketOpen, count: openTotal(counts) },
+    { key: "all", label: en.bugHunter.bucketAll, count: total },
     ...LIFECYCLE_BUCKETS.map(bucket => ({
       key: bucket as BucketFilter,
       label: labels[bucket],
       count: counts[bucket],
     })),
-    { key: "all", label: en.bugHunter.bucketAll, count: total },
   ];
 
   return (
@@ -121,7 +113,7 @@ export const LifecycleBucketChips: FC<LifecycleBucketChipsProps> = ({
     >
       {chips.map(chip => {
         const isSelected = chip.key === value;
-        const occupied = chip.key !== "all" && chip.key !== "open" && chip.count > 0;
+        const occupied = chip.key !== "all" && chip.count > 0;
         const tone = occupied
           ? (OCCUPIED_STYLES[chip.key as LifecycleBucket] ?? NEUTRAL_STYLE)
           : chip.count > 0

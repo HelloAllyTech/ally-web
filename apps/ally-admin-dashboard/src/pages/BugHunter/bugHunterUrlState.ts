@@ -12,7 +12,7 @@ import {
   SortDirection,
   SortKey,
 } from "./findingsView";
-import { LIFECYCLE_BUCKETS } from "./lifecycleBucket";
+import { LIFECYCLE_BUCKETS, LifecycleBucket } from "./lifecycleBucket";
 
 import type { BucketFilter } from "./LifecycleBucketChips";
 
@@ -119,7 +119,7 @@ export const PAGE_SIZES = [20, 50, 100] as const;
 export type PageSize = (typeof PAGE_SIZES)[number];
 export const DEFAULT_PAGE_SIZE: PageSize = 20;
 
-const BUCKET_VALUES = new Set<string>([...LIFECYCLE_BUCKETS, "all"]);
+const BUCKET_VALUES = new Set<string>(LIFECYCLE_BUCKETS);
 const SEVERITY_VALUES = new Set<string>(Object.values(BugFindingSeverity));
 const SOURCE_VALUES = new Set<string>(Object.values(BugFindingSource));
 const STATUS_VALUES = new Set<string>(Object.values(BugFindingStatus));
@@ -133,11 +133,6 @@ const SORT_VALUES = new Set<string>(SORT_KEYS);
  * Returns `"all"` for anything absent, empty or unrecognised — see the module
  * doc on why an unknown value is silently the default rather than an error.
  */
-const readBucket = (params: URLSearchParams): BucketFilter => {
-  const raw = params.get(BUG_HUNTER_PARAM.bucket);
-  return raw && BUCKET_VALUES.has(raw) ? (raw as BucketFilter) : "open";
-};
-
 const readFacet = <T extends string>(
   params: URLSearchParams,
   key: string,
@@ -251,7 +246,7 @@ export interface BugHunterUrlActions {
  * excluded: none of them changes *which* bugs are on the page.
  */
 export const hasFilterParams = (state: BugHunterUrlState): boolean =>
-  (state.bucket !== "open" && state.bucket !== "all") ||
+  state.bucket !== "all" ||
   state.search.trim() !== "" ||
   state.run !== null ||
   state.repos.length > 0 ||
@@ -278,11 +273,7 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
 
     return {
       bug: searchParams.get(BUG_HUNTER_PARAM.bug) || null,
-      // The default is the open pipeline; `?bucket=all` is the one way to see
-      // Live and Closed alongside it, so "all" is a real value here and the
-      // absent one means "open" — unlike the facets below, whose absent value
-      // IS "all".
-      bucket: readBucket(searchParams),
+      bucket: readFacet<LifecycleBucket>(searchParams, BUG_HUNTER_PARAM.bucket, BUCKET_VALUES),
       search: searchParams.get(BUG_HUNTER_PARAM.search) ?? "",
       // Unvalidated for the same reason as `repos`: this hook cannot see the
       // run list, and a run id that matches nothing renders as an empty scope
@@ -341,13 +332,10 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
         current => {
           const next = new URLSearchParams(current);
           Object.entries(patch).forEach(([key, value]) => {
-            // "all" is the sentinel for a facet's default, with two exceptions:
-            // the search box has no such default (a searcher typing the word
-            // "all" means the literal text), and the bucket's default is "open",
-            // so for it "all" is a real choice — the one way to see Live and
-            // Closed alongside the rest — and must reach the address bar.
-            const isSentinel =
-              value === "all" && key !== BUG_HUNTER_PARAM.search && key !== BUG_HUNTER_PARAM.bucket;
+            // "all" is the sentinel for a facet's default, but the search box
+            // has no such default: it is free text, and a searcher typing the
+            // word "all" means the literal text, not "clear this param."
+            const isSentinel = value === "all" && key !== BUG_HUNTER_PARAM.search;
             if (value === null || value === "" || isSentinel) next.delete(key);
             else next.set(key, value);
           });
@@ -364,10 +352,8 @@ export const useBugHunterUrlState = (): BugHunterUrlState & BugHunterUrlActions 
     [write],
   );
 
-  // "open" is the default, so it is written as a removal — see `write`.
   const setBucket = useCallback(
-    (bucket: BucketFilter) =>
-      write({ [BUG_HUNTER_PARAM.bucket]: bucket === "open" ? null : bucket }),
+    (bucket: BucketFilter) => write({ [BUG_HUNTER_PARAM.bucket]: bucket }),
     [write],
   );
 
