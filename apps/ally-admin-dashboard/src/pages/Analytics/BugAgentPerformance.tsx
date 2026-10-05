@@ -134,10 +134,10 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
       {/* Right now, before the trends: what it has cost and whether it was
           right over the current window. Their own data hooks and their own
           window controls, as they had on the Bug Hunter page. */}
-      <div data-chart-id="AAQ-167">
+      <div data-chart-id="AAQ-198">
         <AgentScorecard />
       </div>
-      <div data-chart-id="AAQ-168">
+      <div data-chart-id="AAQ-199">
         <AccuracyPanel />
       </div>
 
@@ -295,7 +295,7 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
       {/* The per-run ledger every number above aggregates: status, trigger,
           cost and the GitHub run for each sweep and fix session. The only view
           of that, so it stays reachable here after leaving the agent's page. */}
-      <div data-chart-id="AAQ-169" className="pt-2">
+      <div data-chart-id="AAQ-200" className="pt-2">
         <RunHistoryTable />
       </div>
     </div>
