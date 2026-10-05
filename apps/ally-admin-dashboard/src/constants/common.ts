@@ -520,6 +520,7 @@ export const ApiEndpoints = {
     SETTINGS: "/v1/bug-hunter/settings",
     MODEL_SETTINGS: "/v1/bug-hunter/settings/models",
     RUNS: "/v1/bug-hunter/runs",
+    RUNS_SUMMARY: "/v1/bug-hunter/runs/summary",
     RUNS_TRIGGER: "/v1/bug-hunter/runs/trigger",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
     RUN_STREAM: (id: string) => `/v1/bug-hunter/runs/${id}/stream`,

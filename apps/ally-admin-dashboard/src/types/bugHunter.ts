@@ -446,6 +446,45 @@ export interface ListBugHuntRunsResponse {
   items: BugHuntRun[];
 }
 
+/** The scorecard's four tiles and token line, totalled server-side over one window. */
+export interface BugHuntRunWindowSummary {
+  runs: number;
+  costUsd: number;
+  completed: number;
+  failed: number;
+  running: number;
+  /** Triggered while the kill switch was off, or with nothing new to sweep. */
+  skipped: number;
+  found: number;
+  autoMerged: number;
+  prOpened: number;
+  dismissed: number;
+  inputTokens: number;
+  outputTokens: number;
+  /** Runs that reported both token counts; the token sums are over these only. */
+  tokensReported: number;
+}
+
+/** One calendar day of the scorecard sparkline, in the zone the request asked for. */
+export interface BugHuntRunDayPoint {
+  /** `YYYY-MM-DD` */
+  date: string;
+  runs: number;
+  costUsd: number;
+  found: number;
+}
+
+/** `GET /v1/bug-hunter/runs/summary` */
+export interface BugHuntRunsSummary {
+  /** The window totalled; null is all time. */
+  days: number | null;
+  /** The zone the series was bucketed in — what was asked for, or UTC if that was unknown. */
+  timeZone: string;
+  window: BugHuntRunWindowSummary;
+  /** One point per day for the last fourteen days, oldest first; quiet days are zeros. */
+  series: BugHuntRunDayPoint[];
+}
+
 /**
  * Where a roadmap bug went. Returned by the deep-link lookup so an
  * `?opportunity=<id>` link to a bug can redirect rather than 404.

@@ -3072,20 +3072,15 @@ export const en = {
     scorecardSpendWindow7: "7 days",
     scorecardSpendWindow30: "30 days",
     scorecardSpendWindowAll: "All",
-    // Not "$41" when the real answer is "$41 plus however much the shifts I'm
-    // not holding cost". A floor stated as a floor is useful; a floor printed
-    // as a total is the one reading that could talk someone out of looking.
-    scorecardSpendFloor:
-      "At least this. I'm holding my {runs} most recent shifts and this window starts before the oldest of them, so older spend in it isn't counted.",
     scorecardFoundLabel: "Bugs I turned up",
     scorecardFoundTooltip:
-      "Every bug my shifts reported, counted from the shifts themselves rather than from the table above — so it includes ones already rejected, shipped or aged out of the hundred I'm holding.",
+      "Every bug my shifts in this window reported, counted from the shifts themselves rather than from the table above — so it includes ones already rejected, shipped or aged out of the hundred I'm holding.",
     scorecardAutoMergeLabel: "Merged without asking",
     scorecardAutoMergeTooltip:
       "How much of what I found I fixed and merged on my own — lint or type-only changes, or a single-file fix backed by a new regression test. The rest came to you as a pull request. If this climbs, I'm being trusted with more; if it falls, I'm finding harder things.",
     scorecardCleanLabel: "Shifts that finished clean",
     scorecardCleanTooltip:
-      "Shifts that completed against shifts that went red. Running and off-duty shifts aren't counted either way. A falling number here usually means something in the harness is broken rather than something in the code.",
+      "Shifts in this window that completed against shifts that went red. Running and off-duty shifts aren't counted either way. A falling number here usually means something in the harness is broken rather than something in the code.",
     scorecardTokensLabel: "Tokens",
     scorecardTokensValue: "{input} in / {output} out",
     scorecardTokensPartial:
@@ -3096,8 +3091,6 @@ export const en = {
     scorecardSeriesEmpty: "I haven't worked a shift in the last 14 days.",
     scorecardSeriesDay: "{date} — {cost}, {found} bugs across {runs} shifts",
     scorecardSeriesDayQuiet: "{date} — nothing",
-    scorecardWindowNotice:
-      "From my {count} most recent shifts. I don't hold my whole history on this page.",
     scorecardEmptyTitle: "Nothing to report yet",
     scorecardEmptySubtitle:
       "Once I've worked a shift, what it cost and what it turned up shows up here.",

@@ -1,20 +1,20 @@
 import { FC, useMemo, useState } from "react";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-import { useGetBugHuntRunsQuery } from "@api";
+import { useGetBugHuntRunsSummaryQuery } from "@api";
 import { TooltipIcon } from "@assets";
 import { en } from "@constants";
-import { BugHuntRun } from "@types";
+import { BugHuntRunDayPoint } from "@types";
 
 import {
-  buildAgentScorecard,
+  autoMergeRate,
   formatRate,
   formatTokens,
   formatUsd,
-  SeriesPoint,
   SPEND_WINDOW_DAYS,
-  SpendWindow,
   SpendWindowDays,
+  successRate,
+  tokensMissing,
 } from "./scorecard";
 import { Sparkbars, SparkbarDatum } from "./Sparkbars";
 
@@ -42,13 +42,13 @@ import { Sparkbars, SparkbarDatum } from "./Sparkbars";
  * per-run rows are what these figures aggregate — the analytical view next to
  * the ledger it summarises.
  *
- * ## Every figure states its own denominator
+ * ## The window chips change every figure, because the server does the sum
  *
- * The run window is the newest 50, so a 30-day total can be a floor rather than
- * a total. `SpendWindow.complete` carries that fact and the tile prints it
- * instead of a confident number. See `scorecard.ts` for why that matters
- * more here than anywhere else on the page: an under-reported spend figure
- * reads as reassuring precisely when the agent has been busiest.
+ * Each chip refetches `GET /runs/summary?days=` and every tile, the token
+ * line and the sparkline redraw from that one response. The first version
+ * summed the newest-50 run list in the browser instead, and since that list
+ * is about a week of five nightly sweeps plus fix sessions, "7 days", "30
+ * days" and "All" printed the same total — see `scorecard.ts`.
  */
 
 /** Chip labels for the spend window. Read in a function — never a module-scope Record off `@constants`. */
@@ -73,9 +73,7 @@ const ScoreTile: FC<{
   value: string;
   /** The smaller line under the number — the count behind a rate, or the shifts behind a total. */
   detail?: string;
-  /** Stated instead of `detail` when the figure is known to be incomplete. */
-  floorNotice?: string;
-}> = ({ label, tooltip, value, detail, floorNotice }) => (
+}> = ({ label, tooltip, value, detail }) => (
   <div className="flex-1 min-w-[10rem] border border-border-light rounded-lg bg-white px-4 py-3">
     <div className="flex items-center gap-1">
       <span className="text-xs text-typography-600">{label}</span>
@@ -86,21 +84,14 @@ const ScoreTile: FC<{
       </Tooltip>
     </div>
     <p className="text-2xl text-typography-900 font-secondary tabular-nums mt-0.5">{value}</p>
-    {floorNotice ? (
-      // Amber rather than grey: this is not a footnote, it is the difference
-      // between a total and a lower bound, and a reader who skims it draws the
-      // wrong conclusion from the number directly above it.
-      <p className="text-[11px] text-amber-700 mt-1 leading-snug">{floorNotice}</p>
-    ) : (
-      detail && <p className="text-[11px] text-typography-500 mt-1">{detail}</p>
-    )}
+    {detail && <p className="text-[11px] text-typography-500 mt-1">{detail}</p>}
   </div>
 );
 
 const SeriesRow: FC<{
   label: string;
-  points: SeriesPoint[];
-  pick: (point: SeriesPoint) => number;
+  points: BugHuntRunDayPoint[];
+  pick: (point: BugHuntRunDayPoint) => number;
   format: (value: number) => string;
   barClassName: string;
 }> = ({ label, points, pick, format, barClassName }) => {
@@ -140,20 +131,26 @@ const SeriesRow: FC<{
   );
 };
 
+/** The reader's IANA zone, so the sparkline's days are the days they saw. */
+const readerTimeZone = (): string | undefined => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return undefined;
+  }
+};
+
 export const AgentScorecard: FC = () => {
-  // Same args as AgentProfileCard's and RunHistoryTable's, so this shares their
-  // RTK Query cache entry rather than opening a third request for the same rows.
-  const { data, isLoading, isError, refetch } = useGetBugHuntRunsQuery(undefined, {
-    pollingInterval: 10_000,
-  });
-
   const [windowDays, setWindowDays] = useState<SpendWindowDays | null>(30);
+  const timeZone = useMemo(readerTimeZone, []);
 
-  const runs = useMemo<BugHuntRun[]>(() => data?.items ?? [], [data]);
-  const scorecard = useMemo(() => buildAgentScorecard({ runs }), [runs]);
+  const { data, isLoading, isFetching, isError, refetch } = useGetBugHuntRunsSummaryQuery(
+    { days: windowDays, timeZone },
+    { pollingInterval: 30_000 },
+  );
 
-  const spend: SpendWindow =
-    scorecard.spend.find(entry => entry.days === windowDays) ?? scorecard.spend[0];
+  const window = data?.window;
+  const series = data?.series ?? [];
 
   if (isLoading) {
     return (
@@ -192,7 +189,7 @@ export const AgentScorecard: FC = () => {
         <p className="text-xs text-typography-600">{en.bugHunter.scorecardSubtitle}</p>
       </div>
 
-      {runs.length === 0 ? (
+      {!window || (windowDays === null && window.runs === 0) ? (
         <div className="border border-border-light rounded-lg py-8 text-center">
           <p className="text-sm font-medium text-typography-900">
             {en.bugHunter.scorecardEmptyTitle}
@@ -231,34 +228,34 @@ export const AgentScorecard: FC = () => {
             })}
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          {/* Dimmed, not blanked, while a chip change is in flight: the old
+              figures stay legible and the reader sees that they're moving. */}
+          <div
+            className={`flex flex-wrap gap-3 transition-opacity ${isFetching ? "opacity-60" : ""}`}
+            aria-busy={isFetching}
+          >
             <ScoreTile
               label={en.bugHunter.scorecardSpendLabel}
               tooltip={en.bugHunter.scorecardSpendTooltip}
-              value={formatUsd(spend.costUsd)}
-              detail={`${spend.runs} ${spend.runs === 1 ? "shift" : "shifts"}`}
-              floorNotice={
-                spend.complete
-                  ? undefined
-                  : en.bugHunter.scorecardSpendFloor.replace("{runs}", String(runs.length))
-              }
+              value={formatUsd(window.costUsd)}
+              detail={`${window.runs.toLocaleString()} ${window.runs === 1 ? "shift" : "shifts"}`}
             />
             <ScoreTile
               label={en.bugHunter.scorecardFoundLabel}
               tooltip={en.bugHunter.scorecardFoundTooltip}
-              value={scorecard.pipeline.found.toLocaleString()}
+              value={window.found.toLocaleString()}
             />
             <ScoreTile
               label={en.bugHunter.scorecardAutoMergeLabel}
               tooltip={en.bugHunter.scorecardAutoMergeTooltip}
-              value={formatRate(scorecard.pipeline.autoMergeRate)}
-              detail={`${scorecard.pipeline.autoMerged.toLocaleString()} merged · ${scorecard.pipeline.prOpened.toLocaleString()} as PRs`}
+              value={formatRate(autoMergeRate(window))}
+              detail={`${window.autoMerged.toLocaleString()} merged · ${window.prOpened.toLocaleString()} as PRs`}
             />
             <ScoreTile
               label={en.bugHunter.scorecardCleanLabel}
               tooltip={en.bugHunter.scorecardCleanTooltip}
-              value={formatRate(scorecard.runs.successRate)}
-              detail={`${scorecard.runs.completed} clean · ${scorecard.runs.failed} red`}
+              value={formatRate(successRate(window))}
+              detail={`${window.completed.toLocaleString()} clean · ${window.failed.toLocaleString()} red`}
             />
           </div>
 
@@ -266,20 +263,20 @@ export const AgentScorecard: FC = () => {
             <p className="text-xs font-medium text-typography-700 mb-2">
               {en.bugHunter.scorecardSeriesTitle}
             </p>
-            {scorecard.series.every(point => point.runs === 0) ? (
+            {series.every(point => point.runs === 0) ? (
               <p className="text-xs text-typography-500">{en.bugHunter.scorecardSeriesEmpty}</p>
             ) : (
               <div className="flex flex-col gap-2">
                 <SeriesRow
                   label={en.bugHunter.scorecardSeriesCost}
-                  points={scorecard.series}
+                  points={series}
                   pick={point => point.costUsd}
                   format={formatUsd}
                   barClassName="fill-primary-500"
                 />
                 <SeriesRow
                   label={en.bugHunter.scorecardSeriesFound}
-                  points={scorecard.series}
+                  points={series}
                   pick={point => point.found}
                   format={value => value.toLocaleString()}
                   barClassName="fill-amber-500"
@@ -293,28 +290,19 @@ export const AgentScorecard: FC = () => {
               {en.bugHunter.scorecardTokensLabel}:{" "}
               <span className="tabular-nums text-typography-800">
                 {en.bugHunter.scorecardTokensValue
-                  .replace("{input}", formatTokens(scorecard.tokens.input))
-                  .replace("{output}", formatTokens(scorecard.tokens.output))}
+                  .replace("{input}", formatTokens(window.inputTokens))
+                  .replace("{output}", formatTokens(window.outputTokens))}
               </span>
             </p>
-            {scorecard.tokens.missing > 0 && (
+            {tokensMissing(window) > 0 && (
               <p className="text-[11px] text-typography-500">
                 {en.bugHunter.scorecardTokensPartial.replace(
                   "{count}",
-                  String(scorecard.tokens.missing),
+                  String(tokensMissing(window)),
                 )}
               </p>
             )}
           </div>
-
-          {/* Only when the server actually capped us. On a young install that
-              holds every run it has ever made, saying "from my 12 most recent
-              shifts" would imply a limit that isn't biting. */}
-          {scorecard.runWindowTruncated && (
-            <p className="text-xs text-typography-500 mt-1">
-              {en.bugHunter.scorecardWindowNotice.replace("{count}", String(runs.length))}
-            </p>
-          )}
         </>
       )}
     </section>

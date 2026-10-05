@@ -19,6 +19,7 @@ import {
   BugHuntRunDetail,
   ListBugFindingsQuery,
   ListBugFindingsResponse,
+  BugHuntRunsSummary,
   ListBugHuntRunsResponse,
 } from "@types";
 
@@ -90,6 +91,30 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.BUG_HUNTER.RUNS,
         method: HttpMethod.GET,
       }),
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_RUNS, id: "LIST" }],
+    }),
+
+    /**
+     * The scorecard's totals for one window, aggregated in Postgres over every
+     * run in it. `getBugHuntRuns` is capped at the newest 50 rows, which is
+     * about a week of five nightly sweeps plus fix sessions — so a browser-side
+     * sum over it showed the same figure for "7 days", "30 days" and "All".
+     * `days` null means all time; `timeZone` shapes only the per-day series.
+     */
+    getBugHuntRunsSummary: builder.query<
+      BugHuntRunsSummary,
+      { days: number | null; timeZone?: string }
+    >({
+      query: ({ days, timeZone }) => ({
+        url: ApiEndpoints.BUG_HUNTER.RUNS_SUMMARY,
+        method: HttpMethod.GET,
+        params: {
+          ...(days != null ? { days } : {}),
+          ...(timeZone ? { timeZone } : {}),
+        },
+      }),
+      // Same tag as the run list: a triggered sweep or a run finishing
+      // invalidates the list, and the totals must move with it.
       providesTags: [{ type: TAG_TYPES.BUG_HUNTER_RUNS, id: "LIST" }],
     }),
 
@@ -425,6 +450,7 @@ export const {
   useGetBugHunterModelSettingsQuery,
   useUpdateBugHunterModelSettingsMutation,
   useGetBugHuntRunsQuery,
+  useGetBugHuntRunsSummaryQuery,
   useTriggerBugHuntSweepMutation,
   useGetBugHuntRunQuery,
   useGetBugFindingsQuery,
