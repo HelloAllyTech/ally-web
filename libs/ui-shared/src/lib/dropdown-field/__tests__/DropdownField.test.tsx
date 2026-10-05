@@ -54,4 +54,35 @@ describe("DropdownField", () => {
     );
     expect(document.querySelector(".cursor-pointer")).not.toBeInTheDocument();
   });
+
+  it("portals the list out of a clipping container and still selects", () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <div style={{ overflow: "auto", maxHeight: 40 }}>
+        <DropdownField portal value="Value" onChange={onChange} options={["A", "B"]} />
+      </div>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+
+    const option = screen.getByText("B");
+    // Rendered on document.body, so no ancestor of the trigger can clip it.
+    expect(container.contains(option)).toBe(false);
+    expect(option.closest("div[style]")).toHaveStyle({ position: "fixed" });
+
+    // The outside-click handler listens on mousedown; the portaled panel is
+    // outside the trigger's DOM, so pressing an option must not close it.
+    fireEvent.mouseDown(option);
+    fireEvent.click(option);
+    expect(onChange).toHaveBeenCalledWith("B");
+  });
+
+  it("closes a portaled list on a click outside it", () => {
+    render(<DropdownField portal value="Value" onChange={vi.fn()} options={["A"]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+    expect(screen.getByText("A")).toBeInTheDocument();
+
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByText("A")).not.toBeInTheDocument();
+  });
 });

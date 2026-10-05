@@ -125,6 +125,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
         <div className="flex gap-1">
           <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
           <DropdownField
+            portal
             disabled={disabled}
             value={value ?? field.placeholder ?? "--"}
             valueClassName={`${field.isEditable ? "text-typography-900" : "text-typography-800"}

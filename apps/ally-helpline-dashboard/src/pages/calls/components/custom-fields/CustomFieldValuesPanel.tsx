@@ -159,6 +159,9 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             {`${field.name}: `}
           </span>
           <DropdownField
+            // The summary scrolls inside its own panel; an inline list near its
+            // bottom edge is cut off (Tags → Name of Institution, Review Stage).
+            portal
             disabled={!isEditable}
             value={selectedLabel}
             valueClassName={`${isEditable ? "text-typography-900" : "text-typography-800"} text-lg font-primary`}
@@ -251,6 +254,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             {`${field.name}: `}
           </span>
           <DropdownField
+            portal
             disabled={!isEditable}
             value={boolLabel}
             valueClassName={`${isEditable ? "text-typography-900" : "text-typography-800"} text-lg font-primary`}
