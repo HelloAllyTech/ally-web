@@ -1,5 +1,7 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 
+import { useLocation, useNavigate } from "react-router-dom";
+
 import {
   Table,
   TableBody,
@@ -12,7 +14,7 @@ import {
 import { useGetBugHuntRunQuery, useGetBugHuntRunsQuery } from "@api";
 import { TooltipIcon } from "@assets";
 import { EmptyState } from "@components";
-import { en } from "@constants";
+import { en, ROUTES } from "@constants";
 import { BugHuntRun, BugHuntTrigger } from "@types";
 import { formatDateTime, formatTimestamp } from "@utils";
 
@@ -60,6 +62,12 @@ const formatCost = (run: BugHuntRun): string =>
  */
 const FoundCell: FC<{ run: BugHuntRun }> = ({ run }) => {
   const { setRun } = useBugHunterUrlState();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  // This table lives on the Analytics → Bug Agent tab now (OPP-0749), where
+  // there is no bugs table to scope. From there the link goes to the Bug
+  // Hunter page with the run already applied; on that page it scopes in place.
+  const onBugHunterPage = pathname.startsWith(ROUTES.BUG_HUNTER);
 
   if (run.foundCount === 0) return <>{run.foundCount}</>;
 
@@ -71,6 +79,10 @@ const FoundCell: FC<{ run: BugHuntRun }> = ({ run }) => {
       // scrolled away from.
       onClick={event => {
         event.stopPropagation();
+        if (!onBugHunterPage) {
+          navigate(`${ROUTES.BUG_HUNTER}?run=${encodeURIComponent(run.id)}`);
+          return;
+        }
         setRun(run.id);
         document
           .getElementById(BUG_FINDINGS_TABLE_ANCHOR_ID)

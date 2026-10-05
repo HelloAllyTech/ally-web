@@ -2665,10 +2665,9 @@ export const en = {
     // active values stay visible as pills while the panel itself is shut.
     // ── Page sections ─────────────────────────────────────────────────────────
     // Named for the question each answers, not for what they contain. "Work" is
-    // a triager's daily surface; "Performance" is the monthly governance one —
-    // see BugHunter.tsx on why those are two readers and not one long page.
+    // the triager's daily surface; the monthly governance numbers moved to
+    // Analytics → Bug Agent (OPP-0749) — see BugHunter.tsx.
     sectionWork: "Work",
-    sectionPerformance: "Performance",
     sectionAbout: "About",
     sectionNotebook: "Notebook",
     filtersButton: "Filters",

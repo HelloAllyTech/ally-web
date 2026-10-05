@@ -40,6 +40,10 @@ const renderTable = (ui = <RunHistoryTable />, entry = "/bug-hunter") =>
  * table reads.
  */
 const SearchProbe: FC = () => <span data-testid="search">{useLocation().search}</span>;
+const LocationProbe: FC = () => {
+  const { pathname, search } = useLocation();
+  return <span data-testid="location">{`${pathname}${search}`}</span>;
+};
 vi.mock("@assets", () => ({ TooltipIcon: () => <svg data-testid="tooltip-icon" /> }));
 
 // @constants reads `cellTypes` off the @components barrel at module-eval time,
@@ -267,6 +271,24 @@ describe("RunHistoryTable — the Found count links to that sweep's bugs", () =>
     fireEvent.click(screen.getByRole("button", { name: /Show the 10 bugs/ }));
 
     expect(screen.getByTestId("search").textContent).toBe("?run=run-a");
+  });
+
+  // The log lives on Analytics → Bug Agent now (OPP-0749). From there the
+  // count has no table beneath it to scope, so it carries the reader to the
+  // Bug Hunter page with the run already applied.
+  it("navigates to the Bug Hunter page with ?run=<id> when mounted anywhere else", () => {
+    mockRuns([found("run-a", "ally-web", 4)]);
+    renderTable(
+      <>
+        <RunHistoryTable />
+        <LocationProbe />
+      </>,
+      "/analytics?tab=bug-agent-performance",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Show the 4 bugs/ }));
+
+    expect(screen.getByTestId("location").textContent).toBe("/bug-hunter?run=run-a");
   });
 
   it("clears the other filters, so the count means what the log says it means", () => {

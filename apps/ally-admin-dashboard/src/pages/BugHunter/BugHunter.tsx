@@ -1,26 +1,24 @@
 import { FC, useMemo, useState } from "react";
 
 import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useGetBugFindingsQuery, useGetBugHunterSettingsQuery } from "@api";
-import { en, FeatureToggleKey } from "@constants";
+import { en, FeatureToggleKey, ROUTES } from "@constants";
 import { RootState } from "@store";
 import { BugFinding, BugHunterMode } from "@types";
 import { hasFeature } from "@utils";
 
 import { AboutAgent } from "./AboutAgent";
-import { AccuracyPanel } from "./AccuracyPanel";
 import { AgentProfileCard } from "./AgentProfileCard";
-import { AgentScorecard } from "./AgentScorecard";
 import { BugFindingsTable } from "./BugFindingsTable";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { KeyboardShortcutSheet } from "./KeyboardShortcutSheet";
 import { LiveWorkBoard } from "./LiveWorkBoard";
 import { NotebookPanel } from "./NotebookPanel";
-import { RunHistoryTable } from "./RunHistoryTable";
 import { UxSignalsPanel } from "./UxSignalsPanel";
+import { ANALYTICS_BUG_AGENT_TAB_ID, ANALYTICS_TAB_PARAM } from "../Analytics/Analytics";
 
 /**
  * Bug Hunter's tab: a colleague's card, and under it the work — with the two
@@ -73,17 +71,11 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
  * action-needed items were the same bugs again. The sidebar badge still counts
  * unread notifications, and run-level messages remain readable in the shift log.
  *
- * **Performance** — the governor's surface, in the order the question is
- * actually asked: `AgentScorecard` (what it has cost), then `AccuracyPanel`
- * (whether it was right, how fast, and what a landed fix costs), then
- * `RunHistoryTable` (the per-run ledger both of them aggregate). The cost half
- * and the accuracy half stay separate components on purpose: the scorecard
- * derives everything from `GET /runs` and deliberately refuses to compute a
- * finding-level funnel from it, because run totals and finding statuses have
- * different denominators there — see `scorecard.ts`. The funnel needs its own
- * server-side query, and giving it its own component is what keeps that
- * refusal intact rather than quietly growing a second data source inside the
- * scorecard.
+ * **Performance** — gone (OPP-0749, 2026-10-05). The governor's surface —
+ * `AgentScorecard`, `AccuracyPanel`, `RunHistoryTable` — lives on Analytics →
+ * Bug Agent beside the operations charts, so one place answers "how is Bug
+ * Hunter doing" and this page is for work. `?section=performance` redirects
+ * there, so an old link still lands on the numbers.
  *
  * **About** — reference material, and the default tab on the one occasion
  * nothing else has any content: before anyone has put it on duty. That replaces
@@ -109,14 +101,17 @@ import { UxSignalsPanel } from "./UxSignalsPanel";
 /** The three sections, and the `?section=` values that address them. */
 const SECTION = {
   work: "work",
-  performance: "performance",
   notebook: "notebook",
   about: "about",
 } as const;
 
 type Section = (typeof SECTION)[keyof typeof SECTION];
 
-const SECTIONS: Section[] = [SECTION.work, SECTION.performance, SECTION.notebook, SECTION.about];
+const SECTIONS: Section[] = [SECTION.work, SECTION.notebook, SECTION.about];
+
+/** The section that moved to Analytics; its old address is honoured with a redirect. */
+const RETIRED_PERFORMANCE_SECTION = "performance";
+const PERFORMANCE_REDIRECT = `${ROUTES.ANALYTICS}?${ANALYTICS_TAB_PARAM}=${ANALYTICS_BUG_AGENT_TAB_ID}`;
 
 export const BugHunter: FC = () => {
   // Already in flight from the profile card with identical args, so both of
@@ -186,7 +181,6 @@ export const BugHunter: FC = () => {
   const tabItems = useMemo(
     () => [
       { id: SECTION.work, label: en.bugHunter.sectionWork },
-      { id: SECTION.performance, label: en.bugHunter.sectionPerformance },
       // What the agent wrote down for its future self, and what admins added.
       // Its own tab: it is neither today's work nor a metric, and a reader who
       // wants to teach the agent something should not have to hunt for where.
@@ -195,6 +189,10 @@ export const BugHunter: FC = () => {
     ],
     [],
   );
+
+  if (rawSection === RETIRED_PERFORMANCE_SECTION) {
+    return <Navigate to={PERFORMANCE_REDIRECT} replace />;
+  }
 
   return (
     <div className="h-full font-primary flex flex-col overflow-y-auto custom-scrollbar">
@@ -229,26 +227,6 @@ export const BugHunter: FC = () => {
               onShowShortcuts={() => setShowShortcuts(true)}
               canTriage={canTriage}
             />
-          </div>
-        </>
-      )}
-
-      {section === SECTION.performance && (
-        <>
-          <div className="mt-6 shrink-0">
-            <AgentScorecard />
-            {/* Above the shift log and below the scorecard. The scorecard says
-                what Bug Hunter cost; this says whether it was right — the two
-                halves of the same question, so they read together, with the
-                raw per-run ledger they both summarise underneath. */}
-            <AccuracyPanel />
-          </div>
-
-          {/* Directly under the scorecard it aggregates, which is the pairing
-              the single-column layout already had and the reason these two
-              share a tab rather than getting one each. */}
-          <div className="mt-6 shrink-0">
-            <RunHistoryTable />
           </div>
         </>
       )}

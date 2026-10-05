@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useState } from "react";
 
 import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
@@ -74,6 +75,11 @@ interface TabDef {
    */
   visibleTo?: (ctx: { features: string[] }) => boolean;
 }
+
+/** Query-string key that selects an Analytics tab by its `TabDef.id`. */
+export const ANALYTICS_TAB_PARAM = "tab";
+/** The Bug Agent tab's id, exported so the Bug Hunter page can link to it. */
+export const ANALYTICS_BUG_AGENT_TAB_ID = "bug-agent-performance";
 
 const TABS: TabDef[] = [
   // Highlights is the whole-platform picture; it absorbed the former separate
@@ -171,7 +177,7 @@ const TABS: TabDef[] = [
     ),
   },
   {
-    id: "bug-agent-performance",
+    id: ANALYTICS_BUG_AGENT_TAB_ID,
     label: "Bug Agent",
     uses: { language: false, range: true },
     render: f => <BugAgentPerformance {...f} />,
@@ -251,7 +257,11 @@ export const Analytics = () => {
   // Page-level filters, shared across tabs (language id "" = all). Each tab
   // opts in via TabDef.uses; the picker only renders for tabs that use it.
   const [language, setLanguage] = useState<string>("");
-  const [tabIndex, setTabIndex] = useState(0);
+  // The open tab lives in `?tab=<id>`, so "look at the Bug Agent numbers" is
+  // a link — the Bug Hunter page sends its retired Performance section here
+  // (OPP-0749). An unknown or absent id is the first tab, never an error.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get(ANALYTICS_TAB_PARAM);
 
   // Most tabs are visible to everyone who can reach this page (the route
   // gates on the analytics feature toggle); a tab may declare a narrower gate
@@ -261,6 +271,23 @@ export const Analytics = () => {
     () => TABS.filter(t => !t.visibleTo || t.visibleTo({ features })),
     [features],
   );
+  const tabIndex = Math.max(
+    0,
+    tabs.findIndex(t => t.id === requestedTab),
+  );
+  const setTabIndex = (index: number) =>
+    setSearchParams(
+      current => {
+        const params = new URLSearchParams(current);
+        const id = tabs[index]?.id;
+        // The first tab is the default, so it is the absent value and the
+        // page's own address stays `/analytics`.
+        if (!id || index === 0) params.delete(ANALYTICS_TAB_PARAM);
+        else params.set(ANALYTICS_TAB_PARAM, id);
+        return params;
+      },
+      { replace: true },
+    );
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(

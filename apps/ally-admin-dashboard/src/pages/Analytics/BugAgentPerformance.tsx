@@ -28,6 +28,9 @@ import {
   lineOpts,
 } from "./chartKit";
 import { buildColorScale, formatPercent, formatUsd } from "./tokenChart";
+import { AccuracyPanel } from "../BugHunter/AccuracyPanel";
+import { AgentScorecard } from "../BugHunter/AgentScorecard";
+import { RunHistoryTable } from "../BugHunter/RunHistoryTable";
 
 /**
  * Bug Hunter's five headline performance trends, week over week: is it
@@ -44,6 +47,14 @@ import { buildColorScale, formatPercent, formatUsd } from "./tokenChart";
  * Reuses the exact funnel arithmetic `AccuracyPanel.tsx`'s single-window
  * figures already use, applied per week server-side — this tab does not
  * recompute anything the accuracy panel didn't already define correctly.
+ *
+ * Since OPP-0749 (2026-10-05) this tab is also the home of the three panels
+ * that used to make up the Bug Hunter page's Performance tab: the scorecard
+ * and the accuracy panel open the tab as "right now" figures, and the shift
+ * log closes it as the per-run ledger everything above aggregates. The Bug
+ * Hunter page keeps Work, Notebook and About; its old `?section=performance`
+ * redirects here. The shift log's "N found" links jump back to that page's
+ * table — see `RunHistoryTable`.
  */
 export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
   const { query } = filters;
@@ -120,6 +131,24 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Right now, before the trends: what it has cost and whether it was
+          right over the current window. Their own data hooks and their own
+          window controls, as they had on the Bug Hunter page. */}
+      <div data-chart-id="AAQ-167">
+        <AgentScorecard />
+      </div>
+      <div data-chart-id="AAQ-168">
+        <AccuracyPanel />
+      </div>
+
+      <div className="pt-2">
+        <h3 className="text-sm font-semibold text-typography-900">Week over week</h3>
+        <p className="text-xs text-typography-600">
+          The same five questions as the panels above, asked per calendar week so a drift shows
+          before the monthly figure moves.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard
           title="Precision"
@@ -262,6 +291,13 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
         </p>
       </div>
       <BugHunterOperationsCards {...filters} />
+
+      {/* The per-run ledger every number above aggregates: status, trigger,
+          cost and the GitHub run for each sweep and fix session. The only view
+          of that, so it stays reachable here after leaving the agent's page. */}
+      <div data-chart-id="AAQ-169" className="pt-2">
+        <RunHistoryTable />
+      </div>
     </div>
   );
 };

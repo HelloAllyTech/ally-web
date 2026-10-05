@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock API hooks — mode state, the findings table, and run history all come entirely from these.
@@ -201,6 +201,12 @@ import * as api from "@api";
 import { BugHunterMode } from "@types";
 import { BugHunter } from "../BugHunter";
 
+/** Renders the router's current address, so a redirect's target is assertable. */
+const LocationProbe = () => {
+  const { pathname, search } = useLocation();
+  return <span data-testid="location">{`${pathname}${search}`}</span>;
+};
+
 const mockSettingsQuery = (overrides: Record<string, unknown> = {}) => {
   (api.useGetBugHunterSettingsQuery as any).mockReturnValue({
     data: { mode: BugHunterMode.OFF, updatedBy: null, updatedAt: "2026-08-01T00:00:00.000Z" },
@@ -325,22 +331,34 @@ describe("BugHunter", () => {
    * The scorecard and the shift log answer a governance question asked roughly
    * monthly, and used to render under the bugs table on every single visit.
    */
-  it("keeps the governance sections off the work tab, one click away", () => {
+  it("has no Performance tab, and keeps the governance panels off this page entirely (OPP-0749)", () => {
     onDuty();
     render(
       <MemoryRouter>
         <BugHunter />
       </MemoryRouter>,
     );
+    expect(screen.queryByTestId("tab-performance")).not.toBeInTheDocument();
     expect(screen.queryByText("How I'm doing")).not.toBeInTheDocument();
     expect(screen.queryByText("My shift log")).not.toBeInTheDocument();
+    expect(screen.getByTestId("tab-work")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-notebook")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-about")).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByTestId("tab-performance"));
-
-    expect(screen.getByText("How I'm doing")).toBeInTheDocument();
-    expect(screen.getByText("My shift log")).toBeInTheDocument();
-    // And the work is not also on this tab — that would be the old page again.
-    expect(screen.queryByText("Bugs I'm tracking")).not.toBeInTheDocument();
+  // The numbers moved to Analytics → Bug Agent; an old link to the section
+  // still lands on them rather than on a blank Work tab.
+  it("redirects the retired ?section=performance to the Analytics Bug Agent tab", () => {
+    onDuty();
+    render(
+      <MemoryRouter initialEntries={["/bug-hunter?section=performance"]}>
+        <Routes>
+          <Route path="/bug-hunter" element={<BugHunter />} />
+          <Route path="/analytics" element={<LocationProbe />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("location").textContent).toBe("/analytics?tab=bug-agent-performance");
   });
 
   // The card is the page's heading and holds the kill switch, so it must be
@@ -352,7 +370,7 @@ describe("BugHunter", () => {
         <BugHunter />
       </MemoryRouter>,
     );
-    fireEvent.click(screen.getByTestId("tab-performance"));
+    fireEvent.click(screen.getByTestId("tab-notebook"));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Bug Hunter");
 
     fireEvent.click(screen.getByTestId("tab-about"));
@@ -362,11 +380,11 @@ describe("BugHunter", () => {
   it("reads the open section out of the address bar, so a section is linkable", () => {
     onDuty();
     render(
-      <MemoryRouter initialEntries={["/?section=performance"]}>
+      <MemoryRouter initialEntries={["/?section=notebook"]}>
         <BugHunter />
       </MemoryRouter>,
     );
-    expect(screen.getByText("How I'm doing")).toBeInTheDocument();
+    expect(screen.getByText("My notebook")).toBeInTheDocument();
   });
 
   it("falls back to the default section for a hand-edited one, rather than erroring", () => {
@@ -486,11 +504,6 @@ describe("BugHunter", () => {
     );
     expect(
       screen.getAllByTestId("empty-state").some(el => el.textContent?.includes("No bugs yet")),
-    ).toBe(true);
-
-    fireEvent.click(screen.getByTestId("tab-performance"));
-    expect(
-      screen.getAllByTestId("empty-state").some(el => el.textContent?.includes("No shifts yet")),
     ).toBe(true);
   });
 });
