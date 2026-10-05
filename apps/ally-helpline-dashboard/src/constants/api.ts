@@ -295,4 +295,34 @@ export const ApiEndpoints = {
     // Public (ungated) feature-level product updates for the /blog/changelog page.
     GET_PUBLIC: "/v1/product-updates/public",
   },
+  // Text helpline — ally-be docs/text-helpline.md §5.
+  HELPLINE: {
+    // Public (no auth) and guest (talker guest token) — served by helplineGuestAPI,
+    // which never touches the user session.
+    PUBLIC_STATUS: (tenantCode: string) =>
+      `/v1/helpline/public/${encodeURIComponent(tenantCode)}/status`,
+    PUBLIC_SESSION: (tenantCode: string) =>
+      `/v1/helpline/public/${encodeURIComponent(tenantCode)}/session`,
+    GUEST_CHAT: "/v1/helpline/guest/chat",
+    GUEST_REFRESH: "/v1/helpline/guest/refresh",
+    GUEST_END: "/v1/helpline/guest/end",
+    GUEST_ERASE: "/v1/helpline/guest/erase",
+    GUEST_FEEDBACK: "/v1/helpline/guest/feedback",
+    // Listener / supervisor (user JWT).
+    ENABLED: "/v1/helpline/enabled",
+    ME: "/v1/helpline/me",
+    ME_PROFILE: "/v1/helpline/me/profile",
+    ME_PRESENCE: "/v1/helpline/me/presence",
+    LOBBY: "/v1/helpline/lobby",
+    CHATS: "/v1/helpline/chats",
+    CHAT: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}`,
+    CHAT_MESSAGES: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/messages`,
+    CHAT_CLAIM: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/claim`,
+    CHAT_END: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/end`,
+    CHAT_SUMMARY: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/summary`,
+    RISK_FLAG_ACK: (chatId: string, flagId: string) =>
+      `/v1/helpline/chats/${encodeURIComponent(chatId)}/risk-flags/${encodeURIComponent(flagId)}/ack`,
+    COPILOT_FEEDBACK: (chatId: string) =>
+      `/v1/helpline/chats/${encodeURIComponent(chatId)}/copilot-feedback`,
+  },
 };

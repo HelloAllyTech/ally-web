@@ -28,3 +28,5 @@ export * from "./useFieldAutosave";
 export * from "./useCharacterInterviewStream";
 export * from "./useCanViewCharacterLibrary";
 export * from "./useCanViewAnalytics";
+export * from "./useCanUseTextHelpline";
+export * from "./useHelplineSocket";
