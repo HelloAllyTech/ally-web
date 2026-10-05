@@ -31,8 +31,6 @@ import {
   lineOpts,
 } from "./chartKit";
 import { buildColorScale, formatPercent, formatUsd } from "./tokenChart";
-import { AccuracyPanel } from "../BugHunter/AccuracyPanel";
-import { AgentScorecard } from "../BugHunter/AgentScorecard";
 import { RunHistoryTable } from "../BugHunter/RunHistoryTable";
 
 /**
@@ -51,10 +49,11 @@ import { RunHistoryTable } from "../BugHunter/RunHistoryTable";
  * figures already use, applied per week server-side — this tab does not
  * recompute anything the accuracy panel didn't already define correctly.
  *
- * Since OPP-0749 (2026-10-05) this tab is also the home of the three panels
- * that used to make up the Bug Hunter page's Performance tab: the scorecard
- * and the accuracy panel open the tab as "right now" figures, and the shift
- * log closes it as the per-run ledger everything above aggregates. The Bug
+ * Since OPP-0749 (2026-10-05) this tab also closes with the shift log, the
+ * per-run ledger everything above aggregates — the one panel kept from the
+ * Bug Hunter page's retired Performance tab. The scorecard and the accuracy
+ * panel moved here with it and were removed the same day at the product
+ * head's request: the trends and operations charts already carry their figures. The Bug
  * Hunter page keeps Work, Notebook and About; its old `?section=performance`
  * redirects here. The shift log's "N found" links jump back to that page's
  * table — see `RunHistoryTable`.
@@ -140,24 +139,6 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Right now, before the trends: what it has cost and whether it was
-          right over the current window. Their own data hooks and their own
-          window controls, as they had on the Bug Hunter page. */}
-      <div data-chart-id="AAQ-198">
-        <AgentScorecard />
-      </div>
-      <div data-chart-id="AAQ-199">
-        <AccuracyPanel />
-      </div>
-
-      <div className="pt-2">
-        <h3 className="text-sm font-semibold text-typography-900">Week over week</h3>
-        <p className="text-xs text-typography-600">
-          The same five questions as the panels above, asked per calendar week so a drift shows
-          before the monthly figure moves.
-        </p>
-      </div>
-
       {/* The headline the governor asked for, ahead of the weekly rates: is
           the agent finding FEWER bugs as the codebases get cleaner? Daily,
           not weekly like everything below it, because the sweeps are nightly
