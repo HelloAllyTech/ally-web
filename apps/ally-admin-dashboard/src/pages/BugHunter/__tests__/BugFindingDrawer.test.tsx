@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BugFindingStatus } from "@types";
@@ -470,8 +470,9 @@ describe("BugFindingDrawer — multi-repo plan", () => {
     renderDrawer(finding({ status: BugFindingStatus.COORDINATING, steps }));
 
     expect(screen.getByText("This fix spans 2 repos")).toBeInTheDocument();
-    expect(screen.getByText("Step 1")).toBeInTheDocument();
-    expect(screen.getByText("ally-be")).toBeInTheDocument();
+    // Scoped to the step: the parent's own meta line names ally-be too.
+    const stepOne = screen.getByText("Step 1").closest("li") as HTMLElement;
+    expect(within(stepOne).getByText("ally-be")).toBeInTheDocument();
     expect(screen.getByText("Add the emergencyServicesUrl field")).toBeInTheDocument();
     expect(screen.getByText("Step 2")).toBeInTheDocument();
     expect(screen.getByText("Render it as a proper link")).toBeInTheDocument();

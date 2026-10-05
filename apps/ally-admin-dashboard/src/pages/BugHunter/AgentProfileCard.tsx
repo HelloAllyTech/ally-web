@@ -160,8 +160,9 @@ export const AgentProfileCard: FC = () => {
             <span className="text-xs text-typography-600">{en.bugHunter.modeLabel}</span>
             {/* Carbon splits a ContentSwitcher's width evenly across its
                 switches, so the container has to fit the longest label
-                ("Checks with you"), not the average one. */}
-            <div className="w-[22rem] max-w-full">
+                ("Checks with you"), not the average one — at 22rem it was
+                clipping to "Checks wit…" on the live page. */}
+            <div className="w-[27rem] max-w-full">
               <ContentSwitcher
                 key={`${settings?.mode}-${resetToken}`}
                 selectedIndex={currentIndex}

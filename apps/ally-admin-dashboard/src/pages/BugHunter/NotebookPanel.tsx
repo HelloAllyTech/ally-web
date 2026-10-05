@@ -111,7 +111,7 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
         </div>
       </div>
 
-      <div className="mt-4 flex items-end justify-between gap-3">
+      <div className="mt-4 flex items-end gap-3">
         <div className="w-[220px]">
           <Select
             id="bug-hunter-notebook-repo"
@@ -137,7 +137,7 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
         )}
       </div>
 
-      <div className="mt-4 border border-border-light rounded">
+      <div className="mt-4 border border-border-light rounded-lg bg-white">
         {isLoading ? (
           <p className="px-4 py-6 text-sm text-typography-500">{en.bugHunter.notebookLoading}</p>
         ) : isError ? (

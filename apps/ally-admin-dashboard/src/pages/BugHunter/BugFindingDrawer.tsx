@@ -58,6 +58,14 @@ interface BugFindingDrawerProps {
 }
 
 /** Statuses where something is in flight and the drawer should poll rather than sit stale. */
+/**
+ * One item of the drawer's meta line. The dot trails each item rather than
+ * leading the next, so when the line wraps the dot stays at the end of a line
+ * instead of opening the following one. The last item carries none.
+ */
+const DRAWER_META_ITEM =
+  "text-xs text-typography-600 after:ml-2 after:text-typography-400 after:content-['·'] last-of-type:after:hidden";
+
 const IN_FLIGHT_STATUSES: BugFindingStatus[] = [
   BugFindingStatus.QUEUED,
   BugFindingStatus.FIXING,
@@ -323,30 +331,47 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
   };
 
   return (
-    <SidePanel open onClose={onClose} title={finding?.title ?? "…"} className="w-[32rem]">
+    <SidePanel
+      open
+      onClose={onClose}
+      // The panel renders its title as plain bold text; a long bug title wrapped
+      // to three lines at the panel's default size and ran into the close
+      // button. Two clamped lines, with the full title a hover away.
+      title={
+        <span
+          title={finding?.title}
+          className="block text-base font-semibold leading-snug text-typography-900 line-clamp-2"
+        >
+          {finding?.title ?? "…"}
+        </span>
+      }
+      className="w-[32rem]"
+    >
       {isLoading ? (
         <p className="text-sm text-typography-600">…</p>
       ) : isError || !finding ? (
         <p className="text-sm text-destructive-600">{en.bugHunter.drawerLoadFailed}</p>
       ) : (
         <div className="flex flex-col gap-5">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <BugFindingStatusBadge status={finding.status} />
             {IN_FLIGHT_STATUSES.includes(finding.status) && (
               <BrailleSpinner className="text-amber-600" />
             )}
-            <span className="text-xs text-typography-600">
-              {BUG_FINDING_SOURCE_LABELS[finding.source]}
-            </span>
-            {finding.repo && <span className="text-xs text-typography-600">· {finding.repo}</span>}
+            {/* The separators are drawn by the layout, not typed into the
+                text, so a wrap never starts a line with a stray dot. The copy
+                link below is a div, so `last-of-type` lands on the last of
+                these spans. */}
+            <span className={DRAWER_META_ITEM}>{BUG_FINDING_SOURCE_LABELS[finding.source]}</span>
+            {finding.repo && <span className={DRAWER_META_ITEM}>{finding.repo}</span>}
             {finding.severity && (
-              <span className="text-xs text-typography-600">
-                · {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
+              <span className={DRAWER_META_ITEM}>
+                {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
               </span>
             )}
             {engineModelLabel(finding.engine, finding.model) && (
-              <span className="text-xs text-typography-600">
-                · {engineModelLabel(finding.engine, finding.model)}
+              <span className={DRAWER_META_ITEM}>
+                {engineModelLabel(finding.engine, finding.model)}
               </span>
             )}
 

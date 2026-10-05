@@ -105,7 +105,7 @@ const SEVERITY_DOTS: Record<BugFindingSeverity, string> = {
  * opaque background is not optional: without it, rows scroll visibly *through*
  * the header text.
  */
-const STICKY_HEADER = "sticky top-0 z-20 bg-white";
+const STICKY_HEADER = "sticky top-0 z-20 bg-neutral-50";
 
 /**
  * The two columns that step aside on a narrow viewport.
@@ -216,7 +216,7 @@ const SortableHeader: FC<{
   const isActive = activeKey === sortKey;
   return (
     <TableHeader
-      className={`py-2.5 pr-4 font-medium ${STICKY_HEADER} ${className ?? ""}`}
+      className={`py-2.5 pr-3 font-medium ${STICKY_HEADER} ${className ?? ""}`}
       // Real `aria-sort` on the header cell rather than a visual caret only:
       // the old table had no sort at all, and adding one that a screen reader
       // cannot read the state of would be adding half of it.
@@ -255,6 +255,125 @@ const SortableHeader: FC<{
     </TableHeader>
   );
 };
+
+/**
+ * The row's quick actions, as one compact control rather than three Carbon
+ * ghost buttons. Carbon's `sm` ghost button is 32px tall with 16px side
+ * padding, so the three of them cost ~300px of the Decide column on every
+ * row — measured on the live page that was the column pushing the table past
+ * its container, and the reason "Put me on it" read as "Pu". These are 28px,
+ * bordered so they read as buttons at a glance, and tinted by what they do.
+ */
+const QUICK_ACTION_STYLES = {
+  approve: "border-success-200 text-success-600 hover:bg-success-50 focus-visible:ring-success-400",
+  reject:
+    "border-destructive-200 text-destructive-600 hover:bg-destructive-50 focus-visible:ring-destructive-400",
+  fix: "border-primary-200 text-primary-700 hover:bg-primary-50 focus-visible:ring-primary-400",
+} as const;
+
+const QuickAction: FC<{
+  tone: keyof typeof QUICK_ACTION_STYLES;
+  onClick: () => void;
+  children: string;
+}> = ({ tone, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`inline-flex h-7 items-center whitespace-nowrap rounded-md border bg-white px-2.5 text-xs font-medium cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 ${QUICK_ACTION_STYLES[tone]}`}
+  >
+    {children}
+  </button>
+);
+
+/** How many page buttons the pager shows before it starts eliding the middle. */
+const PAGER_MAX_VISIBLE = 7;
+
+/**
+ * Which page numbers (zero-based) to show, with `null` where a run of pages
+ * is elided. Always the first and last page, and the current page with one
+ * neighbour each side, so the reader can see where they are and jump to
+ * either end without a page-size calculation.
+ */
+export const pagerItems = (page: number, pageCount: number): (number | null)[] => {
+  if (pageCount <= PAGER_MAX_VISIBLE) {
+    return Array.from({ length: pageCount }, (_, index) => index);
+  }
+  const last = pageCount - 1;
+  if (page <= 3) return [0, 1, 2, 3, 4, null, last];
+  if (page >= last - 3) return [0, null, last - 4, last - 3, last - 2, last - 1, last];
+  return [0, null, page - 1, page, page + 1, null, last];
+};
+
+const PAGER_BUTTON =
+  "inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-xs font-medium tabular-nums cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:cursor-not-allowed disabled:opacity-40";
+const PAGER_BUTTON_IDLE =
+  "border-border-light bg-white text-typography-800 hover:bg-neutral-50 hover:border-border-medium";
+const PAGER_BUTTON_ACTIVE = "border-primary-500 bg-primary-500 text-white";
+
+/**
+ * Previous / numbered pages / Next.
+ *
+ * Replaces two Carbon ghost buttons either side of "Page 1 of 5": ghost
+ * buttons have no border and the disabled one greys to the colour of the
+ * caption beside it, so the whole footer read as three words of muted text
+ * and nothing in it looked pressable. Numbered pages also make "jump to the
+ * end" one click, which a Next button alone never can.
+ */
+const TablePager: FC<{
+  page: number;
+  pageCount: number;
+  onChange: (page: number) => void;
+}> = ({ page, pageCount, onChange }) => (
+  <nav
+    className="flex items-center gap-1"
+    aria-label={en.bugHunter.pageStatus
+      .replace("{page}", String(page + 1))
+      .replace("{pages}", String(pageCount))}
+  >
+    <button
+      type="button"
+      className={`${PAGER_BUTTON} ${PAGER_BUTTON_IDLE} gap-1`}
+      disabled={page === 0}
+      onClick={() => onChange(Math.max(0, page - 1))}
+    >
+      <span aria-hidden="true">‹</span>
+      {en.bugHunter.pagePrev}
+    </button>
+    {pagerItems(page, pageCount).map((item, index) =>
+      item === null ? (
+        <span
+          key={`gap-${index}`}
+          aria-hidden="true"
+          className="inline-flex h-8 w-6 items-center justify-center text-xs text-typography-500"
+        >
+          …
+        </span>
+      ) : (
+        <button
+          key={item}
+          type="button"
+          aria-current={item === page ? "page" : undefined}
+          aria-label={en.bugHunter.pageStatus
+            .replace("{page}", String(item + 1))
+            .replace("{pages}", String(pageCount))}
+          className={`${PAGER_BUTTON} ${item === page ? PAGER_BUTTON_ACTIVE : PAGER_BUTTON_IDLE}`}
+          onClick={() => onChange(item)}
+        >
+          {item + 1}
+        </button>
+      ),
+    )}
+    <button
+      type="button"
+      className={`${PAGER_BUTTON} ${PAGER_BUTTON_IDLE} gap-1`}
+      disabled={page >= pageCount - 1}
+      onClick={() => onChange(page + 1)}
+    >
+      {en.bugHunter.pageNext}
+      <span aria-hidden="true">›</span>
+    </button>
+  </nav>
+);
 
 /** Six pulsing rows, so a slow response looks like a table arriving rather than a broken page. */
 const TableSkeleton: FC = () => (
@@ -824,7 +943,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
   // One row height. The comfortable/compact toggle came off the toolbar on
   // 2026-10-01 along with the "Keyboard" button; compact is what everyone had
   // switched to, and `?` still opens the shortcut sheet.
-  const rowPadding = "py-1.5";
+  const rowPadding = "py-2";
 
   return (
     <div id={BUG_FINDINGS_TABLE_ANCHOR_ID} className="scroll-mt-4">
@@ -956,31 +1075,37 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
             </div>
           )}
 
-          <Table className="w-full text-left border-collapse">
-            <TableHead>
-              <TableRow className="border-b border-border-light text-sm text-typography-700">
-                {/* No selection column at all for a reader who cannot act —
+          {/* One card around the rows and the pager. A wrapper rather than a
+              border on the table itself, because `border-collapse` cannot
+              round a corner — and deliberately without `overflow-hidden`,
+              which would make this box the scrollport and stop the sticky
+              header sticking to the page. */}
+          <div className="rounded-lg border border-border-light bg-white">
+            <Table className="w-full text-left border-collapse">
+              <TableHead>
+                <TableRow className="border-b border-border-medium text-xs font-semibold text-typography-700">
+                  {/* No selection column at all for a reader who cannot act —
                     bulk triage is a decision, same as the row quick actions and
                     the drawer's buttons, all gated the same way. The whole
                     <TableHeader> goes, not just the checkbox inside it: an
                     empty 32px gutter down the left of every row is the "dead
                     column" this table collapses everywhere else. */}
-                {canTriage && (
-                  <TableHeader className={`py-2.5 pr-3 w-8 ${STICKY_HEADER}`}>
-                    <Tooltip label={en.bugHunter.selectAllTooltip} align="right">
-                      <span className="inline-flex">
-                        <TriStateCheckbox
-                          id="bug-findings-select-all"
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onChange={togglePage}
-                          label={en.bugHunter.selectAllLabel}
-                        />
-                      </span>
-                    </Tooltip>
-                  </TableHeader>
-                )}
-                {/* The one column that holds prose, and the one that absorbs
+                  {canTriage && (
+                    <TableHeader className={`py-2.5 pl-3 pr-3 w-8 ${STICKY_HEADER}`}>
+                      <Tooltip label={en.bugHunter.selectAllTooltip} align="right">
+                        <span className="inline-flex">
+                          <TriStateCheckbox
+                            id="bug-findings-select-all"
+                            checked={allPageSelected}
+                            indeterminate={somePageSelected}
+                            onChange={togglePage}
+                            label={en.bugHunter.selectAllLabel}
+                          />
+                        </span>
+                      </Tooltip>
+                    </TableHeader>
+                  )}
+                  {/* The one column that holds prose, and the one that absorbs
                     whatever width the others do not use. A table in `auto`
                     layout hands surplus to whichever cell wants it, which used
                     to be the actions column — so a 1500px viewport spent 325px
@@ -993,140 +1118,143 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                     region and everything from Status rightwards was off-screen.
                     The other half is `max-w-0` on the body cell, which is what
                     lets this column shrink past its content — see there. */}
-                <SortableHeader
-                  sortKey="title"
-                  label={en.bugHunter.findingColumnTitle}
-                  activeKey={sortKey}
-                  direction={sortDirection}
-                  onSort={toggleSort}
-                  className="w-full"
-                />
-                {showRepo && (
                   <SortableHeader
-                    sortKey="repo"
-                    label={en.bugHunter.findingColumnRepo}
+                    sortKey="title"
+                    label={en.bugHunter.findingColumnTitle}
+                    activeKey={sortKey}
+                    direction={sortDirection}
+                    onSort={toggleSort}
+                    className={`w-full ${canTriage ? "" : "pl-3"}`}
+                  />
+                  {showRepo && (
+                    <SortableHeader
+                      sortKey="repo"
+                      label={en.bugHunter.findingColumnRepo}
+                      activeKey={sortKey}
+                      direction={sortDirection}
+                      onSort={toggleSort}
+                      className="whitespace-nowrap"
+                    />
+                  )}
+                  {showSeverity && (
+                    <SortableHeader
+                      sortKey="severity"
+                      label={en.bugHunter.findingColumnSeverity}
+                      activeKey={sortKey}
+                      direction={sortDirection}
+                      onSort={toggleSort}
+                      className="whitespace-nowrap"
+                    />
+                  )}
+                  <SortableHeader
+                    sortKey="status"
+                    label={en.bugHunter.findingColumnStatus}
+                    tooltip={en.bugHunter.findingColumnStatusTooltip}
                     activeKey={sortKey}
                     direction={sortDirection}
                     onSort={toggleSort}
                     className="whitespace-nowrap"
                   />
-                )}
-                {showSeverity && (
-                  <SortableHeader
-                    sortKey="severity"
-                    label={en.bugHunter.findingColumnSeverity}
-                    activeKey={sortKey}
-                    direction={sortDirection}
-                    onSort={toggleSort}
-                    className="whitespace-nowrap"
-                  />
-                )}
-                <SortableHeader
-                  sortKey="status"
-                  label={en.bugHunter.findingColumnStatus}
-                  tooltip={en.bugHunter.findingColumnStatusTooltip}
-                  activeKey={sortKey}
-                  direction={sortDirection}
-                  onSort={toggleSort}
-                  className="whitespace-nowrap"
-                />
-                {showStage && (
-                  <SortableHeader
-                    sortKey="stage"
-                    label={en.bugHunter.findingColumnStage}
-                    tooltip={en.bugHunter.findingColumnStageTooltip}
-                    activeKey={sortKey}
-                    direction={sortDirection}
-                    onSort={toggleSort}
-                    className={`whitespace-nowrap ${SECONDARY_COLUMN}`}
-                  />
-                )}
-                {/* Replaces the old absolute "Discovered" date column. The
+                  {showStage && (
+                    <SortableHeader
+                      sortKey="stage"
+                      label={en.bugHunter.findingColumnStage}
+                      tooltip={en.bugHunter.findingColumnStageTooltip}
+                      activeKey={sortKey}
+                      direction={sortDirection}
+                      onSort={toggleSort}
+                      className={`whitespace-nowrap ${SECONDARY_COLUMN}`}
+                    />
+                  )}
+                  {/* Replaces the old absolute "Discovered" date column. The
                     magnitude is what a triager reads ("this has been sitting
                     three weeks"); the exact timestamp is a hover away. */}
-                <SortableHeader
-                  sortKey="discovered"
-                  label={en.bugHunter.findingColumnAge}
-                  tooltip={en.bugHunter.findingColumnAgeTooltip}
-                  activeKey={sortKey}
-                  direction={sortDirection}
-                  onSort={toggleSort}
-                  className="whitespace-nowrap"
-                />
-                {/* Age answers "how long has this been sitting"; this answers
+                  <SortableHeader
+                    sortKey="discovered"
+                    label={en.bugHunter.findingColumnAge}
+                    tooltip={en.bugHunter.findingColumnAgeTooltip}
+                    activeKey={sortKey}
+                    direction={sortDirection}
+                    onSort={toggleSort}
+                    className="whitespace-nowrap"
+                  />
+                  {/* Age answers "how long has this been sitting"; this answers
                     "did anything happen to it recently" — and they come apart
                     hard on a re-triaged human report, where Age is the day
                     somebody filed it and this is last night. */}
-                {showUpdated && (
-                  <SortableHeader
-                    sortKey="updated"
-                    label={en.bugHunter.findingColumnUpdated}
-                    tooltip={en.bugHunter.findingColumnUpdatedTooltip}
-                    activeKey={sortKey}
-                    direction={sortDirection}
-                    onSort={toggleSort}
-                    className={`whitespace-nowrap ${SECONDARY_COLUMN}`}
-                  />
-                )}
-                {showPr && (
-                  <TableHeader
-                    className={`py-2.5 pr-4 font-medium whitespace-nowrap ${STICKY_HEADER}`}
-                  >
-                    {en.bugHunter.findingColumnPr}
-                  </TableHeader>
-                )}
-                {/* Same rule as the selection column: for a read-only reader
+                  {showUpdated && (
+                    <SortableHeader
+                      sortKey="updated"
+                      label={en.bugHunter.findingColumnUpdated}
+                      tooltip={en.bugHunter.findingColumnUpdatedTooltip}
+                      activeKey={sortKey}
+                      direction={sortDirection}
+                      onSort={toggleSort}
+                      className={`whitespace-nowrap ${SECONDARY_COLUMN}`}
+                    />
+                  )}
+                  {showPr && (
+                    <TableHeader
+                      className={`py-2.5 pr-3 font-medium whitespace-nowrap ${STICKY_HEADER}`}
+                    >
+                      {en.bugHunter.findingColumnPr}
+                    </TableHeader>
+                  )}
+                  {/* Same rule as the selection column: for a read-only reader
                     every cell under this heading is empty, so the heading is a
                     column-width promise of buttons that are never coming. */}
-                {canTriage && (
-                  <TableHeader
-                    className={`py-2.5 font-medium text-right whitespace-nowrap ${STICKY_HEADER}`}
-                  >
-                    {en.bugHunter.quickActionsColumn}
-                  </TableHeader>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map(({ finding, duplicateCount }, index) => {
-                const days = ageInDays(finding);
-                const tier = days == null ? "fresh" : stalenessTier(days);
-                const tinted = showsStaleness(finding) ? tier : "fresh";
-                const isCursor = index === cursor;
-                const isSelected = selectedIds.has(finding.id);
+                  {canTriage && (
+                    <TableHeader
+                      // A width hint, not a cap: the cell's actions wrap onto a
+                      // second line when all three are offered, instead of the
+                      // column growing until the table leaves its container.
+                      className={`py-2.5 pr-3 min-w-[11rem] font-medium text-right whitespace-nowrap ${STICKY_HEADER}`}
+                    >
+                      {en.bugHunter.quickActionsColumn}
+                    </TableHeader>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map(({ finding, duplicateCount }, index) => {
+                  const days = ageInDays(finding);
+                  const tier = days == null ? "fresh" : stalenessTier(days);
+                  const tinted = showsStaleness(finding) ? tier : "fresh";
+                  const isCursor = index === cursor;
+                  const isSelected = selectedIds.has(finding.id);
 
-                return (
-                  <TableRow
-                    key={finding.id}
-                    className={`border-b border-border-light text-sm text-typography-900 cursor-pointer ${
-                      isSelected ? "bg-primary-50" : "hover:bg-neutral-50"
-                    } ${
-                      // The keyboard cursor's own mark. Focus lands on the
-                      // row's button and is visible on its own, but the ring is
-                      // on one cell inside a full-width row — so the row gets a
-                      // left rule too, which is what makes "where am I"
-                      // answerable at a glance while paging with j/k.
-                      isCursor ? "shadow-[inset_3px_0_0_0_var(--cds-interactive,#0f62fe)]" : ""
-                    } ${freshIds.has(finding.id) ? "animate-fadeIn motion-reduce:animate-none" : ""}`}
-                    // Mouse convenience only. The row deliberately carries no
-                    // role or tabIndex — see the button in the title cell.
-                    onClick={() => setBug(finding.id)}
-                  >
-                    {/* Gated with its header above, never independently — a
+                  return (
+                    <TableRow
+                      key={finding.id}
+                      className={`border-b border-border-light text-sm text-typography-900 cursor-pointer ${
+                        isSelected ? "bg-primary-50" : "hover:bg-neutral-50"
+                      } ${
+                        // The keyboard cursor's own mark. Focus lands on the
+                        // row's button and is visible on its own, but the ring is
+                        // on one cell inside a full-width row — so the row gets a
+                        // left rule too, which is what makes "where am I"
+                        // answerable at a glance while paging with j/k.
+                        isCursor ? "shadow-[inset_3px_0_0_0_var(--cds-interactive,#0f62fe)]" : ""
+                      } ${freshIds.has(finding.id) ? "animate-fadeIn motion-reduce:animate-none" : ""}`}
+                      // Mouse convenience only. The row deliberately carries no
+                      // role or tabIndex — see the button in the title cell.
+                      onClick={() => setBug(finding.id)}
+                    >
+                      {/* Gated with its header above, never independently — a
                         body cell that outlives its column shifts every other
                         cell on the row one place left. */}
-                    {canTriage && (
-                      <TableCell className={`${rowPadding} pr-3`}>
-                        <TriStateCheckbox
-                          id={`bug-finding-select-${finding.id}`}
-                          checked={isSelected}
-                          onChange={() => toggleId(finding.id)}
-                          label={en.bugHunter.rowSelectLabel.replace("{title}", finding.title)}
-                        />
-                      </TableCell>
-                    )}
+                      {canTriage && (
+                        <TableCell className={`${rowPadding} pl-3 pr-3`}>
+                          <TriStateCheckbox
+                            id={`bug-finding-select-${finding.id}`}
+                            checked={isSelected}
+                            onChange={() => toggleId(finding.id)}
+                            label={en.bugHunter.rowSelectLabel.replace("{title}", finding.title)}
+                          />
+                        </TableCell>
+                      )}
 
-                    {/* `max-w-0` is load-bearing, not a typo. A table cell's
+                      {/* `max-w-0` is load-bearing, not a typo. A table cell's
                         column can never be narrower than its content's
                         min-content width, and `truncate` does not lower that —
                         so a long title would widen the column and push the
@@ -1134,9 +1262,11 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                         `max-width: 0` opts this column out of that floor: the
                         header's `w-full` then gets it the leftover space, and
                         the `truncate`s below do the rest. */}
-                    <TableCell className={`${rowPadding} pr-4 min-w-[12rem] max-w-0`}>
-                      <div className="flex items-center gap-2">
-                        {/* The row's real control, and the reason it is here
+                      <TableCell
+                        className={`${rowPadding} ${canTriage ? "" : "pl-3"} pr-4 min-w-[14rem] max-w-0`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {/* The row's real control, and the reason it is here
                             rather than on the <tr>.
 
                             Rows used to be `<tr onClick>` with no tabIndex, no
@@ -1154,62 +1284,65 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                             control. The aria-label states the affordance and
                             contains the visible text, satisfying WCAG 2.5.3.
                             It doubles as the keyboard cursor's focus target. */}
-                        <button
-                          ref={element => {
-                            rowButtonRefs.current[index] = element;
-                          }}
-                          type="button"
-                          aria-label={en.bugHunter.rowOpenLabel.replace("{title}", finding.title)}
-                          title={finding.title}
-                          onFocus={() => setCursorId(finding.id)}
-                          onClick={event => {
-                            event.stopPropagation();
-                            setBug(finding.id);
-                          }}
-                          className="min-w-0 truncate text-left rounded cursor-pointer hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                        >
-                          {finding.title}
-                        </button>
-                        {duplicateCount != null && (
-                          <Tooltip
-                            label={en.bugHunter.duplicateTooltip.replace(
-                              "{count}",
-                              String(duplicateCount),
-                            )}
-                            align="top"
+                          <button
+                            ref={element => {
+                              rowButtonRefs.current[index] = element;
+                            }}
+                            type="button"
+                            aria-label={en.bugHunter.rowOpenLabel.replace("{title}", finding.title)}
+                            title={finding.title}
+                            onFocus={() => setCursorId(finding.id)}
+                            onClick={event => {
+                              event.stopPropagation();
+                              setBug(finding.id);
+                            }}
+                            className="min-w-0 truncate text-left rounded cursor-pointer hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                           >
-                            <span className="shrink-0 inline-flex items-center rounded border border-border-light bg-neutral-100 px-1.5 text-[10px] font-semibold text-typography-600 cursor-help">
-                              {en.bugHunter.duplicateTag.replace("{count}", String(duplicateCount))}
-                            </span>
-                          </Tooltip>
-                        )}
-                        {/* A shipped fix that came back. Amber rather than
-                            neutral because it is the one row state where the
-                            reasonable next move is NOT to fix it again — see
-                            the notification's own reasoning. */}
-                        {(finding.regressed || finding.regressionOf) && (
-                          <Tooltip label={en.bugHunter.findingRegressedTooltip} align="top">
-                            <span className="shrink-0 inline-flex items-center rounded border border-amber-300 bg-amber-50 px-1.5 text-[10px] font-semibold text-amber-800 cursor-help">
-                              {finding.regressionOf
-                                ? en.bugHunter.findingRegressionOfChip
-                                : en.bugHunter.findingRegressedChip}
-                            </span>
-                          </Tooltip>
-                        )}
-                        {/* Both verifiers accepted it, one of them hesitantly.
-                            Shown on the row rather than only in the drawer:
-                            it is a reason to open THIS bug before the others,
-                            which is a scanning decision. */}
-                        {finding.confidence != null &&
-                          finding.confidence < BUG_FINDING_LOW_CONFIDENCE_THRESHOLD && (
-                            <Tooltip label={en.bugHunter.findingLowConfidenceTooltip} align="top">
-                              <span className="shrink-0 inline-flex items-center rounded border border-border-light bg-neutral-100 px-1.5 text-[10px] font-semibold text-typography-600 cursor-help">
-                                {en.bugHunter.findingLowConfidenceChip}
+                            {finding.title}
+                          </button>
+                          {duplicateCount != null && (
+                            <Tooltip
+                              label={en.bugHunter.duplicateTooltip.replace(
+                                "{count}",
+                                String(duplicateCount),
+                              )}
+                              align="top"
+                            >
+                              <span className="shrink-0 inline-flex items-center whitespace-nowrap rounded border border-border-light bg-neutral-100 px-1.5 text-[10px] font-semibold text-typography-600 cursor-help">
+                                {en.bugHunter.duplicateTag.replace(
+                                  "{count}",
+                                  String(duplicateCount),
+                                )}
                               </span>
                             </Tooltip>
                           )}
-                      </div>
-                      {/* Source moved out of its own column and under the title.
+                          {/* A shipped fix that came back. Amber rather than
+                            neutral because it is the one row state where the
+                            reasonable next move is NOT to fix it again — see
+                            the notification's own reasoning. */}
+                          {(finding.regressed || finding.regressionOf) && (
+                            <Tooltip label={en.bugHunter.findingRegressedTooltip} align="top">
+                              <span className="shrink-0 inline-flex items-center whitespace-nowrap rounded border border-amber-300 bg-amber-50 px-1.5 text-[10px] font-semibold text-amber-800 cursor-help">
+                                {finding.regressionOf
+                                  ? en.bugHunter.findingRegressionOfChip
+                                  : en.bugHunter.findingRegressedChip}
+                              </span>
+                            </Tooltip>
+                          )}
+                          {/* Both verifiers accepted it, one of them hesitantly.
+                            Shown on the row rather than only in the drawer:
+                            it is a reason to open THIS bug before the others,
+                            which is a scanning decision. */}
+                          {finding.confidence != null &&
+                            finding.confidence < BUG_FINDING_LOW_CONFIDENCE_THRESHOLD && (
+                              <Tooltip label={en.bugHunter.findingLowConfidenceTooltip} align="top">
+                                <span className="shrink-0 inline-flex items-center whitespace-nowrap rounded border border-border-light bg-neutral-100 px-1.5 text-[10px] font-semibold text-typography-600 cursor-help">
+                                  {en.bugHunter.findingLowConfidenceChip}
+                                </span>
+                              </Tooltip>
+                            )}
+                        </div>
+                        {/* Source moved out of its own column and under the title.
                           It reads as provenance rather than as a field, it freed
                           a column, and the facet above is how you scan by it.
 
@@ -1218,75 +1351,75 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                           user's report can be told apart from an agent-found
                           lint error, and "who hit this" is the first thing a
                           triager wants from that distinction. */}
-                      <div className="text-xs text-typography-600 truncate">
-                        {BUG_FINDING_SOURCE_LABELS[finding.source]}
-                        {finding.report && (
-                          <>
-                            {" · "}
-                            <span className={CONSUMER_BADGE_STYLE}>
-                              {finding.report.reporterSource === "consumer"
-                                ? en.bugHunter.reporterConsumer
-                                : en.bugHunter.reporterStaff}
-                            </span>{" "}
-                            {finding.report.reportedByName ?? en.bugHunter.reporterUnknown}
-                          </>
-                        )}
-                        {finding.file ? ` · ${finding.file}` : ""}
-                        {engineModelLabel(finding.engine, finding.model)
-                          ? ` · ${engineModelLabel(finding.engine, finding.model)}`
-                          : ""}
-                      </div>
-                    </TableCell>
-
-                    {showRepo && (
-                      <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                        {finding.repo ?? "—"}
+                        <div className="text-xs text-typography-600 truncate">
+                          {BUG_FINDING_SOURCE_LABELS[finding.source]}
+                          {finding.report && (
+                            <>
+                              {" · "}
+                              <span className={CONSUMER_BADGE_STYLE}>
+                                {finding.report.reporterSource === "consumer"
+                                  ? en.bugHunter.reporterConsumer
+                                  : en.bugHunter.reporterStaff}
+                              </span>{" "}
+                              {finding.report.reportedByName ?? en.bugHunter.reporterUnknown}
+                            </>
+                          )}
+                          {finding.file ? ` · ${finding.file}` : ""}
+                          {engineModelLabel(finding.engine, finding.model)
+                            ? ` · ${engineModelLabel(finding.engine, finding.model)}`
+                            : ""}
+                        </div>
                       </TableCell>
-                    )}
 
-                    {showSeverity && (
-                      <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                        {finding.severity ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            <span
-                              aria-hidden="true"
-                              className={`h-2 w-2 rounded-full ${SEVERITY_DOTS[finding.severity]}`}
-                            />
-                            {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
-                          </span>
-                        ) : (
-                          en.bugHunter.findingSeverityNone
-                        )}
+                      {showRepo && (
+                        <TableCell className={`${rowPadding} pr-3 whitespace-nowrap`}>
+                          {finding.repo ?? "—"}
+                        </TableCell>
+                      )}
+
+                      {showSeverity && (
+                        <TableCell className={`${rowPadding} pr-3 whitespace-nowrap`}>
+                          {finding.severity ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <span
+                                aria-hidden="true"
+                                className={`h-2 w-2 rounded-full ${SEVERITY_DOTS[finding.severity]}`}
+                              />
+                              {BUG_FINDING_SEVERITY_LABELS[finding.severity]}
+                            </span>
+                          ) : (
+                            en.bugHunter.findingSeverityNone
+                          )}
+                        </TableCell>
+                      )}
+
+                      <TableCell className={`${rowPadding} pr-3 whitespace-nowrap`}>
+                        <span className="inline-flex items-center gap-1.5">
+                          <BugFindingStatusBadge status={finding.status} />
+                          {isMidFlight(finding.status) && (
+                            <BrailleSpinner className="text-amber-600" />
+                          )}
+                        </span>
                       </TableCell>
-                    )}
 
-                    <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                      <span className="inline-flex items-center gap-1.5">
-                        <BugFindingStatusBadge status={finding.status} />
-                        {isMidFlight(finding.status) && (
-                          <BrailleSpinner className="text-amber-600" />
-                        )}
-                      </span>
-                    </TableCell>
-
-                    {/* The roadmap ladder, in its own column now rather than
+                      {/* The roadmap ladder, in its own column now rather than
                         stacked under the status badge — see `showStage`. */}
-                    {showStage && (
-                      <TableCell
-                        className={`${rowPadding} pr-4 whitespace-nowrap ${SECONDARY_COLUMN}`}
-                      >
-                        <BugFindingStageChip
-                          stage={finding.stage}
-                          status={finding.status}
-                          isAuto={finding.stageIsAuto}
-                          pinnedByName={finding.stageOverriddenByName}
-                          pinnedAt={finding.stageOverriddenAt}
-                        />
-                      </TableCell>
-                    )}
+                      {showStage && (
+                        <TableCell
+                          className={`${rowPadding} pr-3 whitespace-nowrap ${SECONDARY_COLUMN}`}
+                        >
+                          <BugFindingStageChip
+                            stage={finding.stage}
+                            status={finding.status}
+                            isAuto={finding.stageIsAuto}
+                            pinnedByName={finding.stageOverriddenByName}
+                            pinnedAt={finding.stageOverriddenAt}
+                          />
+                        </TableCell>
+                      )}
 
-                    <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                      {/* The exact timestamp — to the second, not just the day —
+                      <TableCell className={`${rowPadding} pr-3 whitespace-nowrap`}>
+                        {/* The exact timestamp — to the second, not just the day —
                           stays reachable as the hover title, so a row can be
                           placed against the sweep that touched it. The column
                           itself shows the magnitude, which is the thing a
@@ -1298,211 +1431,196 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                           column beside a value that was *already* amber or red
                           for the same reason — a third encoding of one fact,
                           and the only emoji in the table. */}
-                      <span
-                        title={
-                          tinted === "stale" || tinted === "ancient"
-                            ? `${formatTimestamp(finding.createdAt)} — ${
-                                tinted === "ancient"
-                                  ? en.bugHunter.findingAgeAncientTooltip
-                                  : en.bugHunter.findingAgeStaleTooltip
-                              }`
-                            : formatTimestamp(finding.createdAt)
-                        }
-                        className={`tabular-nums ${STALENESS_STYLES[tinted]}`}
-                      >
-                        {days == null ? "—" : formatAge(days)}
-                      </span>
-                    </TableCell>
-
-                    {showUpdated && (
-                      <TableCell
-                        className={`${rowPadding} pr-4 whitespace-nowrap ${SECONDARY_COLUMN}`}
-                      >
-                        {/* Relative, like Age, and from the same helper — a
-                            column of absolute timestamps next to a column of
-                            "9h" is two units to hold at once. */}
                         <span
-                          title={formatTimestamp(finding.updatedAt)}
-                          className="tabular-nums text-typography-700"
+                          title={
+                            tinted === "stale" || tinted === "ancient"
+                              ? `${formatTimestamp(finding.createdAt)} — ${
+                                  tinted === "ancient"
+                                    ? en.bugHunter.findingAgeAncientTooltip
+                                    : en.bugHunter.findingAgeStaleTooltip
+                                }`
+                              : formatTimestamp(finding.createdAt)
+                          }
+                          className={`tabular-nums ${STALENESS_STYLES[tinted]}`}
                         >
-                          {formatAge(
-                            // Fractional days, and clamped: `formatAge` derives
-                            // hours from the fraction, so flooring here would
-                            // print "now" for everything under a day, and clock
-                            // skew would otherwise print a negative age.
-                            Math.max(0, (Date.now() - updatedAt(finding)) / 86_400_000),
-                          )}
+                          {days == null ? "—" : formatAge(days)}
                         </span>
                       </TableCell>
-                    )}
 
-                    {showPr && (
-                      <TableCell className={`${rowPadding} pr-4 whitespace-nowrap`}>
-                        {finding.prUrl ? (
-                          <a
-                            href={finding.prUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center text-primary-600 hover:text-primary-800"
-                            aria-label={en.bugHunter.viewPr}
-                            title={en.bugHunter.viewPr}
-                            onClick={e => e.stopPropagation()}
+                      {showUpdated && (
+                        <TableCell
+                          className={`${rowPadding} pr-3 whitespace-nowrap ${SECONDARY_COLUMN}`}
+                        >
+                          {/* Relative, like Age, and from the same helper — a
+                            column of absolute timestamps next to a column of
+                            "9h" is two units to hold at once. */}
+                          <span
+                            title={formatTimestamp(finding.updatedAt)}
+                            className="tabular-nums text-typography-700"
                           >
-                            <Launch className="h-4 w-4" aria-hidden="true" />
-                          </a>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                    )}
+                            {formatAge(
+                              // Fractional days, and clamped: `formatAge` derives
+                              // hours from the fraction, so flooring here would
+                              // print "now" for everything under a day, and clock
+                              // skew would otherwise print a negative age.
+                              Math.max(0, (Date.now() - updatedAt(finding)) / 86_400_000),
+                            )}
+                          </span>
+                        </TableCell>
+                      )}
 
-                    {/* Quick actions. Rendered only where ally-be would accept
+                      {showPr && (
+                        <TableCell className={`${rowPadding} pr-3 whitespace-nowrap`}>
+                          {finding.prUrl ? (
+                            <a
+                              href={finding.prUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center text-primary-600 hover:text-primary-800"
+                              aria-label={en.bugHunter.viewPr}
+                              title={en.bugHunter.viewPr}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <Launch className="h-4 w-4" aria-hidden="true" />
+                            </a>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      )}
+
+                      {/* Quick actions. Rendered only where ally-be would accept
                         them, so there is no such thing as a disabled one here —
                         a greyed-out "Approve" on forty rows is noise, and an
                         enabled one that 403s is worse. */}
-                    {canTriage && (
-                      <TableCell className={`${rowPadding} text-right whitespace-nowrap`}>
-                        <div
-                          className="inline-flex items-center gap-1 justify-end"
-                          // These are the row's actions, not the row: a click on
-                          // one must not also open the drawer behind it.
-                          onClick={event => event.stopPropagation()}
-                        >
-                          {canAct("approve", finding) && (
-                            <Button
-                              size="sm"
-                              kind="ghost"
-                              onClick={() => setPending({ action: "approve", finding })}
-                            >
-                              {en.bugHunter.quickApprove}
-                            </Button>
-                          )}
-                          {canAct("reject", finding) && (
-                            <Button
-                              size="sm"
-                              kind="ghost"
-                              onClick={() => setPending({ action: "reject", finding })}
-                            >
-                              {en.bugHunter.quickReject}
-                            </Button>
-                          )}
-                          {canAct("fix", finding) && (
-                            <Button
-                              size="sm"
-                              kind="ghost"
-                              onClick={() => setPending({ action: "fix", finding })}
-                            >
-                              {en.bugHunter.quickFix}
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      {canTriage && (
+                        <TableCell className={`${rowPadding} pr-3 text-right`}>
+                          <div
+                            className="inline-flex max-w-[11rem] flex-wrap items-center justify-end gap-1.5"
+                            // These are the row's actions, not the row: a click on
+                            // one must not also open the drawer behind it.
+                            onClick={event => event.stopPropagation()}
+                          >
+                            {canAct("approve", finding) && (
+                              <QuickAction
+                                tone="approve"
+                                onClick={() => setPending({ action: "approve", finding })}
+                              >
+                                {en.bugHunter.quickApprove}
+                              </QuickAction>
+                            )}
+                            {canAct("reject", finding) && (
+                              <QuickAction
+                                tone="reject"
+                                onClick={() => setPending({ action: "reject", finding })}
+                              >
+                                {en.bugHunter.quickReject}
+                              </QuickAction>
+                            )}
+                            {canAct("fix", finding) && (
+                              <QuickAction
+                                tone="fix"
+                                onClick={() => setPending({ action: "fix", finding })}
+                              >
+                                {en.bugHunter.quickFix}
+                              </QuickAction>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
 
-          {/* Only while something is ticked — an always-present bar with a zero
+            {/* Only while something is ticked — an always-present bar with a zero
               in it is a permanent strip of chrome at the bottom of the page. */}
-          {selected.length > 0 && (
-            <BulkTriageBar
-              selected={selected}
-              onClear={() => setSelectedIds(new Set())}
-              onSettled={actedIds =>
-                setSelectedIds(current => {
-                  const next = new Set(current);
-                  actedIds.forEach(id => next.delete(id));
-                  return next;
-                })
-              }
-            />
-          )}
+            {selected.length > 0 && (
+              <BulkTriageBar
+                selected={selected}
+                onClear={() => setSelectedIds(new Set())}
+                onSettled={actedIds =>
+                  setSelectedIds(current => {
+                    const next = new Set(current);
+                    actedIds.forEach(id => next.delete(id));
+                    return next;
+                  })
+                }
+              />
+            )}
 
-          {/* One line, not four. This footer used to stack the result count, the
+            {/* One line, not four. This footer used to stack the result count, the
               window notice and a shortcuts hint as three paragraphs of
               micro-copy under every table — permanent chrome that said nothing
               new after the first read. The count and the window caveat are one
               sentence now, and the shortcuts hint is gone: `?` opens the
               shortcut sheet from anywhere on the page. */}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <p className="text-xs text-typography-600" aria-live="polite">
-              {view.matched === 1
-                ? en.bugHunter.resultSummaryOne
-                : en.bugHunter.resultSummary
-                    .replace("{shown}", String(view.rows.length))
-                    .replace("{matched}", String(view.matched))}
-              {view.windowed && (
-                <span className="text-typography-500">
-                  {" · "}
-                  {en.bugHunter.windowNotice
-                    .replace("{loaded}", String(view.loaded))
-                    .replace("{total}", String(view.total))}{" "}
-                  <button
-                    type="button"
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                    className="font-medium text-primary-700 underline cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {loadingMore
-                      ? en.bugHunter.loadMorePending
-                      : en.bugHunter.loadMoreAction.replace(
-                          "{count}",
-                          String(Math.min(FINDINGS_LOAD_INCREMENT, view.total - view.loaded)),
-                        )}
-                  </button>
-                </span>
-              )}
-            </p>
-
-            <div className="flex items-center gap-3">
-              {/* Beside the pager rather than up with the filters: it changes
-                  how the results are paginated, not which results there are. */}
-              <label
-                htmlFor="bug-findings-page-size"
-                className="flex items-center gap-1.5 text-xs text-typography-600"
-              >
-                {en.bugHunter.pageSizeLabel}
-                <select
-                  id="bug-findings-page-size"
-                  value={pageSize}
-                  onChange={event => setPageSize(Number(event.target.value) as PageSize)}
-                  className="rounded border border-border-light bg-white px-1.5 py-0.5 text-xs text-typography-900 cursor-pointer"
-                >
-                  {PAGE_SIZES.map(size => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {view.pageCount > 1 && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    kind="ghost"
-                    disabled={view.page === 0}
-                    onClick={() => setPage(p => Math.max(0, p - 1))}
-                  >
-                    {en.bugHunter.pagePrev}
-                  </Button>
-                  <span className="text-xs text-typography-600 tabular-nums">
-                    {en.bugHunter.pageStatus
-                      .replace("{page}", String(view.page + 1))
-                      .replace("{pages}", String(view.pageCount))}
+            {/* Closes the table's card: the border continues from the rows above,
+              and the pager sits inside it rather than floating under the page. */}
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-b-lg border-t border-border-light bg-neutral-50 px-3 py-2">
+              <p className="text-xs text-typography-600" aria-live="polite">
+                {view.matched === 1
+                  ? en.bugHunter.resultSummaryOne
+                  : en.bugHunter.resultSummary
+                      .replace("{shown}", String(view.rows.length))
+                      .replace("{matched}", String(view.matched))}
+                {view.windowed && (
+                  <span className="text-typography-500">
+                    {" · "}
+                    {en.bugHunter.windowNotice
+                      .replace("{loaded}", String(view.loaded))
+                      .replace("{total}", String(view.total))}{" "}
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="font-medium text-primary-700 underline cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {loadingMore
+                        ? en.bugHunter.loadMorePending
+                        : en.bugHunter.loadMoreAction.replace(
+                            "{count}",
+                            String(Math.min(FINDINGS_LOAD_INCREMENT, view.total - view.loaded)),
+                          )}
+                    </button>
                   </span>
-                  <Button
-                    size="sm"
-                    kind="ghost"
-                    disabled={view.page >= view.pageCount - 1}
-                    onClick={() => setPage(p => p + 1)}
+                )}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {/* Beside the pager rather than up with the filters: it changes
+                  how the results are paginated, not which results there are. */}
+                <label
+                  htmlFor="bug-findings-page-size"
+                  className="flex items-center gap-1.5 text-xs text-typography-600"
+                >
+                  {en.bugHunter.pageSizeLabel}
+                  <select
+                    id="bug-findings-page-size"
+                    value={pageSize}
+                    onChange={event => setPageSize(Number(event.target.value) as PageSize)}
+                    className="h-8 rounded-md border border-border-light bg-white pl-2 pr-6 text-xs text-typography-900 cursor-pointer hover:border-border-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                   >
-                    {en.bugHunter.pageNext}
-                  </Button>
-                </div>
-              )}
+                    {PAGE_SIZES.map(size => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {view.pageCount > 1 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-typography-600 tabular-nums">
+                      {en.bugHunter.pageStatus
+                        .replace("{page}", String(view.page + 1))
+                        .replace("{pages}", String(view.pageCount))}
+                    </span>
+                    <TablePager page={view.page} pageCount={view.pageCount} onChange={setPage} />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>
