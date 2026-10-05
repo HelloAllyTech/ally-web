@@ -743,7 +743,17 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
     };
   }, [activeChat?.chatId, microphoneChatId]);
 
-  // Handle page refresh for microphone mode - show browser's default confirmation dialog
+  // Handle page refresh for microphone mode - show browser's default confirmation dialog.
+  // Guards a rejoined web microphone chat too: that tab is recording just the
+  // same, and unloading it ends the chat on the server (socket disconnect).
+  const isRecordingInThisTab = !!isActiveMicrophoneSession || !!isSharedMicrophoneMode;
+
+  useEffect(() => {
+    if (isActiveMicrophoneSession) {
+      sessionStorage.setItem(SESSION_STORAGE_KEYS.TRANSCRIPTION_GENERATION_VIDEO_SEEN, "false");
+    }
+  }, [isActiveMicrophoneSession]);
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       // Show browser's default confirmation dialog
@@ -752,15 +762,14 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
       event.returnValue = "";
     };
 
-    if (isActiveMicrophoneSession) {
-      sessionStorage.setItem(SESSION_STORAGE_KEYS.TRANSCRIPTION_GENERATION_VIDEO_SEEN, "false");
+    if (isRecordingInThisTab) {
       window.addEventListener("beforeunload", handleBeforeUnload);
     }
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isActiveMicrophoneSession]);
+  }, [isRecordingInThisTab]);
 
   return {
     activeChat,
