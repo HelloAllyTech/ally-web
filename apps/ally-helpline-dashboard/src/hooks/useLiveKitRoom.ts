@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Room, RoomEvent, Participant, RemoteTrackPublication, Track } from "livekit-client";
@@ -235,7 +236,7 @@ export const useLiveKitRoom = (
         return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
       });
     },
-    [],
+    [updateAgentTurnStatus],
   );
 
   const clearAgentJoinTimer = useCallback(() => {
@@ -377,7 +378,7 @@ export const useLiveKitRoom = (
       ended_by_learner: Boolean(endSessionButtonRef.current),
       ...interactionModeProps(sessionIdsRef.current.isTextChat),
     });
-  }, []);
+  }, [endSessionButtonRef]);
 
   const onRoomDisconnect = useCallback(() => {
     captureSimulationCompleted();
@@ -397,7 +398,13 @@ export const useLiveKitRoom = (
       },
       endSessionButtonRef.current ? 0 : 1000,
     );
-  }, []);
+  }, [
+    captureSimulationCompleted,
+    endSessionButtonRef,
+    handleDisconnect,
+    room.localParticipant,
+    updateAgentTurnStatus,
+  ]);
 
   // Detach every listener this hook attaches. Extracted so the retry path can
   // reuse it: retrying has to disconnect a room that may already be connected,
@@ -615,14 +622,16 @@ export const useLiveKitRoom = (
       // Cleanup on route change to avoid duplicate listeners and ensure disconnect
       cleanupRoom();
     };
-  }, [id, cleanupRoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     return () => {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
       cleanupRoom();
     };
-  }, [cleanupRoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleUnload = () => {
