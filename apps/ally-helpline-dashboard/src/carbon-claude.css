@@ -220,6 +220,17 @@
   overflow: hidden;
 }
 
+/*
+ * The rule above has the same specificity as Carbon's own
+ * `.cds--accordion__item--active { overflow: visible }` and loads later, so it
+ * won — and an open accordion clipped any popover inside it. A dropdown near
+ * the bottom of a section (e.g. a "Review Stage" custom field on the scribe
+ * summary) opened with only its search box showing and no options.
+ */
+.cds--accordion__item.cds--accordion__item--active {
+  overflow: visible;
+}
+
 .cds--tag,
 .cds--checkbox-label::before,
 .cds--progress-bar__track,
