@@ -18,6 +18,7 @@ import { baseAPI } from "../baseAPI";
 
 // Mock constants
 vi.mock("@constants", () => ({
+  LOCAL_STORAGE_KEYS: {},
   ApiEndpoints: {
     AUTH: {
       LOGIN: "/auth/login",
@@ -47,6 +48,7 @@ vi.mock("@constants", () => ({
 
 // Mock types
 vi.mock("@types", () => ({
+  AppType: {},
   User: {},
   VerifyOTPRequest: {},
   VerifyOTPResponse: {},
