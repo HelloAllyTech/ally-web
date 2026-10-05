@@ -2908,6 +2908,10 @@ export const en = {
     drawerFixSessionConfirmTitle: "Put Bug Hunter on this bug?",
     drawerFixSessionConfirmBody:
       "I'll work on this in {repo} on my own: a regression test first, then the smallest fix that makes it pass, then the full suite. If everything is green I open a PR and merge it — unless the fix touches migrations, auth or payments, which always stay a PR for you to review. I won't deploy anything in this step.",
+    drawerFixSessionRepoLabel: "Which codebase?",
+    drawerFixSessionRepoAuto: "Let me work it out",
+    drawerFixSessionRepoHelp:
+      "Pick one if you know it. If I couldn't tell from the description, this is how you answer.",
     drawerFixSessionConfirmBodyUnknownRepo:
       "Nobody has matched this bug to a codebase yet — I'll figure out which repo it needs, then work on it there on my own: a regression test first, then the smallest fix that makes it pass, then the full suite. If everything is green I open a PR and merge it — unless the fix touches migrations, auth or payments, which always stay a PR for you to review. I won't deploy anything in this step.",
     // Deliberately not "Put me on it" again — the button that opened this

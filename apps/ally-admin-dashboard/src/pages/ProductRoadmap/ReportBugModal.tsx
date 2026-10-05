@@ -1,11 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
-import { BugReportForm, BugReportSubmitError, detectDeviceOs } from "@ally-ui-mono/ui-shared";
+import {
+  BugReportForm,
+  BugReportSubmitError,
+  Select,
+  SelectItem,
+  detectDeviceOs,
+} from "@ally-ui-mono/ui-shared";
 import { useCreateRoadmapBugReportMutation } from "@api";
+
+import { BUG_HUNTER_REPOS } from "../BugHunter/repos";
+
+/** The picker's "I don't know" value: Bug Hunter classifies the report itself. */
+const REPO_AUTO = "";
 
 interface ReportBugModalProps {
   onClose: () => void;
@@ -26,15 +37,23 @@ interface ReportBugModalProps {
  * category picker, and the screen/device context captured silently rather than asked for.
  * `source` is stamped server-side from the reporter's roles, so this correctly reads "Staff"
  * in Bug Hunter without the client asserting anything about who it is.
+ *
+ * One field more than the consumer form: an optional codebase picker. Staff usually know
+ * which repo a bug lives in, and the classifier gives up on a report that names files in
+ * two folders of the same repo — which left admins at "I couldn't tell which repo this bug
+ * belongs to" with no way to answer. A named repo skips the classifier; the default leaves
+ * it to Bug Hunter, exactly as before.
  */
 export const ReportBugModal: React.FC<ReportBugModalProps> = ({ onClose }) => {
   const location = useLocation();
   const [createBugReport] = useCreateRoadmapBugReportMutation();
+  const [repo, setRepo] = useState<string>(REPO_AUTO);
 
   const handleSubmit = async (description: string) => {
     try {
       await createBugReport({
         description,
+        ...(repo ? { repo } : {}),
         context: {
           // The admin route, including its ?tab= and ?opportunity= params — on a screen
           // this deep in query state, the path alone would not locate what broke.
@@ -76,6 +95,22 @@ export const ReportBugModal: React.FC<ReportBugModalProps> = ({ onClose }) => {
         rateLimitedError: "You've filed a few reports just now — please try again in a bit.",
         genericError: "Could not file that bug report. Please try again.",
       }}
+      extraFields={
+        <div className="mt-4">
+          <Select
+            id="report-bug-repo"
+            labelText="Which codebase? (optional)"
+            helperText="Leave it to Bug Hunter if you are not sure."
+            value={repo}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRepo(e.target.value)}
+          >
+            <SelectItem value={REPO_AUTO} text="Let Bug Hunter work it out" />
+            {BUG_HUNTER_REPOS.map(name => (
+              <SelectItem key={name} value={name} text={name} />
+            ))}
+          </Select>
+        </div>
+      }
     />
   );
 };

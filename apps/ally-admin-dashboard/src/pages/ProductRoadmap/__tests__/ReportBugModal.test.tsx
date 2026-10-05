@@ -54,7 +54,7 @@ describe("ReportBugModal", () => {
     expect(typeof body.context.clientTimestamp).toBe("string");
   });
 
-  it("never asks the reporter for anything but the one prompt", () => {
+  it("asks the reporter for the one prompt and an optional codebase, nothing idea-shaped", () => {
     mockCreateBugReport.mockReturnValue({ unwrap: () => Promise.resolve({}) });
     renderModal();
 
@@ -62,7 +62,41 @@ describe("ReportBugModal", () => {
     // idea-shaped questions. Nothing about a product goal, severity or category belongs here.
     expect(screen.queryByLabelText(/product goal/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/severity/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/type/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^type/i)).not.toBeInTheDocument();
+    // The one thing staff can answer that a consumer cannot, and it is optional.
+    expect(screen.getByLabelText(/which codebase\? \(optional\)/i)).toHaveValue("");
+  });
+
+  it("sends the codebase the reporter named, so Bug Hunter skips guessing", async () => {
+    mockCreateBugReport.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+    renderModal();
+
+    fireEvent.change(screen.getByLabelText(/which codebase\? \(optional\)/i), {
+      target: { value: "ally-web" },
+    });
+    fireEvent.change(screen.getByLabelText(/what went wrong/i), {
+      target: { value: "Report a problem modal buttons stick out of the rounded corners" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /report bug/i }));
+
+    await waitFor(() =>
+      expect(mockCreateBugReport).toHaveBeenCalledWith(
+        expect.objectContaining({ repo: "ally-web" }),
+      ),
+    );
+  });
+
+  it("sends no repo when the reporter leaves the picker on the default", async () => {
+    mockCreateBugReport.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+    renderModal();
+
+    fireEvent.change(screen.getByLabelText(/what went wrong/i), {
+      target: { value: "Something broke somewhere" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /report bug/i }));
+
+    await waitFor(() => expect(mockCreateBugReport).toHaveBeenCalled());
+    expect(mockCreateBugReport.mock.calls[0][0]).not.toHaveProperty("repo");
   });
 
   it("shows the throttle message rather than the generic one on a 429", async () => {

@@ -4,7 +4,7 @@
 // `apps/ally-web`'s server components import, which makes the directive
 // required rather than optional. See ArtifactLabelPalette for the same note.
 
-import { FC, useState } from "react";
+import { FC, ReactNode, useState } from "react";
 
 import {
   Button,
@@ -80,6 +80,12 @@ export interface BugReportFormProps {
   maxLength?: number;
   /** Override any subset of the copy — e.g. to route it through the app's own i18n. */
   labels?: Partial<BugReportFormLabels>;
+  /**
+   * Rendered under the prompt. For the one caller whose reporters can answer
+   * something a consumer cannot — the admin dashboard's codebase picker. Keep
+   * it optional in both senses: the consumer form passes nothing.
+   */
+  extraFields?: ReactNode;
 }
 
 /**
@@ -98,6 +104,7 @@ export const BugReportForm: FC<BugReportFormProps> = ({
   onSuccess,
   maxLength = BUG_REPORT_DESCRIPTION_MAX,
   labels: labelOverrides,
+  extraFields,
 }) => {
   const labels = { ...DEFAULT_BUG_REPORT_LABELS, ...labelOverrides };
   const [description, setDescription] = useState("");
@@ -144,6 +151,7 @@ export const BugReportForm: FC<BugReportFormProps> = ({
           rows={5}
           disabled={submitting}
         />
+        {extraFields}
         {error && (
           <InlineNotification
             kind="error"
