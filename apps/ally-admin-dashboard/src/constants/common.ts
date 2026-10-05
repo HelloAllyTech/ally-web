@@ -546,6 +546,9 @@ export const ApiEndpoints = {
     // ally-be src/agent-memory, docs/bug-hunter-memory-adr.md.
     MEMORY: "/v1/bug-hunter/memory",
     MEMORY_RETIRE: (id: string) => `/v1/bug-hunter/memory/${id}/retire`,
+    // What the agent retired on its own recently, with its reason (OPP-0752), and the undo.
+    MEMORY_RETIRED: "/v1/bug-hunter/memory/retired",
+    MEMORY_RESTORE: (id: string) => `/v1/bug-hunter/memory/${id}/restore`,
   },
   BUILDER: {
     SESSIONS: "/v1/builder/sessions",

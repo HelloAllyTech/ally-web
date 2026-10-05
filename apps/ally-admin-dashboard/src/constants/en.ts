@@ -2887,6 +2887,14 @@ export const en = {
     notebookAdded: "Added. I'll read it before the next sweep.",
     notebookAddFailed: "Couldn't add that entry.",
     notebookReadOnly: "You can read the notebook; adding and retiring needs the Bug Hunter toggle.",
+    // ── What the agent retired on its own (OPP-0752) ─────────────────────────
+    notebookRetiredByMeTitle: "Retired by me recently ({count})",
+    notebookRetiredByMeIntro:
+      "Entries I took out of my own notebook in the last 30 days, each with the rule that fired. Put one back if I got it wrong.",
+    notebookRetiredBecause: "Retired {when} because: {reason}",
+    notebookRestore: "Put it back",
+    notebookRestored: "Back in the notebook. I'll read it before the next sweep.",
+    notebookRestoreFailed: "Couldn't restore that entry.",
     // ── Multi-repo plan ──────────────────────────────────────────────────────
     planTitle: "This fix spans {count} repos",
     planSubtitle:

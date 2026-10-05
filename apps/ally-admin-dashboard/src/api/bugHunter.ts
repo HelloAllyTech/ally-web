@@ -374,6 +374,32 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Entries the agent retired on its own in the last month, each with the
+     * rule that fired (OPP-0752). Shares the list tag with the active set:
+     * a restore moves a row from one list to the other, so both refetch.
+     */
+    getBugHunterRetiredMemory: builder.query<
+      ListBugHunterMemoryResponse,
+      { repo?: string; limit?: number } | void
+    >({
+      query: params => ({
+        url: ApiEndpoints.BUG_HUNTER.MEMORY_RETIRED,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_MEMORY, id: "LIST" }],
+    }),
+
+    /** The undo for a retirement, the agent's or a person's. */
+    restoreBugHunterMemory: builder.mutation<BugHunterMemoryEntry, string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.MEMORY_RESTORE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [{ type: TAG_TYPES.BUG_HUNTER_MEMORY, id: "LIST" }],
+    }),
+
+    /**
      * Rewrite the bug's description before putting Bug Hunter on it. This text
      * is the fix agent's entire brief — see ally-be's `buildFixSessionPrompt`
      * — so an edit here changes what the NEXT session is asked to fix, and
@@ -473,4 +499,6 @@ export const {
   useGetBugHunterMemoryQuery,
   useAddBugHunterMemoryMutation,
   useRetireBugHunterMemoryMutation,
+  useGetBugHunterRetiredMemoryQuery,
+  useRestoreBugHunterMemoryMutation,
 } = bugHunterAPI;

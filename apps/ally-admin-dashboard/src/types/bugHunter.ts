@@ -748,6 +748,13 @@ export interface BugHunterMemoryEntry {
   createdBy: number | null;
   embeddingStatus: "pending" | "success" | "failed" | "skipped";
   createdAt: string;
+  lastAppliedAt: string | null;
+  /** When it left the active set; null while active. */
+  retiredAt: string | null;
+  /** The admin who retired it, or null when the agent's own nightly pass did (OPP-0752). */
+  retiredBy: number | null;
+  /** The rule that fired, in the agent's words, when it retired the entry itself. */
+  retiredReason: string | null;
 }
 
 export interface ListBugHunterMemoryResponse {

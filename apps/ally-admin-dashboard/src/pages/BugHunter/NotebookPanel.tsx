@@ -7,6 +7,8 @@ import { Button, Select, SelectItem, SidePanel, TextArea, Tooltip } from "@ally-
 import {
   useAddBugHunterMemoryMutation,
   useGetBugHunterMemoryQuery,
+  useGetBugHunterRetiredMemoryQuery,
+  useRestoreBugHunterMemoryMutation,
   useRetireBugHunterMemoryMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
@@ -53,6 +55,13 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
   );
   const [addEntry, { isLoading: isAdding }] = useAddBugHunterMemoryMutation();
   const [retireEntry, { isLoading: isRetiring }] = useRetireBugHunterMemoryMutation();
+  // The agent's own retirements (OPP-0752): same repo scope as the list above,
+  // shown under it with the rule that fired and an undo.
+  const { data: retiredData } = useGetBugHunterRetiredMemoryQuery(
+    repo === ALL_REPOS ? { limit: 50 } : { repo, limit: 50 },
+  );
+  const [restoreEntry, { isLoading: isRestoring }] = useRestoreBugHunterMemoryMutation();
+  const retiredByAgent = useMemo(() => retiredData?.items ?? [], [retiredData]);
 
   const [body, setBody] = useState("");
   const [scope, setScope] = useState<string>(BUG_HUNTER_REPOS[0]);
@@ -84,6 +93,15 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
       setAdding(false);
     } catch {
       toast.error(en.bugHunter.notebookAddFailed);
+    }
+  };
+
+  const handleRestore = async (entry: BugHunterMemoryEntry) => {
+    try {
+      await restoreEntry(entry.id).unwrap();
+      toast.success(en.bugHunter.notebookRestored);
+    } catch {
+      toast.error(en.bugHunter.notebookRestoreFailed);
     }
   };
 
@@ -201,6 +219,53 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
 
       {!canTriage && (
         <p className="mt-4 text-xs text-typography-500">{en.bugHunter.notebookReadOnly}</p>
+      )}
+
+      {/* The subtractive half of the notebook made visible. Absent when the
+          agent retired nothing recently: a heading over "nothing" would teach
+          a reader to skip the place where a wrong retirement later shows. */}
+      {retiredByAgent.length > 0 && (
+        <section className="mt-6" data-testid="notebook-retired-by-me">
+          <h3 className="text-sm font-semibold text-typography-900">
+            {en.bugHunter.notebookRetiredByMeTitle.replace(
+              "{count}",
+              String(retiredByAgent.length),
+            )}
+          </h3>
+          <p className="text-xs text-typography-600 mt-0.5">
+            {en.bugHunter.notebookRetiredByMeIntro}
+          </p>
+          <ul className="mt-2 border border-border-light rounded-lg bg-neutral-50">
+            {retiredByAgent.map(entry => (
+              <li
+                key={entry.id}
+                className="px-4 py-3 border-b border-b-border-light last:border-b-0"
+                data-testid="notebook-retired-entry"
+              >
+                <p className="text-sm text-typography-700 line-through decoration-typography-400">
+                  {entry.body}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-typography-600">
+                  <span className="flex-1 min-w-[12rem]">
+                    {en.bugHunter.notebookRetiredBecause
+                      .replace("{when}", entry.retiredAt ? formatDate(entry.retiredAt) : "")
+                      .replace("{reason}", entry.retiredReason ?? "")}
+                  </span>
+                  {canTriage && (
+                    <Button
+                      size="sm"
+                      kind="ghost"
+                      disabled={isRestoring}
+                      onClick={() => handleRestore(entry)}
+                    >
+                      {en.bugHunter.notebookRestore}
+                    </Button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {canTriage && adding && (

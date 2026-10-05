@@ -4,11 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NotebookPanel } from "../NotebookPanel";
 
 const getMemory = vi.fn();
+const getRetiredMemory = vi.fn();
 const addEntry = vi.fn();
 const retireEntry = vi.fn();
+const restoreEntry = vi.fn();
 
 vi.mock("@api", () => ({
   useGetBugHunterMemoryQuery: (...args: unknown[]) => getMemory(...args),
+  useGetBugHunterRetiredMemoryQuery: (...args: unknown[]) => getRetiredMemory(...args),
+  useRestoreBugHunterMemoryMutation: () => [restoreEntry, { isLoading: false }],
   useAddBugHunterMemoryMutation: () => [addEntry, { isLoading: false }],
   useRetireBugHunterMemoryMutation: () => [retireEntry, { isLoading: false }],
 }));
@@ -80,8 +84,9 @@ const entry = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const renderPanel = (items: any[], canTriage = true) => {
+const renderPanel = (items: any[], canTriage = true, retired: any[] = []) => {
   getMemory.mockReturnValue({ data: { items }, isLoading: false, isError: false });
+  getRetiredMemory.mockReturnValue({ data: { items: retired }, isLoading: false, isError: false });
   render(<NotebookPanel canTriage={canTriage} />);
 };
 
@@ -200,6 +205,47 @@ describe("NotebookPanel", () => {
 
     fireEvent.click(screen.getByText("Retire it"));
     await waitFor(() => expect(retireEntry).toHaveBeenCalledWith("m-1"));
+  });
+
+  describe("what the agent retired on its own (OPP-0752)", () => {
+    const retiredByAgent = entry({
+      id: "m-9",
+      body: "ally-be: the old payments cron still runs on Sundays.",
+      status: "retired",
+      retiredAt: "2026-10-04",
+      retiredBy: null,
+      retiredReason: "No run applied it in the last 30 runs that reported what they used.",
+    });
+
+    it("shows nothing about retirements when the agent retired nothing recently", () => {
+      renderPanel([entry()]);
+      expect(screen.queryByTestId("notebook-retired-by-me")).not.toBeInTheDocument();
+    });
+
+    it("lists each retired entry with the rule that fired, scoped like the active list", () => {
+      renderPanel([entry()], true, [retiredByAgent]);
+      expect(getRetiredMemory).toHaveBeenCalledWith({ repo: "ally-be", limit: 50 });
+      expect(screen.getByText("Retired by me recently (1)")).toBeInTheDocument();
+      expect(screen.getByText(/old payments cron/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Retired 2026-10-04 because: No run applied it in the last 30 runs/),
+      ).toBeInTheDocument();
+    });
+
+    it("puts an entry back on request", async () => {
+      restoreEntry.mockReturnValue({ unwrap: () => Promise.resolve(entry({ id: "m-9" })) });
+      renderPanel([], true, [retiredByAgent]);
+
+      fireEvent.click(screen.getByText("Put it back"));
+
+      await waitFor(() => expect(restoreEntry).toHaveBeenCalledWith("m-9"));
+    });
+
+    it("shows the retirements to a read-only viewer, without the undo", () => {
+      renderPanel([], false, [retiredByAgent]);
+      expect(screen.getByTestId("notebook-retired-by-me")).toBeInTheDocument();
+      expect(screen.queryByText("Put it back")).not.toBeInTheDocument();
+    });
   });
 
   it("is read-only without the toggle: no form, no retire button, and says why", () => {
