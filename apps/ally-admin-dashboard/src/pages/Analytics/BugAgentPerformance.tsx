@@ -7,12 +7,15 @@ import { useGetBugAgentPerformanceQuery } from "@api";
 import { AnalyticsTabFilters, asOf, windowLabel } from "./analyticsFilters";
 import {
   buildCostTrend,
+  buildFoundTrend,
   buildPrecisionTrend,
   buildReliabilityTrend,
   buildSourceAccuracyBreakdown,
   buildSpeedTrend,
   buildThroughputTrend,
   COST_SCALE,
+  FOUND_SCALE,
+  foundTakeaway,
   PRECISION_SCALE,
   RELIABILITY_SCALE,
   SPEED_SCALE,
@@ -66,12 +69,14 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
   const speedWeekly = useMemo(() => data?.speed ?? [], [data]);
   const costWeekly = useMemo(() => data?.cost ?? [], [data]);
   const reliabilityWeekly = useMemo(() => data?.reliability ?? [], [data]);
+  const foundDaily = useMemo(() => data?.found ?? [], [data]);
 
   const precisionTrend = useMemo(() => buildPrecisionTrend(precisionWeekly), [precisionWeekly]);
   const sourceAccuracy = useMemo(() => buildSourceAccuracyBreakdown(bySource), [bySource]);
   const throughputTrend = useMemo(() => buildThroughputTrend(throughputWeekly), [throughputWeekly]);
   const speedTrend = useMemo(() => buildSpeedTrend(speedWeekly), [speedWeekly]);
   const costTrend = useMemo(() => buildCostTrend(costWeekly), [costWeekly]);
+  const foundTrend = useMemo(() => buildFoundTrend(foundDaily), [foundDaily]);
   const reliabilityTrend = useMemo(
     () => buildReliabilityTrend(reliabilityWeekly),
     [reliabilityWeekly],
@@ -117,6 +122,10 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
     [],
   );
   const costOptions = useMemo(() => lineOpts({ leftTitle: "USD", colorScale: COST_SCALE }), []);
+  const foundOptions = useMemo(
+    () => lineOpts({ leftTitle: "Bugs found", colorScale: FOUND_SCALE }),
+    [],
+  );
   const reliabilityOptions = useMemo(
     () => withPercentTicks(lineOpts({ leftTitle: "Rate", colorScale: RELIABILITY_SCALE })),
     [],
@@ -148,6 +157,31 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
           before the monthly figure moves.
         </p>
       </div>
+
+      {/* The headline the governor asked for, ahead of the weekly rates: is
+          the agent finding FEWER bugs as the codebases get cleaner? Daily,
+          not weekly like everything below it, because the sweeps are nightly
+          and a week would hide a change for seven days. */}
+      <ChartCard
+        title="Bugs found per day"
+        caption="Distinct bugs Bug Hunter filed each day across every repo and source, with the trailing seven-day average as the line to read the trend from. A quiet night is a real zero. Days are UTC, the clock the sweeps run on."
+        source={source(
+          "bug_findings top-level rows by createdAt day; the average is the mean of that day and the six before it",
+        )}
+        takeaway={foundTakeaway(foundDaily)}
+        loading={isLoading && !data}
+        error={isError}
+        onRetry={refetch}
+        errorTitle="Couldn't load bugs found per day"
+        empty={foundTrend.length === 0}
+        emptyText="No days in this window"
+        height={CHART_HEIGHT}
+        chartId="AAQ-201"
+      >
+        <ScrollableChart data={foundTrend}>
+          <LineChart data={foundTrend} options={foundOptions} />
+        </ScrollableChart>
+      </ChartCard>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard

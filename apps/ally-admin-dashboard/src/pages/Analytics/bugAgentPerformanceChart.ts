@@ -1,5 +1,6 @@
 import {
   BugAgentPerformanceCostWeek,
+  BugAgentPerformanceFoundDay,
   BugAgentPerformancePrecisionWeek,
   BugAgentPerformanceReliabilityWeek,
   BugAgentPerformanceSourceAccuracy,
@@ -147,3 +148,60 @@ export function buildReliabilityTrend(weekly: BugAgentPerformanceReliabilityWeek
       : [{ group: RELIABILITY_GROUPS.regression, key: w.week, value: w.regressionRate }]),
   ]);
 }
+
+const FOUND_GROUPS = { daily: "Bugs found", rolling: "7-day average" };
+export const FOUND_SCALE: ColorScale = {
+  [FOUND_GROUPS.daily]: PALETTE.lightBlue,
+  [FOUND_GROUPS.rolling]: PALETTE.purple,
+};
+
+/**
+ * Bugs found per day across every repo, plus the trailing seven-day mean.
+ *
+ * The raw count is a real series — a quiet night is a real 0 and is plotted,
+ * since the whole point of this chart is to watch the count fall and a line
+ * that skipped zeros would hide exactly the days that prove it. The mean is
+ * null until seven days exist and is omitted there rather than plotted as 0,
+ * same convention as every other null rate on this tab. Both are counts on
+ * one axis; the mean is the line a reader judges the trend from, the daily
+ * bars-as-line are the spiky truth under it.
+ */
+export function buildFoundTrend(days: BugAgentPerformanceFoundDay[]): WeeklyDatum[] {
+  return days.flatMap(d => [
+    { group: FOUND_GROUPS.daily, key: d.day, value: d.filed },
+    ...(d.rollingAvg7 == null
+      ? []
+      : [{ group: FOUND_GROUPS.rolling, key: d.day, value: d.rollingAvg7 }]),
+  ]);
+}
+
+/** Days each side of the comparison `foundTakeaway` makes. */
+export const FOUND_COMPARE_DAYS = 7;
+
+/**
+ * The sentence the chart exists to let someone say: "N/day over the last
+ * week, down X% on the week before". Undefined until there are two full
+ * weeks to compare — a trend claimed from less would be noise with a sign.
+ * "Flat" rather than "down 0%" when the two weeks match, and it is the raw
+ * daily counts that are compared, not the smoothed line, so the figure is
+ * reproducible from the table.
+ */
+export const foundTakeaway = (days: BugAgentPerformanceFoundDay[]): string | undefined => {
+  if (days.length < FOUND_COMPARE_DAYS * 2) return undefined;
+  const recent = days.slice(-FOUND_COMPARE_DAYS);
+  const before = days.slice(-FOUND_COMPARE_DAYS * 2, -FOUND_COMPARE_DAYS);
+  const mean = (rows: BugAgentPerformanceFoundDay[]) =>
+    rows.reduce((sum, d) => sum + d.filed, 0) / rows.length;
+  const recentMean = mean(recent);
+  const beforeMean = mean(before);
+  const perDay = `${recentMean.toFixed(1)} bugs/day over the last ${FOUND_COMPARE_DAYS} days`;
+  if (beforeMean === 0) {
+    return recentMean === 0
+      ? `Nothing found in the last ${FOUND_COMPARE_DAYS * 2} days`
+      : `${perDay} · nothing was found the week before`;
+  }
+  const change = (recentMean - beforeMean) / beforeMean;
+  if (Math.abs(change) < 0.005) return `${perDay} · flat on the week before`;
+  const direction = change < 0 ? "down" : "up";
+  return `${perDay} · ${direction} ${Math.round(Math.abs(change) * 100)}% on the week before (${beforeMean.toFixed(1)}/day)`;
+};

@@ -922,6 +922,16 @@ export interface BugAgentPerformanceReliabilityWeek {
   failed: number;
 }
 
+/** One UTC day of bugs found across every repo and source — mirrors FoundDayDto. */
+export interface BugAgentPerformanceFoundDay {
+  /** yyyy-mm-dd, UTC — the clock the sweeps run on. */
+  day: string;
+  /** Distinct top-level findings filed that day. A quiet day is a real 0. */
+  filed: number;
+  /** Mean of `filed` over this day and the six before; null for the first six days of the window. */
+  rollingAvg7: number | null;
+}
+
 export interface BugAgentPerformanceResponse {
   precision: {
     weekly: BugAgentPerformancePrecisionWeek[];
@@ -931,6 +941,8 @@ export interface BugAgentPerformanceResponse {
   speed: BugAgentPerformanceSpeedWeek[];
   cost: BugAgentPerformanceCostWeek[];
   reliability: BugAgentPerformanceReliabilityWeek[];
+  /** Bugs found per day, oldest first, gap-filled — the one daily series on the tab. */
+  found: BugAgentPerformanceFoundDay[];
   window: AnalyticsWindow;
   computedAt: string;
 }
