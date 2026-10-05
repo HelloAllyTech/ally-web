@@ -152,7 +152,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     translationTitle: data.translationTitle ?? {},
     reminders: Array.isArray(data?.metadata?.reminders)
       ? data.metadata.reminders.join("\n")
-      : ((data?.metadata?.reminders as unknown as string) ?? ""),
+      : String(data?.metadata?.reminders ?? ""),
     translationReminders: Object.fromEntries(
       Object.entries(data.translationReminders ?? {}).map(([languageId, lines]) => [
         languageId,
