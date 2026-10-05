@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Room, RoomEvent, Participant, RemoteTrackPublication, Track } from "livekit-client";
@@ -647,7 +646,10 @@ export const useLiveKitRoom = (
   }, [room]);
 
   useEffect(() => {
-    return () => autoTerminationAudio.current?.pause();
+    // Capture the element up front: the cleanup must pause the same Audio this
+    // effect saw, not whatever `.current` happens to hold at unmount.
+    const audio = autoTerminationAudio.current;
+    return () => audio?.pause();
   }, []);
 
   return {
