@@ -164,9 +164,9 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
           and a week would hide a change for seven days. */}
       <ChartCard
         title="Bugs found per day"
-        caption="Distinct bugs Bug Hunter filed each day across every repo and source, with the trailing seven-day average as the line to read the trend from. A quiet night is a real zero. Days are UTC, the clock the sweeps run on."
+        caption="Distinct bugs Bug Hunter filed each day across every repo and source, leaving out any since dismissed or rejected, with the trailing seven-day average as the line to read the trend from. A day's count can drop later as its findings are ruled on. A quiet night is a real zero. Days are UTC, the clock the sweeps run on."
         source={source(
-          "bug_findings top-level rows by createdAt day; the average is the mean of that day and the six before it",
+          "bug_findings top-level rows by createdAt day whose current status is not dismissed or rejected; the average is the mean of that day and the six before it",
         )}
         takeaway={foundTakeaway(foundDaily)}
         loading={isLoading && !data}

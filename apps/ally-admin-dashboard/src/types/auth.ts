@@ -926,7 +926,7 @@ export interface BugAgentPerformanceReliabilityWeek {
 export interface BugAgentPerformanceFoundDay {
   /** yyyy-mm-dd, UTC — the clock the sweeps run on. */
   day: string;
-  /** Distinct top-level findings filed that day. A quiet day is a real 0. */
+  /** Distinct top-level findings filed that day, excluding any since dismissed or rejected. A quiet day is a real 0. */
   filed: number;
   /** Mean of `filed` over this day and the six before; null for the first six days of the window. */
   rollingAvg7: number | null;
