@@ -303,7 +303,14 @@ const knowledge: KnowledgeVsSkillResponse = {
   scoreDomain: [1, 4],
   quizScoreDomain: [0, 100],
   skillWindowCuts: 6,
-  coverage: { courses: 1, enrolments: 30, points: 12, learners: 12, missingQuiz: 10, missingSkill: 8 },
+  coverage: {
+    courses: 1,
+    enrolments: 30,
+    points: 12,
+    learners: 12,
+    missingQuiz: 10,
+    missingSkill: 8,
+  },
   overall: { points: 12, learners: 12, r: null, rCi: null, detectable: false },
   courses: [],
   points: [{ trackId: "t1", learnerId: 1, quizScore: 80, skillScore: 2.5, quizzes: 2, slices: 6 }],
@@ -370,31 +377,39 @@ describe("CourseOutcomesSection", () => {
 
     // getAll where the closed detail modal repeats a card's body (it stays mounted).
     // AAQ-210: full course titles, nested counts, server shares only.
-    expect(screen.getAllByText("Listening basics for helpline volunteers").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Listening basics for helpline volunteers").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getAllByText("80 → 70 → 52 → 40").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/50% finished · 12 stalled \(17\.1% of started\)/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/50% finished · 12 stalled \(17\.1% of started\)/).length,
+    ).toBeGreaterThan(0);
     // The tiny course has no stated rate, so none is shown.
     expect(screen.getAllByText("3 → 2 → 1 → 1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("0 stalled").length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(/83 enrolments across 2 courses: 49\.4% finished/),
-    ).toBeTruthy();
+    expect(screen.getByText(/83 enrolments across 2 courses: 49\.4% finished/)).toBeTruthy();
 
     // AAQ-211: the hardest quiz named, the withheld one listed with its n.
     expect(
-      screen.getByText(/Hardest first time: Module 1 quiz \(Listening basics for helpline volunteers\), 38\.1%/),
+      screen.getByText(
+        /Hardest first time: Module 1 quiz \(Listening basics for helpline volunteers\), 38\.1%/,
+      ),
     ).toBeTruthy();
     expect(
       screen.getByText("Under 20 scored first attempts, so not rated: Pilot check-in (n = 4)."),
     ).toBeTruthy();
 
     // AAQ-212: a retry's recovery, in points.
-    expect(screen.getByText(/Biggest recovery on a retry: Module 1 quiz, \+24 points/)).toBeTruthy();
+    expect(
+      screen.getByText(/Biggest recovery on a retry: Module 1 quiz, \+24 points/),
+    ).toBeTruthy();
     expect(screen.getAllByText(/too few retries \(n = 2\)/).length).toBeGreaterThan(0);
 
     // AAQ-213: the flagged gate is named, the thin one listed with its n.
     expect(screen.getByText("Check calibration: Opening the call (20% first time).")).toBeTruthy();
-    expect(screen.getAllByText("check calibration: under 40% clear it first time").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("check calibration: under 40% clear it first time").length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Under 20 learners, so not split: Pilot gate (n = 6).")).toBeTruthy();
 
     // AAQ-225: the steepest fall named; the thin course listed with its n.
@@ -413,7 +428,9 @@ describe("CourseOutcomesSection", () => {
         "12 learner-course points (12 learners): r withheld: 12 of 30 points — the correlation is stated from 30.",
       ),
     ).toBeTruthy();
-    expect(screen.getByText(/^Not plotted: 10 enrolments with no scored first quiz attempt/)).toBeTruthy();
+    expect(
+      screen.getByText(/^Not plotted: 10 enrolments with no scored first quiz attempt/),
+    ).toBeTruthy();
 
     for (const id of ["AAQ-210", "AAQ-211", "AAQ-212", "AAQ-213", "AAQ-225", "AAQ-226"]) {
       expect(screen.getByText(id)).toBeTruthy();
@@ -421,7 +438,9 @@ describe("CourseOutcomesSection", () => {
   });
 
   it("says what is missing when there is nothing to draw, naming the floor", () => {
-    funnelMock.mockReturnValue(result({ ...funnel, courses: [], totals: { ...funnel.totals, enrolled: 0 } }));
+    funnelMock.mockReturnValue(
+      result({ ...funnel, courses: [], totals: { ...funnel.totals, enrolled: 0 } }),
+    );
     quizMock.mockReturnValue(
       result({
         ...quizzes,
@@ -448,7 +467,9 @@ describe("CourseOutcomesSection", () => {
 
     expect(screen.getByText("No one enrolled in a course in the last 12 months")).toBeTruthy();
     expect(
-      screen.getByText(/No quiz has 20 scored first attempts in the last 12 months — 2 quizzes have fewer/),
+      screen.getByText(
+        /No quiz has 20 scored first attempts in the last 12 months — 2 quizzes have fewer/,
+      ),
     ).toBeTruthy();
     expect(
       screen.getByText(

@@ -264,9 +264,7 @@ describe("pooled row and free-practice reference", () => {
     expect(referenceNote(reference(), 3, 20)).toBe(
       "Free practice, same slice positions: 40 of 310 learners who never enrolled in a course, read over the same point in their own practice (slices 4–6 against 10–12): +0.08 (95% CI −0.02 to +0.18).",
     );
-    expect(
-      referenceNote(reference({ learners: 12, change: null, changeCi: null }), 3, 20),
-    ).toBe(
+    expect(referenceNote(reference({ learners: 12, change: null, changeCi: null }), 3, 20)).toBe(
       "Free practice, same slice positions: withheld — 12 of 310 learners who never enrolled in a course have practised far enough to compare (slices 4–6 against 10–12); need 20.",
     );
     expect(referenceNote(reference({ matchedStartPosition: null }), 3, 20)).toMatch(

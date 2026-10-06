@@ -175,7 +175,9 @@ describe("PracticeQualitySection (AAQ-208/209)", () => {
     render(<PracticeQualitySection />);
 
     expect(screen.getAllByText("Not enough data to show a trend")).toHaveLength(2);
-    expect(screen.getByText("Too few sessions to state a share (n = 9 · need 20)")).toBeInTheDocument();
+    expect(
+      screen.getByText("Too few sessions to state a share (n = 9 · need 20)"),
+    ).toBeInTheDocument();
   });
 });
 
@@ -193,9 +195,33 @@ const stickiness = (spacing?: StickinessResponse["spacing"]): StickinessResponse
 const spacingBlock: NonNullable<StickinessResponse["spacing"]> = {
   window: "all",
   bands: [
-    { band: "0-1", label: "0–1 days", minDays: 0, maxDays: 1, gaps: 120, sharePct: 40, learners: 50 },
-    { band: "2-6", label: "2–6 days", minDays: 2, maxDays: 6, gaps: 90, sharePct: 30, learners: 40 },
-    { band: "30+", label: "30+ days", minDays: 30, maxDays: null, gaps: 90, sharePct: 30, learners: 20 },
+    {
+      band: "0-1",
+      label: "0–1 days",
+      minDays: 0,
+      maxDays: 1,
+      gaps: 120,
+      sharePct: 40,
+      learners: 50,
+    },
+    {
+      band: "2-6",
+      label: "2–6 days",
+      minDays: 2,
+      maxDays: 6,
+      gaps: 90,
+      sharePct: 30,
+      learners: 40,
+    },
+    {
+      band: "30+",
+      label: "30+ days",
+      minDays: 30,
+      maxDays: null,
+      gaps: 90,
+      sharePct: 30,
+      learners: 20,
+    },
   ],
   totalGaps: 300,
   minGapSample: 20,
@@ -231,7 +257,12 @@ describe("PracticeSpacingCard (AAQ-224)", () => {
 
   it("says the backend has not caught up when the response has no spacing block", () => {
     render(
-      <PracticeSpacingCard stickiness={stickiness()} loading={false} error={false} onRetry={vi.fn()} />,
+      <PracticeSpacingCard
+        stickiness={stickiness()}
+        loading={false}
+        error={false}
+        onRetry={vi.fn()}
+      />,
     );
 
     expect(screen.getByText(/returned no spacing figures/)).toBeInTheDocument();

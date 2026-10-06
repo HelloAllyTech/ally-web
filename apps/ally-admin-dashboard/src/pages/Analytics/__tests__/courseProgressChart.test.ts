@@ -181,7 +181,14 @@ const know = (over: Partial<KnowledgeVsSkillResponse> = {}): KnowledgeVsSkillRes
   scoreDomain: [1, 4],
   quizScoreDomain: [0, 100],
   skillWindowCuts: 6,
-  coverage: { courses: 2, enrolments: 90, points: 58, learners: 41, missingQuiz: 20, missingSkill: 12 },
+  coverage: {
+    courses: 2,
+    enrolments: 90,
+    points: 58,
+    learners: 41,
+    missingQuiz: 20,
+    missingSkill: 12,
+  },
   overall: corr(),
   courses: [
     {
@@ -238,7 +245,9 @@ describe("knowledge vs skill", () => {
       "Spearman r = +0.21 (95% CI −0.05 to +0.44) over 58 learner-course points (41 learners): no detectable association. 1 course has enough points to read on its own (expanded view).",
     );
     expect(
-      knowledgeTakeaway(know({ overall: corr({ r: -0.42, rCi: [-0.6, -0.2], detectable: true }), courses: [] })),
+      knowledgeTakeaway(
+        know({ overall: corr({ r: -0.42, rCi: [-0.6, -0.2], detectable: true }), courses: [] }),
+      ),
     ).toBe(
       "Spearman r = −0.42 (95% CI −0.60 to −0.20) over 58 learner-course points (41 learners): a moderate negative association.",
     );
@@ -255,7 +264,9 @@ describe("knowledge vs skill", () => {
       "Not plotted: 20 enrolments with no scored first quiz attempt, and 12 with a quiz score but no helping-skills slice after enrolling.",
     );
     expect(
-      knowledgeCoverageNote(know({ coverage: { ...know().coverage, missingQuiz: 0, missingSkill: 0 } })),
+      knowledgeCoverageNote(
+        know({ coverage: { ...know().coverage, missingQuiz: 0, missingSkill: 0 } }),
+      ),
     ).toBeNull();
     const table = knowledgeTable(know());
     expect(table.rows[0][table.columns.indexOf("Spearman r")]).toBe("+0.38");

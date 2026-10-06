@@ -51,7 +51,13 @@ const fixture: CourseImpactResponse = {
     unclear: 0,
     pairedEnrollments: 27,
   },
-  pooled: comparison({ learners: 26, beforeAvg: 2.12, afterAvg: 2.5, change: 0.38, changeCi: [0.22, 0.54] }),
+  pooled: comparison({
+    learners: 26,
+    beforeAvg: 2.12,
+    afterAvg: 2.5,
+    change: 0.38,
+    changeCi: [0.22, 0.54],
+  }),
   reference,
   courses: [
     {
@@ -181,12 +187,16 @@ describe("CourseImpactSubTab", () => {
     expect(screen.getByText("All courses, each learner once")).toBeTruthy();
     expect(screen.getByText("2.12 → 2.50 · 26 learners")).toBeTruthy();
     expect(
-      screen.getByText("Grey: Free practice, same slice positions — +0.08 [−0.02 to +0.18] · n = 40"),
+      screen.getByText(
+        "Grey: Free practice, same slice positions — +0.08 [−0.02 to +0.18] · n = 40",
+      ),
     ).toBeTruthy();
     expect(screen.getByText(/40 of 310 learners who never enrolled in a course/)).toBeTruthy();
     expect(screen.getByText(/slices 4–6 against 10–12/)).toBeTruthy();
     expect(
-      screen.getByText(/^Before\/after on the same learners\. Not a trial: people who finish courses also practise more\./),
+      screen.getByText(
+        /^Before\/after on the same learners\. Not a trial: people who finish courses also practise more\./,
+      ),
     ).toBeTruthy();
 
     // It asked for the default course's detail once it knew the list.
@@ -197,7 +207,9 @@ describe("CourseImpactSubTab", () => {
     expect(screen.getByText("Taught in this course (tagged by the author)")).toBeTruthy();
     expect(screen.queryByText("Assessment of harm and developing a response plan")).toBeNull();
     expect(
-      screen.getByText(/Competencies this course teaches \(tagged by the author\): Verbal Communication/),
+      screen.getByText(
+        /Competencies this course teaches \(tagged by the author\): Verbal Communication/,
+      ),
     ).toBeTruthy();
 
     // Unhelpful behaviour reads down as good.
@@ -215,7 +227,9 @@ describe("CourseImpactSubTab", () => {
     );
     const { unmount } = render(<CourseImpactSubTab />);
     expect(
-      screen.getByText("Grey: Free practice, same slice positions — not drawn, too few learners (n = 12)"),
+      screen.getByText(
+        "Grey: Free practice, same slice positions — not drawn, too few learners (n = 12)",
+      ),
     ).toBeTruthy();
     expect(screen.getByText(/withheld — 12 of 310 learners/)).toBeTruthy();
     unmount();

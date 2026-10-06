@@ -431,9 +431,7 @@ describe("competency map", () => {
 
   it("plots the learner skill level (score), not the deprecated actor median", () => {
     const points = buildCompetencyScatter([competency({ score: 2.6, medianScore: 99 })]);
-    expect(points).toEqual([
-      { group: "Empathy, warmth and genuineness", x: 100, y: 2.6 },
-    ]);
+    expect(points).toEqual([{ group: "Empathy, warmth and genuineness", x: 100, y: 2.6 }]);
   });
 
   it("omits unscored competencies rather than plotting them at the bottom of the axis", () => {
@@ -452,7 +450,10 @@ describe("competency map", () => {
 
   it("gives every named point the same accent — names without colour-by-identity", () => {
     const scale = competencyScale(
-      buildCompetencyScatter([competency(), competency({ competencyId: "c4", skillName: "Rapport" })]),
+      buildCompetencyScatter([
+        competency(),
+        competency({ competencyId: "c4", skillName: "Rapport" }),
+      ]),
     );
     expect(Object.keys(scale)).toHaveLength(2);
     expect(new Set(Object.values(scale)).size).toBe(1);
@@ -475,7 +476,12 @@ describe("competency map", () => {
   it("names the weakest and strongest scored skill on the 1–4 scale", () => {
     const takeaway = competencyTakeaway([
       competency({ score: 3.1 }),
-      competency({ competencyId: "c2", name: "Rapport", skillName: "Rapport-building", score: 2.05 }),
+      competency({
+        competencyId: "c2",
+        name: "Rapport",
+        skillName: "Rapport-building",
+        score: 2.05,
+      }),
     ]);
     expect(takeaway).toContain("Lowest mean level: Rapport-building at 2.05");
     expect(takeaway).toContain("highest: Empathy, warmth and genuineness at 3.10");

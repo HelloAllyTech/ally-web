@@ -128,9 +128,7 @@ describe("course funnel", () => {
     expect(courseFunnelTakeaway(thin)).toBe(
       "3 enrolments across 3 courses: too few to state a completion rate (need 5).",
     );
-    expect(
-      courseFunnelTakeaway(funnel({ totals: { ...funnel().totals, enrolled: 0 } })),
-    ).toBe("");
+    expect(courseFunnelTakeaway(funnel({ totals: { ...funnel().totals, enrolled: 0 } }))).toBe("");
   });
 
   it("keeps nulls as nulls in the table", () => {
@@ -183,7 +181,11 @@ const quizzes = (list: QuizOutcome[]): QuizOutcomesResponse => ({
   window: period,
   minSampleSize: 20,
   scoreDomain: [0, 100],
-  summary: { quizzes: list.length, measurable: list.filter(q => !q.withheld).length, firstAttempts: 90 },
+  summary: {
+    quizzes: list.length,
+    measurable: list.filter(q => !q.withheld).length,
+    firstAttempts: 90,
+  },
   quizzes: list,
   scoping,
   provenance,

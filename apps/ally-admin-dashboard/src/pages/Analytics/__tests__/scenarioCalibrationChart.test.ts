@@ -88,7 +88,9 @@ const calibration = (
       flag: "tooHard",
     }),
   ],
-  belowFloor: [{ scenarioId: 7, versionId: "v-7-1", versionNumber: 1, title: "New one", sessions: 6 }],
+  belowFloor: [
+    { scenarioId: 7, versionId: "v-7-1", versionNumber: 1, title: "New one", sessions: 6 },
+  ],
   totals: { sessions: 166, unresolvedExcluded: 9, rows: 2, derivedRows: 1, tooEasy: 1, tooHard: 1 },
   bandDefinitions: { derived: DERIVED, raw: RAW },
   thresholds: { tooEasyTopBandPct: 80, tooHardBelowZeroPct: 50 },
@@ -103,15 +105,24 @@ describe("calibration", () => {
     const scale = bandScale(DERIVED);
     expect(scale.below0).toBe(PALETTE.orange);
     expect(scale.over100).toBe(PALETTE.purple);
-    expect(new Set([scale.pct0to25, scale.pct25to50, scale.pct50to75, scale.pct75to100]).size).toBe(4);
+    expect(new Set([scale.pct0to25, scale.pct25to50, scale.pct50to75, scale.pct75to100]).size).toBe(
+      4,
+    );
   });
 
   it("stacks each row on its own band set, dropping empty bands", () => {
     const [derived, raw] = calibrationRows(calibration());
     expect(derived.label).toBe("Angry caller v2");
     expect(derived.difficulty).toBe("Hard");
-    expect(derived.sublabel).toBe("100 sessions · share of its −20 to 80 point range · median 68 points");
-    expect(derived.segments.map(s => s.key)).toEqual(["pct0to25", "pct25to50", "pct50to75", "pct75to100"]);
+    expect(derived.sublabel).toBe(
+      "100 sessions · share of its −20 to 80 point range · median 68 points",
+    );
+    expect(derived.segments.map(s => s.key)).toEqual([
+      "pct0to25",
+      "pct25to50",
+      "pct50to75",
+      "pct75to100",
+    ]);
     expect(derived.notes).toEqual(["too easy: 85% of sessions in the top band"]);
     expect(raw.label).toBe("Quiet teen unversioned");
     expect(raw.sublabel).toContain("raw points: nothing in its scoring adds points");
@@ -147,12 +158,17 @@ describe("calibration", () => {
     expect(r0[table.columns.indexOf("Attainable range")]).toBe("-20 to 80");
     expect(r0[table.columns.indexOf("Ceiling")]).toBe("hard");
     expect(r0[table.columns.indexOf("Scoring stable since")]).toBe("2026-08-01");
-    expect(String(r0[table.columns.indexOf("Bands (share, count)")])).toContain("75–100%: 85% (85)");
+    expect(String(r0[table.columns.indexOf("Bands (share, count)")])).toContain(
+      "75–100%: 85% (85)",
+    );
     expect(table.rows[1][table.columns.indexOf("Bands")]).toBe("raw points (noScoredContributors)");
   });
 });
 
-const point = (bucket: string, over: Partial<ScenarioProgressionPoint> = {}): ScenarioProgressionPoint => ({
+const point = (
+  bucket: string,
+  over: Partial<ScenarioProgressionPoint> = {},
+): ScenarioProgressionPoint => ({
   bucket,
   sessions: 40,
   reachedTerminal: 10,
@@ -229,7 +245,12 @@ describe("progression", () => {
     expect(
       progressionTakeaway(
         progression({
-          totals: { ...progression().totals, sessions: 9, reachedTerminalPct: null, neverAdvancedPct: null },
+          totals: {
+            ...progression().totals,
+            sessions: 9,
+            reachedTerminalPct: null,
+            neverAdvancedPct: null,
+          },
         }),
       ),
     ).toBe("9 tracked sessions: too few to state shares (need 20).");

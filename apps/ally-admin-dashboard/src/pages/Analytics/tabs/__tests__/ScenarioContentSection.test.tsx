@@ -120,7 +120,21 @@ const repeat: ScenarioRepeatImprovementResponse = {
   minSampleSize: 20,
   thresholds: { minSpanHours: 24, pickerSize: 10 },
   repeatGroups: 50,
-  scenarios: [row(), row({ scenarioId: 9, title: "Quiet teen", versionId: null, versionNumber: null, pairs: 4, change: null, changeCi: null, firstAvg: null, latestAvg: null, pairsSpanningScoringChange: 0 })],
+  scenarios: [
+    row(),
+    row({
+      scenarioId: 9,
+      title: "Quiet teen",
+      versionId: null,
+      versionNumber: null,
+      pairs: 4,
+      change: null,
+      changeCi: null,
+      firstAvg: null,
+      latestAvg: null,
+      pairsSpanningScoringChange: 0,
+    }),
+  ],
   pooled: { pairs: 28, learners: 26, up: 18, down: 6, tied: 2, improvingPct: 75, signP: 0.02 },
   selected: {
     scenarioId: 5,
@@ -192,13 +206,19 @@ const calibration: ScenarioCalibrationResponse = {
       ceilingIsHard: true,
       uncappedContributors: 0,
       configStableSince: "2026-08-01T00:00:00.000Z",
-      bands: derivedDefs.map((d, i) => ({ ...d, count: [0, 2, 3, 10, 85, 0][i], pct: [0, 2, 3, 10, 85, 0][i] })),
+      bands: derivedDefs.map((d, i) => ({
+        ...d,
+        count: [0, 2, 3, 10, 85, 0][i],
+        pct: [0, 2, 3, 10, 85, 0][i],
+      })),
       medianScore: 68,
       flag: "tooEasy",
       rangeSuspect: false,
     },
   ],
-  belowFloor: [{ scenarioId: 9, versionId: null, versionNumber: null, title: "Quiet teen", sessions: 7 }],
+  belowFloor: [
+    { scenarioId: 9, versionId: null, versionNumber: null, title: "Quiet teen", sessions: 7 },
+  ],
   totals: { sessions: 127, unresolvedExcluded: 4, rows: 1, derivedRows: 1, tooEasy: 1, tooHard: 0 },
   bandDefinitions: { derived: derivedDefs, raw: rawDefs },
   thresholds: { tooEasyTopBandPct: 80, tooHardBelowZeroPct: 50 },
@@ -284,7 +304,9 @@ describe("ScenarioContentSection", () => {
       ),
     ).toBeTruthy();
     expect(screen.getAllByText("Labelled hard").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("too easy: 85% of sessions in the top band").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("too easy: 85% of sessions in the top band").length).toBeGreaterThan(
+      0,
+    );
     expect(
       screen.getByText("Under 20 scored sessions, so not banded: Quiet teen unversioned (n = 7)."),
     ).toBeTruthy();
@@ -322,7 +344,9 @@ describe("ScenarioContentSection", () => {
       screen.getAllByText(/Restricted to single-scenario slices: only 45% of scored slices/).length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getByText(/1 more scenario has fewer than 20 single-scenario slices: New scenario \(n = 12\)/),
+      screen.getByText(
+        /1 more scenario has fewer than 20 single-scenario slices: New scenario \(n = 12\)/,
+      ),
     ).toBeTruthy();
   });
 
@@ -339,11 +363,17 @@ describe("ScenarioContentSection", () => {
   it("draws the selected scenario's slopes, the pooled share and the scoring-edit warning", () => {
     render(<ScenarioContentSection query={query} />);
     expect(
-      screen.getByText(/^Across every scenario, 75% of 26 learners who replayed one scored higher on balance/),
+      screen.getByText(
+        /^Across every scenario, 75% of 26 learners who replayed one scored higher on balance/,
+      ),
     ).toBeTruthy();
-    expect(screen.getAllByRole("img", { name: /for 2 learners who replayed this scenario/ }).length).toBeGreaterThan(0);
     expect(
-      screen.getByText("6 of these 24 pairs straddle a scoring edit on 2026-09-03 — read the change with care."),
+      screen.getAllByRole("img", { name: /for 2 learners who replayed this scenario/ }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        "6 of these 24 pairs straddle a scoring edit on 2026-09-03 — read the change with care.",
+      ),
     ).toBeTruthy();
     expect(screen.getByRole("combobox", { name: "Scenario" })).toHaveTextContent(
       "Angry caller · 24 pairs",
@@ -361,7 +391,13 @@ describe("ScenarioContentSection", () => {
     repeatMock.mockReturnValue(
       result({
         ...repeat,
-        selected: { ...repeat.selected!, scenarioId: 9, title: "Quiet teen", pairs: 4, learners: null },
+        selected: {
+          ...repeat.selected!,
+          scenarioId: 9,
+          title: "Quiet teen",
+          pairs: 4,
+          learners: null,
+        },
       }),
     );
     render(<ScenarioContentSection query={query} />);
@@ -371,10 +407,22 @@ describe("ScenarioContentSection", () => {
 
   it("names what is missing when nothing qualifies", () => {
     coverageMock.mockReturnValue(
-      result({ ...coverage, scenarios: [], tagGaps: [], belowFloor: [{ scenarioId: 2, title: "New scenario", cuts: 12 }] }),
+      result({
+        ...coverage,
+        scenarios: [],
+        tagGaps: [],
+        belowFloor: [{ scenarioId: 2, title: "New scenario", cuts: 12 }],
+      }),
     );
     repeatMock.mockReturnValue(
-      result({ ...repeat, scenarios: [], selected: null, picker: [], repeatGroups: 3, pooled: { ...repeat.pooled, learners: 0 } }),
+      result({
+        ...repeat,
+        scenarios: [],
+        selected: null,
+        picker: [],
+        repeatGroups: 3,
+        pooled: { ...repeat.pooled, learners: 0 },
+      }),
     );
     calibrationMock.mockReturnValue(result({ ...calibration, rows: [] }));
     progressionMock.mockReturnValue(
@@ -394,11 +442,14 @@ describe("ScenarioContentSection", () => {
       screen.getByText("No session in the period carries a simulation state (6 ran without one)"),
     ).toBeTruthy();
     expect(
-      screen.getAllByText("No scenario has 20 single-scenario slices yet — 1 has fewer (the most is 12)")
-        .length,
+      screen.getAllByText(
+        "No scenario has 20 single-scenario slices yet — 1 has fewer (the most is 12)",
+      ).length,
     ).toBe(2);
     expect(
-      screen.getByText("3 learners have replayed a scenario, but none a day or more after their first play yet"),
+      screen.getByText(
+        "3 learners have replayed a scenario, but none a day or more after their first play yet",
+      ),
     ).toBeTruthy();
   });
 
@@ -420,7 +471,9 @@ describe("ScenarioContentSection", () => {
       ).length,
     ).toBe(2);
     expect(
-      screen.getByText("The repeat-improvement endpoint did not respond — it may not be deployed yet."),
+      screen.getByText(
+        "The repeat-improvement endpoint did not respond — it may not be deployed yet.",
+      ),
     ).toBeTruthy();
   });
 });

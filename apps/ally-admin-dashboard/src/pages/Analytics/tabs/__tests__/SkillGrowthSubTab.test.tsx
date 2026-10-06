@@ -53,7 +53,10 @@ const thresholds: SkillTrendThresholds = {
 };
 
 const scoping = { tenantId: null, unscopedSections: [] };
-const provenance = { derivation: "R1 slices", note: "AI judge not validated against human raters." };
+const provenance = {
+  derivation: "R1 slices",
+  note: "AI judge not validated against human raters.",
+};
 
 const growth: SkillGrowthResponse = {
   ordinals: [
@@ -149,11 +152,21 @@ const competencyMap: CompetencyMapResponse = {
       evaluatedSessions: 0,
     },
   ],
-  unattributed: { completedSessions: 0, scoredCuts: 0, evaluatedSessions: 0, label: "No competency tagged" },
+  unattributed: {
+    completedSessions: 0,
+    scoredCuts: 0,
+    evaluatedSessions: 0,
+    label: "No competency tagged",
+  },
   minSampleSize: 20,
   scoreDomain: [1, 4],
   rubricVersion: "fhs-text-v1",
-  cutAttribution: { scoredCuts: 800, singleScenarioCuts: 500, singleScenarioPct: 62.5, untaggedCuts: 20 },
+  cutAttribution: {
+    scoredCuts: 800,
+    singleScenarioCuts: 500,
+    singleScenarioPct: 62.5,
+    untaggedCuts: 20,
+  },
   summary: { competencies: 3, completedSessions: 550, evaluatedSessions: 500 },
   provenance,
   scoping,
@@ -224,7 +237,9 @@ describe("SkillGrowthSubTab — on the learner ruler", () => {
     expect(screen.getByText("Scored slices")).toBeInTheDocument();
     // The first-slice median at the server's precision, on the 1–4 scale.
     expect(screen.getByText("2.10")).toBeInTheDocument();
-    expect(screen.getByText(/0\.25 higher than at their 1st \(2\.10 → 2\.35 on the 1–4 scale\)/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/0\.25 higher than at their 1st \(2\.10 → 2\.35 on the 1–4 scale\)/),
+    ).toBeInTheDocument();
     // Band copy from the response, sized to noise — never "± N points".
     expect(screen.getByText(/±0\.31 at 4 slices, narrower with more/)).toBeInTheDocument();
     expect(screen.queryByText(/points/)).not.toBeInTheDocument();
@@ -233,9 +248,7 @@ describe("SkillGrowthSubTab — on the learner ruler", () => {
   it("states how much practice the competency scores can be credited, and lists the unscored by reason", () => {
     render(<SkillGrowthSubTab {...filters} />);
 
-    expect(
-      screen.getByText(/62\.5% of scored slices ran a single scenario/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/62\.5% of scored slices ran a single scenario/)).toBeInTheDocument();
     expect(
       screen.getByText("No rubric skill (practice volume only): Non-Verbal Communication"),
     ).toBeInTheDocument();

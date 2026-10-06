@@ -69,7 +69,14 @@ const coverage = (
     { scenarioId: 3, title: "Rare scenario", cuts: 3 },
   ],
   tagGaps: [
-    { scenarioId: 1, title: "Grieving parent", skill: "hope", opportunityPct: 10, cuts: 40, sessionsPlayed: 220 },
+    {
+      scenarioId: 1,
+      title: "Grieving parent",
+      skill: "hope",
+      opportunityPct: 10,
+      cuts: 40,
+      sessionsPlayed: 220,
+    },
   ],
   thresholds: { maxOpportunityPct: 30, minCuts: 20 },
   provenance,
@@ -111,12 +118,14 @@ describe("opportunity coverage grid", () => {
     expect(singleScenarioNote(coverage())).toBe(
       "75% of scored slices (150 of 200) played one scenario throughout; only those are attributed to a scenario.",
     );
-    expect(singleScenarioNote(coverage({ singleScenarioShare: 41.5, singleScenarioCuts: 83 }))).toMatch(
-      /^Restricted to single-scenario slices: only 41\.5% of scored slices/,
-    );
-    expect(singleScenarioNote(coverage({ singleScenarioShare: null, scoredCuts: 9, singleScenarioCuts: 4 }))).toContain(
-      "too few to state a share",
-    );
+    expect(
+      singleScenarioNote(coverage({ singleScenarioShare: 41.5, singleScenarioCuts: 83 })),
+    ).toMatch(/^Restricted to single-scenario slices: only 41\.5% of scored slices/);
+    expect(
+      singleScenarioNote(
+        coverage({ singleScenarioShare: null, scoredCuts: 9, singleScenarioCuts: 4 }),
+      ),
+    ).toContain("too few to state a share");
   });
 
   it("counts tagged cells against the server's gap list", () => {
@@ -133,13 +142,18 @@ describe("opportunity coverage grid", () => {
     const table = coverageTable(coverage());
     const row = table.rows[0];
     expect(row[table.columns.indexOf("Tagged skills")]).toBe("Exploring feelings, Instilling hope");
-    expect(row[table.columns.indexOf("Tags with no helping skill")]).toBe("Non-Verbal Communication");
+    expect(row[table.columns.indexOf("Tags with no helping skill")]).toBe(
+      "Non-Verbal Communication",
+    );
     expect(row[table.columns.indexOf("Instilling hope %")]).toBe("10 (tagged)");
     expect(row[table.columns.indexOf("Verbal communication %")]).toBe(90);
   });
 
   it("names the fix list's first entry by its full skill name", () => {
-    expect(tagGapRows(coverage())[0]).toMatchObject({ scenario: "Grieving parent", skill: "Instilling hope" });
+    expect(tagGapRows(coverage())[0]).toMatchObject({
+      scenario: "Grieving parent",
+      skill: "Instilling hope",
+    });
     expect(tagGapTakeaway(coverage())).toBe(
       "Fix first: Grieving parent. It is tagged with Instilling hope, but gives a chance at it in 10% of 40 slices, across 220 sessions played.",
     );
@@ -221,9 +235,7 @@ describe("repeat improvement", () => {
     expect(repeatTakeaway(thin)).toMatch(
       /^5 learners have replayed a scenario a day or more apart; need 20 before a share improving is stated\./,
     );
-    expect(
-      repeatTakeaway(repeat({ pooled: { ...repeat().pooled, learners: 0 } })),
-    ).toBeUndefined();
+    expect(repeatTakeaway(repeat({ pooled: { ...repeat().pooled, learners: 0 } }))).toBeUndefined();
   });
 
   it("warns when pairs straddle a scoring edit, and stays quiet when none do", () => {
