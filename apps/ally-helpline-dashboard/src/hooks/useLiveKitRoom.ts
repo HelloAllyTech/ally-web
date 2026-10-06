@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Room, RoomEvent, Participant, RemoteTrackPublication, Track } from "livekit-client";
@@ -622,16 +621,15 @@ export const useLiveKitRoom = (
       // Cleanup on route change to avoid duplicate listeners and ensure disconnect
       cleanupRoom();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    
+  }, [id, connectToRoom, cleanupRoom]);
 
   useEffect(() => {
     return () => {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
       cleanupRoom();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [cleanupRoom]);
 
   useEffect(() => {
     const handleUnload = () => {
