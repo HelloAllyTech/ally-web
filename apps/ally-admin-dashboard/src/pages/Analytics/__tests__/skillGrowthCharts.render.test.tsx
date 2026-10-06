@@ -23,9 +23,8 @@ import {
   TREND_SCALE,
   buildKnowledgeSeries,
   buildLearnerCompositeSeries,
-  buildSkillCoverageSeries,
   buildTrendMixSeries,
-  skillCoverageScale,
+  learnerSliceTooltip,
 } from "../skillGrowthChart";
 
 /**
@@ -41,50 +40,33 @@ const sessions = [
     ordinal: 1,
     occurredAt: "2026-01-05T10:00:00.000Z",
     scenarioTitle: "De-escalation",
-    compositeScore: 40,
-    skillCoverage: [
-      { category: "Listening Engagement", percentage: 34 },
-      { category: "Emotional Attunement", percentage: 42 },
-    ],
+    compositeScore: 2.1,
+    skillCoverage: null,
+    skillLevels: { verbal: 2, empathy: 2 },
+    hasUnhelpfulBehaviour: true,
   },
   {
-    ordinal: 2,
+    ordinal: 3,
     occurredAt: "2026-01-19T10:00:00.000Z",
-    scenarioTitle: "De-escalation",
-    compositeScore: 55,
-    // No payload: the coverage series must carry nulls here, and Carbon must
-    // still render rather than choking on the gap.
+    scenarioTitle: "De-escalation · Exam stress",
+    compositeScore: 2.55,
     skillCoverage: null,
+    skillLevels: { verbal: 3 },
+    hasUnhelpfulBehaviour: false,
   },
 ];
 
 describe("skill growth charts render", () => {
-  it("renders the learner composite line", () => {
+  it("renders the learner slice line on the 1–4 scale with the slice tooltip", () => {
     const data = buildLearnerCompositeSeries(sessions);
     const { container } = render(
       <LineChart
         data={data}
         options={lineOpts({
-          leftTitle: "Composite score",
+          leftTitle: "Helping-skills score (1–4)",
           colorScale: LEARNER_SCALE,
-          domain: [0, 100],
-        })}
-      />,
-    );
-
-    expect(container.querySelector("svg")).toBeTruthy();
-  });
-
-  it("renders the per-skill lines with a discovered colour scale and null gaps", () => {
-    const data = buildSkillCoverageSeries(sessions);
-    const categories = ["Listening Engagement", "Emotional Attunement"];
-    const { container } = render(
-      <LineChart
-        data={data}
-        options={lineOpts({
-          leftTitle: "Skill %",
-          colorScale: skillCoverageScale(categories),
-          domain: [0, 100],
+          domain: [1, 4],
+          extra: { tooltip: { customHTML: learnerSliceTooltip } },
         })}
       />,
     );
@@ -107,7 +89,7 @@ describe("skill growth charts render", () => {
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
-  it("renders the knowledge series", () => {
+  it("renders the knowledge series on its own 0–100 scale", () => {
     const data = buildKnowledgeSeries([
       {
         kind: "quiz",

@@ -7,6 +7,7 @@ import { CarbonDropdown as Dropdown, InlineNotification } from "@ally-ui-mono/ui
 import {
   useGetFoundationalSkillsBehavioursQuery,
   useGetFoundationalSkillsBenchmarkQuery,
+  useGetFoundationalSkillsJudgeAgreementQuery,
   useGetFoundationalSkillsProgressQuery,
   useGetTenantsQuery,
 } from "@api";
@@ -67,6 +68,9 @@ import {
   unhelpfulTakeaway,
   windowLabel,
 } from "../foundationalSkillsProgressChart";
+import { FoundationalSkillsTimeSection } from "../FoundationalSkillsTimeSection";
+import { humanRaterAgreementStat } from "../foundationalSkillsValidityChart";
+import { FoundationalSkillsValiditySection } from "../FoundationalSkillsValiditySection";
 import { FunnelBars } from "../FunnelBars";
 import { HabitGrid } from "../HabitGrid";
 import { SkillCutGrid } from "../SkillCutGrid";
@@ -308,6 +312,8 @@ export const FoundationalSkillsSubTab = () => {
   });
   const bench = useGetFoundationalSkillsBenchmarkQuery(org);
   const habits = useGetFoundationalSkillsBehavioursQuery(org);
+  // AAQ-187's human-rater stat reads AAQ-223's status (platform-wide, so no org arg).
+  const humanStat = humanRaterAgreementStat(useGetFoundationalSkillsJudgeAgreementQuery().data);
   const hb = habits.data;
   const habitCommon = {
     loading: habits.isLoading && !hb,
@@ -570,11 +576,7 @@ export const FoundationalSkillsSubTab = () => {
             }
             note="Stored levels that disagree with the behaviour codes the judge ticked"
           />
-          <Stat
-            label="Human-rater agreement"
-            value="Not yet"
-            note="No study yet comparing the AI judge with trained raters — treat scores as practice feedback, not assessment"
-          />
+          <Stat label="Human-rater agreement" value={humanStat.value} note={humanStat.note} />
         </div>
       </ChartCard>
 
@@ -1374,6 +1376,10 @@ export const FoundationalSkillsSubTab = () => {
           </ChartCard>
         </div>
       </Section>
+
+      <FoundationalSkillsTimeSection tenantId={tenantId} windowLabel={allTime} />
+
+      <FoundationalSkillsValiditySection tenantId={tenantId} windowLabel={allTime} />
 
       {data && (
         <p className="max-w-4xl text-[11px] leading-relaxed text-typography-500">

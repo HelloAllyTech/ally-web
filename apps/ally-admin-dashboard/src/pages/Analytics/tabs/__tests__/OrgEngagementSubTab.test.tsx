@@ -31,6 +31,7 @@ vi.mock("@api", () => ({
   useGetOrgEngagementQuery: (args: unknown) => queryMock(args),
   useGetOrgHealthQuery: () => idleQuery(),
   useGetOrgSessionDistributionQuery: () => idleQuery(),
+  useGetEffectivenessOrgsQuery: () => idleQuery(),
 }));
 
 import { OrgEngagementSubTab } from "../OrgEngagementSubTab";

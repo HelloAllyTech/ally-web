@@ -66,6 +66,22 @@ import {
   BugHunterVolumeResponse,
 } from "../pages/Analytics/bugHunterVolumeChart";
 import { CourseImpactQuery, CourseImpactResponse } from "../pages/Analytics/courseImpactChart";
+import {
+  KnowledgeVsSkillResponse,
+  ProgressCurveResponse,
+} from "../pages/Analytics/courseProgressChart";
+import {
+  CourseFunnelResponse,
+  QuizOutcomesResponse,
+  RoleplayGatesResponse,
+} from "../pages/Analytics/curriculumOutcomesChart";
+import {
+  CostPerImprovementResponse,
+  EffectivenessFunnelQuery,
+  EffectivenessFunnelResponse,
+  FoundationalSkillsSegmentsQuery,
+  FoundationalSkillsSegmentsResponse,
+} from "../pages/Analytics/effectivenessChart";
 import { FoundationalSkillsResponse } from "../pages/Analytics/foundationalSkillsChart";
 import { FoundationalSkillsBehavioursResponse } from "../pages/Analytics/foundationalSkillsHabits";
 import {
@@ -73,6 +89,28 @@ import {
   FoundationalSkillsLearnersResponse,
   FoundationalSkillsProgressResponse,
 } from "../pages/Analytics/foundationalSkillsProgressChart";
+import {
+  PracticeProgressionResponse,
+  SkillRetentionResponse,
+  TimeToCompetenceResponse,
+} from "../pages/Analytics/foundationalSkillsTimeChart";
+import {
+  FeedbackUptakeResponse,
+  FoundationalSkillsTransferResponse,
+  JudgeAgreementResponse,
+  MeasurementConvergenceResponse,
+} from "../pages/Analytics/foundationalSkillsValidityChart";
+import { EffectivenessOrgsResponse } from "../pages/Analytics/orgEffectivenessChart";
+import { SelfEfficacyResponse } from "../pages/Analytics/perceptionChart";
+import {
+  ScenarioCalibrationResponse,
+  ScenarioProgressionResponse,
+} from "../pages/Analytics/scenarioCalibrationChart";
+import {
+  ScenarioOpportunityCoverageResponse,
+  ScenarioRepeatImprovementQuery,
+  ScenarioRepeatImprovementResponse,
+} from "../pages/Analytics/scenarioEffectivenessChart";
 import { XpByTenantQuery, XpByTenantResponse } from "../pages/Analytics/xpByTenantChart";
 import {
   XpLevelReachedQuery,
@@ -273,6 +311,20 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.PRACTICE_STICKINESS,
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Was it practice? Learner talk share, learner turns and the share of
+    // sessions that count as practice, per bucket (AAQ-208/209). Types live
+    // beside their transforms; the inline import keeps this slice's import
+    // block untouched.
+    getPracticeQuality: builder.query<
+      import("../pages/Analytics/practiceQualityChart").PracticeQualityResponse,
+      import("../pages/Analytics/practiceQualityChart").PracticeQualityQuery
+    >({
+      query: ({ language, ...q } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.PRACTICE_QUALITY,
+        method: HttpMethod.GET,
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     // Completed roleplays of 5+ minutes per bucket, with all completed sessions
@@ -685,6 +737,77 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    // Highlights → Effectiveness: account → measured improvement, all time (AAQ-203).
+    getEffectivenessFunnel: builder.query<
+      EffectivenessFunnelResponse,
+      EffectivenessFunnelQuery | void
+    >({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.EFFECTIVENESS_FUNNEL,
+        method: HttpMethod.GET,
+        params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
+      }),
+    }),
+    // The Helping skills panel's start → now change split by one dimension
+    // (AAQ-204; `difficultyTransition` is AAQ-219). Same panel args as /progress.
+    getFoundationalSkillsSegments: builder.query<
+      FoundationalSkillsSegmentsResponse,
+      FoundationalSkillsSegmentsQuery
+    >({
+      query: ({ dimension, cuts, baselineFrom, tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_SEGMENTS,
+        method: HttpMethod.GET,
+        params: {
+          ...(dimension ? { dimension } : {}),
+          ...(cuts ? { cuts } : {}),
+          ...(baselineFrom === 2 ? { baselineFrom: 2 } : {}),
+          ...(tenantId ? { tenantId } : {}),
+        },
+      }),
+    }),
+    // Helping skills' time cards (AAQ-205/206/207): all-time, `tenantId` only.
+    getFoundationalSkillsTimeToCompetence: builder.query<
+      TimeToCompetenceResponse,
+      { tenantId?: string } | void
+    >({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_TIME_TO_COMPETENCE,
+        method: HttpMethod.GET,
+        params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
+      }),
+    }),
+    getFoundationalSkillsRetention: builder.query<
+      SkillRetentionResponse,
+      { tenantId?: string } | void
+    >({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_RETENTION,
+        method: HttpMethod.GET,
+        params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
+      }),
+    }),
+    getPracticeProgression: builder.query<
+      PracticeProgressionResponse,
+      { tenantId?: string } | void
+    >({
+      query: arg => ({
+        url: ApiEndpoints.ANALYTICS.PRACTICE_PROGRESSION,
+        method: HttpMethod.GET,
+        params: arg && arg.tenantId ? { tenantId: arg.tenantId } : {},
+      }),
+    }),
+    // Learner-caused AI spend in a window ÷ learners whose improvement landed
+    // in it (AAQ-218). Window params; platform-wide whatever `tenantId` says.
+    getEffectivenessCostPerImprovement: builder.query<
+      CostPerImprovementResponse,
+      AnalyticsWindowQuery
+    >({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.EFFECTIVENESS_COST_PER_IMPROVEMENT,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
     // Same scenario before and after, per learner (the benchmark pipeline).
     getFoundationalSkillsBenchmark: builder.query<
       FoundationalSkillsBenchmarkResponse,
@@ -705,6 +828,87 @@ export const analyticsAPI = baseAPI.injectEndpoints({
           ...(arg && arg.tenantId ? { tenantId: arg.tenantId } : {}),
           ...(arg && arg.trackId ? { trackId: arg.trackId } : {}),
         },
+      }),
+    }),
+    // Curriculum → Courses (AAQ-210): enrolled → started → halfway → finished, per course.
+    getCurriculumCourseFunnel: builder.query<CourseFunnelResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CURRICULUM_COURSE_FUNNEL,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Curriculum → Courses (AAQ-211, AAQ-212): first-attempt pass and first → best, per quiz.
+    getCurriculumQuizOutcomes: builder.query<QuizOutcomesResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CURRICULUM_QUIZ_OUTCOMES,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Curriculum → Courses (AAQ-213): course roleplay score gates. All time.
+    getCurriculumRoleplayGates: builder.query<RoleplayGatesResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CURRICULUM_ROLEPLAY_GATES,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Curriculum → Scenarios (AAQ-214, AAQ-215): which skills each scenario exercises. All time.
+    getScenarioOpportunityCoverage: builder.query<
+      ScenarioOpportunityCoverageResponse,
+      AllTimeAnalyticsQuery
+    >({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCENARIO_OPPORTUNITY_COVERAGE,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Curriculum → Scenarios (AAQ-216): same-scenario repeat improvement. All time.
+    getScenarioRepeatImprovement: builder.query<
+      ScenarioRepeatImprovementResponse,
+      ScenarioRepeatImprovementQuery
+    >({
+      query: ({ scenarioId, tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCENARIO_REPEAT_IMPROVEMENT,
+        method: HttpMethod.GET,
+        params: {
+          ...(scenarioId ? { scenarioId: String(scenarioId) } : {}),
+          ...(tenantId ? { tenantId } : {}),
+        },
+      }),
+    }),
+    // Curriculum → Courses (AAQ-225): where in each course learners stop. All time.
+    getCurriculumProgressCurve: builder.query<ProgressCurveResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CURRICULUM_PROGRESS_CURVE,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Curriculum → Courses (AAQ-226): first-attempt quiz score against helping skills. All time.
+    getCurriculumKnowledgeVsSkill: builder.query<KnowledgeVsSkillResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CURRICULUM_KNOWLEDGE_VS_SKILL,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Curriculum → Scenarios (AAQ-227): where session scores land per scenario version. All time.
+    getScenarioCalibration: builder.query<ScenarioCalibrationResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCENARIO_CALIBRATION,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Curriculum → Scenarios (AAQ-228): sessions that move the client through the states.
+    getScenarioProgression: builder.query<ScenarioProgressionResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCENARIO_PROGRESSION,
+        method: HttpMethod.GET,
+        params: windowParams(q),
       }),
     }),
     // One learner's scored cuts, for the Skills tab's per-person panel.
@@ -749,6 +953,60 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.QUALITY_DISTRIBUTION,
         method: HttpMethod.GET,
         params: windowParams(q),
+      }),
+    }),
+    // Helping skills → "Is the measure sound, and does feedback land?"
+    // (AAQ-220..223), learner confidence beside the judge (AAQ-230/231) and the
+    // org effectiveness scorecard (AAQ-232). All-time by construction: tenantId
+    // is the only param, and judge agreement takes none (a property of the
+    // instrument, not of an org).
+    getFoundationalSkillsTransfer: builder.query<
+      FoundationalSkillsTransferResponse,
+      AllTimeAnalyticsQuery
+    >({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_TRANSFER,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    getFoundationalSkillsFeedbackUptake: builder.query<
+      FeedbackUptakeResponse,
+      AllTimeAnalyticsQuery
+    >({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_FEEDBACK_UPTAKE,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    getMeasurementConvergence: builder.query<MeasurementConvergenceResponse, AllTimeAnalyticsQuery>(
+      {
+        query: ({ tenantId } = {}) => ({
+          url: ApiEndpoints.ANALYTICS.MEASUREMENT_CONVERGENCE,
+          method: HttpMethod.GET,
+          params: tenantId ? { tenantId } : {},
+        }),
+      },
+    ),
+    getFoundationalSkillsJudgeAgreement: builder.query<JudgeAgreementResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_JUDGE_AGREEMENT,
+        method: HttpMethod.GET,
+      }),
+    }),
+    getFoundationalSkillsSelfEfficacy: builder.query<SelfEfficacyResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_SELF_EFFICACY,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    getEffectivenessOrgs: builder.query<EffectivenessOrgsResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.EFFECTIVENESS_ORGS,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
       }),
     }),
     getCompetencyMap: builder.query<CompetencyMapResponse, AllTimeAnalyticsQuery>({
@@ -918,10 +1176,31 @@ export const {
   useGetFoundationalSkillsLearnerQuery,
   useGetFoundationalSkillsBenchmarkQuery,
   useGetFoundationalSkillsBehavioursQuery,
+  useGetEffectivenessFunnelQuery,
+  useGetFoundationalSkillsSegmentsQuery,
+  useGetFoundationalSkillsTimeToCompetenceQuery,
+  useGetFoundationalSkillsRetentionQuery,
+  useGetPracticeProgressionQuery,
+  useGetEffectivenessCostPerImprovementQuery,
   useGetCourseImpactQuery,
+  useGetCurriculumCourseFunnelQuery,
+  useGetCurriculumQuizOutcomesQuery,
+  useGetCurriculumRoleplayGatesQuery,
+  useGetScenarioOpportunityCoverageQuery,
+  useGetScenarioRepeatImprovementQuery,
+  useGetCurriculumProgressCurveQuery,
+  useGetCurriculumKnowledgeVsSkillQuery,
+  useGetScenarioCalibrationQuery,
+  useGetScenarioProgressionQuery,
   useGetSkillGrowthLearnersQuery,
   useGetSkillGrowthLearnerSeriesQuery,
   useGetQualityDistributionQuery,
+  useGetFoundationalSkillsTransferQuery,
+  useGetFoundationalSkillsFeedbackUptakeQuery,
+  useGetMeasurementConvergenceQuery,
+  useGetFoundationalSkillsJudgeAgreementQuery,
+  useGetFoundationalSkillsSelfEfficacyQuery,
+  useGetEffectivenessOrgsQuery,
   useGetCompetencyMapQuery,
   useGetTrackDropoffQuery,
   useGetCoachingLoopQuery,
@@ -931,6 +1210,7 @@ export const {
   useGetScenarioUsageQuery,
   useGetScribeAdoptionQuery,
   useGetPracticeStickinessQuery,
+  useGetPracticeQualityQuery,
   useGetQualifiedSessionsQuery,
   useGetOrgEngagementQuery,
   useGetRoleplayCostQuery,

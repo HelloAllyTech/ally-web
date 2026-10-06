@@ -32,9 +32,12 @@ import {
   buildTimeToFirstBars,
   buildTimeToFirstScale,
   buildTurnaroundSeries,
+  competencyPointLabel,
+  competencyScale,
   competencyTakeaway,
   creditUtilisationLabel,
   formatHours,
+  formatLevel,
   formatPct,
   formatRating,
   formatScore,
@@ -49,6 +52,8 @@ import {
   skillGrowthTakeaway,
   suppressedCompetencies,
   suppressedItemTypes,
+  unscoredCompetencies,
+  unscoredCompetencyLines,
 } from "../testingChart";
 
 const stat = (median: number | null, n: number, p25 = median, p75 = median) => ({
@@ -93,12 +98,19 @@ const satisfactionPoint = (over: Partial<SatisfactionMixPoint> = {}): Satisfacti
 
 const competency = (over: Partial<CompetencyMapRow> = {}): CompetencyMapRow => ({
   competencyId: "c1",
-  name: "Active listening",
+  name: "Empathy, Warmth & Genuineness",
   completedSessions: 100,
-  evaluatedSessions: 80,
-  medianScore: 70,
   learners: 20,
   scenarios: 4,
+  skill: "empathy",
+  skillName: "Empathy, warmth and genuineness",
+  score: 2.6,
+  taggedCuts: 60,
+  scoredCuts: 45,
+  scoreLearners: 18,
+  scoreUnavailable: null,
+  medianScore: 2.6,
+  evaluatedSessions: 45,
   belowFloor: false,
   ...over,
 });
@@ -276,23 +288,37 @@ describe("skill growth", () => {
     expect(buildSkillGrowthSeries(ordinals, "experienced")).toHaveLength(0);
   });
 
+  const DOMAIN: [number, number] = [1, 4];
+
   it("refuses an efficacy claim built on a single comparable ordinal", () => {
-    expect(skillGrowthTakeaway([ordinal(1, 60, 400)], "all", 20)).toContain(
-      "not enough of the curve",
-    );
-    expect(skillGrowthTakeaway([], "all", 20)).toBeNull();
+    const text = skillGrowthTakeaway([ordinal(1, 2.1, 400)], "all", 20, DOMAIN);
+    expect(text).toContain("not enough of the curve");
+    expect(text).toContain("1st slice");
+    expect(skillGrowthTakeaway([], "all", 20, DOMAIN)).toBeNull();
   });
 
-  it("states the movement between the first and last comparable ordinal", () => {
-    const takeaway = skillGrowthTakeaway([ordinal(1, 60, 400), ordinal(2, 66.5, 300)], "all", 20);
-    expect(takeaway).toContain("6.5 points higher");
-    expect(takeaway).toContain("60.0 → 66.5");
+  it("states the movement in helping-skills levels on the response's scale, never points", () => {
+    const takeaway = skillGrowthTakeaway(
+      [ordinal(1, 2.1, 400), ordinal(2, 2.35, 300)],
+      "all",
+      20,
+      DOMAIN,
+    );
+    expect(takeaway).toContain("2nd slice");
+    expect(takeaway).toContain("0.25 higher");
+    expect(takeaway).toContain("2.10 → 2.35 on the 1–4 scale");
+    expect(takeaway).not.toMatch(/points|session/);
   });
 
   it("says flat rather than inventing a direction", () => {
-    expect(skillGrowthTakeaway([ordinal(1, 60, 400), ordinal(2, 60, 300)], "all", 20)).toContain(
-      "flat",
-    );
+    expect(
+      skillGrowthTakeaway([ordinal(1, 2.4, 400), ordinal(2, 2.4, 300)], "all", 20, DOMAIN),
+    ).toContain("flat at 2.40");
+  });
+
+  it("prints a level at the server's two decimals", () => {
+    expect(formatLevel(2.1)).toBe("2.10");
+    expect(formatLevel(null)).toBe("—");
   });
 });
 
@@ -380,31 +406,86 @@ describe("quality and satisfaction", () => {
 });
 
 describe("competency map", () => {
-  it("omits competencies whose score was suppressed rather than plotting them at zero", () => {
-    const rows = [
-      competency(),
-      competency({
-        competencyId: "c2",
-        name: "De-escalation",
-        medianScore: null,
-        belowFloor: true,
-      }),
-    ];
-    expect(buildCompetencyScatter(rows)).toHaveLength(1);
-    expect(suppressedCompetencies(rows).map(r => r.name)).toEqual(["De-escalation"]);
+  const thin = competency({
+    competencyId: "c2",
+    name: "Promote Realistic Hope",
+    skill: "hope",
+    skillName: "Promote realistic hope for change",
+    score: null,
+    medianScore: null,
+    scoredCuts: 7,
+    scoreUnavailable: "tooFewCuts",
+    belowFloor: true,
+  });
+  const noSkill = competency({
+    competencyId: "c3",
+    name: "Non-Verbal Communication",
+    skill: null,
+    skillName: null,
+    score: null,
+    medianScore: null,
+    taggedCuts: 0,
+    scoredCuts: 0,
+    scoreUnavailable: "noRubricSkill",
   });
 
-  it("names the weakest and strongest scored competency", () => {
-    const takeaway = competencyTakeaway([
-      competency({ medianScore: 80 }),
-      competency({ competencyId: "c2", name: "De-escalation", medianScore: 55 }),
+  it("plots the learner skill level (score), not the deprecated actor median", () => {
+    const points = buildCompetencyScatter([competency({ score: 2.6, medianScore: 99 })]);
+    expect(points).toEqual([
+      { group: "Empathy, warmth and genuineness", x: 100, y: 2.6 },
     ]);
-    expect(takeaway).toContain("Lowest median: De-escalation at 55.0");
-    expect(takeaway).toContain("highest: Active listening at 80.0");
   });
 
-  it("does not claim a comparison when only one competency clears the floor", () => {
-    expect(competencyTakeaway([competency()])).toContain("Only Active listening");
+  it("omits unscored competencies rather than plotting them at the bottom of the axis", () => {
+    const rows = [competency(), thin, noSkill];
+    expect(buildCompetencyScatter(rows)).toHaveLength(1);
+    expect(suppressedCompetencies(rows).map(r => r.name)).toEqual([
+      "Promote Realistic Hope",
+      "Non-Verbal Communication",
+    ]);
+  });
+
+  it("names each point by the rubric skill it reads, falling back to the competency", () => {
+    expect(competencyPointLabel(competency())).toBe("Empathy, warmth and genuineness");
+    expect(competencyPointLabel(noSkill)).toBe("Non-Verbal Communication");
+  });
+
+  it("gives every named point the same accent — names without colour-by-identity", () => {
+    const scale = competencyScale(
+      buildCompetencyScatter([competency(), competency({ competencyId: "c4", skillName: "Rapport" })]),
+    );
+    expect(Object.keys(scale)).toHaveLength(2);
+    expect(new Set(Object.values(scale)).size).toBe(1);
+  });
+
+  it("splits the unscored by reason, and lists thin ones with their n", () => {
+    const rows = [competency(), thin, noSkill];
+    const split = unscoredCompetencies(rows);
+    expect(split.noRubricSkill.map(r => r.name)).toEqual(["Non-Verbal Communication"]);
+    expect(split.tooFewCuts.map(r => r.name)).toEqual(["Promote Realistic Hope"]);
+
+    const lines = unscoredCompetencyLines(rows, 20);
+    expect(lines).toEqual([
+      "No rubric skill (practice volume only): Non-Verbal Communication",
+      "Too few slices to score (need 20): Promote Realistic Hope (n = 7)",
+    ]);
+    expect(unscoredCompetencyLines([competency()], 20)).toEqual([]);
+  });
+
+  it("names the weakest and strongest scored skill on the 1–4 scale", () => {
+    const takeaway = competencyTakeaway([
+      competency({ score: 3.1 }),
+      competency({ competencyId: "c2", name: "Rapport", skillName: "Rapport-building", score: 2.05 }),
+    ]);
+    expect(takeaway).toContain("Lowest mean level: Rapport-building at 2.05");
+    expect(takeaway).toContain("highest: Empathy, warmth and genuineness at 3.10");
+  });
+
+  it("does not claim a comparison when only one competency has a score", () => {
+    expect(competencyTakeaway([competency(), thin, noSkill])).toContain(
+      "Only Empathy, warmth and genuineness",
+    );
+    expect(competencyTakeaway([thin, noSkill])).toBeNull();
   });
 });
 

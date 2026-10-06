@@ -598,6 +598,46 @@ export interface StickinessStep {
   ofTopPct: number | null;
 }
 
+/** One band of the practice-spacing histogram (AAQ-224). */
+export interface StickinessSpacingBand {
+  /** Stable key: "0-1" | "2-6" | "7-13" | "14-29" | "30+". */
+  band: string;
+  /** Axis label, e.g. "2–6 days". */
+  label: string;
+  minDays: number;
+  /** Null for the open 30+ band. */
+  maxDays: number | null;
+  /** Gaps in the band — always present. */
+  gaps: number;
+  /** gaps ÷ totalGaps (%), 1 dp; null below `minGapSample` gaps in total. */
+  sharePct: number | null;
+  /** Distinct learners with a gap in the band (a learner can be in several). */
+  learners: number;
+}
+
+/**
+ * Days between consecutive countable sessions of the same learner, all time
+ * (GET practice-stickiness → `spacing`, since 2026-10).
+ */
+export interface StickinessSpacing {
+  window: "all";
+  bands: StickinessSpacingBand[];
+  totalGaps: number;
+  minGapSample: number;
+  learnersWithSessions: number;
+  /** Learners with 2+ countable sessions — the KPI's denominator. */
+  activeLearners: number;
+  /** The KPI threshold on a learner's median gap, in days (7). */
+  targetDays: number;
+  learnersWithinTarget: number;
+  /** learnersWithinTarget ÷ activeLearners (%), 1 dp; null below `minLearners`. */
+  withinTargetPct: number | null;
+  /** Median of each active learner's own median gap (days); null below `minLearners`. */
+  medianGapDays: number | null;
+  minLearners: number;
+  provenance: { derivation: string; note: string };
+}
+
 export interface StickinessResponse {
   qualifyingMinutes: number;
   steps: StickinessStep[];
@@ -606,6 +646,8 @@ export interface StickinessResponse {
   medianActiveDays: number | null;
   /** Below this population the server has already nulled every share. */
   minPopulation: number;
+  /** Practice spacing (AAQ-224). Optional: absent from a backend older than 2026-10. */
+  spacing?: StickinessSpacing;
   scoping: AnalyticsScoping;
   computedAt: string;
 }

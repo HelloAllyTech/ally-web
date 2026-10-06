@@ -148,26 +148,35 @@ export interface LanguageMixResponse {
 /* -------------------------------------------------------------------------- */
 /* Skill growth — GET /v1/analytics/skill-growth                              */
 /* -------------------------------------------------------------------------- */
+//
+// Since 2026-10 every skill-growth endpoint reads the LEARNER ruler (R1): each
+// learner's roleplay speech cut into 5,000-character slices ("cuts"), each
+// scored 1–4 on the foundational helping skills rubric. Before then the same
+// keys carried the AI judge's 0–100 score of the AI actor. The keys were kept
+// so a released build kept rendering; their meaning changed — an "ordinal" or
+// "session" below is a scored slice, and a score is 1–4.
 
 /** Median with its interquartile range, and the n behind them. */
 export interface SkillGrowthStat {
+  /** Helping-skills composite, 1–4 (2 dp); null below `minSampleSize`. */
   median: number | null;
   p25: number | null;
   p75: number | null;
+  /** Learners with a scored slice at this index — travels when the percentiles do not. */
   n: number;
 }
 
 export interface SkillGrowthOrdinal {
-  /** 1 = the learner's first evaluated session. */
+  /** The learner's slice index: 1 = their first 5,000 characters of roleplay speech. */
   ordinal: number;
   all: SkillGrowthStat;
-  /** Same rows, restricted to learners who stayed — the survivorship control. */
+  /** Same slices, restricted to learners who stayed — the survivorship control. */
   experienced: SkillGrowthStat;
 }
 
 /**
- * How a learner's own history moved. `insufficient` = too few evaluated
- * sessions to say anything, which is a state to render, not a gap to hide.
+ * How a learner's own history moved. `insufficient` = too few scored slices
+ * to say anything, which is a state to render, not a gap to hide.
  */
 export type SkillTrendClass = "improving" | "flat" | "declining" | "insufficient";
 
@@ -175,12 +184,24 @@ export type SkillTrendClass = "improving" | "flat" | "declining" | "insufficient
  * The knobs the server classified under, echoed with every response.
  *
  * Read them, never re-declare them: a client copy is how a legend ends up
- * saying "±3 points" while the server classified at ±5.
+ * stating one band while the server classified at another.
  */
 export interface SkillTrendThresholds {
+  /** Scored slices a learner needs before their trend is classified. */
   minSessions: number;
+  /** Slices in each half AT that minimum (⌊minSessions/2⌋) — the smallest window. */
   window: number;
-  flatBand: number;
+  /**
+   * The widest band any classified learner faces (1–4 scale): the band at
+   * `minSessions` slices. Null when the noise cannot be estimated yet.
+   */
+  flatBand: number | null;
+  /** Slice-to-slice noise (SD, 1–4 scale); null with no consecutive pairs. */
+  cutNoiseSd: number | null;
+  /** z of the noise band (1.96). */
+  bandZ: number;
+  /** The classification rule in words, with the live constants. */
+  bandRule: string;
 }
 
 export interface SkillTrendMixMonth {
@@ -204,14 +225,21 @@ export interface SkillTrendMix {
 export interface SkillGrowthResponse {
   ordinals: SkillGrowthOrdinal[];
   maxOrdinal: number;
+  /** Scored slices a learner needs to enter the `experienced` series. */
   experiencedMinSessions: number;
   minSampleSize: number;
+  /** The rubric's [1, 4] (was [0, 100] until 2026-10). */
   scoreDomain: [number, number];
+  /** Rubric version every score was judged under; versions are never pooled. */
+  rubricVersion: string;
+  /** Learner characters per slice — the size of one ordinal step. */
+  cutSizeLearnerChars: number;
   /** What produced the score, and why cross-version comparison is invalid. */
   provenance: { derivation: string; note: string };
   summary: {
     learners: number;
     experiencedLearners: number;
+    /** Scored slices (name kept from when it counted judged sessions). */
     evaluatedSessions: number;
     firstOrdinalMedian: number | null;
     lastComparableOrdinal: number | null;
@@ -232,12 +260,17 @@ export interface SkillTrendLearnerRow {
   name: string | null;
   email: string | null;
   tenantId: string | null;
+  /** Scored slices in scope (name kept from when it counted judged sessions). */
   evaluatedSessions: number;
-  /** Null for `insufficient` learners — overlapping windows would read as flat. */
+  /** Mean composite (1–4) of the first half of their slices; null when `insufficient`. */
   firstWindowMean: number | null;
+  /** Mean composite (1–4) of the last half; null when `insufficient`. */
   lastWindowMean: number | null;
   delta: number | null;
+  /** ± band this learner's change had to clear — narrower with more slices. */
+  band: number | null;
   trend: SkillTrendClass;
+  /** When the session that closed their latest scored slice ended. */
   lastSessionAt: string | null;
 }
 
@@ -247,7 +280,9 @@ export interface SkillGrowthLearnersResponse {
   limit: number;
   offset: number;
   thresholds: SkillTrendThresholds;
+  rubricVersion: string;
   provenance: { derivation: string; note: string };
+  scoping: AnalyticsScoping;
   computedAt: string;
 }
 
@@ -272,13 +307,21 @@ export interface SkillCoverageEntry {
   percentage: number;
 }
 
+/** One scored slice on a learner's own timeline (key name kept: it is not a session). */
 export interface SkillGrowthLearnerSession {
+  /** Slice index; gaps are slices that failed scoring or are not yet scored. */
   ordinal: number;
   occurredAt: string | null;
+  /** The slice's scenarios, distinct titles in practice order joined " · ". */
   scenarioTitle: string | null;
+  /** Helping-skills composite, 1–4 (2 dp). */
   compositeScore: number;
-  /** Null on sessions the evaluation left no per-skill payload for. */
+  /** Always null since 2026-10 — per-skill levels are in `skillLevels`. */
   skillCoverage: SkillCoverageEntry[] | null;
+  /** Level 1–4 per rubric skill the slice gave an opportunity for; absent = no opportunity. */
+  skillLevels: Record<string, number>;
+  /** True when the judge saw an unhelpful behaviour in the slice; null when not recorded. */
+  hasUnhelpfulBehaviour: boolean | null;
 }
 
 export interface SkillGrowthKnowledgeAttempt {
@@ -299,6 +342,7 @@ export interface SkillGrowthLearnerSeriesResponse {
     firstWindowMean: number | null;
     lastWindowMean: number | null;
     delta: number | null;
+    band: number | null;
     trend: SkillTrendClass;
   };
   sessions: SkillGrowthLearnerSession[];
@@ -306,7 +350,11 @@ export interface SkillGrowthLearnerSeriesResponse {
   /** True when a series hit the server row cap — the timeline is incomplete. */
   truncated: boolean;
   thresholds: SkillTrendThresholds;
+  /** The ROLEPLAY (slice composite) axis: [1, 4]. */
   scoreDomain: [number, number];
+  /** The quiz/annotation axis (`scorePct`): [0, 100]. Never shared with the roleplay axis. */
+  knowledgeScoreDomain: [number, number];
+  rubricVersion: string;
   provenance: { derivation: string; note: string };
   computedAt: string;
 }
@@ -340,7 +388,43 @@ export interface SatisfactionMixPoint {
   responseRatePct: number | null;
 }
 
+/** Ratings at one ordinal, for one population (AAQ-229). Null below `minSampleSize` ratings. */
+export interface SatisfactionOrdinalCell {
+  /** One per learner: each learner has one Nth rated session. Always present. */
+  ratings: number;
+  avgRating: number | null;
+  /** Share rated 4 or 5 (%), 1 dp. */
+  highSharePct: number | null;
+}
+
+export interface SatisfactionOrdinalPoint {
+  /** The learner's Nth RATED session (unrated sessions are not counted). */
+  ordinal: number;
+  all: SatisfactionOrdinalCell;
+  /** Fixed panel: learners with `experiencedMinRatings`+ rated sessions in total. */
+  experienced: SatisfactionOrdinalCell;
+}
+
+/**
+ * Satisfaction by practice ordinal (AAQ-229). ALL-TIME whatever the endpoint's
+ * window says; scoped by the session's tenant.
+ */
+export interface SatisfactionByOrdinal {
+  window: "all";
+  maxOrdinal: number;
+  experiencedMinRatings: number;
+  minSampleSize: number;
+  ratedLearners: number;
+  experiencedLearners: number;
+  /** 1..maxOrdinal, contiguous: an ordinal nobody reached has zero counts and null values. */
+  points: SatisfactionOrdinalPoint[];
+  ratingsBeyondLastOrdinal: number;
+  provenance: { derivation: string; note: string };
+}
+
 export interface QualityDistributionResponse {
+  /** Additive (AAQ-229). Optional: a backend deployed before it omits the block. */
+  byOrdinal?: SatisfactionByOrdinal;
   window: AnalyticsWindow;
   /** Sparse: a bucket with no evaluated sessions is absent, not zero. */
   quality: QualityDistributionPoint[];
@@ -374,28 +458,68 @@ export interface QualityDistributionResponse {
 /* Competency map — GET /v1/analytics/competency-map                          */
 /* -------------------------------------------------------------------------- */
 
+/** Why a competency has no score: no rubric skill to read, or too few slices. */
+export type CompetencyScoreUnavailable = "noRubricSkill" | "tooFewCuts";
+
 export interface CompetencyMapRow {
   competencyId: string;
   name: string;
+  /** Completed sessions on scenarios carrying the tag — the volume axis. */
   completedSessions: number;
-  evaluatedSessions: number;
-  /** Null below `minSampleSize` — the row still travels, only the score is held back. */
-  medianScore: number | null;
   learners: number;
   scenarios: number;
+  /** The rubric skill key the competency names, or null when it names none. */
+  skill: string | null;
+  /** The rubric's display name for `skill`. */
+  skillName: string | null;
+  /**
+   * Mean level (1–4) of `skill` over `scoredCuts`; null with `scoreUnavailable`
+   * set. Since 2026-10 — before then the map plotted the AI actor's judge score.
+   */
+  score: number | null;
+  /** Single-scenario scored slices on tagged scenarios, assessable or not. */
+  taggedCuts: number;
+  /** Of `taggedCuts`, slices that gave the skill an opportunity — the n behind `score`. */
+  scoredCuts: number;
+  /** Distinct learners behind `scoredCuts`. */
+  scoreLearners: number;
+  scoreUnavailable: CompetencyScoreUnavailable | null;
+  /** @deprecated alias of `score` (a mean on 1–4 since 2026-10). */
+  medianScore: number | null;
+  /** @deprecated alias of `scoredCuts`. */
+  evaluatedSessions: number;
+  /** `scoreUnavailable === "tooFewCuts"`. */
   belowFloor: boolean;
 }
 
 export interface CompetencyMapResponse {
   /**
-   * One row per competency. A scenario tagged with several competencies counts
-   * towards each, so these can sum to more than `summary.completedSessions`.
+   * One row per competency, unscored rows included. A scenario tagged with
+   * several competencies counts towards each, so these can sum to more than
+   * `summary.completedSessions`.
    */
   competencies: CompetencyMapRow[];
-  unattributed: { completedSessions: number; evaluatedSessions: number; label: string };
+  unattributed: {
+    completedSessions: number;
+    scoredCuts: number;
+    /** @deprecated alias of `scoredCuts`. */
+    evaluatedSessions: number;
+    label: string;
+  };
   minSampleSize: number;
+  /** The rubric's [1, 4]. */
   scoreDomain: [number, number];
+  rubricVersion: string;
+  /** How much of the learner ruler the map can credit to a scenario's tags. */
+  cutAttribution: {
+    scoredCuts: number;
+    singleScenarioCuts: number;
+    /** singleScenarioCuts ÷ scoredCuts × 100 (1 dp); null below the floor. */
+    singleScenarioPct: number | null;
+    untaggedCuts: number;
+  };
   summary: { competencies: number; completedSessions: number; evaluatedSessions: number };
+  provenance: { derivation: string; note: string };
   scoping: AnalyticsScoping;
   computedAt: string;
 }

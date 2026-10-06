@@ -3,14 +3,22 @@ import { describe, expect, it } from "vitest";
 import {
   CourseImpactComparison,
   CourseImpactCourse,
+  CourseImpactReference,
   CourseImpactSkill,
+  POOLED_LABEL,
   biggestCoverageGap,
   comparisonLine,
+  competencySourceText,
+  coursePace,
   courseRows,
   courseTakeaway,
   courseVerdict,
   coverageAdvice,
   coverageStages,
+  pooledRow,
+  pooledTakeaway,
+  referenceNote,
+  referenceWindowText,
   sharePct,
   skillRows,
   toPoints,
@@ -189,5 +197,106 @@ describe("unhelpful behaviour wording", () => {
     );
     expect(sharePct(0.214)).toBe("21%");
     expect(sharePct(null)).toBe("—");
+  });
+});
+
+const reference = (over: Partial<CourseImpactReference> = {}): CourseImpactReference => ({
+  ...comparison({
+    learners: 40,
+    beforeAvg: 2.0,
+    afterAvg: 2.08,
+    change: 0.08,
+    changeCi: [-0.02, 0.18],
+    detectable: false,
+  }),
+  candidates: 310,
+  matchedStartPosition: 6,
+  matchedGap: 4,
+  ...over,
+});
+
+describe("course pace in the row's sublabel", () => {
+  it("adds median days to finish and slices between when the server states them", () => {
+    const c = course({ medianDaysToComplete: 12, medianCutsBetween: 3.5 });
+    expect(coursePace(c)).toBe("median 12 days to finish · 3.5 slices between");
+    expect(courseRows([c])[0].sublabel).toBe(
+      "2.10 → 2.50 · 24 of 100 enrolled · median 12 days to finish · 3.5 slices between",
+    );
+  });
+
+  it("says nothing extra when withheld or sent by an older backend", () => {
+    expect(coursePace(course({ medianDaysToComplete: null, medianCutsBetween: null }))).toBeNull();
+    expect(coursePace(course())).toBeNull();
+    expect(coursePace(course({ medianDaysToComplete: 1, medianCutsBetween: 1 }))).toBe(
+      "median 1 day to finish · 1 slice between",
+    );
+  });
+});
+
+describe("pooled row and free-practice reference", () => {
+  it("heads the list with every learner once, or nothing when nobody is paired", () => {
+    expect(pooledRow(comparison({ learners: 31 }))).toMatchObject({
+      label: POOLED_LABEL,
+      sublabel: "2.10 → 2.50 · 31 learners",
+      change: 0.4,
+      n: 31,
+    });
+    expect(pooledRow(comparison({ learners: 0 }))).toBeNull();
+    expect(pooledRow(undefined)).toBeNull();
+    expect(
+      pooledRow(comparison({ learners: 7, beforeAvg: null, afterAvg: null, change: null }))
+        ?.sublabel,
+    ).toBe("7 learners can be compared");
+  });
+
+  it("names the slice positions the reference reads, clamped at the first slice", () => {
+    expect(referenceWindowText(reference(), 3)).toBe("slices 4–6 against 10–12");
+    expect(referenceWindowText(reference({ matchedStartPosition: 2, matchedGap: 1 }), 3)).toBe(
+      "slices 1–2 against 3–5",
+    );
+    expect(referenceWindowText(reference({ matchedStartPosition: 1, matchedGap: 2 }), 1)).toBe(
+      "slices 1 against 3",
+    );
+    expect(referenceWindowText(reference({ matchedGap: null }), 3)).toBeNull();
+  });
+
+  it("states the reference, or its n when withheld", () => {
+    expect(referenceNote(reference(), 3, 20)).toBe(
+      "Free practice, same slice positions: 40 of 310 learners who never enrolled in a course, read over the same point in their own practice (slices 4–6 against 10–12): +0.08 (95% CI −0.02 to +0.18).",
+    );
+    expect(
+      referenceNote(reference({ learners: 12, change: null, changeCi: null }), 3, 20),
+    ).toBe(
+      "Free practice, same slice positions: withheld — 12 of 310 learners who never enrolled in a course have practised far enough to compare (slices 4–6 against 10–12); need 20.",
+    );
+    expect(referenceNote(reference({ matchedStartPosition: null }), 3, 20)).toMatch(
+      /drawn once a course learner can be compared/,
+    );
+    expect(referenceNote(undefined, 3, 20)).toBeNull();
+  });
+
+  it("puts the pooled change beside free practice, without claiming cause", () => {
+    expect(pooledTakeaway(comparison({ learners: 31 }), reference())).toBe(
+      "All courses together (31 learners, each once): +0.40 (95% CI +0.20 to +0.60), against +0.08 for free practice over the same slices.",
+    );
+    expect(pooledTakeaway(comparison(), reference({ change: null }))).toBe(
+      "All courses together (24 learners, each once): +0.40 (95% CI +0.20 to +0.60).",
+    );
+    expect(pooledTakeaway(comparison({ change: null }), reference())).toBeNull();
+  });
+});
+
+describe("where a course's taught skills come from", () => {
+  it("marks taught skills with their source when known", () => {
+    expect(competencySourceText("explicit")).toBe("tagged by the author");
+    expect(competencySourceText("derived")).toBe("from its roleplays");
+    expect(competencySourceText(null)).toBeNull();
+    expect(skillRows([skill("hope", true)], "explicit")[0].sublabel).toBe(
+      "Taught in this course (tagged by the author)",
+    );
+    expect(skillRows([skill("hope", true)], "derived")[0].sublabel).toBe(
+      "Taught in this course (from its roleplays)",
+    );
+    expect(skillRows([skill("hope", true)])[0].sublabel).toBe("Taught in this course");
   });
 });

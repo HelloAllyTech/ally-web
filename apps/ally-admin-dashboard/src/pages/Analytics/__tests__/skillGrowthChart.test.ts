@@ -4,27 +4,38 @@ import {
   SkillGrowthKnowledgeAttempt,
   SkillGrowthLearnerSession,
   SkillTrendMix,
+  SkillTrendThresholds,
 } from "@types";
 
 import {
   MIN_LEARNERS_FOR_SHARE,
   TREND_LABELS,
+  bandSentence,
   buildKnowledgeSeries,
   buildLearnerCompositeSeries,
-  buildSkillCoverageSeries,
   buildTrendMixSeries,
   classifiedShareValue,
+  escapeHtml,
+  formatBand,
   formatDelta,
   learnerName,
+  learnerSliceTooltip,
+  learnerTableRows,
   learnerTakeaway,
   monthLabel,
   sessionTick,
-  skillCoverageCategories,
-  skillCoverageScale,
+  skillLevelsText,
   trendMixTakeaway,
 } from "../skillGrowthChart";
 
-const thresholds = { minSessions: 4, window: 2, flatBand: 5 };
+const thresholds: SkillTrendThresholds = {
+  minSessions: 4,
+  window: 2,
+  flatBand: 0.31,
+  cutNoiseSd: 0.112,
+  bandZ: 1.96,
+  bandRule: "k = the learner's scored cuts (at least 4); w = floor(k / 2).",
+};
 
 const mix = (over: Partial<SkillTrendMix> = {}): SkillTrendMix => ({
   classifiedLearners: 10,
@@ -40,14 +51,16 @@ const mix = (over: Partial<SkillTrendMix> = {}): SkillTrendMix => ({
 const session = (
   ordinal: number,
   compositeScore: number,
-  skillCoverage: SkillGrowthLearnerSession["skillCoverage"] = null,
+  skillLevels: Record<string, number> = {},
   occurredAt = "2026-02-12T10:00:00.000Z",
 ): SkillGrowthLearnerSession => ({
   ordinal,
   occurredAt,
   scenarioTitle: "De-escalation",
   compositeScore,
-  skillCoverage,
+  skillCoverage: null,
+  skillLevels,
+  hasUnhelpfulBehaviour: null,
 });
 
 describe("trend mix", () => {
@@ -80,9 +93,7 @@ describe("trend mix", () => {
   });
 
   it("emits a zero rather than dropping a class, so segments never reorder", () => {
-    const series = buildTrendMixSeries([
-      { month: "2026-01", improving: 0, flat: 0, declining: 2 },
-    ]);
+    const series = buildTrendMixSeries([{ month: "2026-01", improving: 0, flat: 0, declining: 2 }]);
 
     expect(series).toHaveLength(3);
     expect(series.find(d => d.group === TREND_LABELS.improving)?.value).toBe(0);
@@ -104,12 +115,15 @@ describe("trend mix", () => {
     expect(trendMixTakeaway(thin)).not.toContain("100%");
   });
 
-  it("states the share once enough learners are classified", () => {
+  it("states the share once enough learners are classified, in slices against noise", () => {
     expect(classifiedShareValue(mix())).toBe("60%");
-    expect(trendMixTakeaway(mix())).toContain("60% of the 10 learners");
+    const text = trendMixTakeaway(mix());
+    expect(text).toContain("60% of the 10 learners with 4+ scored slices");
+    expect(text).toContain("slice-to-slice noise");
+    expect(text).not.toMatch(/session/i);
   });
 
-  it("explains an empty mix by naming the session threshold", () => {
+  it("explains an empty mix by naming the slice threshold", () => {
     const none = mix({
       classifiedLearners: 0,
       improving: 0,
@@ -118,7 +132,7 @@ describe("trend mix", () => {
       insufficientLearners: 7,
     });
 
-    expect(trendMixTakeaway(none)).toContain("4 evaluated sessions");
+    expect(trendMixTakeaway(none)).toContain("4 scored slices");
   });
 
   it("says nothing at all when there are no learners either way", () => {
@@ -145,54 +159,77 @@ describe("trend mix", () => {
 
     expect(classifiedShareValue(atFloor)).toBe("100%");
   });
+
+  it("names the unclassified by the reason — not enough slices", () => {
+    expect(TREND_LABELS.insufficient).toBe("Not enough slices");
+  });
+});
+
+describe("band copy", () => {
+  it("sizes the band from the server's noise, never as fixed points", () => {
+    const text = bandSentence(thresholds);
+    expect(text).toContain("±0.31 at 4 slices");
+    expect(text).toContain("SD 0.11");
+    expect(text).toContain("narrower with more");
+    expect(text).not.toContain("points");
+  });
+
+  it("says the band cannot be sized when the server has no noise estimate", () => {
+    expect(bandSentence({ ...thresholds, flatBand: null, cutNoiseSd: null })).toContain(
+      "cannot be sized yet",
+    );
+  });
 });
 
 describe("learner timeline", () => {
-  it("plots one point per evaluated session, oldest first", () => {
-    const series = buildLearnerCompositeSeries([session(1, 40), session(2, 55)]);
+  it("plots one point per scored slice, oldest first, on the 1–4 composite", () => {
+    const series = buildLearnerCompositeSeries([session(1, 2.1), session(2, 2.45)]);
 
-    expect(series.map(d => d.value)).toEqual([40, 55]);
+    expect(series.map(d => d.value)).toEqual([2.1, 2.45]);
     expect(series[0].key).toContain("#1");
+    expect(series[0].group).toBe("Helping-skills score");
   });
 
-  it("keeps a session tick inside the Carbon truncation limit", () => {
-    expect(sessionTick(session(12, 60)).length).toBeLessThanOrEqual(14);
+  it("carries the slice's scenarios and skill levels for the tooltip", () => {
+    const [point] = buildLearnerCompositeSeries([session(1, 2.5, { empathy: 3, verbal: 2 })]);
+
+    expect(point.scenarios).toBe("De-escalation");
+    // Rubric order (verbal before empathy), whatever order the server sent.
+    expect(point.skills).toBe("Verbal 2 · Empathy 3");
   });
 
-  it("discovers skill categories from the data, tolerating both label generations", () => {
-    const sessions = [
-      session(1, 50, [{ category: "Listening Engagement", percentage: 44 }]),
-      session(2, 60, [{ category: "Learning", percentage: 61 }]),
-    ];
+  it("keeps a slice tick inside the Carbon truncation limit", () => {
+    expect(sessionTick(session(12, 2.6)).length).toBeLessThanOrEqual(14);
+  });
 
-    // A hardcoded enum would have dropped one of these entirely.
-    expect(skillCoverageCategories(sessions)).toEqual([
-      "Listening Engagement",
-      "Learning",
+  it("lists only skills that had an opportunity — an absent skill is not a low score", () => {
+    expect(skillLevelsText({ rapport: 4 })).toBe("Rapport 4");
+    expect(skillLevelsText({})).toBe("");
+    expect(skillLevelsText(null)).toBe("");
+    // An unknown key still shows rather than vanishing.
+    expect(skillLevelsText({ newSkill: 2 })).toBe("newSkill 2");
+  });
+
+  it("appends scenarios and skill levels to Carbon's tooltip, escaped", () => {
+    const [point] = buildLearnerCompositeSeries([
+      { ...session(1, 2.5, { empathy: 3 }), scenarioTitle: "<b>Grief</b> · Exam stress" },
     ]);
+    const html = learnerSliceTooltip([point], "<ul>default</ul>");
+
+    expect(html.startsWith("<ul>default</ul>")).toBe(true);
+    expect(html).toContain("Scenarios: &lt;b&gt;Grief&lt;/b&gt; · Exam stress");
+    expect(html).toContain("Skill levels: Empathy 3");
+    expect(html).not.toContain("<b>Grief</b>");
   });
 
-  it("emits null for a session missing a category, so the line shows a real gap", () => {
-    const sessions = [
-      session(1, 50, [{ category: "Listening Engagement", percentage: 44 }]),
-      session(2, 60, null),
-    ];
-
-    const series = buildSkillCoverageSeries(sessions);
-
-    expect(series).toHaveLength(2);
-    expect(series[1].value).toBeNull();
+  it("leaves the default tooltip alone for a datum without slice detail", () => {
+    expect(learnerSliceTooltip([{ group: "x", value: 1 }], "<p>d</p>")).toBe("<p>d</p>");
   });
 
-  it("returns no coverage series at all when no session carries a payload", () => {
-    expect(buildSkillCoverageSeries([session(1, 50), session(2, 60)])).toEqual([]);
-  });
-
-  it("gives every discovered category a colour", () => {
-    const scale = skillCoverageScale(["A", "B", "C"]);
-
-    expect(Object.keys(scale)).toEqual(["A", "B", "C"]);
-    expect(Object.values(scale).every(Boolean)).toBe(true);
+  it("escapes every HTML-significant character", () => {
+    expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
+      "&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;",
+    );
   });
 
   it("keeps quiz and annotation as separate series — different rulers", () => {
@@ -222,29 +259,31 @@ describe("learner timeline", () => {
 });
 
 describe("learner takeaway", () => {
-  it("names both windows rather than only the delta", () => {
+  it("names both halves and the learner's own band rather than only the change", () => {
     const text = learnerTakeaway(
       {
         trend: "improving",
-        delta: 30,
-        firstWindowMean: 45,
-        lastWindowMean: 75,
-        evaluatedSessions: 5,
+        delta: 0.4,
+        band: 0.22,
+        firstWindowMean: 2.1,
+        lastWindowMean: 2.5,
+        evaluatedSessions: 8,
       },
       thresholds,
     );
 
-    // "+30 points" alone would read as one before/after pair.
-    expect(text).toContain("Last 2 sessions average 75");
-    expect(text).toContain("30 points higher");
-    expect(text).toContain("first 2 (45)");
+    expect(text).toContain("last half of their slices averages 2.50");
+    expect(text).toContain("0.40 higher than the first half (2.10)");
+    expect(text).toContain("±0.22 for 8 slices");
+    expect(text).not.toContain("points");
   });
 
-  it("says how many more sessions an unclassified learner needs", () => {
+  it("says how many more slices an unclassified learner needs", () => {
     const text = learnerTakeaway(
       {
         trend: "insufficient",
         delta: null,
+        band: null,
         firstWindowMean: null,
         lastWindowMean: null,
         evaluatedSessions: 2,
@@ -252,37 +291,64 @@ describe("learner takeaway", () => {
       thresholds,
     );
 
-    expect(text).toContain("2 evaluated sessions");
+    expect(text).toContain("2 scored slices");
     expect(text).toContain("needs 4");
   });
 
-  it("frames a flat learner against the band, not as no change", () => {
+  it("frames a steady learner against noise, not as no change", () => {
     const text = learnerTakeaway(
       {
         trend: "flat",
-        delta: 2,
-        firstWindowMean: 60,
-        lastWindowMean: 62,
+        delta: 0.05,
+        band: 0.27,
+        firstWindowMean: 2.4,
+        lastWindowMean: 2.45,
         evaluatedSessions: 6,
       },
       thresholds,
     );
 
-    expect(text).toContain("within 5 points");
+    expect(text).toContain("Holding steady");
+    expect(text).toContain("inside slice-to-slice noise");
+    expect(text).toContain("±0.27");
   });
 });
 
 describe("formatting", () => {
   it("signs a delta and uses a real minus glyph", () => {
-    expect(formatDelta(12.5)).toBe("+12.5");
-    expect(formatDelta(-7)).toBe("−7");
+    expect(formatDelta(0.25)).toBe("+0.25");
+    expect(formatDelta(-0.4)).toBe("−0.4");
     expect(formatDelta(0)).toBe("0");
     expect(formatDelta(null)).toBe("—");
+  });
+
+  it("prints a learner's band at the server's precision, or a dash", () => {
+    expect(formatBand(0.2)).toBe("±0.20");
+    expect(formatBand(null)).toBe("—");
   });
 
   it("falls back through email to an id rather than rendering blank", () => {
     expect(learnerName({ name: "Asha", email: "a@x.com" })).toBe("Asha");
     expect(learnerName({ name: null, email: "a@x.com" })).toBe("a@x.com");
     expect(learnerName({ name: null, email: null, learnerId: 7 })).toBe("Learner 7");
+  });
+
+  it("exports the band beside the change for each learner", () => {
+    const [row] = learnerTableRows([
+      {
+        learnerId: 1,
+        name: "Asha",
+        email: null,
+        tenantId: null,
+        evaluatedSessions: 8,
+        firstWindowMean: 2.1,
+        lastWindowMean: 2.5,
+        delta: 0.4,
+        band: 0.22,
+        trend: "improving",
+        lastSessionAt: "2026-09-30T10:00:00.000Z",
+      },
+    ]);
+    expect(row).toEqual(["Asha", 8, 2.1, 2.5, "+0.4", "±0.22", "Improving", "2026-09-30"]);
   });
 });
