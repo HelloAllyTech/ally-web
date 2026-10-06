@@ -19,7 +19,7 @@ import sidebarSource from "../Sidebar.tsx?raw";
  */
 describe("sidebar icons", () => {
   // Scoped to renderIcon's own body. Sidebar.tsx now holds a second switch over the same
-  // SIDEBAR_ITEMS keys (renderBadge, for the Bug Hunter waiting-on-you count), and matching
+  // SIDEBAR_ITEMS keys (renderBadge, for the Builder unread count), and matching
   // the whole file would let a badge case satisfy the "this item has an icon" invariant — the
   // exact silent-omission bug this file exists to catch.
   const renderIconSource = (() => {
