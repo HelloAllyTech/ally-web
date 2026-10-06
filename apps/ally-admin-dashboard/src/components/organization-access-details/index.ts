@@ -5,6 +5,7 @@ export { CasesTab } from "./CasesTab";
 export { CoursesTab } from "./CoursesTab";
 export { ScribeSettings } from "./ScribeSettings";
 export { SimulationsSettings } from "./SimulationsSettings";
+export { TextHelplineSettings } from "./TextHelplineSettings";
 export * from "./GroupsTab";
 export { CohortRestrictionCell } from "./CohortRestrictionCell";
 export { useCohortRestrictions } from "./useCohortRestrictions";

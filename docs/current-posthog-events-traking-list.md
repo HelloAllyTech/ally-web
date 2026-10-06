@@ -238,6 +238,34 @@ confirmation picker reports the label the scenario's language list supplies.
 switching it between Day / Week / Month — with `view` naming the grouping the learner ends up
 looking at. Collapsing the panel reports nothing.
 
+### Text helpline
+
+The anonymous talker page (`/talk/:tenantCode`) and the listener workspace (`/helpline/*`). **No
+content, ever**: no message text, display names, summaries, risk signals or notes — only the chat
+uuid (`chat_id`) and coarse enums/counts. The talker page root and the listener transcript, copilot
+and summary containers carry `ph-no-capture`, so session replay and autocapture skip them too.
+Talker events have no signed-in user, so `user_role` is `unknown`.
+
+| Constant                          | Event Name                        | Description | Fires at |
+| --------------------------------- | --------------------------------- | ----------- | -------- |
+| `TALKER_SESSION_STARTED`          | `talker_session_started`          | A talker accepted consent and joined the queue. Sends `chat_id`, `language`, `has_display_name` (boolean, never the name), `chat_status` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUEUE_LEFT`               | `talker_queue_left`               | A waiting talker left the queue (Leave → confirm). Sends `chat_id`, `wait_seconds` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CHAT_ENDED`               | `talker_chat_ended`               | A talker ended an active chat (End chat → confirm). Sends `chat_id` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_FEEDBACK_SUBMITTED`       | `talker_feedback_submitted`       | The one-question rating after a chat. Sends `chat_id`, `rating` (1–5), `has_feedback_text` (boolean, never the comment) | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CONVERSATION_DELETED`     | `talker_conversation_deleted`     | A talker erased their conversation. Sends `chat_id`, `screen` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUICK_EXIT_USED`          | `talker_quick_exit_used`          | Quick exit pressed. Sends `screen` and `chat_id` when there is a chat | `pages/helpline-talk/useTalkerSession.ts` |
+| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds` | `pages/helpline/HelplineLobby.tsx` |
+| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index` | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count` | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_TRANSFER_REQUESTED`     | `helpline_transfer_requested`     | The listener of record or a supervisor asked for a chat to be passed on (Request transfer → confirm). Sends `chat_id`, `actor` (`listener` \| `supervisor`), `has_target` (boolean, never who) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_CHAT_ASSIGNED`          | `helpline_chat_assigned`          | A supervisor pointed a waiting chat at one listener from the Monitor (Assign to… → confirm). Sends `chat_id`, `risk_level` | `pages/helpline/HelplineMonitor.tsx` |
+| `HELPLINE_CHAT_TAKEN_OVER`        | `helpline_chat_taken_over`        | A supervisor took over a chat as its listener (Take over → confirm). Sends `chat_id`, `risk_level` | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_WHISPER_SENT`           | `helpline_whisper_sent`           | A supervisor sent a whisper to the listener (staff-only). Sends `chat_id` only — never the whisper | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_TALKER_BLOCKED`         | `helpline_talker_blocked`         | A supervisor blocked a talker (Block talker → confirm). Sends `chat_id`, `has_reason` (boolean, never the reason) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_SUPERVISOR_ALERTED`     | `helpline_supervisor_alerted`     | The listener of record pressed **Alert a supervisor**. Sends `chat_id`, `has_note` (boolean, never the note), `alerted_count` (how many supervisors the server reached; 0 means none is set up) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_QA_VIEWED`              | `helpline_qa_viewed`              | Someone opened a chat's helping-skills feedback. Sends `chat_id`, `viewer` (`self` for the listener's own feedback, `supervisor` otherwise) — never scores or behaviours | `pages/helpline/HelplineQaDetail.tsx` |
+
 ### Errors (automatic — no component code needed)
 
 | Constant             | Event Name           | Description                                                            | Fires at |

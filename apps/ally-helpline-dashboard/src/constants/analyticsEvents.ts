@@ -98,6 +98,28 @@ export const ANALYTICS_EVENTS = {
 
   // Errors
   API_ERROR_OCCURRED: "api_error_occurred",
+
+  // Text helpline. NEVER send message text, display names, summaries, risk
+  // signals or anything a talker or listener wrote — only the chat uuid and
+  // coarse enums/counts. The talker page and the listener transcript also
+  // carry `ph-no-capture`, so session replay and autocapture skip them.
+  TALKER_SESSION_STARTED: "talker_session_started",
+  TALKER_QUEUE_LEFT: "talker_queue_left",
+  TALKER_CHAT_ENDED: "talker_chat_ended",
+  TALKER_FEEDBACK_SUBMITTED: "talker_feedback_submitted",
+  TALKER_CONVERSATION_DELETED: "talker_conversation_deleted",
+  TALKER_QUICK_EXIT_USED: "talker_quick_exit_used",
+  HELPLINE_CHAT_CLAIMED: "helpline_chat_claimed",
+  HELPLINE_SUGGESTION_INSERTED: "helpline_suggestion_inserted",
+  HELPLINE_RISK_ACKNOWLEDGED: "helpline_risk_acknowledged",
+  HELPLINE_CHAT_ENDED_BY_LISTENER: "helpline_chat_ended_by_listener",
+  HELPLINE_TRANSFER_REQUESTED: "helpline_transfer_requested",
+  HELPLINE_CHAT_ASSIGNED: "helpline_chat_assigned",
+  HELPLINE_CHAT_TAKEN_OVER: "helpline_chat_taken_over",
+  HELPLINE_WHISPER_SENT: "helpline_whisper_sent",
+  HELPLINE_TALKER_BLOCKED: "helpline_talker_blocked",
+  HELPLINE_SUPERVISOR_ALERTED: "helpline_supervisor_alerted",
+  HELPLINE_QA_VIEWED: "helpline_qa_viewed",
 } as const;
 
 /**
@@ -244,4 +266,23 @@ export const ANALYTICS_PROPS = {
   ERROR_CODE: "error_code",
   ERROR_MESSAGE: "error_message",
   ENDPOINT: "endpoint",
+
+  // Text helpline context (no content — see the events above)
+  HELPLINE_CHAT_ID: "chat_id",
+  HELPLINE_SCREEN: "screen",
+  HELPLINE_CHAT_STATUS: "chat_status",
+  HELPLINE_RISK_LEVEL: "risk_level",
+  HELPLINE_RISK_OUTCOME: "risk_outcome",
+  HELPLINE_RISK_SOURCE: "risk_source",
+  HELPLINE_SKILL_KEY: "skill_key",
+  HELPLINE_SUGGESTION_INDEX: "suggestion_index",
+  HELPLINE_HAS_DISPLAY_NAME: "has_display_name",
+  HELPLINE_WAIT_SECONDS: "wait_seconds",
+  HELPLINE_MESSAGE_COUNT: "message_count",
+  HELPLINE_ACTOR: "actor",
+  HELPLINE_HAS_TARGET: "has_target",
+  HELPLINE_HAS_REASON: "has_reason",
+  HELPLINE_HAS_NOTE: "has_note",
+  HELPLINE_ALERTED_COUNT: "alerted_count",
+  HELPLINE_QA_VIEWER: "viewer",
 } as const;

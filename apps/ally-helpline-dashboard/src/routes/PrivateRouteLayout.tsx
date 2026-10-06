@@ -29,6 +29,14 @@ import {
   Progress,
   CharacterLibrary,
   CharacterInterview,
+  HelplineLayout,
+  HelplineLobby,
+  HelplineChatView,
+  HelplineHistory,
+  HelplineMonitor,
+  HelplineQa,
+  HelplineQaDetail,
+  HelplineTeam,
 } from "@pages";
 import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
@@ -112,6 +120,15 @@ const PrivateRouteLayout: FC = () => {
     if (hasRoleplayLogsPermission(permissions)) return ROUTES.ROLEPLAY_LOGS;
     if (canViewAnalytics) return ROUTES.ANALYTICS;
     if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
+    // A LISTENER-only or HELPLINE_SUPERVISOR-only account has nothing else in
+    // the app. Permission alone decides the landing; the workspace itself
+    // shows a plain "not turned on" state when the org toggle is off.
+    if (
+      hasPermissions(permissions, Permissions.VIEW_HELPLINE_LOBBY) ||
+      hasPermissions(permissions, Permissions.VIEW_HELPLINE_MONITOR)
+    ) {
+      return ROUTES.HELPLINE;
+    }
     // Fallback: ROUTES.HOME ("/") has no page of its own and only redirects to
     // itself (blank screen). Send unmatched users to Learn, which always
     // renders and defaults to the Simulations tab.
@@ -292,6 +309,21 @@ const PrivateRouteLayout: FC = () => {
             useCanViewCharacterLibrary) — not a plain permission array. */}
         <Route path={ROUTES.CHARACTER_LIBRARY} element={<CharacterLibrary />} />
         <Route path={ROUTES.CHARACTER_LIBRARY_INTERVIEW} element={<CharacterInterview />} />
+        {/* Text helpline workspace. Access is enforced in HelplineLayout: a
+            helpline permission AND the tenant's TEXT_HELPLINE_ENABLED toggle
+            (useCanUseTextHelpline), for every child route. One layout so the
+            staff socket survives moving between lobby and chats. */}
+        <Route path={ROUTES.HELPLINE} element={<HelplineLayout />}>
+          <Route index element={<HelplineLobby />} />
+          <Route path={ROUTES.HELPLINE_CHAT} element={<HelplineChatView />} />
+          <Route path={ROUTES.HELPLINE_HISTORY} element={<HelplineHistory />} />
+          {/* Each page also checks its own permission (monitor / team), so a
+              typed URL shows a plain "not for your role" state. */}
+          <Route path={ROUTES.HELPLINE_MONITOR} element={<HelplineMonitor />} />
+          <Route path={ROUTES.HELPLINE_QA} element={<HelplineQa />} />
+          <Route path={ROUTES.HELPLINE_QA_DETAIL} element={<HelplineQaDetail />} />
+          <Route path={ROUTES.HELPLINE_TEAM} element={<HelplineTeam />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </NavbarWrapper>

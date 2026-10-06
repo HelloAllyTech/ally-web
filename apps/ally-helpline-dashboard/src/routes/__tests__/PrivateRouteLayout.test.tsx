@@ -3,11 +3,13 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { UserRole } from "@types";
+import { hasCallPermission, hasScribeLogsPermission } from "@utils";
 
 import PrivateRouteLayout from "../PrivateRouteLayout";
 
 // Mock the useUser hook
 const mockUseUser = vi.fn();
+const mockUseCanViewAnalytics = vi.fn(() => ({ canView: true, isGateLoading: false }));
 vi.mock("@hooks", () => ({
   // Exhaustive mock: NavSideBar gates the Progress tab and its level ring on this hook.
   useProgressSummary: () => ({ summary: undefined, canViewProgress: false }),
@@ -15,7 +17,7 @@ vi.mock("@hooks", () => ({
   useAutoActiveCallRedirect: vi.fn(),
   // Exhaustive mock: the analytics landing fallback is gated on this hook, not
   // on the permission alone — a tenant with no dashboards has nothing to land on.
-  useCanViewAnalytics: () => ({ canView: true, isGateLoading: false }),
+  useCanViewAnalytics: () => mockUseCanViewAnalytics(),
   useAchievementBadgeModal: () => ({
     currentBadge: null,
     closeModal: vi.fn(),
@@ -71,6 +73,14 @@ vi.mock("@pages", () => ({
   CharacterInterview: () => (
     <div data-testid="character-interview-page">Character Interview Page</div>
   ),
+  HelplineLayout: () => <div data-testid="helpline-layout">Helpline Layout</div>,
+  HelplineLobby: () => <div data-testid="helpline-lobby-page">Helpline Lobby</div>,
+  HelplineChatView: () => <div data-testid="helpline-chat-page">Helpline Chat</div>,
+  HelplineHistory: () => <div data-testid="helpline-history-page">Helpline History</div>,
+  HelplineMonitor: () => <div data-testid="helpline-monitor-page">Helpline Monitor</div>,
+  HelplineQa: () => <div data-testid="helpline-qa-page">Helpline QA</div>,
+  HelplineQaDetail: () => <div data-testid="helpline-qa-detail-page">Helpline QA detail</div>,
+  HelplineTeam: () => <div data-testid="helpline-team-page">Helpline Team</div>,
 }));
 
 // Mock the reducer actions
@@ -111,6 +121,8 @@ vi.mock("@constants", () => ({
     START_MICROPHONE_CHAT: "start:microphone-chat",
     START_CLOUD_TELEPHONY_CHAT: "start:cloud-telephony-chat",
     VIEW_CHAT_TYPES: "view:settings:chat-types",
+    VIEW_HELPLINE_LOBBY: "view:helpline:lobby",
+    VIEW_HELPLINE_MONITOR: "view:helpline:monitor",
   },
   CALL_PERMISSIONS: ["start:cloud-telephony-chat", "start:microphone-chat"],
   ROUTES: {
@@ -128,6 +140,13 @@ vi.mock("@constants", () => ({
     SIMULATION: "/simulation/:id",
     SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
     REVIEW: "/review",
+    HELPLINE: "/helpline",
+    HELPLINE_CHAT: "/helpline/chat/:chatId",
+    HELPLINE_HISTORY: "/helpline/history",
+    HELPLINE_MONITOR: "/helpline/monitor",
+    HELPLINE_QA: "/helpline/qa",
+    HELPLINE_QA_DETAIL: "/helpline/qa/:chatId",
+    HELPLINE_TEAM: "/helpline/team",
   },
   TAG_TYPES: {
     REVIEW: "REVIEW",
@@ -140,6 +159,7 @@ vi.mock("@types", () => ({
     ADMIN: "ADMIN",
     COUNSELLOR: "COUNSELOR",
     LEARNER: "LEARNER",
+    LISTENER: "LISTENER",
   },
   SessionType: {
     CALL: "call",
@@ -175,6 +195,7 @@ vi.mock("@utils", () => ({
   hasScribeLogsPermission: vi.fn((permissions: any[]) => true),
   hasRoleplayLogsPermission: vi.fn((permissions: any[]) => false),
   hasLearnPermission: vi.fn((permissions: any[]) => false),
+  hasReviewPermission: vi.fn(() => false),
   hasPermissions: (permissions: any[], requiredPermission: any) => {
     if (!permissions || !Array.isArray(permissions)) {
       return false;
@@ -364,6 +385,31 @@ describe("PrivateRouteLayout", () => {
     await waitFor(() => {
       expect(mockCheckAuth).toHaveBeenCalled();
     });
+  });
+
+  it("lands a LISTENER-only account on the helpline workspace, not on Learn", async () => {
+    vi.mocked(hasCallPermission).mockReturnValue(false);
+    vi.mocked(hasScribeLogsPermission).mockReturnValue(false);
+    mockUseCanViewAnalytics.mockReturnValue({ canView: false, isGateLoading: false });
+    window.history.pushState({}, "", "/");
+    const listener = { id: 7, role: UserRole.LISTENER, roles: [UserRole.LISTENER] };
+    mockUseUser.mockReturnValue({
+      user: listener,
+      checkAuth: vi.fn().mockResolvedValue(listener),
+      permissions: ["view:helpline:lobby", "edit:helpline:claim"],
+    });
+    mockUseGetChatTypesQuery.mockReturnValue({ data: [] });
+
+    try {
+      renderWithRouter(<PrivateRouteLayout />);
+      expect(await screen.findByTestId("helpline-layout")).toBeInTheDocument();
+      expect(window.location.pathname).toBe("/helpline");
+    } finally {
+      vi.mocked(hasCallPermission).mockReturnValue(true);
+      vi.mocked(hasScribeLogsPermission).mockReturnValue(true);
+      mockUseCanViewAnalytics.mockReturnValue({ canView: true, isGateLoading: false });
+      window.history.pushState({}, "", "/");
+    }
   });
 
   it("handles authentication errors gracefully", async () => {

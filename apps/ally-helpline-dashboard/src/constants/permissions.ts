@@ -60,6 +60,24 @@ export enum Permissions {
   // grants the ADMIN group view/create: 1905000000000-AddTenantScopedCharacterLibrary).
   VIEW_CHARACTER_LIBRARY = "view:scenario-character",
   CREATE_CHARACTER_LIBRARY = "create:scenario-character",
+
+  // Text helpline (ally-be docs/text-helpline.md §2). LISTENER holds the first
+  // eight; HELPLINE_SUPERVISOR adds monitor/whisper/transfer/qa; tenant ADMIN
+  // adds team. Every one of them is also behind the tenant's
+  // TEXT_HELPLINE_ENABLED toggle on the server — see useCanUseTextHelpline.
+  VIEW_HELPLINE_LOBBY = "view:helpline:lobby",
+  EDIT_HELPLINE_PRESENCE = "edit:helpline:presence",
+  EDIT_HELPLINE_CLAIM = "edit:helpline:claim",
+  VIEW_HELPLINE_CHAT = "view:helpline:chat",
+  EDIT_HELPLINE_MESSAGE = "edit:helpline:message",
+  EDIT_HELPLINE_END = "edit:helpline:end",
+  VIEW_HELPLINE_COPILOT = "view:helpline:copilot",
+  EDIT_HELPLINE_SUMMARY = "edit:helpline:summary",
+  VIEW_HELPLINE_MONITOR = "view:helpline:monitor",
+  EDIT_HELPLINE_WHISPER = "edit:helpline:whisper",
+  EDIT_HELPLINE_TRANSFER = "edit:helpline:transfer",
+  VIEW_HELPLINE_QA = "view:helpline:qa",
+  EDIT_HELPLINE_TEAM = "edit:helpline:team",
 }
 
 export const CALL_PERMISSIONS = [

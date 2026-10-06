@@ -223,6 +223,7 @@ export const baseAPI = createApi({
     TAG_TYPES.PLATFORM_ADMINS,
     TAG_TYPES.MOBILE_RELEASE_RUNS,
     TAG_TYPES.MIN_APP_VERSION,
+    TAG_TYPES.HELPLINE_ADMIN_SETTINGS,
   ],
   endpoints: () => ({}),
 });
