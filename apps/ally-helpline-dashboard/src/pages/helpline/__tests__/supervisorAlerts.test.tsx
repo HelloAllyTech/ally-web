@@ -173,4 +173,41 @@ describe("supervisor alerts in the workspace", () => {
     expect(toastMock.warning).not.toHaveBeenCalled();
     expect(notifications).toHaveLength(0);
   });
+
+  it("a chat assigned to a listener: a toast with Open to the lobby, content-free, once", async () => {
+    permissionsRef.current = ["view:helpline:lobby", "edit:helpline:claim"];
+    await mount();
+    const assigned = { type: "ASSIGNED", chatId: "chat-5", at: "2026-10-06T10:00:00Z" };
+    await fireAlert(assigned);
+    await fireAlert({ ...assigned, at: "2026-10-06T10:00:20Z" });
+
+    expect(toastMock).toHaveBeenCalledTimes(1);
+    const [text, options] = toastMock.mock.calls[0];
+    expect(text).toBe("A chat was assigned to you.");
+    expect(options).toMatchObject({ id: "ASSIGNED:chat-5", action: { label: "Open" } });
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].options.body).toBe("A chat was assigned to you.");
+    await act(async () => {
+      options.action.onClick();
+    });
+    expect(await screen.findByTestId("lobby-route")).toBeInTheDocument();
+  });
+
+  it("a transfer naming a listener says it's being passed to them", async () => {
+    permissionsRef.current = ["view:helpline:lobby", "edit:helpline:claim"];
+    await mount();
+    await fireAlert({ type: "TRANSFER_REQUESTED", chatId: "chat-6", at: "2026-10-06T10:00:00Z" });
+    expect(toastMock).toHaveBeenCalledWith(
+      "A chat is being passed to you.",
+      expect.objectContaining({ id: "TRANSFER_REQUESTED:chat-6" }),
+    );
+    expect(toastMock.warning).not.toHaveBeenCalled();
+  });
+
+  it("a supervisor assigned a chat hears it as theirs too", async () => {
+    await mount();
+    await fireAlert({ type: "ASSIGNED", chatId: "chat-7", at: "2026-10-06T10:00:00Z" });
+    expect(toastMock).toHaveBeenCalledWith("A chat was assigned to you.", expect.anything());
+    expect(toastMock.warning).not.toHaveBeenCalled();
+  });
 });

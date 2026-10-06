@@ -317,9 +317,21 @@ export interface RiskFlagDto {
   createdAt: string;
   /**
    * How many supervisors were alerted for this flag: null/absent = not
-   * applicable (or an older payload), 0 = nobody could be alerted, n = alerted.
+   * applicable (ELEVATED, or an older payload), 0 = nobody could be alerted,
+   * n = alerted.
    */
   supervisorsAlerted?: number | null;
+  /**
+   * Fold-until-acknowledged: repeated hits on a chat fold into its open flag
+   * instead of raising new ones. `hitCount` counts them (1 = the first),
+   * `lastHitAt` is the newest, `latestSignal` its wording (null once erased).
+   * A fold or an ELEVATED → HIGH upgrade arrives as RISK_FLAG_UPDATED with the
+   * same id; after acknowledgement a new hit raises a new flag. Optional:
+   * older payloads don't carry them.
+   */
+  hitCount?: number;
+  lastHitAt?: string | null;
+  latestSignal?: string | null;
 }
 
 export type SummaryKind = "ROLLING" | "HANDOFF" | "FINAL";
@@ -344,6 +356,17 @@ export interface ChatDetailDto {
   copilot: { status: CopilotStatus; stage: string | null };
   /** Timeline, no bodies. */
   events: { type: string; at: string; actorName: string | null }[];
+}
+
+/** `GET /v1/helpline/enabled`. */
+export interface HelplineEnabledDto {
+  enabled: boolean;
+  /**
+   * While the org's helpline is switched off: the ACTIVE chats the caller is
+   * still listener of record for, which stay usable until they end (§5.4).
+   * Always [] while enabled.
+   */
+  continuingChatIds: string[];
 }
 
 export interface ChatListResponse {
@@ -395,21 +418,29 @@ export interface MonitorDto {
   listeners: MonitorListenerDto[];
 }
 
-/**
- * A row of the risk calibration view. The contract names this type without
- * pinning it; assumed to be the flag plus the chat it belongs to. `signal` is
- * never rendered here — the calibration view is about outcomes, not content.
- */
-export interface RiskFlagRowDto extends Omit<RiskFlagDto, "signal"> {
+/** A row of the risk calibration view (§5.5 `RiskFlagRowDto`). Its `signal` is never rendered there. */
+export interface RiskFlagRowDto extends RiskFlagDto {
   chatId: string;
-  signal?: string | null;
+  chatStatus: HelplineChatStatus;
+  chatRiskLevel: HelplineRiskLevel;
+  listener: { id: number; displayName: string } | null;
+  erased: boolean;
 }
 
-export interface RiskFlagsResponse {
+export type RiskOutcomeCounts = Record<RiskFlagOutcome, number>;
+
+/** `GET /v1/helpline/risk-flags` (§5.5 `RiskCalibrationDto`). */
+export interface RiskCalibrationDto {
+  /** Newest first, ≤ 200; narrowed by `outcome` when given. */
   items: RiskFlagRowDto[];
-  counts: Record<RiskFlagOutcome, number>;
-  /** Assumed `{ KEYWORD, CLASSIFIER }` — the contract leaves it as `{...}`. */
-  bySource: Partial<Record<RiskFlagDto["source"], number>>;
+  /** The whole window, not narrowed by `outcome`. */
+  counts: RiskOutcomeCounts;
+  bySource: Record<RiskFlagDto["source"], RiskOutcomeCounts & { total: number }>;
+  /** Classifier flags by confidence band (0–.5, .5–.6 … .9–1). */
+  classifierByConfidence: ({ from: number; to: number } & RiskOutcomeCounts)[];
+  /** The org's current HIGH threshold for the classifier. */
+  riskHighConfidence: number;
+  days: number;
 }
 
 export interface RiskFlagsParams {
@@ -499,12 +530,18 @@ export interface QueueUpdatedPayload {
   counts: LobbyCounts;
 }
 
+/**
+ * `supervisors:{tenantId}` gets RISK_HIGH, HIGH_RISK_WAITING,
+ * LISTENER_DISCONNECTED, LISTENER_REQUESTED_HELP and TRANSFER_REQUESTED;
+ * `user:{id}` gets ASSIGNED, and TRANSFER_REQUESTED when a transfer names them.
+ */
 export type HelplineAlertType =
   | "RISK_HIGH"
-  | "LISTENER_DISCONNECTED"
-  | "TRANSFER_REQUESTED"
   | "HIGH_RISK_WAITING"
-  | "LISTENER_REQUESTED_HELP";
+  | "LISTENER_DISCONNECTED"
+  | "LISTENER_REQUESTED_HELP"
+  | "TRANSFER_REQUESTED"
+  | "ASSIGNED";
 
 export interface HelplineAlertPayload {
   type: HelplineAlertType;

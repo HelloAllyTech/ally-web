@@ -228,26 +228,50 @@ describe("HelplineMonitor", () => {
   it("risk calibration shows outcomes, sources and a chat link per flag", async () => {
     fetchRoutes["GET /v1/helpline/risk-flags"] = request => {
       expect(new URL(request.url).searchParams.get("days")).toBe("7");
+      const counts = (UNREVIEWED: number, CONFIRMED: number, FALSE_POSITIVE: number) => ({
+        UNREVIEWED,
+        CONFIRMED,
+        FALSE_POSITIVE,
+      });
       return json({
         items: [
           {
             id: "flag-1",
             chatId: "chat-1",
+            chatStatus: "ENDED",
+            chatRiskLevel: "HIGH",
+            listener: { id: 7, displayName: "Meera" },
+            erased: false,
             messageId: 3,
             level: "HIGH",
             source: "CLASSIFIER",
             confidence: 0.82,
             subject: "SELF",
+            signal: "a live signal that must never be shown here",
             resourcesSent: true,
+            supervisorsAlerted: 2,
             acknowledgedAt: "2026-10-05T10:06:00.000Z",
             acknowledgedByName: "Meera",
             outcome: "FALSE_POSITIVE",
             outcomeNote: "Song lyrics",
             createdAt: "2026-10-05T10:05:00.000Z",
+            hitCount: 3,
+            lastHitAt: "2026-10-05T10:09:00.000Z",
+            latestSignal: "another live signal",
           },
         ],
-        counts: { UNREVIEWED: 2, CONFIRMED: 5, FALSE_POSITIVE: 1 },
-        bySource: { KEYWORD: 6, CLASSIFIER: 2 },
+        counts: counts(2, 5, 1),
+        bySource: {
+          KEYWORD: { ...counts(1, 4, 1), total: 6 },
+          CLASSIFIER: { ...counts(1, 1, 0), total: 2 },
+        },
+        classifierByConfidence: [
+          { from: 0, to: 0.5, ...counts(0, 0, 0) },
+          { from: 0.6, to: 0.7, ...counts(1, 0, 0) },
+          { from: 0.7, to: 0.8, ...counts(0, 1, 0) },
+        ],
+        riskHighConfidence: 0.7,
+        days: 7,
       });
     };
     renderMonitor(store, "/helpline/monitor?view=calibration");
@@ -262,8 +286,19 @@ describe("HelplineMonitor", () => {
     expect(within(panel).getByTestId("calibration-source-KEYWORD")).toHaveTextContent(
       "Keyword match6",
     );
+    expect(within(panel).getByTestId("calibration-source-KEYWORD-outcomes")).toHaveTextContent(
+      "4 confirmed · 1 false positive · 1 unreviewed",
+    );
     expect(panel).toHaveTextContent("82%");
     expect(panel).toHaveTextContent("Song lyrics");
+    expect(within(panel).getByTestId("calibration-hits")).toHaveTextContent("3");
+    // Rows carry live signals; this view never renders them.
+    expect(panel).not.toHaveTextContent("live signal");
+    // Classifier outcomes by confidence, with the org's threshold marked.
+    const bands = within(within(panel).getByTestId("calibration-bands")).getAllByRole("row");
+    expect(bands[3]).toHaveTextContent("0.70–0.80");
+    expect(bands[3]).toHaveTextContent("Your threshold");
+    expect(bands[2]).not.toHaveTextContent("Your threshold");
     expect(within(panel).getByRole("link", { name: "Open chat" })).toHaveAttribute(
       "href",
       "/helpline/chat/chat-1",

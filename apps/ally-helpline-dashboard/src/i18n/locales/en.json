@@ -2191,8 +2191,7 @@
       "lastMessage": "Last message {{time}} ago",
       "profileButton": "My helpline profile",
       "notificationTitle": "Someone is waiting to talk",
-      "highRiskWaiting": "A talker who may be at high risk is waiting.",
-      "passedToYouToast": "A chat was passed to you."
+      "highRiskWaiting": "A talker who may be at high risk is waiting."
     },
     "risk": {
       "HIGH": "High risk",
@@ -2246,7 +2245,8 @@
         "ASSIGNED": "Chat assigned",
         "generic": "Chat update",
         "risk": "Risk flagged here: {{level}} · {{source}}",
-        "SUPERVISOR_REQUESTED": "{{name}} asked a supervisor for help"
+        "SUPERVISOR_REQUESTED": "{{name}} asked a supervisor for help",
+        "riskFolded": "Flagged again"
       },
       "typing": "{{name}} is typing…",
       "composerLabel": "Reply",
@@ -2272,7 +2272,13 @@
       "showInfo": "Show talker details",
       "hideInfo": "Hide talker details",
       "erased": "This chat's content has been erased.",
-      "otherStaff": "Another listener"
+      "otherStaff": "Another listener",
+      "systemNamed": {
+        "TRANSFERRED": "Transferred to {{name}}",
+        "ASSIGNED": "Assigned to {{name}}",
+        "TAKEN_OVER": "{{name}} took over this chat",
+        "SUPERVISOR_REQUESTED_NOTE": "{{name}} asked a supervisor for help: “{{note}}”"
+      }
     },
     "copilot": {
       "title": "Copilot",
@@ -2328,7 +2334,14 @@
       "ackFailed": "Couldn't save. The flag stays open until it's acknowledged.",
       "noted": "Risk noted",
       "notedFalse": "Marked false positive",
-      "noSupervisorAlerted": "No supervisor could be alerted automatically — use Alert a supervisor or follow your organisation's emergency procedure."
+      "noSupervisorAlerted": "No supervisor could be alerted automatically — use Alert a supervisor or follow your organisation's emergency procedure.",
+      "folded_one": "Flagged {{count}} time",
+      "folded_other": "Flagged {{count}} times",
+      "foldedLatest_one": "Flagged {{count}} time · latest: ‘{{signal}}’",
+      "foldedLatest_other": "Flagged {{count}} times · latest: ‘{{signal}}’",
+      "raised": "Raised from possible to high risk.",
+      "hideSteps": "Hide steps",
+      "showSteps": "Show steps"
     },
     "info": {
       "title": "Talker",
@@ -2452,6 +2465,10 @@
         "LISTENER_DISCONNECTED": "A listener has been disconnected from a live chat.",
         "TRANSFER_REQUESTED": "A chat is waiting to be transferred.",
         "LISTENER_REQUESTED_HELP": "A listener is asking for a supervisor."
+      },
+      "forYou": {
+        "ASSIGNED": "A chat was assigned to you.",
+        "TRANSFER_REQUESTED": "A chat is being passed to you."
       }
     },
     "whisper": {
@@ -2590,10 +2607,17 @@
         "confidence": "Confidence",
         "outcome": "Outcome",
         "note": "Note",
-        "chat": "Chat"
+        "chat": "Chat",
+        "band": "Confidence",
+        "hits": "Hits"
       },
       "percent": "{{value}}%",
-      "openChat": "Open chat"
+      "openChat": "Open chat",
+      "sourceOutcomes": "{{confirmed}} confirmed · {{falsePositive}} false positive · {{unreviewed}} unreviewed",
+      "byConfidence": "AI classifier by confidence",
+      "byConfidenceHint": "How the classifier's flags turned out at each confidence. Flags at or above your threshold ({{threshold}}) are high risk; below it, possible risk.",
+      "band": "{{from}}–{{to}}",
+      "yourThreshold": "Your threshold"
     },
     "qa": {
       "title": "Quality",
@@ -2666,6 +2690,13 @@
       "supervisorFor": "Supervisor: {{name}}",
       "failed": "Couldn't update {{name}}. Their access hasn't changed.",
       "noAccess": "Team is for your organisation's admins."
+    },
+    "restricted": {
+      "title": "Helpline is switched off for your organisation — you can finish your open chats",
+      "body": "New talkers can't reach the helpline and the queue is closed. Your open chats carry on until they end.",
+      "chatsTitle": "Your open chats",
+      "chatFallback": "Chat",
+      "elsewhere": "This part of the helpline is unavailable while it's switched off. Finish your open chats from the Lobby."
     }
   }
 }

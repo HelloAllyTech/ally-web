@@ -3,6 +3,7 @@ import type {
   ChatDetailDto,
   HelplineMeDto,
   HelplineRiskLevel,
+  ListenerSettingsDto,
   LobbyEntryDto,
   MonitorListenerDto,
   RiskFlagDto,
@@ -114,6 +115,20 @@ export const upsertRiskFlag = (draft: ChatDetailDto, flag: RiskFlagDto) => {
   draft.chat.riskLevel = maxRiskLevel(draft.chat.riskLevel, flag.level);
 };
 
+/**
+ * Whether a risk flag arriving over the socket should sound the alert tone in
+ * the chat view: a HIGH flag that is new, or an open flag upgraded from
+ * ELEVATED to HIGH (fold-until-acknowledged keeps one id). Only for the
+ * listener of record with the chat loaded — supervisors hear the ALERT tone —
+ * and never for a fold at the same level or an acknowledgement.
+ */
+export const riskToneDue = (before: ChatDetailDto | undefined, flag: RiskFlagDto) => {
+  if (!before || before.chat.myAccess !== "LISTENER") return false;
+  if (flag.level !== "HIGH" || flag.acknowledgedAt || flag.outcome !== "UNREVIEWED") return false;
+  const previous = before.riskFlags.find(item => item.id === flag.id);
+  return !previous || previous.level === "ELEVATED";
+};
+
 /** Flags still waiting for the listener to acknowledge, most serious and newest first. */
 export const openRiskFlags = (flags: RiskFlagDto[]) =>
   flags
@@ -161,3 +176,21 @@ export const assignableListeners = (
         listener.activeChatCount < Math.max(1, Math.min(listener.maxConcurrentChats, orgCap)),
     )
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+/**
+ * The summary fields to review. Normally the org's; while the helpline is
+ * switched off `GET /me` (which carries them) is refused, so fall back to the
+ * keys the copilot's own summaries used — a field still beats no field.
+ */
+export const summaryFieldsFor = (
+  orgFields: ListenerSettingsDto["summaryFields"],
+  summaries: ChatDetailDto["summaries"],
+): ListenerSettingsDto["summaryFields"] => {
+  if (orgFields.length) return orgFields;
+  const source = summaries.final ?? summaries.rolling ?? summaries.handoff;
+  return Object.keys(source?.fields ?? {}).map(key => ({
+    key,
+    label: key.replace(/_/g, " ").replace(/^./, first => first.toUpperCase()),
+    description: "",
+  }));
+};

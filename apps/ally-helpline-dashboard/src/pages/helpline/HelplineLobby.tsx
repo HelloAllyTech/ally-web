@@ -19,18 +19,26 @@ import type { LobbyEntryDto } from "@types";
 import { parseHelplineError } from "@utils/helplineErrors";
 import { hasPermissions } from "@utils/permission";
 
+import { ContinuingChats } from "./components/ContinuingChats";
 import { ListenerProfileDrawer } from "./components/ListenerProfileDrawer";
 import { MyChatsList } from "./components/MyChatsList";
 import { PresenceSwitch } from "./components/PresenceSwitch";
 import { WaitingList } from "./components/WaitingList";
+import { useHelplineAccess } from "./HelplineAccess";
 import { secondsSince } from "./utils";
 
 /**
  * `/helpline` — presence, who is waiting (most urgent first), and my open
  * chats. Claiming is a race the server settles atomically; losing it is
- * normal and gets a plain toast, not an error screen.
+ * normal and gets a plain toast, not an error screen. With the helpline
+ * switched off, only the chats still open (ContinuingChats).
  */
 export const HelplineLobby: FC = () => {
+  const { restricted, continuingChatIds } = useHelplineAccess();
+  return restricted ? <ContinuingChats chatIds={continuingChatIds} /> : <ListenerLobby />;
+};
+
+const ListenerLobby: FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { track } = useAnalytics();

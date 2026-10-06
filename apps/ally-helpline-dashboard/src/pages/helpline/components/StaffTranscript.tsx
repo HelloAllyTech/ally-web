@@ -38,6 +38,9 @@ const KNOWN_SYSTEM_KINDS = [
   "SUPERVISOR_REQUESTED",
 ];
 
+/** Staff-only kinds that read better with the listener's name, when the row carries it. */
+const NAMED_SYSTEM_KINDS = ["TRANSFERRED", "ASSIGNED", "TAKEN_OVER"];
+
 /** `#message-123` → 123 (QA evidence links land on the quoted message). */
 const messageIdFromHash = (hash: string) => {
   const match = /^#message-(\d+)$/.exec(hash);
@@ -122,10 +125,58 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
     );
   };
 
+  /**
+   * System rows carry the listener they're about in `metadata.params.listenerName`
+   * (ACCEPTED: who joined; TRANSFERRED / ASSIGNED: who it went to; TAKEN_OVER:
+   * who took it). SUPERVISOR_REQUESTED is sent by the listener and its content
+   * is their note to the supervisor (may be empty) — staff-only, like the row.
+   */
+  const systemText = (message: StaffMessageDto, kind: string) => {
+    const params = (message.metadata?.params ?? {}) as Record<string, unknown>;
+    const paramName =
+      (typeof params.listenerName === "string" && params.listenerName) ||
+      (typeof message.metadata?.listenerName === "string" && message.metadata.listenerName) ||
+      "";
+    if (kind === "SUPERVISOR_REQUESTED") {
+      const name =
+        message.senderName ||
+        paramName ||
+        chat.listener?.displayName ||
+        t("helplineWorkspace.chat.otherStaff");
+      const note = message.erased ? "" : message.content.trim();
+      return note
+        ? t("helplineWorkspace.chat.systemNamed.SUPERVISOR_REQUESTED_NOTE", { name, note })
+        : t("helplineWorkspace.chat.system.SUPERVISOR_REQUESTED", { name });
+    }
+    if (NAMED_SYSTEM_KINDS.includes(kind) && paramName) {
+      return t(`helplineWorkspace.chat.systemNamed.${kind}`, { name: paramName });
+    }
+    if (!KNOWN_SYSTEM_KINDS.includes(kind)) return t("helplineWorkspace.chat.system.generic");
+    return t(`helplineWorkspace.chat.system.${kind}`, {
+      name: paramName || chat.listener?.displayName || "",
+    });
+  };
+
   const systemLine = (message: StaffMessageDto) => {
     if (message.type === "RISK") {
       const level = String(message.metadata?.level ?? "");
       const source = String(message.metadata?.source ?? "");
+      // Another hit folded into the open flag: a quieter marker, not a new flag.
+      if (message.metadata?.folded === true) {
+        return (
+          <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
+            <p
+              className="inline-flex items-center gap-1 rounded-full border border-dashed border-status-alarmDot px-2 py-0.5 font-primary text-[11px] text-status-alarmFg"
+              data-testid="risk-folded-marker"
+            >
+              <Lock aria-hidden="true" className="h-2.5 w-2.5 flex-shrink-0" />
+              <span className="sr-only">{t("helplineWorkspace.chat.staffOnly")}:</span>
+              {t("helplineWorkspace.chat.system.riskFolded")}
+              {level ? ` · ${t(`helplineWorkspace.risk.${level}`)}` : ""}
+            </p>
+          </li>
+        );
+      }
       return (
         <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
           <p className="inline-flex max-w-[90%] items-center gap-1.5 rounded-full border border-dashed border-status-alarmDot bg-status-alarmBg px-3 py-1 text-center font-primary text-xs text-status-alarmFg">
@@ -141,15 +192,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
     }
     const kind = message.systemKind ?? "";
     const talkerSees = message.visibleToTalker && isTalkerVisibleSystemKind(kind);
-    const text = KNOWN_SYSTEM_KINDS.includes(kind)
-      ? t(`helplineWorkspace.chat.system.${kind}`, {
-          name:
-            (message.metadata?.listenerName as string) ||
-            message.senderName ||
-            chat.listener?.displayName ||
-            "",
-        })
-      : t("helplineWorkspace.chat.system.generic");
+    const text = systemText(message, kind);
     return (
       <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
         <p

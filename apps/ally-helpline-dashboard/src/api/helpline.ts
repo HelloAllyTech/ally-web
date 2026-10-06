@@ -20,6 +20,7 @@ import type {
   ChatListParams,
   ChatListResponse,
   CopilotFeedbackBody,
+  HelplineEnabledDto,
   HelplineMeDto,
   HelplinePresence,
   LobbyDto,
@@ -29,7 +30,7 @@ import type {
   QaListParams,
   RiskFlagDto,
   RiskFlagsParams,
-  RiskFlagsResponse,
+  RiskCalibrationDto,
   StaffMessageDto,
   SummaryDto,
   TeamMemberDto,
@@ -42,10 +43,18 @@ import { baseAPI } from "./baseAPI";
 
 export const helplineAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    /** Nav gate: any authenticated user, no helpline permission needed, never 403s. */
-    getHelplineEnabled: builder.query<boolean, void>({
+    /**
+     * Nav gate: any authenticated user, no helpline permission needed, never
+     * 403s. Normalised so a missing or malformed field reads as off / none.
+     */
+    getHelplineEnabled: builder.query<HelplineEnabledDto, void>({
       query: () => ApiEndpoints.HELPLINE.ENABLED,
-      transformResponse: (response: { enabled?: boolean } | null) => Boolean(response?.enabled),
+      transformResponse: (response: Partial<HelplineEnabledDto> | null) => ({
+        enabled: response?.enabled === true,
+        continuingChatIds: Array.isArray(response?.continuingChatIds)
+          ? response.continuingChatIds.filter(id => typeof id === "string")
+          : [],
+      }),
     }),
 
     getHelplineMe: builder.query<HelplineMeDto, void>({
@@ -323,7 +332,7 @@ export const helplineAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.HELPLINE_MONITOR],
     }),
 
-    getHelplineRiskFlags: builder.query<RiskFlagsResponse, RiskFlagsParams>({
+    getHelplineRiskFlags: builder.query<RiskCalibrationDto, RiskFlagsParams>({
       query: params => ({ url: ApiEndpoints.HELPLINE.RISK_FLAGS, params }),
       providesTags: [TAG_TYPES.HELPLINE_RISK_FLAGS],
     }),

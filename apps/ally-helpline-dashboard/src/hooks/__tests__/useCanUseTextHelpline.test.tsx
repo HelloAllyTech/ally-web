@@ -28,12 +28,42 @@ describe("useCanUseTextHelpline", () => {
 
   it("is false when the organisation's helpline is off, even with the permission", () => {
     permissionsRef.current = ["view:helpline:lobby"];
-    enabledQuery.mockReturnValue({ data: false, isLoading: false });
+    enabledQuery.mockReturnValue({
+      data: { enabled: false, continuingChatIds: [] },
+      isLoading: false,
+    });
     const { result } = renderHook(() => useCanUseTextHelpline());
 
     expect(enabledQuery).toHaveBeenCalledWith(undefined, { skip: false });
     expect(result.current.canView).toBe(false);
     expect(result.current.hasPermission).toBe(true);
+    expect(result.current.restricted).toBe(false);
+  });
+
+  it("keeps a listener's open chats reachable when the helpline is switched off", () => {
+    permissionsRef.current = ["view:helpline:lobby"];
+    enabledQuery.mockReturnValue({
+      data: { enabled: false, continuingChatIds: ["chat-1", "chat-2"] },
+      isLoading: false,
+    });
+    expect(renderHook(() => useCanUseTextHelpline()).result.current).toMatchObject({
+      canView: true,
+      restricted: true,
+      continuingChatIds: ["chat-1", "chat-2"],
+    });
+  });
+
+  it("ignores continuing chats while the helpline is on", () => {
+    permissionsRef.current = ["view:helpline:lobby"];
+    enabledQuery.mockReturnValue({
+      data: { enabled: true, continuingChatIds: ["chat-1"] },
+      isLoading: false,
+    });
+    expect(renderHook(() => useCanUseTextHelpline()).result.current).toMatchObject({
+      canView: true,
+      restricted: false,
+      continuingChatIds: [],
+    });
   });
 
   it("fails closed while the toggle is loading or errored", () => {
@@ -47,7 +77,10 @@ describe("useCanUseTextHelpline", () => {
 
   it("is true with a listener permission and the toggle on", () => {
     permissionsRef.current = ["view:helpline:lobby"];
-    enabledQuery.mockReturnValue({ data: true, isLoading: false });
+    enabledQuery.mockReturnValue({
+      data: { enabled: true, continuingChatIds: [] },
+      isLoading: false,
+    });
     expect(renderHook(() => useCanUseTextHelpline()).result.current).toMatchObject({
       canView: true,
       canListen: true,
@@ -57,7 +90,10 @@ describe("useCanUseTextHelpline", () => {
 
   it("counts a supervisor's monitor permission as a way in", () => {
     permissionsRef.current = ["view:helpline:monitor"];
-    enabledQuery.mockReturnValue({ data: true, isLoading: false });
+    enabledQuery.mockReturnValue({
+      data: { enabled: true, continuingChatIds: [] },
+      isLoading: false,
+    });
     expect(renderHook(() => useCanUseTextHelpline()).result.current).toMatchObject({
       canView: true,
       canMonitor: true,

@@ -24,10 +24,17 @@ const OUTCOMES: RiskFlagOutcome[] = ["UNREVIEWED", "CONFIRMED", "FALSE_POSITIVE"
 const SOURCES = ["KEYWORD", "CLASSIFIER"] as const;
 const WINDOWS: RiskFlagsParams["days"][] = [7, 30];
 
+/** 0.7 → "0.70": the threshold reads the way the admin console sets it. */
+const formatConfidence = (value: number) =>
+  typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) : "—";
+
 /**
  * Risk calibration: how this org's risk flags turned out, as reviewed by the
  * listeners who acknowledged them. A tuning aid for the org's risk threshold
- * — counts and outcomes, never what the talker wrote (no `signal` here).
+ * — counts and outcomes, never what the talker wrote: the rows carry live
+ * signals (the server audits the read) but this view never renders them.
+ * The classifier's outcomes by confidence band sit beside the org's current
+ * threshold, which is what a threshold change would move.
  */
 export const RiskCalibration: FC = () => {
   const { t, i18n } = useTranslation();
@@ -106,17 +113,94 @@ export const RiskCalibration: FC = () => {
               title={t("helplineWorkspace.calibration.bySource")}
             >
               <div className="grid grid-cols-2 gap-2">
-                {SOURCES.map(source => (
-                  <StatTile
-                    key={source}
-                    label={t(`helplineWorkspace.riskBanner.source.${source}`)}
-                    value={data.bySource?.[source] ?? 0}
-                    testId={`calibration-source-${source}`}
-                  />
-                ))}
+                {SOURCES.map(source => {
+                  const counts = data.bySource?.[source];
+                  return (
+                    <div key={source} className="flex flex-col gap-1">
+                      <StatTile
+                        label={t(`helplineWorkspace.riskBanner.source.${source}`)}
+                        value={counts?.total ?? 0}
+                        testId={`calibration-source-${source}`}
+                      />
+                      <p
+                        className="px-1 font-primary text-xs text-typography-700"
+                        data-testid={`calibration-source-${source}-outcomes`}
+                      >
+                        {t("helplineWorkspace.calibration.sourceOutcomes", {
+                          confirmed: counts?.CONFIRMED ?? 0,
+                          falsePositive: counts?.FALSE_POSITIVE ?? 0,
+                          unreviewed: counts?.UNREVIEWED ?? 0,
+                        })}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </PageSection>
           </div>
+
+          {(data.classifierByConfidence?.length ?? 0) > 0 && (
+            <PageSection
+              id="calibration-confidence"
+              title={t("helplineWorkspace.calibration.byConfidence")}
+            >
+              <p className="font-primary text-sm text-typography-700">
+                {t("helplineWorkspace.calibration.byConfidenceHint", {
+                  threshold: formatConfidence(data.riskHighConfidence),
+                })}
+              </p>
+              <div className="overflow-x-auto rounded-xl border border-border-light">
+                <table className={`${tableClass} min-w-[520px]`} data-testid="calibration-bands">
+                  <thead className={theadClass}>
+                    <tr>
+                      <th scope="col" className={thClass}>
+                        {t("helplineWorkspace.calibration.columns.band")}
+                      </th>
+                      {OUTCOMES.map(outcome => (
+                        <th key={outcome} scope="col" className={thClass}>
+                          {t(`helplineWorkspace.calibration.outcome.${outcome}`)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.classifierByConfidence.map(band => {
+                      const atThreshold =
+                        data.riskHighConfidence >= band.from && data.riskHighConfidence < band.to;
+                      return (
+                        <tr
+                          key={`${band.from}-${band.to}`}
+                          className="border-t border-border-light"
+                        >
+                          <th scope="row" className={`${tdClass} text-left font-normal`}>
+                            <span className="tabular-nums text-typography-900">
+                              {t("helplineWorkspace.calibration.band", {
+                                from: formatConfidence(band.from),
+                                to: formatConfidence(band.to),
+                              })}
+                            </span>
+                            {atThreshold && (
+                              <span className="ml-2 rounded-full bg-background-secondary px-2 py-0.5 text-xs text-typography-800">
+                                {t("helplineWorkspace.calibration.yourThreshold")}
+                              </span>
+                            )}
+                          </th>
+                          {OUTCOMES.map(outcome => (
+                            <td
+                              key={outcome}
+                              className={`${tdClass} tabular-nums text-typography-800`}
+                            >
+                              {band[outcome] ?? 0}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </PageSection>
+          )}
 
           <PageSection id="calibration-flags" title={t("helplineWorkspace.calibration.listTitle")}>
             {data.items.length === 0 ? (
@@ -139,6 +223,9 @@ export const RiskCalibration: FC = () => {
                       </th>
                       <th scope="col" className={thClass}>
                         {t("helplineWorkspace.calibration.columns.confidence")}
+                      </th>
+                      <th scope="col" className={thClass}>
+                        {t("helplineWorkspace.calibration.columns.hits")}
                       </th>
                       <th scope="col" className={thClass}>
                         {t("helplineWorkspace.calibration.columns.outcome")}
@@ -171,6 +258,12 @@ export const RiskCalibration: FC = () => {
                                 value: Math.round(flag.confidence * 100),
                               })
                             : "—"}
+                        </td>
+                        <td
+                          className={`${tdClass} tabular-nums text-typography-800`}
+                          data-testid="calibration-hits"
+                        >
+                          {flag.hitCount ?? 1}
                         </td>
                         <td className={`${tdClass} text-typography-800`}>
                           {t(`helplineWorkspace.calibration.outcome.${flag.outcome}`)}

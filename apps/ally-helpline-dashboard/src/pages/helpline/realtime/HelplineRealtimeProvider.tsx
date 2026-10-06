@@ -20,6 +20,7 @@ import { helplineAPI } from "@api/helpline";
 import { LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
 import { HELPLINE_SOCKET_EVENTS, HELPLINE_TIMINGS } from "@constants/helpline";
 import { Permissions } from "@constants/permissions";
+import { ROUTES } from "@constants/routes";
 import { HelplineSocketStatus, useHelplineSocket } from "@hooks/useHelplineSocket";
 import { useUser } from "@hooks/useUser";
 import type { AppDispatch, RootState } from "@store";
@@ -50,7 +51,7 @@ import {
   createAlertDeduper,
   isSupervisorAlertType,
 } from "../supervisorAlerts";
-import { lastMessageId, upsertRiskFlag, upsertStaffMessage } from "../utils";
+import { lastMessageId, riskToneDue, upsertRiskFlag, upsertStaffMessage } from "../utils";
 
 export interface PendingStaffMessage {
   clientMessageId: string;
@@ -226,6 +227,35 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
     [navigate, refreshMonitor, t],
   );
 
+  /**
+   * A chat aimed at this listener (ALERT ASSIGNED, or TRANSFER_REQUESTED that
+   * names them). Open goes to the lobby, where it waits as "Passed to you".
+   * Content-free like every alert, and deduped the same way.
+   */
+  const onAlertForMe = useCallback(
+    (payload: HelplineAlertPayload) => {
+      dispatch(helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_LOBBY]));
+      const key = alertKey(payload.type, payload.chatId ?? "");
+      if (!alertDeduper.current(key)) return;
+      const text = t(`helplineWorkspace.alerts.forYou.${payload.type}`);
+      toast(text, {
+        id: key,
+        duration: HELPLINE_TIMINGS.ALERT_FOR_ME_TOAST_MS,
+        action: {
+          label: t("helplineWorkspace.alerts.open"),
+          onClick: () => navigate(ROUTES.HELPLINE),
+        },
+      });
+      showSupervisorAlertNotification(
+        t("helplineWorkspace.alerts.notificationTitle"),
+        text,
+        key,
+        () => navigate(ROUTES.HELPLINE),
+      );
+    },
+    [dispatch, navigate, t],
+  );
+
   // ─── Server → client ─────────────────────────────────────────────────────
 
   const onMessage = useCallback(
@@ -277,9 +307,8 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
       const me = selectMe();
       const arrivals = payload.waiting.filter(entry => !known.has(entry.chatId));
       if (!arrivals.length || !me || me.presence !== "AVAILABLE") return;
-      if (arrivals.some(entry => entry.targetListenerId === me.userId)) {
-        toast(t("helplineWorkspace.lobby.passedToYouToast"));
-      }
+      // A chat aimed at me is announced by its own ALERT (ASSIGNED /
+      // TRANSFER_REQUESTED on user:{id}); here it only chimes like any arrival.
       if (me.profile.notificationsEnabled) {
         playChime();
         showWaitingNotification(t("helplineWorkspace.lobby.notificationTitle"));
@@ -381,17 +410,23 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
       },
       [HELPLINE_SOCKET_EVENTS.RISK_FLAGGED]: (payload: { chatId: string; flag: RiskFlagDto }) => {
         if (!payload?.chatId || !payload.flag) return;
+        const before = selectChat(payload.chatId);
         patchChat(payload.chatId, draft => upsertRiskFlag(draft, payload.flag));
         refreshMonitor();
+        if (riskToneDue(before, payload.flag)) playAlertTone();
       },
-      // A flag was acknowledged (here or elsewhere): clears its banner, no re-alert.
+      // The open flag changed: acknowledged (clears its banner, no re-alert),
+      // folded another hit (count and latest wording), or upgraded
+      // ELEVATED → HIGH on the same id (the banner re-asserts, the tone replays).
       [HELPLINE_SOCKET_EVENTS.RISK_FLAG_UPDATED]: (payload: {
         chatId: string;
         flag: RiskFlagDto;
       }) => {
         if (!payload?.chatId || !payload.flag) return;
+        const before = selectChat(payload.chatId);
         patchChat(payload.chatId, draft => upsertRiskFlag(draft, payload.flag));
         refreshMonitor();
+        if (riskToneDue(before, payload.flag)) playAlertTone();
       },
       [HELPLINE_SOCKET_EVENTS.STAGE]: (payload: { chatId: string; stage: string }) => {
         if (!payload?.chatId) return;
@@ -422,6 +457,14 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
       [HELPLINE_SOCKET_EVENTS.TRANSFERRED]: onTransferEvent("transferred"),
       [HELPLINE_SOCKET_EVENTS.ALERT]: (payload: HelplineAlertPayload) => {
         if (!payload?.type) return;
+        // On user:{id}: a chat aimed at me — assigned, or a transfer naming me.
+        if (
+          payload.type === "ASSIGNED" ||
+          (payload.type === "TRANSFER_REQUESTED" && !isSupervisor)
+        ) {
+          onAlertForMe(payload);
+          return;
+        }
         if (isSupervisor && isSupervisorAlertType(payload.type) && payload.chatId) {
           onSupervisorAlert(payload);
           return;
@@ -438,12 +481,14 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
     [
       dispatch,
       isSupervisor,
+      onAlertForMe,
       onMessage,
       onQueueUpdated,
       onSupervisorAlert,
       onTransferEvent,
       patchChat,
       refreshMonitor,
+      selectChat,
       selectMe,
       setTyping,
       t,
@@ -467,17 +512,34 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
     handlers,
     onConnected: async ({ isReconnect }) => {
       const lobby = selectLobby();
+      const cachedChats = helplineAPI.util.selectCachedArgsForQuery(
+        store.getState(),
+        "getHelplineChat",
+      );
       const chatIds = new Set<string>([
         ...(lobby?.myChats.map(chat => chat.id) ?? []),
+        ...cachedChats,
         ...watchedRef.current.keys(),
       ]);
+      // The handshake restores only the rooms of my own ACTIVE chats. Rooms
+      // joined with JOIN_CHAT (monitoring, a previous listener) are not, so
+      // every chat on screen is re-joined, then re-synced, after each connect.
       for (const chatId of watchedRef.current.keys()) {
         await emitWithAck(HELPLINE_SOCKET_EVENTS.JOIN_CHAT, { chatId });
       }
       await Promise.all([...chatIds].map(chatId => syncChatRef.current(chatId)));
       if (isReconnect) {
+        // State that changes without a message (COPILOT_STATUS is only sent on
+        // change, flags, participants) is re-read for the chats on screen.
         dispatch(
-          helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_LOBBY, TAG_TYPES.HELPLINE_ME]),
+          helplineAPI.util.invalidateTags([
+            TAG_TYPES.HELPLINE_LOBBY,
+            TAG_TYPES.HELPLINE_ME,
+            ...[...watchedRef.current.keys()].map(id => ({
+              type: TAG_TYPES.HELPLINE_CHAT,
+              id,
+            })),
+          ]),
         );
       }
       for (const list of Object.values(pendingRef.current)) {

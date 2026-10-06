@@ -8,6 +8,7 @@ import { useUser } from "@hooks/useUser";
 import { hasPermissions } from "@utils/permission";
 
 import { ConnectionPill } from "./HelplineBadges";
+import { useHelplineAccess } from "../HelplineAccess";
 import { useHelplineRealtime } from "../realtime/HelplineRealtimeProvider";
 
 interface SubNavItem {
@@ -19,6 +20,8 @@ interface SubNavItem {
   /** A different label for holders of this permission (QA: "Quality" vs "My feedback"). */
   labelFor?: { permission: Permissions; labelKey: string };
   end?: boolean;
+  /** Still shown while the helpline is switched off and only open chats are reachable. */
+  whileRestricted?: boolean;
 }
 
 /**
@@ -32,6 +35,7 @@ const SUB_NAV: SubNavItem[] = [
     path: ROUTES.HELPLINE,
     labelKey: "helplineWorkspace.subnav.lobby",
     end: true,
+    whileRestricted: true,
   },
   {
     key: "history",
@@ -62,8 +66,11 @@ export const HelplineSubNav: FC = () => {
   const { t } = useTranslation();
   const { permissions } = useUser();
   const { connection } = useHelplineRealtime();
+  const { restricted } = useHelplineAccess();
   const items = SUB_NAV.filter(
-    item => !item.permission || hasPermissions(permissions, item.permission),
+    item =>
+      (!restricted || item.whileRestricted) &&
+      (!item.permission || hasPermissions(permissions, item.permission)),
   );
   const labelOf = (item: SubNavItem) =>
     item.labelFor && hasPermissions(permissions, item.labelFor.permission)

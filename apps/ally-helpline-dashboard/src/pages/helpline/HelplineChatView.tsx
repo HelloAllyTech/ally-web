@@ -16,7 +16,6 @@ import {
   useBlockHelplineTalkerMutation,
   useEndHelplineChatMutation,
   useGetHelplineChatQuery,
-  useGetHelplineMeQuery,
   useGetHelplineMonitorQuery,
   useRequestHelplineTransferMutation,
   useSaveHelplineSummaryMutation,
@@ -44,9 +43,10 @@ import { SummaryReviewModal } from "./components/SummaryReviewModal";
 import { TalkerInfoPanel, type TalkerAction } from "./components/TalkerInfoPanel";
 import { WellbeingInterstitial } from "./components/WellbeingInterstitial";
 import { WhisperComposer } from "./components/WhisperComposer";
+import { useHelplineAccess, useHelplineMe } from "./HelplineAccess";
 import { useHelplineRealtime } from "./realtime/HelplineRealtimeProvider";
 import { useSupervisorAlert } from "./useSupervisorAlert";
-import { assignableListeners, isPreviousListener, openRiskFlags } from "./utils";
+import { assignableListeners, isPreviousListener, openRiskFlags, summaryFieldsFor } from "./utils";
 import { TalkerDialog } from "../helpline-talk/components/TalkerDialog";
 
 type Phase = "chat" | "wellbeing";
@@ -68,7 +68,8 @@ export const HelplineChatView: FC = () => {
   const { track } = useAnalytics();
   const { permissions } = useUser();
   const realtime = useHelplineRealtime();
-  const { data: me } = useGetHelplineMeQuery();
+  const { data: me } = useHelplineMe();
+  const { restricted } = useHelplineAccess();
   const {
     data: detail,
     isLoading,
@@ -102,8 +103,10 @@ export const HelplineChatView: FC = () => {
   const canEnd = hasPermissions(permissions, Permissions.EDIT_HELPLINE_END);
   const canUseCopilot = hasPermissions(permissions, Permissions.VIEW_HELPLINE_COPILOT);
   const canSummarise = hasPermissions(permissions, Permissions.EDIT_HELPLINE_SUMMARY);
-  // Supervisors: transfer/assign/take-over/block share one permission.
-  const canSupervise = hasPermissions(permissions, Permissions.EDIT_HELPLINE_TRANSFER);
+  // Supervisors: transfer/assign/take-over/block share one permission. None of
+  // them is served while the helpline is switched off (restricted).
+  const canSupervise =
+    !restricted && hasPermissions(permissions, Permissions.EDIT_HELPLINE_TRANSFER);
   const canWhisper = hasPermissions(permissions, Permissions.EDIT_HELPLINE_WHISPER);
   const canMonitor = hasPermissions(permissions, Permissions.VIEW_HELPLINE_MONITOR);
 
@@ -367,7 +370,12 @@ export const HelplineChatView: FC = () => {
         node: alertSupervisorNode,
       });
     }
-    if (isActive && !chat?.transferPending && ((isListener && canEnd) || canSupervise)) {
+    if (
+      !restricted &&
+      isActive &&
+      !chat?.transferPending &&
+      ((isListener && canEnd) || canSupervise)
+    ) {
       list.push({
         key: "transfer",
         label: t("helplineWorkspace.transfer.action"),
@@ -662,7 +670,7 @@ export const HelplineChatView: FC = () => {
 
       <SummaryReviewModal
         open={reviewMode !== null}
-        fields={me.settings.summaryFields}
+        fields={summaryFieldsFor(me.settings.summaryFields, detail.summaries)}
         finalSummary={detail.summaries.final}
         saving={isSavingSummary}
         onSave={fields => void onSaveSummary(fields)}

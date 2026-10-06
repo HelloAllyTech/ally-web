@@ -75,6 +75,8 @@ export const HELPLINE_TIMINGS = {
   MONITOR_POLL_MS: 15_000,
   /** Coalesce bursts of socket events into one Monitor refetch. */
   MONITOR_REFRESH_THROTTLE_MS: 1_500,
+  /** How long "A chat was assigned to you" stays up. */
+  ALERT_FOR_ME_TOAST_MS: 30_000,
   /** Alert a supervisor stays disabled this long after a send. */
   SUPERVISOR_ALERT_COOLDOWN_MS: 2 * 60 * 1000,
 } as const;
