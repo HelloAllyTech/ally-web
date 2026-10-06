@@ -33,7 +33,7 @@ export const SafetySection: FC<SectionProps> = ({ form, errors, onChange }) => {
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-sm text-typography-900">
           {text.supervisorAlerts}
-          <HelpTip label={text.supervisorAlertsHint} />
+          <HelpTip label={text.supervisorAlertsHint} subject={text.supervisorAlerts} />
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <CheckboxField

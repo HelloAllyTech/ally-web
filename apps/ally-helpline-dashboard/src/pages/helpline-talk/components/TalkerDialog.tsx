@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useId, useRef } from "react";
+import { FC, ReactNode, RefObject, useEffect, useId, useRef } from "react";
 
 import { TalkerButton } from "./TalkerButton";
 
@@ -15,6 +15,11 @@ interface TalkerDialogProps {
   /** Disables only the confirm button (e.g. a required choice not made yet). */
   confirmDisabled?: boolean;
   error?: string | null;
+  /**
+   * The Cancel button, for a caller that has to put focus back on it — e.g. after something inside
+   * the body (a button that disables itself once used) takes focus with it.
+   */
+  cancelRef?: RefObject<HTMLButtonElement>;
 }
 
 /**
@@ -37,11 +42,13 @@ export const TalkerDialog: FC<TalkerDialogProps> = ({
   busy,
   confirmDisabled,
   error,
+  cancelRef: externalCancelRef,
 }) => {
   const titleId = useId();
   const bodyId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const cancelRef = useRef<HTMLButtonElement>(null);
+  const ownCancelRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = externalCancelRef ?? ownCancelRef;
   const returnFocusTo = useRef<Element | null>(null);
 
   useEffect(() => {
@@ -51,7 +58,7 @@ export const TalkerDialog: FC<TalkerDialogProps> = ({
     return () => {
       (returnFocusTo.current as HTMLElement | null)?.focus?.();
     };
-  }, [open]);
+  }, [open, cancelRef]);
 
   if (!open) return null;
 

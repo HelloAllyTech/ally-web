@@ -46,6 +46,13 @@ const PositionLine: FC<{ position: number | null }> = ({ position }) => {
 };
 
 /**
+ * The in-stream resources card is already in the conversation. Same test the message list uses to
+ * draw it: a SYSTEM line of kind RESOURCES (it is always talker-visible).
+ */
+const hasResourcesInStream = (messages: TalkerMessage[]) =>
+  messages.some(message => message.type === "SYSTEM" && message.systemKind === "RESOURCES");
+
+/**
  * Waiting and chatting share one layout — header, a scrolling conversation, a
  * composer pinned to the bottom — so the talker's own messages typed in the
  * queue are simply still there when the listener joins.
@@ -68,6 +75,10 @@ export const ConversationScreen: FC<ConversationScreenProps> = ({
   const { t } = useTranslation();
   const headingRef = useFocusOnMount<HTMLHeadingElement>();
   const listenerName = chat.listenerName || t("helplineTalker.chat.listenerFallback");
+  // The waiting screen carries a static "If you need help right now" card so a talker is never
+  // without numbers. Once the org's resources have arrived in the stream (they carry the org's own
+  // text), the same numbers twice only push the conversation down — the stream's card stays.
+  const showStaticResources = !hasResourcesInStream(messages);
 
   return (
     <>
@@ -120,7 +131,7 @@ export const ConversationScreen: FC<ConversationScreenProps> = ({
                   {t("helplineTalker.waiting.leave")}
                 </TalkerButton>
               </section>
-              <ResourcesCard text={resourcesText} />
+              {showStaticResources && <ResourcesCard text={resourcesText} />}
             </>
           ) : (
             <h1 ref={headingRef} tabIndex={-1} className="sr-only">

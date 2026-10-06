@@ -16,7 +16,7 @@ import type {
   SummaryDto,
 } from "@types";
 
-import { HelpTip } from "./HelpTip";
+import { HelpTip, WithTooltip } from "./HelpTip";
 import { RiskBanner, RiskNotedChip } from "./RiskBanner";
 import { latestMessageOfType, openRiskFlags, skillLabelKey } from "../utils";
 
@@ -308,14 +308,18 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
                           {suggestion.text}
                         </p>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            title={t("helplineWorkspace.copilot.useHint")}
-                            onClick={() => onUseSuggestion(suggestion, suggestionMessage.id)}
-                            className="min-h-[32px] rounded-full bg-white px-3 font-primary text-xs font-medium text-typography-900 shadow-sm hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                          >
-                            {t("helplineWorkspace.copilot.use")}
-                          </button>
+                          {/* Named "Use this suggestion" (visible text stays "Use"); what it does
+                              is its description, so a screen reader says the name first. */}
+                          <WithTooltip label={t("helplineWorkspace.copilot.useHint")}>
+                            <button
+                              type="button"
+                              aria-label={t("helplineWorkspace.copilot.useLabel")}
+                              onClick={() => onUseSuggestion(suggestion, suggestionMessage.id)}
+                              className="min-h-[32px] rounded-full bg-white px-3 font-primary text-xs font-medium text-typography-900 shadow-sm hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                            >
+                              {t("helplineWorkspace.copilot.use")}
+                            </button>
+                          </WithTooltip>
                           <Thumbs
                             value={ratingFor(suggestionMessage, suggestion.index)}
                             onRate={rating =>

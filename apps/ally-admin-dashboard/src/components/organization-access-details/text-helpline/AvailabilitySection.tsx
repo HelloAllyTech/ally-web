@@ -28,7 +28,7 @@ export const AvailabilitySection: FC<SectionProps> = ({ form, errors, onChange }
       <fieldset className="flex flex-col gap-2">
         <legend className="flex items-center gap-2 text-sm text-typography-900 mb-1">
           {text.modeLabel}
-          <HelpTip label={text.modeHint} />
+          <HelpTip label={text.modeHint} subject={text.modeLabel} />
         </legend>
         <label className="flex items-center gap-2 text-sm text-typography-900 cursor-pointer">
           <input

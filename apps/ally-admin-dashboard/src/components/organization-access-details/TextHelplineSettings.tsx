@@ -2,16 +2,14 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetHelplineAdminSettingsQuery, useUpdateHelplineAdminSettingsMutation } from "@src/api";
-import { TooltipIcon } from "@src/assets";
 import { ToggleSwitch } from "@src/components/toggle-switch";
 import { en } from "@src/constants";
 import { HelplineAdminSettingsDto, HelplineSettings } from "@src/types";
 
 import { AvailabilitySection } from "./text-helpline/AvailabilitySection";
 import { CopilotSection } from "./text-helpline/CopilotSection";
-import { primaryButtonClass, secondaryButtonClass } from "./text-helpline/formControls";
+import { HelpTip, primaryButtonClass, secondaryButtonClass } from "./text-helpline/formControls";
 import {
   buildPublicLink,
   cloneSettings,
@@ -167,15 +165,7 @@ const TextHelplineForm: FC<{ tenantId: string; data: HelplineAdminSettingsDto }>
         <div className="flex h-9 flex-row justify-between items-center">
           <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
             {text.enableLabel}
-            <Tooltip label={text.enableHint} align="top">
-              <button
-                type="button"
-                className="cursor-pointer inline-flex items-center"
-                aria-label={text.moreInfo}
-              >
-                <TooltipIcon />
-              </button>
-            </Tooltip>
+            <HelpTip label={text.enableHint} subject={text.enableLabel} />
           </div>
           <div className="flex flex-row items-center gap-2">
             <ToggleSwitch

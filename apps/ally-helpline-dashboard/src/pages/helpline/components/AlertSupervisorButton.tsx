@@ -11,6 +11,12 @@ interface AlertSupervisorButtonProps {
   alert: SupervisorAlertState;
   /** "banner" sits on the risk banner's tinted background. */
   variant?: "panel" | "banner";
+  /**
+   * Called after an alert went out and the note panel closed. The button disables itself for the
+   * cooldown at that moment, so it cannot take focus back — a host with focus to place (a dialog)
+   * does it here.
+   */
+  onSent?: () => void;
 }
 
 /**
@@ -22,6 +28,7 @@ interface AlertSupervisorButtonProps {
 export const AlertSupervisorButton: FC<AlertSupervisorButtonProps> = ({
   alert,
   variant = "panel",
+  onSent,
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -45,6 +52,7 @@ export const AlertSupervisorButton: FC<AlertSupervisorButtonProps> = ({
     if (ok) {
       setNote("");
       close();
+      onSent?.();
     }
   };
 

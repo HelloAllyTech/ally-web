@@ -17,6 +17,10 @@
    Agent Builder "terminal" glyph above is unaffected. See the TooltipIcon
    component in components/icons. */
 .tooltip-icon.material-symbols-outlined {
+  /* Ligature icon fonts show the glyph's NAME as plain text until the font has loaded (cold
+     cache, slow or blocked fonts.gstatic.com). The stand-in face below draws nothing, so the
+     icon is blank for that moment instead of reading "sticky_note" beside every label. */
+  font-family: "Material Symbols Outlined", "Tooltip Icon Stand-in";
   font-variation-settings:
     "FILL" 0,
     "wght" 100,
@@ -24,6 +28,24 @@
     "opsz" 20;
   font-size: 18px;
   line-height: 1;
+  /* Hold the icon's box open so nothing jumps when the real glyph arrives. */
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+}
+
+/* The glyph name lives in data-icon, not in the DOM text — see TooltipIcon. */
+.tooltip-icon.material-symbols-outlined::before {
+  content: attr(data-icon);
+}
+
+/* Zero-size stand-in for the rule above: any installed sans, scaled to nothing. */
+@font-face {
+  font-family: "Tooltip Icon Stand-in";
+  src:
+    local("Arial"), local("Helvetica"), local("Helvetica Neue"), local("Liberation Sans"),
+    local("DejaVu Sans"), local("Noto Sans"), local("Roboto"), local("Segoe UI");
+  size-adjust: 0%;
 }
 
 /* IBM Plex Serif - Local Font Faces */

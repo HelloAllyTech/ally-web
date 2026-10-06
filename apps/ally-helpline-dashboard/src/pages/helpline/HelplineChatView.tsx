@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   PanelRightClose,
   PanelRightOpen,
+  ShieldAlert,
   Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -37,7 +38,7 @@ import { AlertSupervisorButton } from "./components/AlertSupervisorButton";
 import { BlockTalkerDialog, ListenerPickerDialog } from "./components/ChatActionDialogs";
 import { CopilotPanel } from "./components/CopilotPanel";
 import { RiskBadge } from "./components/HelplineBadges";
-import { StaffComposer, STAFF_COMPOSER_ID } from "./components/StaffComposer";
+import { StaffComposer, type StaffComposerHandle } from "./components/StaffComposer";
 import { StaffTranscript } from "./components/StaffTranscript";
 import { SummaryReviewModal } from "./components/SummaryReviewModal";
 import { TalkerInfoPanel, type TalkerAction } from "./components/TalkerInfoPanel";
@@ -68,7 +69,7 @@ export const HelplineChatView: FC = () => {
   const { track } = useAnalytics();
   const { permissions } = useUser();
   const realtime = useHelplineRealtime();
-  const { data: me } = useHelplineMe();
+  const { data: me, isLoading: isMeLoading } = useHelplineMe();
   const { restricted } = useHelplineAccess();
   const {
     data: detail,
@@ -89,6 +90,11 @@ export const HelplineChatView: FC = () => {
   const supervisorAlert = useSupervisorAlert(chatId, me?.settings.listenerSupportContact ?? null);
 
   const [draft, setDraft] = useState("");
+  // Use asks for the cursor to go to the end of the box. A counter, not a flag, so a second Use
+  // asks again; the effect below runs after the draft has been committed to the textarea.
+  const composerRef = useRef<StaffComposerHandle>(null);
+  const [focusComposerRequest, setFocusComposerRequest] = useState(0);
+  const endCancelRef = useRef<HTMLButtonElement>(null);
   const [attached, setAttached] = useState<{ messageId: number; index: number } | null>(null);
   const [copilotOpen, setCopilotOpen] = useState(true);
   const [infoOpen, setInfoOpen] = useState(wideScreen);
@@ -169,8 +175,12 @@ export const HelplineChatView: FC = () => {
   }, [chat?.myAccess, chat?.listener?.displayName, t]);
 
   // An open risk flag keeps the copilot panel (where its banner lives) open.
-  const hasOpenFlag = detail ? openRiskFlags(detail.riskFlags).length > 0 : false;
+  const openFlags = detail ? openRiskFlags(detail.riskFlags) : [];
+  const hasOpenFlag = openFlags.length > 0;
   const showCopilot = copilotOpen || hasOpenFlag;
+  // Ending a chat with a flag nobody has reviewed is allowed, but never silently. Most serious
+  // first (openRiskFlags sorts), so one HIGH among several is HIGH.
+  const openRiskLevel = openFlags[0]?.level ?? null;
 
   const finishChat = () => {
     if (detail?.chat.riskLevel === "HIGH") setPhase("wellbeing");
@@ -227,12 +237,11 @@ export const HelplineChatView: FC = () => {
       [ANALYTICS_PROPS.HELPLINE_SUGGESTION_INDEX]: suggestion.index,
     });
     // Inserted, never sent: hand the listener the box to edit it in.
-    requestAnimationFrame(() => {
-      const box = document.getElementById(STAFF_COMPOSER_ID) as HTMLTextAreaElement | null;
-      box?.focus();
-      box?.setSelectionRange(box.value.length, box.value.length);
-    });
+    setFocusComposerRequest(request => request + 1);
   };
+  useEffect(() => {
+    if (focusComposerRequest > 0) composerRef.current?.focusEnd();
+  }, [focusComposerRequest]);
 
   const onSend = () => {
     const content = draft.trim();
@@ -417,7 +426,8 @@ export const HelplineChatView: FC = () => {
     );
   }
 
-  if (isLoading) {
+  // Restricted sessions fetch their profile here (the layout only does for an unrestricted one).
+  if (isLoading || isMeLoading) {
     return (
       <p className="p-6 font-primary text-sm text-typography-700" role="status">
         {t("helplineWorkspace.chat.loading")}
@@ -580,6 +590,7 @@ export const HelplineChatView: FC = () => {
             <WhisperComposer listenerName={currentListenerName} onSend={onWhisper} />
           ) : (
             <StaffComposer
+              ref={composerRef}
               value={draft}
               onChange={value => {
                 setDraft(value);
@@ -619,9 +630,41 @@ export const HelplineChatView: FC = () => {
       <TalkerDialog
         open={confirmEnd}
         title={t("helplineWorkspace.info.endTitle")}
-        body={t("helplineWorkspace.info.endBody")}
-        confirmLabel={t("helplineWorkspace.info.endConfirm")}
+        body={
+          <>
+            <p>{t("helplineWorkspace.info.endBody")}</p>
+            {openRiskLevel && (
+              <div
+                className={`mt-3 flex flex-col gap-3 rounded-xl border-2 p-3 text-sm ${
+                  openRiskLevel === "HIGH"
+                    ? "border-status-alarmDot bg-status-alarmBg text-status-alarmFg"
+                    : "border-status-ochreDot bg-status-ochreBg text-status-ochreFg"
+                }`}
+                data-testid="end-open-risk"
+              >
+                <p className="flex items-start gap-2 font-medium">
+                  <ShieldAlert aria-hidden="true" className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  {openRiskLevel === "HIGH"
+                    ? t("helplineWorkspace.info.openRiskHigh")
+                    : t("helplineWorkspace.info.openRiskElevated")}
+                </p>
+                {/* The existing control and its note panel; once it has sent, focus returns to Cancel. */}
+                <AlertSupervisorButton
+                  alert={supervisorAlert}
+                  variant="banner"
+                  onSent={() => endCancelRef.current?.focus()}
+                />
+              </div>
+            )}
+          </>
+        }
+        confirmLabel={
+          openRiskLevel
+            ? t("helplineWorkspace.info.endAnyway")
+            : t("helplineWorkspace.info.endConfirm")
+        }
         cancelLabel={t("helplineWorkspace.info.cancel")}
+        cancelRef={endCancelRef}
         onConfirm={() => void onConfirmEnd()}
         onCancel={() => {
           setConfirmEnd(false);

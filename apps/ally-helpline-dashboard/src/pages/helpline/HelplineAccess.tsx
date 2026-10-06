@@ -1,10 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 
-import { useSelector } from "react-redux";
-
-import { helplineAPI, useGetHelplineMeQuery } from "@api/helpline";
+import { useGetHelplineMeQuery } from "@api/helpline";
 import { useUser } from "@hooks/useUser";
-import type { RootState } from "@store";
 import type { HelplineMeDto } from "@types";
 
 /**
@@ -29,7 +26,7 @@ export const HelplineAccessProvider = HelplineAccessContext.Provider;
 export const useHelplineAccess = () => useContext(HelplineAccessContext);
 
 /**
- * Stand-in for `GET /me` while restricted, when the server refuses it: the
+ * Stand-in for `GET /me` while restricted, for a server that refuses it: the
  * caller's id, no org settings (the chat view falls back where it needs them),
  * and every copilot feature reported on, so nothing claims the org turned it
  * off.
@@ -51,20 +48,22 @@ const restrictedMe = (userId: number, activeChatCount: number): HelplineMeDto =>
 });
 
 /**
- * The listener's `GET /me`, or — while restricted, when that route answers
- * HELPLINE_DISABLED — whatever this session last loaded, else a stand-in.
+ * The listener's `GET /me`. While restricted it is asked for like any other
+ * time — the server serves it to a listener with continuing chats even with
+ * the org switched off, and it carries what the chat view needs (the
+ * escalation checklist, the support contact, the summary fields). Only if it
+ * fails (a server that still refuses it with HELPLINE_DISABLED, or an outage)
+ * does a restricted session fall back to a stand-in, so a chat that must be
+ * finished is never blocked on a settings call.
  */
 export const useHelplineMe = () => {
   const { restricted, continuingChatIds } = useHelplineAccess();
-  const query = useGetHelplineMeQuery(undefined, { skip: restricted });
-  const cached = useSelector(
-    (state: RootState) => helplineAPI.endpoints.getHelplineMe.select()(state).data,
-  );
+  const query = useGetHelplineMeQuery();
   const { user } = useUser();
   const userId = Number(user?.id ?? 0);
   const fallback = useMemo(
     () => restrictedMe(userId, continuingChatIds.length),
     [userId, continuingChatIds.length],
   );
-  return restricted ? { ...query, data: cached ?? fallback } : query;
+  return restricted && !query.data && query.isError ? { ...query, data: fallback } : query;
 };

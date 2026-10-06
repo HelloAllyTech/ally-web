@@ -307,15 +307,6 @@ export const Heading3 = LHeading3;
 /* -------------------------------------------------------------------------- */
 
 /**
- * Standard tooltip affordance across the admin. Unlike the Carbon icons above
- * this renders the Material Symbols "sticky_note" glyph via a ligature span —
- * the font is loaded in index.html (`icon_names=sticky_note,...`) and the thin
- * variation-settings + sizing live in styles.css under `.tooltip-icon`. Colour
- * follows the surrounding `color` (`currentColor`), same as the Carbon icons.
- * Drop-in for the old `InfoIcon` tooltip trigger; `width`/`height`/`size` are
- * accepted but ignored (sizing is CSS-driven for visual consistency).
- */
-/**
  * Material Symbols "vertical_align_top" — the votes-budget glyph in the roadmap header.
  *
  * A Material Symbol rather than a Carbon icon because Carbon has no equivalent mark: its
@@ -425,13 +416,28 @@ export const BuilderAgentIcon = materialSymbol("auto_awesome");
  */
 export const RoadmapSettingsIcon = materialSymbol("settings");
 
+/**
+ * Standard tooltip affordance across the admin. Unlike the Carbon icons above
+ * this renders the Material Symbols "sticky_note" glyph via a ligature — the
+ * font is loaded in index.html (`icon_names=sticky_note,...`) and the thin
+ * variation-settings + sizing live in styles.css under `.tooltip-icon`. Colour
+ * follows the surrounding `color` (`currentColor`), same as the Carbon icons.
+ * Drop-in for the old `InfoIcon` tooltip trigger; `width`/`height`/`size` are
+ * accepted but ignored (sizing is CSS-driven for visual consistency).
+ *
+ * The ligature name is NOT a child of the span: styles.css draws it from
+ * `data-icon` through `::before`. A ligature is just text until the icon font
+ * arrives, so as a child it was readable by anything that reads text — and on a
+ * cold load it showed on screen as the word "sticky_note" next to every label.
+ * Kept in a pseudo-element it is never in the DOM text, and styles.css gives the
+ * icon a stand-in face that draws nothing while the font is on its way.
+ */
 export const TooltipIcon = ({ className }: IconProps) => (
   <span
     className={["material-symbols-outlined tooltip-icon", className].filter(Boolean).join(" ")}
+    data-icon="sticky_note"
     aria-hidden="true"
-  >
-    sticky_note
-  </span>
+  />
 );
 
 /* -------------------------------------------------------------------------- */

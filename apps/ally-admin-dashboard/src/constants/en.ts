@@ -4207,7 +4207,8 @@ export const en = {
   // Written for a platform admin configuring a helpline for an organisation. Functions are for
   // interpolated strings.
   textHelpline: {
-    moreInfo: "More information",
+    // The help marker's accessible name: "About Maximum wait (minutes)".
+    moreInfoAbout: (subject: string) => `About ${subject}`,
     loading: "Loading text helpline settings…",
     loadFailed: "Could not load the text helpline settings.",
     retry: "Retry",

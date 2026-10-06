@@ -36,7 +36,7 @@ export const ChecklistEditor: FC<ChecklistEditorProps> = ({ steps, onChange, err
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2 text-sm text-typography-900">
         {text.escalationChecklist}
-        <HelpTip label={text.escalationChecklistHint} />
+        <HelpTip label={text.escalationChecklistHint} subject={text.escalationChecklist} />
       </div>
 
       {steps.length === 0 && <p className="text-sm text-typography-700">{text.checklistEmpty}</p>}

@@ -16,11 +16,27 @@ const { mockQuery, mockUpdate, mockRefetch, mockToastSuccess, mockToastError } =
 
 vi.mock("sonner", () => ({ toast: { success: mockToastSuccess, error: mockToastError } }));
 
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Tooltip: ({ children, label }: any) => <span data-tooltip={label}>{children}</span>,
-}));
-
-vi.mock("@src/assets", () => ({ TooltipIcon: () => <svg /> }));
+// Carbon's Tooltip, as far as accessible names go: `label` points the trigger's aria-labelledby at
+// the tooltip text (which then outranks its aria-label), `description` points aria-describedby.
+// The real icon is used on purpose (no `@src/assets` mock): it is what a regression to a
+// text-rendered icon would show up in.
+vi.mock("@ally-ui-mono/ui-shared", async () => {
+  const { cloneElement, useId } = await import("react");
+  return {
+    Tooltip: ({ children, label, description }: any) => {
+      const id = useId();
+      const text = label ?? description;
+      return (
+        <span data-tooltip={text}>
+          {cloneElement(children, label ? { "aria-labelledby": id } : { "aria-describedby": id })}
+          <span id={id} hidden>
+            {text}
+          </span>
+        </span>
+      );
+    },
+  };
+});
 
 // The real copy, but not the real `@src/constants` barrel: it pulls in the whole component tree
 // (SimulationCreator imports from `@components`), which needs a real `@src/api`.
@@ -806,6 +822,44 @@ describe("TextHelplineSettings", () => {
       const { settings } = mockUpdate.mock.calls[0][0];
       expect(settings.ageNotice).toBeNull();
       expect(settings.listenerSupportContact).toBeNull();
+    });
+  });
+
+  describe("help markers", () => {
+    const markers = () =>
+      Array.from(document.querySelectorAll<HTMLElement>(".tooltip-icon")).map(
+        icon => icon.closest("button") as HTMLButtonElement,
+      );
+
+    it("never writes the icon's ligature name out as text", () => {
+      renderSettings();
+
+      // The glyph name is drawn by CSS from data-icon; as text it showed up on screen as the word
+      // "sticky_note" beside every label whenever the icon font had not loaded yet.
+      expect(markers().length).toBeGreaterThan(10);
+      expect(screen.queryByText(/sticky_note/)).not.toBeInTheDocument();
+      expect(document.body.textContent).not.toMatch(/sticky_note/);
+    });
+
+    it("gives every marker the name 'About <field>', with the hint as its description", () => {
+      renderSettings();
+
+      for (const marker of markers()) {
+        expect(marker).toHaveAccessibleName(/^About \S/);
+        expect(marker).not.toHaveAttribute("aria-labelledby");
+        expect(marker).toHaveAccessibleDescription();
+      }
+
+      const enable = screen.getByRole("button", { name: text.moreInfoAbout(text.enableLabel) });
+      expect(enable).toHaveAccessibleDescription(text.enableHint);
+
+      const maxWait = screen.getByRole("button", {
+        name: text.moreInfoAbout(text.availability.maxWaitMinutes),
+      });
+      expect(maxWait).toHaveAccessibleDescription(text.availability.maxWaitMinutesHint);
+      // Two markers can share a name only if their fields share a label — they do not.
+      const names = markers().map(marker => marker.getAttribute("aria-label"));
+      expect(new Set(names).size).toBe(names.length);
     });
   });
 

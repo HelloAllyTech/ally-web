@@ -104,7 +104,7 @@ describe("HelplineChatView", () => {
 
     const card = screen.getByTestId("suggestion-0");
     expect(within(card).getByText("Show empathy")).toBeInTheDocument();
-    fireEvent.click(within(card).getByRole("button", { name: "Use" }));
+    fireEvent.click(within(card).getByRole("button", { name: "Use this suggestion" }));
 
     const composer = screen.getByRole("textbox", { name: "Reply" });
     expect(composer).toHaveValue("It sounds like a lot to carry right now.");
@@ -256,7 +256,9 @@ describe("HelplineChatView", () => {
         },
       });
     });
-    const concern = screen.getByLabelText("What they came to talk about");
+    // Awaited: the cache is patched inside act, but the modal swaps its skeleton for the fields on
+    // a render that does not always land before this line (the test failed about half the time).
+    const concern = await screen.findByLabelText("What they came to talk about");
     expect(concern).toHaveValue("Trouble sleeping after exams");
     fireEvent.change(screen.getByLabelText("Agreed next step"), {
       target: { value: "Talk to a friend tonight" },
@@ -365,5 +367,295 @@ describe("HelplineChatView", () => {
     renderChat(store);
     // Rendering a chat makes no HTTP request at all once it is cached.
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  describe("Use", () => {
+    const USE_HINT = "Puts this text in your reply box to edit. Nothing is sent.";
+    const seedSuggestions = () =>
+      seed(store, {
+        me: meDto(),
+        chat: chatDetail({ messages: [staffMessage(), suggestionMessage] }),
+      });
+
+    it("is named for what it does, and its explanation is a description, not its name", async () => {
+      seedSuggestions();
+      renderChat(store);
+      await connect();
+
+      const card = screen.getByTestId("suggestion-0");
+      const use = within(card).getByRole("button", { name: "Use this suggestion" });
+      // The visible text is unchanged; only the accessible name is fuller.
+      expect(use).toHaveTextContent(/^Use$/);
+      expect(use).toHaveAccessibleName("Use this suggestion");
+      // Carbon hides its tooltip body from the accessibility tree (aria-hidden) but a button's
+      // aria-describedby may still point at it, which is how a screen reader reads it second.
+      const describedBy = use.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
+      expect(document.getElementById(describedBy as string)).toHaveTextContent(USE_HINT);
+      // The explanation must never become the name (what it was, via the tooltip).
+      expect(within(card).queryByRole("button", { name: USE_HINT })).not.toBeInTheDocument();
+      expect(use).not.toHaveAttribute("aria-labelledby");
+      expect(use).not.toHaveAttribute("title");
+    });
+
+    it("moves the cursor into the empty reply box, after the inserted text, and brings it into view", async () => {
+      seedSuggestions();
+      renderChat(store);
+      await connect();
+      const scrollIntoView = Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>;
+      scrollIntoView.mockClear();
+
+      const use = within(screen.getByTestId("suggestion-0")).getByRole("button", {
+        name: "Use this suggestion",
+      });
+      use.focus();
+      expect(use).toHaveFocus();
+      fireEvent.click(use);
+
+      const composer = screen.getByRole("textbox", { name: "Reply" }) as HTMLTextAreaElement;
+      const inserted = "It sounds like a lot to carry right now.";
+      expect(composer).toHaveValue(inserted);
+      expect(composer).toHaveFocus();
+      expect(composer.selectionStart).toBe(inserted.length);
+      expect(composer.selectionEnd).toBe(inserted.length);
+      expect(scrollIntoView.mock.contexts).toContain(composer);
+    });
+
+    it("puts the cursor after the whole of what is there when text was already typed", async () => {
+      seedSuggestions();
+      renderChat(store);
+      await connect();
+
+      const composer = screen.getByRole("textbox", { name: "Reply" }) as HTMLTextAreaElement;
+      fireEvent.change(composer, { target: { value: "Thank you for telling me." } });
+      // Cursor somewhere else entirely: the start.
+      composer.focus();
+      composer.setSelectionRange(0, 0);
+
+      fireEvent.click(
+        within(screen.getByTestId("suggestion-1")).getByRole("button", {
+          name: "Use this suggestion",
+        }),
+      );
+
+      const expected = "Thank you for telling me. What has been hardest this week?";
+      expect(composer).toHaveValue(expected);
+      expect(composer).toHaveFocus();
+      expect(composer.selectionStart).toBe(expected.length);
+      expect(composer.selectionEnd).toBe(expected.length);
+    });
+
+    it("does it again on a second Use, even when focus has moved away", async () => {
+      seedSuggestions();
+      renderChat(store);
+      await connect();
+      const composer = screen.getByRole("textbox", { name: "Reply" }) as HTMLTextAreaElement;
+
+      fireEvent.click(
+        within(screen.getByTestId("suggestion-0")).getByRole("button", {
+          name: "Use this suggestion",
+        }),
+      );
+      expect(composer).toHaveFocus();
+
+      screen.getByRole("button", { name: "Show talker details" }).focus();
+      expect(composer).not.toHaveFocus();
+
+      fireEvent.click(
+        within(screen.getByTestId("suggestion-1")).getByRole("button", {
+          name: "Use this suggestion",
+        }),
+      );
+      expect(composer).toHaveFocus();
+      expect(composer.selectionStart).toBe(composer.value.length);
+      expect(composer.value.endsWith("What has been hardest this week?")).toBe(true);
+    });
+  });
+
+  describe("ending a chat with an open risk flag", () => {
+    const HIGH_WARNING =
+      "This chat has an open high-risk flag. The talker may still be at risk — the checklist says not to end the chat while they are at risk.";
+    const ELEVATED_WARNING = "This chat has an open risk flag that hasn't been reviewed.";
+
+    const openEndDialog = () => {
+      fireEvent.click(screen.getByRole("button", { name: "End chat" }));
+      return screen.getByRole("dialog", { name: "End this chat?" });
+    };
+    const withFlags = (...flags: ReturnType<typeof riskFlag>[]) =>
+      seed(store, {
+        me: meDto(),
+        chat: chatDetail({
+          chat: staffChat({
+            riskLevel: flags.some(flag => flag.level === "HIGH") ? "HIGH" : "ELEVATED",
+          }),
+          riskFlags: flags,
+        }),
+      });
+
+    it("with no flag it is the plain confirmation: nothing to warn about, End chat", async () => {
+      seed(store, { me: meDto(), chat: chatDetail() });
+      renderChat(store);
+      await connect();
+
+      const dialog = openEndDialog();
+      expect(within(dialog).queryByTestId("end-open-risk")).not.toBeInTheDocument();
+      expect(dialog).not.toHaveTextContent("open");
+      expect(within(dialog).getByRole("button", { name: "End chat" })).toBeInTheDocument();
+      expect(within(dialog).queryByRole("button", { name: "End anyway" })).not.toBeInTheDocument();
+      expect(
+        within(dialog).queryByRole("button", { name: "Alert a supervisor" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("an open HIGH flag: says the talker may still be at risk, offers Alert a supervisor, End anyway and Cancel", async () => {
+      withFlags(riskFlag({ level: "HIGH" }));
+      renderChat(store);
+      await connect();
+
+      const dialog = openEndDialog();
+      // The title is unchanged; the warning is part of what the dialog describes.
+      expect(within(dialog).getByRole("heading", { name: "End this chat?" })).toBeInTheDocument();
+      const warning = within(dialog).getByTestId("end-open-risk");
+      expect(warning).toHaveTextContent(HIGH_WARNING);
+      expect(warning).not.toHaveTextContent(ELEVATED_WARNING);
+      expect(dialog).toHaveAccessibleDescription(new RegExp("open high-risk flag"));
+
+      expect(within(dialog).getByRole("button", { name: "Alert a supervisor" })).toBeEnabled();
+      expect(within(dialog).getByRole("button", { name: "End anyway" })).toBeInTheDocument();
+      expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+      // The confirm button is renamed, not duplicated.
+      expect(within(dialog).queryByRole("button", { name: "End chat" })).not.toBeInTheDocument();
+      // Focus still starts on the safe choice.
+      expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    });
+
+    it("an open ELEVATED flag: the softer line, with the same three choices", async () => {
+      withFlags(riskFlag({ level: "ELEVATED", source: "CLASSIFIER" }));
+      renderChat(store);
+      await connect();
+
+      const dialog = openEndDialog();
+      const warning = within(dialog).getByTestId("end-open-risk");
+      expect(warning).toHaveTextContent(ELEVATED_WARNING);
+      expect(warning).not.toHaveTextContent("high-risk");
+      expect(
+        within(dialog).getByRole("button", { name: "Alert a supervisor" }),
+      ).toBeInTheDocument();
+      expect(within(dialog).getByRole("button", { name: "End anyway" })).toBeInTheDocument();
+      expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+    });
+
+    it("one HIGH among several open flags is a HIGH warning", async () => {
+      withFlags(
+        riskFlag({ id: "flag-a", level: "ELEVATED" }),
+        riskFlag({ id: "flag-b", level: "HIGH" }),
+      );
+      renderChat(store);
+      await connect();
+
+      expect(within(openEndDialog()).getByTestId("end-open-risk")).toHaveTextContent(HIGH_WARNING);
+    });
+
+    it("a flag that has been acknowledged is not open: no warning, End chat as before", async () => {
+      withFlags(
+        riskFlag({ acknowledgedAt: "2026-10-05T10:06:00.000Z", outcome: "CONFIRMED" }),
+        riskFlag({
+          id: "flag-2",
+          level: "ELEVATED",
+          acknowledgedAt: "2026-10-05T10:07:00.000Z",
+          outcome: "FALSE_POSITIVE",
+        }),
+      );
+      renderChat(store);
+      await connect();
+
+      const dialog = openEndDialog();
+      expect(within(dialog).queryByTestId("end-open-risk")).not.toBeInTheDocument();
+      expect(within(dialog).getByRole("button", { name: "End chat" })).toBeInTheDocument();
+      expect(within(dialog).queryByRole("button", { name: "End anyway" })).not.toBeInTheDocument();
+    });
+
+    it("the warning goes away if the flag is acknowledged while the dialog is open", async () => {
+      withFlags(riskFlag());
+      renderChat(store);
+      await connect();
+      const dialog = openEndDialog();
+      expect(within(dialog).getByTestId("end-open-risk")).toBeInTheDocument();
+
+      await act(async () => {
+        lastSocket().fire("RISK_FLAGGED", {
+          chatId: "chat-1",
+          flag: riskFlag({ acknowledgedAt: "2026-10-05T10:08:00.000Z", outcome: "CONFIRMED" }),
+        });
+      });
+
+      await waitFor(() =>
+        expect(within(dialog).queryByTestId("end-open-risk")).not.toBeInTheDocument(),
+      );
+      expect(within(dialog).getByRole("button", { name: "End chat" })).toBeInTheDocument();
+    });
+
+    it("Alert a supervisor opens the same note panel and sends — without ending the chat or closing the dialog", async () => {
+      withFlags(riskFlag());
+      fetchRoutes["POST /v1/helpline/chats/chat-1/alert-supervisor"] = () =>
+        json({ alertedCount: 1 });
+      renderChat(store);
+      await connect();
+      const dialog = openEndDialog();
+
+      fireEvent.click(within(dialog).getByRole("button", { name: "Alert a supervisor" }));
+      fireEvent.change(
+        within(dialog).getByRole("textbox", { name: "What do you need? (optional)" }),
+        {
+          target: { value: "They said they have a plan" },
+        },
+      );
+      fireEvent.click(within(dialog).getByRole("button", { name: "Send alert" }));
+
+      await waitFor(() =>
+        expect(requests("POST", "/v1/helpline/chats/chat-1/alert-supervisor")).toHaveLength(1),
+      );
+      const [[alertRequest]] = requests("POST", "/v1/helpline/chats/chat-1/alert-supervisor");
+      expect(await (alertRequest as Request).clone().json()).toEqual({
+        note: "They said they have a plan",
+      });
+      // Still here, still deciding; nothing was ended.
+      expect(screen.getByRole("dialog", { name: "End this chat?" })).toBeInTheDocument();
+      expect(requests("POST", "/v1/helpline/chats/chat-1/end")).toHaveLength(0);
+      expect(
+        await within(dialog).findByRole("button", { name: "Alerted just now" }),
+      ).toBeDisabled();
+      // The button disabled itself, so focus is placed back on the safe choice, not left behind.
+      expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    });
+
+    it("End anyway ends the chat", async () => {
+      withFlags(riskFlag());
+      fetchRoutes["POST /v1/helpline/chats/chat-1/end"] = () =>
+        json(chatDetail({ chat: staffChat({ status: "ENDED", riskLevel: "HIGH" }) }));
+      renderChat(store);
+      await connect();
+
+      fireEvent.click(within(openEndDialog()).getByRole("button", { name: "End anyway" }));
+
+      await waitFor(() =>
+        expect(requests("POST", "/v1/helpline/chats/chat-1/end")).toHaveLength(1),
+      );
+      expect(trackMock).toHaveBeenCalledWith(
+        ANALYTICS_EVENTS.HELPLINE_CHAT_ENDED_BY_LISTENER,
+        expect.objectContaining({ chat_id: "chat-1", risk_level: "HIGH" }),
+      );
+    });
+
+    it("Cancel leaves the chat running", async () => {
+      withFlags(riskFlag());
+      renderChat(store);
+      await connect();
+
+      fireEvent.click(within(openEndDialog()).getByRole("button", { name: "Cancel" }));
+
+      expect(screen.queryByRole("dialog", { name: "End this chat?" })).not.toBeInTheDocument();
+      expect(requests("POST", "/v1/helpline/chats/chat-1/end")).toHaveLength(0);
+    });
   });
 });

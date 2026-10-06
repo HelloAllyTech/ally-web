@@ -17,13 +17,21 @@ export const secondaryButtonClass =
 export const linkButtonClass =
   "text-sm text-primary-500 hover:underline disabled:text-neutral-500 disabled:no-underline disabled:cursor-not-allowed";
 
-/** The "?" help marker, as in the rest of the admin console (see ally-web's CLAUDE.md). */
-export const HelpTip: FC<{ label: string }> = ({ label }) => (
-  <Tooltip label={label} align="top">
+/**
+ * The help marker, as in the rest of the admin console (see ally-web's CLAUDE.md), with one
+ * deliberate difference: the hint goes in Carbon's `description`, not its `label`.
+ *
+ * `label` makes Carbon point `aria-labelledby` at the tooltip text, and `aria-labelledby` outranks
+ * `aria-label` — so the button's name would be the whole hint paragraph and "About <field>" would
+ * never be announced. `description` uses `aria-describedby` instead: the name says what the button
+ * is about, the hint is read after it. Looks the same.
+ */
+export const HelpTip: FC<{ label: string; subject: string }> = ({ label, subject }) => (
+  <Tooltip description={label} align="top">
     <button
       type="button"
       className="cursor-pointer inline-flex items-center"
-      aria-label={en.textHelpline.moreInfo}
+      aria-label={en.textHelpline.moreInfoAbout(subject)}
     >
       <TooltipIcon />
     </button>
@@ -40,7 +48,7 @@ export const Section: FC<{
     <div className="flex flex-col gap-1">
       <h3 className="flex items-center gap-2 text-base font-medium text-typography-900">
         {title}
-        {tooltip && <HelpTip label={tooltip} />}
+        {tooltip && <HelpTip label={tooltip} subject={title} />}
       </h3>
       {description && <p className="text-sm text-typography-700">{description}</p>}
     </div>
@@ -69,7 +77,7 @@ export const Field: FC<{
       <label htmlFor={id} className="text-sm text-typography-900">
         {label}
       </label>
-      {tooltip && <HelpTip label={tooltip} />}
+      {tooltip && <HelpTip label={tooltip} subject={label} />}
     </div>
     {children}
     {help && <span className="text-xs text-typography-700">{help}</span>}
@@ -183,6 +191,6 @@ export const CheckboxField: FC<{
       />
       {label}
     </label>
-    {tooltip && <HelpTip label={tooltip} />}
+    {tooltip && <HelpTip label={tooltip} subject={label} />}
   </div>
 );
