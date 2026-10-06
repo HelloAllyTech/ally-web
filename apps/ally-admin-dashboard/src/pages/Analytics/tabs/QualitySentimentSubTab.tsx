@@ -30,6 +30,7 @@ import {
   stackedAreaLineOpts,
   stackedBarOpts,
 } from "../chartKit";
+import { PerceptionSection } from "../PerceptionSection";
 import {
   PCT_DOMAIN,
   RATING_BAND_SCALE,
@@ -340,7 +341,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           loading={loading}
           error={Boolean(error)}
           onRetry={() => void refetch()}
-          description="Mean LLM-judge composite over the window, 0–100. One of the four inputs to the Quality index chart below — not the same figure."
+          description="Mean LLM-judge composite over the window, 0–100. One of the four inputs to the Quality index chart below — not the same figure. Scores the AI actor against its scenario goals, not the learner."
           chartId="AAQ-054"
         />
 
@@ -375,7 +376,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
             visible rather than asserted. */}
         <KpiTile
           label="Median quality score"
-          description={`Median composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric. Median, not mean: one outlying session moves a mean and not a median.`}
+          description={`Median composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric. Median, not mean: one outlying session moves a mean and not a median. Scores the AI actor, not the learner.`}
           value={formatScore(dist?.summary.medianScore)}
           n={dist?.summary.evaluatedSessions}
           nUnit="evaluated sessions"
@@ -387,7 +388,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
         />
         <KpiTile
           label="Rated 4–5"
-          description="Share of post-session ratings that were 4 or 5. Rating is optional, so this covers only sessions that were rated."
+          description="Share of post-session ratings that were 4 or 5. Rating is optional, so this covers only sessions that were rated. The learner rating the roleplay with the AI actor — not a measure of learner skill."
           value={formatPct(dist?.summary.top2BoxPct)}
           n={dist?.summary.responses}
           nUnit="ratings"
@@ -406,7 +407,8 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
             `Weighted blend of four dimensions per ${bucketTitle(controls.grain).toLowerCase()} — ` +
             `the stack is what it's made of, the line is their sum. ` +
             `${boundedDomainNote(QUALITY_INDEX_DOMAIN)} A period with no data in ANY ` +
-            `dimension breaks the line rather than dropping to zero.` +
+            `dimension breaks the line rather than dropping to zero. Every dimension ` +
+            `scores the AI actor and the platform, not the learner.` +
             (fullyCalibrated
               ? ""
               : " Some dimensions are still on PLACEHOLDER anchors, not yet " +
@@ -472,7 +474,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ChartCard
           title="Roleplay quality — median and spread"
-          caption={`The distribution behind the quality average: the median with its interquartile range. A median that climbs while the quartiles stay wide is a different story from one that climbs while they converge. Periods with fewer than ${
+          caption={`The AI judge's score of the AI actor, not the learner. The distribution behind the quality average: the median with its interquartile range. A median that climbs while the quartiles stay wide is a different story from one that climbs while they converge. Periods with fewer than ${
             dist?.minSampleSize ?? MIN_N_FOR_SCORE
           } evaluated sessions carry no percentiles. ${boundedDomainNote(SCORE_DOMAIN)}${
             distIsAllTime ? "" : inProgressCaption(distControls.grain, distInProgress)
@@ -556,6 +558,16 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
           </ScrollableChart>
         </ChartCard>
       </div>
+
+      <PerceptionSection
+        tenantId={query.tenantId}
+        distribution={{
+          data: sat,
+          loading: satLoading,
+          error: satQ.isError,
+          onRetry: satQ.refetch,
+        }}
+      />
 
       {/* Per-dimension coverage/calibration, one line each. Not a paraphrase of
           a server string (the index has no single `note` field to render

@@ -8,6 +8,7 @@ import {
 } from "@types";
 
 import { CONTEXT, ColorScale, PALETTE } from "./chartScales";
+import { SKILL_SHORT, skillShort } from "./foundationalSkillsProgressChart";
 
 /**
  * Series builders for the Skill growth sub-tab.
@@ -17,11 +18,21 @@ import { CONTEXT, ColorScale, PALETTE } from "./chartScales";
  * typechecker, so the only way these transforms get tested is if they are
  * plain functions over server-shaped data.
  *
+ * ## The ruler (since 2026-10)
+ *
+ * Everything here reads the LEARNER's helping-skills score: each learner's
+ * roleplay speech cut into 5,000-character slices, each slice scored 1–4 on
+ * the fixed foundational helping skills rubric — the same slices the Helping
+ * skills sub-tab reads. Until 2026-10 the same endpoints carried the AI
+ * judge's 0–100 score of the AI actor, which said nothing about the learner.
+ * The response keys survived the change (`evaluatedSessions` now counts
+ * slices), so the user-facing words here say "slice", never "session".
+ *
  * One rule runs through the whole file: **self against self, never learner
  * against learner.** Nothing here ranks people. The mix counts how many
- * learners moved relative to their OWN baseline, and the per-learner panel
- * plots one person's history. That was a scoping decision, not an omission —
- * a mastery-oriented view sustains practice where a peer ranking discourages
+ * learners moved relative to their OWN start, and the per-learner panel plots
+ * one person's history. That was a scoping decision, not an omission — a
+ * mastery-oriented view sustains practice where a peer ranking discourages
  * exactly the learners who most need to keep going.
  */
 
@@ -34,7 +45,7 @@ type Datum = { group: string; key: string; value: number | null };
 /**
  * Labels for the three movement classes plus the honest fourth.
  *
- * "Not enough sessions" rather than "unclassified" or "N/A": it names the
+ * "Not enough slices" rather than "unclassified" or "N/A": it names the
  * reason, and the reason is a fact about how much this learner has practised,
  * which is itself the actionable part for a leader reading the strip.
  */
@@ -42,7 +53,7 @@ export const TREND_LABELS: Record<SkillTrendClass, string> = {
   improving: "Improving",
   flat: "Holding steady",
   declining: "Declining",
-  insufficient: "Not enough sessions",
+  insufficient: "Not enough slices",
 };
 
 /**
@@ -98,35 +109,54 @@ export const buildTrendMixSeries = (months: SkillTrendMixMonth[]): Datum[] =>
  * Refuses below a handful of classified learners rather than printing a
  * percentage: "100% of learners are improving" over two people is the kind of
  * number that gets screenshotted into a board deck and then cannot be walked
- * back.
+ * back. Five is the platform's minimum group size for a share of people.
  */
 export const MIN_LEARNERS_FOR_SHARE = 5;
 
 export const trendMixTakeaway = (mix: SkillTrendMix): string | null => {
+  const min = mix.thresholds.minSessions;
   if (mix.classifiedLearners === 0) {
     return mix.insufficientLearners > 0
-      ? `No learner has reached ${mix.thresholds.minSessions} evaluated sessions yet — not enough history to classify anyone`
+      ? `No learner has reached ${min} scored slices yet — not enough history to classify anyone`
       : null;
   }
   if (mix.classifiedLearners < MIN_LEARNERS_FOR_SHARE) {
-    return `Only ${mix.classifiedLearners} learner${mix.classifiedLearners === 1 ? "" : "s"} have ${mix.thresholds.minSessions}+ evaluated sessions — too few to state a share`;
+    return `Only ${mix.classifiedLearners} learner${mix.classifiedLearners === 1 ? " has" : "s have"} ${min}+ scored slices — too few to state a share`;
   }
   const pct = Math.round((mix.improving / mix.classifiedLearners) * 100);
-  return `${pct}% of the ${mix.classifiedLearners} learners with enough history score higher than they started (${mix.improving} improving · ${mix.flat} steady · ${mix.declining} declining)`;
+  return `${pct}% of the ${mix.classifiedLearners} learners with ${min}+ scored slices rose beyond slice-to-slice noise against their own start (${mix.improving} improving · ${mix.flat} steady · ${mix.declining} declining)`;
 };
 
-/** "n of m learners" for the KPI tile, where m is everyone with any session. */
+/** The improving share for the KPI tile, withheld below the group-size floor. */
 export const classifiedShareValue = (mix: SkillTrendMix): string => {
   if (mix.classifiedLearners < MIN_LEARNERS_FOR_SHARE) return "—";
   return `${Math.round((mix.improving / mix.classifiedLearners) * 100)}%`;
 };
+
+/**
+ * The band, in words, from the server's own numbers.
+ *
+ * Never a fixed "±N points": the band is sized to the measured slice-to-slice
+ * noise and narrows as a learner's slices accumulate, so the honest statement
+ * is the widest one (at the classification minimum) plus that it narrows.
+ */
+export const bandSentence = (thresholds: {
+  minSessions: number;
+  flatBand: number | null;
+  cutNoiseSd: number | null;
+}): string =>
+  thresholds.flatBand === null
+    ? "The noise band cannot be sized yet: no learner has two consecutive scored slices."
+    : `Called up or down only beyond a band sized to slice-to-slice noise (SD ${
+        thresholds.cutNoiseSd === null ? "—" : thresholds.cutNoiseSd.toFixed(2)
+      }): ±${thresholds.flatBand.toFixed(2)} at ${thresholds.minSessions} slices, narrower with more.`;
 
 /* -------------------------------------------------------------------------- */
 /* One learner's timeline                                                     */
 /* -------------------------------------------------------------------------- */
 
 export const LEARNER_GROUPS = {
-  composite: "Session score",
+  composite: "Helping-skills score",
 } as const;
 
 export const LEARNER_SCALE: ColorScale = {
@@ -134,11 +164,12 @@ export const LEARNER_SCALE: ColorScale = {
 };
 
 /**
- * The x tick for one session on a learner's own timeline.
+ * The x tick for one slice on a learner's own timeline.
  *
  * Ordinal first, date second: the ordinal is the axis (this person's 1st, 2nd,
- * 3rd judged session) and the date is context. Kept under Carbon's 14-char
- * tick truncation — "#3 · 12 Feb" fits, "3rd session, 12 February" does not.
+ * 3rd scored slice) and the date — when the session that closed the slice
+ * ended — is context. Kept under Carbon's 14-char tick truncation: "#3 · 12 Feb"
+ * fits, "3rd slice, 12 February" does not.
  */
 export const sessionTick = (session: SkillGrowthLearnerSession): string => {
   const d = session.occurredAt ? new Date(session.occurredAt) : null;
@@ -146,59 +177,71 @@ export const sessionTick = (session: SkillGrowthLearnerSession): string => {
   return `#${session.ordinal}${when}`;
 };
 
-/** The composite score line: one point per evaluated session, oldest first. */
-export const buildLearnerCompositeSeries = (sessions: SkillGrowthLearnerSession[]): Datum[] =>
+/**
+ * A slice's skill levels as one line, in rubric order: "Verbal 3 · Empathy 2".
+ *
+ * Only the skills the slice gave an opportunity for appear — an absent skill
+ * had no chance to be shown, and listing it as anything (a 0, a dash) would
+ * read as a low score.
+ */
+export const skillLevelsText = (levels: Record<string, number> | null | undefined): string => {
+  if (!levels) return "";
+  const known = Object.keys(SKILL_SHORT).filter(k => k in levels);
+  const extra = Object.keys(levels).filter(k => !(k in SKILL_SHORT));
+  return [...known, ...extra].map(k => `${skillShort(k)} ${levels[k]}`).join(" · ");
+};
+
+/** One point per scored slice, carrying what the tooltip names beside the score. */
+export type LearnerSliceDatum = Datum & {
+  /** The slice's scenarios (a slice can span several). */
+  scenarios: string | null;
+  /** {@link skillLevelsText} of the slice. */
+  skills: string;
+};
+
+/** The composite line: one point per scored slice, oldest first. */
+export const buildLearnerCompositeSeries = (
+  sessions: SkillGrowthLearnerSession[],
+): LearnerSliceDatum[] =>
   sessions.map(s => ({
     group: LEARNER_GROUPS.composite,
     key: sessionTick(s),
     value: s.compositeScore,
+    scenarios: s.scenarioTitle,
+    skills: skillLevelsText(s.skillLevels),
   }));
 
-/**
- * The per-skill lines, one series per category actually present.
- *
- * Categories are discovered from the data rather than declared, because two
- * label generations exist in the backing payloads and a hardcoded set would
- * silently drop whichever one it did not list. A session with no payload
- * contributes a null at its tick, so the line shows a real gap instead of
- * closing over a session that was never scored that way.
- */
-export const buildSkillCoverageSeries = (sessions: SkillGrowthLearnerSession[]): Datum[] => {
-  const categories = skillCoverageCategories(sessions);
-  if (!categories.length) return [];
-  return sessions.flatMap(s => {
-    const byCategory = new Map(
-      (s.skillCoverage ?? []).map(c => [c.category, c.percentage] as const),
-    );
-    return categories.map(category => ({
-      group: category,
-      key: sessionTick(s),
-      value: byCategory.has(category) ? (byCategory.get(category) as number) : null,
-    }));
-  });
+const HTML_ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
 };
 
-/** Every category the learner's sessions mention, in first-seen order. */
-export const skillCoverageCategories = (sessions: SkillGrowthLearnerSession[]): string[] => {
-  const seen: string[] = [];
-  for (const s of sessions) {
-    for (const c of s.skillCoverage ?? []) {
-      if (!seen.includes(c.category)) seen.push(c.category);
-    }
-  }
-  return seen;
-};
+/** Scenario titles are author-written; they go into tooltip HTML escaped. */
+export const escapeHtml = (text: string): string => text.replace(/[&<>"']/g, c => HTML_ESCAPES[c]);
+
+const isSliceDatum = (d: unknown): d is LearnerSliceDatum =>
+  typeof d === "object" && d !== null && "skills" in d;
 
 /**
- * A colour per discovered skill category.
- *
- * Assigned by position from a fixed list so the same category keeps its colour
- * within a session's panel. It is NOT stable across learners with different
- * category sets — which is why the legend is always on for this chart.
+ * Carbon `tooltip.customHTML` for the learner line: the default score row, then
+ * the slice's scenarios and skill levels. The scenario is the known confound of
+ * a raw-score timeline, so a dip has to be readable against a scenario change
+ * at the point itself.
  */
-export const skillCoverageScale = (categories: string[]): ColorScale => {
-  const hues = [PALETTE.blue, PALETTE.teal, PALETTE.purple, PALETTE.orange, PALETTE.gold];
-  return Object.fromEntries(categories.map((c, i) => [c, hues[i % hues.length]]));
+export const learnerSliceTooltip = (data: unknown, defaultHTML: string): string => {
+  const items = Array.isArray(data) ? data : [data];
+  const d = items.find(isSliceDatum);
+  if (!d) return defaultHTML;
+  const lines = [
+    d.scenarios ? `Scenarios: ${d.scenarios}` : null,
+    d.skills ? `Skill levels: ${d.skills}` : "No skill had an opportunity in this slice",
+  ].filter((l): l is string => l !== null);
+  return `${defaultHTML}<div style="max-width:18rem;padding:4px 8px 6px;font-size:12px;line-height:1.4">${lines
+    .map(l => `<p>${escapeHtml(l)}</p>`)
+    .join("")}</div>`;
 };
 
 /**
@@ -207,7 +250,8 @@ export const skillCoverageScale = (categories: string[]): ColorScale => {
  * Separate groups rather than one "knowledge" line because the two are graded
  * differently — annotation grading is deterministic set comparison, quiz
  * grading runs through an LLM — so a single line would average a stable ruler
- * with a drifting one.
+ * with a drifting one. And never on the roleplay chart: these are 0–100 and
+ * the slice score is 1–4.
  */
 export const KNOWLEDGE_GROUPS = {
   quiz: "Quiz",
@@ -236,43 +280,53 @@ export const shortDate = (iso: string | null): string => {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 };
 
+/** A 1–4 level at the server's precision. */
+const level = (n: number | null): string => (n === null ? "—" : n.toFixed(2));
+
 /**
  * The learner's movement in one sentence.
  *
- * Names the two windows it compared rather than just the delta, because "+30
- * points" invites the reader to imagine a single before-and-after session pair
- * when it is actually a mean of two at each end.
+ * Names the two halves it compared rather than just the change, because "+0.3"
+ * alone invites the reader to imagine a single before-and-after pair when it is
+ * a mean of several slices at each end — and names THIS learner's band, which
+ * is narrower the more slices they have.
  */
 export const learnerTakeaway = (
   learner: {
     trend: SkillTrendClass;
     delta: number | null;
+    band: number | null;
     firstWindowMean: number | null;
     lastWindowMean: number | null;
     evaluatedSessions: number;
   },
-  thresholds: { minSessions: number; window: number; flatBand: number },
+  thresholds: { minSessions: number },
 ): string => {
+  const k = learner.evaluatedSessions;
   if (learner.trend === "insufficient") {
-    return `${learner.evaluatedSessions} evaluated session${learner.evaluatedSessions === 1 ? "" : "s"} — needs ${thresholds.minSessions} before a trend can be read`;
+    return `${k} scored slice${k === 1 ? "" : "s"} — needs ${thresholds.minSessions} before a trend can be read`;
   }
-  const first = learner.firstWindowMean ?? 0;
-  const last = learner.lastWindowMean ?? 0;
-  const delta = learner.delta ?? 0;
-  const window = thresholds.window;
+  const first = level(learner.firstWindowMean);
+  const last = level(learner.lastWindowMean);
+  const band = learner.band === null ? "" : ` (band ±${learner.band.toFixed(2)} for ${k} slices)`;
   if (learner.trend === "flat") {
-    return `Holding steady: last ${window} sessions average ${last}, within ${thresholds.flatBand} points of their first ${window} (${first})`;
+    return `Holding steady: the last half of their slices averages ${last} against ${first} for the first half — inside slice-to-slice noise${band}`;
   }
+  const delta = learner.delta ?? 0;
   const direction = delta > 0 ? "higher" : "lower";
-  return `Last ${window} sessions average ${last} — ${Math.abs(delta)} points ${direction} than their first ${window} (${first})`;
+  return `The last half of their slices averages ${last} — ${Math.abs(delta).toFixed(2)} ${direction} than the first half (${first}), beyond slice-to-slice noise${band}`;
 };
 
-/** "+12.5" / "−7" / "—" — signed, with a real minus sign, for the table. */
+/** "+0.25" / "−0.4" / "—" — signed, with a real minus sign, for the table. */
 export const formatDelta = (delta: number | null): string => {
   if (delta === null) return "—";
   if (delta === 0) return "0";
   return delta > 0 ? `+${delta}` : `−${Math.abs(delta)}`;
 };
+
+/** "±0.22" for a learner's own band, "—" when they are not classified. */
+export const formatBand = (band: number | null): string =>
+  band === null ? "—" : `±${band.toFixed(2)}`;
 
 /** The learner's display name, falling back through email to the id. */
 export const learnerName = (row: {
@@ -290,6 +344,7 @@ export const learnerTableRows = (rows: SkillTrendLearnerRow[]): (string | number
     r.firstWindowMean,
     r.lastWindowMean,
     formatDelta(r.delta),
+    formatBand(r.band),
     TREND_LABELS[r.trend],
     r.lastSessionAt ? r.lastSessionAt.slice(0, 10) : null,
   ]);

@@ -936,6 +936,10 @@ export const extractTrackMetadata = (values: TrackFormValues): TrackMetadataInpu
   coverImageUrl: values.coverImageUrl || undefined,
   isGlobal: values.isGlobal,
   estimatedDurationMinutes: values.estimatedDurationMinutes ?? undefined,
+  // Always sent, so clearing the picker clears the tag (`[]` is stored as
+  // null). Ids the picker could not list ride along untouched — the backend
+  // never rejects an id the course already carries.
+  competencyIds: values.competencyIds ?? [],
 });
 
 /** GET /tracks/:id response -> builder form values (fresh client localIds). */
@@ -945,6 +949,7 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
   coverImageUrl: detail.coverImageUrl ?? "",
   isGlobal: detail.isGlobal ?? false,
   estimatedDurationMinutes: detail.estimatedDurationMinutes ?? null,
+  competencyIds: detail.competencyIds ?? [],
   sections: [...(detail.sections ?? [])]
     .sort((a, b) => a.order - b.order)
     .map(section => ({

@@ -6,6 +6,7 @@ import { AnalyticsTabFilters } from "../analyticsFilters";
 import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
 import { CourseImpactSubTab } from "./CourseImpactSubTab";
 import { CurriculumSubTab } from "./CurriculumSubTab";
+import { EffectivenessSubTab } from "./EffectivenessSubTab";
 import { FoundationalSkillsSubTab } from "./FoundationalSkillsSubTab";
 import { GoalsTab } from "./GoalsTab";
 import { OrgEngagementSubTab } from "./OrgEngagementSubTab";
@@ -44,10 +45,22 @@ const SUB_TABS: SubTabDef[] = [
     render: () => <GoalsTab />,
   },
   {
+    // Straight after Priority: "are we on pace" is answered there, "is it
+    // working" here — the chain from reaching a learner to a measured change
+    // in how they help, each tile read from the tab that owns its definition.
+    // All-time with its own org filter, so no page filters reach it.
+    id: "effectiveness",
+    label: "Effectiveness",
+    blurb:
+      "Does practice on Ally change how people help? Each tile is one link in that chain; open the tile's tab for the detail.",
+    render: () => <EffectivenessSubTab />,
+  },
+  {
     // Next to Priority because it is the deep-dive behind AAQ-166 there: which
     // of the 14 foundational helping skills practice is moving, and for whom.
-    // Distinct from "Skill growth" below, which reads each scenario's own judge
-    // score; this reads one fixed rubric that every scenario is scored against.
+    // "Skill growth" below reads the same rubric (since 2026-10; before that it
+    // plotted the AI actor's judge score) but as a median curve per learner's Nth
+    // slice; this tab is the balanced-panel, start → now reading with intervals.
     // Labelled "Helping skills" (not "Skills") so the two never read as the same.
     // All-time like Priority, so no page filters reach it; it opens on all orgs
     // and carries its own org filter.
@@ -81,7 +94,7 @@ const SUB_TABS: SubTabDef[] = [
     id: "skills",
     label: "Skill growth",
     blurb:
-      "Does practice raise each scenario's own judge score? The learning curve, how many individuals improved against their own baseline, which competencies the practice lands on, and any one learner's history. (For the fixed 14-skill rubric, see Helping skills.)",
+      "Does practice raise learners' helping-skills score, slice by slice? The learning curve, how many individuals improved against their own start, which competencies the practice lands on, and any one learner's history — on the same 1–4 rubric as Helping skills.",
     render: f => <SkillGrowthSubTab {...f} />,
   },
   {

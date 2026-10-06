@@ -28,6 +28,8 @@ import {
   stackedBarOpts,
 } from "../chartKit";
 import { CONTEXT, PALETTE } from "../chartScales";
+import { CourseOutcomesSection } from "../CourseOutcomesSection";
+import { ScenarioContentSection } from "../ScenarioContentSection";
 import {
   PCT_DOMAIN,
   buildItemTypeBars,
@@ -288,6 +290,13 @@ export const CurriculumSubTab = ({ query }: AnalyticsTabFilters) => {
           </ScrollableChart>
         </ChartCard>
       </div>
+
+      {/* ----------------- Courses, and scenarios as content ---------------- */}
+      <SubHeading>Courses</SubHeading>
+      <CourseOutcomesSection query={query} />
+
+      <SubHeading>Scenarios as practice content</SubHeading>
+      <ScenarioContentSection query={query} />
 
       {/* ------------------------- Detail / export ------------------------ */}
 

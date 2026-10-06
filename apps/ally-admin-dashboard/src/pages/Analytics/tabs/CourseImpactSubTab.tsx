@@ -8,18 +8,24 @@ import { ChangeWhiskers } from "../ChangeWhiskers";
 import { ChartCard, buildSource } from "../chartKit";
 import {
   CourseImpactCourse,
+  REFERENCE_LABEL,
+  competencySourceText,
   comparisonLine,
   courseRows,
   courseTakeaway,
   courseVerdict,
   coverageAdvice,
   coverageStages,
+  pooledRow,
+  pooledTakeaway,
+  referenceNote,
   sharePct,
   skillRows,
   toPoints,
   unhelpfulVerdict,
   unpairedCourseCount,
 } from "../courseImpactChart";
+import { CourseLiftWhiskers } from "../CourseLiftWhiskers";
 import { ALL_ORGS, orgFilterItems } from "../foundationalSkillsProgressChart";
 import { FunnelBars } from "../FunnelBars";
 
@@ -150,6 +156,24 @@ export const CourseImpactSubTab = () => {
   const rows = courseRows(courses);
   const visibleRows = showAll ? rows : rows.slice(0, COURSE_ROWS_COLLAPSED);
   const unpaired = unpairedCourseCount(courses);
+  // All courses together, each learner once, heads the list; the free-practice
+  // reference is the grey whisker under every row. Both are absent from a
+  // backend that predates them, and the rows still render without them.
+  const pooled = pooledRow(data?.pooled);
+  const reference = data?.reference
+    ? {
+        label: REFERENCE_LABEL,
+        change: data.reference.change,
+        ci: data.reference.changeCi,
+        n: data.reference.learners,
+      }
+    : null;
+  const refNote = referenceNote(data?.reference, windowCuts, minN);
+  const liftTakeaway = data
+    ? [courseTakeaway(data.summary, minN), pooledTakeaway(data.pooled, data.reference)]
+        .filter(Boolean)
+        .join(" ")
+    : undefined;
 
   const chosen = courses.find(c => c.trackId === trackId);
   const detail = data?.course && data.course.trackId === trackId ? data.course : null;
@@ -169,6 +193,7 @@ export const CourseImpactSubTab = () => {
 
   const unhelpful = detail ? toPoints(detail.unhelpful) : null;
   const targetedNames = detail ? detail.skills.filter(s => s.targeted).map(s => s.name) : [];
+  const taughtFrom = competencySourceText(chosen?.competencySource);
 
   return (
     <div className="flex flex-col gap-8">
@@ -225,7 +250,7 @@ export const CourseImpactSubTab = () => {
         <ChartCard
           wide
           title="Helping skills before and after, by course"
-          caption={`Change in each course's average score (after − before), with its 95% interval. Green or red only when the interval clears zero. Under each course: before → after, and how many of its enrolled learners can be compared.`}
+          caption={`Before/after on the same learners. Not a trial: people who finish courses also practise more. The grey whisker is what free practice over the same number of slices looked like. Each row is the change in a course's average score (after − before) with its 95% interval, green or red only when the interval clears zero; under each course: before → after, how many of its enrolled learners can be compared, and how long finishing took.`}
           source={buildSource({
             derivation: "Each learner before vs after, one fixed rubric",
             window: allTime,
@@ -233,7 +258,7 @@ export const CourseImpactSubTab = () => {
             nUnit: "learner–course pairs",
             asOf: asOfStamp(data?.computedAt),
           })}
-          takeaway={data ? courseTakeaway(data.summary, minN) : undefined}
+          takeaway={liftTakeaway || undefined}
           {...common}
           empty={!loading && !!data && rows.length === 0}
           emptyText={
@@ -244,7 +269,15 @@ export const CourseImpactSubTab = () => {
           chartId="AAQ-194"
         >
           <div className="flex flex-col gap-3">
-            <ChangeWhiskers rows={visibleRows} emptyLabel="too few learners" />
+            <CourseLiftWhiskers
+              rows={visibleRows}
+              headRow={pooled}
+              reference={reference}
+              emptyLabel="too few learners"
+            />
+            {refNote && (
+              <p className="max-w-4xl text-[11px] leading-snug text-typography-500">{refNote}</p>
+            )}
             <div className="flex flex-wrap items-center gap-3 text-xs text-typography-500">
               {rows.length > COURSE_ROWS_COLLAPSED && (
                 <Button kind="ghost" size="sm" onClick={() => setShowAll(v => !v)}>
@@ -269,7 +302,7 @@ export const CourseImpactSubTab = () => {
 
       <Section
         title="One course"
-        blurb="Why a course can or cannot be read, which skills moved, and whether harmful habits fell away. Skills the course's roleplays assess are listed first."
+        blurb="Why a course can or cannot be read, which skills moved, and whether harmful habits fell away. Skills this course teaches are listed first."
         controls={
           courseItems.length > 0 ? (
             <div className="flex items-center gap-2">
@@ -349,7 +382,10 @@ export const CourseImpactSubTab = () => {
                 : undefined
             }
             {...detailCommon}
-            empty={!detailLoading && (!detail || skillRows(detail.skills).length === 0)}
+            empty={
+              !detailLoading &&
+              (!detail || skillRows(detail.skills, chosen?.competencySource).length === 0)
+            }
             emptyText={
               detail
                 ? "No learner in this course can be compared before and after yet."
@@ -359,10 +395,11 @@ export const CourseImpactSubTab = () => {
           >
             {detail && (
               <div className="flex flex-col gap-3">
-                <ChangeWhiskers rows={skillRows(detail.skills)} />
+                <ChangeWhiskers rows={skillRows(detail.skills, chosen?.competencySource)} />
                 {detail.competencies.length > 0 && (
                   <p className="text-[11px] leading-snug text-typography-500">
-                    Competencies this course's roleplays assess: {detail.competencies.join(", ")}.
+                    Competencies this course teaches{taughtFrom ? ` (${taughtFrom})` : ""}:{" "}
+                    {detail.competencies.join(", ")}.
                   </p>
                 )}
               </div>

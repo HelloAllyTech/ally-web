@@ -79,6 +79,7 @@ import { HighlightsTab } from "../HighlightsTab";
 /** Label, and one heading or card title that only that sub-tab renders. */
 const SUB_TABS: [label: string, marker: RegExp][] = [
   ["Priority", /Utilization actual versus goal/i],
+  ["Effectiveness", /Where learners fall out of the chain/i],
   ["Platform", /North star/i],
   ["Usage", /Activation — getting to a first session/i],
   ["Skill growth", /Competency map/i],

@@ -22,7 +22,6 @@ vi.hoisted(() => {
 
 import { barOpts, hBarOpts, lineOpts, scatterOpts, stackedBarOpts, timeBarOpts } from "../chartKit";
 import {
-  COMPETENCY_SCALE,
   COMPLETION_SCALE,
   PCT_DOMAIN,
   PRACTISING_SCALE,
@@ -47,6 +46,7 @@ import {
   buildSkillGrowthSeries,
   buildTimeToFirstBars,
   buildTimeToFirstScale,
+  competencyScale,
 } from "../testingChart";
 
 /**
@@ -98,18 +98,18 @@ describe("Testing tab charts render with server-shaped data", () => {
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
-  it("plots the skill-growth median with its interquartile band", () => {
+  it("plots the skill-growth median with its interquartile band on the 1–4 scale", () => {
     const series = buildSkillGrowthSeries(
       [
         {
           ordinal: 1,
-          all: { median: 61, p25: 52, p75: 70, n: 120 },
-          experienced: { median: 60, p25: 51, p75: 69, n: 40 },
+          all: { median: 2.1, p25: 1.8, p75: 2.4, n: 120 },
+          experienced: { median: 2.05, p25: 1.75, p75: 2.35, n: 40 },
         },
         {
           ordinal: 2,
-          all: { median: 65, p25: 57, p75: 73, n: 90 },
-          experienced: { median: 66, p25: 58, p75: 74, n: 40 },
+          all: { median: 2.3, p25: 2.0, p75: 2.6, n: 90 },
+          experienced: { median: 2.35, p25: 2.05, p75: 2.65, n: 40 },
         },
       ],
       "all",
@@ -118,10 +118,10 @@ describe("Testing tab charts render with server-shaped data", () => {
       <LineChart
         data={series}
         options={lineOpts({
-          leftTitle: "Composite score",
-          bottomTitle: "Session number for that learner",
+          leftTitle: "Helping-skills score (1–4)",
+          bottomTitle: "Learner's Nth scored slice",
           colorScale: SKILL_GROWTH_SCALE,
-          domain: SCORE_DOMAIN,
+          domain: [1, 4],
         })}
       />,
     );
@@ -218,37 +218,50 @@ describe("Testing tab charts render with server-shaped data", () => {
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
-  it("plots the competency scatter on two measured axes", () => {
+  it("plots the competency scatter on two measured axes, points named by skill", () => {
+    const row = {
+      learners: 60,
+      scenarios: 8,
+      taggedCuts: 80,
+      scoreLearners: 30,
+      scoreUnavailable: null,
+      belowFloor: false,
+    };
     const points = buildCompetencyScatter([
       {
+        ...row,
         competencyId: "c1",
-        name: "Active listening",
+        name: "Empathy, Warmth & Genuineness",
+        skill: "empathy",
+        skillName: "Empathy, warmth and genuineness",
         completedSessions: 420,
-        evaluatedSessions: 300,
-        medianScore: 74,
-        learners: 60,
-        scenarios: 8,
-        belowFloor: false,
+        score: 2.7,
+        scoredCuts: 60,
+        medianScore: 2.7,
+        evaluatedSessions: 60,
       },
       {
+        ...row,
         competencyId: "c2",
-        name: "De-escalation",
+        name: "Rapport Building & Self-Disclosure",
+        skill: "rapport",
+        skillName: "Rapport-building and self-disclosure",
         completedSessions: 40,
-        evaluatedSessions: 30,
-        medianScore: 58,
-        learners: 12,
-        scenarios: 2,
-        belowFloor: false,
+        score: 2.2,
+        scoredCuts: 25,
+        medianScore: 2.2,
+        evaluatedSessions: 25,
       },
     ]);
     const { container } = render(
       <ScatterChart
         data={points}
         options={scatterOpts({
-          leftTitle: "Median composite score",
+          leftTitle: "Mean skill level (1–4)",
           bottomTitle: "Completed sessions",
-          colorScale: COMPETENCY_SCALE,
-          domain: SCORE_DOMAIN,
+          colorScale: competencyScale(points),
+          domain: [1, 4],
+          extra: { tooltip: { groupLabel: "Skill" } },
         })}
       />,
     );
