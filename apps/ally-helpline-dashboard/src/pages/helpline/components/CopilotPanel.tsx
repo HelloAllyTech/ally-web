@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, ReactNode, useState } from "react";
 
 import { Sparkles, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -32,6 +32,8 @@ interface CopilotPanelProps {
   onAcknowledge: (flag: RiskFlagDto, body: AckRiskFlagBody) => Promise<boolean>;
   onFeedback: (messageId: number, index: number | undefined, rating: Rating) => Promise<boolean>;
   onEditFinalSummary: () => void;
+  /** The listener of record's Alert a supervisor control, shown in each risk banner. */
+  alertSupervisor?: ReactNode;
 }
 
 const Card: FC<{
@@ -138,6 +140,7 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
   onAcknowledge,
   onFeedback,
   onEditFinalSummary,
+  alertSupervisor,
 }) => {
   const { t } = useTranslation();
   const [ratings, setRatings] = useState<Record<string, Rating>>({});
@@ -174,12 +177,21 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
     return (message.metadata as unknown as SuggestionMetadata | null)?.feedback?.[index];
   };
 
+  // Every copilot feature is switched on for this org, yet the server says
+  // OFF/UNAVAILABLE: that's an outage (an early backend reported OFF for it),
+  // not the org's choice — so never tell the listener their org turned it off.
+  const allFeaturesOn =
+    settings.copilot.suggestions && settings.copilot.nudges && settings.copilot.riskClassifier;
   const statusDot =
     copilot.status === "OK"
       ? null
-      : copilot.status === "UNAVAILABLE"
-        ? t("helplineWorkspace.copilot.unavailable")
-        : t("helplineWorkspace.copilot.off");
+      : allFeaturesOn
+        ? t("helplineWorkspace.copilot.unavailableNow")
+        : copilot.status === "UNAVAILABLE"
+          ? t("helplineWorkspace.copilot.unavailable")
+          : t("helplineWorkspace.copilot.off");
+  const showUnavailableHint =
+    copilot.status === "UNAVAILABLE" || (copilot.status === "OFF" && allFeaturesOn);
 
   return (
     <div className="ph-no-capture flex flex-col gap-3 p-3" data-testid="copilot-panel">
@@ -195,11 +207,7 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
         {statusDot && (
           <span
             role="status"
-            title={
-              copilot.status === "UNAVAILABLE"
-                ? t("helplineWorkspace.copilot.unavailableHint")
-                : undefined
-            }
+            title={showUnavailableHint ? t("helplineWorkspace.copilot.unavailableHint") : undefined}
             className="inline-flex items-center gap-1.5 rounded-full bg-status-ochreBg px-2 py-0.5 font-primary text-xs text-status-ochreFg"
             data-testid="copilot-status"
           >
@@ -217,6 +225,8 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
           checklist={settings.escalationChecklist}
           canAcknowledge={canAcknowledge && !isEnded}
           onAcknowledge={body => onAcknowledge(flag, body)}
+          alertSupervisor={isEnded ? undefined : alertSupervisor}
+          supportContact={settings.listenerSupportContact}
         />
       ))}
       {acknowledged.length > 0 && (
@@ -260,7 +270,7 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
         </Card>
       ) : !canUseCopilot ? null : (
         <>
-          {copilot.status === "UNAVAILABLE" && (
+          {showUnavailableHint && (
             <p className="rounded-lg bg-background-secondary p-2 font-primary text-xs text-typography-800">
               {t("helplineWorkspace.copilot.unavailableHint")}
             </p>

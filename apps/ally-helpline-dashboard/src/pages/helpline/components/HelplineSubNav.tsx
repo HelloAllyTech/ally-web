@@ -16,50 +16,45 @@ interface SubNavItem {
   labelKey: string;
   /** Shown only to holders of this permission. */
   permission?: Permissions;
-  /** False until the page exists; flips when the later pass lands it. */
-  available: boolean;
+  /** A different label for holders of this permission (QA: "Quality" vs "My feedback"). */
+  labelFor?: { permission: Permissions; labelKey: string };
   end?: boolean;
 }
 
 /**
- * Lobby / History now. Monitor (supervisors), QA and Team (tenant admins) have
- * their slots here but stay hidden until their pages exist — a tab that leads
- * nowhere is worse than no tab.
+ * Lobby and History for everyone in the workspace; Monitor for supervisors;
+ * QA for everyone — supervisors review every chat ("Quality"), a listener sees
+ * their own ("My feedback"); Team for tenant admins.
  */
 const SUB_NAV: SubNavItem[] = [
   {
     key: "lobby",
     path: ROUTES.HELPLINE,
     labelKey: "helplineWorkspace.subnav.lobby",
-    available: true,
     end: true,
   },
   {
     key: "history",
     path: ROUTES.HELPLINE_HISTORY,
     labelKey: "helplineWorkspace.subnav.history",
-    available: true,
   },
   {
     key: "monitor",
-    path: "/helpline/monitor",
+    path: ROUTES.HELPLINE_MONITOR,
     labelKey: "helplineWorkspace.subnav.monitor",
     permission: Permissions.VIEW_HELPLINE_MONITOR,
-    available: false,
   },
   {
     key: "qa",
-    path: "/helpline/qa",
-    labelKey: "helplineWorkspace.subnav.qa",
-    permission: Permissions.VIEW_HELPLINE_QA,
-    available: false,
+    path: ROUTES.HELPLINE_QA,
+    labelKey: "helplineWorkspace.subnav.myFeedback",
+    labelFor: { permission: Permissions.VIEW_HELPLINE_QA, labelKey: "helplineWorkspace.subnav.qa" },
   },
   {
     key: "team",
-    path: "/helpline/team",
+    path: ROUTES.HELPLINE_TEAM,
     labelKey: "helplineWorkspace.subnav.team",
     permission: Permissions.EDIT_HELPLINE_TEAM,
-    available: false,
   },
 ];
 
@@ -68,26 +63,33 @@ export const HelplineSubNav: FC = () => {
   const { permissions } = useUser();
   const { connection } = useHelplineRealtime();
   const items = SUB_NAV.filter(
-    item => item.available && (!item.permission || hasPermissions(permissions, item.permission)),
+    item => !item.permission || hasPermissions(permissions, item.permission),
   );
+  const labelOf = (item: SubNavItem) =>
+    item.labelFor && hasPermissions(permissions, item.labelFor.permission)
+      ? item.labelFor.labelKey
+      : item.labelKey;
 
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border-light bg-white px-4 md:px-6">
-      <nav aria-label={t("helplineWorkspace.subnav.label")} className="flex gap-1">
+      <nav
+        aria-label={t("helplineWorkspace.subnav.label")}
+        className="-mb-px flex gap-1 overflow-x-auto"
+      >
         {items.map(item => (
           <NavLink
             key={item.key}
             to={item.path}
             end={item.end}
             className={({ isActive }) =>
-              `inline-flex min-h-[44px] items-center border-b-2 px-3 font-primary text-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+              `inline-flex min-h-[44px] items-center whitespace-nowrap border-b-2 px-3 font-primary text-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                 isActive
                   ? "border-primary-500 font-medium text-typography-900"
                   : "border-transparent text-typography-700 hover:text-typography-900"
               }`
             }
           >
-            {t(item.labelKey)}
+            {t(labelOf(item))}
           </NavLink>
         ))}
       </nav>

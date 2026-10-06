@@ -143,7 +143,7 @@ describe("HelplineChatView", () => {
       me: meDto(),
       chat: chatDetail({
         chat: staffChat({ riskLevel: "HIGH" }),
-        riskFlags: [riskFlag()],
+        riskFlags: [riskFlag({ supervisorsAlerted: 1 })],
       }),
     });
     fetchRoutes["POST /v1/helpline/chats/chat-1/risk-flags/flag-1/ack"] = async request => {

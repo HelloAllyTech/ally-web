@@ -3,6 +3,8 @@ import { FC, useEffect, useRef } from "react";
 import { AlertCircle, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { HELPLINE_TALKER_SYSTEM_KINDS } from "@constants/helpline";
+
 import { ResourcesCard } from "./ResourcesCard";
 
 import type { TalkerMessage } from "../talkerReducer";
@@ -21,6 +23,14 @@ const SystemLine: FC<{ children: React.ReactNode }> = ({ children }) => (
     </p>
   </li>
 );
+
+const isTalkerVisible = (message: TalkerMessage) => {
+  if (message.type !== "TEXT" && message.type !== "SYSTEM") return false;
+  if (message.type === "SYSTEM" && message.systemKind) {
+    return (HELPLINE_TALKER_SYSTEM_KINDS as readonly string[]).includes(message.systemKind);
+  }
+  return true;
+};
 
 /**
  * The talker's view of the conversation: their own bubbles on the right, the
@@ -105,6 +115,10 @@ export const TalkerMessageList: FC<TalkerMessageListProps> = ({
         data-testid="talker-message-list"
       >
         {messages.map((message, index) => {
+          // Defence in depth: the server only ever sends this page TEXT and
+          // talker-visible SYSTEM rows. Anything else (a whisper, a staff-only
+          // system line) is never shown here, even if one slipped through.
+          if (!isTalkerVisible(message)) return null;
           if (message.from === "SERVICE" || message.type === "SYSTEM")
             return renderService(message);
 

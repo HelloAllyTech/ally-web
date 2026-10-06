@@ -4,6 +4,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -11,13 +12,16 @@ import {
 
 import { useTranslation } from "react-i18next";
 import { useDispatch, useStore } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { helplineAPI } from "@api/helpline";
 import { LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
 import { HELPLINE_SOCKET_EVENTS, HELPLINE_TIMINGS } from "@constants/helpline";
+import { Permissions } from "@constants/permissions";
 import { HelplineSocketStatus, useHelplineSocket } from "@hooks/useHelplineSocket";
+import { useUser } from "@hooks/useUser";
 import type { AppDispatch, RootState } from "@store";
 import type {
   ChatDetailDto,
@@ -29,10 +33,23 @@ import type {
   StaffChatDto,
   StaffMessageDto,
   SummaryDto,
+  TransferEventPayload,
 } from "@types";
 import { createClientMessageId } from "@utils/helplineErrors";
+import { hasPermissions } from "@utils/permission";
 
-import { playChime, showWaitingNotification } from "../alerts";
+import {
+  playAlertTone,
+  playChime,
+  showSupervisorAlertNotification,
+  showWaitingNotification,
+} from "../alerts";
+import {
+  alertKey,
+  alertTarget,
+  createAlertDeduper,
+  isSupervisorAlertType,
+} from "../supervisorAlerts";
 import { lastMessageId, upsertRiskFlag, upsertStaffMessage } from "../utils";
 
 export interface PendingStaffMessage {
@@ -86,6 +103,11 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const store = useStore<RootState>();
+  const navigate = useNavigate();
+  const { permissions } = useUser();
+  const isSupervisor = hasPermissions(permissions, Permissions.VIEW_HELPLINE_MONITOR);
+  const alertDeduper = useRef(createAlertDeduper());
+  const monitorRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [typingByChat, setTypingByChat] = useState<Record<string, boolean>>({});
   const [pendingByChat, setPendingByChat] = useState<Record<string, PendingStaffMessage[]>>({});
@@ -152,6 +174,58 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
     [],
   );
 
+  /**
+   * The Monitor polls every 15 s; socket events make it fresher. Bursts (a
+   * queue update plus a chat update for one claim) coalesce into one refetch,
+   * and only a mounted Monitor actually refetches.
+   */
+  const refreshMonitor = useCallback(() => {
+    if (!isSupervisor || monitorRefreshTimer.current) return;
+    monitorRefreshTimer.current = setTimeout(() => {
+      monitorRefreshTimer.current = null;
+      dispatch(helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_MONITOR]));
+    }, HELPLINE_TIMINGS.MONITOR_REFRESH_THROTTLE_MS);
+  }, [dispatch, isSupervisor]);
+
+  useEffect(
+    () => () => {
+      if (monitorRefreshTimer.current) clearTimeout(monitorRefreshTimer.current);
+    },
+    [],
+  );
+
+  /**
+   * Supervisor alerts: a toast that stays until dismissed, with Open; a tone;
+   * and a system notification when the tab is out of view. None of them names
+   * the talker or carries anything anyone wrote. A repeat for the same chat
+   * and type within 10 minutes is dropped (the server dedupes too).
+   */
+  const onSupervisorAlert = useCallback(
+    (payload: HelplineAlertPayload) => {
+      const key = alertKey(payload.type, payload.chatId);
+      refreshMonitor();
+      if (!alertDeduper.current(key)) return;
+      const target = alertTarget(payload.type, payload.chatId);
+      const text = t(`helplineWorkspace.alerts.types.${payload.type}`);
+      toast.warning(text, {
+        id: key,
+        duration: Number.POSITIVE_INFINITY,
+        action: {
+          label: t("helplineWorkspace.alerts.open"),
+          onClick: () => navigate(target),
+        },
+      });
+      playAlertTone();
+      showSupervisorAlertNotification(
+        t("helplineWorkspace.alerts.notificationTitle"),
+        text,
+        key,
+        () => navigate(target),
+      );
+    },
+    [navigate, refreshMonitor, t],
+  );
+
   // ─── Server → client ─────────────────────────────────────────────────────
 
   const onMessage = useCallback(
@@ -191,6 +265,7 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
       const known =
         knownWaitingRef.current ?? new Set((selectLobby()?.waiting ?? []).map(e => e.chatId));
       knownWaitingRef.current = new Set(payload.waiting.map(entry => entry.chatId));
+      refreshMonitor();
       dispatch(
         helplineAPI.util.updateQueryData("getHelplineLobby", undefined, draft => {
           draft.waiting = payload.waiting;
@@ -210,7 +285,29 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
         showWaitingNotification(t("helplineWorkspace.lobby.notificationTitle"));
       }
     },
-    [dispatch, selectLobby, selectMe, t],
+    [dispatch, refreshMonitor, selectLobby, selectMe, t],
+  );
+
+  const onTransferEvent = useCallback(
+    (kind: "requested" | "transferred") => (payload: TransferEventPayload) => {
+      dispatch(helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_LOBBY]));
+      refreshMonitor();
+      if (!payload?.chatId) return;
+      if (kind === "requested") {
+        patchChat(payload.chatId, draft => {
+          draft.chat.transferPending = true;
+        });
+        return;
+      }
+      // Who is listener of record changed: refetch the chat (if it's loaded)
+      // so myAccess, the listener and the timeline are the server's.
+      if (selectChat(payload.chatId)) {
+        dispatch(
+          helplineAPI.util.invalidateTags([{ type: TAG_TYPES.HELPLINE_CHAT, id: payload.chatId }]),
+        );
+      }
+    },
+    [dispatch, patchChat, refreshMonitor, selectChat],
   );
 
   const handlers = useMemo(
@@ -230,6 +327,7 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
         presence: HelplinePresence;
         activeChatCount: number;
       }) => {
+        refreshMonitor();
         if (!payload?.presence) return;
         dispatch(
           helplineAPI.util.updateQueryData("getHelplineMe", undefined, draft => {
@@ -241,7 +339,11 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
         );
       },
       [HELPLINE_SOCKET_EVENTS.CHAT_UPDATED]: (payload: { chat: StaffChatDto }) => {
+        refreshMonitor();
         if (!payload?.chat?.id) return;
+        // myAccess is per viewer (LISTENER on user:{id}, READ_ONLY on the chat
+        // room), so this is also how a transfer or take-over reaches the
+        // previous listener's screen.
         patchChat(payload.chat.id, draft => {
           draft.chat = payload.chat;
         });
@@ -257,6 +359,7 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
           draft.chat.endedAt = draft.chat.endedAt ?? new Date().toISOString();
         });
         setTyping(payload.chatId, false);
+        refreshMonitor();
         dispatch(
           helplineAPI.util.invalidateTags([
             TAG_TYPES.HELPLINE_LOBBY,
@@ -279,6 +382,16 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
       [HELPLINE_SOCKET_EVENTS.RISK_FLAGGED]: (payload: { chatId: string; flag: RiskFlagDto }) => {
         if (!payload?.chatId || !payload.flag) return;
         patchChat(payload.chatId, draft => upsertRiskFlag(draft, payload.flag));
+        refreshMonitor();
+      },
+      // A flag was acknowledged (here or elsewhere): clears its banner, no re-alert.
+      [HELPLINE_SOCKET_EVENTS.RISK_FLAG_UPDATED]: (payload: {
+        chatId: string;
+        flag: RiskFlagDto;
+      }) => {
+        if (!payload?.chatId || !payload.flag) return;
+        patchChat(payload.chatId, draft => upsertRiskFlag(draft, payload.flag));
+        refreshMonitor();
       },
       [HELPLINE_SOCKET_EVENTS.STAGE]: (payload: { chatId: string; stage: string }) => {
         if (!payload?.chatId) return;
@@ -305,14 +418,16 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
           draft.summaries[key] = payload.summary;
         });
       },
-      [HELPLINE_SOCKET_EVENTS.TRANSFER_REQUESTED]: () =>
-        dispatch(helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_LOBBY])),
-      [HELPLINE_SOCKET_EVENTS.TRANSFERRED]: () =>
-        dispatch(helplineAPI.util.invalidateTags([TAG_TYPES.HELPLINE_LOBBY])),
+      [HELPLINE_SOCKET_EVENTS.TRANSFER_REQUESTED]: onTransferEvent("requested"),
+      [HELPLINE_SOCKET_EVENTS.TRANSFERRED]: onTransferEvent("transferred"),
       [HELPLINE_SOCKET_EVENTS.ALERT]: (payload: HelplineAlertPayload) => {
-        // Supervisor alerts belong to the monitor (later pass). A listener only
-        // hears about a high-risk talker waiting while they're Available.
-        if (payload?.type === "HIGH_RISK_WAITING" && selectMe()?.presence === "AVAILABLE") {
+        if (!payload?.type) return;
+        if (isSupervisor && isSupervisorAlertType(payload.type) && payload.chatId) {
+          onSupervisorAlert(payload);
+          return;
+        }
+        // A listener only hears about a high-risk talker waiting while they're Available.
+        if (payload.type === "HIGH_RISK_WAITING" && selectMe()?.presence === "AVAILABLE") {
           toast.warning(t("helplineWorkspace.lobby.highRiskWaiting"));
         }
       },
@@ -320,7 +435,19 @@ export const HelplineRealtimeProvider: FC<{ children: ReactNode; enabled: boolea
         logger.info(`[helpline-staff] server error: ${payload?.code ?? "unknown"}`);
       },
     }),
-    [dispatch, onMessage, onQueueUpdated, patchChat, selectMe, setTyping, t],
+    [
+      dispatch,
+      isSupervisor,
+      onMessage,
+      onQueueUpdated,
+      onSupervisorAlert,
+      onTransferEvent,
+      patchChat,
+      refreshMonitor,
+      selectMe,
+      setTyping,
+      t,
+    ],
   );
 
   // ─── Socket ──────────────────────────────────────────────────────────────

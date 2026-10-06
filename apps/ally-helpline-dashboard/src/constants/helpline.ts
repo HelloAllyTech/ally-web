@@ -38,6 +38,7 @@ export const HELPLINE_SOCKET_EVENTS = {
   TRANSFER_REQUESTED: "TRANSFER_REQUESTED",
   TRANSFERRED: "TRANSFERRED",
   ALERT: "ALERT",
+  RISK_FLAG_UPDATED: "RISK_FLAG_UPDATED",
   ERROR: "ERROR",
 } as const;
 
@@ -49,6 +50,10 @@ export const HELPLINE_LIMITS = {
   DISPLAY_NAME_MAX: 40,
   FEEDBACK_COMMENT_MAX: 1000,
   RISK_NOTE_MAX: 500,
+  /** Alert a supervisor: the optional "What do you need?" note. */
+  SUPERVISOR_ALERT_NOTE_MAX: 300,
+  WHISPER_MAX: 2000,
+  BLOCK_REASON_MAX: 500,
 } as const;
 
 export const HELPLINE_TIMINGS = {
@@ -66,6 +71,12 @@ export const HELPLINE_TIMINGS = {
   GUEST_TOKEN_REFRESH_BEFORE_MS: 60 * 60 * 1000,
   /** Wait this long for the FINAL summary before offering empty fields. */
   FINAL_SUMMARY_WAIT_MS: 20_000,
+  /** The Monitor's poll fallback; socket events refresh it sooner. */
+  MONITOR_POLL_MS: 15_000,
+  /** Coalesce bursts of socket events into one Monitor refetch. */
+  MONITOR_REFRESH_THROTTLE_MS: 1_500,
+  /** Alert a supervisor stays disabled this long after a send. */
+  SUPERVISOR_ALERT_COOLDOWN_MS: 2 * 60 * 1000,
 } as const;
 
 /** sessionStorage key for a talker's guest token, one per helpline (§11). */

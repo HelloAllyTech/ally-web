@@ -113,6 +113,13 @@ export const ANALYTICS_EVENTS = {
   HELPLINE_SUGGESTION_INSERTED: "helpline_suggestion_inserted",
   HELPLINE_RISK_ACKNOWLEDGED: "helpline_risk_acknowledged",
   HELPLINE_CHAT_ENDED_BY_LISTENER: "helpline_chat_ended_by_listener",
+  HELPLINE_TRANSFER_REQUESTED: "helpline_transfer_requested",
+  HELPLINE_CHAT_ASSIGNED: "helpline_chat_assigned",
+  HELPLINE_CHAT_TAKEN_OVER: "helpline_chat_taken_over",
+  HELPLINE_WHISPER_SENT: "helpline_whisper_sent",
+  HELPLINE_TALKER_BLOCKED: "helpline_talker_blocked",
+  HELPLINE_SUPERVISOR_ALERTED: "helpline_supervisor_alerted",
+  HELPLINE_QA_VIEWED: "helpline_qa_viewed",
 } as const;
 
 /**
@@ -272,4 +279,10 @@ export const ANALYTICS_PROPS = {
   HELPLINE_HAS_DISPLAY_NAME: "has_display_name",
   HELPLINE_WAIT_SECONDS: "wait_seconds",
   HELPLINE_MESSAGE_COUNT: "message_count",
+  HELPLINE_ACTOR: "actor",
+  HELPLINE_HAS_TARGET: "has_target",
+  HELPLINE_HAS_REASON: "has_reason",
+  HELPLINE_HAS_NOTE: "has_note",
+  HELPLINE_ALERTED_COUNT: "alerted_count",
+  HELPLINE_QA_VIEWER: "viewer",
 } as const;

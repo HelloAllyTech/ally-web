@@ -13,6 +13,8 @@ export interface TalkerAction {
   label: string;
   onSelect: () => void;
   destructive?: boolean;
+  /** Rendered in place of the plain button — for a control with its own UI (Alert a supervisor). */
+  node?: ReactNode;
 }
 
 const Row: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
@@ -23,9 +25,9 @@ const Row: FC<{ label: string; children: ReactNode }> = ({ label, children }) =>
 );
 
 /**
- * Who the talker is, as far as the helpline knows, and what can be done.
- * `actions` is a list on purpose: Transfer and Block arrive in a later pass
- * and slot in here without reshaping the panel.
+ * Who the talker is, as far as the helpline knows, and what can be done:
+ * Alert a supervisor, Request transfer, Take over, Block talker, End chat —
+ * whichever the viewer's access and permissions allow.
  */
 export const TalkerInfoPanel: FC<{ chat: StaffChatDto; actions: TalkerAction[] }> = ({
   chat,
@@ -73,6 +75,16 @@ export const TalkerInfoPanel: FC<{ chat: StaffChatDto; actions: TalkerAction[] }
         {chat.listener && (
           <Row label={t("helplineWorkspace.info.listener")}>{chat.listener.displayName}</Row>
         )}
+        {chat.transferPending && chat.status === "ACTIVE" && (
+          <Row label={t("helplineWorkspace.info.transfer")}>
+            {t("helplineWorkspace.transfer.pendingShort")}
+          </Row>
+        )}
+        {chat.talker.blocked && (
+          <Row label={t("helplineWorkspace.info.blocked")}>
+            {t("helplineWorkspace.block.blockedShort")}
+          </Row>
+        )}
       </dl>
 
       {actions.length > 0 && (
@@ -80,20 +92,24 @@ export const TalkerInfoPanel: FC<{ chat: StaffChatDto; actions: TalkerAction[] }
           <h3 className="font-primary text-xs font-medium uppercase tracking-wide text-typography-700">
             {t("helplineWorkspace.info.actions")}
           </h3>
-          {actions.map(action => (
-            <button
-              key={action.key}
-              type="button"
-              onClick={action.onSelect}
-              className={`min-h-[40px] rounded-full border px-4 font-primary text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                action.destructive
-                  ? "border-destructive-300 text-destructive-700 hover:bg-destructive-50"
-                  : "border-border-medium text-typography-900 hover:bg-background-secondary"
-              }`}
-            >
-              {action.label}
-            </button>
-          ))}
+          {actions.map(action =>
+            action.node ? (
+              <div key={action.key}>{action.node}</div>
+            ) : (
+              <button
+                key={action.key}
+                type="button"
+                onClick={action.onSelect}
+                className={`min-h-[40px] rounded-full border px-4 font-primary text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+                  action.destructive
+                    ? "border-destructive-300 text-destructive-700 hover:bg-destructive-50"
+                    : "border-border-medium text-typography-900 hover:bg-background-secondary"
+                }`}
+              >
+                {action.label}
+              </button>
+            ),
+          )}
         </div>
       )}
     </div>

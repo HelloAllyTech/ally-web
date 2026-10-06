@@ -12,6 +12,8 @@ interface TalkerDialogProps {
   onCancel: () => void;
   destructive?: boolean;
   busy?: boolean;
+  /** Disables only the confirm button (e.g. a required choice not made yet). */
+  confirmDisabled?: boolean;
   error?: string | null;
 }
 
@@ -33,6 +35,7 @@ export const TalkerDialog: FC<TalkerDialogProps> = ({
   onCancel,
   destructive,
   busy,
+  confirmDisabled,
   error,
 }) => {
   const titleId = useId();
@@ -105,7 +108,7 @@ export const TalkerDialog: FC<TalkerDialogProps> = ({
           <TalkerButton
             variant={destructive ? "danger" : "primary"}
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || confirmDisabled}
           >
             {confirmLabel}
           </TalkerButton>

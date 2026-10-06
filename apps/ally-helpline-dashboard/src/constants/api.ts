@@ -324,5 +324,22 @@ export const ApiEndpoints = {
       `/v1/helpline/chats/${encodeURIComponent(chatId)}/risk-flags/${encodeURIComponent(flagId)}/ack`,
     COPILOT_FEEDBACK: (chatId: string) =>
       `/v1/helpline/chats/${encodeURIComponent(chatId)}/copilot-feedback`,
+    // Supervision (§5.3, §10).
+    CHAT_TRANSFER: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/transfer`,
+    CHAT_ASSIGN: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/assign`,
+    CHAT_TAKE_OVER: (chatId: string) =>
+      `/v1/helpline/chats/${encodeURIComponent(chatId)}/take-over`,
+    CHAT_WHISPER: (chatId: string) => `/v1/helpline/chats/${encodeURIComponent(chatId)}/whisper`,
+    CHAT_ALERT_SUPERVISOR: (chatId: string) =>
+      `/v1/helpline/chats/${encodeURIComponent(chatId)}/alert-supervisor`,
+    TALKER_BLOCK: (talkerId: string) =>
+      `/v1/helpline/talkers/${encodeURIComponent(talkerId)}/block`,
+    MONITOR: "/v1/helpline/monitor",
+    RISK_FLAGS: "/v1/helpline/risk-flags",
+    QA: "/v1/helpline/qa",
+    QA_MINE: "/v1/helpline/qa/mine",
+    QA_DETAIL: (chatId: string) => `/v1/helpline/qa/${encodeURIComponent(chatId)}`,
+    TEAM: "/v1/helpline/team",
+    TEAM_MEMBER: (userId: number) => `/v1/helpline/team/${encodeURIComponent(String(userId))}`,
   },
 };

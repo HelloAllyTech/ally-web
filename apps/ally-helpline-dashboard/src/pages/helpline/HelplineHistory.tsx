@@ -1,10 +1,10 @@
 import { FC, useState } from "react";
 
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { useGetHelplineChatsQuery } from "@api/helpline";
-import { buildHelplineChatRoute } from "@constants/routes";
+import { useGetHelplineChatsQuery, useGetMyHelplineQaQuery } from "@api/helpline";
+import { buildHelplineChatRoute, buildHelplineQaRoute } from "@constants/routes";
 import type { ChatListItemDto } from "@types";
 
 import { RiskBadge } from "./components/HelplineBadges";
@@ -42,6 +42,9 @@ export const HelplineHistory: FC = () => {
     page,
     limit: PAGE_SIZE,
   });
+  // Chats with helping-skills feedback get a link to it (GET qa/mine — my own only).
+  const { data: myQa } = useGetMyHelplineQaQuery();
+  const scored = new Set((myQa?.items ?? []).map(item => item.chatId));
   const pages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
   const dateFormat = new Intl.DateTimeFormat(i18n.language || "en", {
     dateStyle: "medium",
@@ -85,7 +88,7 @@ export const HelplineHistory: FC = () => {
           <>
             <div className="ph-no-capture overflow-x-auto rounded-xl border border-border-light">
               <table
-                className="w-full min-w-[640px] border-collapse font-primary text-sm"
+                className="w-full min-w-[720px] border-collapse font-primary text-sm"
                 data-testid="history-table"
               >
                 <thead className="bg-background-secondary text-left text-xs text-typography-700">
@@ -107,6 +110,9 @@ export const HelplineHistory: FC = () => {
                     </th>
                     <th scope="col" className="px-3 py-2 font-medium">
                       {t("helplineWorkspace.history.columns.erased")}
+                    </th>
+                    <th scope="col" className="px-3 py-2 font-medium">
+                      {t("helplineWorkspace.history.columns.feedback")}
                     </th>
                   </tr>
                 </thead>
@@ -159,6 +165,20 @@ export const HelplineHistory: FC = () => {
                           {chat.erased
                             ? t("helplineWorkspace.history.erased")
                             : t("helplineWorkspace.history.kept")}
+                        </td>
+                        <td className="px-3 py-2">
+                          {scored.has(chat.id) ? (
+                            <Link
+                              to={buildHelplineQaRoute(chat.id)}
+                              onClick={event => event.stopPropagation()}
+                              className="whitespace-nowrap font-medium text-typography-900 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                              data-testid={`history-feedback-${chat.id}`}
+                            >
+                              {t("helplineWorkspace.qa.viewFeedback")}
+                            </Link>
+                          ) : (
+                            <span className="text-typography-700">—</span>
+                          )}
                         </td>
                       </tr>
                     );

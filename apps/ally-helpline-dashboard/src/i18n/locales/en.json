@@ -2134,7 +2134,8 @@
       "history": "History",
       "monitor": "Monitor",
       "qa": "Quality",
-      "team": "Team"
+      "team": "Team",
+      "myFeedback": "My feedback"
     },
     "gate": {
       "loading": "Loading the helpline…",
@@ -2244,7 +2245,8 @@
         "TRANSFERRED": "Chat transferred",
         "ASSIGNED": "Chat assigned",
         "generic": "Chat update",
-        "risk": "Risk flagged here: {{level}} · {{source}}"
+        "risk": "Risk flagged here: {{level}} · {{source}}",
+        "SUPERVISOR_REQUESTED": "{{name}} asked a supervisor for help"
       },
       "typing": "{{name}} is typing…",
       "composerLabel": "Reply",
@@ -2301,7 +2303,8 @@
       "editSummary": "Edit summary",
       "editedBy": "Edited by {{name}}",
       "whispersTitle": "From your supervisor",
-      "whispersEmpty": "No messages from a supervisor."
+      "whispersEmpty": "No messages from a supervisor.",
+      "unavailableNow": "Copilot is unavailable right now"
     },
     "riskBanner": {
       "title": {
@@ -2324,7 +2327,8 @@
       "saving": "Saving…",
       "ackFailed": "Couldn't save. The flag stays open until it's acknowledged.",
       "noted": "Risk noted",
-      "notedFalse": "Marked false positive"
+      "notedFalse": "Marked false positive",
+      "noSupervisorAlerted": "No supervisor could be alerted automatically — use Alert a supervisor or follow your organisation's emergency procedure."
     },
     "info": {
       "title": "Talker",
@@ -2348,7 +2352,9 @@
       "endBody": "The talker will see that the chat has ended. You'll then review the summary.",
       "endConfirm": "End chat",
       "cancel": "Cancel",
-      "endFailed": "Couldn't end the chat. Please try again."
+      "endFailed": "Couldn't end the chat. Please try again.",
+      "transfer": "Transfer",
+      "blocked": "Blocked"
     },
     "summary": {
       "title": "Review the summary",
@@ -2379,7 +2385,8 @@
         "duration": "Duration",
         "risk": "Risk",
         "reason": "How it ended",
-        "erased": "Content"
+        "erased": "Content",
+        "feedback": "Feedback"
       },
       "erased": "Erased",
       "kept": "Kept",
@@ -2419,6 +2426,246 @@
       "psychoeducation": "Explain simply",
       "feedback": "Ask for feedback",
       "verbal": "Clear wording"
+    },
+    "alertSupervisor": {
+      "button": "Alert a supervisor",
+      "noteLabel": "What do you need? (optional)",
+      "notePlaceholder": "For example: please join this chat",
+      "noteCount": "{{count}}/{{max}}",
+      "send": "Send alert",
+      "sending": "Sending…",
+      "sent": "Supervisor alerted",
+      "noneSetUp": "No supervisor is set up for your organisation — follow your organisation's emergency procedure.",
+      "supportContact": "Support: {{contact}}",
+      "failed": "Couldn't alert a supervisor. Try again, or follow your organisation's emergency procedure.",
+      "alertedJustNow": "Alerted just now",
+      "alertedAgo_one": "Alerted {{count}} min ago",
+      "alertedAgo_other": "Alerted {{count}} min ago",
+      "coolingDownHint": "You can send another alert 2 minutes after the last one."
+    },
+    "alerts": {
+      "open": "Open",
+      "notificationTitle": "Helpline alert",
+      "types": {
+        "RISK_HIGH": "A talker may be at high risk.",
+        "HIGH_RISK_WAITING": "A talker who may be at high risk is waiting.",
+        "LISTENER_DISCONNECTED": "A listener has been disconnected from a live chat.",
+        "TRANSFER_REQUESTED": "A chat is waiting to be transferred.",
+        "LISTENER_REQUESTED_HELP": "A listener is asking for a supervisor."
+      }
+    },
+    "whisper": {
+      "hint": "Whisper to {{name}} — only staff see this, never the talker.",
+      "label": "Whisper to {{name}}",
+      "placeholder": "Keep it short — {{name}} reads it mid-chat",
+      "send": "Send whisper",
+      "failed": "Couldn't send the whisper. Please try again.",
+      "inlineToMe": "Supervisor whisper — only you can see this",
+      "inlineFromMe": "Your whisper to {{name}} — the talker can't see this",
+      "inlineOther": "Supervisor whisper — the talker can't see this"
+    },
+    "transfer": {
+      "action": "Request transfer",
+      "title": "Pass this chat to another listener?",
+      "body": "The talker is told their chat is being passed on. Stay with them until another listener picks it up.",
+      "bodySupervisor": "The talker is told their chat is being passed on. Their listener stays with them until another listener picks it up.",
+      "targetLabel": "Pass to (optional)",
+      "anyone": "Anyone available",
+      "noneAvailable": "No one else is available right now. The chat waits in the lobby for the next available listener.",
+      "confirm": "Request transfer",
+      "requested": "Transfer requested",
+      "failed": "Couldn't request a transfer. Please try again.",
+      "pending": "Transfer requested — waiting for another listener",
+      "pendingListener": "Transfer requested — waiting for another listener. Stay with the talker until someone picks it up.",
+      "pendingShort": "Waiting for a listener",
+      "nowWith": "This chat is now with {{name}}.",
+      "previousBanner": "This chat is now with {{name}}. You can still read it, but only they can reply.",
+      "previousComposer": "This chat is now with {{name}}. Only they can reply."
+    },
+    "takeOver": {
+      "action": "Take over",
+      "title": "Take over this chat?",
+      "body": "You become the talker's listener now, and {{name}} can no longer reply. Often a whisper is enough — take over when the talker's safety needs it.",
+      "confirm": "Take over",
+      "failed": "Couldn't take over this chat. Please try again.",
+      "nowYours": "You're now this chat's listener."
+    },
+    "block": {
+      "action": "Block talker",
+      "title": "Block this talker?",
+      "body": "This ends the chat now and refuses new chats from this device or network for 24 hours. The talker sees a neutral message.",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "Kept with this chat's record for your team",
+      "confirm": "Block and end chat",
+      "done": "Talker blocked. The chat has ended.",
+      "failed": "Couldn't block this talker. Please try again.",
+      "blockedShort": "Blocked for 24 hours"
+    },
+    "monitor": {
+      "title": "Monitor",
+      "intro": "Live chats, the queue and who is on. Open a chat to read along, whisper to its listener, or step in.",
+      "noAccess": "The Monitor is for supervisors.",
+      "viewsLabel": "Monitor views",
+      "views": {
+        "live": "Live",
+        "calibration": "Risk calibration"
+      },
+      "loadFailed": "Couldn't load the monitor.",
+      "browserAlertsOn": "Turn on browser alerts",
+      "browserAlertsBlocked": "Browser notifications are blocked, so alerts only show while this tab is open.",
+      "tiles": {
+        "waiting": "Waiting",
+        "active": "Active chats",
+        "listenersAvailable": "Listeners available",
+        "openHighFlags": "Open high-risk flags"
+      },
+      "activeTitle": "Active chats",
+      "activeEmpty": "No active chats right now.",
+      "waitingTitle": "Waiting to talk",
+      "listenersTitle": "Listeners",
+      "listenersEmpty": "No one is set up as a listener yet.",
+      "columns": {
+        "listener": "Listener",
+        "talker": "Talker",
+        "duration": "Duration",
+        "risk": "Risk",
+        "lastMessage": "Last message",
+        "listenerConnection": "Listener connection",
+        "talkerConnection": "Talker connection",
+        "transfer": "Transfer",
+        "openFlags": "Open flags",
+        "waited": "Waiting",
+        "language": "Language",
+        "kind": "Type",
+        "actions": "Actions",
+        "status": "Status",
+        "chats": "Chats",
+        "languages": "Languages"
+      },
+      "ago": "{{time}} ago",
+      "kindNew": "New",
+      "assignedTo": "for {{name}}",
+      "presence": {
+        "AVAILABLE": "Available",
+        "AWAY": "Away",
+        "OFFLINE": "Offline"
+      },
+      "load": "{{active}} of {{max}}",
+      "assign": {
+        "action": "Assign to…",
+        "title": "Assign {{name}}",
+        "body": "Choose an available listener. The chat is held for them and they're alerted.",
+        "listenerLabel": "Listener",
+        "choose": "Choose a listener",
+        "option": "{{name}} · {{active}} of {{max}} chats",
+        "noneAvailable": "No listener is available with room for another chat.",
+        "confirm": "Assign",
+        "done": "Assigned to {{name}}. They've been alerted.",
+        "gone": "Someone picked this chat up, or it ended.",
+        "failed": "Couldn't assign this chat. Please try again."
+      }
+    },
+    "calibration": {
+      "title": "Risk calibration",
+      "explainerLabel": "About risk calibration",
+      "explainer": "How this organisation's risk flags turned out, as marked by the listeners who reviewed them. Use it to tune your risk threshold: many false positives from the AI classifier suggest it is set too low. Your Ally contact can change it.",
+      "windowLabel": "Period",
+      "window_one": "Last {{count}} day",
+      "window_other": "Last {{count}} days",
+      "byOutcome": "By outcome",
+      "bySource": "By source",
+      "outcome": {
+        "UNREVIEWED": "Unreviewed",
+        "CONFIRMED": "Confirmed",
+        "FALSE_POSITIVE": "False positive"
+      },
+      "listTitle": "Flags",
+      "empty_one": "No risk flags in the last {{count}} day.",
+      "empty_other": "No risk flags in the last {{count}} days.",
+      "loadFailed": "Couldn't load risk flags.",
+      "columns": {
+        "date": "Raised",
+        "level": "Level",
+        "source": "Source",
+        "confidence": "Confidence",
+        "outcome": "Outcome",
+        "note": "Note",
+        "chat": "Chat"
+      },
+      "percent": "{{value}}%",
+      "openChat": "Open chat"
+    },
+    "qa": {
+      "title": "Quality",
+      "mineTitle": "My feedback",
+      "introSupervisor": "Helping-skills feedback on finished chats, newest first. Each one is a snapshot of one conversation — use it to talk with the listener about how they're growing.",
+      "introMine": "Feedback on your finished chats, from the helping-skills rubric. It's here to help you grow, not to grade you.",
+      "listenerFilter": "Listener",
+      "allListeners": "All listeners",
+      "loadFailed": "Couldn't load feedback.",
+      "emptySupervisor": "No chats have feedback yet. It appears a little while after a chat ends, for chats with enough conversation to review.",
+      "emptyFiltered": "No chats with feedback for this listener yet.",
+      "emptyMine": "No feedback yet. It appears a little while after a chat ends, for chats with enough conversation to review.",
+      "columns": {
+        "listener": "Listener",
+        "date": "Date",
+        "overall": "Overall",
+        "notes": "Notes"
+      },
+      "overallHint": "The average of this chat's skill scores, on the rubric's 1–4 scale. One chat is a snapshot, not a verdict.",
+      "scoreOf": "score {{score}} of 4",
+      "unhelpfulMarker": "Unhelpful behaviour noted",
+      "viewFeedback": "View feedback",
+      "chatOn": "Chat on {{date}}",
+      "backAll": "Back to Quality",
+      "backMine": "Back to My feedback",
+      "notFound": "This feedback doesn't exist, or you can't see it.",
+      "detailTitleMine": "Your feedback",
+      "detailTitle": "Feedback for {{name}}",
+      "overallScore": "Overall score {{score}} of 4",
+      "detailIntroMine": "Read it alongside your own sense of the chat — what would you add? Talk it through with your supervisor if you'd like.",
+      "detailIntroSupervisor": "{{name}} sees exactly this. Start from what went well, then ask what they'd like to practise.",
+      "wentWell": "What went well",
+      "wentWellEmpty": "Strengths show here once a skill reaches score 3. Every chat builds them — pick one step below to start.",
+      "goingFurther": "Going further",
+      "toWorkOn": "To work on",
+      "toWorkOnIntro": "One or two at a time is plenty. Each comes with a way to practise.",
+      "toWorkOnEmpty": "Nothing stood out to work on in this chat.",
+      "unhelpfulLabel": "What got in the way:",
+      "missingLabel": "A step to add:",
+      "practiseUnhelpful": "Practise: in your next chat or roleplay, notice the moment before “{{behaviour}}” and pause before you reply.",
+      "practiseMissing": "Practise: make “{{behaviour}}” a deliberate step in your next chat or roleplay.",
+      "showMore_one": "Show {{count}} more skill",
+      "showMore_other": "Show {{count}} more skills",
+      "skillScore": "score {{score}} of 4",
+      "seeInChat": "See in chat",
+      "tiers": {
+        "Engage": "Engage",
+        "Understand": "Understand",
+        "Support": "Support"
+      },
+      "closing": "Thank you for being there for someone who reached out. Every conversation builds these skills."
+    },
+    "team": {
+      "title": "Team",
+      "rolesLabel": "Who can do what",
+      "listener": "Listener",
+      "supervisor": "Supervisor",
+      "listenerExplainer": "Takes chats with talkers: claims them from the lobby, replies, ends them, and sees their own feedback.",
+      "supervisorExplainer": "Everything a listener can do, plus: monitors live chats, whispers to listeners, transfers or takes over chats, and reviews feedback.",
+      "lagNote": "Changes apply at once. Someone already signed in may need to reload the page to see their new access.",
+      "searchLabel": "Search people",
+      "searchPlaceholder": "Name or email",
+      "loadFailed": "Couldn't load your team.",
+      "empty": "No one in your organisation yet.",
+      "noMatch": "No one matches “{{search}}”.",
+      "adminChip": "Admin",
+      "adminHint": "Admins are supervisors by role, so this can't be changed here.",
+      "listenerViaSupervisor": "Supervisors can already take chats. Turn Supervisor off to change this.",
+      "listenerFor": "Listener: {{name}}",
+      "supervisorFor": "Supervisor: {{name}}",
+      "failed": "Couldn't update {{name}}. Their access hasn't changed.",
+      "noAccess": "Team is for your organisation's admins."
     }
   }
 }

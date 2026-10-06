@@ -33,6 +33,10 @@ import {
   HelplineLobby,
   HelplineChatView,
   HelplineHistory,
+  HelplineMonitor,
+  HelplineQa,
+  HelplineQaDetail,
+  HelplineTeam,
 } from "@pages";
 import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
@@ -313,6 +317,12 @@ const PrivateRouteLayout: FC = () => {
           <Route index element={<HelplineLobby />} />
           <Route path={ROUTES.HELPLINE_CHAT} element={<HelplineChatView />} />
           <Route path={ROUTES.HELPLINE_HISTORY} element={<HelplineHistory />} />
+          {/* Each page also checks its own permission (monitor / team), so a
+              typed URL shows a plain "not for your role" state. */}
+          <Route path={ROUTES.HELPLINE_MONITOR} element={<HelplineMonitor />} />
+          <Route path={ROUTES.HELPLINE_QA} element={<HelplineQa />} />
+          <Route path={ROUTES.HELPLINE_QA_DETAIL} element={<HelplineQaDetail />} />
+          <Route path={ROUTES.HELPLINE_TEAM} element={<HelplineTeam />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

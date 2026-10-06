@@ -77,6 +77,10 @@ vi.mock("@pages", () => ({
   HelplineLobby: () => <div data-testid="helpline-lobby-page">Helpline Lobby</div>,
   HelplineChatView: () => <div data-testid="helpline-chat-page">Helpline Chat</div>,
   HelplineHistory: () => <div data-testid="helpline-history-page">Helpline History</div>,
+  HelplineMonitor: () => <div data-testid="helpline-monitor-page">Helpline Monitor</div>,
+  HelplineQa: () => <div data-testid="helpline-qa-page">Helpline QA</div>,
+  HelplineQaDetail: () => <div data-testid="helpline-qa-detail-page">Helpline QA detail</div>,
+  HelplineTeam: () => <div data-testid="helpline-team-page">Helpline Team</div>,
 }));
 
 // Mock the reducer actions
@@ -139,6 +143,10 @@ vi.mock("@constants", () => ({
     HELPLINE: "/helpline",
     HELPLINE_CHAT: "/helpline/chat/:chatId",
     HELPLINE_HISTORY: "/helpline/history",
+    HELPLINE_MONITOR: "/helpline/monitor",
+    HELPLINE_QA: "/helpline/qa",
+    HELPLINE_QA_DETAIL: "/helpline/qa/:chatId",
+    HELPLINE_TEAM: "/helpline/team",
   },
   TAG_TYPES: {
     REVIEW: "REVIEW",

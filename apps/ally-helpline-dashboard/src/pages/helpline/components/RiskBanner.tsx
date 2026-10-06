@@ -1,4 +1,4 @@
-import { FC, useId, useState } from "react";
+import { FC, ReactNode, useId, useState } from "react";
 
 import { ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,14 @@ interface RiskBannerProps {
   checklist: string[];
   canAcknowledge: boolean;
   onAcknowledge: (body: AckRiskFlagBody) => Promise<boolean>;
+  /** The Alert a supervisor control, for the listener of record. */
+  alertSupervisor?: ReactNode;
+  /** The org's listener support contact, for the "nobody could be alerted" line. */
+  supportContact?: string | null;
 }
+
+/** The checklist step about telling a supervisor, if the org wrote one. */
+const SUPERVISOR_STEP = /supervisor/i;
 
 /**
  * An unacknowledged risk flag. It stays until the listener acknowledges it or
@@ -26,6 +33,8 @@ export const RiskBanner: FC<RiskBannerProps> = ({
   checklist,
   canAcknowledge,
   onAcknowledge,
+  alertSupervisor,
+  supportContact = null,
 }) => {
   const { t } = useTranslation();
   const [note, setNote] = useState("");
@@ -33,7 +42,11 @@ export const RiskBanner: FC<RiskBannerProps> = ({
   const [saving, setSaving] = useState<AckRiskFlagBody["outcome"] | null>(null);
   const [failed, setFailed] = useState(false);
   const noteId = useId();
+  const stepId = useId();
   const isHigh = flag.level === "HIGH";
+  // null/absent: the server didn't say (older payloads) — so neither do we.
+  const alerted = flag.supervisorsAlerted;
+  const supervisorStep = checklist.findIndex(item => SUPERVISOR_STEP.test(item));
 
   const submit = async (outcome: AckRiskFlagBody["outcome"]) => {
     setSaving(outcome);
@@ -72,9 +85,17 @@ export const RiskBanner: FC<RiskBannerProps> = ({
               {t("helplineWorkspace.riskBanner.signal", { signal: flag.signal })}
             </p>
           )}
-          {isHigh && (
-            <p className="mt-1 text-sm font-medium">
+          {typeof alerted === "number" && alerted > 0 && (
+            <p className="mt-1 text-sm font-medium" data-testid="risk-supervisor-alerted">
               {t("helplineWorkspace.riskBanner.supervisorAlerted")}
+            </p>
+          )}
+          {alerted === 0 && (
+            <p className="mt-1 text-sm font-medium" data-testid="risk-no-supervisor">
+              {t("helplineWorkspace.riskBanner.noSupervisorAlerted")}
+              {supportContact
+                ? ` ${t("helplineWorkspace.alertSupervisor.supportContact", { contact: supportContact })}`
+                : ""}
             </p>
           )}
           {isHigh && flag.resourcesSent && (
@@ -90,23 +111,30 @@ export const RiskBanner: FC<RiskBannerProps> = ({
           </legend>
           <ul className="mt-1 flex flex-col gap-1">
             {checklist.map((item, index) => (
-              <li key={`${index}-${item}`}>
+              <li key={`${index}-${item}`} className="flex flex-col gap-1.5">
                 <label className="flex items-start gap-2 text-sm text-typography-900">
+                  {/* Named explicitly: some accessibility trees read a wrapped
+                      checkbox by its value ("on") rather than its label. */}
                   <input
                     type="checkbox"
+                    aria-labelledby={`${stepId}-${index}`}
                     checked={Boolean(ticked[index])}
                     onChange={event =>
                       setTicked(current => ({ ...current, [index]: event.target.checked }))
                     }
                     className="mt-0.5 h-4 w-4 flex-shrink-0"
                   />
-                  <span>{item}</span>
+                  <span id={`${stepId}-${index}`}>{item}</span>
                 </label>
+                {alertSupervisor && index === supervisorStep && (
+                  <div className="pl-6">{alertSupervisor}</div>
+                )}
               </li>
             ))}
           </ul>
         </fieldset>
       )}
+      {alertSupervisor && supervisorStep < 0 && <div className="mt-3">{alertSupervisor}</div>}
 
       {canAcknowledge && (
         <div className="mt-3 flex flex-col gap-2">

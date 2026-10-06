@@ -79,6 +79,10 @@ export const ROUTES = {
   HELPLINE: "/helpline",
   HELPLINE_CHAT: "/helpline/chat/:chatId",
   HELPLINE_HISTORY: "/helpline/history",
+  HELPLINE_MONITOR: "/helpline/monitor",
+  HELPLINE_QA: "/helpline/qa",
+  HELPLINE_QA_DETAIL: "/helpline/qa/:chatId",
+  HELPLINE_TEAM: "/helpline/team",
   // Text helpline: the anonymous public talker page. No sign-in, no nav.
   TALK: "/talk/:tenantCode",
 } as const;
@@ -99,6 +103,11 @@ export const buildTrackItemDiscussionPostRoute = (
 export const buildTrackProgressRoute = (trackId: string) => `/track/${trackId}/progress`;
 export const buildHelplineChatRoute = (chatId: string) =>
   `/helpline/chat/${encodeURIComponent(chatId)}`;
+/** A message inside a chat, for links from QA evidence quotes. */
+export const buildHelplineChatMessageRoute = (chatId: string, messageId: number) =>
+  `${buildHelplineChatRoute(chatId)}#message-${messageId}`;
+export const buildHelplineQaRoute = (chatId: string) =>
+  `/helpline/qa/${encodeURIComponent(chatId)}`;
 
 export const excludeNavBar = [
   ROUTES.AUDIO_CALL,
@@ -218,7 +227,14 @@ export const navBarOptions = [
     key: "nav.tabs.helpline",
     Icon: HelplineNavIcon,
     path: ROUTES.HELPLINE,
-    activePages: [ROUTES.HELPLINE_CHAT, ROUTES.HELPLINE_HISTORY],
+    activePages: [
+      ROUTES.HELPLINE_CHAT,
+      ROUTES.HELPLINE_HISTORY,
+      ROUTES.HELPLINE_MONITOR,
+      ROUTES.HELPLINE_QA,
+      ROUTES.HELPLINE_QA_DETAIL,
+      ROUTES.HELPLINE_TEAM,
+    ],
     // Empty on purpose, like Character Library: visibility needs a helpline
     // permission AND the tenant's TEXT_HELPLINE_ENABLED toggle, so
     // useCanUseTextHelpline decides it in NavSideBar.

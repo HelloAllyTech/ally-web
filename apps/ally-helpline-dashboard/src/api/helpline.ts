@@ -15,6 +15,7 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import type {
   AckRiskFlagBody,
+  AlertSupervisorResponse,
   ChatDetailDto,
   ChatListParams,
   ChatListResponse,
@@ -22,10 +23,19 @@ import type {
   HelplineMeDto,
   HelplinePresence,
   LobbyDto,
+  MonitorDto,
+  QaDetailDto,
+  QaListItemDto,
+  QaListParams,
   RiskFlagDto,
+  RiskFlagsParams,
+  RiskFlagsResponse,
   StaffMessageDto,
   SummaryDto,
+  TeamMemberDto,
+  TransferBody,
   UpdateHelplineProfileBody,
+  UpdateTeamMemberBody,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -184,6 +194,9 @@ export const helplineAPI = baseAPI.injectEndpoints({
           // Handled by the caller; the banner stays up until the server accepts.
         }
       },
+      // The outcome feeds the Monitor's open-flag counts and the calibration view.
+      invalidatesTags: (_result, error) =>
+        error ? [] : [TAG_TYPES.HELPLINE_MONITOR, TAG_TYPES.HELPLINE_RISK_FLAGS],
     }),
 
     sendHelplineCopilotFeedback: builder.mutation<
@@ -195,6 +208,191 @@ export const helplineAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
+    }),
+
+    // ─── Supervision (§5.3, §10) ─────────────────────────────────────────
+
+    /** Listener of record (with edit:helpline:end) or a supervisor. */
+    requestHelplineTransfer: builder.mutation<ChatDetailDto, { chatId: string } & TransferBody>({
+      query: ({ chatId, targetListenerId }) => ({
+        url: ApiEndpoints.HELPLINE.CHAT_TRANSFER(chatId),
+        method: HttpMethod.POST,
+        body: targetListenerId !== undefined ? { targetListenerId } : {},
+      }),
+      async onQueryStarted({ chatId }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(helplineAPI.util.upsertQueryData("getHelplineChat", chatId, data));
+        } catch {
+          // Handled by the caller.
+        }
+      },
+      invalidatesTags: [TAG_TYPES.HELPLINE_LOBBY, TAG_TYPES.HELPLINE_MONITOR],
+    }),
+
+    /** Points a WAITING or transfer-pending chat at one listener, and alerts them. */
+    assignHelplineChat: builder.mutation<ChatDetailDto, { chatId: string; listenerId: number }>({
+      query: ({ chatId, listenerId }) => ({
+        url: ApiEndpoints.HELPLINE.CHAT_ASSIGN(chatId),
+        method: HttpMethod.POST,
+        body: { listenerId },
+      }),
+      invalidatesTags: [TAG_TYPES.HELPLINE_LOBBY, TAG_TYPES.HELPLINE_MONITOR],
+    }),
+
+    /** The supervisor becomes listener of record at once. */
+    takeOverHelplineChat: builder.mutation<ChatDetailDto, string>({
+      query: chatId => ({
+        url: ApiEndpoints.HELPLINE.CHAT_TAKE_OVER(chatId),
+        method: HttpMethod.POST,
+      }),
+      async onQueryStarted(chatId, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(helplineAPI.util.upsertQueryData("getHelplineChat", chatId, data));
+        } catch {
+          // Handled by the caller.
+        }
+      },
+      invalidatesTags: [
+        TAG_TYPES.HELPLINE_LOBBY,
+        TAG_TYPES.HELPLINE_ME,
+        TAG_TYPES.HELPLINE_MONITOR,
+      ],
+    }),
+
+    /** Staff-only; the server never puts a whisper in the talker room. */
+    sendHelplineWhisper: builder.mutation<StaffMessageDto, { chatId: string; content: string }>({
+      query: ({ chatId, content }) => ({
+        url: ApiEndpoints.HELPLINE.CHAT_WHISPER(chatId),
+        method: HttpMethod.POST,
+        body: { content },
+      }),
+      async onQueryStarted({ chatId }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            helplineAPI.util.updateQueryData("getHelplineChat", chatId, draft => {
+              // The WHISPER socket event may have delivered it first.
+              if (!draft.messages.some(message => message.id === data.id)) {
+                draft.messages.push(data);
+                draft.messages.sort((a, b) => a.id - b.id);
+              }
+            }),
+          );
+        } catch {
+          // Handled by the caller (the draft stays in the box).
+        }
+      },
+    }),
+
+    /** Ends the chat (TALKER_BLOCKED) and refuses new chats from this device/network for 24 h. */
+    blockHelplineTalker: builder.mutation<
+      void,
+      { talkerId: string; chatId: string; reason?: string }
+    >({
+      query: ({ talkerId, reason }) => ({
+        url: ApiEndpoints.HELPLINE.TALKER_BLOCK(talkerId),
+        method: HttpMethod.POST,
+        body: reason ? { reason } : {},
+      }),
+      invalidatesTags: (_result, error, { chatId }) =>
+        error
+          ? []
+          : [
+              { type: TAG_TYPES.HELPLINE_CHAT, id: chatId },
+              TAG_TYPES.HELPLINE_LOBBY,
+              TAG_TYPES.HELPLINE_MONITOR,
+            ],
+    }),
+
+    /** The listener of record asks for a supervisor now (the checklist's "tell a supervisor"). */
+    alertHelplineSupervisor: builder.mutation<
+      AlertSupervisorResponse,
+      { chatId: string; note?: string }
+    >({
+      query: ({ chatId, note }) => ({
+        url: ApiEndpoints.HELPLINE.CHAT_ALERT_SUPERVISOR(chatId),
+        method: HttpMethod.POST,
+        body: note ? { note } : {},
+      }),
+    }),
+
+    getHelplineMonitor: builder.query<MonitorDto, void>({
+      query: () => ApiEndpoints.HELPLINE.MONITOR,
+      providesTags: [TAG_TYPES.HELPLINE_MONITOR],
+    }),
+
+    getHelplineRiskFlags: builder.query<RiskFlagsResponse, RiskFlagsParams>({
+      query: params => ({ url: ApiEndpoints.HELPLINE.RISK_FLAGS, params }),
+      providesTags: [TAG_TYPES.HELPLINE_RISK_FLAGS],
+    }),
+
+    getHelplineQa: builder.query<{ items: QaListItemDto[]; total: number }, QaListParams>({
+      query: params => ({ url: ApiEndpoints.HELPLINE.QA, params }),
+      providesTags: [TAG_TYPES.HELPLINE_QA],
+    }),
+
+    /** The caller's own scored chats only — what a listener sees as "My feedback". */
+    getMyHelplineQa: builder.query<{ items: QaListItemDto[] }, void>({
+      query: () => ApiEndpoints.HELPLINE.QA_MINE,
+      providesTags: [TAG_TYPES.HELPLINE_QA],
+    }),
+
+    getHelplineQaDetail: builder.query<QaDetailDto, string>({
+      query: chatId => ApiEndpoints.HELPLINE.QA_DETAIL(chatId),
+      providesTags: (_result, _error, chatId) => [{ type: TAG_TYPES.HELPLINE_QA, id: chatId }],
+    }),
+
+    getHelplineTeam: builder.query<{ items: TeamMemberDto[] }, string>({
+      query: search => ({
+        url: ApiEndpoints.HELPLINE.TEAM,
+        params: search.trim() ? { search: search.trim() } : undefined,
+      }),
+      providesTags: [TAG_TYPES.HELPLINE_TEAM],
+    }),
+
+    /**
+     * Grants/revokes exactly the two helpline groups. Optimistic: every cached
+     * Team search shows the change at once and is rolled back if the server
+     * refuses; on success the server's row replaces it.
+     */
+    updateHelplineTeamMember: builder.mutation<
+      TeamMemberDto,
+      { userId: number } & UpdateTeamMemberBody
+    >({
+      query: ({ userId, listener, supervisor }) => ({
+        url: ApiEndpoints.HELPLINE.TEAM_MEMBER(userId),
+        method: HttpMethod.PUT,
+        body: { listener, supervisor },
+      }),
+      async onQueryStarted(
+        { userId, listener, supervisor },
+        { dispatch, getState, queryFulfilled },
+      ) {
+        const cached = helplineAPI.util
+          .selectInvalidatedBy(getState(), [TAG_TYPES.HELPLINE_TEAM])
+          .filter(entry => entry.endpointName === "getHelplineTeam");
+        const patchMember = (recipe: (member: TeamMemberDto) => void) =>
+          cached.map(({ originalArgs }) =>
+            dispatch(
+              helplineAPI.util.updateQueryData("getHelplineTeam", originalArgs, draft => {
+                const member = draft.items.find(item => item.userId === userId);
+                if (member) recipe(member);
+              }),
+            ),
+          );
+        const optimistic = patchMember(member => {
+          member.isListener = listener;
+          member.isSupervisor = supervisor;
+        });
+        try {
+          const { data } = await queryFulfilled;
+          patchMember(member => Object.assign(member, data));
+        } catch {
+          optimistic.forEach(patch => patch.undo());
+        }
+      },
     }),
   }),
 });
@@ -213,4 +411,17 @@ export const {
   useGetHelplineChatsQuery,
   useAckHelplineRiskFlagMutation,
   useSendHelplineCopilotFeedbackMutation,
+  useRequestHelplineTransferMutation,
+  useAssignHelplineChatMutation,
+  useTakeOverHelplineChatMutation,
+  useSendHelplineWhisperMutation,
+  useBlockHelplineTalkerMutation,
+  useAlertHelplineSupervisorMutation,
+  useGetHelplineMonitorQuery,
+  useGetHelplineRiskFlagsQuery,
+  useGetHelplineQaQuery,
+  useGetMyHelplineQaQuery,
+  useGetHelplineQaDetailQuery,
+  useGetHelplineTeamQuery,
+  useUpdateHelplineTeamMemberMutation,
 } = helplineAPI;

@@ -21,8 +21,7 @@ export const notificationPermission = (): NotificationPermission | null =>
 
 let audioContext: AudioContext | null = null;
 
-/** A soft two-note chime (~0.35 s) from WebAudio, so there is no asset to ship. */
-export const playChime = () => {
+const playNotes = (frequencies: number[]) => {
   try {
     const Context =
       window.AudioContext ??
@@ -31,7 +30,7 @@ export const playChime = () => {
     audioContext ??= new Context();
     const context = audioContext;
     const start = context.currentTime;
-    [660, 880].forEach((frequency, index) => {
+    frequencies.forEach((frequency, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = "sine";
@@ -49,20 +48,49 @@ export const playChime = () => {
   }
 };
 
+/** A soft two-note chime (~0.35 s) from WebAudio, so there is no asset to ship. */
+export const playChime = () => playNotes([660, 880]);
+
 /**
- * A system notification, only when the tab is out of view (in view, the lobby
- * itself and the chime are enough) and only if the listener allowed it.
+ * A supervisor alert: three notes, falling — distinct from the rising queue
+ * chime so a supervisor who is also listening can tell them apart by ear.
  */
-export const showWaitingNotification = (title: string) => {
+export const playAlertTone = () => playNotes([988, 784, 659]);
+
+const showHiddenTabNotification = (
+  title: string,
+  options: NotificationOptions,
+  onClick?: () => void,
+) => {
   try {
     if (notificationPermission() !== "granted") return;
     if (document.visibilityState === "visible") return;
-    const notification = new Notification(title, { tag: "ally-helpline-queue", silent: true });
+    const notification = new Notification(title, options);
     notification.onclick = () => {
       window.focus();
+      onClick?.();
       notification.close();
     };
   } catch {
     // Some browsers only allow notifications from a service worker.
   }
 };
+
+/**
+ * A system notification, only when the tab is out of view (in view, the lobby
+ * itself and the chime are enough) and only if the listener allowed it.
+ */
+export const showWaitingNotification = (title: string) =>
+  showHiddenTabNotification(title, { tag: "ally-helpline-queue", silent: true });
+
+/**
+ * A supervisor alert as a system notification, when the tab is out of view.
+ * `body` is fixed copy for the alert type — never a talker's name or anything
+ * anyone wrote. One `tag` per chat, so a repeat replaces rather than stacks.
+ */
+export const showSupervisorAlertNotification = (
+  title: string,
+  body: string,
+  tag: string,
+  onClick?: () => void,
+) => showHiddenTabNotification(title, { body, tag, silent: true }, onClick);

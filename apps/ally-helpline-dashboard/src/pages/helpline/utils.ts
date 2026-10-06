@@ -4,6 +4,7 @@ import type {
   HelplineMeDto,
   HelplineRiskLevel,
   LobbyEntryDto,
+  MonitorListenerDto,
   RiskFlagDto,
   StaffMessageDto,
 } from "@types";
@@ -49,12 +50,31 @@ export const skillLabelKey = (skillKey: string | undefined | null) =>
 export const isTalkerVisibleSystemKind = (kind: string | null) =>
   Boolean(kind) && (HELPLINE_TALKER_SYSTEM_KINDS as readonly string[]).includes(kind as string);
 
-/** The messages that belong in the transcript (copilot output lives in its own panel). */
+/**
+ * The messages that belong in the transcript (copilot output lives in its own
+ * panel). Whispers appear in both: inline where they were sent, styled as
+ * staff-only, and in the copilot panel's Whispers section.
+ */
 export const isTranscriptMessage = (message: StaffMessageDto) =>
   message.type === "TEXT" ||
   message.type === "SYSTEM" ||
   message.type === "RISK" ||
-  message.type === "TRANSFER";
+  message.type === "TRANSFER" ||
+  message.type === "WHISPER";
+
+/**
+ * A previous listener of this chat (after a transfer or take-over): read-only
+ * now, but they wrote to the talker in it. The DTO doesn't carry
+ * `previous_listener_ids`, so their own listener messages are the evidence.
+ */
+export const isPreviousListener = (detail: ChatDetailDto, myUserId: number) =>
+  detail.chat.myAccess === "READ_ONLY" &&
+  detail.messages.some(
+    message =>
+      message.type === "TEXT" &&
+      message.senderRole !== "TALKER" &&
+      message.senderUserId === myUserId,
+  );
 
 export const latestMessageOfType = (
   messages: StaffMessageDto[],
@@ -122,3 +142,22 @@ export const claimBlockReason = (
   if (me.activeChatCount >= effectiveCapacity(me)) return "capacity";
   return null;
 };
+
+/**
+ * Listeners a chat can be pointed at (Assign to…, or a transfer's target):
+ * Available, with room under their own cap and the org's, never the chat's
+ * current listener. Alphabetical — a picker, not a ranking by load.
+ */
+export const assignableListeners = (
+  listeners: MonitorListenerDto[],
+  orgCap: number,
+  excludeUserId?: number | null,
+) =>
+  listeners
+    .filter(
+      listener =>
+        listener.presence === "AVAILABLE" &&
+        listener.userId !== excludeUserId &&
+        listener.activeChatCount < Math.max(1, Math.min(listener.maxConcurrentChats, orgCap)),
+    )
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));

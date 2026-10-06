@@ -315,6 +315,11 @@ export interface RiskFlagDto {
   outcome: RiskFlagOutcome;
   outcomeNote: string | null;
   createdAt: string;
+  /**
+   * How many supervisors were alerted for this flag: null/absent = not
+   * applicable (or an older payload), 0 = nobody could be alerted, n = alerted.
+   */
+  supervisorsAlerted?: number | null;
 }
 
 export type SummaryKind = "ROLLING" | "HANDOFF" | "FINAL";
@@ -364,6 +369,110 @@ export interface CopilotFeedbackBody {
   rating: "UP" | "DOWN";
 }
 
+// ─── Supervision (§5.3, §10) ────────────────────────────────────────────────
+
+export interface MonitorActiveChatDto extends ChatListItemDto {
+  lastMessageAgeSeconds: number | null;
+  listenerConnected: boolean;
+  talkerConnected: boolean;
+  transferPending: boolean;
+  openFlags: number;
+}
+
+export interface MonitorListenerDto {
+  userId: number;
+  displayName: string;
+  presence: HelplinePresence;
+  activeChatCount: number;
+  maxConcurrentChats: number;
+  languages: string[];
+}
+
+export interface MonitorDto {
+  tiles: { waiting: number; active: number; listenersAvailable: number; openHighFlags: number };
+  activeChats: MonitorActiveChatDto[];
+  waiting: LobbyEntryDto[];
+  listeners: MonitorListenerDto[];
+}
+
+/**
+ * A row of the risk calibration view. The contract names this type without
+ * pinning it; assumed to be the flag plus the chat it belongs to. `signal` is
+ * never rendered here — the calibration view is about outcomes, not content.
+ */
+export interface RiskFlagRowDto extends Omit<RiskFlagDto, "signal"> {
+  chatId: string;
+  signal?: string | null;
+}
+
+export interface RiskFlagsResponse {
+  items: RiskFlagRowDto[];
+  counts: Record<RiskFlagOutcome, number>;
+  /** Assumed `{ KEYWORD, CLASSIFIER }` — the contract leaves it as `{...}`. */
+  bySource: Partial<Record<RiskFlagDto["source"], number>>;
+}
+
+export interface RiskFlagsParams {
+  days: 7 | 30;
+  outcome?: RiskFlagOutcome;
+}
+
+export interface TransferBody {
+  targetListenerId?: number;
+}
+
+export interface AlertSupervisorResponse {
+  alertedCount: number;
+}
+
+export type QaTier = "Engage" | "Understand" | "Support";
+
+export interface QaListItemDto {
+  chatId: string;
+  listenerId: number;
+  listenerName: string;
+  endedAt: string;
+  /** Mean of the skill scores, 1–4. */
+  compositeScore: number;
+  hasUnhelpfulBehaviour: boolean;
+  rubricVersion: string;
+}
+
+export interface QaSkillDto {
+  key: string;
+  label: string;
+  tier: QaTier;
+  level: 1 | 2 | 3 | 4;
+  unhelpful: string[];
+  basicMet: string[];
+  basicMissing: string[];
+  advanced: string[];
+  evidence: { messageId: number; quote: string }[];
+}
+
+export interface QaDetailDto extends QaListItemDto {
+  skills: QaSkillDto[];
+}
+
+export interface QaListParams {
+  listenerId?: number;
+  page?: number;
+}
+
+export interface TeamMemberDto {
+  userId: number;
+  name: string;
+  email: string;
+  isListener: boolean;
+  isSupervisor: boolean;
+  isAdmin: boolean;
+}
+
+export interface UpdateTeamMemberBody {
+  listener: boolean;
+  supervisor: boolean;
+}
+
 // ─── Socket (§6.3) ──────────────────────────────────────────────────────────
 
 /**
@@ -380,13 +489,25 @@ export interface SendMessagePayload {
   suggestion?: { messageId: number; index: number };
 }
 
+export interface TransferEventPayload {
+  chatId: string;
+  toListenerId?: number | null;
+}
+
 export interface QueueUpdatedPayload {
   waiting: LobbyEntryDto[];
   counts: LobbyCounts;
 }
 
+export type HelplineAlertType =
+  | "RISK_HIGH"
+  | "LISTENER_DISCONNECTED"
+  | "TRANSFER_REQUESTED"
+  | "HIGH_RISK_WAITING"
+  | "LISTENER_REQUESTED_HELP";
+
 export interface HelplineAlertPayload {
-  type: "RISK_HIGH" | "LISTENER_DISCONNECTED" | "TRANSFER_REQUESTED" | "HIGH_RISK_WAITING";
+  type: HelplineAlertType;
   chatId: string;
   level?: string;
   at: string;

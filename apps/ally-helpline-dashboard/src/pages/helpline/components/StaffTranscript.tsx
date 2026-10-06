@@ -1,7 +1,8 @@
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
-import { AlertCircle, Eye, Lock } from "lucide-react";
+import { AlertCircle, Eye, Lock, MessageSquareLock } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 import type { StaffChatDto, StaffMessageDto } from "@types";
 
@@ -20,6 +21,29 @@ interface StaffTranscriptProps {
 
 const SEND_ERRORS = ["rate_limited", "too_long", "chat_ended", "not_allowed"];
 
+/** System kinds with their own copy; anything else reads as a generic update. */
+const KNOWN_SYSTEM_KINDS = [
+  "ACCEPTED",
+  "RESOURCES",
+  "CLOSING",
+  "TRANSFERRING",
+  "LISTENER_RECONNECTING",
+  "LISTENER_BACK",
+  "ENDED",
+  "TALKER_DISCONNECTED",
+  "TALKER_RECONNECTED",
+  "TAKEN_OVER",
+  "TRANSFERRED",
+  "ASSIGNED",
+  "SUPERVISOR_REQUESTED",
+];
+
+/** `#message-123` → 123 (QA evidence links land on the quoted message). */
+const messageIdFromHash = (hash: string) => {
+  const match = /^#message-(\d+)$/.exec(hash);
+  return match ? Number(match[1]) : null;
+};
+
 /**
  * Talker on the left, staff on the right (me unlabelled, anyone else — a
  * previous listener, a supervisor who took over — under their name). System
@@ -36,8 +60,10 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
   onRetry,
 }) => {
   const { t } = useTranslation();
+  const { hash } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [highlightId, setHighlightId] = useState<number | null>(null);
   const talkerName = chat.talker.displayName || t("helplineWorkspace.chat.talkerFallback");
   const visible = messages.filter(isTranscriptMessage);
   const confirmedClientIds = new Set(
@@ -46,18 +72,62 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
   const unconfirmed = pending.filter(item => !confirmedClientIds.has(item.clientMessageId));
 
   useEffect(() => {
+    if (highlightId !== null) return;
     const scroller = scrollRef.current;
     if (!scroller) return;
     const nearBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 160;
     if (nearBottom) endRef.current?.scrollIntoView?.({ block: "end" });
-  }, [visible.length, unconfirmed.length, talkerTyping]);
+  }, [visible.length, unconfirmed.length, talkerTyping, highlightId]);
+
+  // A link to one message (from QA feedback) scrolls to it and marks it.
+  const targetId = messageIdFromHash(hash);
+  const hasTarget = targetId !== null && visible.some(message => message.id === targetId);
+  useEffect(() => {
+    if (!hasTarget || targetId === null) return;
+    setHighlightId(targetId);
+    document.getElementById(`message-${targetId}`)?.scrollIntoView?.({ block: "center" });
+  }, [hasTarget, targetId]);
+
+  const whisperLine = (message: StaffMessageDto) => {
+    const fromMe = message.senderUserId === myUserId;
+    const iAmListener = chat.myAccess === "LISTENER" && chat.listener?.id === myUserId;
+    const heading = fromMe
+      ? t("helplineWorkspace.whisper.inlineFromMe", {
+          name: chat.listener?.displayName || t("helplineWorkspace.chat.otherStaff"),
+        })
+      : iAmListener
+        ? t("helplineWorkspace.whisper.inlineToMe")
+        : t("helplineWorkspace.whisper.inlineOther");
+    return (
+      <li
+        key={message.id}
+        id={`message-${message.id}`}
+        className="flex justify-center px-2"
+        data-testid="transcript-whisper"
+      >
+        <div
+          className={`w-full max-w-[90%] rounded-xl border border-dashed border-status-mauveFg bg-status-mauveBg px-3 py-2 font-primary text-status-mauveFg ${
+            highlightId === message.id ? "ring-2 ring-primary-500" : ""
+          }`}
+        >
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold">
+            <MessageSquareLock aria-hidden="true" className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="sr-only">{t("helplineWorkspace.chat.staffOnly")}:</span>
+            {heading}
+            {message.senderName && !fromMe ? ` · ${message.senderName}` : ""}
+          </p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm">{message.content}</p>
+        </div>
+      </li>
+    );
+  };
 
   const systemLine = (message: StaffMessageDto) => {
     if (message.type === "RISK") {
       const level = String(message.metadata?.level ?? "");
       const source = String(message.metadata?.source ?? "");
       return (
-        <li key={message.id} className="flex justify-center px-2">
+        <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
           <p className="inline-flex max-w-[90%] items-center gap-1.5 rounded-full border border-dashed border-status-alarmDot bg-status-alarmBg px-3 py-1 text-center font-primary text-xs text-status-alarmFg">
             <Lock aria-hidden="true" className="h-3 w-3 flex-shrink-0" />
             <span className="sr-only">{t("helplineWorkspace.chat.staffOnly")}:</span>
@@ -71,27 +141,17 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
     }
     const kind = message.systemKind ?? "";
     const talkerSees = message.visibleToTalker && isTalkerVisibleSystemKind(kind);
-    const knownKinds = [
-      "ACCEPTED",
-      "RESOURCES",
-      "CLOSING",
-      "TRANSFERRING",
-      "LISTENER_RECONNECTING",
-      "LISTENER_BACK",
-      "ENDED",
-      "TALKER_DISCONNECTED",
-      "TALKER_RECONNECTED",
-      "TAKEN_OVER",
-      "TRANSFERRED",
-      "ASSIGNED",
-    ];
-    const text = knownKinds.includes(kind)
+    const text = KNOWN_SYSTEM_KINDS.includes(kind)
       ? t(`helplineWorkspace.chat.system.${kind}`, {
-          name: (message.metadata?.listenerName as string) || chat.listener?.displayName || "",
+          name:
+            (message.metadata?.listenerName as string) ||
+            message.senderName ||
+            chat.listener?.displayName ||
+            "",
         })
       : t("helplineWorkspace.chat.system.generic");
     return (
-      <li key={message.id} className="flex justify-center px-2">
+      <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
         <p
           title={
             talkerSees
@@ -133,12 +193,14 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
         data-testid="staff-transcript"
       >
         {visible.map((message, index) => {
+          if (message.type === "WHISPER") return whisperLine(message);
           if (message.type !== "TEXT") return systemLine(message);
           const fromTalker = message.senderRole === "TALKER";
           const mine = !fromTalker && message.senderUserId === myUserId;
           const previous = visible[index - 1];
           const startsRun =
             !previous ||
+            previous.type === "WHISPER" ||
             previous.type !== "TEXT" ||
             previous.senderRole !== message.senderRole ||
             previous.senderUserId !== message.senderUserId;
@@ -150,6 +212,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
           return (
             <li
               key={message.id}
+              id={`message-${message.id}`}
               className={`flex flex-col ${fromTalker ? "items-start" : "items-end"}`}
             >
               {startsRun && (!mine || fromTalker) ? (
@@ -160,7 +223,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
               <p
                 className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 font-primary text-base ${
                   message.erased ? "italic opacity-70" : ""
-                } ${
+                } ${highlightId === message.id ? "ring-2 ring-primary-500 ring-offset-2" : ""} ${
                   fromTalker
                     ? "rounded-bl-md border border-border-light bg-background-secondary text-typography-900"
                     : mine
