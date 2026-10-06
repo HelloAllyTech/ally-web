@@ -254,10 +254,10 @@ Talker events have no signed-in user, so `user_role` is `unknown`.
 | `TALKER_FEEDBACK_SUBMITTED`       | `talker_feedback_submitted`       | The one-question rating after a chat. Sends `chat_id`, `rating` (1–5), `has_feedback_text` (boolean, never the comment) | `pages/helpline-talk/useTalkerSession.ts` |
 | `TALKER_CONVERSATION_DELETED`     | `talker_conversation_deleted`     | A talker erased their conversation. Sends `chat_id`, `screen` | `pages/helpline-talk/useTalkerSession.ts` |
 | `TALKER_QUICK_EXIT_USED`          | `talker_quick_exit_used`          | Quick exit pressed. Sends `screen` and `chat_id` when there is a chat | `pages/helpline-talk/useTalkerSession.ts` |
-| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds` | — |
-| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index` | — |
-| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note) | — |
-| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count` | — |
+| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds` | `pages/helpline/HelplineLobby.tsx` |
+| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index` | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count` | `pages/helpline/HelplineChatView.tsx` |
 
 ### Errors (automatic — no component code needed)
 

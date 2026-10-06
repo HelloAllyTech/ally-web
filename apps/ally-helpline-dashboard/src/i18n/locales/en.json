@@ -2269,7 +2269,8 @@
       "hideCopilot": "Hide copilot",
       "showInfo": "Show talker details",
       "hideInfo": "Hide talker details",
-      "erased": "This chat's content has been erased."
+      "erased": "This chat's content has been erased.",
+      "otherStaff": "Another listener"
     },
     "copilot": {
       "title": "Copilot",

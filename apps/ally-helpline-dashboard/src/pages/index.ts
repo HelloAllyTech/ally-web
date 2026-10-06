@@ -37,3 +37,7 @@ export * from "./sjt/Sjt1";
 export * from "./sjt/SjtEdit";
 export * from "./sjt-report/SjtReport1";
 export * from "./helpline-talk/HelplineTalk";
+export * from "./helpline/HelplineLayout";
+export * from "./helpline/HelplineLobby";
+export * from "./helpline/HelplineChatView";
+export * from "./helpline/HelplineHistory";
