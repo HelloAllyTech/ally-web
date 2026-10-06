@@ -17,4 +17,3 @@ export * from "./aiChat";
 export * from "./rating";
 export * from "./characterOptions";
 export * from "./characterLibraryStrings";
-export * from "./helpline";

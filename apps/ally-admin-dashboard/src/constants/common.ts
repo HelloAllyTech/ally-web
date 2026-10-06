@@ -670,10 +670,6 @@ export const ApiEndpoints = {
     PRIVACY: "/v1/settings/privacy",
     TURN_ENDPOINTING: "/v1/settings/turn-endpointing",
   },
-  // Text helpline org settings (platform admin only; EDIT_GLOBAL_SETTINGS).
-  HELPLINE_ADMIN: {
-    SETTINGS: "/v1/helpline/admin/settings",
-  },
 };
 
 export const ROUTES = {
@@ -930,9 +926,6 @@ export const TAG_TYPES = {
   // mobile-releases — shared with the same admin page though). Also
   // registered in baseApi.ts's `tagTypes`, same caveat as above.
   MIN_APP_VERSION: "minAppVersion",
-  // Text helpline org settings. Also registered in baseApi.ts's `tagTypes` — an
-  // unregistered tag is silently ignored and its invalidation never fires.
-  HELPLINE_ADMIN_SETTINGS: "helplineAdminSettings",
 };
 
 /**

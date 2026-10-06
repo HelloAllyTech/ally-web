@@ -23,7 +23,6 @@ import {
   PathTab,
   ScribeSettings,
   SimulationsSettings,
-  TextHelplineSettings,
   CasesTab,
   CoursesTab,
   GroupsTab,
@@ -43,7 +42,6 @@ enum TAB_IDS {
   BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
   SIMULATION_SETTINGS = "simulationSettings",
-  TEXT_HELPLINE = "textHelpline",
 }
 
 const defaultTabs = [
@@ -55,7 +53,6 @@ const defaultTabs = [
   { id: TAB_IDS.BADGES, label: en.userManagement.badges },
   { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
   { id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings },
-  { id: TAB_IDS.TEXT_HELPLINE, label: en.userManagement.textHelpline },
 ];
 
 export const OrganizationDetail: FC = () => {
@@ -268,8 +265,6 @@ export const OrganizationDetail: FC = () => {
         );
       case TAB_IDS.SIMULATION_SETTINGS:
         return <SimulationsSettings organizationId={id} onUpdateTenant={refetchTenant} />;
-      case TAB_IDS.TEXT_HELPLINE:
-        return <TextHelplineSettings tenantId={id} />;
       default:
         return null;
     }

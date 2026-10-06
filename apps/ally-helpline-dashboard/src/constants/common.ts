@@ -140,12 +140,6 @@ export const TAG_TYPES = {
   CHARACTER_LIBRARY: "CharacterLibrary",
   // The per-user preferences blob (default language, org-metrics layout, ...)
   USER_PREFERENCES: "UserPreferences",
-  // Text helpline listener workspace. All four are registered in baseAPI.ts's
-  // `tagTypes` too — an unregistered tag makes invalidatesTags a silent no-op.
-  HELPLINE_ME: "HelplineMe",
-  HELPLINE_LOBBY: "HelplineLobby",
-  HELPLINE_CHAT: "HelplineChat",
-  HELPLINE_CHATS: "HelplineChats",
 };
 
 export const SORT_ORDER = {

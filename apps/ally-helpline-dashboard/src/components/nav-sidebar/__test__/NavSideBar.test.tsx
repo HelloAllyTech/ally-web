@@ -46,7 +46,6 @@ vi.mock("@hooks", () => ({
   // Not visible by default — the mocked `navBarOptions` below has no
   // CHARACTER_LIBRARY entry anyway, so this only needs to exist, not vary.
   useCanViewCharacterLibrary: () => ({ canView: false, isLoading: false }),
-  useCanUseTextHelpline: () => ({ canView: false, isLoading: false }),
   // useAnalytics reads the role from the Redux store; this suite renders without one.
   useAnalytics: () => ({ track: vi.fn() }),
   // Exhaustive mock: NavSideBar gates the Statistics tab on this hook, which

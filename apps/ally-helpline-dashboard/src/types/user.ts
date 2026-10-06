@@ -41,11 +41,6 @@ export enum UserRole {
   SUPER_ADMIN = "SUPER_ADMIN",
   SUPER_DUPER_ADMIN = "SUPER_DUPER_ADMIN",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
-  // Text helpline groups (ally-be docs/text-helpline.md §2). A LISTENER-only or
-  // HELPLINE_SUPERVISOR-only account has nothing in the app but the Helpline
-  // workspace, so the landing page must send it there.
-  LISTENER = "LISTENER",
-  HELPLINE_SUPERVISOR = "HELPLINE_SUPERVISOR",
 }
 
 export enum AppType {

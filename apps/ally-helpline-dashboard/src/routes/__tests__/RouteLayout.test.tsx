@@ -25,7 +25,6 @@ vi.mock("@pages", () => ({
   Sjt1: () => <div data-testid="sjt1-page">SJT1 Page</div>,
   SjtEdit: () => <div data-testid="sjt1-edit-page">SJT1 Edit Page</div>,
   SjtReport1: () => <div data-testid="sjt-report1-page">SJT Report 1 Page</div>,
-  HelplineTalk: () => <div data-testid="helpline-talk-page">Helpline Talk Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -79,7 +78,6 @@ vi.mock("@constants", () => ({
     SJT1: "/SJT1",
     SJT1_EDIT: "/SJT1/edit",
     SJT_REPORT1: "/sjtreport1",
-    TALK: "/talk/:tenantCode",
   },
 }));
 
@@ -143,15 +141,6 @@ describe("RouteLayout", () => {
     renderWithRouter(<RouteLayout />);
 
     expect(screen.getByTestId("public-layout")).toBeInTheDocument();
-    expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
-  });
-
-  it("serves the text helpline talker page publicly, outside the signed-in app", () => {
-    window.history.pushState({}, "", "/talk/acme");
-    renderWithRouter(<RouteLayout />);
-
-    expect(screen.getByTestId("public-layout")).toBeInTheDocument();
-    // A talker has no account: the catch-all would bounce them to /login.
     expect(screen.queryByTestId("private-layout")).not.toBeInTheDocument();
   });
 

@@ -262,11 +262,6 @@ export const baseAPI = createApi({
     TAG_TYPES.NOTIFICATIONS,
     TAG_TYPES.UNREAD_NOTIFICATION_COUNT,
     TAG_TYPES.COURSE_DISCUSSION,
-    // Text helpline listener workspace (see api/helpline.ts).
-    TAG_TYPES.HELPLINE_ME,
-    TAG_TYPES.HELPLINE_LOBBY,
-    TAG_TYPES.HELPLINE_CHAT,
-    TAG_TYPES.HELPLINE_CHATS,
   ],
   endpoints: () => ({}),
 });
