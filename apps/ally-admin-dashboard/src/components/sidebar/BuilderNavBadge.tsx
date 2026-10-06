@@ -4,19 +4,20 @@ import { useGetBuilderNotificationsQuery } from "@api";
 import { en } from "@constants";
 
 /**
- * How many of Builder's notifications are unread, shown on its sidebar tab —
- * the same reasoning as `BugHunterNavBadge`: a backgrounded agent waiting on
- * a question or reporting a failed build should be visible from anywhere in
- * the console, not only once you remember to open the tab.
+ * How many of Builder's notifications are unread, shown on its sidebar tab:
+ * a backgrounded agent waiting on a question or reporting a failed build
+ * should be visible from anywhere in the console, not only once you remember
+ * to open the tab. (Bug Hunter had the same badge until 2026-10-06, when it
+ * was removed, so Builder's is the only one.)
  *
- * Unlike Bug Hunter, Builder's notifications carry no severity split — a
- * `budget_reached` message is exactly as much "needs you" as a
- * `question_pending` one — so this counts all unread rather than a subset.
+ * Builder's notifications carry no severity split — a `budget_reached`
+ * message is exactly as much "needs you" as a `question_pending` one — so
+ * this counts all unread rather than a subset.
  *
  * Deliberately **not** polled here. `BuilderNotificationInbox` on the
  * mission-control page subscribes to the same query on its own interval, so
  * this badge rides that cache for free while the tab is open; everywhere else
- * it costs one request per app load, matching the Bug Hunter badge's trade-off.
+ * it costs one request per app load.
  */
 export const BuilderNavBadge: FC = () => {
   const { data } = useGetBuilderNotificationsQuery();

@@ -71,6 +71,11 @@ export const TESTING_GROUPS = {
   avgRating: "Average rating",
 };
 
+/**
+ * The AI judge's 0–100 score of the AI ACTOR (the roleplay character) — the
+ * Quality & sentiment and Platform cards. NOT the learner's helping-skills
+ * scale: the Skill growth sub-tab reads `scoreDomain` (1–4) off its responses.
+ */
 export const SCORE_DOMAIN: [number, number] = [0, 100];
 export const PCT_DOMAIN: [number, number] = [0, 100];
 /** The 1–5 post-session rating scale, fixed so a 4.2 always sits in the same place. */
@@ -93,6 +98,14 @@ export const formatPct = (n: number | null | undefined, decimals = 0): string =>
  */
 export const formatScore = (n: number | null | undefined): string =>
   n === null || n === undefined ? "—" : n.toFixed(1);
+
+/**
+ * A helping-skills level on the rubric's 1–4 scale. Two decimals: the server
+ * rounds to 2 dp, and on a three-point range a tenth is a large move — one
+ * decimal would hide changes the slice noise can resolve.
+ */
+export const formatLevel = (n: number | null | undefined): string =>
+  n === null || n === undefined ? "—" : n.toFixed(2);
 
 /** Turnaround in the unit a reader thinks in: hours under a day, then days. */
 export const formatHours = (h: number | null | undefined): string => {
@@ -194,6 +207,12 @@ export const buildTimeToFirstScale = (ttf?: TimeToFirstPractice): ColorScale => 
 /* -------------------------------------------------------------------------- */
 /* Skill growth — median with its interquartile range                         */
 /* -------------------------------------------------------------------------- */
+//
+// Since 2026-10 the curve reads the LEARNER ruler: each learner's roleplay
+// speech cut into 5,000-character slices, each slice scored 1–4 on the fixed
+// helping-skills rubric. An ordinal is the learner's Nth slice — the same
+// amount of practice for everyone — not their Nth session. Before 2026-10 the
+// same response keys carried the AI judge's 0–100 score of the AI actor.
 
 /**
  * Which population the curve is read over.
@@ -201,30 +220,30 @@ export const buildTimeToFirstScale = (ttf?: TimeToFirstPractice): ColorScale => 
  * Both come from one response computed in one pass, so switching cannot make the
  * two divide different numerators — and both are offered because the survivorship
  * question has no single right answer:
- *  - `all` — every learner's Nth session. Honest about who is in the platform,
+ *  - `all` — every learner's Nth slice. Honest about who is in the platform,
  *    but the later ordinals are made of people who chose to keep going.
- *  - `experienced` — only learners who completed enough sessions to appear at
- *    both ends of the axis, so the curve compares the same people with
- *    themselves. Narrower, and the control for the survivorship the first view
- *    cannot rule out.
+ *  - `experienced` — only learners with enough scored slices to appear at both
+ *    ends of the axis, so the curve compares the same people with themselves.
+ *    Narrower, and the control for the survivorship the first view cannot rule
+ *    out.
  */
 export type SkillGrowthVariant = "all" | "experienced";
 
 export const SKILL_GROWTH_VARIANTS: {
   key: SkillGrowthVariant;
   label: string;
-  description: (minSessions: number) => string;
+  description: (minSlices: number) => string;
 }[] = [
   {
     key: "all",
     label: "All learners",
-    description: () => "every learner's Nth evaluated session, whoever they are",
+    description: () => "every learner's Nth scored slice, whoever they are",
   },
   {
     key: "experienced",
     label: "Learners who stayed",
     description: n =>
-      `only learners with ${n}+ evaluated sessions, so the curve compares the same people with themselves`,
+      `only learners with ${n}+ scored slices, so the curve compares the same people with themselves`,
   },
 ];
 
@@ -257,7 +276,7 @@ export const ordinalLabel = (ordinal: number): string => {
  *
  * Ordinals whose median the server suppressed (n below the sample floor) are cut
  * from the plot rather than drawn as gaps. They are always the tail of the axis —
- * few learners reach a 12th session — and a line that fades into a run of gaps
+ * few learners reach a 12th slice — and a line that fades into a run of gaps
  * invites the reader to extrapolate through them.
  */
 export const buildSkillGrowthSeries = (
@@ -297,32 +316,38 @@ export const plottableOrdinals = (
 /**
  * The efficacy claim, in one sentence, or an honest refusal.
  *
- * States the movement in score points between the first and last comparable
- * ordinal. Refuses when there is only one comparable ordinal: "learners score 62
- * on their first session" is not evidence that practice works, and this chart
- * exists to answer only that question.
+ * States the movement in helping-skills levels (the rubric's 1–4) between the
+ * first and last comparable slice. Refuses when there is only one comparable
+ * ordinal: "learners score 2.1 on their first slice" is not evidence that
+ * practice works, and this chart exists to answer only that question.
+ *
+ * The two ends are DIFFERENT populations under `all` (whoever reached each
+ * slice), which is why the sentence names the population and the variant
+ * picker sits on the card.
  */
 export const skillGrowthTakeaway = (
   ordinals: SkillGrowthOrdinal[],
   variant: SkillGrowthVariant,
   minSampleSize: number,
+  /** The response's `scoreDomain`, named in the sentence so the size of the move has a scale. */
+  domain: [number, number],
 ): string | null => {
   const plottable = plottableOrdinals(ordinals, variant);
   if (plottable.length < 2) {
     return plottable.length === 1
-      ? `Only the ${ordinalLabel(plottable[0].ordinal)} session clears ${minSampleSize} evaluated sessions — not enough of the curve to read a trend yet`
+      ? `Only the ${ordinalLabel(plottable[0].ordinal)} slice has scores from ${minSampleSize}+ learners — not enough of the curve to read a trend yet`
       : null;
   }
   const first = plottable[0];
   const last = plottable[plottable.length - 1];
   const from = first[variant].median as number;
   const to = last[variant].median as number;
-  const diff = Number((to - from).toFixed(1));
+  const diff = Number((to - from).toFixed(2));
   if (diff === 0) {
-    return `Median score is flat at ${formatScore(to)} from the ${ordinalLabel(first.ordinal)} to the ${ordinalLabel(last.ordinal)} session`;
+    return `Median helping-skills score is flat at ${formatLevel(to)} from the ${ordinalLabel(first.ordinal)} to the ${ordinalLabel(last.ordinal)} slice`;
   }
   const direction = diff > 0 ? "higher" : "lower";
-  return `By their ${ordinalLabel(last.ordinal)} session learners score ${Math.abs(diff).toFixed(1)} points ${direction} than on their ${ordinalLabel(first.ordinal)} (${formatScore(from)} → ${formatScore(to)})`;
+  return `At their ${ordinalLabel(last.ordinal)} slice the median helping-skills score is ${Math.abs(diff).toFixed(2)} ${direction} than at their ${ordinalLabel(first.ordinal)} (${formatLevel(from)} → ${formatLevel(to)} on the ${domain[0]}–${domain[1]} scale)`;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -494,51 +519,107 @@ export const buildRankedBarScale = (bars: BarDatum[]): ColorScale =>
 /* Competency map                                                             */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Kept for callers that colour a single unnamed series; the map itself now
+ * names each point (see {@link competencyScale}).
+ */
 export const COMPETENCY_SCALE: ColorScale = {
   [TESTING_GROUPS.competency]: PALETTE.blue,
 };
 
 /**
- * One point per competency: practice volume against median score.
- *
- * A single group, so every point is the same colour. One point per entity is the
- * case where colouring by identity looks informative and encodes nothing — the
- * quadrant a point sits in is the message, and the expanded table names them.
- *
- * Competencies whose score the server suppressed are absent: a point at y = 0
- * would read as "scores zero" rather than "not enough data", which is the
- * opposite of what the floor exists to prevent. The count of held-back rows goes
- * in the caption so their absence is stated rather than silent.
+ * A point's name: the rubric skill whose level the y-axis reads, falling back
+ * to the competency's own name. The y value IS that skill's level (since
+ * 2026-10), so naming the point by the skill says what was measured.
  */
-export const buildCompetencyScatter = (rows: CompetencyMapRow[]): ScatterDatum[] =>
-  rows
-    .filter(r => r.medianScore !== null)
-    .map(r => ({
-      group: TESTING_GROUPS.competency,
-      x: r.completedSessions,
-      y: r.medianScore as number,
-    }));
+export const competencyPointLabel = (row: CompetencyMapRow): string => row.skillName ?? row.name;
 
-export const suppressedCompetencies = (rows: CompetencyMapRow[]): CompetencyMapRow[] =>
-  rows.filter(r => r.medianScore === null);
+const hasScore = (row: CompetencyMapRow): boolean => typeof row.score === "number";
 
 /**
- * The quadrant read, in words: the heavily-practised competency that scores worst
- * is the teaching gap, and the barely-practised one is the coverage gap.
+ * One point per scored competency: practice volume against the learners' mean
+ * level (1–4) on the rubric skill the tag names.
+ *
+ * Every point is the same colour: one point per entity is the case where
+ * colouring by identity looks informative and encodes nothing — the quadrant a
+ * point sits in is the message. The point's GROUP carries its name only so the
+ * tooltip can say which skill it is; {@link competencyScale} gives every group
+ * the one accent and the legend stays off.
+ *
+ * Competencies with no score are absent: a point at the bottom of the axis
+ * would read as "scores low" rather than "no rubric skill" or "not enough
+ * slices", which is the opposite of what the floor exists to prevent. They are
+ * listed under the chart instead ({@link unscoredCompetencyLines}).
+ */
+export const buildCompetencyScatter = (rows: CompetencyMapRow[]): ScatterDatum[] =>
+  rows.filter(hasScore).map(r => ({
+    group: competencyPointLabel(r),
+    x: r.completedSessions,
+    y: r.score as number,
+  }));
+
+/** One accent for every named point, so names travel without colour-by-identity. */
+export const competencyScale = (points: ScatterDatum[]): ColorScale =>
+  Object.fromEntries(points.map(p => [p.group, PALETTE.blue]));
+
+/** Every competency the map could not score, for whatever reason. */
+export const suppressedCompetencies = (rows: CompetencyMapRow[]): CompetencyMapRow[] =>
+  rows.filter(r => !hasScore(r));
+
+/**
+ * The unscored competencies, split by WHY — the two reasons call for different
+ * actions. "No rubric skill" is a property of the tag (Non-Verbal
+ * Communication is not visible in a transcript; a custom competency maps to
+ * nothing), so more practice will never give it a score. "Too few slices" is a
+ * thin sample that more single-scenario practice will fill, so its n travels.
+ */
+export const unscoredCompetencies = (
+  rows: CompetencyMapRow[],
+): { noRubricSkill: CompetencyMapRow[]; tooFewCuts: CompetencyMapRow[] } => {
+  const unscored = suppressedCompetencies(rows);
+  return {
+    noRubricSkill: unscored.filter(r => r.scoreUnavailable === "noRubricSkill"),
+    // Anything else unscored is a thin sample: the server only withholds for
+    // the two stated reasons, and a missing reason must not hide a row.
+    tooFewCuts: unscored.filter(r => r.scoreUnavailable !== "noRubricSkill"),
+  };
+};
+
+/** The lines under the map naming what is not plotted, and why. Empty when all are scored. */
+export const unscoredCompetencyLines = (
+  rows: CompetencyMapRow[],
+  minSampleSize: number,
+): string[] => {
+  const { noRubricSkill, tooFewCuts } = unscoredCompetencies(rows);
+  const lines: string[] = [];
+  if (noRubricSkill.length > 0) {
+    lines.push(
+      `No rubric skill (practice volume only): ${noRubricSkill.map(r => r.name).join(", ")}`,
+    );
+  }
+  if (tooFewCuts.length > 0) {
+    lines.push(
+      `Too few slices to score (need ${minSampleSize}): ${tooFewCuts
+        .map(r => `${r.name} (n = ${r.scoredCuts.toLocaleString()})`)
+        .join(", ")}`,
+    );
+  }
+  return lines;
+};
+
+/**
+ * The quadrant read, in words: the heavily-practised competency whose skill
+ * sits lowest is the teaching gap, and the barely-practised one the coverage gap.
  */
 export const competencyTakeaway = (rows: CompetencyMapRow[]): string | null => {
-  const scored = rows.filter(r => r.medianScore !== null);
+  const scored = rows.filter(hasScore);
   if (scored.length === 0) return null;
-  const weakest = scored.reduce((a, b) =>
-    (b.medianScore as number) < (a.medianScore as number) ? b : a,
-  );
-  const strongest = scored.reduce((a, b) =>
-    (b.medianScore as number) > (a.medianScore as number) ? b : a,
-  );
+  const weakest = scored.reduce((a, b) => ((b.score as number) < (a.score as number) ? b : a));
+  const strongest = scored.reduce((a, b) => ((b.score as number) > (a.score as number) ? b : a));
   if (weakest.competencyId === strongest.competencyId) {
-    return `Only ${weakest.name} has enough evaluated sessions to score — median ${formatScore(weakest.medianScore)}`;
+    return `Only ${competencyPointLabel(weakest)} has enough scored slices to read — mean level ${formatLevel(weakest.score)}`;
   }
-  return `Lowest median: ${weakest.name} at ${formatScore(weakest.medianScore)} over ${weakest.completedSessions.toLocaleString()} sessions · highest: ${strongest.name} at ${formatScore(strongest.medianScore)}`;
+  return `Lowest mean level: ${competencyPointLabel(weakest)} at ${formatLevel(weakest.score)} over ${weakest.completedSessions.toLocaleString()} sessions · highest: ${competencyPointLabel(strongest)} at ${formatLevel(strongest.score)}`;
 };
 
 /* -------------------------------------------------------------------------- */

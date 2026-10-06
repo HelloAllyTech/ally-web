@@ -11,12 +11,16 @@ import { ButtonVariant } from "@components/types";
 import { TrackFormValues } from "@types";
 
 import { useTrackMediaUpload } from "../useTrackMediaUpload";
+import { TrackCompetenciesField } from "./TrackCompetenciesField";
 
 const labelClass = "text-sm font-medium text-typography-800";
 const inputClass =
   "w-full border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400";
 
-/** Editor for track-level metadata: title, description, cover image, visibility. */
+/**
+ * Editor for track-level metadata: title, description, cover image, visibility,
+ * duration, and the competencies the course teaches.
+ */
 export const TrackSettingsEditor: FC = () => {
   const { control, setValue } = useFormContext<TrackFormValues>();
   const { upload, isUploading } = useTrackMediaUpload();
@@ -168,6 +172,8 @@ export const TrackSettingsEditor: FC = () => {
           )}
         />
       </div>
+
+      <TrackCompetenciesField />
     </div>
   );
 };

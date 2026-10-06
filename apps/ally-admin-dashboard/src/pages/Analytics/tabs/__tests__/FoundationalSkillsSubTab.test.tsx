@@ -14,6 +14,10 @@ const progressMock = vi.fn();
 const benchmarkMock = vi.fn();
 const behavioursMock = vi.fn();
 const tenantsMock = vi.fn();
+// The "Time, breaks and difficulty" section's four queries share one spy.
+const timeMock = vi.fn();
+// The "Is the measure sound?" section's three org-scoped queries share one spy.
+const validityMock = vi.fn();
 
 const idleQuery = () => ({
   data: undefined,
@@ -34,6 +38,15 @@ vi.mock("@api", () => ({
   useGetFoundationalSkillsBehavioursQuery: (args: unknown) => behavioursMock(args),
   useGetFoundationalSkillsLearnerQuery: () => idleQuery(),
   useGetTenantsQuery: (args: unknown) => tenantsMock(args),
+  useGetFoundationalSkillsTimeToCompetenceQuery: (args: unknown) => timeMock(args),
+  useGetFoundationalSkillsRetentionQuery: (args: unknown) => timeMock(args),
+  useGetPracticeProgressionQuery: (args: unknown) => timeMock(args),
+  useGetFoundationalSkillsSegmentsQuery: (args: unknown) => timeMock(args),
+  // "Is the measure sound?" (AAQ-220..223) and the AAQ-187 human-rater stat.
+  useGetFoundationalSkillsTransferQuery: (args: unknown) => validityMock(args),
+  useGetFoundationalSkillsFeedbackUptakeQuery: (args: unknown) => validityMock(args),
+  useGetMeasurementConvergenceQuery: (args: unknown) => validityMock(args),
+  useGetFoundationalSkillsJudgeAgreementQuery: () => idleQuery(),
 }));
 
 import { FoundationalSkillsSubTab } from "../FoundationalSkillsSubTab";
@@ -57,7 +70,7 @@ const lastArgs = (mock: ReturnType<typeof vi.fn>) =>
 
 describe("FoundationalSkillsSubTab — org filter", () => {
   beforeEach(() => {
-    for (const mock of [progressMock, benchmarkMock, behavioursMock]) {
+    for (const mock of [progressMock, benchmarkMock, behavioursMock, timeMock, validityMock]) {
       mock.mockReset();
       mock.mockReturnValue(idleQuery());
     }
@@ -92,12 +105,15 @@ describe("FoundationalSkillsSubTab — org filter", () => {
     expect(lastArgs(progressMock)).toMatchObject({ tenantId: "t-alpha", cuts: undefined });
     expect(lastArgs(benchmarkMock)).toEqual({ tenantId: "t-alpha" });
     expect(lastArgs(behavioursMock)).toEqual({ tenantId: "t-alpha" });
+    expect(lastArgs(timeMock)).toMatchObject({ tenantId: "t-alpha" });
+    expect(lastArgs(validityMock)).toEqual({ tenantId: "t-alpha" });
 
     await userEvent.click(screen.getByRole("combobox", { name: "Org" }));
     await userEvent.click(screen.getByRole("option", { name: "All orgs" }));
 
     expect(lastArgs(progressMock)).not.toHaveProperty("tenantId");
     expect(lastArgs(benchmarkMock)).toEqual({});
+    expect(lastArgs(validityMock)).toEqual({});
   });
 
   it("still offers all orgs when the org list cannot be read", () => {

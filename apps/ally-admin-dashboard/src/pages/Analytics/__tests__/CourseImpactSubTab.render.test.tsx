@@ -23,9 +23,24 @@ const comparison = (over: Partial<CourseImpactResponse["summary"]> | object = {}
   ...over,
 });
 
+const reference = {
+  ...comparison({
+    learners: 40,
+    beforeAvg: 2.0,
+    afterAvg: 2.08,
+    change: 0.08,
+    changeCi: [-0.02, 0.18] as [number, number],
+    detectable: false,
+  }),
+  candidates: 310,
+  matchedStartPosition: 6,
+  matchedGap: 4,
+};
+
 const fixture: CourseImpactResponse = {
   rubricVersion: "fhs-text-v1",
   minSampleSize: 20,
+  minCohortSize: 5,
   scoreDomain: [1, 4],
   windowCuts: 3,
   summary: {
@@ -36,6 +51,14 @@ const fixture: CourseImpactResponse = {
     unclear: 0,
     pairedEnrollments: 27,
   },
+  pooled: comparison({
+    learners: 26,
+    beforeAvg: 2.12,
+    afterAvg: 2.5,
+    change: 0.38,
+    changeCi: [0.22, 0.54],
+  }),
+  reference,
   courses: [
     {
       trackId: "t1",
@@ -44,6 +67,10 @@ const fixture: CourseImpactResponse = {
       coverage: { enrolled: 80, started: 70, completed: 50, withBaseline: 30, paired: 24 },
       composite: comparison(),
       targetedSkills: ["verbal"],
+      competencySource: "explicit",
+      reference,
+      medianDaysToComplete: 12,
+      medianCutsBetween: 4,
     },
     {
       trackId: "t2",
@@ -143,26 +170,78 @@ describe("CourseImpactSubTab", () => {
 
     // Course list: the two courses with paired learners, the third only counted.
     expect(screen.getAllByText("Listening basics").length).toBeGreaterThan(0);
-    expect(screen.getByText("2.10 → 2.55 · 24 of 80 enrolled")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "2.10 → 2.55 · 24 of 80 enrolled · median 12 days to finish · 4 slices between",
+      ),
+    ).toBeTruthy();
     expect(screen.getByText("3 of 10 enrolled can be compared")).toBeTruthy();
     expect(screen.getByText(/1 more course has no learner who can be compared yet/)).toBeTruthy();
-    expect(screen.getByText("Of 1 course with enough learners to read: 1 improved.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Of 1 course with enough learners to read: 1 improved. All courses together (26 learners, each once): +0.38 (95% CI +0.22 to +0.54), against +0.08 for free practice over the same slices.",
+      ),
+    ).toBeTruthy();
+
+    // The pooled row heads the list; the grey reference is stated once, with its slices.
+    expect(screen.getByText("All courses, each learner once")).toBeTruthy();
+    expect(screen.getByText("2.12 → 2.50 · 26 learners")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Grey: Free practice, same slice positions — +0.08 [−0.02 to +0.18] · n = 40",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/40 of 310 learners who never enrolled in a course/)).toBeTruthy();
+    expect(screen.getByText(/slices 4–6 against 10–12/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /^Before\/after on the same learners\. Not a trial: people who finish courses also practise more\./,
+      ),
+    ).toBeTruthy();
 
     // It asked for the default course's detail once it knew the list.
     expect(useGetCourseImpactQuery).toHaveBeenLastCalledWith({ trackId: "t1" });
 
     // Drill-down: funnel, taught skill first, the no-opportunity skill left out.
     expect(screen.getByText("Practised after")).toBeTruthy();
-    expect(screen.getByText("Taught in this course")).toBeTruthy();
+    expect(screen.getByText("Taught in this course (tagged by the author)")).toBeTruthy();
     expect(screen.queryByText("Assessment of harm and developing a response plan")).toBeNull();
     expect(
-      screen.getByText(/Competencies this course's roleplays assess: Verbal Communication/),
+      screen.getByText(
+        /Competencies this course teaches \(tagged by the author\): Verbal Communication/,
+      ),
     ).toBeTruthy();
 
     // Unhelpful behaviour reads down as good.
     expect(screen.getByText("34%")).toBeTruthy();
     expect(screen.getByText("21%")).toBeTruthy();
     expect(screen.getAllByText(/less often after the course/).length).toBeGreaterThan(0);
+  });
+
+  it("says the reference's n when it is withheld, and renders without it from an older backend", () => {
+    useGetCourseImpactQuery.mockReturnValue(
+      result({
+        ...fixture,
+        reference: { ...reference, learners: 12, change: null, changeCi: null },
+      }),
+    );
+    const { unmount } = render(<CourseImpactSubTab />);
+    expect(
+      screen.getByText(
+        "Grey: Free practice, same slice positions — not drawn, too few learners (n = 12)",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/withheld — 12 of 310 learners/)).toBeTruthy();
+    unmount();
+
+    const { pooled: _p, reference: _r, ...older } = fixture;
+    useGetCourseImpactQuery.mockReturnValue(
+      result({ ...older, courses: fixture.courses.map(({ reference: _x, ...c }) => c) }),
+    );
+    render(<CourseImpactSubTab />);
+    expect(screen.queryByText("All courses, each learner once")).toBeNull();
+    expect(screen.queryByText(/^Grey:/)).toBeNull();
+    expect(screen.getAllByText("Listening basics").length).toBeGreaterThan(0);
   });
 
   it("explains an empty list instead of drawing nothing", () => {

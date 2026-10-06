@@ -81,7 +81,8 @@ export const RoleplayQualityCard = () => {
     `Weighted blend of actor-goal score, in-character rate, language quality ` +
     `and response latency, one number per period. ${boundedDomainNote(QUALITY_INDEX_DOMAIN)} ` +
     `The full 4-dimension breakdown lives on the Quality & sentiment tab — this ` +
-    `card shows only the composite.`;
+    `card shows only the composite. Every input scores the AI actor and the ` +
+    `platform, not the learner.`;
 
   const source = buildSource({
     derivation:

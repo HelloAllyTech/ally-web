@@ -27,6 +27,7 @@ import {
   buildOrgActivitySeries,
   periodLabel,
 } from "../engagementChart";
+import { OrgEffectivenessCard } from "../OrgEffectivenessCard";
 import { OrgHealthCard } from "../OrgHealthCard";
 
 /**
@@ -258,6 +259,7 @@ export const OrgEngagementSubTab = () => {
           error={orgHealth.isError}
           onRetry={orgHealth.refetch}
         />
+        <OrgEffectivenessCard />
       </div>
 
       {/* How the WHOLE customer base is shaped — org-health above is which

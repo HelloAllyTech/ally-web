@@ -2846,7 +2846,6 @@ export const en = {
     drawerAnswerFailed: "Couldn't send that answer. Try again.",
     drawerAnsweredBy: "Answered by user #{userId}",
     drawerDecidedBy: "Decided by user #{userId}",
-    inboxWaitingOnYou: "{count} waiting on you",
     // ── The notebook ─────────────────────────────────────────────────────────
     notebookTitle: "My notebook",
     notebookIntro:

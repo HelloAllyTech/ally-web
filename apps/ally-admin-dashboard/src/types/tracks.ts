@@ -443,6 +443,12 @@ export interface TrackDetail {
   isGlobal: boolean;
   totalItems: number;
   estimatedDurationMinutes?: number;
+  /**
+   * `tracks.competencyIds`: the competencies the author tagged this course with,
+   * or null when untagged (Analytics → Course impact then uses the competencies
+   * of the course's roleplays). Absent on a backend that predates the column.
+   */
+  competencyIds?: string[] | null;
   updatedAt?: string;
   sections: TrackSectionDetail[];
 }
@@ -453,6 +459,11 @@ export interface TrackMetadataInput {
   coverImageUrl?: string;
   isGlobal?: boolean;
   estimatedDurationMinutes?: number;
+  /**
+   * Omit to leave the tag unchanged; `[]` clears it (stored as null). New ids
+   * must be shared competencies; ids already on the course are never rejected.
+   */
+  competencyIds?: string[];
 }
 
 export interface UpdateTrackInput extends TrackMetadataInput {
@@ -465,6 +476,7 @@ export interface CreateTrackResponse {
   description: string;
   coverImageUrl: string;
   status: SimulationStatus;
+  competencyIds?: string[] | null;
 }
 
 export interface TrackStructureItemInput {
@@ -559,6 +571,8 @@ export interface TrackFormValues {
   coverImageUrl: string;
   isGlobal: boolean;
   estimatedDurationMinutes?: number | null;
+  /** Competency ids this course teaches; `[]` = untagged. */
+  competencyIds?: string[];
   sections: TrackSectionFormValue[];
 }
 

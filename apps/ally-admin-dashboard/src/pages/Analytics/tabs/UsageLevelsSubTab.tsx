@@ -32,6 +32,8 @@ import {
 } from "../chartKit";
 import { buildStickinessStages, stickinessPlateau } from "../engagementChart";
 import { FunnelBars } from "../FunnelBars";
+import { PracticeQualitySection } from "../PracticeQualitySection";
+import { PracticeSpacingCard } from "../PracticeSpacingCard";
 import {
   TESTING_GROUPS,
   buildTimeToFirstBars,
@@ -241,6 +243,14 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
         >
           <FunnelBars stages={stickinessStages} unit="learners" />
         </ChartCard>
+
+        {/* AAQ-224 reads the same stickiness response — one request for both. */}
+        <PracticeSpacingCard
+          stickiness={s}
+          loading={stickiness.isLoading && !s}
+          error={Boolean(stickiness.error)}
+          onRetry={() => void stickiness.refetch()}
+        />
       </div>
 
       <SubHeading>Volume — sessions long enough to be practice</SubHeading>
@@ -306,6 +316,9 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
           />
         </ScrollableChart>
       </ChartCard>
+
+      {/* AAQ-208/209: whether those sessions were practice at all. */}
+      <PracticeQualitySection tenantId={query.tenantId} />
 
       {/* ------------------------------ detail ------------------------------ */}
 

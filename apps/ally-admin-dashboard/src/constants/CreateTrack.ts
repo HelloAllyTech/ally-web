@@ -307,8 +307,16 @@ export const DEFAULT_TRACK_FORM_VALUES: TrackFormValues = {
   coverImageUrl: "",
   isGlobal: false,
   estimatedDurationMinutes: null,
+  competencyIds: [],
   sections: [],
 };
+
+/**
+ * Competencies one course may be tagged with. Mirrors ally-be's
+ * `TRACK_MAX_COMPETENCIES` (the 15 seeded foundational helping skills), which
+ * rejects a longer list with a 400.
+ */
+export const TRACK_MAX_COMPETENCIES = 15;
 
 /** Node keys for the outline rail / publish-error mapping. */
 export const TRACK_SETTINGS_NODE_KEY = "settings";
