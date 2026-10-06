@@ -2,11 +2,61 @@ import posthog, { type Properties } from "posthog-js";
 
 import type { AnalyticsEventName } from "@constants/analyticsEvents";
 
+import { isTalkPath } from "../analytics/talkPrivacy";
+
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY as string;
 const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST as string;
 const POSTHOG_ENABLED = import.meta.env.VITE_POSTHOG_ENABLED === "true";
 
+/**
+ * Which configuration PostHog was started with in this document. "talk" on the
+ * anonymous talker page (`/talk/*`, decided from the URL at load time), where a
+ * person reaching a helpline must not get a persistent id; "standard"
+ * everywhere else; null when PostHog is off.
+ */
+type AnalyticsMode = "standard" | "talk";
+let analyticsMode: AnalyticsMode | null = null;
+
+/** The only events the talker page may send (see ANALYTICS_EVENTS.TALKER_*). */
+const TALKER_EVENT_PREFIX = "talker_";
+
+const onTalkPath = () => typeof window !== "undefined" && isTalkPath(window.location.pathname);
+
+/**
+ * True when PostHog was started for the signed-in app (persistent id, replay,
+ * autocapture). The talker page reloads itself once if it finds this, so it
+ * gets a document set up with `talk` mode instead — see talkPrivacy.ts.
+ */
+export const isAnalyticsPersistent = (): boolean => analyticsMode === "standard";
+
 // ─── Initialisation ────────────────────────────────────────────────────────
+
+/**
+ * The talker page's PostHog: an anonymous in-memory id that dies with the tab
+ * (no cookie, no localStorage), no session recording, no autocapture, dead
+ * clicks, heatmaps, exceptions, page-leave, surveys or remote scripts, no
+ * person profile, no referrer or campaign params. Only the explicit
+ * `talker_*` events get through (captureEvent), and those carry no content.
+ */
+const TALK_CONFIG = {
+  persistence: "memory",
+  disable_session_recording: true,
+  autocapture: false,
+  capture_dead_clicks: false,
+  rageclick: false,
+  capture_heatmaps: false,
+  capture_exceptions: false,
+  capture_pageleave: false,
+  capture_performance: false,
+  disable_surveys: true,
+  disable_product_tours: true,
+  disable_web_experiments: true,
+  advanced_disable_feature_flags: true,
+  disable_external_dependency_loading: true,
+  person_profiles: "identified_only",
+  save_referrer: false,
+  save_campaign_params: false,
+} as const;
 
 export function initAnalytics(): void {
   if (!POSTHOG_ENABLED || !POSTHOG_KEY) {
@@ -17,6 +67,19 @@ export function initAnalytics(): void {
     return;
   }
 
+  if (onTalkPath()) {
+    analyticsMode = "talk";
+    posthog.init(POSTHOG_KEY, {
+      api_host: POSTHOG_HOST,
+      ui_host: POSTHOG_HOST,
+      capture_pageview: false,
+      respect_dnt: true,
+      ...TALK_CONFIG,
+    });
+    return;
+  }
+
+  analyticsMode = "standard";
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     ui_host: POSTHOG_HOST,
@@ -48,15 +111,24 @@ export function initAnalytics(): void {
 
 // ─── Event Capture ─────────────────────────────────────────────────────────
 
+/**
+ * On a `/talk` path only `talker_*` events are sent, and only from a PostHog
+ * started in talk mode — a standard instance there (in-app navigation into the
+ * talker page, before its reload) sends nothing. This app pushes nothing to
+ * GTM's dataLayer, so there is no GTM call to guard here.
+ */
 export function captureEvent(event: AnalyticsEventName, properties?: Properties): void {
   if (!POSTHOG_ENABLED) return;
+  if (onTalkPath() || analyticsMode === "talk") {
+    if (analyticsMode !== "talk" || !event.startsWith(TALKER_EVENT_PREFIX)) return;
+  }
   posthog.capture(event, properties);
 }
 
 // ─── Pageview ──────────────────────────────────────────────────────────────
 
 export function capturePageview(path: string, title?: string): void {
-  if (!POSTHOG_ENABLED) return;
+  if (!POSTHOG_ENABLED || onTalkPath() || analyticsMode === "talk") return;
   posthog.capture("$pageview", {
     $current_url: window.location.origin + path,
     page_title: title ?? document.title,
@@ -65,13 +137,14 @@ export function capturePageview(path: string, title?: string): void {
 
 // ─── User Identity ─────────────────────────────────────────────────────────
 
+/** Never on the talker page: a signed-in colleague testing it must not be linked to it. */
 export function identifyUser(userId: string, traits?: Properties): void {
-  if (!POSTHOG_ENABLED) return;
+  if (!POSTHOG_ENABLED || onTalkPath() || analyticsMode === "talk") return;
   posthog.identify(userId, traits);
 }
 
 export function setUserProperties(properties: Properties): void {
-  if (!POSTHOG_ENABLED) return;
+  if (!POSTHOG_ENABLED || onTalkPath() || analyticsMode === "talk") return;
   posthog.people.set(properties);
 }
 

@@ -18,6 +18,7 @@ import { TalkerButton } from "./components/TalkerButton";
 import { TalkerDialog } from "./components/TalkerDialog";
 import { TalkerHeader, type TalkerMenuItem } from "./components/TalkerHeader";
 import { useTalkerSession } from "./useTalkerSession";
+import { useTalkPrivacyReload } from "./useTalkPrivacyReload";
 import { usePageMeta } from "../blog/usePageMeta";
 
 type PendingConfirm = "end" | "leave" | "delete" | null;
@@ -30,9 +31,24 @@ const baseLanguage = (language: string | undefined) => (language || "en").split(
  *
  * The whole page carries `ph-no-capture`, so PostHog session replay and
  * autocapture never record what a talker reads or types; the events this page
- * sends carry no content (see useTalkerSession).
+ * sends carry no content (see useTalkerSession). On top of that, a `/talk`
+ * document loads no GTM and runs PostHog in memory only, without replay or
+ * autocapture (analytics/talkPrivacy.ts) — this wrapper reloads once when an
+ * in-app navigation brought the talker here from a page that had set those up.
  */
 export const HelplineTalk: FC = () => {
+  const reloading = useTalkPrivacyReload();
+  if (reloading) {
+    return (
+      <div className="ph-no-capture flex h-dvh flex-col bg-white font-primary">
+        <LoadingScreen />
+      </div>
+    );
+  }
+  return <HelplineTalkPage />;
+};
+
+const HelplineTalkPage: FC = () => {
   const { tenantCode = "" } = useParams<{ tenantCode: string }>();
   const { t, i18n } = useTranslation();
   const session = useTalkerSession(tenantCode);

@@ -4,14 +4,20 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "path";
 
+import { buildGtmHeadSnippet } from "./src/analytics/gtmSnippet";
 import { testResourceLimits } from "../../vitest.resource-limits";
 // Get absolute paths
 const projectRoot = __dirname;
 
 /**
- * Injects the standard Google Tag Manager snippets into index.html at build time.
+ * Injects the Google Tag Manager head snippet into index.html at build time.
  * Only active when VITE_GTM_ID is set (and looks like a valid container id), so
  * environments without the variable ship no GTM code at all.
+ *
+ * The snippet skips the anonymous talker page (`/talk/*`) at load time — see
+ * src/analytics/talkPrivacy.ts. There is no `<noscript>` iframe: this SPA
+ * renders nothing without JavaScript, so the iframe only ever measured blank
+ * pages, and it can't be kept off `/talk` (no script means no path check).
  */
 function gtm(gtmId: string | undefined): PluginOption {
   if (!gtmId || !/^GTM-[A-Z0-9]+$/.test(gtmId)) {
@@ -20,18 +26,7 @@ function gtm(gtmId: string | undefined): PluginOption {
   return {
     name: "gtm-inject",
     transformIndexHtml() {
-      return [
-        {
-          tag: "script",
-          injectTo: "head",
-          children: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`,
-        },
-        {
-          tag: "noscript",
-          injectTo: "body-prepend",
-          children: `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
-        },
-      ];
+      return [{ tag: "script", injectTo: "head", children: buildGtmHeadSnippet(gtmId) }];
     },
   };
 }
