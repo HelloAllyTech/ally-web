@@ -784,10 +784,10 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
         setDeclineReason(null);
         setDeclineNote("");
       }
-      // No `repo` argument. ally-be resolves the repo itself for a bug that has
-      // none — the confirm dialog says so in as many words — and this call used
-      // to carry a `...(finding.repo ? {} : {})` spread whose two branches were
-      // both the empty object.
+      // A bug with no repo opens the drawer instead of starting blind: the
+      // drawer's dialog has the codebase picker, and a classifier that could
+      // not place the bug at intake will not place it now either.
+      else if (!finding.repo) setBug(finding.id);
       else await startFixSession({ id: finding.id }).unwrap();
     } catch {
       toast.error(en.bugHunter.quickActionFailed);

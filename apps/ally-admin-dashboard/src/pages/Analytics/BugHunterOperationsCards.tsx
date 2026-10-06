@@ -2,6 +2,7 @@ import { ReactNode, useMemo, useState } from "react";
 
 import { SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
+import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetBugHunterOperationsMetricsQuery } from "@api";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
@@ -28,8 +29,14 @@ import {
   buildReporterTable,
   buildSourceSeries,
   buildSourceTable,
+  buildSpendSeries,
+  buildSpendTable,
   buildTokensSeries,
   buildTokensTable,
+  SPEND_GRANULARITIES,
+  SpendGranularity,
+  spendEmptyText,
+  spendTakeaway,
   difficultyTakeaway,
   filedEmptyText,
   filedTakeaway,
@@ -54,7 +61,7 @@ import {
   integerTickValues,
   stackedBarOpts,
 } from "./chartKit";
-import { formatUsd } from "./tokenChart";
+import { formatUsd, formatUsdCompact } from "./tokenChart";
 
 /**
  * Bug Hunter's volume, beside its rates.
@@ -89,6 +96,13 @@ export const BugHunterOperationsCards = ({ query }: AnalyticsTabFilters) => {
   const difficultySeries = useMemo(() => buildDifficultySeries(dayRows), [dayRows]);
   const reporterBars = useMemo(() => buildReporterBars(data?.byReporter ?? []), [data]);
   const tokensSeries = useMemo(() => buildTokensSeries(dayRows), [dayRows]);
+  // Spend over time, at the grain the reader picks. Folded client-side from the
+  // same day rows, so switching Day / Week / Month costs no request.
+  const [spendGranularity, setSpendGranularity] = useState<SpendGranularity>("day");
+  const spendSeries = useMemo(
+    () => buildSpendSeries(dayRows, spendGranularity),
+    [dayRows, spendGranularity],
+  );
   const breadthSeries = useMemo(() => buildBreadthSeries(dayRows), [dayRows]);
   const modelBars = useMemo(() => buildModelBars(data?.tokensByModel ?? []), [data]);
 
@@ -111,6 +125,30 @@ export const BugHunterOperationsCards = ({ query }: AnalyticsTabFilters) => {
       stackedBarOpts({ leftTitle: "Tokens", bottomTitle: "Day (UTC)", colorScale: TRIGGER_SCALE }),
     [],
   );
+  const spendOpts = useMemo(() => {
+    const base = stackedBarOpts({
+      leftTitle: "Estimated cost (USD)",
+      bottomTitle:
+        spendGranularity === "day"
+          ? "Day (UTC)"
+          : spendGranularity === "week"
+            ? "Week (UTC, from Monday)"
+            : "Month (UTC)",
+      colorScale: TRIGGER_SCALE,
+    });
+    // Same hand-applied tick formatter CodingAgentCost uses: `extra` on the
+    // chartKit factories replaces a whole axis key rather than deep-merging.
+    return {
+      ...base,
+      axes: {
+        ...base.axes,
+        left: {
+          ...base.axes.left,
+          ticks: { formatter: (tick: number | Date) => formatUsdCompact(Number(tick)) },
+        },
+      },
+    };
+  }, [spendGranularity]);
   const breadthOpts = useMemo(
     () =>
       stackedBarOpts({
@@ -241,6 +279,44 @@ export const BugHunterOperationsCards = ({ query }: AnalyticsTabFilters) => {
 
       <OpsCard
         wide
+        title="Spend over time"
+        caption="Estimated cost of the runs that started in each period, split by what started them — the CLI's own figure where a run reported one, our token-priced estimate otherwise. Pick the grain: days for last week's bill, weeks or months for the trend."
+        source={source(
+          "bug_hunt_runs: metadata.cliReportedCostUsd else totalTokenCostUsd, summed by createdAt day and trigger, folded into the chosen period on the client",
+        )}
+        takeaway={data ? spendTakeaway(data, spendGranularity) : undefined}
+        emptyText={spendEmptyText(data)}
+        table={buildSpendTable(dayRows, spendGranularity)}
+        chartId="AAQ-170"
+        controls={
+          <div className="w-28 shrink-0">
+            <Dropdown
+              id="bug-hunter-spend-granularity"
+              size="sm"
+              titleText="Period"
+              hideLabel
+              label="Period"
+              items={SPEND_GRANULARITIES}
+              selectedItem={
+                SPEND_GRANULARITIES.find(g => g.id === spendGranularity) ?? SPEND_GRANULARITIES[0]
+              }
+              itemToString={item => item?.label ?? ""}
+              onChange={({ selectedItem }) => {
+                if (selectedItem) setSpendGranularity(selectedItem.id);
+              }}
+            />
+          </div>
+        }
+        {...common}
+        render={height => (
+          <ScrollableChart data={spendSeries}>
+            <StackedBarChart data={spendSeries} options={{ ...spendOpts, height }} />
+          </ScrollableChart>
+        )}
+      />
+
+      <OpsCard
+        wide
         title="Code shown to the sweeps per day"
         caption={`Lines of code in scope for the sweeps that started each day — the day's diff, or the whole tree on a deep sweep — as each sweep reports after Discover. This is the breadth proxy: tokens say how much the model read, this says how much it was given to read.${
           start
@@ -310,6 +386,8 @@ interface OpsCardProps {
   table: ChartTableData;
   tableCaption?: string;
   chartId: string;
+  /** A control that belongs to this card alone (a period picker, say), rendered in its header. */
+  controls?: ReactNode;
   wide?: boolean;
   loading: boolean;
   error: boolean;
@@ -332,6 +410,7 @@ const OpsCard = ({
   table,
   tableCaption,
   chartId,
+  controls,
   wide,
   loading,
   error,
@@ -356,6 +435,7 @@ const OpsCard = ({
         onExpand={() => setExpanded(true)}
         height={CHART_HEIGHT}
         chartId={chartId}
+        controls={controls}
       >
         {render(CHART_HEIGHT)}
       </ChartCard>

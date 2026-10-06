@@ -173,17 +173,35 @@ describe("BugFindingDrawer — fix session", () => {
     );
   });
 
-  it("starts the session immediately even when the bug has no repo yet — Bug Hunter classifies it, not the admin", async () => {
+  it("offers a codebase picker when the bug has no repo, defaulting to letting Bug Hunter classify it", async () => {
     renderDrawer(finding({ repo: null }));
     fireEvent.click(screen.getByText("Put me on it"));
 
     expect(screen.getByText("Start now")).not.toBeDisabled();
-    expect(screen.queryByTestId("repo-picker")).not.toBeInTheDocument();
+    expect(screen.getByTestId("repo-picker")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Start now"));
     await waitFor(() =>
       expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1" }),
     );
+  });
+
+  it("sends the codebase the admin picked, which is how a bug the classifier could not place gets fixed", async () => {
+    renderDrawer(finding({ repo: null }));
+    fireEvent.click(screen.getByText("Put me on it"));
+
+    fireEvent.change(screen.getByLabelText("Which codebase?"), { target: { value: "ally-web" } });
+    fireEvent.click(screen.getByText("Start now"));
+
+    await waitFor(() =>
+      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: "ally-web" }),
+    );
+  });
+
+  it("shows no picker for a bug that already has a repo", () => {
+    renderDrawer(finding({ repo: "ally-be" }));
+    fireEvent.click(screen.getByText("Put me on it"));
+    expect(screen.queryByTestId("repo-picker")).not.toBeInTheDocument();
   });
 
   it("hides the button while a session is already in flight", () => {

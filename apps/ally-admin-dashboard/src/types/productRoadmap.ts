@@ -57,6 +57,8 @@ export interface RoadmapBugReportContext {
 export interface RoadmapBugReportBody {
   description: string;
   context?: RoadmapBugReportContext;
+  /** The codebase the reporter named, when they know it. Skips Bug Hunter's classifier. */
+  repo?: string;
 }
 
 /** One-time confirmation: there is deliberately no "my reports" list to link back to. */
