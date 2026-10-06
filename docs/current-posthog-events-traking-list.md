@@ -238,6 +238,27 @@ confirmation picker reports the label the scenario's language list supplies.
 switching it between Day / Week / Month — with `view` naming the grouping the learner ends up
 looking at. Collapsing the panel reports nothing.
 
+### Text helpline
+
+The anonymous talker page (`/talk/:tenantCode`) and the listener workspace (`/helpline/*`). **No
+content, ever**: no message text, display names, summaries, risk signals or notes — only the chat
+uuid (`chat_id`) and coarse enums/counts. The talker page root and the listener transcript, copilot
+and summary containers carry `ph-no-capture`, so session replay and autocapture skip them too.
+Talker events have no signed-in user, so `user_role` is `unknown`.
+
+| Constant                          | Event Name                        | Description | Fires at |
+| --------------------------------- | --------------------------------- | ----------- | -------- |
+| `TALKER_SESSION_STARTED`          | `talker_session_started`          | A talker accepted consent and joined the queue. Sends `chat_id`, `language`, `has_display_name` (boolean, never the name), `chat_status` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUEUE_LEFT`               | `talker_queue_left`               | A waiting talker left the queue (Leave → confirm). Sends `chat_id`, `wait_seconds` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CHAT_ENDED`               | `talker_chat_ended`               | A talker ended an active chat (End chat → confirm). Sends `chat_id` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_FEEDBACK_SUBMITTED`       | `talker_feedback_submitted`       | The one-question rating after a chat. Sends `chat_id`, `rating` (1–5), `has_feedback_text` (boolean, never the comment) | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CONVERSATION_DELETED`     | `talker_conversation_deleted`     | A talker erased their conversation. Sends `chat_id`, `screen` | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUICK_EXIT_USED`          | `talker_quick_exit_used`          | Quick exit pressed. Sends `screen` and `chat_id` when there is a chat | `pages/helpline-talk/useTalkerSession.ts` |
+| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds` | `pages/helpline/HelplineLobby.tsx` |
+| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index` | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note) | `pages/helpline/HelplineChatView.tsx` |
+| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count` | `pages/helpline/HelplineChatView.tsx` |
+
 ### Errors (automatic — no component code needed)
 
 | Constant             | Event Name           | Description                                                            | Fires at |

@@ -23,3 +23,4 @@ export * from "./tooltip";
 export * from "./tracks";
 export * from "./bugReport";
 export * from "./characterLibrary";
+export * from "./helpline";

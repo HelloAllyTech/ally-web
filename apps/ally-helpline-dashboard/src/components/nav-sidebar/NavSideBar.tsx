@@ -29,6 +29,7 @@ import {
 } from "@constants";
 import {
   useAnalytics,
+  useCanUseTextHelpline,
   useCanViewAnalytics,
   useCanViewCharacterLibrary,
   usePracticeStreakSummary,
@@ -175,7 +176,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const [openReportProblem, setOpenReportProblem] = useState<boolean>(false);
   const { canView: canViewCharacterLibrary } = useCanViewCharacterLibrary();
   const { canView: canViewAnalytics } = useCanViewAnalytics();
+  const { canView: canUseTextHelpline } = useCanUseTextHelpline();
   const permittedTabs = navBarOptions.filter(tab => {
+    // Text helpline needs a helpline permission AND the tenant's
+    // TEXT_HELPLINE_ENABLED toggle — see useCanUseTextHelpline.
+    if (tab.id === TabId.HELPLINE) {
+      return canUseTextHelpline;
+    }
+
     // Character Library needs the view:scenario-character permission AND the
     // tenant's CHARACTER_LIBRARY_ENABLED org toggle — see useCanViewCharacterLibrary.
     if (tab.id === TabId.CHARACTER_LIBRARY) {
