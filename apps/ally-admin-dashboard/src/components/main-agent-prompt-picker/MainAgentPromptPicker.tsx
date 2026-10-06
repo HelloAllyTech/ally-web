@@ -41,6 +41,14 @@ interface MainAgentPromptPickerProps {
  * future-visibility switch, not a kill switch — an existing simulation must
  * keep running on its chosen skill, and dropping the option outright would
  * silently reassign it to a different skill the next time an author saved.
+ *
+ * The default (`DEFAULT_MAIN_AGENT_PROMPT_CODE`) is a second exception: it
+ * stays on offer even when switched off, marked "(default)", because a
+ * simulation with no selection already runs on it. It is also the ONLY
+ * version the picker fills in by itself. Falling back to the first visible
+ * option instead — the list comes back sorted by name — re-pointed every
+ * unset simulation an author opened at whichever variant sorts first, which
+ * in production was a Kannada-only template.
  */
 export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   id,
@@ -67,21 +75,34 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   const options = useMemo(
     () =>
       (prompts ?? [])
-        .filter(prompt => prompt.visibleInStudio !== false || prompt.promptCode === currentValue)
-        .map(prompt => ({
-          label: prompt.visibleInStudio === false ? `${prompt.name} (hidden)` : prompt.name,
-          value: prompt.promptCode,
-        })),
+        .filter(
+          prompt =>
+            prompt.visibleInStudio !== false ||
+            prompt.promptCode === currentValue ||
+            prompt.promptCode === DEFAULT_MAIN_AGENT_PROMPT_CODE,
+        )
+        .map(prompt => {
+          let optionLabel = prompt.name;
+          if (prompt.visibleInStudio === false) {
+            optionLabel =
+              prompt.promptCode === DEFAULT_MAIN_AGENT_PROMPT_CODE
+                ? `${prompt.name} (default)`
+                : `${prompt.name} (hidden)`;
+          }
+          return { label: optionLabel, value: prompt.promptCode };
+        }),
     [prompts, currentValue],
   );
 
   // True when this simulation sits on a variant that has since been switched
   // off — worth saying out loud, because the author needs to know the skill
-  // still runs but is no longer on offer for anything new.
+  // still runs but is no longer on offer for anything new. Not said of the
+  // default: it is what an unset simulation runs on, switched off or not.
   const isOnHiddenVariant = useMemo(
     () =>
       Boolean(
         currentValue &&
+        currentValue !== DEFAULT_MAIN_AGENT_PROMPT_CODE &&
         (prompts ?? []).some(
           prompt => prompt.promptCode === currentValue && prompt.visibleInStudio === false,
         ),
@@ -89,13 +110,14 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
     [prompts, currentValue],
   );
 
-  // Auto-select the default prompt by its stable promptCode whenever none is chosen yet.
+  // Fill in the default, by its stable promptCode, whenever none is chosen yet
+  // — that is what the runtime would use anyway, so showing it changes
+  // nothing. Never any other version: when the default isn't in the list at
+  // all, leave the field unset and let the runtime fall back.
   useEffect(() => {
-    if (options.length === 0) return;
-    if (!currentValue) {
-      const defaultOption =
-        options.find(o => o.value === DEFAULT_MAIN_AGENT_PROMPT_CODE) ?? options[0];
-      formMethods.setValue(id, defaultOption.value, { shouldDirty: false });
+    if (currentValue) return;
+    if (options.some(o => o.value === DEFAULT_MAIN_AGENT_PROMPT_CODE)) {
+      formMethods.setValue(id, DEFAULT_MAIN_AGENT_PROMPT_CODE, { shouldDirty: false });
     }
   }, [options, id, formMethods, currentValue]);
 
