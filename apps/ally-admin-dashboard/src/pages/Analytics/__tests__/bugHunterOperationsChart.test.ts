@@ -28,6 +28,10 @@ import {
   rangeToDays,
   sourceLabel,
   tokensPerLine,
+  buildSpendSeries,
+  buildSpendTable,
+  spendBucket,
+  spendTakeaway,
 } from "../bugHunterOperationsChart";
 
 const tokens = (input = 0, output = 0, runs = 0, costUsd = 0) => ({
@@ -216,5 +220,85 @@ describe("breadth", () => {
     // unmeasured day's 550k are both left out.
     expect(tokensPerLine(days)).toBe(300);
     expect(tokensPerLine([day("2026-09-21")])).toBeNull();
+  });
+});
+
+describe("spend over time", () => {
+  const spent = (date: string, scheduled: number, fix = 0) =>
+    day(date, {
+      tokens: {
+        [BugHuntTrigger.SCHEDULED]: { ...tokens(), runs: 1, costUsd: scheduled },
+        [BugHuntTrigger.MANUAL]: tokens(),
+        [BugHuntTrigger.FIX_SESSION]: { ...tokens(), runs: fix ? 1 : 0, costUsd: fix },
+      },
+    });
+
+  it("buckets a day by itself, by the Monday of its week, or by its month", () => {
+    expect(spendBucket("2026-10-01", "day")).toBe("2026-10-01");
+    // 2026-10-01 is a Thursday; 2026-10-04 a Sunday; 2026-10-05 a Monday.
+    expect(spendBucket("2026-10-01", "week")).toBe("Wk of 2026-09-28");
+    expect(spendBucket("2026-10-04", "week")).toBe("Wk of 2026-09-28");
+    expect(spendBucket("2026-10-05", "week")).toBe("Wk of 2026-10-05");
+    expect(spendBucket("2026-10-01", "month")).toBe("2026-10");
+  });
+
+  it("sums cost per bucket and trigger, keeping buckets in date order", () => {
+    const days = [spent("2026-09-30", 1.1), spent("2026-10-01", 2.2, 0.5), spent("2026-10-05", 4)];
+
+    const byDay = buildSpendSeries(days, "day");
+    expect(byDay.filter(p => p.group === "Nightly sweep").map(p => [p.key, p.value])).toEqual([
+      ["2026-09-30", 1.1],
+      ["2026-10-01", 2.2],
+      ["2026-10-05", 4],
+    ]);
+
+    const byWeek = buildSpendSeries(days, "week");
+    expect(byWeek.filter(p => p.group === "Nightly sweep").map(p => [p.key, p.value])).toEqual([
+      ["Wk of 2026-09-28", 3.3],
+      ["Wk of 2026-10-05", 4],
+    ]);
+    expect(
+      byWeek.find(p => p.group === "Fix session" && p.key === "Wk of 2026-09-28")?.value,
+    ).toBe(0.5);
+
+    const byMonth = buildSpendSeries(days, "month");
+    expect(byMonth.filter(p => p.group === "Nightly sweep").map(p => [p.key, p.value])).toEqual([
+      ["2026-09", 1.1],
+      ["2026-10", 6.2],
+    ]);
+  });
+
+  it("tables every bucket with a total and a run count", () => {
+    const table = buildSpendTable(
+      [spent("2026-09-30", 1.1), spent("2026-10-01", 2.2, 0.5)],
+      "month",
+    );
+    expect(table.columns[0]).toBe("Month (UTC)");
+    expect(table.columns).toContain("Total (USD)");
+    expect(table.rows).toEqual([
+      ["2026-09", 1.1, 0, 0, 1.1, 1],
+      ["2026-10", 2.2, 0, 0.5, 2.7, 2],
+    ]);
+  });
+
+  it("names the total, the average per period and the peak", () => {
+    const days = [spent("2026-09-30", 1), spent("2026-10-01", 3)];
+    const data = {
+      days,
+      totals: {
+        filed: 0,
+        accepted: 0,
+        declined: 0,
+        undecided: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        costUsd: 4,
+        runs: 2,
+      },
+    } as unknown as Parameters<typeof spendTakeaway>[0];
+    expect(spendTakeaway(data, "day")).toMatch(
+      /\$4\.00 over the window · \$2\.00 per day on average · most in 2026-10-01 \(\$3\.00\)/,
+    );
+    expect(spendTakeaway(data, "month")).toMatch(/per month on average · most in 2026-10/);
   });
 });

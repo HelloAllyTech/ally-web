@@ -22,13 +22,17 @@ import {
 
 import { baseAPI, baseQuery } from "./baseAPI";
 
-const ALLOWED_ROLES = [
+// Exported for its test only. A role missing here is refused at login, so a
+// LISTENER-only account could never reach the Helpline workspace.
+export const ALLOWED_ROLES = [
   UserRole.COUNSELLOR,
   UserRole.ADMIN,
   UserRole.LEARNER,
   UserRole.SIMULATION_REVIEWER,
   UserRole.SCRIBE_REVIEWER,
   UserRole.EVALUATOR,
+  UserRole.LISTENER,
+  UserRole.HELPLINE_SUPERVISOR,
 ];
 
 const authAPI = baseAPI.injectEndpoints({

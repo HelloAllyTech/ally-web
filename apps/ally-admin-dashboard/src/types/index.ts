@@ -37,3 +37,4 @@ export * from "./characterInterview";
 export * from "./featureToggles";
 export * from "./cohorts";
 export * from "./internalMonologue";
+export * from "./helpline";

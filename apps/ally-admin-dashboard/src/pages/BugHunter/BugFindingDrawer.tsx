@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { Launch } from "@icons";
 import { toast } from "sonner";
 
-import { Button, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Button, Select, SelectItem, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
@@ -44,6 +44,7 @@ import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 import { PipelineRail } from "./PipelineRail";
 import { stageFromFindingStatus } from "./pipelineStage";
 import { ReportedBugPanel } from "./ReportedBugPanel";
+import { BUG_HUNTER_REPOS } from "./repos";
 
 interface BugFindingDrawerProps {
   id: string;
@@ -120,6 +121,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
   const [reject, { isLoading: isRejecting }] = useRejectBugFindingMutation();
   const [answer, { isLoading: isAnswering }] = useAnswerBugFindingMutation();
   const [startFixSession, { isLoading: isStartingSession }] = useStartBugFixSessionMutation();
+  // The codebase an admin names for a bug that has none, or "" to let Bug
+  // Hunter classify it. The API has always taken the override; the dialog
+  // never offered it, which left a failed classification as a dead end.
+  const [fixRepo, setFixRepo] = useState<string>("");
   const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
   const [merge, { isLoading: isMerging }] = useMergeBugFindingMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
@@ -280,7 +285,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
 
   const handleStartFixSession = async () => {
     try {
-      await startFixSession({ id }).unwrap();
+      await startFixSession({ id, ...(fixRepo ? { repo: fixRepo } : {}) }).unwrap();
       setConfirmAction(null);
     } catch (error) {
       // The backend's own message is the useful one here — "Bug Hunter is
@@ -1118,7 +1123,27 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             disabled: isStartingSession,
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
-        />
+        >
+          {/* Only for a bug with no repo. One with a repo already says where
+              it will work, and a picker beside that would be a second answer
+              to a question already settled. */}
+          {!finding?.repo && (
+            <div className="mt-3 text-left" data-testid="repo-picker">
+              <Select
+                id={`drawer-${id}-repo`}
+                labelText={en.bugHunter.drawerFixSessionRepoLabel}
+                helperText={en.bugHunter.drawerFixSessionRepoHelp}
+                value={fixRepo}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFixRepo(e.target.value)}
+              >
+                <SelectItem value="" text={en.bugHunter.drawerFixSessionRepoAuto} />
+                {BUG_HUNTER_REPOS.map(name => (
+                  <SelectItem key={name} value={name} text={name} />
+                ))}
+              </Select>
+            </div>
+          )}
+        </ActionConfirmationPopup>
       )}
 
       {confirmAction === "stopFixSession" && (

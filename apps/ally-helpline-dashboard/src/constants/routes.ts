@@ -12,6 +12,10 @@ import {
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
+// Imported by relative path, not from @assets: an @assets icon here breaks every
+// test that mocks @assets explicitly, and a lucide icon breaks the ones that
+// mock lucide-react — this one has no dependencies for either to miss.
+import HelplineNavIcon from "../components/nav-sidebar/HelplineNavIcon";
 
 export const ROUTES = {
   // Public Routes
@@ -70,6 +74,13 @@ export const ROUTES = {
   SIMULATION_REVIEW_DETAILS: "/simulation-review/:reviewId",
   SCRIBE_REVIEW_DETAILS: "/scribe-review/:reviewId",
   ARCHIVES: "/archives",
+  // Text helpline: the listener workspace (gated on a helpline permission AND
+  // the tenant's TEXT_HELPLINE_ENABLED toggle — see useCanUseTextHelpline).
+  HELPLINE: "/helpline",
+  HELPLINE_CHAT: "/helpline/chat/:chatId",
+  HELPLINE_HISTORY: "/helpline/history",
+  // Text helpline: the anonymous public talker page. No sign-in, no nav.
+  TALK: "/talk/:tenantCode",
 } as const;
 
 // Route builders for the Track 2.0 parameterised routes (string-only — this
@@ -86,6 +97,8 @@ export const buildTrackItemDiscussionPostRoute = (
 ) =>
   `${buildTrackItemRoute(trackId, itemId)}?${TRACK_DISCUSSION_POST_QUERY_PARAM}=${encodeURIComponent(postId)}`;
 export const buildTrackProgressRoute = (trackId: string) => `/track/${trackId}/progress`;
+export const buildHelplineChatRoute = (chatId: string) =>
+  `/helpline/chat/${encodeURIComponent(chatId)}`;
 
 export const excludeNavBar = [
   ROUTES.AUDIO_CALL,
@@ -197,6 +210,18 @@ export const navBarOptions = [
     // visibility needs the view:scenario-character permission AND the tenant's
     // CHARACTER_LIBRARY_ENABLED org toggle, so useCanViewCharacterLibrary
     // handles it in NavSideBar instead.
+    permissions: [] as Permissions[],
+  },
+  {
+    id: TabId.HELPLINE,
+    title: "Helpline",
+    key: "nav.tabs.helpline",
+    Icon: HelplineNavIcon,
+    path: ROUTES.HELPLINE,
+    activePages: [ROUTES.HELPLINE_CHAT, ROUTES.HELPLINE_HISTORY],
+    // Empty on purpose, like Character Library: visibility needs a helpline
+    // permission AND the tenant's TEXT_HELPLINE_ENABLED toggle, so
+    // useCanUseTextHelpline decides it in NavSideBar.
     permissions: [] as Permissions[],
   },
 ];
