@@ -142,6 +142,7 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   regressed: false,
   rediscoveredCount: 0,
   miss: null,
+  latestFixVerdict: null,
   budget: {
     caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
     used: { sessions: 0, attempts: 0, escalations: 0, usd: 0, minutes: 0 },

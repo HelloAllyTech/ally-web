@@ -115,10 +115,18 @@ describe("filed series", () => {
 
   it("states the accepted share over what was ruled on, never over what was filed", () => {
     expect(
-      filedTakeaway(metrics({ totals: { ...outcomes(8, 3, 2, 3), inputTokens: 0, outputTokens: 0, costUsd: 0, runs: 0 } })),
+      filedTakeaway(
+        metrics({
+          totals: { ...outcomes(8, 3, 2, 3), inputTokens: 0, outputTokens: 0, costUsd: 0, runs: 0 },
+        }),
+      ),
     ).toBe("8 filed · 60% of the 5 ruled on were accepted");
     expect(
-      filedTakeaway(metrics({ totals: { ...outcomes(4, 0, 0, 4), inputTokens: 0, outputTokens: 0, costUsd: 0, runs: 0 } })),
+      filedTakeaway(
+        metrics({
+          totals: { ...outcomes(4, 0, 0, 4), inputTokens: 0, outputTokens: 0, costUsd: 0, runs: 0 },
+        }),
+      ),
     ).toBe("4 filed — none ruled on yet");
   });
 });
@@ -187,7 +195,9 @@ describe("reporters", () => {
 
 describe("breadth", () => {
   const days = [
-    day("2026-09-21", { tokens: { ...day("x").tokens, [BugHuntTrigger.SCHEDULED]: tokens(500_000, 50_000, 5) } }),
+    day("2026-09-21", {
+      tokens: { ...day("x").tokens, [BugHuntTrigger.SCHEDULED]: tokens(500_000, 50_000, 5) },
+    }),
     day("2026-09-22"),
     day("2026-09-23", {
       breadth: { runs: 5, linesInScope: 4000, filesInScope: 60, commits: 7, deepRuns: 0 },
@@ -257,9 +267,9 @@ describe("spend over time", () => {
       ["Wk of 2026-09-28", 3.3],
       ["Wk of 2026-10-05", 4],
     ]);
-    expect(
-      byWeek.find(p => p.group === "Fix session" && p.key === "Wk of 2026-09-28")?.value,
-    ).toBe(0.5);
+    expect(byWeek.find(p => p.group === "Fix session" && p.key === "Wk of 2026-09-28")?.value).toBe(
+      0.5,
+    );
 
     const byMonth = buildSpendSeries(days, "month");
     expect(byMonth.filter(p => p.group === "Nightly sweep").map(p => [p.key, p.value])).toEqual([
@@ -276,8 +286,8 @@ describe("spend over time", () => {
     expect(table.columns[0]).toBe("Month (UTC)");
     expect(table.columns).toContain("Total (USD)");
     expect(table.rows).toEqual([
-      ["2026-09", 1.1, 0, 0, 1.1, 1],
-      ["2026-10", 2.2, 0, 0.5, 2.7, 2],
+      ["2026-09", 1.1, 0, 0, 0, 1.1, 1],
+      ["2026-10", 2.2, 0, 0.5, 0, 2.7, 2],
     ]);
   });
 

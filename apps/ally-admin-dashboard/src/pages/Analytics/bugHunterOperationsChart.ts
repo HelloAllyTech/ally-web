@@ -292,18 +292,21 @@ export const TRIGGER_ORDER: BugHuntTrigger[] = [
   BugHuntTrigger.SCHEDULED,
   BugHuntTrigger.MANUAL,
   BugHuntTrigger.FIX_SESSION,
+  BugHuntTrigger.VERIFY_FIX,
 ];
 
 export const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.SCHEDULED]: "Nightly sweep",
   [BugHuntTrigger.MANUAL]: "On-demand sweep",
   [BugHuntTrigger.FIX_SESSION]: "Fix session",
+  [BugHuntTrigger.VERIFY_FIX]: "Verifier",
 };
 
 export const TRIGGER_SCALE: ColorScale = {
   [TRIGGER_LABELS[BugHuntTrigger.SCHEDULED]]: PALETTE.blue,
   [TRIGGER_LABELS[BugHuntTrigger.MANUAL]]: PALETTE.orange,
   [TRIGGER_LABELS[BugHuntTrigger.FIX_SESSION]]: PALETTE.teal,
+  [TRIGGER_LABELS[BugHuntTrigger.VERIFY_FIX]]: PALETTE.purple,
 };
 
 const dayTokens = (d: BugHunterOperationsDay, trigger: BugHuntTrigger): number => {

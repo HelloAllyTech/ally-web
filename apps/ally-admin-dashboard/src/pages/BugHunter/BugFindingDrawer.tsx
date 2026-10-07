@@ -574,6 +574,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             finding.regressionOf ||
             finding.rediscoveredCount > 0 ||
             finding.miss ||
+            finding.latestFixVerdict ||
             finding.budget) && (
             <div className="border border-border-light rounded p-3 flex flex-col gap-2">
               {finding.confidence != null && (
@@ -641,6 +642,63 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     String(finding.rediscoveredCount),
                   )}
                 </p>
+              )}
+
+              {/* The Verifier's verdict on the current fix PR (OPP-0779): the
+                  second opinion a reviewer reads before the diff. */}
+              {finding.latestFixVerdict && (
+                <div data-testid="fix-verdict" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-xs font-medium ${
+                        finding.latestFixVerdict.verdict === "pass"
+                          ? "text-green-700"
+                          : "text-amber-700"
+                      }`}
+                    >
+                      {finding.latestFixVerdict.verdict === "pass"
+                        ? en.bugHunter.drawerVerdictPass
+                        : en.bugHunter.drawerVerdictFail}
+                    </span>
+                    {finding.latestFixVerdict.by.engine && (
+                      <span className="text-xs text-typography-600">
+                        ·{" "}
+                        {en.bugHunter.drawerVerdictBy.replace(
+                          "{engine}",
+                          finding.latestFixVerdict.by.engine,
+                        )}
+                      </span>
+                    )}
+                    <Tooltip label={en.bugHunter.drawerVerdictTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.latestFixVerdict.summary && (
+                    <p className="text-xs text-typography-700">
+                      {finding.latestFixVerdict.summary}
+                    </p>
+                  )}
+                  <ul className="text-xs text-typography-600 flex flex-col gap-0.5">
+                    {finding.latestFixVerdict.checks.map(check => (
+                      <li key={check.name} className="flex gap-1.5">
+                        <span className={`font-mono ${check.ok === false ? "text-amber-700" : ""}`}>
+                          {check.skipped ? "–" : check.ok ? "✓" : "✗"}
+                        </span>
+                        <span className="font-mono">{check.name}</span>
+                        <span className="min-w-0 break-words">
+                          {check.skipped
+                            ? en.bugHunter.drawerVerdictCheckSkipped.replace(
+                                "{reason}",
+                                check.skipped,
+                              )
+                            : (check.evidence ?? "")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
               {/* The case file's budget (OPP-0775): what this bug has cost so

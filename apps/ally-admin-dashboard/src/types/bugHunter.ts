@@ -8,6 +8,8 @@ export enum BugHuntTrigger {
   MANUAL = "manual",
   /** One admin, one bug, one click — a run scoped to a single finding. */
   FIX_SESSION = "fix_session",
+  /** The Verifier's read-only pass over one fix PR, on the other vendor's model (OPP-0779). */
+  VERIFY_FIX = "verify_fix",
 }
 
 /**
@@ -202,6 +204,28 @@ export interface BugCaseBudget {
   overriddenAt: string | null;
 }
 
+/** The Verifier's judgement on a fix PR — mirrors ally-be's `BugFixVerdict` (OPP-0779). */
+export interface BugFixVerdictCheck {
+  name: string;
+  ok: boolean | null;
+  evidence: string | null;
+  skipped: string | null;
+}
+
+export interface BugFixVerdict {
+  verdict: "pass" | "fail";
+  confidence: number | null;
+  checks: BugFixVerdictCheck[];
+  scopeExceeded: boolean;
+  wouldBeWrongIf: string | null;
+  summary: string | null;
+  by: { engine: string | null; model: string | null };
+  prUrl: string | null;
+  prHeadSha: string | null;
+  runId: string | null;
+  at: string;
+}
+
 export interface BugFindingMiss {
   reason: BugFindingMissReason;
   /** Null only for `not_a_miss`. */
@@ -388,6 +412,8 @@ export interface BugFinding {
   miss: BugFindingMiss | null;
   /** Caps and spend on this bug. Defaults with nothing spent until a move has been metered. */
   budget: BugCaseBudget;
+  /** The Verifier's latest verdict on the current fix PR, or null until one has run. */
+  latestFixVerdict: BugFixVerdict | null;
   /**
    * What the last failed fix session left behind, or null. Written by the
    * fix protocol with `status: failed`; the next session reads it in its

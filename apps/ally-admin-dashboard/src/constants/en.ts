@@ -2796,6 +2796,14 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the Verifier's verdict on a fix (OPP-0779) ────────────────────────
+    drawerVerdictPass: "My Verifier passed this fix",
+    drawerVerdictFail: "My Verifier refused this fix",
+    drawerVerdictTooltip:
+      "After I open a fix PR, a separate run on a different model reads it with fresh eyes: does the regression test fail before and pass after, is the suite green, does the diff do only what the bug needs, do data files keep their counts. I merge only on a pass, and only where this repo lets me.",
+    drawerVerdictBy: "Read on {engine}",
+    drawerVerdictCheckSkipped: "skipped: {reason}",
+
     // ── the case file's budget (OPP-0775) ─────────────────────────────────
     drawerBudgetLabel: "What I've spent on this bug",
     drawerBudgetTooltip:
@@ -3032,6 +3040,7 @@ export const en = {
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
     triggerFixSession: "Fix session",
+    triggerVerifyFix: "Verifier",
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",
