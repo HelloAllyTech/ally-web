@@ -2796,6 +2796,35 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the Work tab's "Today, by repo" board ──────────────────────────────
+    today: {
+      title: "Today, by repo",
+      subtitle: "{date}, since midnight India time",
+      colRepo: "Repo",
+      colSweeps: "Sweeps",
+      colFound: "Found",
+      colVerified: "Verifier on findings",
+      colSessions: "Fix sessions",
+      colFixVerdicts: "Verifier on fixes",
+      colPrsOpen: "PRs open",
+      colMerged: "Merged",
+      colReleased: "Released",
+      colSpend: "Spend",
+      total: "Total",
+      sweepsDone: "done",
+      sweepsFailed: "failed",
+      sweepsRunning: "running",
+      sweepsSkipped: "skipped",
+      verifiedWord: "confirmed",
+      refutedWord: "refuted",
+      passedWord: "passed",
+      failedWord: "failed",
+      sessionsAuto: "by me",
+      sessionsByYou: "by you",
+      sessionsRunning: "running",
+      sessionsFailed: "failed",
+    },
+
     // ── the independent verifier's view of a finding (OPP-0780) ───────────
     drawerIndependentPending: "My independent verifier is still reading this",
     drawerIndependentConfirmed: "Confirmed by my independent verifier",

@@ -206,6 +206,31 @@ export interface BugCaseBudget {
   overriddenAt: string | null;
 }
 
+/** One repo's day on the Work tab's board — mirrors ally-be's `BugHunterTodayRepo`. */
+export interface BugHunterTodayRepo {
+  repo: string;
+  sweeps: { completed: number; failed: number; skipped: number; running: number };
+  found: number;
+  verified: number;
+  refuted: number;
+  fixSessions: { byPerson: number; byAgent: number; running: number; failed: number };
+  fixesPassed: number;
+  fixesFailed: number;
+  /** Fix PRs open right now, whatever day they were opened. */
+  prsOpen: number;
+  merged: number;
+  released: number;
+  spendUsd: number;
+}
+
+export interface BugHunterToday {
+  date: string;
+  timeZone: string;
+  since: string;
+  repos: BugHunterTodayRepo[];
+  totals: Omit<BugHunterTodayRepo, "repo">;
+}
+
 /** The Verifier's judgement on a fix PR — mirrors ally-be's `BugFixVerdict` (OPP-0779). */
 export interface BugFixVerdictCheck {
   name: string;

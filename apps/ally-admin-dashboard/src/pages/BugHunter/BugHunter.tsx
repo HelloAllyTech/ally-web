@@ -17,6 +17,7 @@ import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { KeyboardShortcutSheet } from "./KeyboardShortcutSheet";
 import { LiveWorkBoard } from "./LiveWorkBoard";
 import { NotebookPanel } from "./NotebookPanel";
+import { TodayBoard } from "./TodayBoard";
 import { UxSignalsPanel } from "./UxSignalsPanel";
 import { ANALYTICS_BUG_AGENT_TAB_ID, ANALYTICS_TAB_PARAM } from "../Analytics/Analytics";
 
@@ -213,6 +214,13 @@ export const BugHunter: FC = () => {
               quiet night and the table sits directly under the card. */}
           <div className="mt-6 shrink-0 empty:mt-0">
             <LiveWorkBoard findings={findings} onOpen={setBug} />
+          </div>
+
+          {/* The day so far, one row per repo: sweeps, found, verified, fix
+              sessions, PRs, merges, releases, spend. Reads its own endpoint
+              on its own poll and touches nothing the table depends on. */}
+          <div className="mt-6 shrink-0 empty:mt-0">
+            <TodayBoard />
           </div>
 
           {/* Directly above the table its bug-shaped output lands in, which is

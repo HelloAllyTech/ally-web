@@ -5,22 +5,23 @@ import {
   BugFindingDetail,
   BugFindingRef,
   BugFindingStage,
+  BugHunterMemoryEntry,
   BugHunterMetrics,
-  BugHunterOperationsMetrics,
   BugHunterMode,
   BugHunterModelSettings,
   BugHunterNotification,
-  ListBugHunterNotificationsResponse,
-  BugHunterMemoryEntry,
-  ListBugHunterMemoryResponse,
-  WriteBugHunterMemoryBody,
+  BugHunterOperationsMetrics,
   BugHunterSettings,
+  BugHunterToday,
   BugHuntRun,
   BugHuntRunDetail,
+  BugHuntRunsSummary,
   ListBugFindingsQuery,
   ListBugFindingsResponse,
-  BugHuntRunsSummary,
+  ListBugHunterMemoryResponse,
+  ListBugHunterNotificationsResponse,
   ListBugHuntRunsResponse,
+  WriteBugHunterMemoryBody,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -210,6 +211,23 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
      * a finding-level funnel from `GET /runs`, because run totals and finding
      * statuses have different denominators there. This has one.
      */
+    /**
+     * The Work tab's "Today, by repo" board (since midnight in the team's time
+     * zone). Polled by the board itself; tagged with findings and runs so a
+     * triage or a dispatch refreshes it without waiting for the poll.
+     */
+    getBugHunterToday: builder.query<BugHunterToday, { timeZone: string }>({
+      query: ({ timeZone }) => ({
+        url: ApiEndpoints.BUG_HUNTER.TODAY,
+        method: HttpMethod.GET,
+        params: { timeZone },
+      }),
+      providesTags: [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+        { type: TAG_TYPES.BUG_HUNTER_RUNS, id: "LIST" },
+      ],
+    }),
+
     getBugHunterMetrics: builder.query<BugHunterMetrics, { days?: number } | void>({
       query: arg => {
         // `arg` is `void` when the hook is called with no argument, and
@@ -495,6 +513,7 @@ export const {
   useMergeBugFindingMutation,
   useReleaseBugFindingMutation,
   useGetBugHunterMetricsQuery,
+  useGetBugHunterTodayQuery,
   useGetBugHunterOperationsMetricsQuery,
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,

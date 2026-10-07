@@ -12,6 +12,9 @@ vi.mock("@api", () => ({
   // The panel invalidates the findings and suggestions queues itself, once it
   // sees a scan finish — so it reaches for the store's util alongside the hooks.
   baseAPI: { util: { invalidateTags: vi.fn() } },
+  // The Today board sits on the Work tab and reads its own query; it renders
+  // nothing until data lands, so an empty answer keeps these tests quiet.
+  useGetBugHunterTodayQuery: vi.fn(() => ({ data: undefined, isError: false })),
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
