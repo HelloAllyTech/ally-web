@@ -1,11 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@api", () => ({
-  useGetBugHunterTodayQuery: vi.fn(),
-  // Reached at module-eval time by a shared import; never called here.
-  baseAPI: { util: { invalidateTags: vi.fn() } },
-}));
+vi.mock("@api", () => ({ useGetBugHunterTodayQuery: vi.fn() }));
+// See BugFindingsTable's note: @constants reads `cellTypes` off this barrel at
+// module-eval time, and the real barrel would pull the whole API layer in.
+vi.mock("@components", () => ({ cellTypes: {} }));
 
 import { useGetBugHunterTodayQuery } from "@api";
 import { BugHunterToday } from "@types";
