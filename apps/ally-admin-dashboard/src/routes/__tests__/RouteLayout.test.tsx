@@ -45,7 +45,7 @@ vi.mock("@pages", () => ({
   LlmModelCatalog: () => <div>LlmModelCatalogPage</div>,
   AiTasks: () => <div>AiTasksPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
-  PromptManagement: () => <div>PromptManagementPage</div>,
+  SystemSkillsPage: () => <div>SystemSkillsPage</div>,
   UserBadges: () => <div>UserBadgesPage</div>,
   GuardrailsManagement: () => <div>GuardrailsManagementPage</div>,
   TranslationManagement: () => <div>TranslationManagementPage</div>,
@@ -190,7 +190,7 @@ describe("RouteLayout", () => {
   it("renders Manage Prompts route", () => {
     window.history.pushState({}, "", ROUTES.MANAGE_PROMPTS);
     render(<RouteLayout />);
-    expect(screen.getByText("PromptManagementPage")).toBeInTheDocument();
+    expect(screen.getByText("SystemSkillsPage")).toBeInTheDocument();
   });
 
   it("renders DefaultRedirect at the root route", () => {

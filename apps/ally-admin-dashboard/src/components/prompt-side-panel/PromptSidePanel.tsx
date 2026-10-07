@@ -27,6 +27,7 @@ import { useCreatePortal } from "@hooks";
 import { Prompt, LlmProviderName } from "@types";
 
 import PromptTranslationsSection from "./PromptTranslationsSection";
+import { SkillExperimentNotice } from "./SkillExperimentNotice";
 import {
   getAvailableVariableName,
   normalizeAvailableVariables,
@@ -1018,6 +1019,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
         <div className="h-[calc(100vh-100px)] px-8 pt-2 overflow-y-auto custom-scrollbar">
           <div className="space-y-6">
+            <SkillExperimentNotice promptId={selectedPrompt?.id} />
             <Field label="UUID">
               <div className="w-full select-all border-b border-border-light bg-secondary-50 px-3 py-2 font-mono text-base text-neutral-700 break-all">
                 {selectedPrompt?.id ?? "—"}

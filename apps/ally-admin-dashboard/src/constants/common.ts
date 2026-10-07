@@ -412,6 +412,15 @@ export const ApiEndpoints = {
     QUESTION_SET_PUBLISH: (id: string) => `/v1/lab/question-sets/${id}/publish`,
     QUESTION_SET_ARCHIVE: (id: string) => `/v1/lab/question-sets/${id}/archive`,
   },
+  SKILL_EXPERIMENTS: {
+    LIST: "/v1/skill-experiments",
+    BY_PROMPT: (promptId: string) => `/v1/skill-experiments/${promptId}`,
+    START: (promptId: string) => `/v1/skill-experiments/${promptId}/start`,
+    STOP: (promptId: string) => `/v1/skill-experiments/${promptId}/stop`,
+    RESUME: (promptId: string) => `/v1/skill-experiments/${promptId}/resume`,
+    APPLY: (promptId: string) => `/v1/skill-experiments/${promptId}/apply`,
+    OBSERVATIONS: (promptId: string) => `/v1/skill-experiments/${promptId}/observations`,
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -962,6 +971,9 @@ export const TAG_TYPES = {
   // Text helpline org settings. Also registered in baseApi.ts's `tagTypes` — an
   // unregistered tag is silently ignored and its invalidation never fires.
   HELPLINE_ADMIN_SETTINGS: "helplineAdminSettings",
+  // Skill experiments (auto-improve on System Skills). Also registered in
+  // baseApi.ts's `tagTypes` — an unregistered tag is silently ignored.
+  SKILL_EXPERIMENTS: "skillExperiments",
 };
 
 /**

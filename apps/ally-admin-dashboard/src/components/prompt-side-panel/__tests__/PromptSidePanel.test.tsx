@@ -130,6 +130,10 @@ vi.mock("@hooks", () => ({
   useCreatePortal: () => ({ top: 0, left: 0, width: 200 }),
 }));
 
+// The auto-improve notice has its own test (SkillExperimentNotice.test.tsx) and
+// needs a router and a store this suite doesn't set up.
+vi.mock("../SkillExperimentNotice", () => ({ SkillExperimentNotice: () => null }));
+
 // Mock constants
 vi.mock("@constants", () => ({
   MAIN_AGENT_PROMPT_VARIABLE_CATALOG: [],

@@ -25,7 +25,7 @@ import {
   ScenarioLanguages,
   LanguageGlossary,
   GuardrailsManagement,
-  PromptManagement,
+  SystemSkillsPage,
   UserBadges,
   TranslationManagement,
   TooltipManagement,
@@ -281,7 +281,7 @@ export const RouteLayout: React.FC = () => {
           path={ROUTES.MANAGE_PROMPTS}
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_PROMPT]}>
-              <PromptManagement />
+              <SystemSkillsPage />
             </PrivateLayout>
           }
         />

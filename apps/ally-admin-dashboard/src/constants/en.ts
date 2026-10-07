@@ -4381,4 +4381,177 @@ export const en = {
       summaryLabelRequired: "Label is required.",
     },
   },
+  skillExperiments: {
+    tabs: { skills: "Skills", experiments: "Auto-improve" },
+    intro:
+      "Auto-improve keeps testing revised versions of a skill on live traffic, judged against your rubric, and pauses when the best version reaches your target.",
+    notConnectedNote:
+      "Only skills that report their outputs can be auto-improved. Ask engineering to connect another skill.",
+    loading: "Loading skills…",
+    loadError: "Couldn't load auto-improve. Your skills are unaffected.",
+    empty: "No skills are connected to auto-improve yet.",
+    columns: {
+      skill: "Skill",
+      runsIn: "Runs in",
+      status: "Status",
+      best: "Best version",
+      target: "Target",
+      lastActivity: "Last activity",
+    },
+    runtime: { "ally-be": "Backend", "ally-ai": "AI service" } as Record<string, string>,
+    never: "—",
+    status: {
+      off: "Off",
+      baseline: "Collecting baseline",
+      testing: "Testing",
+      paused: "Paused — needs review",
+    } as Record<string, string>,
+    pausedReason: {
+      target_reached: "The best version reached your target score. It now serves all traffic.",
+      baseline_meets_target:
+        "The original already meets your target score, so there was nothing to improve.",
+      max_variants: "This run used its variant budget. The best version serves all traffic.",
+      no_progress:
+        "Several challengers in a row failed to beat the best version. It serves all traffic.",
+      designer_failed:
+        "The designer couldn't write a draft that kept the runtime placeholders intact. The best version serves all traffic.",
+    } as Record<string, string>,
+    drawer: {
+      title: (name: string) => `Auto-improve: ${name}`,
+      loadError: "Couldn't load this experiment.",
+      offBody: "Auto-improve is off. The skill serves its own text.",
+      baselineBody: (judged: number, needed: number) =>
+        `Collecting a baseline: ${judged} of ${needed} outputs of the original judged. The first variant is drafted after that.`,
+      testingBody: (challenger: string, percent: number, champion: string) =>
+        `Testing ${challenger} on ${percent}% of traffic against ${champion}.`,
+      draftingBody: (champion: string) =>
+        `${champion} serves all traffic while the designer drafts the next variant.`,
+      waiting: (count: number) => `${count} outputs waiting for the judge`,
+      spend: (cost: string, calls: number) =>
+        `Judge and designer spend: ${cost} over ${calls} calls`,
+      spendUnpriced: "some calls used a model without pricing",
+      lastError: "The last loop run hit an error and will retry:",
+      outputsNote: (description: string) => `An output of this skill is: ${description}`,
+      turnOn: "Turn on auto-improve",
+      turnOnDisabled: "Save a rubric with at least one criterion first.",
+      turnOnUnsaved: "Save your rubric changes first — the judge uses the saved rubric.",
+      turnOff: "Turn off",
+      resume: "Resume",
+      apply: (label: string) => `Apply ${label} to the skill`,
+      applyDisabled: "The original is still the best version — there's nothing to apply.",
+      confirmTurnOnTitle: "Turn on auto-improve?",
+      confirmTurnOnBody:
+        "Outputs of this skill will be stored and judged, and once there's a baseline, AI-drafted versions will serve part of its live traffic. Runtime placeholders are locked, and a draft that breaks the output format is pulled automatically.",
+      confirmTurnOffTitle: "Turn off auto-improve?",
+      confirmTurnOffBody:
+        "The skill goes back to its own text immediately. The variants and scores stay here for reference; turning it on again starts a new run.",
+      confirmApplyTitle: (label: string) => `Apply ${label}?`,
+      confirmApplyBody:
+        "Its text becomes the skill's new version in System Skills (the current text stays in the version history) and auto-improve turns off.",
+      cancel: "Cancel",
+      actionFailed: "That didn't work. Refresh and try again.",
+      applied: (label: string) => `${label} is now the skill's text.`,
+      saved: "Saved.",
+    },
+    rubric: {
+      heading: "Evaluation rubric",
+      help: "The judge scores every output 1–5 on each criterion; the overall score is the weighted average on a 0–100 scale. Describe what a 5 looks like.",
+      lockedWhileLive:
+        "Turn auto-improve off to change the rubric — scores under a different rubric can't be compared with the ones collected so far.",
+      name: "Criterion",
+      description: "What a 5 looks like",
+      weight: "Weight",
+      weightHelp: "How much this criterion counts, 1 (a little) to 5 (a lot).",
+      add: "Add criterion",
+      remove: (name: string) => `Remove ${name || "criterion"}`,
+      save: "Save rubric",
+      max: (count: number) => `Up to ${count} criteria.`,
+      errors: {
+        nameRequired: "Every criterion needs a name.",
+        descriptionRequired: "Every criterion needs a description.",
+        duplicate: "Two criteria have the same name.",
+        empty: "Add at least one criterion.",
+      },
+    },
+    settings: {
+      heading: "Settings",
+      save: "Save settings",
+      targetScore: "Target score (0–100)",
+      targetScoreHelp: "The loop pauses once the best version's average judged score reaches this.",
+      minSamples: "Outputs judged per version",
+      minSamplesHelp:
+        "How many outputs each version needs before it's compared. More is slower but surer.",
+      traffic: "Challenger traffic (%)",
+      trafficHelp:
+        "The share of the skill's live traffic a new draft gets while it's tested. The rest gets the current best version.",
+      maxVariants: "Variant budget per run",
+      maxVariantsHelp: "Drafts the loop may test before pausing for your review.",
+      maxLosses: "Losses in a row before pausing",
+      maxLossesHelp:
+        "If this many drafts in a row fail to beat the best version, the loop pauses rather than keep spending.",
+      minImprovement: "Minimum improvement (points)",
+      minImprovementHelp:
+        "A draft must beat the best version by at least this many points — and by more than chance — to replace it.",
+      judgeModel: "Judge model",
+      judgeModelHelp:
+        "The model that scores outputs. Locked while a run is live, because scores from two judges can't be compared.",
+      designerModel: "Designer model",
+      designerModelHelp: "The model that drafts revised versions of the skill.",
+      defaultModel: "Default",
+      invalid: (label: string, min: number, max: number) =>
+        `${label}: enter a number from ${min} to ${max}.`,
+    },
+    placeholders: {
+      heading: "Locked runtime placeholders",
+      help: "Code fills these in when the skill runs. Every draft must keep each one exactly as written; a draft that drops, renames or adds one is rejected and never served.",
+      none: "This skill has no runtime placeholders.",
+    },
+    variants: {
+      heading: "Versions",
+      earlierRuns: (count: number) => `Earlier runs (${count})`,
+      run: (run: number) => `Run ${run}`,
+      none: "No versions yet. Turn auto-improve on to start a run.",
+      status: {
+        champion: "Best version",
+        challenger: "Testing",
+        retired: "Retired",
+        rejected: "Rejected — never served",
+      } as Record<string, string>,
+      judged: (count: number) => `${count} judged`,
+      score: "Score",
+      noScore: "Not scored yet",
+      changeSummary: "What changed",
+      hypothesis: "Why it should score higher",
+      outcome: "Outcome",
+      text: "Text",
+      showText: "Show text",
+      hideText: "Hide text",
+      showOutputs: "Show judged outputs",
+      hideOutputs: "Hide judged outputs",
+      perCriterion: "Average per criterion (1–5)",
+    },
+    outputs: {
+      loading: "Loading outputs…",
+      empty: "No judged outputs for this version yet.",
+      error: "Couldn't load outputs.",
+      failedCall: "The skill call failed",
+      brokeFormat: "Broke the output format",
+      judgeFailed: "The judge couldn't score this one",
+      input: "Input",
+      output: "Output",
+      more: "Load more",
+    },
+    timeline: {
+      heading: "Timeline",
+      empty: "Nothing has happened yet.",
+      byLoop: "Auto-improve",
+      byAdmin: "Admin",
+    },
+    sidePanel: {
+      running: (status: string) => `Auto-improve: ${status}.`,
+      editWarning:
+        "Saving a change to this skill's text restarts the experiment from your new text.",
+      open: "Open experiment",
+    },
+  },
 };

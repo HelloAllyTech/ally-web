@@ -16,7 +16,15 @@ type PromptManagementFilters = {
   categories: string[];
 };
 
-export const PromptManagement: React.FC = () => {
+interface PromptManagementProps {
+  /**
+   * Replaces the default page title. SystemSkillsPage passes the title plus
+   * its Skills / Auto-improve tabs, so the tabs sit where the title was.
+   */
+  header?: React.ReactNode;
+}
+
+export const PromptManagement: React.FC<PromptManagementProps> = ({ header }) => {
   const limit = 30;
   const [offset, setOffset] = useState<number>(0);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -330,9 +338,11 @@ export const PromptManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
-          {en.simulation.scenarioPrompts}
-        </h1>
+        {header ?? (
+          <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+            {en.simulation.scenarioPrompts}
+          </h1>
+        )}
         <ListToolbar
           searchValue={searchQuery}
           onSearchChange={handleSearchChange}

@@ -100,7 +100,7 @@ import {
 
 import { baseAPI } from "./baseApi";
 
-const simulationStudioAPI = baseAPI.injectEndpoints({
+export const simulationStudioAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
      * Get all simulations available in the Simulation Studio.

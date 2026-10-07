@@ -14,6 +14,9 @@ export enum Permissions {
   DELETE_CHARACTER_LIBRARY = "delete:scenario-character",
   EDIT_PROMPT = "edit:admin:prompts",
   VIEW_PROMPT = "view:admin:prompts",
+  // Auto-improve experiments on System Skills. Granted to roles that can edit prompts.
+  VIEW_SKILL_EXPERIMENT = "view:admin:skill-experiments",
+  EDIT_SKILL_EXPERIMENT = "edit:admin:skill-experiments",
   VIEW_ADMIN_BADGE = "view:admin:badges",
   EDIT_GUARDRAIL = "edit:admin:guardrails",
   EDIT_MULTI_TENANT_ADMINS = "edit:multi-tenant-admins",

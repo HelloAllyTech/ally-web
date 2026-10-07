@@ -18,6 +18,7 @@ export * from "./AiTasks/AiTasks";
 export * from "./LlmModelCatalog/LlmModelCatalog";
 export * from "./LanguageManagement/LanguageManagement";
 export * from "./PromptManagement/PromptManagement";
+export * from "./PromptManagement/SystemSkillsPage";
 export * from "./LanguageGlossary/LanguageGlossary";
 export * from "./UserBadges/UserBadges";
 export * from "./GuardrailsManagement/GuardrailsManagement";
