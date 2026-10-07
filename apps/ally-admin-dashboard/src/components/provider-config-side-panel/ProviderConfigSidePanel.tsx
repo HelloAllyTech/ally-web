@@ -54,12 +54,12 @@ const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode 
   hint,
   children,
 }) => (
-  <div className="flex flex-row min-h-[40px] items-center text-base justify-between">
-    <div className="w-[40%] pr-4">
+  <div className="flex flex-col gap-1 md:gap-0 md:flex-row min-h-[40px] md:items-center text-base justify-between">
+    <div className="w-full md:w-[40%] md:pr-4">
       <div className="text-typography-700">{label}</div>
       {hint && <div className="text-typography-500 text-sm mt-1">{hint}</div>}
     </div>
-    <div className="w-[60%]">{children}</div>
+    <div className="w-full md:w-[60%]">{children}</div>
   </div>
 );
 
@@ -225,8 +225,8 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
   return (
     <div className="fixed inset-0 z-50 flex" data-testid="provider-config-side-panel">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between px-10 pl-[46px] py-4 border-b border-border-light">
+      <div className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between px-4 md:px-10 md:pl-[46px] py-4 border-b border-border-light">
           <button
             type="button"
             onClick={handleClose}
@@ -275,7 +275,7 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
           </div>
         )}
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+        <div className="h-[calc(100dvh-72px)] md:h-[calc(100vh-100px)] px-4 md:px-10 md:pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             <input
               type="text"

@@ -145,7 +145,7 @@ export const ClassifierExamplesEditor: FC<ClassifierExamplesEditorProps> = ({
   disabled = false,
 }) => (
   <div className="flex flex-col gap-3">
-    <div className="flex items-start gap-6">
+    <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6">
       <ExampleColumn
         title="Positive examples"
         hint="Things the counsellor might say that DO belong to this class."

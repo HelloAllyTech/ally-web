@@ -371,7 +371,9 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           {kpis.map(kpi => (
             <Tile key={kpi.label} className="analytics-kpi">
               <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-              <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+              <p className="break-words text-2xl font-medium text-typography-900 sm:text-3xl">
+                {kpi.value}
+              </p>
             </Tile>
           ))}
         </div>
@@ -489,7 +491,9 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
         {kpis.map(kpi => (
           <Tile key={kpi.label} className="analytics-kpi">
             <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-            <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+            <p className="break-words text-2xl font-medium text-typography-900 sm:text-3xl">
+              {kpi.value}
+            </p>
           </Tile>
         ))}
       </div>

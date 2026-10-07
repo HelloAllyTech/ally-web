@@ -395,7 +395,9 @@ const GroupSection: FC<{
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+          // Capped at the container so a phone narrower than 380px gets one
+          // full-width column rather than a card running off the screen.
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(380px, 100%), 1fr))",
           gap: "1rem",
         }}
       >
@@ -488,7 +490,11 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
                 <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
                   <strong>{factor.label}</strong>
                   <Tooltip label={factor.description} align="top">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center"
+                      aria-label={`About ${factor.label}`}
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -498,15 +504,11 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
                 </p>
 
                 {factor.bands.map(band => (
+                  // On a phone the bar moves under its label and numbers,
+                  // full width: four columns do not fit beside each other.
                   <div
                     key={band.band}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "9rem 1fr 4rem 5rem",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                      padding: "0.25rem 0",
-                    }}
+                    className="grid grid-cols-[minmax(0,1fr)_4rem_5rem] items-center gap-x-3 gap-y-1 py-1 sm:grid-cols-[9rem_1fr_4rem_5rem] sm:gap-3"
                   >
                     <span style={{ fontSize: "0.875rem" }}>{bandLabel(band, factor.unit)}</span>
                     {/* Bars are scaled to the worst band rather than to 100%:
@@ -515,11 +517,12 @@ const TurnConditionsSection: FC<{ data: WeakMetricTurnConditions }> = ({ data })
                         be invisible. */}
                     <span
                       aria-hidden
+                      className="order-last col-span-3 sm:order-none sm:col-span-1"
                       style={{
                         display: "block",
                         height: "0.5rem",
                         borderRadius: "0.25rem",
-                        background: PALETTE[0],
+                        background: PALETTE.blue,
                         opacity: 0.85,
                         width: worst > 0 ? `${Math.max((band.rate / worst) * 100, 1)}%` : "1%",
                       }}
@@ -691,7 +694,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
           value is self-describing instead, which is why granularity reads "By
           month" rather than "Month". */}
       <TabControls>
-        <div className="w-40">
+        <div className="w-full sm:w-40">
           <Dropdown
             id="weak-metrics-model"
             size="md"
@@ -706,7 +709,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             }
           />
         </div>
-        <div className="w-56">
+        <div className="w-full sm:w-56">
           <Dropdown
             id="weak-metrics-scenario"
             size="md"
@@ -726,7 +729,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             month. Only versions with judged data are offered — one with none
             behind it would empty the tab and read as "this prompt fixed
             everything". */}
-        <div className="w-40">
+        <div className="w-full sm:w-40">
           <Dropdown
             id="weak-metrics-prompt-version"
             size="md"
@@ -741,7 +744,7 @@ export const WeakPerformingMetricsTab: FC<AnalyticsTabFilters> = ({ query, langu
             }
           />
         </div>
-        <div className="w-36">
+        <div className="w-full sm:w-36">
           <Dropdown
             id="weak-metrics-bucket"
             size="md"

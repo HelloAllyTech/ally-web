@@ -400,13 +400,15 @@ export const EventManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">{en.simulation.events}</h1>
+        <h1 className="text-2xl text-typography-900 pb-4 md:pb-6 font-secondary">
+          {en.simulation.events}
+        </h1>
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}
           action={listToolbarAction}
         />
-        <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
+        <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-4 md:mt-[20px]">
           <NotionTable
             tableData={tableData}
             onRowChange={handleUpdateEventTable}

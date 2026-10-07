@@ -85,7 +85,10 @@ const inPeriod = (range: AnalyticsRange) =>
 /* Bodies                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const ROW_GRID = "grid grid-cols-[minmax(9rem,16rem)_1fr_11rem] items-center gap-3";
+// Label, bar and numbers stack below `sm`: side by side they are wider than a
+// phone. Each bar then spans the full width, so lengths still compare.
+const ROW_GRID =
+  "grid grid-cols-1 items-center gap-1 sm:grid-cols-[minmax(9rem,16rem)_1fr_11rem] sm:gap-3";
 
 /**
  * One row per course: four nested bars (enrolled → started → halfway →

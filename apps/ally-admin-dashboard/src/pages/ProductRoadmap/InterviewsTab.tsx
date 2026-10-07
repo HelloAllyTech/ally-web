@@ -93,10 +93,10 @@ export const InterviewsTab: React.FC<InterviewsTabProps> = ({
       ) : (
         <ul className="flex flex-col gap-3">
           {notes.map(note => (
-            <li key={note.id} className="border border-border-light p-4">
-              <div className="flex items-start justify-between gap-4">
+            <li key={note.id} className="border border-border-light p-3 md:p-4">
+              <div className="flex items-start justify-between gap-2 md:gap-4">
                 <div className="min-w-0">
-                  <h3 className="text-typography-primary text-base">{note.title}</h3>
+                  <h3 className="text-typography-primary break-words text-base">{note.title}</h3>
                   <div className="text-typography-secondary mt-0.5 text-xs">
                     {note.interviewee ? `${note.interviewee} · ` : ""}
                     {new Date(note.createdAt).toISOString().slice(0, 10)}
@@ -116,7 +116,7 @@ export const InterviewsTab: React.FC<InterviewsTabProps> = ({
               </div>
               {/* Plain text, whitespace preserved — the summary is LLM-generated prose with
                   plain-text headings and "- " bullets, deliberately not HTML. */}
-              <p className="text-typography-primary mt-3 text-sm whitespace-pre-wrap">
+              <p className="text-typography-primary mt-3 text-sm whitespace-pre-wrap break-words">
                 {note.summary}
               </p>
             </li>

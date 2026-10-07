@@ -386,7 +386,7 @@ export const BuildView: React.FC<BuildViewProps> = ({
   const failureDetail = runError && failureTitle !== runError ? runError : null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col max-md:flex-none">
       {/* ActionableNotification, not InlineNotification with a button inside
           it. Carbon forbids interactive children in an InlineNotification and
           throws at render — a notification is announced to a screen reader as

@@ -41,7 +41,7 @@ const cloneSection = (section: ScribeSettingsList): ScribeSettingsList => ({
 
 const ScribeSettingsSkeleton = () => {
   return (
-    <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-3/4 mt-4 animate-pulse">
+    <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-full md:w-3/4 mt-4 animate-pulse">
       <div className="h-5 bg-neutral-200 rounded w-40" />
 
       {[1, 2, 3].map(item => (
@@ -553,22 +553,24 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
                 {en.userManagement.selectedCount(selectedCount, totalCount)}
               </span>
               <div className="flex flex-row gap-4">
-                <div
-                  className="text-primary-500 font-normal text-xs font-primary cursor-pointer"
+                <button
+                  type="button"
+                  className="py-2 md:py-0 text-primary-500 font-normal text-xs font-primary cursor-pointer"
                   onClick={() => handleClearAll(item.id)}
                 >
                   {en.userManagement.clearAll}
-                </div>
-                <div
-                  className="text-primary-500 font-normal text-xs font-primary cursor-pointer"
+                </button>
+                <button
+                  type="button"
+                  className="py-2 md:py-0 text-primary-500 font-normal text-xs font-primary cursor-pointer"
                   onClick={() => handleSelectAll(item.id)}
                 >
                   {en.userManagement.selectAll}
-                </div>
+                </button>
               </div>
             </div>
             <div className="border-y-[0.5px] border-border-light">
-              <div className="grid grid-cols-2 gap-1.5 items-center py-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 items-center py-2">
                 {item.fields.map(field => renderScribeSettingsListData(field, item.id))}
               </div>
             </div>
@@ -577,14 +579,14 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
               <Button
                 variant="secondary"
                 onClick={() => handleCancel(item.id)}
-                className="w-[180px] h-10"
+                className="flex-1 sm:flex-none sm:w-[180px] h-10"
               >
                 {en.common.cancel}
               </Button>
               <Button
                 variant="primary"
                 onClick={() => handleSave(item.id)}
-                className="w-[180px] h-10"
+                className="flex-1 sm:flex-none sm:w-[180px] h-10"
                 disabled={!isChanged || isUpdating}
               >
                 {isUpdating ? en.userManagement.saving : en.common.save}
@@ -612,10 +614,13 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   }
 
   return (
-    <div className="w-[60%] flex flex-col gap-4 mb-4 pb-2">
+    <div className="w-full md:w-[60%] flex flex-col gap-4 mb-4 pb-2">
       <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
         {optionValues.map(item => (
-          <div key={item.id} className="flex h-9 flex-row justify-between items-center">
+          <div
+            key={item.id}
+            className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3"
+          >
             <div className="text-sm text-typography-700 font-normal">{item.label}</div>
             <div className="flex flex-row items-center gap-3">
               <ToggleSwitch
@@ -639,7 +644,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
         {en.userManagement.customFields}
       </div>
       <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
-        <div className="flex h-9 flex-row justify-between items-center">
+        <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3">
           <div className="text-sm text-typography-700 font-normal">
             {en.userManagement.customFieldsEnabled}
           </div>
@@ -659,7 +664,10 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
             {allCustomFieldTypes.map(({ key, label }) => {
               const isEnabled = localEnabledTypes.includes(key);
               return (
-                <div key={key} className="flex h-9 flex-row justify-between items-center">
+                <div
+                  key={key}
+                  className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3"
+                >
                   <div className="text-sm text-typography-700 font-normal">{label}</div>
                   <div className="flex flex-row items-center gap-3">
                     <ToggleSwitch
@@ -683,7 +691,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       )}
 
       <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary mt-2">
-        <div className="flex h-9 flex-row justify-between items-center">
+        <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3">
           <div className="text-sm text-typography-700 font-normal">
             {en.userManagement.scribeNoteCreationEnabled}
           </div>
@@ -701,7 +709,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       </div>
 
       <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary mt-2">
-        <div className="flex h-9 flex-row justify-between items-center">
+        <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3">
           <div className="text-sm text-typography-700 font-normal">
             {en.userManagement.voiceNoteEnabled}
           </div>

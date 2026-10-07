@@ -385,7 +385,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
           <span className="text-typography-900 text-base">Character Profile</span>
           <div className="relative" ref={characterDropdownRef}>
             <div
-              className="flex items-center gap-2 text-sm text-typography-600 cursor-pointer hover:text-typography-900 transition-colors"
+              className="flex items-center gap-2 text-sm text-typography-600 cursor-pointer hover:text-typography-900 transition-colors max-md:min-h-10"
               onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
             >
               <span>{getDisplayLabel()}</span>
@@ -396,7 +396,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               </span>
             </div>
             {isCharacterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 min-w-[280px] bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
+              <div className="absolute right-0 top-full mt-1 min-w-[280px] max-w-[calc(100vw-2rem)] bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
                 <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
                   <input
                     type="text"
@@ -454,7 +454,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
       )}
 
       {/* All fields in one unified 2-column grid */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
         {/* Name */}
         {isPersonaFieldVisible(formFieldIds.NAME, nameLookup) && (
           <div>

@@ -190,49 +190,55 @@ export const FoundationalSkillsLearnerPanel = ({
             ) : myHabits.rows.length === 0 ? (
               <p className="text-xs text-typography-500">No helpful behaviour observed yet.</p>
             ) : (
-              <table className="w-full text-xs">
-                <thead className="text-left text-typography-500">
-                  <tr>
-                    <th className="py-1 pr-3 font-medium">Behaviour</th>
-                    <th className="py-1 pr-3 font-medium">All</th>
-                    {myHabits.comparable && <th className="py-1 pr-3 font-medium">Start → now</th>}
-                    <th className="py-1 font-medium" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {myHabits.rows.map(x => {
-                    const d = habitDefs.get(x.code);
-                    return (
-                      <tr key={x.code} className="border-t border-[#f0f0f0] align-top">
-                        <td className="py-1 pr-3">
-                          <span className="text-typography-800">{d?.text ?? x.code}</span>
-                          {d && (
-                            <span className="block text-[11px] text-typography-500">
-                              {trackabilityLabel(d)}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-1 pr-3 tabular-nums">{countText(x.all)}</td>
-                        {myHabits.comparable && (
-                          <td className="whitespace-nowrap py-1 pr-3 tabular-nums">
-                            {countText(x.start)} → {countText(x.now)}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-left text-typography-500">
+                    <tr>
+                      <th className="py-1 pr-3 font-medium">Behaviour</th>
+                      <th className="py-1 pr-3 font-medium">All</th>
+                      {myHabits.comparable && (
+                        <th className="py-1 pr-3 font-medium">Start → now</th>
+                      )}
+                      <th className="py-1 font-medium" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myHabits.rows.map(x => {
+                      const d = habitDefs.get(x.code);
+                      return (
+                        <tr key={x.code} className="border-t border-[#f0f0f0] align-top">
+                          <td className="py-1 pr-3">
+                            <span className="text-typography-800">{d?.text ?? x.code}</span>
+                            {d && (
+                              <span className="block text-[11px] text-typography-500">
+                                {trackabilityLabel(d)}
+                              </span>
+                            )}
                           </td>
-                        )}
-                        <td className="whitespace-nowrap py-1">
-                          {x.clear && (
-                            <span
-                              className="font-medium"
-                              style={{ color: x.clear === "adopted" ? PALETTE.green : PALETTE.red }}
-                            >
-                              {x.clear === "adopted" ? "▲ adopted" : "▼ dropped"}
-                            </span>
+                          <td className="py-1 pr-3 tabular-nums">{countText(x.all)}</td>
+                          {myHabits.comparable && (
+                            <td className="whitespace-nowrap py-1 pr-3 tabular-nums">
+                              {countText(x.start)} → {countText(x.now)}
+                            </td>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          <td className="whitespace-nowrap py-1">
+                            {x.clear && (
+                              <span
+                                className="font-medium"
+                                style={{
+                                  color: x.clear === "adopted" ? PALETTE.green : PALETTE.red,
+                                }}
+                              >
+                                {x.clear === "adopted" ? "▲ adopted" : "▼ dropped"}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </section>
 

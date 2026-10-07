@@ -162,7 +162,7 @@ export const MergeOpportunitiesPanel: React.FC<MergeOpportunitiesPanelProps> = (
                   className="mt-1"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-typography-secondary flex items-center gap-2 text-xs tabular-nums">
+                  <div className="text-typography-secondary flex flex-wrap items-center gap-x-2 text-xs tabular-nums">
                     <span>{opportunity.code}</span>
                     <span>{opportunity.priorityScore} votes</span>
                     {isPrimary && <span className="text-primary-500">keeps code & comments</span>}
@@ -175,7 +175,7 @@ export const MergeOpportunitiesPanel: React.FC<MergeOpportunitiesPanelProps> = (
                   type="button"
                   onClick={() => remove(opportunity.id)}
                   aria-label={`Remove ${opportunity.code} from this merge`}
-                  className="text-typography-secondary hover:text-typography-primary shrink-0"
+                  className="text-typography-secondary hover:text-typography-primary -m-2 shrink-0 p-2 md:m-0 md:p-0"
                 >
                   <Close size={16} />
                 </button>
@@ -257,7 +257,7 @@ export const MergeOpportunitiesPanel: React.FC<MergeOpportunitiesPanelProps> = (
         </>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button variant={ButtonVariant.PRIMARY} disabled={!canMerge || isLoading} onClick={submit}>
           {isLoading ? "Merging…" : `Merge ${picked.length || ""}`.trim()}
         </Button>

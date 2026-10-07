@@ -95,13 +95,13 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex" data-testid="llm-model-catalog-panel">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[50%] min-w-[600px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between px-10 py-4 border-b border-border-light">
+      <div className="w-full md:w-[50%] md:min-w-[600px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between gap-3 px-4 md:px-10 py-4 border-b border-border-light">
           <button
             type="button"
             onClick={onClose}
             aria-label="Close panel"
-            className="text-typography-700"
+            className="inline-flex h-10 w-10 -ml-2 items-center justify-center md:h-auto md:w-auto md:ml-0 text-typography-700"
           >
             <DoubleArrowRight />
           </button>
@@ -122,7 +122,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
         {testResult && (
           <div
             data-testid="llm-model-test-result"
-            className={`mx-10 mt-4 rounded-md border px-4 py-3 text-sm ${
+            className={`mx-4 md:mx-10 mt-4 rounded-md border px-4 py-3 text-sm ${
               testResult.ok
                 ? "border-success-400 bg-success-50 text-typography-800"
                 : "border-destructive-500 bg-destructive-50 text-typography-800"
@@ -142,7 +142,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
           </div>
         )}
 
-        <div className="px-10 pt-6 space-y-5">
+        <div className="px-4 md:px-10 pt-4 md:pt-6 space-y-5">
           <h2 className="text-2xl font-light">{selected ? "Edit model" : "Add model"}</h2>
 
           <div>
@@ -237,6 +237,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
               variant={ButtonVariant.PRIMARY}
               onClick={handleSave}
               disabled={!model.trim() || isSaving}
+              className="w-full sm:w-auto"
             >
               {isSaving ? "Saving…" : "Save"}
             </Button>

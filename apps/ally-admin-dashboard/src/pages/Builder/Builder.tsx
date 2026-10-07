@@ -306,14 +306,14 @@ export const Builder: React.FC = () => {
     ) : null;
 
   return (
-    <div className="mx-auto flex h-full max-w-6xl flex-col overflow-y-auto p-6">
+    <div className="mx-auto flex h-full max-w-6xl flex-col overflow-y-auto md:p-6">
       <header className="mb-6">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-xl font-semibold text-typography-900">{strings.heroTitle}</h1>
             <p className="mt-1 text-sm text-typography-600">{strings.heroSubtitle}</p>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 flex-wrap items-center gap-1">
             <Button
               kind="ghost"
               size="sm"
@@ -357,7 +357,7 @@ export const Builder: React.FC = () => {
             <BuilderNotificationBell />
           </div>
         </div>
-        <div className="mt-3 flex items-end gap-2">
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
           <AutoExpandableTextarea
             id="builder-hero"
             value={heroValue}
@@ -375,6 +375,7 @@ export const Builder: React.FC = () => {
           <Button
             kind="primary"
             size="md"
+            className="max-sm:!w-full max-sm:!max-w-none"
             disabled={!heroValue.trim() || isCreating}
             onClick={() => void start()}
           >

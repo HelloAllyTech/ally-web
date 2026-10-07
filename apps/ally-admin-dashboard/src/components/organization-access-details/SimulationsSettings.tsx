@@ -199,9 +199,12 @@ const SimulationsSettings = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-1/2">
+    <div className="flex flex-col gap-4 w-full md:w-1/2">
       {optionValues.map(item => (
-        <div key={item.id} className="flex h-9 flex-row justify-between items-center font-primary">
+        <div
+          key={item.id}
+          className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3 font-primary"
+        >
           <div className="text-sm text-typography-700 font-normal">{item.label}</div>
           <div className="flex flex-row items-center gap-2">
             <ToggleSwitch
@@ -215,7 +218,7 @@ const SimulationsSettings = ({
         </div>
       ))}
 
-      <div className="flex h-9 flex-row justify-between items-center font-primary">
+      <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3 font-primary">
         <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
           {en.userManagement.characterLibraryEnabled}
           <Tooltip label={en.userManagement.characterLibraryEnabledHint} align="top">
@@ -236,7 +239,7 @@ const SimulationsSettings = ({
         </div>
       </div>
 
-      <div className="flex h-9 flex-row justify-between items-center font-primary">
+      <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3 font-primary">
         <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
           {en.userManagement.progressDashboardEnabled}
           <Tooltip label={en.userManagement.progressDashboardEnabledHint} align="top">
@@ -259,7 +262,7 @@ const SimulationsSettings = ({
 
       <div
         data-testid="text-chat-roleplay-setting"
-        className="flex h-9 flex-row justify-between items-center font-primary"
+        className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3 font-primary"
       >
         <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
           {en.userManagement.textChatRoleplayEnabled}
@@ -281,7 +284,7 @@ const SimulationsSettings = ({
         </div>
       </div>
 
-      <div className="flex h-9 flex-row justify-between items-center font-primary">
+      <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3 font-primary">
         <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
           {en.userManagement.engagementReminderEnabled}
           <Tooltip label={en.userManagement.engagementReminderEnabledHint} align="top">

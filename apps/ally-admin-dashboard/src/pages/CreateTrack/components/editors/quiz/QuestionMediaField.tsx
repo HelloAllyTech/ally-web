@@ -290,7 +290,7 @@ export const QuestionMediaField: FC<QuestionMediaFieldProps> = ({ questionPath }
                   value={linkInput}
                   onChange={event => setLinkInput(event.target.value)}
                   placeholder="Paste a YouTube, Vimeo or Loom link"
-                  className="flex-1 border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400"
+                  className="flex-1 min-w-0 border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400"
                 />
                 <Button
                   variant={ButtonVariant.SECONDARY}

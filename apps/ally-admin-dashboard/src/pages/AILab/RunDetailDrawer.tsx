@@ -34,8 +34,8 @@ export const RunDetailDrawer: React.FC<RunDetailDrawerProps> = ({ run, onClose }
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[50%] min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="flex items-center justify-between p-6">
+      <div className="w-full md:w-[50%] md:min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="flex items-center justify-between gap-3 p-4 md:p-6">
           <button
             onClick={onClose}
             className="flex flex-row items-center gap-2 text-typography-600 hover:text-neutral-800"
@@ -45,7 +45,7 @@ export const RunDetailDrawer: React.FC<RunDetailDrawerProps> = ({ run, onClose }
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-5 pb-8">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar space-y-5 pb-8">
           <Section label={en.aiLab.runs.detailSkill}>{run.skillName}</Section>
 
           <div className="flex gap-10">

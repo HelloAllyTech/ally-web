@@ -105,7 +105,7 @@ export const PathTab: FC<PathTabProps> = ({
     return (
       <div
         key={path.id}
-        className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
+        className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 md:gap-4 py-3 md:py-4 md:pr-4 border-b border-border-light hover:bg-background-secondary transition-colors min-h-[80px] md:h-[80px]"
       >
         {/* Path Image */}
         <div className="w-[64px] sm:w-[72px] md:w-[80px] lg:w-[96px] h-[56px] flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100">
@@ -128,7 +128,7 @@ export const PathTab: FC<PathTabProps> = ({
         </div>
 
         {/* Toggle and Status */}
-        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
+        <div className="flex items-center gap-3 flex-shrink-0 basis-full md:basis-auto min-w-[140px] justify-end mr-0 md:mr-5">
           <ToggleSwitch
             enabled={path.isAssignedToTenant ?? false}
             onChange={enabled => handleToggleAccess(path.id, enabled)}
@@ -164,7 +164,7 @@ export const PathTab: FC<PathTabProps> = ({
         <div className="flex flex-col flex-1 overflow-y-auto pb-8 custom-scrollbar">
           <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-50 bg-white pb-1">
             <div className="col-span-11 text-typography-600 text-sm">{en.userManagement.path}</div>
-            <div className="col-span-1 text-sm text-typography-600 pr-8">
+            <div className="hidden md:block col-span-1 text-sm text-typography-600 pr-8">
               {en.userManagement.access}
             </div>
           </div>
@@ -175,7 +175,7 @@ export const PathTab: FC<PathTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isPathsFetching}
-                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium min-h-[40px] md:min-h-0 py-1 px-1 hover:text-typography-900"
                 >
                   + {isPathsFetching ? en.common.loading : en.common.loadMore}
                 </button>

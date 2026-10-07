@@ -93,7 +93,9 @@ export const BuilderNotificationInbox: FC = () => {
                       {formatDateTime(notification.createdAt)}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-sm text-typography-900">{notification.message}</p>
+                  <p className="mt-0.5 break-words text-sm text-typography-900">
+                    {notification.message}
+                  </p>
                 </button>
               </li>
             ))

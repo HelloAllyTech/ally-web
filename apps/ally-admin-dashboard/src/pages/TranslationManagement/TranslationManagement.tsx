@@ -358,7 +358,7 @@ export const TranslationManagement: React.FC = () => {
               >
                 <Info size={16} />
               </button>
-              <div className="invisible absolute right-0 top-full z-40 mt-2 w-80 origin-top-right rounded-md border border-neutral-200 bg-white p-3 opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="invisible absolute right-0 max-md:left-0 max-md:right-auto top-full z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] origin-top-right rounded-md border border-neutral-200 bg-white p-3 opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                 <h3 className="font-secondary text-sm">Recent audit</h3>
                 <div className="mt-2 max-h-72 divide-y divide-neutral-100 overflow-auto">
                   {auditLogs.length === 0 && (
@@ -438,13 +438,15 @@ export const TranslationManagement: React.FC = () => {
         <div className="flex min-h-0 flex-1 flex-col">
           <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-white">
             <div className="min-h-0 flex-1 overflow-auto">
+              {/* Below md only Section stays pinned: pinning Key as well (440px together) would
+                  cover a phone screen and leave no room for the language columns. */}
               <Table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
                 <TableHead className="sticky top-0 z-20 bg-neutral-50 text-xs uppercase text-typography-600">
                   <TableRow>
                     <TableHeader className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-neutral-50 px-3 py-3">
                       Section
                     </TableHeader>
-                    <TableHeader className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-neutral-50 px-3 py-3 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                    <TableHeader className="md:sticky md:left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-neutral-50 px-3 py-3 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                       Key
                     </TableHeader>
                     {languages.map(lang => (
@@ -473,7 +475,7 @@ export const TranslationManagement: React.FC = () => {
                         ))}
                       </Select>
                     </TableHeader>
-                    <TableHeader className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-white px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                    <TableHeader className="md:sticky md:left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-white px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                       <input
                         value={filters[KEY_FILTER_KEY] ?? ""}
                         onChange={event => setFilter(KEY_FILTER_KEY, event.target.value)}
@@ -521,7 +523,7 @@ export const TranslationManagement: React.FC = () => {
                           {row.namespace}
                         </span>
                       </TableCell>
-                      <TableCell className="sticky left-[160px] z-10 w-[280px] min-w-[280px] border-b border-r border-neutral-100 bg-white px-3 py-3 font-mono text-xs text-typography-700 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] group-hover:bg-neutral-50">
+                      <TableCell className="md:sticky md:left-[160px] z-10 w-[280px] min-w-[280px] border-b border-r border-neutral-100 bg-white px-3 py-3 font-mono text-xs text-typography-700 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] group-hover:bg-neutral-50">
                         {row.fullKey}
                         {row.placeholders.length > 0 && (
                           <div className="mt-1 flex flex-wrap gap-1">
@@ -583,7 +585,7 @@ export const TranslationManagement: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
-            <div className="flex items-center justify-between gap-3 border-t border-neutral-200 px-3 py-2 text-xs text-typography-600">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 px-3 py-2 text-xs text-typography-600">
               <span>
                 Showing {filteredRows.length} of {rows.length} keys
               </span>
@@ -599,17 +601,17 @@ export const TranslationManagement: React.FC = () => {
           onClick={closeAddKey}
         >
           <div
-            className="w-full max-w-3xl rounded-md bg-white shadow-xl"
+            className="w-full max-w-3xl max-h-[90dvh] overflow-y-auto rounded-md bg-white shadow-xl"
             onClick={event => event.stopPropagation()}
           >
-            <div className="border-b border-neutral-200 px-6 py-4">
+            <div className="border-b border-neutral-200 px-4 md:px-6 py-4">
               <h2 className="font-secondary text-lg">Add new translation key</h2>
               <p className="mt-1 text-sm text-typography-600">
                 The new key will be added to drafts. Click Publish from the main page to make it
                 live.
               </p>
             </div>
-            <div className="space-y-4 px-6 py-4">
+            <div className="space-y-4 px-4 md:px-6 py-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-typography-700">Section</label>
@@ -703,7 +705,7 @@ export const TranslationManagement: React.FC = () => {
                   : "Languages left blank won't be saved for this key. You can fill them in later from the main page."}
               </p>
             </div>
-            <div className="flex justify-end gap-2 border-t border-neutral-200 px-6 py-4">
+            <div className="flex justify-end gap-2 border-t border-neutral-200 px-4 md:px-6 py-4">
               <Button
                 variant={ButtonVariant.SECONDARY}
                 onClick={closeAddKey}

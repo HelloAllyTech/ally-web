@@ -239,7 +239,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   const windowNote = `${RANGE_SHORT[controls.range]}, ${groupingNote(controls.grain)}`;
 
   const pickers = (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <RangePicker
         id="quality-sentiment-range"
         value={controls.range}
@@ -255,7 +255,7 @@ export const QualitySentimentSubTab = ({ query }: AnalyticsTabFilters) => {
   );
 
   const chartPickers = (chart: ChartId) => (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <RangePicker
         id={`${chart}-range`}
         value={controlsFor(chart).range}

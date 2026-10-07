@@ -115,7 +115,7 @@ export const AiTasks: React.FC = () => {
       <div className="flex items-center gap-3 pb-2">
         <h1 className="text-2xl text-typography-900 font-secondary">AI Tasks</h1>
       </div>
-      <p className="pb-6 text-typography-500 text-sm max-w-[80ch]">
+      <p className="pb-4 md:pb-6 text-typography-500 text-sm max-w-[80ch]">
         Every action that calls a model, and which model serves it. Models shown are what this
         environment is configured for; rows marked <em>as documented</em> run in another service
         whose environment this screen cannot read. A model can still be overridden per language, per
@@ -145,7 +145,7 @@ export const AiTasks: React.FC = () => {
         currentFilters={filters}
       />
 
-      <div className="flex flex-col gap-4 h-[calc(100dvh-160px)] relative mt-[20px]">
+      <div className="flex flex-col gap-4 h-[calc(100dvh-160px)] relative mt-4 md:mt-[20px]">
         <NotionTable
           tableData={{ data: tableData, columns: AI_TASK_COLUMNS }}
           // Nothing here can be acted on in bulk, so the select-all column would
@@ -154,6 +154,9 @@ export const AiTasks: React.FC = () => {
           // Read-only: there is nothing to open, nothing to edit, and nothing to
           // select. NotionTable requires the handlers, so they are no-ops.
           onRowClick={() => {}}
+          // No cell gets the open-row button either: it would open nothing, and on touch
+          // screens it is always shown rather than revealed on hover.
+          editIndex={-1}
           onRowChange={() => {}}
           onSelectionChange={() => {}}
           tableFooter={<div className="py-4 text-typography-500 text-base">{footer()}</div>}

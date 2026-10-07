@@ -152,7 +152,7 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath, graded
                       <button
                         type="button"
                         onClick={() => removeAnswer(token, answer)}
-                        className="text-destructive-500 hover:text-destructive-600"
+                        className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
                         aria-label="Remove answer"
                       >
                         <Trash className="w-3 h-3" />
@@ -173,7 +173,7 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath, graded
                       }
                     }}
                     placeholder="Add an accepted answer"
-                    className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
+                    className="flex-1 min-w-0 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
                   />
                   <button
                     type="button"

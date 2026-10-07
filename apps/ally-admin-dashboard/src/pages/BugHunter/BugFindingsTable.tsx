@@ -279,7 +279,7 @@ const QuickAction: FC<{
   <button
     type="button"
     onClick={onClick}
-    className={`inline-flex h-7 items-center whitespace-nowrap rounded-md border bg-white px-2.5 text-xs font-medium cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 ${QUICK_ACTION_STYLES[tone]}`}
+    className={`inline-flex h-9 items-center whitespace-nowrap rounded-md border bg-white px-2.5 text-xs font-medium md:h-7 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 ${QUICK_ACTION_STYLES[tone]}`}
   >
     {children}
   </button>
@@ -305,7 +305,7 @@ export const pagerItems = (page: number, pageCount: number): (number | null)[] =
 };
 
 const PAGER_BUTTON =
-  "inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-xs font-medium tabular-nums cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex h-10 min-w-10 items-center justify-center rounded-md border px-2 text-xs font-medium tabular-nums cursor-pointer md:h-8 md:min-w-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:cursor-not-allowed disabled:opacity-40";
 const PAGER_BUTTON_IDLE =
   "border-border-light bg-white text-typography-800 hover:bg-neutral-50 hover:border-border-medium";
 const PAGER_BUTTON_ACTIVE = "border-primary-500 bg-primary-500 text-white";
@@ -325,7 +325,7 @@ const TablePager: FC<{
   onChange: (page: number) => void;
 }> = ({ page, pageCount, onChange }) => (
   <nav
-    className="flex items-center gap-1"
+    className="flex flex-wrap items-center gap-1"
     aria-label={en.bugHunter.pageStatus
       .replace("{page}", String(page + 1))
       .replace("{pages}", String(pageCount))}
@@ -344,7 +344,7 @@ const TablePager: FC<{
         <span
           key={`gap-${index}`}
           aria-hidden="true"
-          className="inline-flex h-8 w-6 items-center justify-center text-xs text-typography-500"
+          className="inline-flex h-10 w-6 items-center justify-center text-xs text-typography-500 md:h-8"
         >
           …
         </span>
@@ -1021,7 +1021,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
       {isLoading ? (
         <TableSkeleton />
       ) : isError && hasNothingToShow ? (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <p className="text-destructive-600 text-sm">{en.bugHunter.findingsLoadFailed}</p>
           <button
             type="button"
@@ -1600,7 +1600,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                     id="bug-findings-page-size"
                     value={pageSize}
                     onChange={event => setPageSize(Number(event.target.value) as PageSize)}
-                    className="h-8 rounded-md border border-border-light bg-white pl-2 pr-6 text-xs text-typography-900 cursor-pointer hover:border-border-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    className="h-10 rounded-md border border-border-light bg-white pl-2 pr-6 text-xs text-typography-900 md:h-8 cursor-pointer hover:border-border-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                   >
                     {PAGE_SIZES.map(size => (
                       <option key={size} value={size}>
@@ -1611,7 +1611,7 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                 </label>
 
                 {view.pageCount > 1 && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span className="text-xs text-typography-600 tabular-nums">
                       {en.bugHunter.pageStatus
                         .replace("{page}", String(view.page + 1))

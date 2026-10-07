@@ -657,8 +657,14 @@ export const BuildActivityFeed: React.FC<BuildActivityFeedProps> = ({
   };
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-3">
+    // Phone: the session column scrolls as a whole (see BuilderSession), so the feed takes a
+    // bounded height of its own instead of whatever is left after the rails.
+    <div className="relative flex min-h-0 flex-1 flex-col max-md:flex-none">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 py-3 max-md:max-h-[60dvh] max-md:min-h-[12rem]"
+      >
         {visible.length === 0 && !failure ? (
           <p className="mt-8 text-center text-sm text-typography-500">
             {isLive ? strings.feedStarting : strings.feedEmpty}

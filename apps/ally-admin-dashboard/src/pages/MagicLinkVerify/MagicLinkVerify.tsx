@@ -56,9 +56,9 @@ export const MagicLinkVerify: React.FC = () => {
   }, [isSuccess, error, data, checkAuth, navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-dvh px-4 md:px-0 bg-background">
       {(error || (!error && !isSuccess && isLoading)) && (
-        <div className="flex flex-col items-center gap-4 p-8 rounded-lg bg-white shadow-lg">
+        <div className="flex flex-col items-center gap-4 p-6 md:p-8 rounded-lg bg-white shadow-lg text-center md:text-left">
           {error && (
             <>
               <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">

@@ -71,8 +71,8 @@ interface FieldProps {
 }
 
 const Field: React.FC<FieldProps> = ({ label, children, required = false }) => (
-  <div className="flex flex-row items-start gap-4 mb-6">
-    <label className="text-base font-regular text-typography-800 w-[40%] flex-shrink-0 mt-2">
+  <div className="flex flex-col md:flex-row md:items-start gap-1 md:gap-4 mb-6">
+    <label className="text-base font-regular text-typography-800 md:w-[40%] flex-shrink-0 md:mt-2">
       {label}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -88,10 +88,10 @@ const PanelHeader: React.FC<{
   isNewCharacter?: boolean;
   readOnly?: boolean;
 }> = ({ characterId, onClose, onDelete, hasCharacter, isNewCharacter, readOnly }) => (
-  <div className="flex items-center justify-between p-6">
+  <div className="flex items-center justify-between p-4 md:p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 max-md:min-h-10"
     >
       <DoubleArrowRight width={14} height={14} />
       <span className="text-base font-tertiary font-[500]">
@@ -436,7 +436,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleCancel} />
 
-      <div className="w-[50%] relative min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
+      <div className="w-full md:w-[50%] relative md:min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
         <PanelHeader
           characterId={selectedCharacter?.id}
           onClose={handleCancel}
@@ -446,7 +446,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           readOnly={readOnly}
         />
 
-        <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
+        <div className="flex-1 px-4 md:px-10 pt-4 md:pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
           <fieldset disabled={readOnly} className="space-y-4 min-w-0 border-0 p-0 m-0">
             <Field label="Name" required>
               <TextInput

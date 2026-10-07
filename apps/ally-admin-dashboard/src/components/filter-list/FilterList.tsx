@@ -46,10 +46,15 @@ export const FilterList: FC<FilterListProps> = ({
   return (
     <div
       ref={containerRef}
-      className="absolute top-0 z-50 left-[40px] bg-white rounded-lg border w-56 animate-in fade-in-0 duration-200 px-[20px] py-[18px] font-primary"
+      className="absolute top-0 z-50 left-[40px] bg-white rounded-lg border w-56 max-w-[calc(100vw-5rem)] animate-in fade-in-0 duration-200 px-[20px] py-[18px] font-primary"
       onClick={e => e.stopPropagation()}
     >
-      <button onClick={onClose} className="absolute right-[16px]">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={en.common.close}
+        className="absolute right-[16px] max-md:right-[4px] max-md:top-[4px] max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
+      >
         <Close />
       </button>
       <div className="space-y-3">
@@ -58,7 +63,10 @@ export const FilterList: FC<FilterListProps> = ({
             <div className="text-typography-600 font-regular text-base">{section.title}</div>
             <div className="space-y-3 border-b pb-2">
               {section.options.map(option => (
-                <label key={option.id} className="flex items-center gap-3 cursor-pointer">
+                <label
+                  key={option.id}
+                  className="flex items-center gap-3 cursor-pointer min-h-[40px] md:min-h-0"
+                >
                   <input
                     type="checkbox"
                     onChange={() => handleStatusChange(option)}
@@ -76,7 +84,7 @@ export const FilterList: FC<FilterListProps> = ({
         <div className="flex justify-end">
           <button
             onClick={onApplyFilters}
-            className="bg-primary-500 text-white rounded-full px-6 py-1 hover:bg-primary-700 transition-colors font-tertiary text-base"
+            className="bg-primary-500 text-white rounded-full px-6 py-2.5 md:py-1 hover:bg-primary-700 transition-colors font-tertiary text-base"
           >
             {en.simulation.apply}
           </button>

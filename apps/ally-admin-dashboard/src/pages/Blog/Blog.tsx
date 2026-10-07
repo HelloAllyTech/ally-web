@@ -154,7 +154,7 @@ export const BlogManagement: React.FC = () => {
 
   return (
     <div className="py-[2px] font-primary relative">
-      <h1 className="text-2xl text-typography-900 pb-6 font-secondary">Blog</h1>
+      <h1 className="text-2xl text-typography-900 pb-4 md:pb-6 font-secondary">Blog</h1>
 
       <ListToolbar
         searchValue={search}
@@ -163,12 +163,13 @@ export const BlogManagement: React.FC = () => {
         action={{ label: "New Post", onClick: openCreate, variant: ButtonVariant.PRIMARY }}
       />
 
-      <div className="flex items-center gap-2 mt-4">
+      <div className="flex flex-wrap items-center gap-2 mt-4">
         {STATUS_FILTERS.map(filter => (
           <button
+            type="button"
             key={filter.id}
             onClick={() => handleStatusChange(filter.id)}
-            className={`text-sm px-3 py-1 rounded-full border transition-colors ${
+            className={`text-sm px-3 py-2 md:py-1 rounded-full border transition-colors ${
               statusFilter === filter.id
                 ? "bg-primary-500 text-white border-primary-500"
                 : "bg-transparent text-typography-700 border-border-light hover:border-primary-300"
@@ -229,22 +230,22 @@ export const BlogManagement: React.FC = () => {
                   {formatDate(blog.updatedAt)}
                 </TableCell>
                 <TableCell className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-3">
+                  <div className="flex items-center justify-end gap-3 whitespace-nowrap">
                     <button
                       onClick={() => openEdit(blog)}
-                      className="text-primary-600 hover:underline"
+                      className="text-primary-600 hover:underline py-2 md:py-0"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleTogglePublish(blog)}
-                      className="text-typography-700 hover:underline"
+                      className="text-typography-700 hover:underline py-2 md:py-0"
                     >
                       {blog.status === "PUBLISHED" ? "Unpublish" : "Publish"}
                     </button>
                     <button
                       onClick={() => setPendingDelete(blog)}
-                      className="text-red-600 hover:underline"
+                      className="text-red-600 hover:underline py-2 md:py-0"
                     >
                       Delete
                     </button>

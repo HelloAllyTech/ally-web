@@ -172,7 +172,7 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
                 }`}
                 data-testid="notebook-entry"
               >
-                <p className="text-sm text-typography-900">{entry.body}</p>
+                <p className="text-sm text-typography-900 break-words">{entry.body}</p>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-typography-600">
                   <span>
                     {entry.createdBy === null
@@ -326,7 +326,10 @@ export const NotebookPanel: FC<NotebookPanelProps> = ({ canTriage }) => {
               />
               {en.bugHunter.notebookAddPinLabel}
               <Tooltip label={en.bugHunter.notebookAddPinTooltip} align="top">
-                <button type="button" className="cursor-pointer inline-flex items-center">
+                <button
+                  type="button"
+                  className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>

@@ -63,7 +63,7 @@ const iconBtnClass =
 // Per-row action icons (rename / branch / delete) — uniform icon buttons so the
 // row actions read consistently instead of mixing a pencil icon with text links.
 const rowActionBtnClass =
-  "shrink-0 p-1 rounded text-typography-500 hover:text-typography-900 hover:bg-secondary-100 disabled:opacity-50";
+  "shrink-0 p-1 max-md:p-2.5 rounded text-typography-500 hover:text-typography-900 hover:bg-secondary-100 disabled:opacity-50";
 
 /**
  * Compact version switcher — a dropdown anchored under the header version
@@ -184,7 +184,9 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
       {/* Click-away layer (sits below the dropdown, above the page). */}
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-[360px] max-h-[70vh] overflow-y-auto custom-scrollbar bg-white border border-border-light rounded shadow-lg">
+      {/* Below md the trigger can sit anywhere in the wrapped header row, so
+          the panel pins to the viewport instead of hanging off the trigger. */}
+      <div className="absolute right-0 top-[calc(100%+6px)] max-md:fixed max-md:inset-x-4 max-md:top-20 max-md:w-auto max-md:max-h-[calc(100dvh-6rem)] z-50 w-[360px] max-h-[70vh] overflow-y-auto custom-scrollbar bg-white border border-border-light rounded shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border-light sticky top-0 bg-white">
           <span className="text-sm font-medium text-typography-900">{t.title}</span>
           <button
@@ -307,7 +309,7 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
                     )}
                   </div>
                   {!isRenamingThis && (
-                    <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 mt-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
                       <button
                         className={rowActionBtnClass}
                         onClick={() => startRename(version)}

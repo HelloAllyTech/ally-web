@@ -635,7 +635,14 @@ describe("ListToolbar", () => {
       const { container } = render(<ListToolbar {...defaultProps} />);
 
       const toolbar = container.firstChild;
-      expect(toolbar).toHaveClass("flex", "items-center", "justify-between");
+      // Stacks below md; the desktop row layout is restored at md.
+      expect(toolbar).toHaveClass(
+        "flex",
+        "flex-col",
+        "md:flex-row",
+        "md:items-center",
+        "justify-between",
+      );
     });
 
     it("applies min-height class to toolbar", () => {

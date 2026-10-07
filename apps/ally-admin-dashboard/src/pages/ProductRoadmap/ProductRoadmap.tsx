@@ -533,7 +533,7 @@ export const ProductRoadmap: React.FC = () => {
           type="button"
           onClick={() => setLayout(option.id)}
           aria-pressed={layout === option.id}
-          className={`px-2 py-1 ${
+          className={`px-3 py-2 md:px-2 md:py-1 ${
             layout === option.id
               ? "bg-primary-50 text-primary-600"
               : "text-typography-secondary hover:text-typography-primary"
@@ -729,7 +729,7 @@ export const ProductRoadmap: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6">
+    <div className="flex flex-col gap-4 md:p-6">
       {/* The title row carries the vote balance inline. It used to spend four lines on a bordered
           card plus a two-line paragraph explaining the vote economy — standing instructions that
           every returning voter has already read, above a board where the first row of data started
@@ -741,7 +741,7 @@ export const ProductRoadmap: React.FC = () => {
         {/* items-CENTER, not baseline. This row is a vote icon and three buttons; an icon has no
             baseline to align to, so baseline alignment left the (now 40px) badge sitting off
             from the buttons beside it. Centring is what a row of controls wants anyway. */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div className="-ml-2.5 flex flex-wrap items-center gap-x-1 gap-y-1 md:ml-0 md:gap-x-4">
           {/* The vote budget, collapsed to its icon.
               It expands IN PLACE rather than into a popover: the numbers push the two buttons
               along rather than covering anything, so nothing is hidden behind it and there is
@@ -768,7 +768,7 @@ export const ProductRoadmap: React.FC = () => {
                   // the right carry, so the three read as one row of icons. It used to be a
                   // 40px outlined square, which made the leftmost of three peers the only one
                   // with a box around it and set it a size apart from the other two.
-                  className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
+                  className="text-typography-secondary hover:text-primary-500 inline-flex h-10 w-10 cursor-pointer items-center justify-center md:h-auto md:w-auto"
                 >
                   {/* An outlined triangle — see TriangleIcon in @icons for why the underlying
                       Material Symbol is called "change_history" and why it is not the solid
@@ -853,7 +853,7 @@ export const ProductRoadmap: React.FC = () => {
                 type="button"
                 aria-label="New opportunity"
                 onClick={() => setIsInterviewOpen(true)}
-                className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
+                className="text-typography-secondary hover:text-primary-500 inline-flex h-10 w-10 cursor-pointer items-center justify-center md:h-auto md:w-auto"
               >
                 {/* A bulb, not a plus: every opportunity is badged "Idea", and the plus said
                     "add a row" where this says what kind of thing gets added. The spark on it is
@@ -872,7 +872,7 @@ export const ProductRoadmap: React.FC = () => {
               type="button"
               aria-label="Report a bug"
               onClick={() => setIsReportBugOpen(true)}
-              className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
+              className="text-typography-secondary hover:text-primary-500 inline-flex h-10 w-10 cursor-pointer items-center justify-center md:h-auto md:w-auto"
             >
               {/* Material Symbols DOES ship a bug glyph, so this is `bug_report` rather than the
                   Carbon stand-in `Debug` the note in @icons describes — and it matches the weight
@@ -912,7 +912,7 @@ export const ProductRoadmap: React.FC = () => {
                 type="button"
                 aria-label="Roadmap settings: product goals, strategy and ranking, merge, split"
                 onClick={() => setIsSettingsOpen(true)}
-                className="text-typography-secondary hover:text-primary-500 inline-flex cursor-pointer items-center"
+                className="text-typography-secondary hover:text-primary-500 inline-flex h-10 w-10 cursor-pointer items-center justify-center md:h-auto md:w-auto"
               >
                 <RoadmapSettingsIcon size={20} />
               </button>
@@ -1044,7 +1044,7 @@ export const ProductRoadmap: React.FC = () => {
           window={monthWindow}
           onWindowChange={setMonthWindow}
           layoutToggle={
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {layoutToggle}
               {groupByPicker}
             </div>

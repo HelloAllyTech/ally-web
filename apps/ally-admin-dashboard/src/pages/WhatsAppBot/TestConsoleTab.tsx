@@ -98,6 +98,7 @@ export const TestConsoleTab: React.FC = () => {
         <div>
           <Button
             variant={ButtonVariant.PRIMARY}
+            className="w-full sm:w-auto"
             onClick={() => void handleAsk()}
             disabled={isLoading || !question.trim()}
           >
@@ -132,7 +133,7 @@ export const TestConsoleTab: React.FC = () => {
       {result && (
         <div className="flex flex-col gap-5 max-w-3xl">
           <section className="border border-border-light rounded-md p-4">
-            <div className="flex items-center justify-between pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
               <h3 className="text-sm font-medium text-typography-900">
                 {en.whatsappBot.testConsole.replyHeading}
               </h3>
@@ -148,7 +149,7 @@ export const TestConsoleTab: React.FC = () => {
             </div>
             {/* Pre-wrap: this is plain text destined for WhatsApp, and its line breaks are part of
                 the message. Rendering it as HTML would collapse them and misrepresent the reply. */}
-            <p className="whitespace-pre-wrap text-sm text-typography-900 font-primary">
+            <p className="whitespace-pre-wrap break-words text-sm text-typography-900 font-primary">
               {result.reply}
             </p>
             {result.intent === "decline" && result.declineReason !== "none" && (
@@ -194,8 +195,8 @@ export const TestConsoleTab: React.FC = () => {
             </section>
           )}
 
-          <section className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            <h3 className="col-span-2 text-sm font-medium text-typography-900">
+          <section className="grid grid-cols-1 gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+            <h3 className="text-sm font-medium text-typography-900 sm:col-span-2">
               {en.whatsappBot.testConsole.retrievalHeading}
             </h3>
             <Row label={en.whatsappBot.testConsole.hitCount} value={result.retrieval.hit_count} />
@@ -216,8 +217,8 @@ export const TestConsoleTab: React.FC = () => {
             />
           </section>
 
-          <section className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            <h3 className="col-span-2 text-sm font-medium text-typography-900">
+          <section className="grid grid-cols-1 gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+            <h3 className="text-sm font-medium text-typography-900 sm:col-span-2">
               {en.whatsappBot.testConsole.modelHeading}
             </h3>
             {/* The model that ACTUALLY ran — dispatch falls back when a key is missing, so this can
@@ -234,8 +235,8 @@ export const TestConsoleTab: React.FC = () => {
 };
 
 const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
-  <div className="flex justify-between border-b border-border-light py-1">
+  <div className="flex justify-between gap-3 border-b border-border-light py-1">
     <span className="text-typography-600">{label}</span>
-    <span className="text-typography-900">{value}</span>
+    <span className="min-w-0 break-words text-typography-900">{value}</span>
   </div>
 );

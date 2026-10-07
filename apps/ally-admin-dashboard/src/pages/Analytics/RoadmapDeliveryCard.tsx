@@ -119,7 +119,7 @@ export const RoadmapDeliveryCard = () => {
               as an absolutely-positioned child, which escapes a `static` scroll
               container and inflates an ancestor's scrollHeight into a phantom
               second scrollbar. */}
-          <div className="relative w-80">
+          <div className="relative w-full sm:w-80">
             <Dropdown
               id="roadmap-delivery-type"
               size="md"

@@ -88,7 +88,7 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
   return (
     <div
       onClick={onOpen}
-      className="border-border-light bg-background-primary flex cursor-pointer items-start gap-4 border border-l-4 p-4"
+      className="border-border-light bg-background-primary flex cursor-pointer items-start gap-3 border border-l-4 p-3 md:gap-4 md:p-4"
       // Inline, not a Tailwind class: the ramp is continuous, and Tailwind's JIT can only emit
       // classes it can see as literals at build time. `border-l-4` sets the width; only the
       // colour is dynamic.
@@ -138,7 +138,7 @@ export const OpportunityListCard: React.FC<OpportunityListCardProps> = ({
         {/* No type badge: bugs were split out to their own Bug Hunter-backed tab (see the tab
             list on RoadmapTab.BUGS in ProductRoadmap.tsx), so every row here is an idea and a
             badge that never varies is just noise repeated down the whole feed. */}
-        <p className="text-typography-primary text-sm font-medium">{heading}</p>
+        <p className="text-typography-primary break-words text-sm font-medium">{heading}</p>
 
         {!!body && <p className="text-typography-secondary line-clamp-2 text-sm">{body}</p>}
 

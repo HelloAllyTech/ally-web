@@ -154,7 +154,7 @@ export const AcceptSuggestionModal: React.FC<AcceptSuggestionModalProps> = ({
             placeholder={strings.descriptionPlaceholder}
           />
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Select
               id="accept-suggestion-type"
               labelText={strings.typeLabel}
@@ -203,7 +203,7 @@ export const AcceptSuggestionModal: React.FC<AcceptSuggestionModalProps> = ({
             />
           )}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant={ButtonVariant.SECONDARY} onClick={onClose} disabled={isFiling}>
               {strings.cancel}
             </Button>

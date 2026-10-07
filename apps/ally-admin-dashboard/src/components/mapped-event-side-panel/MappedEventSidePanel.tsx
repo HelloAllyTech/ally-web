@@ -66,12 +66,14 @@ interface FieldProps {
 
 const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
   <div
-    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
+    className={`flex flex-col gap-1 md:gap-0 md:flex-row min-h-[40px] ${multiline ? "md:items-start" : "md:items-center"} text-base justify-between`}
   >
-    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
+    <div className={`w-full md:w-[40%] ${multiline && "md:mt-[8px]"}`}>
       <span className="text-sm font-medium text-typography-800">{label}</span>
     </div>
-    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
+    <div className="w-full md:w-[60%] flex text-left justify-start text-neutral-800">
+      {children}
+    </div>
   </div>
 );
 
@@ -81,10 +83,10 @@ const PanelHeader: React.FC<{
   onDelete: (eventId: string) => void;
   hasEvent: boolean;
 }> = ({ eventId, onClose, onDelete, hasEvent }) => (
-  <div className="flex items-center justify-between p-6">
+  <div className="flex items-center justify-between p-4 md:p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-800 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-800 hover:text-neutral-800 max-md:min-h-10"
     >
       <span className="inline-flex w-[14px] h-[14px]">
         <DoubleArrowRight />
@@ -92,7 +94,7 @@ const PanelHeader: React.FC<{
       <span className="text-sm">{en.simulation.editEvent}</span>
     </button>
     {hasEvent && (
-      <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
+      <button onClick={() => onDelete(eventId)} className="flex items-center gap-2 max-md:min-h-10">
         <span className="inline-flex w-[14px] h-[14px]">
           <Trash />
         </span>
@@ -174,7 +176,7 @@ const EventDropdown: React.FC<{
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg custom-scrollbar">
+        <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-md:min-w-0 max-md:w-full max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg custom-scrollbar">
           <div className="sticky top-0 bg-white p-2 border-b">
             <input
               ref={inputRef}
@@ -385,7 +387,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
 
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
+      <div className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader
           eventId={selectedEvent?.id?.value || ""}
           onClose={onClose}
@@ -393,7 +395,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
           hasEvent={!!selectedEvent}
         />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+        <div className="h-[calc(100dvh-72px)] md:h-[calc(100vh-100px)] px-4 md:px-10 md:pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             {isNewEvent ? (
               <EventDropdown

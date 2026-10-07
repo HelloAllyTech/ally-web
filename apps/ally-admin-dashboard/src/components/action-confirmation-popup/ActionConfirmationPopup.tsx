@@ -3,6 +3,7 @@ import { FC, ReactNode, useEffect, useRef } from "react";
 import { Close } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant, PopupButtonProps } from "@components/types";
+import { en } from "@constants/en";
 
 interface ActionConfirmationPopupProps {
   isOpen: boolean;
@@ -61,13 +62,15 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
   const popupHeader = (
     <div className="flex flex-col items-center justify-between p-5">
       <button
+        type="button"
         onClick={onClose}
-        className="absolute top-[5px] right-[5px] text-typography-600 hover:text-typography-800 transition-colors"
+        aria-label={en.common.close}
+        className="absolute top-[5px] right-[5px] inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto text-typography-600 hover:text-typography-800 transition-colors"
       >
         <Close width={15} height={20} />
       </button>
 
-      <div className="flex justify-center items-center relative text-2xl font-medium text-center w-full font-primary">
+      <div className="flex flex-wrap justify-center items-center relative text-xl md:text-2xl font-medium text-center w-full font-primary break-words">
         {title}{" "}
         {titleItalic && <span className="italic font-semibold ml-1">{`${titleItalic}`}</span>}
       </div>
@@ -94,7 +97,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
         onClick={primaryButton.onClick}
         disabled={primaryButton.disabled}
         variant={primaryButton.variant || ButtonVariant.PRIMARY}
-        className={`text-white text-base rounded-none p-2 ${secondaryButton ? "w-full" : "w-1/3"}`}
+        className={`text-white text-base rounded-none p-2 ${secondaryButton ? "w-full" : "w-full sm:w-1/3"}`}
       >
         {primaryButton.label}
       </Button>
@@ -106,7 +109,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div
-          className="relative bg-white rounded-none shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-2 "
+          className="relative bg-white rounded-none shadow-xl max-w-md w-full max-h-[90dvh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200 px-4 sm:px-8 py-2 "
           ref={popupRef}
         >
           {popupHeader}

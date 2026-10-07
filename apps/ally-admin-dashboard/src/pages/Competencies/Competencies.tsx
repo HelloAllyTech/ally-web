@@ -123,7 +123,7 @@ const RailItem: FC<{
     type="button"
     onClick={onClick}
     aria-current={isActive}
-    className={`flex items-center justify-between gap-2 rounded px-3 py-2 text-left text-sm transition-colors ${
+    className={`flex items-center justify-between gap-2 rounded px-3 py-2.5 md:py-2 text-left text-sm transition-colors ${
       isActive
         ? "bg-primary-50 text-primary font-medium"
         : "text-typography-900 hover:bg-background-secondary"
@@ -335,10 +335,10 @@ export const Competencies: FC = () => {
   };
 
   return (
-    <div className="h-full font-primary flex flex-col">
-      <div className="flex justify-between items-center shrink-0 gap-3">
+    <div className="md:h-full font-primary flex flex-col">
+      <div className="flex flex-wrap justify-between items-center shrink-0 gap-3">
         <h1 className="text-2xl text-typography-900 font-secondary">Competencies</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={() => setEditingCluster(null)}
@@ -360,8 +360,9 @@ export const Competencies: FC = () => {
         frameworks, and the same left-rail filtering people know from labels
         and saved views elsewhere.
       */}
-      <div className="flex-1 min-h-0 mt-6 flex gap-6">
-        <aside className="w-[240px] shrink-0 overflow-y-auto custom-scrollbar">
+      {/* Below md the cluster rail stacks above the table (capped height). */}
+      <div className="flex-1 min-h-0 mt-4 md:mt-6 flex flex-col md:flex-row gap-4 md:gap-6">
+        <aside className="w-full md:w-[240px] shrink-0 max-h-[40dvh] md:max-h-none overflow-y-auto custom-scrollbar border-b md:border-b-0 border-border-light pb-3 md:pb-0">
           <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-typography-600">
             Clusters
           </p>
@@ -428,7 +429,7 @@ export const Competencies: FC = () => {
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-x-auto md:overflow-y-auto custom-scrollbar">
             {isLoading ? (
               <p className="text-typography-700">Loading…</p>
             ) : visibleCompetencies.length === 0 ? (
@@ -440,7 +441,7 @@ export const Competencies: FC = () => {
                     : "Every competency belongs to a cluster."}
               </p>
             ) : (
-              <Table className="w-full text-left border-collapse">
+              <Table className="w-full min-w-[540px] md:min-w-0 text-left border-collapse">
                 <TableHead>
                   <TableRow className="border-b border-border-light text-sm text-typography-700">
                     <TableHeader className="py-3 pr-4 font-medium w-2/5">Competency</TableHeader>
@@ -475,7 +476,7 @@ export const Competencies: FC = () => {
       {isPanelOpen && (
         <div className="fixed inset-0 z-40 flex justify-end">
           <div className="absolute inset-0 bg-black/30" onClick={closePanel} />
-          <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-6 gap-5 overflow-y-auto custom-scrollbar">
+          <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-4 md:p-6 gap-5 overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-secondary text-typography-900">
                 {isEditMode ? "Edit competency" : "Create competency"}

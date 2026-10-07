@@ -68,9 +68,9 @@ export const AddMessageModal: FC<AddMessageModalProps> = ({
       isOpen={isOpen}
       onClose={handleCancel}
       anchorElement={anchorElement}
-      className="min-w-[500px] max-w-[90vw]"
+      className="w-[calc(100vw-2rem)] md:w-auto md:min-w-[500px] max-w-[90vw]"
     >
-      <div className="bg-white rounded-lg shadow-xl min-w-[500px] p-4 min-h-[376px] flex flex-col gap-4 border">
+      <div className="bg-white rounded-lg shadow-xl md:min-w-[500px] p-4 min-h-[376px] flex flex-col gap-4 border">
         <div className="text-typography-900 w-full text-base font-primary font-bold">
           {en.simulation.addMessage}
         </div>
@@ -78,13 +78,17 @@ export const AddMessageModal: FC<AddMessageModalProps> = ({
         {addMessageModalFields.map(renderFields)}
 
         <div className="flex gap-3 py-2 justify-end">
-          <Button variant={ButtonVariant.SECONDARY} className="w-1/3" onClick={handleCancel}>
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            className="w-1/2 sm:w-1/3"
+            onClick={handleCancel}
+          >
             {en.userManagement.cancel}
           </Button>
 
           <Button
             variant={ButtonVariant.PRIMARY}
-            className="bg-primary-500 hover:bg-primary-700 w-1/3"
+            className="bg-primary-500 hover:bg-primary-700 w-1/2 sm:w-1/3"
             onClick={handleSubmit(handlePrimaryAction)}
           >
             {en.simulation.add}

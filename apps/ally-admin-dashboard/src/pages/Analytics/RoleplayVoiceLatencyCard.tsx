@@ -52,7 +52,7 @@ const LatencyLegend = ({
             type="button"
             aria-pressed={on}
             onClick={() => onToggle(group)}
-            className={`inline-flex cursor-pointer items-center gap-2 text-sm ${on ? "" : "opacity-50"}`}
+            className={`inline-flex cursor-pointer items-center gap-2 text-sm max-sm:min-h-10 ${on ? "" : "opacity-50"}`}
           >
             <span
               aria-hidden

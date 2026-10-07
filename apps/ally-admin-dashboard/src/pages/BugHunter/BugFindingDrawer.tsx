@@ -441,7 +441,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {en.bugHunter.drawerDescriptionEdit}
                   </Button>
                   <Tooltip label={en.bugHunter.drawerDescriptionEditTooltip} align="bottom">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -450,7 +453,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             </div>
 
             {descriptionDraft === null ? (
-              <p className="text-sm text-typography-900 whitespace-pre-wrap">
+              <p className="text-sm text-typography-900 whitespace-pre-wrap break-words">
                 {finding.description}
               </p>
             ) : (
@@ -467,7 +470,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     .replace("{length}", String(descriptionDraft.trim().length))
                     .replace("{max}", String(BUG_FINDING_DESCRIPTION_MAX_LENGTH))}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     size="sm"
                     kind="primary"
@@ -513,7 +516,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     <p className="text-xs font-semibold text-typography-600">
                       {en.bugHunter.drawerDescriptionOriginalTitle}
                     </p>
-                    <p className="text-sm text-typography-700 whitespace-pre-wrap">
+                    <p className="text-sm text-typography-700 whitespace-pre-wrap break-words">
                       {finding.originalDescription}
                     </p>
                   </div>
@@ -571,7 +574,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {Math.round(finding.confidence * 100)}%
                   </span>
                   <Tooltip label={en.bugHunter.drawerConfidenceTooltip} align="top">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -591,7 +597,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {en.bugHunter.drawerConfidenceUnscored}
                   </span>
                   <Tooltip label={en.bugHunter.drawerConfidenceUnscoredTooltip} align="top">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -607,7 +616,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     )}
                   </p>
                   {finding.decisionNote && (
-                    <p className="text-xs text-typography-600 mt-0.5 whitespace-pre-wrap">
+                    <p className="text-xs text-typography-600 mt-0.5 whitespace-pre-wrap break-words">
                       {finding.decisionNote}
                     </p>
                   )}
@@ -650,7 +659,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerPostmortemTitle}
                 </p>
                 <Tooltip label={en.bugHunter.drawerPostmortemTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -872,7 +884,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     : en.bugHunter.drawerStartFixSession}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerFixSessionTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -890,7 +905,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerStopFixSession}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerStopFixSessionTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -913,7 +931,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerMerge}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerMergeTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -933,7 +954,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     : en.bugHunter.drawerRelease}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerReleaseTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -991,7 +1015,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
 
               {finding.escalationAnswer ? (
                 <div>
-                  <p className="text-sm text-typography-900 whitespace-pre-wrap">
+                  <p className="text-sm text-typography-900 whitespace-pre-wrap break-words">
                     {finding.escalationAnswer}
                   </p>
                   {finding.escalationAnsweredBy != null && (
@@ -1040,14 +1064,17 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             ) : (
               <ul className="flex flex-col gap-1">
                 {events.map(event => (
-                  <li key={event.id} className="text-sm text-typography-800 flex gap-2">
+                  <li
+                    key={event.id}
+                    className="text-sm text-typography-800 flex flex-wrap gap-x-2 md:flex-nowrap md:gap-2"
+                  >
                     <span className="text-typography-500 whitespace-nowrap tabular-nums">
                       {formatTimestamp(event.createdAt)}
                     </span>
                     <span className="font-medium text-typography-700 whitespace-nowrap">
                       {BUG_HUNT_EVENT_STAGE_LABELS[event.stage]}
                     </span>
-                    <span>{event.summary}</span>
+                    <span className="min-w-0 break-words">{event.summary}</span>
                   </li>
                 ))}
               </ul>
@@ -1197,7 +1224,7 @@ const PostmortemLine = ({
   <div>
     <p className="text-[11px] text-typography-500">{label}</p>
     <p
-      className={`text-xs whitespace-pre-wrap ${mono ? "font-mono" : ""} ${
+      className={`text-xs whitespace-pre-wrap break-words ${mono ? "font-mono" : ""} ${
         emphasis ? "text-typography-900 font-medium" : "text-typography-700"
       }`}
     >

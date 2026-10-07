@@ -152,7 +152,7 @@ export const EvaluateRecordDetail: React.FC = () => {
     <EvaluateLayout>
       <button
         onClick={() => navigate(ROUTES.EVALUATE_RECORDS)}
-        className="text-primary-600 hover:underline text-sm mb-4"
+        className="text-primary-600 hover:underline text-sm mb-4 max-md:min-h-10"
       >
         ← {en.evaluate.back}
       </button>
@@ -163,9 +163,9 @@ export const EvaluateRecordDetail: React.FC = () => {
         <p className="text-destructive-600 py-8 text-center">{en.evaluate.loadFailed}</p>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl text-typography-900 font-secondary font-mono break-all">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-2xl text-typography-900 font-secondary font-mono break-all">
                 {recordId}
               </h1>
               <p className="text-sm text-typography-500 mt-1">{en.evaluate.recordIdLabel}</p>
@@ -269,12 +269,17 @@ export const EvaluateRecordDetail: React.FC = () => {
           </Section>
 
           {!submitted && (
-            <div className="flex justify-end pb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pb-8">
+              {/* The disabled button's reason lives in a hover title; touch can't hover. */}
+              {!allAnswered && (
+                <p className="sm:hidden text-sm text-typography-600">{en.evaluate.answerAll}</p>
+              )}
               <Button
                 variant={ButtonVariant.PRIMARY}
                 onClick={() => setShowConfirm(true)}
                 disabled={!allAnswered || isSubmitting}
                 title={!allAnswered ? en.evaluate.answerAll : undefined}
+                className="w-full sm:w-auto"
               >
                 {isSubmitting ? en.evaluate.submitting : en.evaluate.submit}
               </Button>

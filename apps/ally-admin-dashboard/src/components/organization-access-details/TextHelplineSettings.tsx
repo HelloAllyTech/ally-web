@@ -162,7 +162,7 @@ const TextHelplineForm: FC<{ tenantId: string; data: HelplineAdminSettingsDto }>
   return (
     <div className="flex flex-col gap-6 max-w-3xl pb-4 font-primary">
       <div className="flex flex-col gap-4">
-        <div className="flex h-9 flex-row justify-between items-center">
+        <div className="flex min-h-9 md:h-9 flex-row justify-between items-center gap-3">
           <div className="flex flex-row items-center gap-2 text-sm text-typography-700 font-normal">
             {text.enableLabel}
             <HelpTip label={text.enableHint} subject={text.enableLabel} />

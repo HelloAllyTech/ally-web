@@ -258,7 +258,7 @@ export const CorpusTab: React.FC = () => {
       </p>
 
       {stats && (
-        <div className="flex gap-6 pb-4 text-sm">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 pb-4 text-sm">
           <Stat label={en.whatsappBot.corpus.statsIndexed} value={stats.byStatus.indexed ?? 0} />
           <Stat label={en.whatsappBot.corpus.statsFailed} value={stats.byStatus.failed ?? 0} />
           <Stat

@@ -213,7 +213,8 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
 
         <TabPanels>
           {SUB_TABS.map((tab, i) => (
-            <TabPanel key={tab.id}>
+            // No side padding on phones, as on the page's own tab panels.
+            <TabPanel key={tab.id} className="max-sm:!px-0">
               {/* Rendered only while selected. Carbon keeps every TabPanel in
                   the tree, so without this guard every panel's hooks would
                   mount on first paint and fire their requests — the cost this

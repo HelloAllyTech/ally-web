@@ -106,7 +106,7 @@ export const LatencySessionsPanel = ({
       chartId="AAQ-104"
     >
       <div className="flex flex-col gap-4">
-        <div className="w-72">
+        <div className="w-full sm:w-72">
           <ComboBox
             id="latency-sessions-scenario"
             size="sm"
@@ -137,7 +137,7 @@ export const LatencySessionsPanel = ({
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={() => refetch()}
-              className="h-[36px] px-4"
+              className="px-4 sm:h-[36px]"
             >
               Retry
             </Button>
@@ -237,7 +237,7 @@ export const LatencySessionsPanel = ({
             )}
 
             {rows.length > 0 && (
-              <div className="flex items-center justify-between shrink-0 border-t border-border-light pt-3 mt-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-t border-border-light pt-3 mt-2">
                 <span className="text-sm text-typography-700">
                   Showing {rangeStart}–{rangeEnd} of {total}
                 </span>
@@ -246,7 +246,7 @@ export const LatencySessionsPanel = ({
                     variant={ButtonVariant.SECONDARY}
                     onClick={goPrev}
                     disabled={!canPrev}
-                    className="h-[36px] px-4"
+                    className="px-4 sm:h-[36px]"
                   >
                     Previous
                   </Button>
@@ -254,7 +254,7 @@ export const LatencySessionsPanel = ({
                     variant={ButtonVariant.SECONDARY}
                     onClick={goNext}
                     disabled={!canNext}
-                    className="h-[36px] px-4"
+                    className="px-4 sm:h-[36px]"
                   >
                     Next
                   </Button>

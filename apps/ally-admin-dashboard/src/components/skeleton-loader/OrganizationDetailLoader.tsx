@@ -8,7 +8,7 @@ export const OrganizationDetailLoader: React.FC<OrganizationDetailLoaderProps> =
   rows = 10,
 }) => {
   return (
-    <div className="flex flex-col font-primary h-[100vh] overflow-hidden animate-pulse">
+    <div className="flex flex-col font-primary h-full md:h-[100vh] overflow-hidden animate-pulse">
       <div className="space-y-6 flex-shrink-0">
         {/* Breadcrumbs Skeleton */}
         <div className="flex items-center justify-between">

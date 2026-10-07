@@ -68,7 +68,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index, onAnsw
   if (message.role === "user") {
     return (
       <div className="flex justify-end" style={entrance}>
-        <div className="max-w-[85%] rounded-lg bg-primary-600 px-3 py-2 text-sm text-white">
+        <div className="max-w-[85%] break-words rounded-lg bg-primary-600 px-3 py-2 text-sm text-white">
           {message.content}
         </div>
       </div>
@@ -92,7 +92,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index, onAnsw
       {(hasBody || message.isStreaming || message.interrupted) && (
         <Tile className="w-full max-w-[92%]">
           {hasBody ? (
-            <div className="prose prose-sm max-w-none text-sm text-typography-900">
+            <div className="prose prose-sm max-w-none break-words text-sm text-typography-900">
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={sharedMarkdownComponents}>
                 {message.content}
               </ReactMarkdown>

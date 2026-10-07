@@ -177,7 +177,7 @@ export const UnansweredTab: React.FC = () => {
         <TooltipHint location={TooltipLocation.WA_UNANSWERED_SCORE} />
       </p>
 
-      <div className="flex items-end gap-4 pb-4">
+      <div className="flex flex-wrap items-end gap-4 pb-4">
         <CarbonDropdown
           id="wa-unanswered-status"
           size="sm"

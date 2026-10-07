@@ -169,7 +169,10 @@ const LessonsTab: React.FC = () => {
             {strings.consolidateNow}
           </Button>
           <Tooltip label={strings.consolidateHint} align="top">
-            <button type="button" className="inline-flex cursor-pointer items-center">
+            <button
+              type="button"
+              className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+            >
               <TooltipIcon />
             </button>
           </Tooltip>
@@ -200,7 +203,10 @@ const LessonsTab: React.FC = () => {
                   <span className="inline-flex items-center gap-1">
                     {strings.columnPinned}
                     <Tooltip label={strings.pinHint} align="top">
-                      <button type="button" className="inline-flex cursor-pointer items-center">
+                      <button
+                        type="button"
+                        className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                      >
                         <TooltipIcon />
                       </button>
                     </Tooltip>
@@ -402,7 +408,7 @@ export const BuilderKnowledge: React.FC = () => {
   ];
 
   return (
-    <div className="mx-auto flex h-full max-w-6xl flex-col gap-4 overflow-y-auto p-6">
+    <div className="mx-auto flex h-full max-w-6xl flex-col gap-4 overflow-y-auto md:p-6">
       <header>
         <Button kind="ghost" size="sm" onClick={() => navigate(ROUTES.BUILDER)}>
           ← {strings.backToBuilder}

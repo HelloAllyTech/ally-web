@@ -294,8 +294,11 @@ export const NotionTable = ({
                   rowClickTrigger === "hover" &&
                   cellIndex === editIndex &&
                   isEditable && (
+                    // Always visible below md: touch has no hover, and this is the only way into
+                    // the row's editor there.
                     <button
-                      className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      type="button"
+                      className="absolute ml-auto p-2 md:p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                       onClick={() => onRowClick(rowIndex)}
                     >
                       <DockToRight />

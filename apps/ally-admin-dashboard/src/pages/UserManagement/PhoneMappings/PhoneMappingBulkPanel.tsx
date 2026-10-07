@@ -151,7 +151,7 @@ export const PhoneMappingBulkPanel: React.FC<PhoneMappingBulkPanelProps> = ({
               <p className="text-sm text-typography-900">
                 {en.whatsappBot.phoneMappings.bulkResultsHeading}
               </p>
-              <div className="max-h-64 overflow-y-auto border border-border-light rounded-md">
+              <div className="max-h-64 overflow-auto border border-border-light rounded-md">
                 <table className="w-full text-sm">
                   <tbody>
                     {attention.map(row => (
@@ -171,7 +171,7 @@ export const PhoneMappingBulkPanel: React.FC<PhoneMappingBulkPanelProps> = ({
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {/* Offered only when there is something for it to do, and it re-sends the SAME rows:
                 the conflicts an admin decides to accept are the ones they just read. */}
             {result.conflicts > 0 && (

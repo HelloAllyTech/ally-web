@@ -56,8 +56,8 @@ const InfinityButton: React.FC<{ onClick: () => void; displayText: string }> = (
 );
 
 const FieldRow: React.FC<FieldRowProps> = ({ label, children, tooltip, tooltipTitle }) => (
-  <div className="flex flex-row min-h-[40px] items-center text-base justify-between">
-    <div className="w-[40%] flex items-center gap-2">
+  <div className="flex flex-col gap-1 md:gap-0 md:flex-row min-h-[40px] md:items-center text-base justify-between">
+    <div className="w-full md:w-[40%] flex items-center gap-2">
       <span className="text-base font-regular text-typography-800">{label}</span>
       {tooltip && (
         <Tooltip label={tooltipTitle || label} align="top">
@@ -67,7 +67,9 @@ const FieldRow: React.FC<FieldRowProps> = ({ label, children, tooltip, tooltipTi
         </Tooltip>
       )}
     </div>
-    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
+    <div className="w-full md:w-[60%] flex text-left justify-start text-neutral-800">
+      {children}
+    </div>
   </div>
 );
 

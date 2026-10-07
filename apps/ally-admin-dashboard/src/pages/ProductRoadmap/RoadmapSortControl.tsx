@@ -73,7 +73,7 @@ export const RoadmapSortControl: React.FC<RoadmapSortControlProps> = ({
         onClick={() => setIsOpen(open => !open)}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        className={`border px-2 py-1 ${
+        className={`border px-3 py-2 md:px-2 md:py-1 ${
           isOpen
             ? "border-primary-500 text-primary-600"
             : "border-border-light text-typography-secondary"
@@ -100,7 +100,7 @@ export const RoadmapSortControl: React.FC<RoadmapSortControlProps> = ({
                   onChange(option.sortBy, option.order);
                   setIsOpen(false);
                 }}
-                className={`cursor-pointer px-3 py-1.5 text-left text-sm ${
+                className={`cursor-pointer px-3 py-2.5 text-left text-sm md:py-1.5 ${
                   isSelected
                     ? "bg-primary-50 text-primary-500 font-medium"
                     : "text-typography-700 hover:bg-background-secondary hover:text-typography-900"

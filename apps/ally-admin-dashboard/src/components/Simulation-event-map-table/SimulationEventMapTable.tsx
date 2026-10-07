@@ -773,15 +773,15 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-        <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
+      <div className="md:sticky flex flex-row flex-wrap gap-y-3 justify-between top-0 z-10 pt-3 md:mx-6 pb-4 border-b border-border-light">
+        <div className="flex flex-row flex-wrap items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
           {/* Opens downward: this row is the top of a scrolling panel, and the
               tooltip has no auto-flip. */}
           <Tooltip label={en.simulation.reloadEvents} align="bottom">
             <button
               type="button"
               aria-label={en.simulation.reloadEvents}
-              className="cursor-pointer inline-flex items-center"
+              className="cursor-pointer inline-flex items-center max-md:h-10 max-md:w-10 max-md:justify-center"
               onClick={onReloadMappedEvents}
             >
               <Refresh className="w-4 h-4" />
@@ -810,7 +810,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
             </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {!isLoading && (
             <>
               {renderBulkAddButton()}
@@ -821,7 +821,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
       </div>
       <div
         ref={tableRef}
-        className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-full custom-scrollbar"
+        className="py-4 md:p-6 md:pt-4 md:pr-0 overflow-y-hidden overflow-x-scroll w-full custom-scrollbar"
       >
         {isLoading ? (
           <EventMapTableLoader />

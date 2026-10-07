@@ -55,6 +55,24 @@
   overflow-y: auto;
 }
 
+// Phones: the page sets its secondary lines (sublabels, legends, provenance,
+// chart ids) at 10–11px, which only reads at desktop distance. Below `md` they
+// are lifted to the 12px floor; desktop keeps the denser setting. One scoped
+// rule here rather than a breakpoint on each of the ~80 places that use them.
+@media (max-width: 767.98px) {
+  .analytics-page :is(.text-\[10px\], .text-\[11px\]) {
+    font-size: 0.75rem;
+  }
+}
+
+// Carbon gives every inline notification a 288px minimum width, wider than a
+// KPI tile in a two-up phone row (and than a narrow desktop tile), so a tile's
+// error state ran out of its card. Letting it shrink only changes anything
+// where it was overflowing.
+.analytics-page .cds--inline-notification {
+  min-inline-size: 0;
+}
+
 // Carbon Charts ships its own precompiled `styles.css` (imported just before
 // this file) that hardcodes `--cds-charts-font-family: 'IBM Plex Sans'` on
 // `.cds--chart-holder` and resolves all SVG text through that var. That beats
@@ -64,4 +82,13 @@
 .cds--chart-holder {
   --cds-charts-font-family: "IBM Plex Serif", serif;
   --cds-charts-font-family-condensed: "IBM Plex Serif", serif;
+}
+
+// An inline dropdown's menu is at least 288px wide and opens rightwards from
+// the control. In a card header on a phone the control sits at the card's
+// right edge, so the menu ran off the screen; open it leftwards there instead.
+@media (max-width: 639.98px) {
+  .analytics-page .analytics-card-controls .cds--dropdown--inline .cds--list-box__menu {
+    inset-inline: auto 0;
+  }
 }

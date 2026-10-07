@@ -204,7 +204,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   function renderConfirmRow() {
     return (
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs text-typography-500">
           {noneSelected ? strings.noneOfThese : strings.selectedCountLabel(selectedCount)}
           {!noneSelected && minSelections > 1 && selectedCount < minSelections

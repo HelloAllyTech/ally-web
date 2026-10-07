@@ -892,7 +892,7 @@ export const Competency: React.FC<CompetencyProps> = ({
               <span className="shrink-0 text-xs text-typography-400">in {coveringCluster}</span>
             )}
             {!coveringCluster && competency.isCustom && (
-              <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
                 <button
                   type="button"
                   title={en.common.edit}
@@ -900,7 +900,8 @@ export const Competency: React.FC<CompetencyProps> = ({
                     e.stopPropagation();
                     startRename(competency);
                   }}
-                  className="text-typography-400 hover:text-primary p-1"
+                  aria-label={en.common.edit}
+                  className="text-typography-400 hover:text-primary p-1 max-md:p-2"
                 >
                   <Edit className="w-3.5 h-3.5" />
                 </button>
@@ -911,7 +912,8 @@ export const Competency: React.FC<CompetencyProps> = ({
                     e.stopPropagation();
                     setPendingDelete(competency);
                   }}
-                  className="text-typography-400 hover:text-destructive-500 p-1"
+                  aria-label={en.common.delete}
+                  className="text-typography-400 hover:text-destructive-500 p-1 max-md:p-2"
                 >
                   <Trash className="w-3.5 h-3.5" />
                 </button>
@@ -929,7 +931,7 @@ export const Competency: React.FC<CompetencyProps> = ({
         // Wider than the trigger on purpose: this field sits in the builder's
         // narrow left column, and competency names like "Exploration &
         // Normalization of Feelings" are unreadable truncated to it.
-        className={`absolute left-0 w-full min-w-[320px] bg-white border rounded-md shadow-lg max-h-[280px] overflow-auto z-50 custom-scrollbar ${
+        className={`absolute left-0 w-full min-w-[320px] max-w-[calc(100vw-2rem)] bg-white border rounded-md shadow-lg max-h-[280px] overflow-auto z-50 custom-scrollbar ${
           dropUp ? "bottom-full mb-1" : "top-full mt-1"
         }`}
       >

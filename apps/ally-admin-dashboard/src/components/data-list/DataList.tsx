@@ -86,8 +86,9 @@ export function DataList<T extends DataListItem>({
             <Tooltip key={index} label={tooltipText} align="top">
               <button
                 type="button"
+                aria-label={tooltipText}
                 onClick={() => !isDisabled && action.onClick(item)}
-                className={isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                className={`max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center ${isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 {action.icon}
               </button>
@@ -123,12 +124,17 @@ export function DataList<T extends DataListItem>({
     };
 
     return (
+      // Below md the percentage columns can't share one line on a phone, so the
+      // row wraps into a card: thumbnail + title on top, the other cells
+      // content-sized underneath, actions last.
       <div
         key={item.id}
-        className="group flex flex-row text-sm items-center justify-between w-full text-typography-900 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
+        className="group flex flex-row flex-wrap md:flex-nowrap gap-x-4 gap-y-2 md:gap-0 text-sm items-center justify-start md:justify-between w-full text-typography-900 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* First Column - Thumbnail + Title/Description */}
-        <div className={`flex flex-row items-center ${firstColumn.width} shrink-0 gap-3`}>
+        <div
+          className={`flex flex-row items-center ${firstColumn.width} basis-full md:basis-auto shrink-0 gap-3`}
+        >
           {thumbnailConfig && (
             <div
               onClick={handleThumbnailClick}
@@ -157,7 +163,7 @@ export function DataList<T extends DataListItem>({
         {otherColumns.map(column => (
           <div
             key={column.key}
-            className={`${column.width} shrink-0 px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
+            className={`${column.width} max-md:w-auto shrink-0 px-0 md:px-4 ${column.hidden ? "hidden lg:block" : ""} ${column.key === COLUM_KEYS.ACTIONS ? "max-md:order-last max-md:ml-auto" : ""} overflow-x-hidden`}
           >
             {renderColumnContent(column, item)}
           </div>
@@ -167,7 +173,7 @@ export function DataList<T extends DataListItem>({
   };
 
   return (
-    <div className="flex flex-col w-full overflow-x-auto font-primary overflow-y-scroll h-[calc(100vh-180px)] custom-scrollbar">
+    <div className="flex flex-col w-full overflow-x-auto font-primary md:overflow-y-scroll md:h-[calc(100vh-180px)] custom-scrollbar">
       {tableHeader}
       {items?.map(item => renderCard(item))}
       {footer}

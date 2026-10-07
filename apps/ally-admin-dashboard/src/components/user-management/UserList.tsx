@@ -54,7 +54,8 @@ export const UserList: React.FC<UserListProps> = ({
       <div className="min-w-[900px]">
         {tableHeader}
 
-        <div className="h-[calc(100vh-270px)] overflow-y-auto custom-scrollbar">
+        {/* Phones scroll the page itself; the fixed-height inner scroller is desktop only. */}
+        <div className="md:h-[calc(100vh-270px)] md:overflow-y-auto custom-scrollbar">
           {users.map(user => (
             <div
               key={user.id}
@@ -99,7 +100,9 @@ export const UserList: React.FC<UserListProps> = ({
                 <StatusBadge status={user.status} />
                 {canEditUser && (
                   <button
-                    className="text-typography-800 hover:text-typography-900"
+                    type="button"
+                    aria-label={en.common.moreActions}
+                    className="inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto text-typography-800 hover:text-typography-900"
                     onClick={e => toggleDropdown(user.id, e)}
                   >
                     ⋮

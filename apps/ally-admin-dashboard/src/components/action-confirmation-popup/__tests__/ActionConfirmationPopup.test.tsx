@@ -253,7 +253,8 @@ describe("ActionConfirmationPopup", () => {
       render(<ActionConfirmationPopup {...propsWithoutSecondary} />);
 
       const confirmButton = screen.getByText("Confirm");
-      expect(confirmButton).toHaveClass("w-1/3");
+      // Full width on phones, a third from sm up.
+      expect(confirmButton).toHaveClass("w-full", "sm:w-1/3");
       expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
     });
 

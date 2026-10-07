@@ -179,7 +179,7 @@ export const GenerateSuggestionsModal: React.FC<GenerateSuggestionsModalProps> =
             />
           )}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant={ButtonVariant.SECONDARY} onClick={onClose} disabled={isLoading}>
               {strings.cancel}
             </Button>

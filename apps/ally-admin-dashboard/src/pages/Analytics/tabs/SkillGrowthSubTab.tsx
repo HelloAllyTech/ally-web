@@ -444,7 +444,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
                         a role="button" on a <TableRow> yields unnamed buttons. */}
                     <button
                       type="button"
-                      className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline"
+                      className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline max-sm:min-h-8"
                       onClick={() => setOpenLearner(r.learnerId)}
                     >
                       {learnerName(r)}
@@ -478,7 +478,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
             <span className="flex gap-2">
               <button
                 type="button"
-                className="cursor-pointer disabled:cursor-default disabled:opacity-40"
+                className="cursor-pointer disabled:cursor-default disabled:opacity-40 max-sm:min-h-10 max-sm:px-2"
                 disabled={offset === 0}
                 onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
               >
@@ -486,7 +486,7 @@ export const SkillGrowthSubTab = ({ query }: AnalyticsTabFilters) => {
               </button>
               <button
                 type="button"
-                className="cursor-pointer disabled:cursor-default disabled:opacity-40"
+                className="cursor-pointer disabled:cursor-default disabled:opacity-40 max-sm:min-h-10 max-sm:px-2"
                 disabled={offset + PAGE_SIZE >= total}
                 onClick={() => setOffset(offset + PAGE_SIZE)}
               >

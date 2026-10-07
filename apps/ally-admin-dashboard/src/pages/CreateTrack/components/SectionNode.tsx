@@ -4,7 +4,8 @@ import {
   DndContext,
   DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -62,8 +63,10 @@ export const SectionNode: FC<SectionNodeProps> = ({
     id: section.localId,
   });
 
+  // Same press-and-hold on touch as the outline rail's section sensors.
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -91,7 +94,7 @@ export const SectionNode: FC<SectionNodeProps> = ({
             {...attributes}
             {...listeners}
             type="button"
-            className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
+            className="cursor-grab active:cursor-grabbing text-typography-400 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 max-lg:p-2 max-lg:-m-1"
             aria-label="Reorder section"
           >
             <DragIndicator className="w-3.5 h-3.5" />
@@ -100,7 +103,7 @@ export const SectionNode: FC<SectionNodeProps> = ({
         <button
           type="button"
           onClick={() => setCollapsed(prev => !prev)}
-          className="text-typography-500"
+          className="text-typography-500 max-lg:p-2 max-lg:-m-1"
           aria-label={collapsed ? "Expand section" : "Collapse section"}
         >
           <ArrowDown className={`w-4 h-4 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
@@ -112,7 +115,7 @@ export const SectionNode: FC<SectionNodeProps> = ({
         <button
           type="button"
           onClick={() => onDeleteSection(sectionIndex)}
-          className="text-destructive-500 opacity-0 group-hover:opacity-100 hover:text-destructive-600"
+          className="text-destructive-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:text-destructive-600 max-lg:p-2 max-lg:-m-1"
           aria-label="Delete section"
         >
           <Trash className="w-3.5 h-3.5" />
@@ -148,7 +151,7 @@ export const SectionNode: FC<SectionNodeProps> = ({
             <button
               type="button"
               onClick={() => setShowPicker(prev => !prev)}
-              className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 py-1"
+              className="inline-flex items-center gap-1 text-sm lg:text-xs text-primary-600 hover:text-primary-700 py-2.5 lg:py-1"
             >
               <Plus className="w-3.5 h-3.5" />
               Add component

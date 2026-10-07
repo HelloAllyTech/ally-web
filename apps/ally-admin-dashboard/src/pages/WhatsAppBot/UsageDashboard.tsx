@@ -168,12 +168,12 @@ export const UsageDashboard: React.FC = () => {
           children with flex-1 internally and does not honour a width on its own className, so sizing
           has to happen on a container. Without that it eats the row and collapses the subtitle into a
           one-word-per-line column. */}
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
         <p className="flex-1 min-w-0 flex items-center gap-1 text-sm text-typography-600">
           {en.whatsappBot.usage.subtitle}
           <TooltipHint location={TooltipLocation.WA_USAGE_DECLINE_RATE} />
         </p>
-        <div className="w-[300px] shrink-0">
+        <div className="w-full md:w-[300px] md:shrink-0">
           <ContentSwitcher
             selectedIndex={rangeIndex}
             onChange={({ index }: { index?: number }) => {
@@ -244,7 +244,7 @@ export const UsageDashboard: React.FC = () => {
 
       {/* Crisis and error counts are raw numbers, deliberately not folded into a chart: one crisis
           reply is operationally significant and would be invisible as a sliver in a stacked bar. */}
-      <div className="flex gap-8 text-sm">
+      <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
         <Counter label={en.whatsappBot.usage.answered} value={stats?.answered ?? 0} />
         <Counter label={en.whatsappBot.usage.declined} value={stats?.declined ?? 0} />
         <Counter label={en.whatsappBot.usage.crisis} value={stats?.crisis ?? 0} />

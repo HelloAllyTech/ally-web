@@ -38,7 +38,7 @@ const TranslationProgressJob: FC<{
         : "bg-blue-500";
 
   return (
-    <div className="w-80 rounded-lg border border-[#EFEFEF] bg-white shadow-lg overflow-hidden">
+    <div className="w-80 max-w-full rounded-lg border border-[#EFEFEF] bg-white shadow-lg overflow-hidden">
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#EFEFEF]">
         <div className="flex flex-col min-w-0">
           <span className="text-sm font-medium text-[#1A1A1A] truncate">
@@ -96,7 +96,7 @@ export const TranslationProgressToast: FC<TranslationProgressToastProps> = ({
   if (jobs.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2">
       {jobs.map(job => (
         <TranslationProgressJob key={job.jobId} job={job} onDismiss={onDismiss} />
       ))}

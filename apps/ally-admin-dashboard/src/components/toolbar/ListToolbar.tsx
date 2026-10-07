@@ -60,7 +60,11 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
           <Tooltip label={formatCapitalizedEnum(chip.allValue.join(", "))} align="top">
             <span className="font-medium mr-1 text-xs">{formatCapitalizedEnum(chip.value)}</span>
           </Tooltip>
-          <button onClick={chip.onClear} className="text-typography-800 hover:text-typography-900">
+          <button
+            type="button"
+            onClick={chip.onClear}
+            className="inline-flex h-8 w-8 -mr-2 items-center justify-center md:h-auto md:w-auto md:mr-0 text-typography-800 hover:text-typography-900"
+          >
             <Close />
           </button>
         </div>
@@ -72,7 +76,8 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <button
       ref={addFilterButtonRef}
       onClick={addFilterCta.onClick}
-      className="inline-flex items-center text-typography-800 hover:text-typography-900 text-xs"
+      type="button"
+      className="inline-flex min-h-[40px] md:min-h-0 items-center text-typography-800 hover:text-typography-900 text-xs"
     >
       <span className="mr-1 text-base p-[1px]">
         <Plus />
@@ -98,8 +103,12 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     ) : null;
 
   return (
-    <div className={`flex items-center justify-between gap-4 min-h-[50px] ${className ?? ""}`}>
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+    // Below md the search row and the action buttons stack, and chips wrap under the search, so
+    // a phone never has to squeeze the search field down to make room for the buttons.
+    <div
+      className={`flex flex-col items-stretch md:flex-row md:items-center justify-between gap-3 md:gap-4 min-h-[50px] ${className ?? ""}`}
+    >
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-1 md:flex-1 min-w-0">
         {searchInput}
         {filter}
         {addFilterButton}
@@ -114,7 +123,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
         Ordered least-primary first, so the primary action stays hard against the right edge
         where every other list in the console puts it.
       */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap md:flex-nowrap max-md:empty:hidden items-center gap-2">
         {renderActionButton(tertiaryAction)}
         {renderActionButton(secondaryAction)}
         {renderActionButton(action)}

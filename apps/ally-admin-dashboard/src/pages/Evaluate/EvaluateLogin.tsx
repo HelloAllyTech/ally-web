@@ -49,14 +49,16 @@ export const EvaluateLogin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background font-primary flex items-center justify-center px-4">
+    <div className="min-h-dvh bg-background font-primary flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-secondary text-typography-900">{en.evaluate.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-secondary text-typography-900">
+            {en.evaluate.title}
+          </h1>
         </div>
         <form
           onSubmit={handleSubmit}
-          className="bg-white border border-border-light rounded-md p-8 space-y-5"
+          className="bg-white border border-border-light rounded-md p-5 sm:p-8 space-y-5"
         >
           <div>
             <h2 className="text-xl text-typography-900">{en.evaluate.loginHeading}</h2>

@@ -208,7 +208,7 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
             type="button"
             onClick={closeSafely}
             aria-label="Close"
-            className="text-typography-secondary hover:text-typography-900 cursor-pointer"
+            className="text-typography-secondary hover:text-typography-900 -m-2 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center md:m-0 md:block md:h-auto md:w-auto"
           >
             <Close />
           </button>
@@ -220,7 +220,9 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
           people abandon halfway. Labels come from the readiness endpoint so this surface and the
           filing gate cannot drift apart on wording.
         */}
-        <section className="border-border-light bg-background-secondary border-b px-4 py-3">
+        {/* Capped on phones so that, with the keyboard up, the pinned checklist cannot crowd the
+            conversation out between it and the composer. */}
+        <section className="border-border-light bg-background-secondary max-h-[30dvh] overflow-y-auto border-b px-4 py-3 md:max-h-none md:overflow-visible">
           <div className="mb-2 flex items-baseline justify-between">
             <h3 className="text-typography-primary text-sm">What this needs</h3>
             <span className="text-typography-700 text-xs tabular-nums">
@@ -268,8 +270,8 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
               <p
                 className={
                   message.role === "admin"
-                    ? "bg-primary-50 text-typography-900 max-w-[85%] rounded-2xl rounded-br-sm px-3 py-2 text-sm whitespace-pre-wrap"
-                    : "text-typography-900 max-w-[90%] text-sm whitespace-pre-wrap"
+                    ? "bg-primary-50 text-typography-900 max-w-[85%] rounded-2xl rounded-br-sm px-3 py-2 text-sm whitespace-pre-wrap break-words"
+                    : "text-typography-900 max-w-[90%] text-sm whitespace-pre-wrap break-words"
                 }
               >
                 {message.content}
@@ -299,7 +301,9 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
           {!!draft && (
             <section className="border-primary-500 flex flex-col gap-2 border p-3">
               <h3 className="text-typography-primary text-sm">The draft</h3>
-              <p className="text-typography-900 text-sm whitespace-pre-wrap">{draft.description}</p>
+              <p className="text-typography-900 text-sm whitespace-pre-wrap break-words">
+                {draft.description}
+              </p>
               <dl className="text-typography-700 flex flex-wrap gap-x-6 gap-y-1 text-xs">
                 <div className="flex gap-1">
                   <dt>Goal:</dt>
@@ -346,7 +350,7 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
 
         <footer className="border-border-light border-t p-4">
           {draft ? (
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <Button variant={ButtonVariant.SECONDARY} onClick={retry} disabled={isFiling}>
                 Keep talking
               </Button>

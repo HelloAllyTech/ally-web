@@ -362,19 +362,21 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   return (
     <div
-      className="fixed top-[-100px] inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[1px]"
+      // max-md:!mt-0: callers render this inside space-y-* stacks, whose sibling margin would
+      // otherwise push the phone overlay down and leave a strip of page showing above it.
+      className="fixed top-0 md:top-[-100px] max-md:!mt-0 inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[1px]"
       onMouseDown={handleBackdropMouseDown}
       onMouseUp={handleBackdropMouseUp}
     >
-      <div className="py-5 px-6 bg-white w-[520px] max-w-[90vw] max-h-[90vh] flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
+      <div className="p-4 md:py-5 md:px-6 bg-white w-[520px] max-w-[calc(100vw-2rem)] md:max-w-[90vw] max-h-[90dvh] flex flex-col gap-4 md:gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative flex-shrink-0">
+        <div className="text-typography-900 flex justify-center w-full text-xl md:text-2xl text-center font-primary relative flex-shrink-0">
           {title}
         </div>
 
         {/* Tabs */}
         {showTabs && (
-          <div className="w-full mb-6 flex-shrink-0">
+          <div className="w-full mb-2 md:mb-6 flex-shrink-0">
             <Tabs
               items={tabOptions}
               tabStyles={{ width: "100%" }}
@@ -409,7 +411,10 @@ export const UserModal: React.FC<UserModalProps> = ({
           {isSecondTab && (
             <div className="flex flex-col gap-4">
               {optionValues?.map(tab => (
-                <div key={tab.id} className="flex justify-between items-center gap-2 h-9">
+                <div
+                  key={tab.id}
+                  className="flex justify-between items-center gap-2 min-h-9 md:h-9"
+                >
                   <label
                     htmlFor={tab.id}
                     className="text-sm text-typography-900 cursor-pointer font-primary"

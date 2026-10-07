@@ -10,7 +10,8 @@ export interface LiftReference {
   n: number;
 }
 
-const GRID = "grid grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] gap-3";
+// Stacked below `sm` (label, whiskers, numbers), as in ChangeWhiskers.
+const GRID = "grid grid-cols-1 gap-1 sm:grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] sm:gap-3";
 
 /**
  * {@link ChangeWhiskers} for course lift, with the free-practice reference drawn
@@ -126,7 +127,7 @@ export const CourseLiftWhiskers = ({
         </p>
       )}
       <div className={`${GRID} mb-1 text-[11px] text-typography-500`}>
-        <span />
+        <span className="hidden sm:block" />
         <span className="flex justify-between tabular-nums">
           <span>{signed(-extent)}</span>
           <span>0</span>

@@ -462,7 +462,7 @@ export const FoundationalSkillsSubTab = () => {
   const b = bench.data;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 md:gap-8">
       {/* The org, the panel and the baseline: whose practice, which learners and which cuts every comparison uses. */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
@@ -756,30 +756,32 @@ export const FoundationalSkillsSubTab = () => {
             <ScrollableChart data={compositeBand}>
               <AreaChart data={compositeBand} options={compositeOpts} />
             </ScrollableChart>
-            <table className="mt-3 w-full text-xs">
-              <thead className="text-left text-typography-500">
-                <tr>
-                  <th className="py-1 pr-3 font-medium">Tier</th>
-                  <th className="py-1 pr-3 font-medium">Start → now</th>
-                  <th className="py-1 pr-3 font-medium">Change [95% CI]</th>
-                  <th className="py-1 font-medium">Verdict</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data?.tiers ?? []).map(t => (
-                  <tr key={t.tier} className="border-t border-[#f0f0f0]">
-                    <td className="py-1 pr-3">{TIER_LABELS[t.tier]}</td>
-                    <td className="py-1 pr-3 tabular-nums">
-                      {level(t.earlyAvg)} → {level(t.lateAvg)}
-                    </td>
-                    <td className="py-1 pr-3 tabular-nums">
-                      {signed(t.change)} [{ciText(t.ci)}]
-                    </td>
-                    <td className="py-1">{changeVerdict(t)}</td>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="text-left text-typography-500">
+                  <tr>
+                    <th className="py-1 pr-3 font-medium">Tier</th>
+                    <th className="py-1 pr-3 font-medium">Start → now</th>
+                    <th className="py-1 pr-3 font-medium">Change [95% CI]</th>
+                    <th className="py-1 font-medium">Verdict</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(data?.tiers ?? []).map(t => (
+                    <tr key={t.tier} className="border-t border-[#f0f0f0]">
+                      <td className="py-1 pr-3">{TIER_LABELS[t.tier]}</td>
+                      <td className="py-1 pr-3 tabular-nums">
+                        {level(t.earlyAvg)} → {level(t.lateAvg)}
+                      </td>
+                      <td className="py-1 pr-3 tabular-nums">
+                        {signed(t.change)} [{ciText(t.ci)}]
+                      </td>
+                      <td className="py-1">{changeVerdict(t)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </ChartCard>
 
           <ChartCard
@@ -1289,7 +1291,7 @@ export const FoundationalSkillsSubTab = () => {
                       <td className="py-2 pr-3">
                         <button
                           type="button"
-                          className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline"
+                          className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline max-sm:min-h-8"
                           onClick={() => setOpenLearner(r.id)}
                         >
                           {learnerName(r)}
@@ -1356,7 +1358,7 @@ export const FoundationalSkillsSubTab = () => {
                 <span className="flex gap-2">
                   <button
                     type="button"
-                    className="cursor-pointer disabled:cursor-default disabled:opacity-40"
+                    className="cursor-pointer disabled:cursor-default disabled:opacity-40 max-sm:min-h-10 max-sm:px-2"
                     disabled={page === 0}
                     onClick={() => setPage(page - 1)}
                   >
@@ -1364,7 +1366,7 @@ export const FoundationalSkillsSubTab = () => {
                   </button>
                   <button
                     type="button"
-                    className="cursor-pointer disabled:cursor-default disabled:opacity-40"
+                    className="cursor-pointer disabled:cursor-default disabled:opacity-40 max-sm:min-h-10 max-sm:px-2"
                     disabled={(page + 1) * PAGE_SIZE >= learnerRows.length}
                     onClick={() => setPage(page + 1)}
                   >

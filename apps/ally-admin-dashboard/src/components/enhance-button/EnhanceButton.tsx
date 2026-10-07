@@ -138,7 +138,7 @@ export const EnhanceButton: FC<EnhanceButtonProps> = ({
 
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-1 z-30 w-72 bg-white border border-border-light rounded-md shadow-lg p-3 flex flex-col gap-3"
+          className="absolute right-0 top-full mt-1 z-30 w-72 max-w-[calc(100vw-2rem)] bg-white border border-border-light rounded-md shadow-lg p-3 flex flex-col gap-3"
           data-testid="enhance-menu"
         >
           <div className="flex items-center gap-2">

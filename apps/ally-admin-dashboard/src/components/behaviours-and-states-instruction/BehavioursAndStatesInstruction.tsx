@@ -42,7 +42,8 @@ const STATE_NAMES_ROW_ID = "state-names-row";
 // additionally carries a colour accent (and colour-matched select text) so the
 // rubric can be scanned without reading every cell. Colour is redundant with
 // the now-untruncated text, never the only signal.
-const RUBRIC_GRID = "grid grid-cols-[1fr_248px_40px]";
+// Narrower category column on phones so the behaviour name keeps some room.
+const RUBRIC_GRID = "grid grid-cols-[minmax(0,1fr)_9.5rem_40px] md:grid-cols-[1fr_248px_40px]";
 
 const rubricAccent = (isShould: boolean) =>
   isShould ? "border-l-success-400" : "border-l-destructive-400";
@@ -403,7 +404,8 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
                 <button
                   type="button"
                   onClick={() => handleRemoveBehaviourFromRow(rowId, tag.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-400 hover:text-destructive-500 p-1"
+                  aria-label={en.common.delete}
+                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity text-typography-400 hover:text-destructive-500 p-1 max-md:p-2.5"
                 >
                   <Close className="w-3.5 h-3.5" />
                 </button>
