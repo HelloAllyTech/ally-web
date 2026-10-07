@@ -245,9 +245,12 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
       <div className="flex h-full min-h-0 flex-col">
         <div
           ref={s3ContainerRef}
-          className="flex min-h-0 flex-1 items-center justify-center bg-black"
+          className="relative flex min-h-0 flex-1 items-center justify-center bg-black"
         >
-          <div className="relative aspect-video w-full max-w-3xl">
+          {/* Below md the interjection overlay anchors to the whole black area
+              (static here, relative above): a phone-width 16:9 box is ~210px
+              tall, too short to answer a question in. */}
+          <div className="relative aspect-video w-full max-w-3xl max-md:static">
             <ProgressVideoPlayer
               ref={progressPlayerRef}
               src={payload.url}
@@ -335,7 +338,7 @@ const VideoErrorFallback: FC<{
         <button
           type="button"
           onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-          className="rounded-full border border-white/40 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+          className="rounded-full border border-white/40 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 max-md:min-h-11"
         >
           {t("tracks2.video.openExternally")}
         </button>
@@ -343,7 +346,7 @@ const VideoErrorFallback: FC<{
           <button
             type="button"
             onClick={onMarkWatched}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
           >
             {t("tracks2.video.markWatched")}
           </button>
@@ -566,7 +569,7 @@ const ManualVideo: FC<{
           <button
             onClick={onMarkWatched}
             disabled={!meetsRequirement}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
           >
             {t("tracks2.video.markWatched")}
           </button>

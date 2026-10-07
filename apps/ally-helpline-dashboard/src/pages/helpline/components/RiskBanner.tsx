@@ -109,7 +109,7 @@ export const RiskBanner: FC<RiskBannerProps> = ({
                 aria-expanded={!collapsed}
                 aria-controls={detailsId}
                 onClick={() => setCollapsed(current => !current)}
-                className="flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                className="min-h-[40px] flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium underline-offset-2 md:min-h-0 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
               >
                 {collapsed
                   ? t("helplineWorkspace.riskBanner.showSteps")
@@ -217,7 +217,7 @@ export const RiskBanner: FC<RiskBannerProps> = ({
                 type="button"
                 disabled={saving !== null}
                 onClick={() => void submit("CONFIRMED")}
-                className="min-h-[36px] rounded-full bg-typography-900 px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+                className="min-h-[44px] rounded-full bg-typography-900 px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60 md:min-h-[36px]"
               >
                 {saving === "CONFIRMED"
                   ? t("helplineWorkspace.riskBanner.saving")
@@ -227,7 +227,7 @@ export const RiskBanner: FC<RiskBannerProps> = ({
                 type="button"
                 disabled={saving !== null}
                 onClick={() => void submit("FALSE_POSITIVE")}
-                className="min-h-[36px] rounded-full border border-current bg-white px-4 text-sm text-typography-900 hover:bg-background-secondary disabled:opacity-60"
+                className="min-h-[44px] rounded-full border border-current bg-white px-4 text-sm text-typography-900 hover:bg-background-secondary disabled:opacity-60 md:min-h-[36px]"
               >
                 {saving === "FALSE_POSITIVE"
                   ? t("helplineWorkspace.riskBanner.saving")

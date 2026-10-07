@@ -290,7 +290,7 @@ export const Scenario: FC = () => {
           <>
             {isAuthenticated() && (
               <div
-                className="flex items-center gap-2 font-secondary text-3xl text-typography-900 px-6 pt-6 shrink-0"
+                className="flex items-center gap-2 font-secondary text-2xl md:text-3xl text-typography-900 px-4 pt-4 md:px-6 md:pt-6 shrink-0"
                 data-testid="scenario-title"
               >
                 {renderBackButton()}
@@ -331,8 +331,11 @@ export const Scenario: FC = () => {
               {/* flex-1 min-h-0 gives the card the remaining space in this
                   column (after the dropdown above it) as a real bound, so the
                   card's own header/scroll/footer split has something definite
-                  to divide up instead of just sizing to its content. */}
-              <div className="min-h-0 w-full flex-1">
+                  to divide up instead of just sizing to its content. Not on a
+                  phone: what's left there under the cover image is a one-line
+                  window onto the description, so the card takes its natural
+                  height, this column scrolls, and the card's footer sticks. */}
+              <div className="w-full shrink-0 md:min-h-0 md:flex-1">
                 <ScenarioDetailsCard
                   data-testid="scenario-details-card"
                   coverImage={scenario?.coverImageUrl || ""}

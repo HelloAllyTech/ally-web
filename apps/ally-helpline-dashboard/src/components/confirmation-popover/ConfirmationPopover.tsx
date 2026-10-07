@@ -62,7 +62,7 @@ const ConfirmationPopover = ({
     >
       <div
         ref={popoverRef}
-        className="bg-white rounded-lg shadow-xl border border-gray-200 p-5 min-w-[300px] max-w-[400px] mx-4 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-lg shadow-xl border border-gray-200 p-5 w-[calc(100%-2rem)] sm:w-auto sm:min-w-[300px] max-w-[400px] mx-4 animate-in fade-in zoom-in-95 duration-200"
       >
         <div className="flex flex-col gap-3">
           <div className="font-medium text-base text-typography-900 text-center">{title}</div>
@@ -70,7 +70,7 @@ const ConfirmationPopover = ({
           <div className="grid grid-cols-2 gap-3 mt-2">
             <Button
               variant="secondary"
-              className="py-1 px-4 h-9 text-sm w-full"
+              className="py-1 px-4 h-10 sm:h-9 text-sm w-full"
               onClick={onClose}
               disabled={isLoading}
             >
@@ -78,7 +78,7 @@ const ConfirmationPopover = ({
             </Button>
             <Button
               variant={confirmVariant === "danger" ? "primary" : "primary"}
-              className={`py-1 px-4 h-9 text-sm w-full ${confirmVariant === "danger" ? "!bg-red-500 hover:!bg-red-600" : ""}`}
+              className={`py-1 px-4 h-10 sm:h-9 text-sm w-full ${confirmVariant === "danger" ? "!bg-red-500 hover:!bg-red-600" : ""}`}
               onClick={onConfirm}
               disabled={isLoading}
             >

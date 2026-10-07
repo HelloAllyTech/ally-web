@@ -19,21 +19,27 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
 }) => (
   <footer className={`blog-serif mt-16 border-t border-[#29261f]/10 bg-[#FAF9F5] ${className}`}>
     <div
-      className={`mx-auto flex ${containerClassName} flex-col gap-4 px-6 py-8 text-sm text-[#928b7c] sm:flex-row sm:items-center sm:justify-between`}
+      className={`mx-auto flex ${containerClassName} flex-col gap-4 px-4 py-8 text-sm sm:px-6 text-[#928b7c] sm:flex-row sm:items-center sm:justify-between`}
     >
       <p>© {new Date().getFullYear()} Ally</p>
       <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Link to={ROUTES.BLOG} className="transition-colors hover:text-[#29261f]">
+        <Link
+          to={ROUTES.BLOG}
+          className="inline-flex min-h-[44px] items-center transition-colors hover:text-[#29261f] md:min-h-0"
+        >
           {BLOG_NAME}
         </Link>
-        <Link to={ROUTES.CHANGELOG} className="transition-colors hover:text-[#29261f]">
+        <Link
+          to={ROUTES.CHANGELOG}
+          className="inline-flex min-h-[44px] items-center transition-colors hover:text-[#29261f] md:min-h-0"
+        >
           Changelog
         </Link>
         <a
           href={ALLY_PRIVACY_POLICY_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#29261f]"
+          className="inline-flex min-h-[44px] items-center transition-colors hover:text-[#29261f] md:min-h-0"
         >
           Privacy
         </a>
@@ -41,7 +47,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
           href={ALLY_TERMS_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#29261f]"
+          className="inline-flex min-h-[44px] items-center transition-colors hover:text-[#29261f] md:min-h-0"
         >
           Terms
         </a>
@@ -49,7 +55,7 @@ export const BlogFooter: FC<{ containerClassName?: string; className?: string }>
           href={ALLY_URL}
           target="_blank"
           rel="noreferrer"
-          className="transition-colors hover:text-[#29261f]"
+          className="inline-flex min-h-[44px] items-center transition-colors hover:text-[#29261f] md:min-h-0"
         >
           About Ally
         </a>

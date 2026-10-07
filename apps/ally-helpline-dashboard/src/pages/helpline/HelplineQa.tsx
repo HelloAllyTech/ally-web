@@ -70,7 +70,7 @@ const SupervisorQa: FC = () => {
   return (
     <>
       <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
+        <div className="flex w-full flex-col gap-1 sm:w-auto">
           <label
             htmlFor={filterId}
             className="font-primary text-xs font-medium text-typography-800"
@@ -84,7 +84,7 @@ const SupervisorQa: FC = () => {
               setPage(1);
               setListenerId(event.target.value ? Number(event.target.value) : undefined);
             }}
-            className="min-h-[36px] rounded-lg border border-border-medium bg-white px-2 font-primary text-sm text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            className="min-h-[40px] w-full rounded-lg border border-border-medium bg-white px-2 font-primary text-sm text-typography-900 sm:w-auto md:min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
           >
             <option value="">{t("helplineWorkspace.qa.allListeners")}</option>
             {options.map(option => (
@@ -110,7 +110,7 @@ const SupervisorQa: FC = () => {
         </EmptyBox>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border-light">
+          <div className="relative overflow-x-auto rounded-xl border border-border-light">
             <table className={`${tableClass} min-w-[600px]`} data-testid="qa-table">
               <thead className={theadClass}>
                 <tr>
@@ -182,7 +182,7 @@ const SupervisorQa: FC = () => {
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage(current => Math.max(1, current - 1))}
-                className="rounded-full border border-border-medium px-3 py-1 disabled:opacity-50"
+                className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 disabled:opacity-50 md:min-h-0"
               >
                 {t("helplineWorkspace.history.previous")}
               </button>
@@ -191,7 +191,7 @@ const SupervisorQa: FC = () => {
                 type="button"
                 disabled={page >= pages}
                 onClick={() => setPage(current => Math.min(pages, current + 1))}
-                className="rounded-full border border-border-medium px-3 py-1 disabled:opacity-50"
+                className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 disabled:opacity-50 md:min-h-0"
               >
                 {t("helplineWorkspace.history.next")}
               </button>

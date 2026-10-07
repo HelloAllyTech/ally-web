@@ -162,6 +162,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               fieldSize="medium"
               type="email"
               inputMode="email"
+              autoComplete="email"
               label={t("auth.login.email.label")}
               value={email}
               onChange={handleEmailChange}
@@ -232,7 +233,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
         <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>
-          <span className="font-semibold text-2xl">{email}</span>
+          <span className="font-semibold text-2xl break-all">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
@@ -285,9 +286,11 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.2 }}
-            className="absolute top-3 right-3"
+            className="absolute top-3 right-3 max-md:right-1 max-md:top-1"
           >
-            <CloseIcon onClick={onClose} className="cursor-pointer" />
+            {/* On phones the svg's own padding makes the tap area 44px; the
+                offset above shrinks to match so the icon doesn't move. */}
+            <CloseIcon onClick={onClose} className="cursor-pointer max-md:box-content max-md:p-2" />
           </motion.div>
           {getLoginSection()}
         </motion.div>

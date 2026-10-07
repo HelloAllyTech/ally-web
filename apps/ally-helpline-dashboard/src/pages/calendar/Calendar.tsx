@@ -3,7 +3,7 @@ import { FallbackUI } from "@components";
 
 export const Calendar = () => {
   return (
-    <div className="h-[90vh] flex items-center justify-center">
+    <div className="h-[90vh] flex items-center justify-center px-4">
       <FallbackUI
         icon={<ComingSoon />}
         mainMessage="Coming Soon"

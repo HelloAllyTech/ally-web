@@ -82,7 +82,7 @@ const CustomMenu = ({
           key={index}
           onClick={() => handleItemClick(item)}
           disabled={item.disabled}
-          className={`w-full text-left px-4 py-2 text-[14px] text-typography-800 hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+          className={`w-full text-left px-4 py-3 md:py-2 text-[14px] text-typography-800 hover:bg-gray-50 transition-colors flex items-center gap-2 ${
             item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
           } ${item.className || ""}`}
         >

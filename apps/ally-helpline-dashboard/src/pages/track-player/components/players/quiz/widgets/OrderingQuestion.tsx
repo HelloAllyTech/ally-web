@@ -54,7 +54,7 @@ const SortableRow: FC<RowProps> = ({ option, index, total, onMove }) => {
         aria-label={t("tracks2.quiz.question.dragHandle")}
         {...attributes}
         {...listeners}
-        className="flex flex-shrink-0 items-center justify-center p-2 cursor-grab text-typography-400 active:cursor-grabbing"
+        className="flex flex-shrink-0 items-center justify-center p-2 cursor-grab touch-none text-typography-400 active:cursor-grabbing"
       >
         <MenuIcon className="h-5 w-5" />
       </button>
@@ -65,7 +65,7 @@ const SortableRow: FC<RowProps> = ({ option, index, total, onMove }) => {
           aria-label={t("tracks2.quiz.question.moveUp")}
           disabled={index === 0}
           onClick={() => onMove(index, index - 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30 max-md:h-10 max-md:w-10"
         >
           <ArrowUp className="h-3.5 w-3.5" />
         </button>
@@ -74,7 +74,7 @@ const SortableRow: FC<RowProps> = ({ option, index, total, onMove }) => {
           aria-label={t("tracks2.quiz.question.moveDown")}
           disabled={index === total - 1}
           onClick={() => onMove(index, index + 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30 max-md:h-10 max-md:w-10"
         >
           <ArrowDownFilled className="h-3.5 w-3.5" />
         </button>

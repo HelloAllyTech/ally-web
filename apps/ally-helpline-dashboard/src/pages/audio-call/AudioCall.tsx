@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -39,6 +39,13 @@ export const AudioCall: FunctionComponent = () => {
     nudgeStatus,
     isFocusButtonDisabled,
   } = selectedHook;
+
+  // Below md the nudge sidebar covers the whole call screen (see CallSidebar),
+  // so start a phone in focus mode: status and controls stay in view, and the
+  // Focus control opens the sidebar on demand.
+  useEffect(() => {
+    if (window.matchMedia?.("(max-width: 767px)")?.matches) setIsFocusMode?.(true);
+  }, [setIsFocusMode]);
 
   // Microphone-specific state (only available in microphone mode)
   const mediaRecorder = isAudioWebMode ? microphoneHook.mediaRecorder : null;

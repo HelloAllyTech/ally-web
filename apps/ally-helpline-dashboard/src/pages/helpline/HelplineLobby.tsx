@@ -128,12 +128,12 @@ const ListenerLobby: FC = () => {
                 {t("helplineWorkspace.gate.loading")}
               </p>
             ) : isError ? (
-              <div className="flex items-center gap-3 font-primary text-sm text-typography-800">
+              <div className="flex flex-wrap items-center gap-3 font-primary text-sm text-typography-800">
                 {t("helplineWorkspace.gate.loadFailed")}
                 <button
                   type="button"
                   onClick={() => void refetch()}
-                  className="rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary"
+                  className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary md:min-h-0"
                 >
                   {t("helplineWorkspace.gate.retry")}
                 </button>

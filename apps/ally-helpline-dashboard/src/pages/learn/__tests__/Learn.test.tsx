@@ -1116,8 +1116,9 @@ describe("Responsive Design", () => {
         <Learn />
       </TestWrapper>,
     );
-    const mainContainer = container.querySelector("div.p-\\[10px\\]");
+    const mainContainer = container.querySelector("div.sm\\:p-\\[24px\\]");
     expect(mainContainer).not.toBeNull();
+    expect(mainContainer?.className).toContain("px-4");
   });
 
   it("should apply responsive text size classes", () => {
@@ -1136,8 +1137,9 @@ describe("Responsive Design", () => {
         <Learn />
       </TestWrapper>,
     );
-    const description = container.querySelector("div[class*='mb-[48px]']");
+    const description = container.querySelector("div[class*='sm:mb-[30px]']");
     expect(description).not.toBeNull();
+    expect(description?.className).toContain("mb-6");
   });
 });
 

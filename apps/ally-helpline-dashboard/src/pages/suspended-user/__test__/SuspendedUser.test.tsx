@@ -96,7 +96,7 @@ describe("SuspendedUser", () => {
     const { container } = renderComponent();
     const innerContainer = container.querySelector(".border.rounded-lg");
     expect(innerContainer).toBeInTheDocument();
-    expect(innerContainer).toHaveClass("px-16", "py-10");
+    expect(innerContainer).toHaveClass("sm:px-16", "sm:py-10");
   });
 
   // --- Interaction Tests ---

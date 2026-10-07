@@ -13,7 +13,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
         data-testid="scenario-page"
       >
         <div
-          class="flex items-center gap-2 font-secondary text-3xl text-typography-900 px-6 pt-6 shrink-0"
+          class="flex items-center gap-2 font-secondary text-2xl md:text-3xl text-typography-900 px-4 pt-4 md:px-6 md:pt-6 shrink-0"
           data-testid="scenario-title"
         >
           <button
@@ -49,7 +49,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           variants="[object Object]"
         >
           <div
-            class="min-h-0 w-full flex-1"
+            class="w-full shrink-0 md:min-h-0 md:flex-1"
           >
             <div
               data-testid="scenario-details-card"

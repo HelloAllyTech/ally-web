@@ -31,7 +31,7 @@ const ErrorScreen = ({
         ease: "easeOut",
         staggerChildren: 0.1,
       }}
-      className="flex flex-col justify-center items-center gap-4 w-80"
+      className="flex flex-col justify-center items-center gap-4 w-80 max-w-[calc(100vw-2rem)]"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.8, rotate: -10 }}

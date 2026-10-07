@@ -178,9 +178,10 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             </label>
           </div>
           <Tooltip label={t("summaryLoading.notesTooltip")} align="bottom-end">
-            <span className="inline-flex">
+            {/* A button so the note can be opened by tap/focus, not only hover. */}
+            <button type="button" className="inline-flex p-2 -m-2">
               <Info className="w-[12px] h-[12px] text-[#29261f] cursor-pointer" />
-            </span>
+            </button>
           </Tooltip>
         </div>
         <TextArea
@@ -224,7 +225,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               <Button
                 variant={ButtonVariant.TEXT}
                 onClick={onViewCallLogs}
-                className=" w-40 font-primary"
+                className=" w-full sm:w-40 font-primary"
               >
                 {t("summaryLoading.checkLater")}
               </Button>
@@ -232,7 +233,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={onReadyButtonClick}
-              className=" w-40 font-primary"
+              className=" w-full sm:w-40 font-primary"
             >
               {isSummaryRefetching && <Loading small withOverlay={false} className="!h-4 !w-4" />}
               {t("summaryLoading.seeIfReady")}
@@ -247,7 +248,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               <Button
                 variant={ButtonVariant.SECONDARY}
                 onClick={onViewCallLogs}
-                className=" w-40 font-primary"
+                className=" w-full sm:w-40 font-primary"
               >
                 {t("summaryLoading.backToSessionLogs")}
               </Button>
@@ -287,7 +288,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
       <div className="h-full flex flex-col justify-around w-full">
         <div className="flex flex-col items-center justify-center">{renderSummaryState()}</div>
         {renderNotes()}
-        <div className="flex flex-row gap-8 items-center justify-center mt-6 ">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-8 items-center justify-center mt-6 ">
           {renderButtonContainer()}
         </div>
       </div>

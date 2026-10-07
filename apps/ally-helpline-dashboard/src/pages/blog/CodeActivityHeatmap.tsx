@@ -33,15 +33,16 @@ const LOAD_OLDER_WITHIN = 0.35;
 
 /**
  * Exactly `CODE_ACTIVITY_PAGE_DAYS` columns fill the strip's visible width (the
- * 116px is the 29 gaps of 4px between them), never narrower than 20px — so a
- * desktop reader sees a month at a glance and a phone scrolls sooner. The
+ * 116px is the 29 gaps of 4px between them), never narrower than 20px (24px on
+ * phones, where a cell is a tap target) — so a desktop reader sees a month at a glance and a phone scrolls sooner. The
  * `100%` is the strip's own width; the columns past it overflow into the
  * scroller, which is what the reader scrolls through.
  */
-const COLUMNS_CLASS = "[grid-auto-columns:max(20px,calc((100%-116px)/30))]";
+const COLUMNS_CLASS =
+  "[grid-auto-columns:max(24px,calc((100%-116px)/30))] md:[grid-auto-columns:max(20px,calc((100%-116px)/30))]";
 
 const NAV_BUTTON_CLASS =
-  "rounded px-1.5 py-0.5 text-gray-700 transition-colors hover:text-gray-900 disabled:cursor-default disabled:text-gray-500/50";
+  "min-h-[40px] rounded px-1.5 py-0.5 text-gray-700 transition-colors md:min-h-0 hover:text-gray-900 disabled:cursor-default disabled:text-gray-500/50";
 
 /**
  * Lines changed per day across Ally's code, as a one-row heatmap at the top of
@@ -299,7 +300,7 @@ const DayCell: FC<{
       />
       <span
         aria-hidden="true"
-        className={`h-3 whitespace-nowrap text-[10px] leading-3 text-gray-500 ${
+        className={`h-3 whitespace-nowrap text-xs leading-3 text-gray-500 md:text-[10px] ${
           label?.kind === "day" ? "text-center" : ""
         }`}
       >

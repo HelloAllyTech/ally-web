@@ -38,7 +38,12 @@ const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void })
   return (
     <div className="flex items-center justify-between border-b border-border pb-3 text-lg">
       {title}
-      <button type="button" onClick={onClose} aria-label={t("common.close")}>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t("common.close")}
+        className="inline-flex shrink-0 items-center justify-center p-2.5 -m-2.5 md:p-0 md:m-0"
+      >
         <CloseIcon />
       </button>
     </div>
@@ -104,7 +109,7 @@ const SubSection = ({
       : `${getFormattedTimeFromDuration(callDuration, "mm:ss")} ${t("review.feedCard.min")}`;
 
   return (
-    <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
+    <div className="flex flex-wrap items-center gap-1 text-typography-600 font-primary text-sm">
       {t("review.details.dateAndTime")}: {formattedDate}
       <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
       <span className="font-primary leading-4">
@@ -204,11 +209,11 @@ const ScenarioDetails = ({
     );
 
   return (
-    <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start">
-      <div className="w-1/3">
+    <div className="rounded-lg flex flex-col sm:flex-row gap-4 border border-border-light p-4 sm:p-5 items-start">
+      <div className="w-full sm:w-1/3">
         <ScenarioMedia scenario={scenario} />
       </div>
-      <div className="flex flex-col gap-2 w-2/3">
+      <div className="flex flex-col gap-2 w-full sm:w-2/3">
         <div className="text-xs bg-[#ede4e8] text-[#5a3f50] px-2 w-fit font-normal rounded-[3px]">
           {tag === TagType.SIMULATION ? t("common.simulation") : t("common.scribe")}
         </div>
@@ -256,11 +261,11 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
       </div>
     );
   return (
-    <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start">
-      <div className="w-1/3">
+    <div className="rounded-lg flex flex-col sm:flex-row gap-4 border border-border-light p-4 sm:p-5 items-start">
+      <div className="w-full sm:w-1/3">
         <ScribeImage />
       </div>
-      <div className="flex flex-col gap-2 w-2/3">
+      <div className="flex flex-col gap-2 w-full sm:w-2/3">
         <div className="text-xs bg-[#f3e6c9] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
           {tag === TagType.SCRIBE ? t("common.scribe") : t("common.simulation")}
         </div>

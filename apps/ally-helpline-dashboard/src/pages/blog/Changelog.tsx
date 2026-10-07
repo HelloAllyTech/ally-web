@@ -24,7 +24,7 @@ export const Changelog: FC = () => {
   return (
     <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#29261f]">
       <BlogHeader />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="mb-6 text-3xl">Changelog</h1>
 
         <CodeActivityHeatmap />

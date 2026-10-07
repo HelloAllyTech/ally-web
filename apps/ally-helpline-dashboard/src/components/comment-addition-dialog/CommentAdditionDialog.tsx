@@ -19,7 +19,7 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onCom
   const { t } = useTranslation();
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-lg border w-[360px]">
+    <div className="bg-white rounded-lg p-4 shadow-lg border w-[360px] max-w-[calc(100vw-2rem)]">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 font-primary">
           <div className="w-8 h-8 rounded-full border flex items-center justify-center text-[#6e6656] text-sm font-medium">

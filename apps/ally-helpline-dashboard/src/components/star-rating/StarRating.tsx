@@ -116,7 +116,7 @@ export const StarRating: FC<StarRatingProps> = ({
             onMouseEnter={() => !readOnly && setHovered(star)}
             onMouseLeave={() => !readOnly && setHovered(0)}
             onKeyDown={e => handleKeyDown(e, star)}
-            className={`flex items-center justify-center rounded p-0.5 transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+            className={`flex items-center justify-center rounded p-0.5 transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 max-md:p-2 ${
               readOnly ? "cursor-default" : "cursor-pointer hover:scale-110"
             }`}
           >

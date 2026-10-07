@@ -75,7 +75,7 @@ export const PresenceSwitch: FC<{ me: HelplineMeDto; canEdit: boolean }> = ({ me
                 aria-checked={selected}
                 disabled={!canEdit}
                 onClick={() => void choose(option.value)}
-                className={`inline-flex min-h-[36px] items-center gap-2 rounded-full px-4 font-primary text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-default ${
+                className={`inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 font-primary text-sm focus-visible:outline-none md:min-h-[36px] focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-default ${
                   selected
                     ? option.value === "AVAILABLE"
                       ? "bg-status-sageBg font-medium text-status-sageFg"

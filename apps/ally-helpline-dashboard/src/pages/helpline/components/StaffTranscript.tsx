@@ -166,7 +166,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
         return (
           <li key={message.id} id={`message-${message.id}`} className="flex justify-center px-2">
             <p
-              className="inline-flex items-center gap-1 rounded-full border border-dashed border-status-alarmDot px-2 py-0.5 font-primary text-[11px] text-status-alarmFg"
+              className="inline-flex items-center gap-1 rounded-full border border-dashed border-status-alarmDot px-2 py-0.5 font-primary text-xs text-status-alarmFg md:text-[11px]"
               data-testid="risk-folded-marker"
             >
               <Lock aria-hidden="true" className="h-2.5 w-2.5 flex-shrink-0" />
@@ -264,7 +264,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
                 <span className="sr-only">{label}:</span>
               )}
               <p
-                className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 font-primary text-base ${
+                className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 font-primary text-base md:max-w-[80%] ${
                   message.erased ? "italic opacity-70" : ""
                 } ${highlightId === message.id ? "ring-2 ring-primary-500 ring-offset-2" : ""} ${
                   fromTalker
@@ -282,7 +282,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
         {unconfirmed.map(item => (
           <li key={item.clientMessageId} className="flex flex-col items-end">
             <span className="sr-only">{t("helplineWorkspace.chat.you")}:</span>
-            <p className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-primary-500 px-4 py-2 font-primary text-base text-white opacity-80">
+            <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-primary-500 px-4 py-2 font-primary text-base text-white opacity-80 md:max-w-[80%]">
               {item.content}
             </p>
             {item.status === "pending" ? (
@@ -290,7 +290,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
                 {t("helplineWorkspace.chat.sending")}
               </span>
             ) : (
-              <span className="mt-1 inline-flex items-center gap-2 font-primary text-xs text-destructive-700">
+              <span className="mt-1 inline-flex flex-wrap items-center justify-end gap-2 font-primary text-xs text-destructive-700">
                 <AlertCircle aria-hidden="true" className="h-3.5 w-3.5" />
                 {t(
                   `helplineWorkspace.chat.sendError.${
@@ -301,7 +301,7 @@ export const StaffTranscript: FC<StaffTranscriptProps> = ({
                   <button
                     type="button"
                     onClick={() => onRetry(item.clientMessageId)}
-                    className="rounded-full border border-destructive-300 px-2 py-0.5 font-medium hover:bg-destructive-50"
+                    className="min-h-[40px] rounded-full border border-destructive-300 px-3 py-0.5 font-medium hover:bg-destructive-50 md:min-h-0 md:px-2"
                   >
                     {t("helplineWorkspace.chat.retrySend")}
                   </button>

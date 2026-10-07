@@ -21,7 +21,7 @@ const ContinuingChatRow: FC<{ chatId: string }> = ({ chatId }) => {
         data-testid={`continuing-${chatId}`}
       >
         <span className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="ph-no-capture truncate font-primary text-base font-medium text-typography-900">
+          <span className="ph-no-capture min-w-0 max-w-full truncate font-primary text-base font-medium text-typography-900">
             {chat?.talker.displayName || t("helplineWorkspace.restricted.chatFallback")}
           </span>
           {chat && <RiskBadge level={chat.riskLevel} />}

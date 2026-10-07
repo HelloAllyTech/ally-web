@@ -104,7 +104,11 @@ export const Analytics: FunctionComponent = () => {
 
   return (
     <div
-      className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100dvh-100px)]"}
+      // Below md the page fills the region under the phone top bar and the
+      // content box takes what's left, instead of a 90vh box clipped at the bottom.
+      className={
+        "flex flex-col justify-center m-4 md:m-6 overflow-hidden h-[calc(100%-2rem)] md:h-[calc(100dvh-100px)]"
+      }
       data-testid="analytics-page"
     >
       <div data-testid="analytics-header">
@@ -124,14 +128,17 @@ export const Analytics: FunctionComponent = () => {
         )}
       </div>
       {showNativeOrgMetrics ? (
-        <div className="h-[90vh] w-full overflow-y-auto" data-testid="analytics-content">
+        <div
+          className="h-[90vh] max-md:h-auto max-md:flex-1 max-md:min-h-0 w-full overflow-y-auto"
+          data-testid="analytics-content"
+        >
           <Suspense fallback={null}>
             <OrganizationMetrics />
           </Suspense>
         </div>
       ) : (
         <div
-          className="h-[90vh] w-full flex flex-col items-center justify-center"
+          className="h-[90vh] max-md:h-auto max-md:flex-1 max-md:min-h-0 w-full flex flex-col items-center justify-center"
           data-testid="analytics-content"
         >
           {hasValidDashboards &&

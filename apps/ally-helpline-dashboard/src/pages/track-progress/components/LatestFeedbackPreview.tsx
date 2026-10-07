@@ -46,7 +46,7 @@ export const LatestFeedbackPreview: FC<LatestFeedbackPreviewProps> = ({ session 
       <p className="mb-2 text-sm text-typography-700">{previewText(session.evaluationMarkdown)}</p>
       <button
         onClick={() => navigate(`/simulation-summary/${session.scenarioSessionId}`)}
-        className="text-sm font-medium text-primary-500 hover:text-primary-600"
+        className="text-sm font-medium text-primary-500 hover:text-primary-600 max-md:min-h-11"
       >
         {t("tracks2.progressDashboard.readFullFeedback")}
       </button>

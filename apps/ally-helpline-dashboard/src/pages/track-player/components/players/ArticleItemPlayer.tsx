@@ -185,7 +185,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
             onClick={() => changeFontScale(-1)}
             disabled={fontScaleIndex === 0}
             aria-label={t("tracks2.article.decreaseFontSize")}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40 max-md:h-10 max-md:w-10"
           >
             A-
           </button>
@@ -194,13 +194,13 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
             onClick={() => changeFontScale(1)}
             disabled={fontScaleIndex === FONT_SCALE_STEPS.length - 1}
             aria-label={t("tracks2.article.increaseFontSize")}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-base font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-base font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40 max-md:h-10 max-md:w-10"
           >
             A+
           </button>
         </div>
         <article
-          className="mx-auto max-w-[68ch]"
+          className="mx-auto max-w-[68ch] break-words"
           style={{ fontSize: `${FONT_SCALE_STEPS[fontScaleIndex]}rem` }}
         >
           {segments.map(segment =>
@@ -229,7 +229,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
           <button
             onClick={handleMarkRead}
             disabled={!canMark || isLoading}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="w-full rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11 sm:w-auto"
           >
             {unansweredCount > 0
               ? t(

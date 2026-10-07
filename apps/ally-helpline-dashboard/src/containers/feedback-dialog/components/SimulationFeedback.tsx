@@ -96,7 +96,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
-              className={`cursor-pointer select-none rounded-full border px-3 py-1 text-sm font-medium transition-all duration-150
+              className={`cursor-pointer select-none rounded-full border px-3 py-1 text-sm font-medium transition-all duration-150 max-md:min-h-10
                 ${
                   selectedTags.includes(tag)
                     ? "bg-primary-600 text-white border-primary-600"

@@ -255,11 +255,13 @@ export const CharacterInterview: React.FC = () => {
   };
 
   return (
-    <div className="py-[2px] font-primary h-[calc(100vh-40px)] flex flex-col">
-      <div className="flex items-center gap-2 pb-6 shrink-0">
+    // h-full below md: the phone top bar already takes 56px, so a 100vh-based
+    // height pushed the composer off-screen.
+    <div className="px-4 md:px-0 py-[2px] pb-2 md:pb-[2px] font-primary h-full md:h-[calc(100vh-40px)] flex flex-col">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 md:pt-0 pb-4 md:pb-6 shrink-0">
         <button
           type="button"
-          className="text-typography-800 cursor-pointer shrink-0 flex items-center gap-2"
+          className="text-typography-800 cursor-pointer shrink-0 flex items-center gap-2 min-h-10 md:min-h-0"
           onClick={handleBack}
         >
           <ArrowLeft width={14} height={14} />
@@ -271,7 +273,7 @@ export const CharacterInterview: React.FC = () => {
             type="button"
             onClick={() => setIsStartOverConfirmOpen(true)}
             disabled={isBooting}
-            className="ml-auto text-sm text-typography-600 hover:text-typography-800 underline disabled:cursor-not-allowed disabled:opacity-60"
+            className="ml-auto text-sm text-typography-600 hover:text-typography-800 underline disabled:cursor-not-allowed disabled:opacity-60 min-h-10 md:min-h-0"
           >
             {strings.startOver}
           </button>

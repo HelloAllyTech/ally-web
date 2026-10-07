@@ -42,7 +42,7 @@ const CopyLink: FC<{ slug: string }> = ({ slug }) => {
     <button
       type="button"
       onClick={copy}
-      className={`ml-auto border border-transparent px-1.5 py-0.5 text-gray-600 transition-opacity hover:border-gray-900/15 hover:text-gray-900 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${
+      className={`ml-auto min-h-[40px] border border-transparent px-1.5 py-0.5 text-gray-600 md:min-h-0 transition-opacity hover:border-gray-900/15 hover:text-gray-900 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${
         copied ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -236,7 +236,7 @@ export const ProductUpdatesFeed: FC = () => {
                 type="button"
                 aria-pressed={active}
                 onClick={() => chooseSurface(filter.value)}
-                className={`border px-3 py-1 transition-colors ${
+                className={`min-h-[40px] border px-3 py-1 transition-colors md:min-h-0 ${
                   active
                     ? "border-gray-900 bg-gray-900 text-gray-50"
                     : "border-gray-900/15 text-gray-700 hover:bg-gray-900/5"
@@ -251,7 +251,7 @@ export const ProductUpdatesFeed: FC = () => {
           <button
             type="button"
             onClick={toggleAll}
-            className="text-gray-700 underline underline-offset-2 hover:text-gray-900"
+            className="min-h-[40px] text-gray-700 underline underline-offset-2 hover:text-gray-900 md:min-h-0"
           >
             {allOpen ? "Collapse all" : "Expand all"}
           </button>

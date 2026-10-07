@@ -129,10 +129,10 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId}>
           <div className="flex items-center">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+            <span className="font-medium text-lg text-typography-800 md:whitespace-nowrap">
               {`${field.name}: `}
             </span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <TextField
                 value={value ?? ""}
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
@@ -155,7 +155,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       const selectedLabel = field.options?.find(o => o.id === value)?.label ?? "--";
       return (
         <div key={field.fieldDefinitionId} className="flex gap-1 items-center">
-          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+          <span className="font-medium text-lg text-typography-800 md:whitespace-nowrap">
             {`${field.name}: `}
           </span>
           <DropdownField
@@ -181,11 +181,11 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId}>
           <div className="flex items-center">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+            <span className="font-medium text-lg text-typography-800 md:whitespace-nowrap">
               {`${field.name}: `}
             </span>
             {isEditable ? (
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <FilterableMultiSelect
                   id={`cf-multi-${field.fieldDefinitionId}`}
                   items={field.options ?? []}
@@ -217,7 +217,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       const pickedDate = parseCustomFieldDate(value);
       return (
         <div key={field.fieldDefinitionId} className="flex items-center gap-1">
-          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+          <span className="font-medium text-lg text-typography-800 md:whitespace-nowrap">
             {`${field.name}: `}
           </span>
           {isEditable ? (
@@ -250,7 +250,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       const boolLabel = value === "true" ? "Yes" : "No";
       return (
         <div key={field.fieldDefinitionId} className="flex gap-1 items-center">
-          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+          <span className="font-medium text-lg text-typography-800 md:whitespace-nowrap">
             {`${field.name}: `}
           </span>
           <DropdownField

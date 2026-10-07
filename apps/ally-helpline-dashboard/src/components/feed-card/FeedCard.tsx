@@ -203,7 +203,7 @@ const FeedCard: FC<FeedCardProps> = ({
 
   const reviewedBadge = () => {
     return (
-      <div className="flex items-center gap-1 h-5 w-fit rounded-full bg-[#E6F4EA] px-2 py-[2px] text-[11px] font-medium leading-none text-[#1E8E3E] flex-shrink-0">
+      <div className="flex items-center gap-1 h-5 w-fit rounded-full bg-[#E6F4EA] px-2 py-[2px] text-xs sm:text-[11px] font-medium leading-none text-[#1E8E3E] flex-shrink-0">
         <svg
           width="12"
           height="12"
@@ -228,7 +228,7 @@ const FeedCard: FC<FeedCardProps> = ({
   const badgeSection = () => {
     return (
       <div
-        className="h-4 w-fit flex flex-col rounded-[2px] items-center justify-center px-1 py-[1.5px] text-[10px]"
+        className="h-4 w-fit flex flex-col rounded-[2px] items-center justify-center px-1 py-[1.5px] text-xs sm:text-[10px]"
         style={{
           backgroundColor: badgeBgColor ?? "#ede4e8",
           color: badgeTextColor ?? "#5a3f50",
@@ -391,7 +391,7 @@ const FeedCard: FC<FeedCardProps> = ({
         {commentsCount > 0 && (
           <button
             onClick={handleCommentsClick}
-            className="ml-auto font-primary font-medium text-xs sm:text-sm leading-[1.5] text-typography-800 hover:underline flex-shrink-0"
+            className="ml-auto font-primary font-medium text-xs sm:text-sm leading-[1.5] text-typography-800 hover:underline flex-shrink-0 max-sm:py-2.5"
           >
             {commentsCount}{" "}
             {commentsCount !== 1

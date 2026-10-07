@@ -88,7 +88,7 @@ export const TalkerComposer: FC<TalkerComposerProps> = ({
               onTyping?.();
             }}
             onKeyDown={onKeyDown}
-            className="min-h-[44px] flex-1 resize-none rounded-2xl border border-border-medium bg-white px-4 py-2.5 font-primary text-base text-typography-900 placeholder:text-typography-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:bg-background-secondary"
+            className="min-h-[44px] min-w-0 flex-1 resize-none rounded-2xl border border-border-medium bg-white px-4 py-2.5 font-primary text-base text-typography-900 placeholder:text-typography-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:bg-background-secondary"
           />
           <button
             type="button"

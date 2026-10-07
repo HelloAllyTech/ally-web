@@ -70,12 +70,12 @@ export const HelplineHistory: FC = () => {
             {t("helplineWorkspace.gate.loading")}
           </p>
         ) : isError ? (
-          <div className="flex items-center gap-3 font-primary text-sm text-typography-800">
+          <div className="flex flex-wrap items-center gap-3 font-primary text-sm text-typography-800">
             {t("helplineWorkspace.history.loadFailed")}
             <button
               type="button"
               onClick={() => void refetch()}
-              className="rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary"
+              className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary md:min-h-0"
             >
               {t("helplineWorkspace.gate.retry")}
             </button>
@@ -86,7 +86,7 @@ export const HelplineHistory: FC = () => {
           </p>
         ) : (
           <>
-            <div className="ph-no-capture overflow-x-auto rounded-xl border border-border-light">
+            <div className="ph-no-capture relative overflow-x-auto rounded-xl border border-border-light">
               <table
                 className="w-full min-w-[720px] border-collapse font-primary text-sm"
                 data-testid="history-table"
@@ -192,7 +192,7 @@ export const HelplineHistory: FC = () => {
                   type="button"
                   disabled={page <= 1}
                   onClick={() => setPage(current => Math.max(1, current - 1))}
-                  className="rounded-full border border-border-medium px-3 py-1 disabled:opacity-50"
+                  className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 disabled:opacity-50 md:min-h-0"
                 >
                   {t("helplineWorkspace.history.previous")}
                 </button>
@@ -201,7 +201,7 @@ export const HelplineHistory: FC = () => {
                   type="button"
                   disabled={page >= pages}
                   onClick={() => setPage(current => Math.min(pages, current + 1))}
-                  className="rounded-full border border-border-medium px-3 py-1 disabled:opacity-50"
+                  className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 disabled:opacity-50 md:min-h-0"
                 >
                   {t("helplineWorkspace.history.next")}
                 </button>

@@ -123,7 +123,7 @@ export const AchievementsViewAll: FC = () => {
           {isFromLeaderboard && (
             <button
               onClick={() => navigate(-1)}
-              className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-4 -m-4 md:p-2 md:-m-2 hover:bg-gray-100 rounded-full transition-colors"
               aria-label={t("achievements.backAria")}
             >
               <ArrowLeft className="w-[5px] h-2.5" />
@@ -204,7 +204,7 @@ export const AchievementsViewAll: FC = () => {
 
     return (
       <div className="flex items-center gap-1">
-        <div className="font-primary text-xs leading-5 font-normal text-typography-600">
+        <div className="font-primary text-xs leading-5 font-normal text-typography-600 max-md:whitespace-nowrap">
           {getBadgeTypeLabels(t)[category]}
         </div>
         <Tooltip label={tooltipContent} align="top" autoAlign>

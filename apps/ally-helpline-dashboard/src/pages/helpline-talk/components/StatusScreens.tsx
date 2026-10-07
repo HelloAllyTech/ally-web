@@ -75,7 +75,11 @@ export const ClosedScreen: FC<ClosedScreenProps> = ({
       </p>
       {!isBusy && hours && hours.weekly.length > 0 && <HoursList hours={hours} />}
       <ResourcesCard text={resourcesText} />
-      <TalkerButton onClick={onTryAgain} disabled={isChecking} className="self-start">
+      <TalkerButton
+        onClick={onTryAgain}
+        disabled={isChecking}
+        className="self-stretch sm:self-start"
+      >
         {isChecking ? t("helplineTalker.closed.checking") : t("helplineTalker.closed.tryAgain")}
       </TalkerButton>
     </ScreenFrame>
@@ -106,7 +110,7 @@ export const DeletedScreen: FC<{ resourcesText: string | null; onStartNew: () =>
         {t("helplineTalker.delete.doneBody")}
       </p>
       <ResourcesCard text={resourcesText} />
-      <TalkerButton variant="secondary" className="self-start" onClick={onStartNew}>
+      <TalkerButton variant="secondary" className="self-stretch sm:self-start" onClick={onStartNew}>
         {t("helplineTalker.ended.startNew")}
       </TalkerButton>
     </ScreenFrame>
@@ -119,7 +123,7 @@ export const ErrorScreen: FC<{ onRetry: () => void }> = ({ onRetry }) => {
     <ScreenFrame testId="talker-error" title={t("helplineTalker.error.title")}>
       <p className="font-primary text-base text-typography-800">{t("helplineTalker.error.body")}</p>
       <ResourcesCard />
-      <TalkerButton className="self-start" onClick={onRetry}>
+      <TalkerButton className="self-stretch sm:self-start" onClick={onRetry}>
         {t("helplineTalker.error.retry")}
       </TalkerButton>
     </ScreenFrame>

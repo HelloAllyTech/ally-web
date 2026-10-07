@@ -84,7 +84,7 @@ const FeaturedCard: FC<{ post: BlogPost }> = ({ post }) => (
     to={`/blog/${post.slug}`}
     className="group grid overflow-hidden border border-[#29261f]/10 bg-white transition-shadow hover:shadow-[0_8px_24px_rgba(20,20,19,0.08)] md:grid-cols-2"
   >
-    <div className="flex flex-col p-8 sm:p-10">
+    <div className="flex flex-col p-5 sm:p-10">
       <p className="text-sm text-[#928b7c]">{formatDate(postDate(post))}</p>
       <h2 className="mt-4 text-3xl leading-tight text-[#29261f] sm:text-4xl">{post.title}</h2>
       {post.tldr && <p className="mt-4 line-clamp-3 leading-relaxed text-[#565045]">{post.tldr}</p>}
@@ -105,7 +105,7 @@ const TagChip: FC<{ label: string; isActive: boolean; onClick: () => void }> = (
     type="button"
     onClick={onClick}
     aria-pressed={isActive}
-    className={`shrink-0 rounded-full border px-3.5 py-1 text-sm transition-colors ${
+    className={`min-h-[40px] shrink-0 rounded-full border px-3.5 py-1 text-sm transition-colors md:min-h-0 ${
       isActive
         ? "border-[#29261f] bg-[#29261f] text-[#FAF9F5]"
         : "border-[#29261f]/15 bg-white text-[#565045] hover:border-[#29261f]/40 hover:text-[#29261f]"
@@ -183,7 +183,7 @@ export const Blog: FC = () => {
       {/* The wordmark is an image, so the page's heading is carried here. */}
       <h1 className="sr-only">{BLOG_NAME}</h1>
 
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-16 pt-6">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-6">
         {tags.length > 0 && (
           <nav aria-label="Filter posts by tag" className="mb-8 flex flex-wrap gap-2">
             <TagChip label="All" isActive={!activeTag} onClick={() => setActiveTag(null)} />

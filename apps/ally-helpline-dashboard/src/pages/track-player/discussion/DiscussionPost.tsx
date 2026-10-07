@@ -29,7 +29,7 @@ interface DiscussionPostProps {
 }
 
 const actionClass =
-  "text-xs font-medium text-typography-600 hover:text-primary-600 disabled:opacity-50";
+  "text-xs font-medium text-typography-600 hover:text-primary-600 disabled:opacity-50 max-md:min-h-10";
 
 const AuthorAvatar: FC<{ name: string | null; imageUrl: string | null }> = ({ name, imageUrl }) =>
   imageUrl ? (

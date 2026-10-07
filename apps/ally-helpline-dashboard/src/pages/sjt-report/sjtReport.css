@@ -522,6 +522,24 @@
   .sjtr header {
     padding-top: 28px;
   }
+  /* Five filters wrap to four rows on a phone: pinned, they would cover a
+   * third of the screen, so here they scroll away with the page. */
+  .sjtr .filters {
+    position: static;
+  }
+  .sjtr select,
+  .sjtr button {
+    min-height: 40px;
+  }
+  /* The 900-unit dot strips shrink to about a third of their size here, which
+   * took their 11px labels down to ~4px. Size the labels for the shrunk drawing
+   * and drop the axis row so the larger figures clear the bottom row of dots. */
+  .sjtr .strip svg text {
+    font-size: 32px;
+  }
+  .sjtr .strip svg text:not(.meantext) {
+    transform: translateY(14px);
+  }
 }
 @media print {
   .sjtr .filters,

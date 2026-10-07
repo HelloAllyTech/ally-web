@@ -40,9 +40,9 @@ export const CompleteProfile: FC = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-dvh gap-2">
-      <div className="border rounded-lg px-16 py-10 flex flex-col items-center gap-4 w-[420px] max-w-[90vw]">
-        <div className="text-2xl font-secondary">{t("completeProfile.title")}</div>
+    <div className="flex flex-col justify-center items-center h-dvh gap-2 px-4">
+      <div className="border rounded-lg px-6 py-8 sm:px-16 sm:py-10 flex flex-col items-center gap-4 w-[420px] max-w-full sm:max-w-[90vw]">
+        <div className="text-2xl font-secondary text-center">{t("completeProfile.title")}</div>
         <div className="text-center font-primary text-typography-700 text-sm">
           {t("completeProfile.subtitle")}
         </div>
@@ -58,6 +58,8 @@ export const CompleteProfile: FC = () => {
             label={t("completeProfile.nameLabel")}
             placeholder={t("completeProfile.namePlaceholder")}
             fieldSize="large"
+            // The user's own name (not client data), so let the phone suggest it.
+            autoComplete="name"
             value={name}
             onChange={e => setName(e.target.value)}
           />

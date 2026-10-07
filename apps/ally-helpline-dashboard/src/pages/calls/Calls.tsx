@@ -105,7 +105,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
   };
 
   return (
-    <div className="px-6 pb-6 h-full flex flex-col" data-testid="calls-page">
+    <div className="px-4 md:px-6 pb-6 h-full flex flex-col" data-testid="calls-page">
       <motion.div
         data-testid="calls-header"
         layout="position"
@@ -115,7 +115,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         className="relative mt-[10px] font-secondary"
       >
         <div
-          className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+          className="sm:p-4 p-0 rounded-lg flex flex-wrap gap-4 sm:justify-between justify-start bg-transparent items-center"
           data-testid="calls-header-content"
         >
           <div
@@ -123,15 +123,21 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
             data-testid="calls-title"
           >
             {t(isScribe ? "calls.scribeTitle" : "calls.roleplayTitle")}
-            <Refresh
-              data-testid="calls-refresh-button"
-              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+            <button
+              type="button"
+              aria-label={t("common.refresh")}
               onClick={handleRefresh}
-            />
+              className="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+            >
+              <Refresh
+                data-testid="calls-refresh-button"
+                className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              />
+            </button>
           </div>
           {isScribe && (
             <div
-              className="flex gap-2 items-center font-tertiary"
+              className="flex flex-wrap gap-2 items-center font-tertiary"
               data-testid="calls-action-buttons"
             >
               <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
@@ -196,12 +202,14 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         )}
         {isScribe && (
           <div className="flex justify-end items-center gap-2">
-            <div
-              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
+            <button
+              type="button"
+              aria-label={t("helplineTalker.header.moreOptions")}
+              className="cursor-pointer w-10 h-10 md:w-7 md:h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
             >
               <MoreVertIcon />
-            </div>
+            </button>
           </div>
         )}
       </motion.div>

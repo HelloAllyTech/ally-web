@@ -42,7 +42,9 @@ const NotificationItem: FC<NotificationItemProps> = ({ notification, onClick }) 
           <p className="text-xs text-gray-600 mt-0.5 line-clamp-3 whitespace-pre-line">
             {notification.body}
           </p>
-          <p className="text-[10px] text-gray-400 mt-1">{timeAgo(notification.createdAt)}</p>
+          <p className="text-xs md:text-[10px] text-gray-400 mt-1">
+            {timeAgo(notification.createdAt)}
+          </p>
         </div>
       </div>
     </button>

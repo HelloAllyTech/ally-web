@@ -44,7 +44,9 @@ export const SegmentedProgressRail: FC<SegmentedProgressRailProps> = ({
               type="button"
               onClick={() => onSegmentClick(item.id)}
               aria-label={t("tracks2.player.reviewItem", { title: item.title })}
-              className={className}
+              // The bar is 6px tall; on a phone an invisible pseudo-element
+              // gives the tap a 30px-tall target without changing the look.
+              className={`${className} relative max-md:before:absolute max-md:before:inset-x-0 max-md:before:-inset-y-3 max-md:before:content-['']`}
             />
           );
         }

@@ -34,7 +34,7 @@ export const MyChatsList: FC<{ chats: ChatListItemDto[] }> = ({ chats }) => {
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate font-primary text-base font-medium text-typography-900">
+                  <span className="min-w-0 max-w-full truncate font-primary text-base font-medium text-typography-900">
                     {chat.talkerName}
                   </span>
                   <LanguageChip code={chat.language} />

@@ -24,7 +24,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
       size="md"
       className="font-primary !fixed !inset-0 !flex !items-center !justify-center"
     >
-      <ModalBody className="max-h-[85vh] h-[550px] p-4">
+      <ModalBody className="max-h-[85dvh] h-[550px] p-4">
         <div className="flex items-center justify-center font-medium text-2xl font-secondary">
           {t("terms.title")}
         </div>
@@ -69,7 +69,9 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
                 checked={agreeCheck}
                 onChange={() => setAgreeCheck(prev => !prev)}
               />
-              <span className="text-[13px] text-typography-900">{t("terms.agreeLabel")}</span>
+              <label htmlFor="agreement_checkbox" className="text-[13px] text-typography-900">
+                {t("terms.agreeLabel")}
+              </label>
             </div>
             <Button
               className="w-[100px] h-[40px] font-semibold text-base font-tertiary"
