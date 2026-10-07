@@ -779,41 +779,11 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": [
-              "Poor",
-              "Not helpful",
-              "Very bad",
-              "Disappointing",
-              "Unhelpful"
-            ],
-            "2": [
-              "Below average",
-              "Lacking",
-              "Unsatisfying",
-              "Weak",
-              "Needs improvement"
-            ],
-            "3": [
-              "Neutral",
-              "Okay",
-              "Average",
-              "Moderate",
-              "Acceptable"
-            ],
-            "4": [
-              "Good",
-              "Helpful",
-              "Satisfying",
-              "Effective",
-              "Worthwhile"
-            ],
-            "5": [
-              "Excellent",
-              "Amazing",
-              "Highly useful",
-              "Outstanding",
-              "Very effective"
-            ]
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
           }
         }
       }
@@ -2701,6 +2671,93 @@
       "chatsTitle": "Your open chats",
       "chatFallback": "Chat",
       "elsewhere": "This part of the helpline is unavailable while it's switched off. Finish your open chats from the Lobby."
+    }
+  },
+  "landing": {
+    "nav": {
+      "label": "Main",
+      "home": "Ally home",
+      "inside": "What's inside",
+      "privacy": "Privacy",
+      "blog": "Blog"
+    },
+    "hero": {
+      "title": "Training and support tools for helplines.",
+      "body": "Practise hard conversations with an AI voice, keep notes on real sessions, and answer your text helpline, all in one place.",
+      "seeInside": "See what's inside"
+    },
+    "signIn": {
+      "title": "Sign in",
+      "subtitle": "Enter your work email and we'll send you a 4-digit code.",
+      "rememberEmail": "Remember my email on this device",
+      "sendCode": "Send code",
+      "sendingCode": "Sending code…",
+      "legal": "By continuing, you agree to Ally's <terms>Terms & Conditions</terms> and acknowledge the <privacy>Privacy Policy</privacy>.",
+      "help": "Trouble signing in? Ask your organisation's Ally admin."
+    },
+    "code": {
+      "back": "Back to email",
+      "title": "Check your email",
+      "sentTo": "Enter the 4-digit code we sent to <strong>{{email}}</strong>",
+      "expires": "Expires in {{time}}",
+      "resend": "Send a new code",
+      "resendIn": "Resend in {{seconds}}s",
+      "verify": "Verify and sign in",
+      "verifying": "Signing in…",
+      "changeEmail": "Wrong email? Change it"
+    },
+    "inside": {
+      "eyebrow": "What's inside",
+      "title": "Practise, take notes and answer chats, in one place.",
+      "body": "Your organisation decides which of these your team uses.",
+      "rolePlay": {
+        "title": "Role play with an AI voice",
+        "body": "Practise real-world situations by talking out loud to an AI client. When you finish, you get a summary of how it went."
+      },
+      "pathways": {
+        "title": "Learning pathways",
+        "body": "Work through the pathways, cases and courses your organisation sets, and see your progress as you go."
+      },
+      "scribe": {
+        "title": "Scribe for real sessions",
+        "body": "Record or upload a session. Ally writes an annotated transcript and an AI summary, and you can add your own notes."
+      },
+      "helpline": {
+        "title": "Text helpline workspace",
+        "body": "Answer chats from one place, with a lobby and history for listeners, and live monitoring and quality reviews for supervisors."
+      },
+      "feedback": {
+        "title": "Feedback from people you trust",
+        "body": "Share a role play or a session for review, and get comments from your supervisor or peers. Or keep it private."
+      },
+      "selfCare": {
+        "title": "A moment for yourself",
+        "body": "After a hard session, Ally offers a short breathing exercise before you move on."
+      }
+    },
+    "privacy": {
+      "eyebrow": "Privacy",
+      "title": "Built for sensitive conversations.",
+      "body": "When you record a session with Scribe:"
+    },
+    "languages": {
+      "title": "The Ally app is available in"
+    },
+    "contact": {
+      "title": "Bring Ally to your helpline",
+      "body": "Talk to us about training your team, setting up Scribe, or running your text helpline on Ally.",
+      "button": "Get in touch",
+      "href": "https://www.helloally.ai"
+    },
+    "footer": {
+      "label": "Footer",
+      "tagline": "Training and support tools for helplines.",
+      "blog": "Blog",
+      "whatsNew": "What's new",
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy",
+      "website": "helloally.ai",
+      "copyright": "© {{year}} Ally"
     }
   }
 }
