@@ -256,11 +256,14 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
      * doesn't already have one — the usual case for a bug a human reported as
      * free text, where the admin picks the codebase in the confirm dialog.
      */
-    startBugFixSession: builder.mutation<BugFinding, { id: string; repo?: string }>({
-      query: ({ id, repo }) => ({
+    startBugFixSession: builder.mutation<
+      BugFinding,
+      { id: string; repo?: string; force?: boolean }
+    >({
+      query: ({ id, repo, force }) => ({
         url: ApiEndpoints.BUG_HUNTER.FINDING_FIX_SESSION(id),
         method: HttpMethod.POST,
-        body: repo ? { repo } : {},
+        body: { ...(repo ? { repo } : {}), ...(force ? { force: true } : {}) },
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id },

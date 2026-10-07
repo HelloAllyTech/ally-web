@@ -190,6 +190,18 @@ export type BugFindingMissSense =
   | "static_content"
   | "llm_output_eval";
 
+/** The case file's budget on a bug — mirrors ally-be's `BugCaseBudget` (OPP-0775). */
+export type BugCaseBudgetKind = "sessions" | "attempts" | "escalations" | "usd" | "minutes";
+
+export interface BugCaseBudget {
+  caps: Record<BugCaseBudgetKind, number>;
+  used: Record<BugCaseBudgetKind, number>;
+  /** The first cap reached and when; null while under budget or after an override. */
+  exhausted: { kind: BugCaseBudgetKind; at: string } | null;
+  overriddenBy: number | null;
+  overriddenAt: string | null;
+}
+
 export interface BugFindingMiss {
   reason: BugFindingMissReason;
   /** Null only for `not_a_miss`. */
@@ -374,6 +386,8 @@ export interface BugFinding {
    * source.
    */
   miss: BugFindingMiss | null;
+  /** Caps and spend on this bug. Defaults with nothing spent until a move has been metered. */
+  budget: BugCaseBudget;
   /**
    * What the last failed fix session left behind, or null. Written by the
    * fix protocol with `status: failed`; the next session reads it in its

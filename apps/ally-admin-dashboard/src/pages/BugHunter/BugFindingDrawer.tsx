@@ -3,7 +3,15 @@ import { FC, useEffect, useState } from "react";
 import { Launch } from "@icons";
 import { toast } from "sonner";
 
-import { Button, Select, SelectItem, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  Checkbox,
+  Select,
+  SelectItem,
+  SidePanel,
+  TextArea,
+  Tooltip,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
@@ -127,6 +135,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
   // Hunter classify it. The API has always taken the override; the dialog
   // never offered it, which left a failed classification as a dead end.
   const [fixRepo, setFixRepo] = useState<string>("");
+  // The admin's explicit "past the budget" tick for this dialog only (OPP-0775).
+  const [forceFix, setForceFix] = useState(false);
+  const budgetSpent = Boolean(finding?.budget?.exhausted);
   const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
   const [merge, { isLoading: isMerging }] = useMergeBugFindingMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
@@ -287,7 +298,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
 
   const handleStartFixSession = async () => {
     try {
-      await startFixSession({ id, ...(fixRepo ? { repo: fixRepo } : {}) }).unwrap();
+      await startFixSession({
+        id,
+        ...(fixRepo ? { repo: fixRepo } : {}),
+        ...(forceFix ? { force: true } : {}),
+      }).unwrap();
+      setForceFix(false);
       setConfirmAction(null);
     } catch (error) {
       // The backend's own message is the useful one here — "Bug Hunter is
@@ -557,7 +573,8 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             finding.regressed ||
             finding.regressionOf ||
             finding.rediscoveredCount > 0 ||
-            finding.miss) && (
+            finding.miss ||
+            finding.budget) && (
             <div className="border border-border-light rounded p-3 flex flex-col gap-2">
               {finding.confidence != null && (
                 <div className="flex items-center gap-1.5">
@@ -624,6 +641,49 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     String(finding.rediscoveredCount),
                   )}
                 </p>
+              )}
+
+              {/* The case file's budget (OPP-0775): what this bug has cost so
+                  far against its caps. Always shown, because "nothing spent"
+                  is itself a fact a reader wants before pressing Start. */}
+              {finding.budget && (
+                <div data-testid="budget" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-typography-700">
+                      {en.bugHunter.drawerBudgetLabel}:
+                    </span>
+                    <span className="text-xs font-medium tabular-nums text-typography-900">
+                      {en.bugHunter.drawerBudgetSummary
+                        .replace("{sessions}", String(finding.budget.used.sessions))
+                        .replace("{sessionsCap}", String(finding.budget.caps.sessions))
+                        .replace("{attempts}", String(finding.budget.used.attempts))
+                        .replace("{attemptsCap}", String(finding.budget.caps.attempts))
+                        .replace("{usd}", finding.budget.used.usd.toFixed(2))
+                        .replace("{usdCap}", finding.budget.caps.usd.toFixed(2))}
+                    </span>
+                    <Tooltip label={en.bugHunter.drawerBudgetTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.budget.exhausted && (
+                    <p className="text-xs text-amber-700">
+                      {en.bugHunter.drawerBudgetExhausted.replace(
+                        "{kind}",
+                        finding.budget.exhausted.kind,
+                      )}
+                    </p>
+                  )}
+                  {finding.budget.overriddenAt && (
+                    <p className="text-xs text-typography-600">
+                      {en.bugHunter.drawerBudgetOverridden.replace(
+                        "{date}",
+                        formatDateTime(finding.budget.overriddenAt),
+                      )}
+                    </p>
+                  )}
+                </div>
               )}
 
               {/* The miss record (OPP-0774). Only reported bugs carry one; it
@@ -1166,13 +1226,33 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
           primaryButton={{
             label: en.bugHunter.drawerFixSessionStart,
             onClick: handleStartFixSession,
-            disabled: isStartingSession,
+            disabled: isStartingSession || (budgetSpent && !forceFix),
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
         >
           {/* Only for a bug with no repo. One with a repo already says where
               it will work, and a picker beside that would be a second answer
               to a question already settled. */}
+          {/* Past the budget, Start is disabled until the admin ticks the
+              override: the refusal the server would give is shown here first,
+              so nobody learns about the budget from an error toast. */}
+          {budgetSpent && (
+            <div className="mt-3 text-left" data-testid="budget-override">
+              <p className="text-xs text-amber-700 mb-2">
+                {en.bugHunter.drawerBudgetExhausted.replace(
+                  "{kind}",
+                  finding?.budget.exhausted?.kind ?? "",
+                )}
+              </p>
+              <Checkbox
+                id={`drawer-${id}-force`}
+                labelText={en.bugHunter.drawerFixSessionForceLabel}
+                helperText={en.bugHunter.drawerFixSessionForceHelp}
+                checked={forceFix}
+                onChange={(_e: unknown, { checked }: { checked: boolean }) => setForceFix(checked)}
+              />
+            </div>
+          )}
           {!finding?.repo && (
             <div className="mt-3 text-left" data-testid="repo-picker">
               <Select

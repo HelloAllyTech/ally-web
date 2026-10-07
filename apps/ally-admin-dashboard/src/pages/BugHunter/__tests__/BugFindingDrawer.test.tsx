@@ -70,6 +70,17 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     </select>
   ),
   SelectItem: ({ value, text }: any) => <option value={value}>{text}</option>,
+  Checkbox: ({ id, labelText, checked, onChange }: any) => (
+    <label htmlFor={id}>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={e => onChange(e, { checked: e.target.checked })}
+      />
+      {labelText}
+    </label>
+  ),
   SidePanel: ({ open, title, children }: any) =>
     open ? (
       <div data-testid="side-panel">
@@ -131,6 +142,13 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   regressed: false,
   rediscoveredCount: 0,
   miss: null,
+  budget: {
+    caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
+    used: { sessions: 0, attempts: 0, escalations: 0, usd: 0, minutes: 0 },
+    exhausted: null,
+    overriddenBy: null,
+    overriddenAt: null,
+  },
   stage: "new",
   stageIsAuto: true,
   stageOverriddenBy: null,
@@ -192,6 +210,50 @@ describe("BugFindingDrawer — fix session", () => {
 
     await waitFor(() =>
       expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", repo: "ally-web" }),
+    );
+  });
+
+  it("shows what the bug has cost so far against its budget", () => {
+    renderDrawer(
+      finding({
+        budget: {
+          caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
+          used: { sessions: 1, attempts: 2, escalations: 0, usd: 3.5, minutes: 22 },
+          exhausted: null,
+          overriddenBy: null,
+          overriddenAt: null,
+        },
+      }),
+    );
+
+    expect(screen.getByTestId("budget")).toHaveTextContent(
+      "1 of 2 sessions · 2 of 4 attempts · $3.50 of $15.00",
+    );
+  });
+
+  it("keeps Start disabled once the budget is spent until the admin ticks the override, then sends force", async () => {
+    renderDrawer(
+      finding({
+        budget: {
+          caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
+          used: { sessions: 2, attempts: 4, escalations: 0, usd: 6, minutes: 70 },
+          exhausted: { kind: "sessions", at: "2026-10-07T05:00:00Z" },
+          overriddenBy: null,
+          overriddenAt: null,
+        },
+      }),
+    );
+    fireEvent.click(screen.getByText("Put me on it"));
+
+    expect(screen.getByTestId("budget-override")).toHaveTextContent("Budget spent (sessions)");
+    expect(screen.getByText("Start now")).toBeDisabled();
+
+    fireEvent.click(screen.getByLabelText("Start anyway, past the budget"));
+    expect(screen.getByText("Start now")).not.toBeDisabled();
+
+    fireEvent.click(screen.getByText("Start now"));
+    await waitFor(() =>
+      expect(startFixSession).toHaveBeenCalledWith({ id: "finding-1", force: true }),
     );
   });
 

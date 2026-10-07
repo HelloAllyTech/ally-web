@@ -2796,6 +2796,18 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the case file's budget (OPP-0775) ─────────────────────────────────
+    drawerBudgetLabel: "What I've spent on this bug",
+    drawerBudgetTooltip:
+      "Every bug has a budget: fix sessions, attempts, times I asked for help, dollars and minutes. I stop starting new sessions once any of them is spent, so trying again is a decision you make, not a reflex I have.",
+    drawerBudgetSummary:
+      "{sessions} of {sessionsCap} sessions · {attempts} of {attemptsCap} attempts · ${usd} of ${usdCap}",
+    drawerBudgetExhausted: "Budget spent ({kind}). I won't start another session on my own.",
+    drawerBudgetOverridden: "You started a session past the budget on {date}.",
+    drawerFixSessionForceLabel: "Start anyway, past the budget",
+    drawerFixSessionForceHelp:
+      "Read what the last session left behind first. I'll note that you overrode the budget.",
+
     // ── why a reported bug was missed (OPP-0774) ───────────────────────────
     // Written by the miss classifier a moment after a person files a bug. The
     // reader is whoever decides what Bug Hunter should learn to look at next,
