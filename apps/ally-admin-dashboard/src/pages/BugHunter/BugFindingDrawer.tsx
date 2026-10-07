@@ -33,6 +33,8 @@ import { formatDateTime, formatTimestamp } from "@utils";
 import { BrailleSpinner } from "./BrailleSpinner";
 import {
   BUG_FINDING_DECISION_REASON_LABELS,
+  BUG_FINDING_MISS_REASON_LABELS,
+  BUG_FINDING_MISS_SENSE_LABELS,
   BUG_FINDING_SEVERITY_LABELS,
   BUG_FINDING_SOURCE_LABELS,
   engineModelLabel,
@@ -554,7 +556,8 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             finding.decisionReason ||
             finding.regressed ||
             finding.regressionOf ||
-            finding.rediscoveredCount > 0) && (
+            finding.rediscoveredCount > 0 ||
+            finding.miss) && (
             <div className="border border-border-light rounded p-3 flex flex-col gap-2">
               {finding.confidence != null && (
                 <div className="flex items-center gap-1.5">
@@ -621,6 +624,49 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     String(finding.rediscoveredCount),
                   )}
                 </p>
+              )}
+
+              {/* The miss record (OPP-0774). Only reported bugs carry one; it
+                  sits with the other evidence about how far to trust this row
+                  because the reader's question is the same: what does Bug
+                  Hunter itself know about how this bug reached a person. */}
+              {finding.miss && (
+                <div data-testid="miss-record" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-typography-700">
+                      {en.bugHunter.drawerMissTitle}:
+                    </span>
+                    <span className="text-xs font-medium text-typography-900">
+                      {BUG_FINDING_MISS_REASON_LABELS[finding.miss.reason] ?? finding.miss.reason}
+                    </span>
+                    <Tooltip label={en.bugHunter.drawerMissTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.miss.sense && (
+                    <p className="text-xs text-typography-600">
+                      {en.bugHunter.drawerMissWouldNeed.replace(
+                        "{sense}",
+                        BUG_FINDING_MISS_SENSE_LABELS[finding.miss.sense] ?? finding.miss.sense,
+                      )}
+                    </p>
+                  )}
+                  {finding.miss.rationale && (
+                    <p className="text-xs text-typography-600 whitespace-pre-wrap">
+                      {finding.miss.rationale}
+                    </p>
+                  )}
+                  {finding.miss.matchedFindingId && (
+                    <a
+                      href={`?bug=${finding.miss.matchedFindingId}`}
+                      className="text-xs text-primary-600 underline w-fit"
+                    >
+                      {en.bugHunter.drawerMissSeeMatched}
+                    </a>
+                  )}
+                </div>
               )}
 
               {finding.regressionOf && (

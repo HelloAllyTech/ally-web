@@ -156,6 +156,52 @@ export enum BugFindingDecisionReason {
 }
 
 /**
+ * Why Bug Hunter did not find a human-reported bug first — mirrors ally-be's
+ * `BugFindingMissReason` (OPP-0774). Every report a person files is a miss by
+ * definition; this says which kind.
+ */
+export enum BugFindingMissReason {
+  /** No current sense could have seen it; a new sense is needed. */
+  NO_SENSE = "no_sense",
+  /** An existing sense covers this kind of bug and did not flag it. */
+  SENSE_MISSED = "sense_missed",
+  /** A sense found it (or its cause) and a person declined it. */
+  DETECTED_DECLINED = "detected_declined",
+  /** A sense found it (or its cause) and it was not yet fixed or released. */
+  DETECTED_NOT_FIXED = "detected_not_fixed",
+  /** Test entry, duplicate report, feature request, or nothing to find. */
+  NOT_A_MISS = "not_a_miss",
+}
+
+/** The sense that would have caught a missed bug, or failed to. Mirrors ally-be's `BUG_FINDING_MISS_SENSES`. */
+export type BugFindingMissSense =
+  | "production_log"
+  | "browser_errors"
+  | "ux_signal"
+  | "code_review"
+  | "tests"
+  | "user_journey"
+  | "data_integrity"
+  | "voice_qa"
+  | "api_contract"
+  | "visual"
+  | "locale_parity"
+  | "mobile_crash"
+  | "static_content"
+  | "llm_output_eval";
+
+export interface BugFindingMiss {
+  reason: BugFindingMissReason;
+  /** Null only for `not_a_miss`. */
+  sense: BugFindingMissSense | null;
+  /** For detected_*: the earlier finding that was this bug or its cause. */
+  matchedFindingId: string | null;
+  confidence: number | null;
+  rationale: string;
+  classifiedAt: string;
+}
+
+/**
  * Reasons that mean the FINDER was wrong, as opposed to the bug being real
  * and unwanted. Mirrors ally-be's BUG_FINDING_FINDER_ERROR_REASONS.
  *
@@ -322,6 +368,12 @@ export interface BugFinding {
   regressed: boolean;
   /** How many sweeps have re-found this bug since it was declined. */
   rediscoveredCount: number;
+  /**
+   * On a human-reported bug: why Bug Hunter did not find it first and which
+   * sense would have. Null until the classifier has run, and on every other
+   * source.
+   */
+  miss: BugFindingMiss | null;
   /**
    * What the last failed fix session left behind, or null. Written by the
    * fix protocol with `status: failed`; the next session reads it in its

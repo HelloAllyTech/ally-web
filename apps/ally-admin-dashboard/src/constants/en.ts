@@ -2796,6 +2796,35 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── why a reported bug was missed (OPP-0774) ───────────────────────────
+    // Written by the miss classifier a moment after a person files a bug. The
+    // reader is whoever decides what Bug Hunter should learn to look at next,
+    // so the sense is named as a thing to build or fix, not as an enum.
+    drawerMissTitle: "Why I didn't find this first",
+    drawerMissTooltip:
+      "Every bug a person reports is one I should have caught. I write down which kind of miss it was and which sense would have seen it, so the next thing I learn to look at is the thing people keep finding for me.",
+    drawerMissWouldNeed: "What would have caught it: {sense}",
+    drawerMissSeeMatched: "See what I had already found",
+    missNoSense: "I have no sense that could have seen this",
+    missSenseMissed: "A sense I have should have caught this and didn't",
+    missDetectedDeclined: "I had found this, and it was turned down",
+    missDetectedNotFixed: "I had found this, and it wasn't fixed or released in time",
+    missNotAMiss: "Not a miss on my part",
+    missSenseProductionLog: "my production-log reader",
+    missSenseBrowserErrors: "my browser-error reader",
+    missSenseUxSignal: "my UX-signal scan",
+    missSenseCodeReview: "my nightly diff review",
+    missSenseTests: "the test and lint run",
+    missSenseUserJourney: "walking the real screens in a browser or on a device",
+    missSenseDataIntegrity: "a nightly check over production data",
+    missSenseVoiceQa: "listening to live roleplay audio",
+    missSenseApiContract: "exercising the API with seeded data",
+    missSenseVisual: "a design-consistency pass over screens",
+    missSenseLocaleParity: "comparing locale files and rendered text against English",
+    missSenseMobileCrash: "a crash signal from the mobile app",
+    missSenseStaticContent: "a check for placeholder text in shipped HTML and meta tags",
+    missSenseLlmOutputEval: "judging generated text against its brief",
+
     // ── the post-mortem a failed fix session leaves behind ─────────────────
     // Read by two audiences: the admin deciding whether to press "Ask me to
     // try again", and (through the dossier) the session that retries. The
