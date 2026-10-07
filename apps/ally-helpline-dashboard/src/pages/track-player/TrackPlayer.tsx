@@ -283,6 +283,12 @@ export const TrackPlayer: FC = () => {
             }}
             className="h-full min-h-0"
           >
+            <div className="p-4">
+              {nav.current && <h1 className="text-2xl font-bold">{nav.current.item.title}</h1>}
+              {nav.current?.item.description && (
+                <p className="text-gray-600 mt-2">{nav.current.item.description}</p>
+              )}
+            </div>
             {hasDiscussion ? (
               <div data-testid="track-item-scroll" className="h-full min-h-0 overflow-y-auto">
                 <div className="h-full min-h-0">
