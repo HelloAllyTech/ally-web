@@ -89,7 +89,13 @@ export function SidePanel({
             el => el.offsetParent !== null,
           )
         : [];
-    (focusables()[0] ?? panel)?.focus();
+    // On a touch screen, focusing the first control pops the keyboard over
+    // the panel (if it is a field) or opens its Carbon tooltip over the
+    // header (if it is an icon button), so the panel itself takes focus
+    // there; Tab still cycles inside it from the top.
+    const isTouch =
+      typeof window.matchMedia === "function" && window.matchMedia("(hover: none)").matches;
+    (isTouch ? panel : (focusables()[0] ?? panel))?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return;

@@ -53,7 +53,7 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
           <button
             key={chip}
             data-testid={`suggestion-chip-${chip.toLowerCase().replace(/\s+/g, "-")}`}
-            className={`w-auto flex items-center border-[0.5px] rounded-xl px-[10px] py-[6px] leading-[100%] tracking-[0] cursor-pointer hover:bg-gray-100 transition whitespace-nowrap ${suggestionsStyles[mode].suggestionButton}`}
+            className={`w-auto max-w-full flex items-center border-[0.5px] rounded-xl px-[10px] py-3 sm:py-[6px] leading-[100%] tracking-[0] cursor-pointer hover:bg-gray-100 transition text-left sm:whitespace-nowrap ${suggestionsStyles[mode].suggestionButton}`}
             onClick={() => onSelect(chip)}
           >
             <Search
