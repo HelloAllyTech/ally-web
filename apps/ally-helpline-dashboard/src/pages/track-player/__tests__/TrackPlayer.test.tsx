@@ -1,6 +1,6 @@
 
 import { vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@store";
@@ -56,8 +56,11 @@ const mockTrackDetail: TrackDetail = {
   ],
 };
 
+// RTK Query's trigger returns a thenable carrying `unwrap()` synchronously —
+// the player calls `startTrackItem(...).unwrap()`, so the trigger itself must
+// not be a bare promise or the item falls into its load-error state.
 const mockStartTrackItemMutation = [
-  vi.fn().mockResolvedValue({
+  vi.fn().mockReturnValue({
     unwrap: vi.fn().mockResolvedValue({
       type: TrackItemType.ARTICLE,
       html: "<p>Hello</p>",
@@ -66,7 +69,7 @@ const mockStartTrackItemMutation = [
 ];
 
 describe("TrackPlayer", () => {
-  it("should display the item title and description", () => {
+  it("shows the item title and description in the header without hiding the player footer", async () => {
     (api.useGetLearnTrackDetailQuery as vi.Mock).mockReturnValue({
       data: mockTrackDetail,
       isError: false,
@@ -84,7 +87,16 @@ describe("TrackPlayer", () => {
       </Provider>
     );
 
-    expect(screen.getByText("Test Item Title")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Test Item Title" })).toBeInTheDocument();
     expect(screen.getByText("Test Item Description")).toBeInTheDocument();
+    // The section title stays as the eyebrow above the item title.
+    expect(screen.getByText("Test Section")).toBeInTheDocument();
+
+    // The header must not displace the player: the article's bottom bar
+    // (its completion control) is still rendered once the item loads. jsdom
+    // has no scroll extent, so the short-article path makes it "Mark as read".
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Mark as read" })).toBeInTheDocument(),
+    );
   });
 });

@@ -258,6 +258,8 @@ export const TrackPlayer: FC = () => {
     <div className="fixed inset-0 z-40 flex h-[100dvh] w-full flex-col bg-white font-primary">
       <PlayerTopBar
         sectionTitle={nav.current?.sectionTitle ?? ""}
+        itemTitle={nav.current?.item.title ?? ""}
+        itemDescription={nav.current?.item.description ?? null}
         sectionItems={sectionItems}
         currentItemId={itemId}
         overallPct={nav.overallPct}
@@ -283,12 +285,6 @@ export const TrackPlayer: FC = () => {
             }}
             className="h-full min-h-0"
           >
-            <div className="p-4">
-              {nav.current && <h1 className="text-2xl font-bold">{nav.current.item.title}</h1>}
-              {nav.current?.item.description && (
-                <p className="text-gray-600 mt-2">{nav.current.item.description}</p>
-              )}
-            </div>
             {hasDiscussion ? (
               <div data-testid="track-item-scroll" className="h-full min-h-0 overflow-y-auto">
                 <div className="h-full min-h-0">

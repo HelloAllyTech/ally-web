@@ -112,9 +112,9 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   const coverImage = isCase ? caseDetails?.coverImageUrl : scenario?.coverImageUrl;
   // The full brief, rendered under the card. The card itself clamps its blurb
   // to two lines and drops it entirely when trigger warnings are present, so
-  // it can't be the only place the challenge description lives.
-  const challengeDescription =
-    (isCase ? caseDetails?.description : scenario?.description) || item.description;
+  // it can't be the only place the challenge description lives. The item's
+  // own description is the player header's job (PlayerTopBar), not this one.
+  const challengeDescription = isCase ? caseDetails?.description : scenario?.description;
 
   const launch = async () => {
     persistTrackContext({ trackId, itemId: item.id });
