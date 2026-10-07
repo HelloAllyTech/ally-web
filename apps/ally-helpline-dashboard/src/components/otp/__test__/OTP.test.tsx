@@ -394,4 +394,25 @@ describe("OTP Component", () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
   });
+
+  describe("Paste", () => {
+    it("fills the remaining boxes from a pasted code and completes", () => {
+      render(<OTP value="1" onChange={mockOnChange} onComplete={mockOnComplete} />);
+
+      const inputs = screen.getAllByRole("textbox");
+      fireEvent.paste(inputs[1], { clipboardData: { getData: () => "234567" } });
+
+      expect(mockOnChange).toHaveBeenCalledWith("1234");
+      expect(mockOnComplete).toHaveBeenCalledWith("1234");
+    });
+
+    it("ignores a paste with no digits", () => {
+      render(<OTP onChange={mockOnChange} />);
+
+      const inputs = screen.getAllByRole("textbox");
+      fireEvent.paste(inputs[0], { clipboardData: { getData: () => "code" } });
+
+      expect(mockOnChange).not.toHaveBeenCalled();
+    });
+  });
 });

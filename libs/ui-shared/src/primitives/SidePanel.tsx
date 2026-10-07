@@ -50,6 +50,10 @@ const OVERLAY_STYLE: CSSProperties = {
  * Sizing: pass `width` for a simple fixed width, OR pass `className` with a
  * width utility (e.g. `w-[50vw] min-w-[600px]`) — when `className` is provided
  * the inline width is dropped so the class controls sizing.
+ *
+ * Below Tailwind's `sm` (640px) the panel is always full-screen, whatever
+ * width the caller asked for: a `min-w-[600px]` panel on a 375px phone
+ * otherwise runs off the edge with its close button out of reach.
  */
 export function SidePanel({
   open,
@@ -139,7 +143,7 @@ export function SidePanel({
     alignItems: "center",
     justifyContent: "space-between",
     gap: "1rem",
-    padding: "1rem 1.5rem",
+    padding: "var(--ally-side-panel-pad-y, 1rem) var(--ally-side-panel-pad-x, 1.5rem)",
     borderBottom: "1px solid var(--cds-border-subtle, #e0e0e0)",
     fontWeight: 600,
     flexShrink: 0,
@@ -151,7 +155,7 @@ export function SidePanel({
       <aside
         ref={panelRef}
         style={panelStyle}
-        className={className}
+        className={`max-sm:!w-full max-sm:!min-w-0 max-sm:!max-w-full max-sm:[--ally-side-panel-pad-x:1rem] ${className ?? ""}`}
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
@@ -167,7 +171,12 @@ export function SidePanel({
           </IconButton>
         </div>
         <div
-          style={{ flex: 1, overflow: "auto", padding: "1rem 1.5rem" }}
+          style={{
+            flex: 1,
+            overflow: "auto",
+            overscrollBehavior: "contain",
+            padding: "var(--ally-side-panel-pad-y, 1rem) var(--ally-side-panel-pad-x, 1.5rem)",
+          }}
           className={bodyClassName}
         >
           {children}

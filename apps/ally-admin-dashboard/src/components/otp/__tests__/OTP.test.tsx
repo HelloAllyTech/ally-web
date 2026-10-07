@@ -213,7 +213,7 @@ describe("OTP", () => {
     const { container } = render(<OTP value="" onChange={onChange} />);
     const wrapper = container.firstChild;
 
-    expect(wrapper).toHaveClass("gap-6");
+    expect(wrapper).toHaveClass("sm:gap-6");
   });
 
   it("centers inputs vertically", () => {
@@ -222,5 +222,28 @@ describe("OTP", () => {
     const wrapper = container.firstChild;
 
     expect(wrapper).toHaveClass("items-center");
+  });
+
+  it("fills every box from one pasted code and completes", () => {
+    const onChange = vi.fn();
+    const onComplete = vi.fn();
+    const { container } = render(<OTP value="" onChange={onChange} onComplete={onComplete} />);
+    const firstInput = container.querySelectorAll("input")[0];
+
+    fireEvent.paste(firstInput, { clipboardData: { getData: () => " 48-21 " } });
+
+    expect(onChange).toHaveBeenCalledWith("4821");
+    expect(onComplete).toHaveBeenCalledWith("4821");
+  });
+
+  it("ignores a paste with no digits", () => {
+    const onChange = vi.fn();
+    const { container } = render(<OTP value="" onChange={onChange} />);
+
+    fireEvent.paste(container.querySelectorAll("input")[0], {
+      clipboardData: { getData: () => "abc" },
+    });
+
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

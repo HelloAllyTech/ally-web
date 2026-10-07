@@ -182,3 +182,46 @@
     }
   }
 }
+
+/* ===== Touch & small-screen baseline =====
+ * App-wide rules every screen gets for free on a phone, so no page has to
+ * remember them:
+ *  - iOS Safari zooms the whole page into any focused field whose font is
+ *    under 16px, and never zooms back out. Fields here are 13–14px, so on
+ *    touch devices they are lifted to 16px — readable, and no zoom jump.
+ *  - `touch-action: manipulation` drops the double-tap-to-zoom wait on
+ *    controls, so taps register immediately.
+ *  - No grey tap flash; the focus/active styles already show the press.
+ *  - Text size stays as authored when a phone rotates to landscape. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary,
+  [role="button"],
+  [role="tab"],
+  [role="link"] {
+    touch-action: manipulation;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    /* Fields deliberately set larger (title inputs, OTP boxes) keep their size. */
+    :is(
+      input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+      select,
+      textarea,
+      [contenteditable="true"]
+    ):not(.text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, [class*="text-["]) {
+      font-size: 16px !important;
+    }
+  }
+}

@@ -10,6 +10,8 @@ export const en = {
     searchMenu: "Search menu...",
     noMenuResults: "No matching tabs",
     clearSearch: "Clear search",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
     searchOrCreate: "Search or create",
     loading: "Loading...",
     loadMore: "Load more",

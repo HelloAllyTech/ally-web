@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
+import { XIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +45,10 @@ import NotificationBadge from "../notification-badge/NotificationBadge";
 import { NotificationBell } from "../notification-feed";
 
 const EXPANDED_WIDTH = 1200;
+// Below Tailwind's `md` the sidebar is an off-canvas drawer opened from the
+// mobile top bar. A drawer of bare icons gives a phone user nothing to read,
+// so it always opens expanded there, whatever the desktop rail was set to.
+const MOBILE_MAX_WIDTH = 768;
 
 // Built lazily (inside the component) so `TabId`/`TooltipLocation` are not
 // dereferenced at module load — keeps tests that mock @constants from breaking.
@@ -244,6 +249,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   useEffect(() => {
     const handleResize = () => {
+      if (window.innerWidth < MOBILE_MAX_WIDTH) {
+        setIsExpanded(true);
+        return;
+      }
       if (userToggledRef.current) return;
       setIsExpanded(window.innerWidth >= EXPANDED_WIDTH);
     };
@@ -462,11 +471,18 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   return (
     <>
+      {/* Mobile: an off-canvas drawer above the sticky top bar (z-30) and its
+          own overlay (z-40). `invisible` while closed takes the off-screen
+          links out of the tab order and the accessibility tree; visibility
+          transitions discretely, so the slide-out still animates. */}
       <div
+        id="app-nav-sidebar"
         data-testid="nav-sidebar"
-        className={`fixed md:static inset-y-0 left-0 z-20 bg-background h-dvh flex flex-col justify-between border-r border-r-border-light transition-all duration-300 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 max-w-[85vw] bg-background h-dvh flex flex-col justify-between border-r border-r-border-light transition-all duration-300 ${
           isExpanded ? "w-64" : "w-24"
-        } p-[12px] font-primary ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        } p-[12px] font-primary ${
+          isOpen ? "translate-x-0" : "-translate-x-full invisible md:visible"
+        } md:translate-x-0 max-md:overflow-y-auto max-md:overscroll-contain`}
       >
         {/* Logo container */}
         <div
@@ -510,12 +526,23 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             <button
               data-testid="nav-sidebar-toggle"
               onClick={handleToggleSidebar}
-              className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+              className="hidden md:block p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
               title={t("nav.sidebar.collapse")}
             >
               <DockToRight />
             </button>
           )}
+          {/* The drawer's own way out on a phone, where the desktop
+              collapse toggle above has no meaning. */}
+          <button
+            type="button"
+            data-testid="nav-sidebar-close"
+            onClick={onClose}
+            aria-label={t("nav.sidebar.collapse")}
+            className="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          >
+            <XIcon aria-hidden="true" />
+          </button>
         </div>
         {renderTabs()}
 
@@ -557,7 +584,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
       />
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-10 md:hidden"
+          className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
           onClick={onClose}
           data-testid="nav-sidebar-overlay"
         ></div>

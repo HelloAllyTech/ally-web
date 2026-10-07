@@ -251,4 +251,37 @@ describe("Sidebar", () => {
     expect(screen.getByText("Translations")).toBeInTheDocument();
     expect(screen.getByText("Users")).toBeInTheDocument();
   });
+
+  describe("phone drawer", () => {
+    it("shows tab labels at phone width instead of the icon rail", () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+      renderWithProvider(<Sidebar isMobileOpen onMobileClose={vi.fn()} />);
+
+      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+    });
+
+    it("is slid out and hidden from assistive tech while closed", () => {
+      renderWithProvider(<Sidebar />);
+
+      expect(screen.getByTestId("admin-sidebar")).toHaveClass("-translate-x-full", "invisible");
+      expect(screen.queryByTestId("admin-sidebar-overlay")).not.toBeInTheDocument();
+    });
+
+    it("closes from its close button, its overlay, and navigation", () => {
+      const onMobileClose = vi.fn();
+      renderWithProvider(<Sidebar isMobileOpen onMobileClose={onMobileClose} />);
+
+      expect(screen.getByTestId("admin-sidebar")).toHaveClass("translate-x-0");
+      fireEvent.click(screen.getByTestId("admin-sidebar-close"));
+      fireEvent.click(screen.getByTestId("admin-sidebar-overlay"));
+      fireEvent.click(screen.getByText("Events"));
+
+      expect(onMobileClose).toHaveBeenCalledTimes(3);
+      expect(navigateMock).toHaveBeenCalledWith("/events");
+    });
+  });
 });
