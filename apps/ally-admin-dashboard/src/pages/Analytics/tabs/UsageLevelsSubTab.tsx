@@ -285,7 +285,7 @@ export const UsageLevelsSubTab = ({ query }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching session volume."
         onRetry={() => void sessions.refetch()}
         controls={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <RangePicker
               id="qualified-sessions-range"
               value={sessionControls.range}

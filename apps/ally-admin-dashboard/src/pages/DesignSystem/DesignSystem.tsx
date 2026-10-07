@@ -104,7 +104,7 @@ const Section: React.FC<{
   description?: string;
   children: React.ReactNode;
 }> = ({ id, title, description, children }) => (
-  <section id={id} className="scroll-mt-24 border-t border-gray-200 py-12">
+  <section id={id} className="scroll-mt-24 border-t border-gray-200 py-8 md:py-12">
     <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
     {description && <p className="mt-1 max-w-2xl text-sm text-gray-500">{description}</p>}
     <div className="mt-6 flex flex-col gap-8">{children}</div>
@@ -270,10 +270,10 @@ const PaginationDemo: React.FC = () => {
 
 export const DesignSystem: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-dvh bg-white text-gray-900">
       {/* Sticky header + anchor navigation */}
       <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-6 py-4">
+        <div className="mx-auto max-w-6xl px-4 md:px-6 py-3 md:py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="flex items-baseline gap-3">
               <span className="text-lg font-semibold" style={{ color: carbonTokens.primary }}>
@@ -283,9 +283,14 @@ export const DesignSystem: React.FC = () => {
             </div>
             <span className="text-xs text-gray-400">@ally-ui-mono/ui-shared</span>
           </div>
-          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          {/* One scrollable row on phones so the sticky header stays short. */}
+          <nav className="mt-2 md:mt-3 -mx-4 px-4 md:mx-0 md:px-0 flex overflow-x-auto whitespace-nowrap md:flex-wrap md:overflow-visible md:whitespace-normal gap-x-4 gap-y-1 text-sm">
             {NAV_SECTIONS.map(s => (
-              <a key={s.id} href={`#${s.id}`} className="text-gray-500 hover:text-gray-900">
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="shrink-0 py-2 md:py-0 text-gray-500 hover:text-gray-900"
+              >
                 {s.label}
               </a>
             ))}
@@ -293,10 +298,10 @@ export const DesignSystem: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 pb-24">
+      <main className="mx-auto max-w-6xl px-4 md:px-6 pb-24">
         {/* Intro */}
-        <div className="py-12">
-          <h1 className="text-4xl font-semibold text-gray-900">Component library</h1>
+        <div className="py-8 md:py-12">
+          <h1 className="text-2xl md:text-4xl font-semibold text-gray-900">Component library</h1>
           <p className="mt-3 max-w-2xl text-gray-500">
             A live gallery of every component in Ally&apos;s centralised design system. Each app in
             the monorepo consumes these from a single shared package, so what you see here is
@@ -343,7 +348,7 @@ export const DesignSystem: React.FC = () => {
         {/* ---------------------------------------------------------------- */}
         <Section id="typography" title="Typography" description="The IBM Plex Serif type scale.">
           <div className="flex flex-col gap-2">
-            <p className="text-4xl font-semibold">Display — the quick brown fox</p>
+            <p className="text-4xl font-semibold break-words">Display — the quick brown fox</p>
             <p className="text-3xl font-semibold">Heading 1 — the quick brown fox</p>
             <p className="text-2xl font-semibold">Heading 2 — the quick brown fox</p>
             <p className="text-xl font-medium">Heading 3 — the quick brown fox</p>

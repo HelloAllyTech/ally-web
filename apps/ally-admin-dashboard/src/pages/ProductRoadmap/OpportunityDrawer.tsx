@@ -519,13 +519,13 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
         className="bg-white relative h-full w-[38rem] max-w-full overflow-y-auto"
         onClick={event => event.stopPropagation()}
       >
-        <header className="border-border-light flex items-center justify-between border-b p-4">
+        <header className="border-border-light flex items-center justify-between gap-2 border-b p-4">
           {/* The code sits with the title rather than down among the stats: it is what this
               drawer IS, and it is the thing someone reads out or pastes into the search box.
               Rendered from `opportunity`, not from `draft` — it is server-generated and not
               editable, so it must not follow unsaved edits. */}
           <div className="flex min-w-0 flex-col gap-0.5">
-            <h2 className="text-typography-primary flex items-baseline gap-2 text-lg">
+            <h2 className="text-typography-primary flex flex-wrap items-baseline gap-x-2 text-lg">
               Opportunity
               {!!opportunity?.code && (
                 <span className="text-typography-secondary text-sm tabular-nums">
@@ -547,7 +547,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               / Your votes for anyone matching the two screens up.
             */}
             {!!opportunity && !isBug && (
-              <div className="text-typography-700 truncate text-xs">
+              <div className="text-typography-700 text-xs md:truncate">
                 <Tooltip
                   label={
                     !voters ? (
@@ -567,7 +567,10 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   }
                   align="bottom"
                 >
-                  <span className="tabular-nums underline decoration-dotted underline-offset-2 cursor-help">
+                  <span
+                    tabIndex={0}
+                    className="tabular-nums underline decoration-dotted underline-offset-2 cursor-help"
+                  >
                     {opportunity.priorityScore} total votes
                   </span>
                 </Tooltip>{" "}
@@ -576,7 +579,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 md:gap-2">
             {/*
               Delete, as an icon, up here with the other two drawer-level actions.
 
@@ -615,7 +618,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   onClick={() => {
                     if (canOpenBuilder) void handleOpenBuilder();
                   }}
-                  className={`inline-flex items-center rounded-full p-1 transition-colors ${
+                  className={`inline-flex items-center rounded-full p-2 transition-colors md:p-1 ${
                     canOpenBuilder
                       ? "text-typography-700 hover:text-primary-500 cursor-pointer"
                       : "text-typography-400 cursor-not-allowed"
@@ -631,7 +634,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                   type="button"
                   aria-label="Delete opportunity"
                   onClick={() => setIsConfirmingDelete(true)}
-                  className="text-typography-700 hover:text-destructive-500 inline-flex cursor-pointer items-center rounded-full p-1 transition-colors"
+                  className="text-typography-700 hover:text-destructive-500 inline-flex cursor-pointer items-center rounded-full p-2 transition-colors md:p-1"
                 >
                   <TrashCan size={16} />
                 </button>
@@ -646,7 +649,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 type="button"
                 aria-label="Copy link"
                 onClick={copyLink}
-                className="text-typography-700 hover:text-primary-500 inline-flex cursor-pointer items-center rounded-full p-1 transition-colors"
+                className="text-typography-700 hover:text-primary-500 inline-flex cursor-pointer items-center rounded-full p-2 transition-colors md:p-1"
               >
                 <Link size={16} />
               </button>
@@ -656,7 +659,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 type="button"
                 aria-label="Close"
                 onClick={closeWithFlush}
-                className="text-typography-700 hover:text-typography-900 inline-flex cursor-pointer items-center rounded-full p-1 transition-colors"
+                className="text-typography-700 hover:text-typography-900 inline-flex cursor-pointer items-center rounded-full p-2 transition-colors md:p-1"
               >
                 <Close size={16} />
               </button>
@@ -985,7 +988,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               <ul className="mb-3 flex flex-col gap-3">
                 {(comments ?? []).map(comment => (
                   <li key={comment.id} className="text-sm">
-                    <div className="text-typography-primary whitespace-pre-wrap">
+                    <div className="text-typography-primary whitespace-pre-wrap break-words">
                       {comment.body}
                     </div>
                     <div className="text-typography-secondary font-mono text-xs">

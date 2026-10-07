@@ -141,7 +141,7 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
           the preview is one operator probing thresholds, and chunk size and floor differ per
           corpus, so a similarity distribution across both describes neither. */}
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-1">
           <span className="text-xs text-typography-500">{en.ragQuality.consumer}</span>
           {CONSUMERS.map(c => (
             <button
@@ -149,7 +149,7 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
               type="button"
               onClick={() => setConsumer(c.id)}
               data-testid={`rag-consumer-${c.id ?? "all"}`}
-              className={`rounded-full border px-2 py-0.5 text-xs ${
+              className={`rounded-full border px-2 py-0.5 text-xs max-sm:min-h-10 max-sm:px-3 ${
                 consumer === c.id
                   ? "border-primary-500 text-primary-600 bg-primary-50"
                   : "border-border-200 text-typography-600"
@@ -159,7 +159,7 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-1">
           <span className="text-xs text-typography-500">{en.ragQuality.corpus}</span>
           {CORPORA.map(c => (
             <button
@@ -167,7 +167,7 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
               type="button"
               onClick={() => setCorpus(c.id)}
               data-testid={`rag-corpus-${c.id ?? "all"}`}
-              className={`rounded-full border px-2 py-0.5 text-xs ${
+              className={`rounded-full border px-2 py-0.5 text-xs max-sm:min-h-10 max-sm:px-3 ${
                 corpus === c.id
                   ? "border-primary-500 text-primary-600 bg-primary-50"
                   : "border-border-200 text-typography-600"
@@ -312,7 +312,9 @@ export const RetrievalQualityTab: FC<AnalyticsTabFilters> = ({ query }) => {
                 data-testid="rag-gap"
                 className="rounded border border-border-200 p-3"
               >
-                <div className="flex items-baseline justify-between gap-3">
+                {/* Stacked on phones: beside its fixed-width meta line the query
+                    was squeezed into a column a word wide. */}
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
                   {/* A withheld query is SAID, not rendered blank. The WhatsApp bot's
                       queries are health workers' own questions and arrive as null from the
                       server; an empty line would read as a bug and invite someone to "fix"

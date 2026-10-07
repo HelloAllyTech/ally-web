@@ -58,7 +58,7 @@ const ListeningBars: FC<{ active: boolean }> = ({ active }) => (
 );
 
 const ctrlButton =
-  "inline-flex items-center gap-1.5 h-9 px-3 font-primary text-sm border transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  "inline-flex items-center gap-1.5 h-10 md:h-9 px-3 font-primary text-sm border transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
 /**
  * The recording / generation surface for the manual scribe-note voice flow.
@@ -177,7 +177,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   if (isRecording || isPaused) {
     return (
       <div
-        className="flex items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
+        className="flex flex-wrap items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
         data-testid="voice-note-recording"
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -242,7 +242,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
   if (isStopped) {
     return (
       <div
-        className="flex items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
+        className="flex flex-wrap items-center justify-between gap-4 border border-[#e3dbce] bg-[#f0eee7] p-4"
         data-testid="voice-note-ready"
       >
         <div className="flex items-center gap-3 min-w-0">

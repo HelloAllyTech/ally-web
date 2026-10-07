@@ -94,7 +94,7 @@ export const Settings: React.FC = () => {
   return (
     <div className="py-[2px] font-primary h-full flex flex-col">
       <h1 className="text-2xl text-typography-900 pb-1 font-secondary">{en.settings.title}</h1>
-      <p className="text-sm text-typography-600 pb-6">{en.settings.subtitle}</p>
+      <p className="text-sm text-typography-600 pb-4 md:pb-6">{en.settings.subtitle}</p>
 
       {/* `showCount={false}`: the shared strip renders a literal "0" beside any
           tab without a count, and none of these three is a countable collection. */}
@@ -107,8 +107,8 @@ export const Settings: React.FC = () => {
           their own scroll area. min-h-0 lets this flex child shrink below its
           content height so overflow-y-auto can kick in. */}
       <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-        <div className="pt-6 pb-6">
-          <p className="text-sm text-typography-600 pb-6 max-w-3xl">
+        <div className="pt-4 md:pt-6 pb-6">
+          <p className="text-sm text-typography-600 pb-4 md:pb-6 max-w-3xl">
             {TABS_BY_ID.get(activeTab)?.description}
           </p>
           {renderTab()}

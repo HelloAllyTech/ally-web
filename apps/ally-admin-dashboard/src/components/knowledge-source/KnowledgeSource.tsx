@@ -138,7 +138,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
 
   const renderKnowledgeSources = () => {
     return (
-      <div className="w-[35%] min-w-[150px] max-w-[280px] shrink-0 overflow-hidden border-r border-border-light flex flex-col">
+      <div className="w-full md:w-[35%] md:min-w-[150px] md:max-w-[280px] max-h-[220px] md:max-h-none shrink-0 overflow-hidden border-b md:border-b-0 md:border-r border-border-light flex flex-col">
         <div className="p-4 border-b border-border-light">
           <div className="flex items-center justify-between gap-2 mb-3">
             <span className="text-typography-900 text-md">
@@ -148,7 +148,8 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
               <button
                 type="button"
                 onClick={handleAddTab}
-                className="w-6 h-6 rounded-sm border border-border-light hover:bg-background-secondary flex items-center justify-center text-typography-600 hover:text-typography-900 transition-colors"
+                aria-label={en.knowledgeSource.addNewTab}
+                className="w-10 h-10 md:w-6 md:h-6 rounded-sm border border-border-light hover:bg-background-secondary flex items-center justify-center text-typography-600 hover:text-typography-900 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -208,7 +209,8 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                     <button
                       type="button"
                       onClick={event => handleRemoveTab(event, item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0"
+                      aria-label={en.knowledgeSource.remove}
+                      className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0 max-md:p-2 max-md:-m-2"
                     >
                       <Close className="w-4 h-4" />
                     </button>
@@ -224,7 +226,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
 
   const renderCreateKnowledgeSource = () => {
     return (
-      <div className="flex-1 min-w-0 h-full p-3 overflow-hidden">
+      <div className="flex-1 min-w-0 h-[360px] md:h-full p-3 overflow-hidden">
         {activeTab ? (
           <div className="flex flex-col gap-1 h-full min-h-0">
             <div className="flex-shrink-0 min-w-0 overflow-hidden">
@@ -285,7 +287,8 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                   <button
                     type="button"
                     onClick={handleDeleteAllContent}
-                    className="text-destructive-500 hover:text-destructive-600 transition-colors"
+                    aria-label={en.knowledgeSource.deleteContent}
+                    className="text-destructive-500 hover:text-destructive-600 transition-colors max-md:p-2 max-md:-m-2"
                   >
                     <Delete className="w-4 h-4" />
                   </button>
@@ -327,7 +330,8 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
         rules={{ required: isMandatory ? `${label} is required` : false }}
         render={() => (
           <div className="bg-white border border-border-light rounded-sm-">
-            <div className="flex w-full min-w-0 gap-0 h-[360px] overflow-hidden">
+            {/* Below md the document list stacks above the editor. */}
+            <div className="flex flex-col md:flex-row w-full min-w-0 gap-0 md:h-[360px] overflow-hidden">
               {renderKnowledgeSources()}
               {renderCreateKnowledgeSource()}
             </div>

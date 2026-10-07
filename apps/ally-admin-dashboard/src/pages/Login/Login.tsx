@@ -192,13 +192,13 @@ export const Login: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-4"
         >
-          <div className="flex flex-col text-4xl font-secondary">
+          <div className="flex flex-col text-3xl md:text-4xl font-secondary">
             <span className="text-typography-900">{`${en.auth.hey},`}</span>
             <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
               <span className="font-bold italic">{en.auth.ally}</span>
             </h1>
-            <span className="text-2xl mt-[24px] text-typography-900">
+            <span className="text-xl md:text-2xl mt-4 md:mt-[24px] text-typography-900">
               {en.auth.enterEmailToContinue}
             </span>
           </div>
@@ -207,6 +207,8 @@ export const Login: React.FC = () => {
               fieldSize="medium"
               type="email"
               inputMode="email"
+              autoComplete="email"
+              enterKeyHint="next"
               label={en.auth.email}
               value={email}
               onChange={handleEmailChange as any}
@@ -224,7 +226,10 @@ export const Login: React.FC = () => {
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm text-typography-600 cursor-pointer">
+              <label
+                htmlFor="remember"
+                className="py-2 md:py-0 text-sm text-typography-600 cursor-pointer"
+              >
                 {en.auth.rememberMe}
               </label>
             </div>
@@ -256,19 +261,21 @@ export const Login: React.FC = () => {
               </div>
             )}
             {en.auth.byTappingNext}{" "}
-            <span
+            <button
+              type="button"
               className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               {en.auth.termsAndConditions}
-            </span>{" "}
+            </button>{" "}
             {en.auth.andAcknowledge}{" "}
-            <span
+            <button
+              type="button"
               className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               {en.auth.privacyPolicy}.
-            </span>
+            </button>
           </div>
         </motion.div>
       );
@@ -282,11 +289,24 @@ export const Login: React.FC = () => {
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="flex flex-col justify-start gap-6"
       >
-        <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
-        <h1 className="text-4xl font-secondary text-typography-900">{en.auth.verifyYourEmail}</h1>
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label={en.common.goBack}
+          className="self-start inline-flex items-center justify-center cursor-pointer ml-[-10px]"
+        >
+          <BackCircle />
+        </button>
+        <h1 className="text-3xl md:text-4xl font-secondary text-typography-900">
+          {en.auth.verifyYourEmail}
+        </h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-2xl text-typography-900">{en.auth.enterSecurityCode}</span>
-          <span className="font-semibold text-2xl text-typography-900">{email}</span>
+          <span className="text-xl md:text-2xl text-typography-900">
+            {en.auth.enterSecurityCode}
+          </span>
+          <span className="font-semibold text-xl md:text-2xl text-typography-900 break-all">
+            {email}
+          </span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
@@ -294,12 +314,13 @@ export const Login: React.FC = () => {
             {en.auth.codeWillExpire}{" "}
             <span className="font-[700]">{`${generateOTPData?.expiresIn ? generateOTPData?.expiresIn / 60 : DEFAULT_EXPIRES_IN} ${en.auth.minutes}`}</span>
             . {en.auth.needNewCode}
-            <span
-              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
+            <button
+              type="button"
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 py-2 md:py-0 cursor-pointer`}
               onClick={handleResendCode}
             >
               {en.auth.resend} {countdown > 0 ? `(${countdown}s)` : ""}
-            </span>
+            </button>
           </div>
         </div>
         <Button
@@ -325,7 +346,7 @@ export const Login: React.FC = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex font-primary flex-col lg:flex-row h-screen lg:p-8">
+    <div className="flex font-primary flex-col lg:flex-row min-h-dvh md:h-screen lg:p-8">
       <div className="hidden md:block lg:max-w-[50%] flex-1 h-full relative">
         <CustomImage
           src={LoginImage}
@@ -343,7 +364,9 @@ export const Login: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-background flex flex-col items-center justify-center md:min-h-auto">
+      {/* Below md the photo is hidden, so the card sits in the page flow at full width instead
+          of floating over it in the middle 50%. */}
+      <div className="flex-1 static md:absolute min-h-[35vh] p-4 md:p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-background flex flex-col items-center justify-center md:min-h-auto">
         <div className="w-full max-w-md flex flex-col gap-4 sm:gap-6">
           <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
         </div>

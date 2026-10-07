@@ -334,7 +334,7 @@ export const EffectivenessSubTab = () => {
   const pickOrg = (id: string) => setTenantId(id);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 md:gap-8">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium text-typography-900">Org:</span>
         <InlinePicker

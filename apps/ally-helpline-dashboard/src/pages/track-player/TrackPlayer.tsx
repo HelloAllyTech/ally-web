@@ -154,7 +154,7 @@ export const TrackPlayer: FC = () => {
           <p className="text-typography-700">{t("tracks2.player.loadFailed")}</p>
           <button
             onClick={loadItem}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white hover:bg-primary-600"
+            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white hover:bg-primary-600 max-md:min-h-11"
           >
             {t("tracks2.player.retry")}
           </button>

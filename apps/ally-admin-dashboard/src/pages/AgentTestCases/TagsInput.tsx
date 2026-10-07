@@ -77,7 +77,7 @@ export const TagsInput: FC<TagsInputProps> = ({
             </button>
           )}
           {open && (
-            <div className="absolute left-0 top-full mt-1 bg-white border rounded-md shadow-lg z-50 w-[280px]">
+            <div className="absolute left-0 top-full mt-1 bg-white border rounded-md shadow-lg z-50 w-[280px] max-w-[calc(100vw-3rem)]">
               <div className="p-2">
                 <input
                   type="text"

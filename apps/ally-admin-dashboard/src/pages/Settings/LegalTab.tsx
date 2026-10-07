@@ -36,7 +36,7 @@ const LegalEditor: React.FC<LegalEditorProps> = ({
   isLoading,
 }) => (
   <section className="flex flex-col gap-3">
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3">
       <h2 className="text-lg font-secondary text-typography-900">{title}</h2>
       <Button variant={ButtonVariant.PRIMARY} onClick={onSave} disabled={isSaving || isLoading}>
         {isSaving ? en.settings.saving : en.settings.save}
@@ -88,7 +88,7 @@ export const LegalTab: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-10 max-w-3xl">
+    <div className="flex flex-col gap-8 md:gap-10 max-w-3xl">
       <LegalEditor
         title={en.settings.termsTitle}
         value={termsHtml}

@@ -6,7 +6,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with MY_L
     data-testid="browser-router"
   >
     <div
-      class="px-6 pb-6 h-full flex flex-col"
+      class="px-4 md:px-6 pb-6 h-full flex flex-col"
       data-testid="archives-page"
     >
       <div
@@ -27,7 +27,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with MY_L
           >
             <button
               aria-label="Go back"
-              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              class="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-0 md:mr-2"
               data-testid="archives-back-button"
               type="button"
             >
@@ -39,12 +39,18 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with MY_L
               </div>
             </button>
             Archives
-            <div
-              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
-              data-testid="archives-refresh-button"
+            <button
+              aria-label="Refresh"
+              class="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+              type="button"
             >
-              Refresh
-            </div>
+              <div
+                class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+                data-testid="archives-refresh-button"
+              >
+                Refresh
+              </div>
+            </button>
           </div>
         </div>
       </div>
@@ -72,7 +78,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_
     data-testid="browser-router"
   >
     <div
-      class="px-6 pb-6 h-full flex flex-col"
+      class="px-4 md:px-6 pb-6 h-full flex flex-col"
       data-testid="archives-page"
     >
       <div
@@ -93,7 +99,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_
           >
             <button
               aria-label="Go back"
-              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              class="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-0 md:mr-2"
               data-testid="archives-back-button"
               type="button"
             >
@@ -105,12 +111,18 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_
               </div>
             </button>
             Archives
-            <div
-              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
-              data-testid="archives-refresh-button"
+            <button
+              aria-label="Refresh"
+              class="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+              type="button"
             >
-              Refresh
-            </div>
+              <div
+                class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+                data-testid="archives-refresh-button"
+              >
+                Refresh
+              </div>
+            </button>
           </div>
         </div>
       </div>
@@ -138,7 +150,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with defa
     data-testid="browser-router"
   >
     <div
-      class="px-6 pb-6 h-full flex flex-col"
+      class="px-4 md:px-6 pb-6 h-full flex flex-col"
       data-testid="archives-page"
     >
       <div
@@ -159,7 +171,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with defa
           >
             <button
               aria-label="Go back"
-              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              class="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-0 md:mr-2"
               data-testid="archives-back-button"
               type="button"
             >
@@ -171,12 +183,18 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with defa
               </div>
             </button>
             Archives
-            <div
-              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
-              data-testid="archives-refresh-button"
+            <button
+              aria-label="Refresh"
+              class="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+              type="button"
             >
-              Refresh
-            </div>
+              <div
+                class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+                data-testid="archives-refresh-button"
+              >
+                Refresh
+              </div>
+            </button>
           </div>
         </div>
       </div>

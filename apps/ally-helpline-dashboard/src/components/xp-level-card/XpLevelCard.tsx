@@ -67,7 +67,7 @@ const XpLevelCard: FC<XpLevelCardProps> = ({ summary, onViewProgress, className 
           <button
             type="button"
             onClick={onViewProgress}
-            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-sm text-typography-700 hover:bg-white"
+            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-sm text-typography-700 hover:bg-white max-md:min-h-11"
             data-testid="progress-hero-view"
           >
             {t("progress.hero.viewProgress")}

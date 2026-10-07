@@ -245,7 +245,7 @@ export const CreateCase: FC = () => {
   const renderStep = (title: string, component: React.ReactNode, addButton?: boolean) => {
     return (
       <div className="flex flex-col h-full w-100%">
-        <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
+        <div className="md:sticky flex flex-row flex-wrap gap-y-2 justify-between items-center md:items-stretch top-0 z-10 pt-3 md:mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg text-typography-900 font-semibold">{title}</h2>
           {addButton &&
             (!(individualCase?.status === SimulationStatus.ACTIVE) ? (
@@ -262,7 +262,10 @@ export const CreateCase: FC = () => {
               </Tooltip>
             ))}
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
+        <div
+          ref={containerRef}
+          className="py-4 md:p-6 md:pt-4 md:overflow-y-auto md:h-full custom-scrollbar"
+        >
           {component}
         </div>
       </div>
@@ -311,7 +314,9 @@ export const CreateCase: FC = () => {
   };
 
   return (
-    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
+    // Below md the stepper sits above the form and the page scrolls as one;
+    // the fixed viewport-height split only works with the stepper beside it.
+    <div className="md:h-[100vh] md:overflow-hidden font-primary md:ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
@@ -322,15 +327,15 @@ export const CreateCase: FC = () => {
         type="Case"
       />
 
-      <div className="flex h-[calc(100vh-100px)]">
+      <div className="flex flex-col md:flex-row md:h-[calc(100vh-100px)]">
         <VerticalStepper
           steps={PathStepperList}
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
 
-        <div className="flex-1 flex flex-col h-[calc(100vh-160px)]">
-          <div className="flex-1 overflow-hidden">{renderCurrentStep()}</div>
+        <div className="flex-1 flex flex-col md:h-[calc(100vh-160px)]">
+          <div className="flex-1 md:overflow-hidden">{renderCurrentStep()}</div>
           <Footer
             onPrevious={handlePrevious}
             onNext={handleNext}

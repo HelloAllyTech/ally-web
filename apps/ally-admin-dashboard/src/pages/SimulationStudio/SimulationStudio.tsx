@@ -311,7 +311,7 @@ export const SimulationStudio: React.FC = () => {
         <button
           onClick={() => loadMore(true)}
           disabled={isFetching}
-          className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 hover:text-typography-900"
+          className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-3 md:py-1 hover:text-typography-900"
         >
           + {isFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -340,12 +340,17 @@ export const SimulationStudio: React.FC = () => {
 
   const renderFilterSection = () => {
     return (
-      <div className="flex flex-row items-center justify-between border-b border-border-light pt-[2px] pb-[10px] pl-5 relative">
+      <div className="flex flex-row flex-wrap md:flex-nowrap gap-y-2 items-center justify-between border-b border-border-light pt-[2px] pb-[10px] pl-2 md:pl-5 relative">
         <div className="flex flex-row items-center">
-          <button onClick={handleFilterClick}>
+          <button
+            type="button"
+            onClick={handleFilterClick}
+            aria-label={en.common.filter}
+            className="max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
+          >
             <Filter />
           </button>
-          <div className="flex flex-row items-center gap-2 ml-3 h-[18px]">
+          <div className="flex flex-row flex-wrap md:flex-nowrap items-center gap-2 ml-1 md:ml-3 md:h-[18px]">
             {selectedFilters?.map(filter => (
               <div
                 key={filter.id}
@@ -353,7 +358,11 @@ export const SimulationStudio: React.FC = () => {
               >
                 <span className="text-xs text-typography-800 font-regular">{filter.label}</span>
 
-                <button onClick={() => handleFilterItemClose(filter)}>
+                <button
+                  type="button"
+                  onClick={() => handleFilterItemClose(filter)}
+                  aria-label={`${en.common.removeFilter}: ${filter.label}`}
+                >
                   <Close />
                 </button>
               </div>
@@ -361,18 +370,26 @@ export const SimulationStudio: React.FC = () => {
           </div>
         </div>
         {activeTab === TAB_KEYS.SIMULATIONS && (
-          <div className="flex relative items-center w-full max-w-xs ml-4">
+          <div className="flex relative items-center w-full max-w-xs ml-4 max-md:flex-1 max-md:min-w-[10rem]">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-typography-600">
               <Search />
             </span>
             <input
+              inputMode="search"
+              enterKeyHint="search"
               value={searchValue}
               onChange={e => setSearchValue(e.target.value)}
               placeholder={en.common.search}
+              aria-label={en.common.search}
               className="block w-full rounded-md border border-border bg-transparent pl-10 pr-8 py-2 placeholder-text-tertiary outline-none font-primary text-sm"
             />
             {searchValue.length > 0 && (
-              <button className="absolute right-2" onClick={() => setSearchValue("")}>
+              <button
+                type="button"
+                className="absolute right-2 max-md:right-0 max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
+                onClick={() => setSearchValue("")}
+                aria-label={en.common.clearSearch}
+              >
                 <Close />
               </button>
             )}

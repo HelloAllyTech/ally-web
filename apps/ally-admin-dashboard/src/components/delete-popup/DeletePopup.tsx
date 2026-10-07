@@ -33,11 +33,13 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="relative bg-white rounded-none shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
+      <div className="relative bg-white rounded-none shadow-xl max-w-md w-full mx-4 max-h-[90dvh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200 px-4 sm:px-[32px] py-[24px] text-typography-900 font-primary">
         {/* Close button */}
         <button
+          type="button"
           onClick={handleClose}
-          className="absolute top-[8px] right-[8px] text-typography-600 hover:text-typography-800 transition-colors"
+          aria-label={en.common.close}
+          className="absolute top-[8px] right-[8px] max-md:top-0 max-md:right-0 max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center text-typography-600 hover:text-typography-800 transition-colors"
         >
           <Close width={24} height={24} />
         </button>
@@ -57,7 +59,7 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
 
         {/* Simulation details card */}
         <div className="rounded-none p-2 mb-3 flex items-center gap-4 border border-border-light">
-          <div className="w-24 h-16 rounded-none flex-shrink-0 flex items-center justify-center">
+          <div className="w-20 sm:w-24 h-16 rounded-none flex-shrink-0 flex items-center justify-center">
             <CustomImage
               src={cardData.coverImageUrl}
               alt={cardData.title}
@@ -88,7 +90,7 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3">
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
           <Button variant={ButtonVariant.SECONDARY} onClick={handleClose} className="flex-1">
             {en.simulation.cancel}
           </Button>

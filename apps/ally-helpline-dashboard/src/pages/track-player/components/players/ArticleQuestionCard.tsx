@@ -157,7 +157,7 @@ export const ArticleQuestionCard: FC<ArticleQuestionCardProps> = ({
           type="button"
           onClick={handleSubmit}
           disabled={!selectedOptionId || isLoading}
-          className="mt-4 rounded-full bg-primary-500 px-6 py-2 text-[0.9em] font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+          className="mt-4 w-full rounded-full bg-primary-500 px-6 py-2 text-[0.9em] font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11 sm:w-auto"
         >
           {t("tracks2.article.question.submit")}
         </button>

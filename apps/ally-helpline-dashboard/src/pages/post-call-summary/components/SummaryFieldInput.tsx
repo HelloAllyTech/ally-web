@@ -191,7 +191,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
               long value wraps to multiple lines. */}
           <div className="flex items-start">
             <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {disabled ? (
                 // Read-only display: render the value as wrapping text. A
                 // single-line input truncates/scrolls long values (e.g. Intake

@@ -3,7 +3,7 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    class="inline-flex h-10 md:h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button
@@ -40,7 +40,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    class="inline-flex h-10 md:h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button

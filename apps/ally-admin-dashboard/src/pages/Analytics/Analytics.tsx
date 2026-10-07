@@ -318,7 +318,7 @@ export const Analytics = () => {
   );
 
   return (
-    <div className="font-primary pr-1">
+    <div className="analytics-page font-primary pr-1">
       <Theme theme="white">
         <Section>
           {/* Heading, then filters on their own full-width line. They used to
@@ -343,7 +343,7 @@ export const Analytics = () => {
                 reach it. Wrapped, it stays one contiguous block of filters. */}
             <div className="flex flex-wrap items-end gap-3">
               {activeTab.uses.language && (
-                <div className="w-44">
+                <div className="w-full sm:w-44">
                   <Dropdown
                     id="analytics-language"
                     size="md"
@@ -360,7 +360,7 @@ export const Analytics = () => {
                 </div>
               )}
               {activeTab.uses.range && (
-                <div className="w-48">
+                <div className="w-full sm:w-48">
                   <Dropdown
                     id="analytics-range"
                     size="md"
@@ -379,8 +379,13 @@ export const Analytics = () => {
               {/* Tabs with slice dimensions of their own portal them here, so
                   the whole filter bar stays one row above the content it
                   scopes. Page-wide filters first, then the tab's own. Empty for
-                  tabs that add nothing. */}
-              <div ref={setControlsSlot} className="flex flex-wrap items-end gap-3" />
+                  tabs that add nothing. On phones the slot dissolves into the
+                  row, so each portalled control stacks full-width like the
+                  page's own pickers. */}
+              <div
+                ref={setControlsSlot}
+                className="flex flex-wrap items-end gap-3 max-sm:contents"
+              />
             </div>
           </div>
 
@@ -402,7 +407,9 @@ export const Analytics = () => {
                 just is not all fetched up front.
               */}
               {tabs.map((t, i) => (
-                <TabPanel key={t.id}>
+                // No side padding on phones: the page wrapper already has its
+                // gutter, and Carbon's panel padding stacks on top of it.
+                <TabPanel key={t.id} className="max-sm:!px-0">
                   {i === tabIndex ? (
                     <TabControlsSlotProvider value={controlsSlot}>
                       {t.render(filters)}

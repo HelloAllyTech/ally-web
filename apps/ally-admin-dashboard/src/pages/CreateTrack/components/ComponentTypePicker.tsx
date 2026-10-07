@@ -82,9 +82,11 @@ export const ComponentTypePicker: FC<ComponentTypePickerProps> = ({
   };
 
   return (
+    // Below lg the outline rail is a short scroll box, so the picker pins to the
+    // viewport instead of opening inside it.
     <div
       ref={ref}
-      className="absolute z-30 left-0 top-full mt-1 w-64 bg-white border border-border-light rounded-md shadow-lg p-2"
+      className="absolute z-30 left-0 top-full mt-1 w-64 max-lg:fixed max-lg:inset-x-4 max-lg:top-20 max-lg:mt-0 max-lg:w-auto max-lg:max-h-[calc(100dvh-6rem)] max-lg:overflow-y-auto bg-white border border-border-light rounded-md shadow-lg p-2"
     >
       <p className="text-xs font-medium text-typography-500 px-2 py-1">Add component</p>
       <div className="flex flex-col">

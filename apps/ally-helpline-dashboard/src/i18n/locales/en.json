@@ -60,7 +60,9 @@
     "draggableArea": {
       "text": "Drag & drop or <0>choose</0> a {{extensions}} file under {{size}}"
     },
-    "practiceAgain": "Practise again"
+    "practiceAgain": "Practise again",
+    "refresh": "Refresh",
+    "play": "Play"
   },
   "carousel": {
     "slides": {

@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 import { Permissions, ROUTES } from "@constants";
 import { useUser } from "@hooks/useUser";
@@ -67,6 +67,8 @@ export const HelplineSubNav: FC = () => {
   const { permissions } = useUser();
   const { connection } = useHelplineRealtime();
   const { restricted } = useHelplineAccess();
+  const { pathname } = useLocation();
+  const navRef = useRef<HTMLElement>(null);
   const items = SUB_NAV.filter(
     item =>
       (!restricted || item.whileRestricted) &&
@@ -77,9 +79,18 @@ export const HelplineSubNav: FC = () => {
       ? item.labelFor.labelKey
       : item.labelKey;
 
+  // On a phone the strip scrolls sideways and Team or Quality can sit off-screen: keep the
+  // current section's tab in view.
+  useEffect(() => {
+    navRef.current
+      ?.querySelector<HTMLElement>('[aria-current="page"]')
+      ?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [pathname]);
+
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border-light bg-white px-4 md:px-6">
       <nav
+        ref={navRef}
         aria-label={t("helplineWorkspace.subnav.label")}
         className="-mb-px flex gap-1 overflow-x-auto"
       >

@@ -67,7 +67,14 @@ const CallControls: FC<CallControlsProps> = ({
         {showMuteTooltip && (
           <div className="flex gap-2 items-center text-xs text-typography-900 bg-[#faf9f5] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2">
             {t("audioCall.controls.muteTooltip")}
-            <X className="w-4 h-4 cursor-pointer" onClick={() => setIsMuteTooltipOpen(false)} />
+            <button
+              type="button"
+              aria-label={t("common.close")}
+              onClick={() => setIsMuteTooltipOpen(false)}
+              className="inline-flex shrink-0 items-center justify-center p-2 -m-2"
+            >
+              <X className="w-4 h-4 cursor-pointer" />
+            </button>
             <span className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#faf9f5] absolute bottom-[-8px] sm:left-[10%] md:left-[20%] lg:left-[30%]" />
           </div>
         )}

@@ -130,7 +130,7 @@ export const DiscussionThread: FC<DiscussionThreadProps> = ({ itemId, highlightP
           <button
             type="button"
             onClick={() => refetch()}
-            className="rounded-full border border-border-light px-4 py-1.5 text-sm font-medium text-typography-800 hover:bg-neutral-50"
+            className="rounded-full border border-border-light px-4 py-1.5 text-sm font-medium text-typography-800 hover:bg-neutral-50 max-md:min-h-10"
           >
             {t("tracks2.discussion.retry")}
           </button>
@@ -202,7 +202,7 @@ export const DiscussionThread: FC<DiscussionThreadProps> = ({ itemId, highlightP
               type="button"
               onClick={handleToggleDiscussionLock}
               disabled={isLockingDiscussion}
-              className="text-xs font-medium text-typography-600 hover:text-primary-600 disabled:opacity-50"
+              className="text-xs font-medium text-typography-600 hover:text-primary-600 disabled:opacity-50 max-md:min-h-10"
             >
               {data.isLocked
                 ? t("tracks2.discussion.unlockDiscussion")

@@ -26,14 +26,14 @@ export const WellbeingInterstitial: FC<WellbeingInterstitialProps> = ({
 
   return (
     <div
-      className="flex h-full items-center justify-center bg-background-secondary p-6"
+      className="flex h-full items-center justify-center bg-background-secondary p-4 md:p-6"
       data-testid="wellbeing-interstitial"
     >
-      <div className="max-w-md rounded-2xl bg-white p-8 text-center font-primary shadow-sm">
+      <div className="max-w-md rounded-2xl bg-white p-6 text-center font-primary shadow-sm md:p-8">
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="font-secondary text-3xl text-typography-900 focus:outline-none"
+          className="font-secondary text-2xl text-typography-900 focus:outline-none md:text-3xl"
         >
           {t("helplineWorkspace.wellbeing.title")}
         </h1>

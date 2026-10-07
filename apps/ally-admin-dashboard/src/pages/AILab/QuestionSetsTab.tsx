@@ -191,13 +191,13 @@ export const QuestionSetsTab: React.FC = () => {
                         {new Date(set.createdAt).toLocaleString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 align-top">
-                        <div className="flex items-center justify-end gap-3 text-typography-600">
+                        <div className="flex items-center justify-end gap-1 text-typography-600 md:gap-3">
                           <button
                             onClick={e => {
                               e.stopPropagation();
                               openRow(set);
                             }}
-                            className="hover:text-primary-600"
+                            className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                             aria-label={set.isPublished ? en.common.view : en.common.edit}
                             title={set.isPublished ? en.common.view : en.common.edit}
                           >
@@ -210,7 +210,7 @@ export const QuestionSetsTab: React.FC = () => {
                                 handleToggleArchive(set);
                               }}
                               disabled={isBusy}
-                              className="hover:text-primary-600 disabled:opacity-50"
+                              className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 disabled:opacity-50 md:block md:h-auto md:w-auto"
                               aria-label={
                                 set.isArchived
                                   ? en.aiLab.questionSets.unarchive
@@ -231,7 +231,7 @@ export const QuestionSetsTab: React.FC = () => {
                                 e.stopPropagation();
                                 setDeleteTarget(set);
                               }}
-                              className="hover:text-destructive-600"
+                              className="inline-flex h-10 w-10 items-center justify-center hover:text-destructive-600 md:block md:h-auto md:w-auto"
                               aria-label={en.common.delete}
                               title={en.common.delete}
                             >

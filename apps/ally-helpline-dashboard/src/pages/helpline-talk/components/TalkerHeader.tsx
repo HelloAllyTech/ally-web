@@ -74,7 +74,7 @@ export const TalkerHeader: FC<TalkerHeaderProps> = ({ org, subtitle, onQuickExit
 
   return (
     <header className="sticky top-0 z-30 border-b border-border-light bg-white">
-      <div className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-2">
+      <div className="relative mx-auto flex max-w-2xl items-center gap-2 px-4 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           {org?.logoUrl && (
             <img
@@ -95,7 +95,9 @@ export const TalkerHeader: FC<TalkerHeaderProps> = ({ org, subtitle, onQuickExit
         </div>
 
         {menuItems && menuItems.length > 0 && (
-          <div className="relative">
+          // Below sm the menu hangs off the header row, not the kebab: the kebab sits left of
+          // Quick exit, so a 220px menu right-aligned to it would run off a 320px screen.
+          <div className="sm:relative">
             <button
               ref={menuButtonRef}
               type="button"
@@ -115,7 +117,7 @@ export const TalkerHeader: FC<TalkerHeaderProps> = ({ org, subtitle, onQuickExit
                 role="menu"
                 aria-label={t("helplineTalker.header.moreOptions")}
                 onKeyDown={onMenuKeyDown}
-                className="absolute right-0 top-12 z-40 min-w-[220px] rounded-xl border border-border-light bg-white py-1 shadow-lg"
+                className="absolute right-4 top-14 z-40 min-w-[220px] max-w-[calc(100vw-2rem)] rounded-xl border border-border-light bg-white py-1 shadow-lg sm:right-0 sm:top-12"
               >
                 {menuItems.map(item => (
                   <button

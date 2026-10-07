@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Trash } from "@assets";
 import { GenericFilterDropdownProps, RequestFilterOption } from "@components/types";
@@ -15,6 +15,9 @@ export function FilterDropdown<T extends Record<string, any>>({
   currentFilters,
 }: GenericFilterDropdownProps<T>) {
   const [viewSubList, setViewSubList] = useState<keyof T | null>(null);
+  // Measured after render so the phone sheet can open just below the section list, not over it.
+  const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Initialize with correct type
   const [selectedFilters, setSelectedFilters] = useState<Record<keyof T, Record<string, boolean>>>(
@@ -69,6 +72,15 @@ export function FilterDropdown<T extends Record<string, any>>({
     setSelectedFilters(newSelectedFilters);
   }, [currentFilters, sections, isOpen]); // Added isOpen to reset on open
 
+  useLayoutEffect(() => {
+    if (!listRef.current || !panelRef.current) return;
+    const listTop = anchorRect ? anchorRect.bottom + 8 : 100;
+    panelRef.current.style.setProperty(
+      "--filter-sheet-top",
+      `${listTop + listRef.current.offsetHeight + 8}px`,
+    );
+  });
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -120,7 +132,8 @@ export function FilterDropdown<T extends Record<string, any>>({
         <div className="flex items-center justify-between mb-3">
           <div className="text-typography-600 text-base">{section.label}</div>
           <button
-            className="text-typography-600 hover:text-typography-800"
+            type="button"
+            className="inline-flex h-10 w-10 -mr-2 items-center justify-center md:h-auto md:w-auto md:mr-0 text-typography-600 hover:text-typography-800"
             title="Clear"
             onClick={() => clearFilterSection(sectionId)}
           >
@@ -159,7 +172,10 @@ export function FilterDropdown<T extends Record<string, any>>({
 
     return (
       <div
-        className="fixed z-[9999] min-w-[220px] bg-white border border-border-light shadow-lg rounded-lg p-4"
+        ref={panelRef}
+        // On a phone there is no room beside the section list, so the options open below it,
+        // full width, down to the bottom of the screen (the !important beats the inline position).
+        className="fixed z-[9999] min-w-[220px] max-sm:min-w-0 max-sm:!left-4 max-sm:right-4 max-sm:!top-[var(--filter-sheet-top)] max-sm:bottom-4 max-sm:overflow-y-auto bg-white border border-border-light shadow-lg rounded-lg p-4"
         style={{ top, left: anchorRect ? anchorRect.left + listWidth + 10 : left + listWidth + 20 }}
       >
         {children}
@@ -179,7 +195,8 @@ export function FilterDropdown<T extends Record<string, any>>({
     <div>
       <div className="fixed inset-0 z-[9998]" onClick={handleClose} />
       <div
-        className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-border-light shadow-lg rounded-lg`}
+        ref={listRef}
+        className={`fixed z-[9999] w-[${listWidth}px] max-sm:!left-4 bg-white border border-border-light shadow-lg rounded-lg`}
         style={{ top, left }}
       >
         {sections.map(section => {

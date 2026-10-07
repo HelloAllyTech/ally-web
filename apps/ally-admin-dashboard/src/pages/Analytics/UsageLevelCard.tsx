@@ -129,7 +129,7 @@ export const UsageLevelCard = ({ tenantId }: { tenantId?: string }) => {
               an absolutely-positioned child, and a `static` ancestor is not a
               containing block — the list escapes any scroll container and inflates
               its scrollHeight into a phantom second scrollbar. */}
-          <div className="relative w-80">
+          <div className="relative w-full sm:w-80">
             <Dropdown
               id="usage-level-denominator"
               size="md"

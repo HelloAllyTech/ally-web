@@ -73,10 +73,12 @@ export const DebriefReplyInput: FC<DebriefReplyInputProps> = ({ onSend, disabled
           ref={inputRef}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className="custom-scrollbar max-h-[120px] w-full flex-1 resize-none overflow-y-auto p-2 px-3 font-primary text-sm outline-none disabled:opacity-60"
+          className="custom-scrollbar max-h-[120px] w-full flex-1 resize-none overflow-y-auto p-2 px-3 font-primary text-sm outline-none disabled:opacity-60 max-md:my-2 max-md:py-0 max-md:leading-6"
           // No character count in the placeholder: CharacterCount sits right
           // beside it saying the same thing, and the pair overflowed the field
-          // on a phone.
+          // on a phone. Below md the vertical padding moves outside the box
+          // (my-2 py-0): phones force 16px text, the placeholder wraps, and
+          // inside padding the next line's tops showed under the first.
           placeholder={t("postSim.debrief.replyPlaceholder")}
           disabled={disabled}
           maxLength={MAX_MESSAGE_LENGTH}

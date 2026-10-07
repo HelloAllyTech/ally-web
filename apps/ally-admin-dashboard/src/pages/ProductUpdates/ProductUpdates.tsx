@@ -130,7 +130,8 @@ export const ProductUpdates: FC = () => {
   };
 
   return (
-    <div className="h-full font-primary flex flex-col">
+    // Phones scroll the whole page; the fixed-height frame with a scrolling table is md+.
+    <div className="md:h-full font-primary flex flex-col">
       <div className="shrink-0">
         <h1 className="text-2xl text-typography-900 font-secondary">{t.title}</h1>
         <p className="text-sm text-typography-700 mt-1 max-w-3xl">{t.description}</p>
@@ -139,18 +140,19 @@ export const ProductUpdates: FC = () => {
       <StatusStrip status={automation} running={running} isError={isStatusError} />
 
       {/* Filters: search + status / audience / surface + hidden toggle. */}
-      <div className="flex flex-wrap items-end gap-3 mt-6 shrink-0">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap items-end gap-3 mt-4 md:mt-6 shrink-0">
+        <div className="flex flex-col gap-1 w-full md:w-auto">
           <label htmlFor="product-updates-search" className="text-xs text-typography-700">
             {t.filters.search}
           </label>
           <input
             id="product-updates-search"
-            type="text"
+            type="search"
+            enterKeyHint="search"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             placeholder={t.filters.searchPlaceholder}
-            className="w-[260px] rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
+            className="w-full md:w-[260px] rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -220,7 +222,7 @@ export const ProductUpdates: FC = () => {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar mt-4">
+      <div className="md:flex-1 md:overflow-y-auto custom-scrollbar mt-4">
         {isLoading ? (
           <p className="text-typography-700">{t.table.loading}</p>
         ) : isError ? (
@@ -285,7 +287,7 @@ export const ProductUpdates: FC = () => {
 
       {/* Pagination footer. */}
       {updates.length > 0 && (
-        <div className="flex items-center justify-between shrink-0 border-t border-border-light pt-3 mt-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-t border-border-light pt-3 mt-2">
           <span className="text-sm text-typography-700">
             {t.table.showing(rangeStart, rangeEnd, total)}
             {isFetching ? t.table.updating : ""}
@@ -295,7 +297,7 @@ export const ProductUpdates: FC = () => {
               variant={ButtonVariant.SECONDARY}
               onClick={goPrev}
               disabled={!canPrev}
-              className="h-[36px] px-4"
+              className="h-10 md:h-[36px] px-4"
             >
               {t.table.previous}
             </Button>
@@ -303,7 +305,7 @@ export const ProductUpdates: FC = () => {
               variant={ButtonVariant.SECONDARY}
               onClick={goNext}
               disabled={!canNext}
-              className="h-[36px] px-4"
+              className="h-10 md:h-[36px] px-4"
             >
               {t.table.next}
             </Button>

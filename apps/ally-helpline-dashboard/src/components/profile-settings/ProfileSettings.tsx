@@ -26,7 +26,14 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   return (
     <ComposedModal open={isOpen} onClose={onClose} size="sm">
       <ModalBody className="flex flex-col p-5">
-        <CloseIcon className="cursor-pointer absolute right-4 top-4 z-10" onClick={onClose} />
+        <button
+          type="button"
+          aria-label={t("common.close")}
+          onClick={onClose}
+          className="absolute right-1 top-1 z-10 inline-flex h-11 w-11 items-center justify-center md:right-4 md:top-4 md:h-auto md:w-auto"
+        >
+          <CloseIcon className="cursor-pointer" />
+        </button>
         <div className="flex flex-col gap-3">
           <div className="flex item-center justify-center text-2xl font-secondary">
             {t("profile.settings.title")}

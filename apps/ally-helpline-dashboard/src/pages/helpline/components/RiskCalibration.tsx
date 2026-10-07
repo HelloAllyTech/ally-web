@@ -69,7 +69,7 @@ export const RiskCalibration: FC = () => {
               role="radio"
               aria-checked={days === window}
               onClick={() => setDays(window)}
-              className={`min-h-[32px] rounded-full px-3 font-primary text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+              className={`min-h-[40px] rounded-full px-3 font-primary text-sm focus-visible:outline-none md:min-h-[32px] focus-visible:ring-2 focus-visible:ring-primary-500 ${
                 days === window
                   ? "bg-typography-900 text-white"
                   : "text-typography-800 hover:bg-background-secondary"
@@ -149,7 +149,7 @@ export const RiskCalibration: FC = () => {
                   threshold: formatConfidence(data.riskHighConfidence),
                 })}
               </p>
-              <div className="overflow-x-auto rounded-xl border border-border-light">
+              <div className="relative overflow-x-auto rounded-xl border border-border-light">
                 <table className={`${tableClass} min-w-[520px]`} data-testid="calibration-bands">
                   <thead className={theadClass}>
                     <tr>
@@ -208,7 +208,7 @@ export const RiskCalibration: FC = () => {
                 {t("helplineWorkspace.calibration.empty", { count: days })}
               </EmptyBox>
             ) : (
-              <div className="ph-no-capture overflow-x-auto rounded-xl border border-border-light">
+              <div className="ph-no-capture relative overflow-x-auto rounded-xl border border-border-light">
                 <table className={`${tableClass} min-w-[760px]`}>
                   <thead className={theadClass}>
                     <tr>

@@ -63,7 +63,8 @@ export const Logs: FC = () => {
   const selectedStream = logStreamName ? { id: logStreamName, label: logStreamName } : null;
 
   return (
-    <div className="h-full font-primary flex flex-col">
+    // Phones scroll the whole page; the fixed-height frame with a scrolling table is md+.
+    <div className="md:h-full font-primary flex flex-col">
       <div>
         <h1 className="text-2xl text-typography-900 font-secondary">Logs</h1>
         <p className="text-sm text-typography-700 mt-1">
@@ -72,7 +73,7 @@ export const Logs: FC = () => {
       </div>
 
       {/* Toolbar: service + time range + level + stream + search + live. */}
-      <div className="flex flex-wrap items-end gap-3 mt-6 shrink-0">
+      <div className="flex flex-wrap items-end gap-3 mt-4 md:mt-6 shrink-0">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-typography-700">Service</label>
           <Select
@@ -88,7 +89,7 @@ export const Logs: FC = () => {
           </Select>
         </div>
 
-        <div className="w-52">
+        <div className="w-full sm:w-52">
           <Dropdown
             id="aws-logs-range"
             size="md"
@@ -142,7 +143,7 @@ export const Logs: FC = () => {
           </Select>
         </div>
 
-        <div className="w-56">
+        <div className="w-full sm:w-56">
           <ComboBox
             id="aws-logs-stream"
             size="md"
@@ -155,14 +156,15 @@ export const Logs: FC = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 w-full sm:w-auto">
           <label className="text-xs text-typography-700">Search</label>
           <input
-            type="text"
+            type="search"
+            enterKeyHint="search"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             placeholder="Filter log message"
-            className="w-[220px] rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
+            className="w-full sm:w-[220px] rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
           />
         </div>
 
@@ -184,7 +186,7 @@ export const Logs: FC = () => {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar mt-4">
+      <div className="md:flex-1 md:overflow-y-auto custom-scrollbar mt-4">
         {isLoading ? (
           <p className="text-typography-700">Loading…</p>
         ) : isError ? (
@@ -218,7 +220,7 @@ export const Logs: FC = () => {
                   <TableCell className="py-3 pr-4 whitespace-nowrap">
                     {event.logStreamName}
                   </TableCell>
-                  <TableCell className="py-3 pr-4 font-mono text-xs whitespace-pre-wrap break-all">
+                  <TableCell className="py-3 pr-4 font-mono text-xs whitespace-pre-wrap break-all min-w-[240px] md:min-w-0">
                     {event.message}
                   </TableCell>
                 </TableRow>
@@ -230,14 +232,14 @@ export const Logs: FC = () => {
 
       {/* Pagination footer. CloudWatch is cursor-based — no total count. */}
       {events.length > 0 && (
-        <div className="flex items-center justify-between shrink-0 border-t border-border-light pt-3 mt-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-t border-border-light pt-3 mt-2">
           <span className="text-sm text-typography-700">{isFetching ? "Updating…" : ""}</span>
           <div className="flex gap-2">
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={goPrev}
               disabled={!canPrev}
-              className="h-[36px] px-4"
+              className="h-10 md:h-[36px] px-4"
             >
               Previous
             </Button>
@@ -245,7 +247,7 @@ export const Logs: FC = () => {
               variant={ButtonVariant.SECONDARY}
               onClick={goNext}
               disabled={!canNext}
-              className="h-[36px] px-4"
+              className="h-10 md:h-[36px] px-4"
             >
               Next
             </Button>

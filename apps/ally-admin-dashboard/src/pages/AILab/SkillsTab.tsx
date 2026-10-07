@@ -260,10 +260,11 @@ export const SkillsTab: React.FC = () => {
             )}
           </Select>
         </LabField>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <LabField label={en.aiLab.skills.temperatureLabel} help={en.aiLab.skills.temperatureHelp}>
             <input
               type="number"
+              inputMode="decimal"
               step="0.1"
               min={0}
               max={2}
@@ -276,6 +277,7 @@ export const SkillsTab: React.FC = () => {
           <LabField label={en.aiLab.skills.maxTokensLabel} help={en.aiLab.skills.maxTokensHelp}>
             <input
               type="number"
+              inputMode="numeric"
               step="1"
               min={1}
               value={form.maxTokens}

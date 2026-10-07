@@ -253,7 +253,9 @@ const SubscriptionRow: React.FC<{
     <div className="flex flex-col gap-2 text-sm">
       <div className="flex justify-between gap-4 border-b border-border-light py-1">
         <span className="text-typography-600">{t.subscriptionLabel}</span>
-        <span className={`text-right ${bad ? "text-destructive-600" : "text-typography-800"}`}>
+        <span
+          className={`min-w-0 break-words text-right ${bad ? "text-destructive-600" : "text-typography-800"}`}
+        >
           {value}
         </span>
       </div>
@@ -288,7 +290,9 @@ const InfoRow: React.FC<{ label: string; value?: string; bad?: boolean }> = ({
 }) => (
   <div className="flex justify-between gap-4 border-b border-border-light py-1">
     <span className="text-typography-600">{label}</span>
-    <span className={`text-right ${bad ? "text-destructive-600" : "text-typography-800"}`}>
+    <span
+      className={`min-w-0 break-words text-right ${bad ? "text-destructive-600" : "text-typography-800"}`}
+    >
       {value || "—"}
     </span>
   </div>

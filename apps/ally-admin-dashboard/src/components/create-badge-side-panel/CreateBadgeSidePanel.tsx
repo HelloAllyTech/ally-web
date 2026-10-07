@@ -3,7 +3,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
-import { TextInput } from "@ally-ui-mono/ui-shared";
+import { TextInput, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateBadgeMutation,
   useUpdateBadgeMutation,
@@ -25,15 +25,17 @@ import { CreateBadgeSidePanelProps, FieldProps, BadgeFormData } from "./types";
 
 const Field: React.FC<FieldProps> = ({ label, children, multiline = false, required = false }) => (
   <div
-    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
+    className={`flex flex-col gap-1 md:gap-0 md:flex-row min-h-[40px] ${multiline ? "md:items-start" : "md:items-center"} text-base justify-between`}
   >
-    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
+    <div className={`w-full md:w-[40%] ${multiline && "md:mt-[8px]"}`}>
       <span className="text-base font-regular text-typography-800">
         {label}
         {required && <span className="text-red-500">*</span>}
       </span>
     </div>
-    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
+    <div className="w-full md:w-[60%] flex text-left justify-start text-neutral-800">
+      {children}
+    </div>
   </div>
 );
 
@@ -42,10 +44,10 @@ const PanelHeader: React.FC<{
   isEditMode: boolean;
   onDelete?: () => void;
 }> = ({ onClose, isEditMode, onDelete }) => (
-  <div className="flex items-center justify-between p-6">
+  <div className="flex items-center justify-between p-4 md:p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 max-md:min-h-10"
     >
       <DoubleArrowRight width={14} height={14} />
       <span className="text-base font-tertiary font-[500]">
@@ -433,10 +435,10 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex font-primary">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
+      <div className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
         <PanelHeader onClose={handleClose} isEditMode={isEditMode} onDelete={handleDeleteClick} />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+        <div className="h-[calc(100dvh-72px)] md:h-[calc(100vh-100px)] px-4 md:px-10 md:pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           {/* Icon Uploader Section */}
           <div className="py-6">
             <IconUploader
@@ -511,13 +513,12 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
           <div className="flex items-center gap-2 w-full text-typography-400 mt-4">
             <div className="flex items-center gap-1 shrink-0">
               <span>Criteria</span>
-              <div className="relative group">
-                <TooltipIcon />
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-typography-900 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                  {en.badge.cannotChangeAfterPublishing}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-typography-900" />
-                </div>
-              </div>
+              {/* The shared Tooltip opens on tap and focus too; the hand-rolled one was hover-only. */}
+              <Tooltip label={en.badge.cannotChangeAfterPublishing} align="top">
+                <button type="button" className="cursor-pointer inline-flex items-center">
+                  <TooltipIcon />
+                </button>
+              </Tooltip>
             </div>
             <div className="border-t border-border-light w-full" />
           </div>
@@ -559,7 +560,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                       type="button"
                       data-testid="criteria-increment-btn"
                       onClick={handleCriteriaIncrement}
-                      className="text-typography-400 p-1 rotate-180 hover:text-typography-600 leading-none"
+                      className="text-typography-400 p-2 md:p-1 rotate-180 hover:text-typography-600 leading-none"
                     >
                       <ArrowDownFilled width={10} height={10} />
                     </button>
@@ -567,7 +568,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                       type="button"
                       data-testid="criteria-decrement-btn"
                       onClick={handleCriteriaDecrement}
-                      className="text-typography-400 p-1 hover:text-typography-600 leading-none"
+                      className="text-typography-400 p-2 md:p-1 hover:text-typography-600 leading-none"
                     >
                       <ArrowDownFilled width={10} height={10} />
                     </button>

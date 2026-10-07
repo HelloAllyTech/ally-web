@@ -61,7 +61,7 @@ export const V2VTestModal: FC<V2VTestModalProps> = ({ open, onClose }) => {
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-50 h-full w-full max-w-[460px] bg-white shadow-xl flex flex-col p-6 gap-5 overflow-y-auto custom-scrollbar">
+      <div className="relative z-50 h-full w-full max-w-[460px] bg-white shadow-xl flex flex-col p-4 sm:p-6 gap-5 overflow-y-auto custom-scrollbar">
         <div>
           <h2 className="text-xl font-secondary text-typography-900">Run V2V Test</h2>
           <p className="text-sm text-typography-700 mt-1">

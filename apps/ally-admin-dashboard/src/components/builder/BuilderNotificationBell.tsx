@@ -70,8 +70,10 @@ export const BuilderNotificationBell: FC = () => {
         )}
       </button>
 
+      {/* On a phone the bell is not at the right edge, so a right-anchored 320px panel would open
+          off-screen; there it drops from the top bar at full width instead. */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded border border-border-light bg-white shadow-md">
+        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded border border-border-light bg-white shadow-md max-md:fixed max-md:inset-x-4 max-md:top-16 max-md:mt-0 max-md:w-auto">
           <div className="flex items-center justify-between gap-2 border-b border-border-light px-4 py-3">
             <span className="text-sm font-semibold text-typography-900">{strings.title}</span>
             {unread > 0 && (
@@ -103,7 +105,9 @@ export const BuilderNotificationBell: FC = () => {
                         {formatDateTime(notification.createdAt)}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-sm text-typography-900">{notification.message}</p>
+                    <p className="mt-0.5 break-words text-sm text-typography-900">
+                      {notification.message}
+                    </p>
                   </button>
                 </li>
               ))

@@ -84,11 +84,11 @@ const Field: FC<FieldProps> = ({
   children,
 }) => (
   <div
-    className={`flex min-h-[40px] flex-row text-base justify-between ${
-      multiline ? "items-start" : "items-center"
+    className={`flex min-h-[40px] flex-col gap-1 md:gap-0 md:flex-row text-base justify-between ${
+      multiline ? "md:items-start" : "md:items-center"
     }`}
   >
-    <div className={`flex w-[40%] items-center gap-2 ${multiline ? "mt-[8px]" : ""}`}>
+    <div className={`flex w-full md:w-[40%] items-center gap-2 ${multiline ? "md:mt-[8px]" : ""}`}>
       <span className="text-base font-regular text-typography-800">{label}</span>
       {tooltip && (
         <Tooltip label={tooltip} align="top">
@@ -111,7 +111,9 @@ const Field: FC<FieldProps> = ({
         </Tooltip>
       )}
     </div>
-    <div className="flex w-[60%] justify-start text-left text-neutral-800">{children}</div>
+    <div className="flex w-full md:w-[60%] justify-start text-left text-neutral-800">
+      {children}
+    </div>
   </div>
 );
 
@@ -197,8 +199,8 @@ export const GenerateEventPanel: FC<GenerateEventPanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
 
-      <div className="flex w-[50%] min-w-[700px] flex-col border-l-[1px] border-border-light bg-white shadow-xl">
-        <div className="flex items-center justify-between p-6">
+      <div className="flex w-full md:w-[50%] md:min-w-[700px] flex-col border-l-[1px] border-border-light bg-white shadow-xl">
+        <div className="flex items-center justify-between p-4 md:p-6">
           <button
             onClick={onClose}
             className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
@@ -208,7 +210,7 @@ export const GenerateEventPanel: FC<GenerateEventPanelProps> = ({
           </button>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto px-10 pl-[46px]">
+        <div className="custom-scrollbar flex-1 overflow-y-auto px-4 md:px-10 md:pl-[46px]">
           {/* Brief — the one thing the author has to write. */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">

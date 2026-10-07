@@ -60,18 +60,19 @@ const PasswordModal: React.FC<{
     {/* No backdrop-click close: the password is shown only once, so require an
         explicit Done to avoid discarding it by an accidental outside click. */}
     <div className="absolute inset-0 bg-black bg-opacity-50" />
-    <div className="relative bg-white shadow-xl max-w-md w-full mx-4 px-8 py-6 font-primary">
+    <div className="relative bg-white shadow-xl max-w-md w-full mx-4 max-h-[90dvh] overflow-y-auto px-4 sm:px-8 py-6 font-primary">
       <h2 className="text-xl font-medium text-typography-900 mb-1">
         {en.aiLab.evaluators.passwordTitle}
       </h2>
       <p className="text-sm text-typography-600 mb-4">{en.aiLab.evaluators.passwordNote}</p>
       <div className="border border-border-light rounded-md px-4 py-3 bg-background-secondary mb-1">
-        <div className="text-xs text-typography-500 mb-1">{email}</div>
+        <div className="text-xs text-typography-500 mb-1 break-all">{email}</div>
         <div className="flex items-center justify-between gap-3">
           <span className="font-mono text-lg text-typography-900 break-all">{password}</span>
           <button
+            type="button"
             onClick={() => copyToClipboard(password)}
-            className="text-typography-600 hover:text-primary-600 shrink-0"
+            className="text-typography-600 hover:text-primary-600 shrink-0 -m-2 p-2 md:m-0 md:p-0"
             aria-label={en.aiLab.evaluators.copyPassword}
             title={en.aiLab.evaluators.copyPassword}
           >
@@ -81,7 +82,7 @@ const PasswordModal: React.FC<{
       </div>
       <p className="text-xs text-typography-500 mb-4">
         {en.aiLab.evaluators.portalLinkLabel}{" "}
-        <span className="font-mono">{`${window.location.origin}${ROUTES.EVALUATE}`}</span>
+        <span className="font-mono break-all">{`${window.location.origin}${ROUTES.EVALUATE}`}</span>
       </p>
       <div className="flex justify-end">
         <Button variant={ButtonVariant.PRIMARY} onClick={onClose}>
@@ -233,10 +234,10 @@ export const EvaluatorsTab: React.FC = () => {
                       {new Date(evaluator.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-3 text-typography-600">
+                      <div className="flex items-center justify-end gap-1 text-typography-600 md:gap-3">
                         <button
                           onClick={() => setRegenerateTarget(evaluator)}
-                          className="hover:text-primary-600"
+                          className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                           aria-label={en.aiLab.evaluators.regenerate}
                           title={en.aiLab.evaluators.regenerate}
                         >
@@ -244,7 +245,7 @@ export const EvaluatorsTab: React.FC = () => {
                         </button>
                         <button
                           onClick={() => setDeleteTarget(evaluator)}
-                          className="hover:text-destructive-600"
+                          className="inline-flex h-10 w-10 items-center justify-center hover:text-destructive-600 md:block md:h-auto md:w-auto"
                           aria-label="Delete"
                           title="Delete"
                         >

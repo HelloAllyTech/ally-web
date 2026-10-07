@@ -174,7 +174,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
   }
 
   const isVertical = orientation === "vertical";
-  const buttonSize = isVertical ? "h-8 w-8" : "h-7 w-7";
+  const buttonSize = isVertical ? "h-10 w-10 md:h-8 md:w-8" : "h-9 w-9 md:h-7 md:w-7";
   const iconSize = isVertical ? 18 : 16;
 
   const arrow = (delta: 1 | -1) => {

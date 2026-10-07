@@ -304,7 +304,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trac
               type="button"
               disabled={isSavingLanguages || isFetching}
               onClick={() => handleToggleLanguage(language.languageId)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors disabled:opacity-50 ${
+              className={`rounded-full border px-3 py-2 lg:py-1 text-sm lg:text-xs transition-colors disabled:opacity-50 ${
                 isSelected
                   ? "border-primary-400 bg-primary-50 text-primary-700"
                   : "border-border-light text-typography-600 hover:border-primary-300"
@@ -357,7 +357,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trac
                   </span>
                 )}
 
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex flex-wrap items-center gap-2">
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     className="!h-9 !px-3 text-sm"
@@ -451,7 +451,7 @@ export const TrackTranslationsEditor: FC<TrackTranslationsEditorProps> = ({ trac
             </select>
 
             {editingLanguageId !== null && (
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 <Button
                   variant={ButtonVariant.SECONDARY}
                   className="!h-9 !px-3 text-sm"
@@ -620,7 +620,7 @@ const FieldGroup: FC<FieldGroupProps> = ({
           const key = `${scope}|${entityId}|${field.path}`;
           const value = drafts[key] ?? field.translated ?? "";
           return (
-            <div key={field.path} className="grid grid-cols-2 gap-3 p-3">
+            <div key={field.path} className="grid grid-cols-1 lg:grid-cols-2 gap-3 p-3">
               <div className="flex flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[11px] uppercase tracking-wide text-typography-500">

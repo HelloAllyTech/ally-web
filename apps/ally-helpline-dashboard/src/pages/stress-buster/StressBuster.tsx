@@ -65,11 +65,11 @@ export const StressBuster = () => {
     const words = text.split(" ");
 
     return (
-      <span className="text-white text-5xl font-secondary">
+      <span className="text-white text-5xl font-secondary max-md:text-3xl">
         {words.map((word, wordIndex) => (
           <span key={getKeyFromIndex(wordIndex, "word")}>
             {word === highlight ? (
-              <span className="bg-primary-500 capitalize px-6 py-2 rounded-full italic">
+              <span className="bg-primary-500 capitalize px-6 py-2 rounded-full italic max-md:px-4">
                 {word}
               </span>
             ) : (
@@ -90,7 +90,9 @@ export const StressBuster = () => {
 
   if (isEnding) {
     return (
-      <div className="w-screen h-dvh bg-[#29261f] flex justify-center items-center">
+      // relative + overflow-hidden: the background art is wider than a phone
+      // and, positioned against the page, scrolled it sideways by ~530px.
+      <div className="relative w-screen h-dvh overflow-hidden bg-[#29261f] flex justify-center items-center max-md:px-4 max-md:text-center">
         <motion.div
           key={getKeyFromIndex(messageIndex, "message")}
           initial={{ opacity: 0 }}

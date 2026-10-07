@@ -42,7 +42,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
       <div className="min-w-[900px]">
         {renderHeader}
 
-        <div className="h-[calc(100vh-270px)] overflow-y-auto custom-scrollbar">
+        <div className="md:h-[calc(100vh-270px)] md:overflow-y-auto custom-scrollbar">
           {organizations.map(tenant => (
             <div
               key={tenant.id}
@@ -71,7 +71,9 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
               <div className="col-span-2 flex items-center justify-between text-typography-900 pl-1">
                 <span>{tenant.userCount}</span>
                 <button
-                  className="text-typography-600 hover:text-typography-900 px-2"
+                  type="button"
+                  aria-label={en.common.edit}
+                  className="inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto text-typography-600 hover:text-typography-900 px-2"
                   title={en.common.edit}
                   onClick={e => handleEditPress(tenant, e)}
                 >

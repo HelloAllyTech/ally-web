@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
+import { Menu } from "@icons";
 import { useDispatch } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 
@@ -92,6 +93,21 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // element position across routes, so without a per-route key a page that
   // crashed would keep showing its error panel on the next page you opened.
   const { pathname } = useLocation();
+
+  // Phone-only nav drawer (the Sidebar is an in-flow rail from md up). It
+  // covers the page, so any navigation and Escape close it.
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [pathname]);
+  useEffect(() => {
+    if (!isMobileNavOpen) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileNavOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMobileNavOpen]);
 
   useEffect(() => {
     if (userData) dispatch(setUser(userData));
@@ -202,8 +218,8 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   return (
     <ScenarioReportsSocketProvider>
-      <div className="flex h-screen bg-white">
-        <Sidebar />
+      <div className="flex h-dvh bg-white">
+        <Sidebar isMobileOpen={isMobileNavOpen} onMobileClose={() => setIsMobileNavOpen(false)} />
         {/* Single scroll container for the whole app shell: main never scrolls,
             the padded wrapper is the one scroll area. A page that sets its own
             overflow fills the wrapper exactly (its scroll is the one); a tall
@@ -214,11 +230,25 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
             against the initial containing block (<html>) and stretch the page
             scroll height far past the content, producing a phantom second
             scrollbar and empty white space you can scroll into below the page. */}
-        <main className="flex-1 overflow-hidden">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border-light bg-white px-2 md:hidden">
+            {/* 44px target: the only way into navigation on a phone. */}
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(true)}
+              aria-label={en.common.openMenu}
+              aria-expanded={isMobileNavOpen}
+              aria-controls="admin-nav-sidebar"
+              data-testid="admin-mobile-menu-button"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md hover:bg-background-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
+            >
+              <Menu size={24} aria-hidden="true" />
+            </button>
+          </div>
           {/* The barrier sits inside the shell, not around it: a page that
               throws during render should cost the admin that page, not the
               sidebar, the nav and their way out of it. */}
-          <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
+          <div className="relative min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
             <ErrorBoundary resetKey={pathname}>
               {entitlementsLoading ? (
                 <div

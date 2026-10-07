@@ -66,7 +66,7 @@ const BrowserAlertsHint: FC = () => {
     <button
       type="button"
       onClick={() => void requestNotificationPermission().then(setPermission)}
-      className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-border-medium px-3 font-primary text-sm text-typography-900 hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-border-medium px-3 font-primary text-sm md:min-h-[36px] text-typography-900 hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
     >
       <BellRing aria-hidden="true" className="h-4 w-4" />
       {t("helplineWorkspace.monitor.browserAlertsOn")}
@@ -172,7 +172,7 @@ const LiveView: FC<{ canAssign: boolean }> = ({ canAssign }) => {
             {t("helplineWorkspace.monitor.activeEmpty")}
           </EmptyBox>
         ) : (
-          <div className="ph-no-capture overflow-x-auto rounded-xl border border-border-light">
+          <div className="ph-no-capture relative overflow-x-auto rounded-xl border border-border-light">
             <table className={`${tableClass} min-w-[960px]`} data-testid="monitor-active-table">
               <thead className={theadClass}>
                 <tr>
@@ -288,7 +288,7 @@ const LiveView: FC<{ canAssign: boolean }> = ({ canAssign }) => {
             {t("helplineWorkspace.lobby.emptyWaiting")}
           </EmptyBox>
         ) : (
-          <div className="ph-no-capture overflow-x-auto rounded-xl border border-border-light">
+          <div className="ph-no-capture relative overflow-x-auto rounded-xl border border-border-light">
             <table className={`${tableClass} min-w-[720px]`} data-testid="monitor-waiting-table">
               <thead className={theadClass}>
                 <tr>
@@ -362,7 +362,7 @@ const LiveView: FC<{ canAssign: boolean }> = ({ canAssign }) => {
                               setAssignError(null);
                               setAssigning(entry);
                             }}
-                            className="inline-flex min-h-[36px] items-center whitespace-nowrap rounded-full border border-border-medium px-3 font-primary text-sm font-medium text-typography-900 hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                            className="inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border border-border-medium px-3 md:min-h-[36px] font-primary text-sm font-medium text-typography-900 hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                           >
                             {t("helplineWorkspace.monitor.assign.action")}
                           </button>
@@ -381,7 +381,7 @@ const LiveView: FC<{ canAssign: boolean }> = ({ canAssign }) => {
         {data.listeners.length === 0 ? (
           <EmptyBox>{t("helplineWorkspace.monitor.listenersEmpty")}</EmptyBox>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border-light">
+          <div className="relative overflow-x-auto rounded-xl border border-border-light">
             <table className={`${tableClass} min-w-[560px]`} data-testid="monitor-listeners-table">
               <thead className={theadClass}>
                 <tr>

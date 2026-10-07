@@ -136,8 +136,8 @@ export const SuggestionsTab = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h3 className="text-typography-primary text-lg">{strings.heading}</h3>
-        <div className="flex items-end gap-3">
-          <div className="w-56">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+          <div className="w-full sm:w-56">
             <Dropdown
               id="suggestions-status"
               size="md"
@@ -152,7 +152,11 @@ export const SuggestionsTab = () => {
               }}
             />
           </div>
-          <Button variant={ButtonVariant.PRIMARY} onClick={() => setGenerateOpen(true)}>
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            className="w-full sm:w-auto"
+            onClick={() => setGenerateOpen(true)}
+          >
             {strings.generate}
           </Button>
         </div>

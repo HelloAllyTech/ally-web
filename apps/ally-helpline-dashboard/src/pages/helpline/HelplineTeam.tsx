@@ -72,7 +72,7 @@ const MemberRow: FC<{
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-primary text-base font-medium text-typography-900">
+          <span className="min-w-0 max-w-full truncate font-primary text-base font-medium text-typography-900">
             {member.name || member.email}
           </span>
           {member.isAdmin && (
@@ -92,7 +92,7 @@ const MemberRow: FC<{
             (listenerViaSupervisor ? t("helplineWorkspace.team.listenerViaSupervisor") : null)
           }
         >
-          <label className="inline-flex items-center gap-2 font-primary text-sm text-typography-900">
+          <label className="inline-flex min-h-[44px] items-center gap-2 font-primary text-sm text-typography-900 md:min-h-0">
             <Switch
               checked={member.isAdmin || listener || supervisor}
               disabled={member.isAdmin || supervisor}
@@ -104,7 +104,7 @@ const MemberRow: FC<{
           </label>
         </WithTooltip>
         <WithTooltip label={adminHint}>
-          <label className="inline-flex items-center gap-2 font-primary text-sm text-typography-900">
+          <label className="inline-flex min-h-[44px] items-center gap-2 font-primary text-sm text-typography-900 md:min-h-0">
             <Switch
               checked={member.isAdmin || supervisor}
               disabled={member.isAdmin}
@@ -206,6 +206,7 @@ export const HelplineTeam: FC = () => {
             <input
               id={searchId}
               type="search"
+              enterKeyHint="search"
               value={search}
               onChange={event => setSearch(event.target.value)}
               placeholder={t("helplineWorkspace.team.searchPlaceholder")}

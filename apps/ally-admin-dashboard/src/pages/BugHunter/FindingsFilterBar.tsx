@@ -107,7 +107,7 @@ function FacetSection<T extends string>({
         {options.map(option => (
           <label
             key={option.value}
-            className="flex items-center gap-2 px-3 py-1 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer md:py-1"
           >
             <input
               type="checkbox"
@@ -147,7 +147,7 @@ const AgeSection: FC<{
         {options.map(option => (
           <label
             key={option.value}
-            className="flex items-center gap-2 px-3 py-1 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer md:py-1"
           >
             <input
               type="radio"
@@ -173,7 +173,7 @@ const FilterPill: FC<{ label: string; onRemove: () => void }> = ({ label, onRemo
       type="button"
       onClick={onRemove}
       aria-label={en.bugHunter.filterPillRemove.replace("{label}", label)}
-      className="inline-flex h-4 w-4 items-center justify-center rounded-full text-typography-500 hover:bg-neutral-200 hover:text-typography-900 cursor-pointer"
+      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-typography-500 hover:bg-neutral-200 hover:text-typography-900 cursor-pointer md:h-4 md:w-4"
     >
       <span aria-hidden="true">×</span>
     </button>
@@ -284,7 +284,7 @@ export const FindingsFilterBar: FC<FindingsFilterBarProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex-1 min-w-[220px] max-w-md" ref={searchRef}>
+        <div className="flex-1 min-w-[180px] max-w-md sm:min-w-[220px]" ref={searchRef}>
           <Search
             id="bug-findings-search"
             size="sm"
@@ -304,7 +304,7 @@ export const FindingsFilterBar: FC<FindingsFilterBarProps> = ({
             aria-haspopup="dialog"
             aria-controls={open ? panelId : undefined}
             onClick={() => setOpen(value => !value)}
-            className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded border px-3 py-2 text-xs font-medium cursor-pointer transition-colors md:py-1.5 ${
               facetCount > 0
                 ? "border-primary-300 bg-primary-50 text-primary-700"
                 : "border-border-light bg-white text-typography-800 hover:bg-neutral-50"
@@ -329,7 +329,7 @@ export const FindingsFilterBar: FC<FindingsFilterBarProps> = ({
               // `right-0` rather than `left-0`: this button sits at the right
               // end of its row on a wide viewport, and a left-anchored panel
               // would open off the edge of the page.
-              className="absolute right-0 top-full z-30 mt-1 w-72 max-h-[26rem] overflow-y-auto custom-scrollbar rounded-lg border border-border-light bg-white shadow-lg divide-y divide-border-light"
+              className="absolute right-0 top-full z-30 mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-[26rem] overflow-y-auto custom-scrollbar rounded-lg border border-border-light bg-white shadow-lg divide-y divide-border-light"
             >
               <FacetSection
                 title={en.bugHunter.filterSectionStatus}
@@ -388,7 +388,7 @@ export const FindingsFilterBar: FC<FindingsFilterBarProps> = ({
                   toggle that can only ever empty the table is a trap. */}
               {counts.duplicates > 0 && (
                 <div className="py-2">
-                  <label className="flex items-center gap-2 px-3 py-1 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer">
+                  <label className="flex items-center gap-2 px-3 py-2 text-sm text-typography-900 hover:bg-neutral-50 cursor-pointer md:py-1">
                     <input
                       type="checkbox"
                       checked={filters.duplicatesOnly}

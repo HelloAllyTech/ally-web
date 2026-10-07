@@ -52,19 +52,19 @@ export const PublishRunDrawer: React.FC<PublishRunDrawerProps> = ({ run, onClose
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[50%] min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="p-6">
+      <div className="w-full md:w-[50%] md:min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">{en.aiLab.publish.drawerTitle}</span>
           <p className="text-sm text-typography-600 mt-1">
             {run.skillName} — {en.aiLab.publish.subtitle}
           </p>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-4 pb-4">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar space-y-4 pb-4">
           <QuestionBuilderFields questions={questions} onChange={setQuestions} />
         </div>
 
-        <div className="border-t border-border-light px-10 py-4 flex gap-3 justify-end">
+        <div className="border-t border-border-light px-4 md:px-10 py-4 flex gap-3 justify-end">
           <Button variant={ButtonVariant.SECONDARY} onClick={onClose} disabled={isLoading}>
             {en.common.cancel}
           </Button>

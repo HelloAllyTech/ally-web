@@ -12,7 +12,7 @@ import {
 } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
-import { Permissions } from "@constants";
+import { Permissions, en } from "@constants";
 import { RootState } from "@store";
 import {
   CustomFieldDefinition,
@@ -243,7 +243,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
 
   return (
     <div className="mt-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <p className="text-sm font-medium text-typography-700">Custom field definitions</p>
         {canManageDefinitions && (
           <Button
@@ -270,7 +270,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
           {definitions.map(def => (
             <div
               key={def.id}
-              className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2"
+              className="flex flex-wrap md:flex-nowrap items-center justify-between gap-y-1 rounded-lg border border-border-light px-3 py-2"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm text-typography-800 truncate">{def.name}</span>
@@ -309,7 +309,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
       {/* Create / Edit modal */}
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 flex flex-col gap-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-4 sm:p-6 max-h-[90dvh] overflow-y-auto flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-typography-900">
                 {isEditing ? "Edit custom field" : "Add custom field"}
@@ -317,7 +317,8 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-typography-400 hover:text-typography-700 text-lg leading-none"
+                aria-label={en.common.close}
+                className="inline-flex h-10 w-10 -mr-2 items-center justify-center md:h-auto md:w-auto md:mr-0 text-typography-400 hover:text-typography-700 text-lg leading-none"
               >
                 ×
               </button>
@@ -329,7 +330,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                 {/* Fill mode picker — drives which field types are offered */}
                 <div className="flex flex-col gap-2">
                   <p className="text-sm text-typography-600">How will this field be filled?</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {(
                       [
                         {
@@ -389,7 +390,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                 {fillMode !== CustomFieldFillMode.AI && (
                   <div className="flex flex-col gap-2">
                     <p className="text-sm text-typography-600">Select field type</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[])
                         .filter(type => enabledTypes.includes(type))
                         .map(type => (

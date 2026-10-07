@@ -346,7 +346,7 @@ export const CalibrationRows = ({ rows }: { rows: CalibrationRowView[] }) => (
     {rows.map(r => (
       <div
         key={r.key}
-        className="grid grid-cols-[minmax(9rem,16rem)_1fr_11rem] items-center gap-3 border-t border-[#f0f0f0] py-1.5"
+        className="grid grid-cols-1 items-center gap-1 border-t border-[#f0f0f0] py-1.5 sm:grid-cols-[minmax(9rem,16rem)_1fr_11rem] sm:gap-3"
       >
         <span className="flex min-w-0 flex-col">
           <span className="text-xs text-typography-900">{r.label}</span>
@@ -710,7 +710,7 @@ export const ScenarioContentSection = ({ query }: Pick<AnalyticsTabFilters, "que
               : "No completed session in the period"
         }
         controls={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <RangePicker
               id="curriculum-range-scenarioProgression"
               value={progControls.range}

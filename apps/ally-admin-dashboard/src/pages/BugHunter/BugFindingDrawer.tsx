@@ -3,7 +3,15 @@ import { FC, useEffect, useState } from "react";
 import { Launch } from "@icons";
 import { toast } from "sonner";
 
-import { Button, Select, SelectItem, SidePanel, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  Checkbox,
+  Select,
+  SelectItem,
+  SidePanel,
+  TextArea,
+  Tooltip,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAnswerBugFindingMutation,
   useApproveBugFindingMutation,
@@ -33,6 +41,8 @@ import { formatDateTime, formatTimestamp } from "@utils";
 import { BrailleSpinner } from "./BrailleSpinner";
 import {
   BUG_FINDING_DECISION_REASON_LABELS,
+  BUG_FINDING_MISS_REASON_LABELS,
+  BUG_FINDING_MISS_SENSE_LABELS,
   BUG_FINDING_SEVERITY_LABELS,
   BUG_FINDING_SOURCE_LABELS,
   engineModelLabel,
@@ -125,6 +135,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
   // Hunter classify it. The API has always taken the override; the dialog
   // never offered it, which left a failed classification as a dead end.
   const [fixRepo, setFixRepo] = useState<string>("");
+  // The admin's explicit "past the budget" tick for this dialog only (OPP-0775).
+  const [forceFix, setForceFix] = useState(false);
+  const budgetSpent = Boolean(finding?.budget?.exhausted);
   const [cancelFixSession, { isLoading: isCancellingSession }] = useCancelBugFixSessionMutation();
   const [merge, { isLoading: isMerging }] = useMergeBugFindingMutation();
   const [release, { isLoading: isReleasing }] = useReleaseBugFindingMutation();
@@ -285,7 +298,12 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
 
   const handleStartFixSession = async () => {
     try {
-      await startFixSession({ id, ...(fixRepo ? { repo: fixRepo } : {}) }).unwrap();
+      await startFixSession({
+        id,
+        ...(fixRepo ? { repo: fixRepo } : {}),
+        ...(forceFix ? { force: true } : {}),
+      }).unwrap();
+      setForceFix(false);
       setConfirmAction(null);
     } catch (error) {
       // The backend's own message is the useful one here — "Bug Hunter is
@@ -441,7 +459,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {en.bugHunter.drawerDescriptionEdit}
                   </Button>
                   <Tooltip label={en.bugHunter.drawerDescriptionEditTooltip} align="bottom">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -450,7 +471,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             </div>
 
             {descriptionDraft === null ? (
-              <p className="text-sm text-typography-900 whitespace-pre-wrap">
+              <p className="text-sm text-typography-900 whitespace-pre-wrap break-words">
                 {finding.description}
               </p>
             ) : (
@@ -467,7 +488,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     .replace("{length}", String(descriptionDraft.trim().length))
                     .replace("{max}", String(BUG_FINDING_DESCRIPTION_MAX_LENGTH))}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     size="sm"
                     kind="primary"
@@ -513,7 +534,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     <p className="text-xs font-semibold text-typography-600">
                       {en.bugHunter.drawerDescriptionOriginalTitle}
                     </p>
-                    <p className="text-sm text-typography-700 whitespace-pre-wrap">
+                    <p className="text-sm text-typography-700 whitespace-pre-wrap break-words">
                       {finding.originalDescription}
                     </p>
                   </div>
@@ -554,7 +575,11 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             finding.decisionReason ||
             finding.regressed ||
             finding.regressionOf ||
-            finding.rediscoveredCount > 0) && (
+            finding.rediscoveredCount > 0 ||
+            finding.miss ||
+            finding.latestFixVerdict ||
+            finding.independentVerification ||
+            finding.budget) && (
             <div className="border border-border-light rounded p-3 flex flex-col gap-2">
               {finding.confidence != null && (
                 <div className="flex items-center gap-1.5">
@@ -571,7 +596,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {Math.round(finding.confidence * 100)}%
                   </span>
                   <Tooltip label={en.bugHunter.drawerConfidenceTooltip} align="top">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -591,7 +619,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     {en.bugHunter.drawerConfidenceUnscored}
                   </span>
                   <Tooltip label={en.bugHunter.drawerConfidenceUnscoredTooltip} align="top">
-                    <button type="button" className="cursor-pointer inline-flex items-center">
+                    <button
+                      type="button"
+                      className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                    >
                       <TooltipIcon />
                     </button>
                   </Tooltip>
@@ -607,7 +638,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     )}
                   </p>
                   {finding.decisionNote && (
-                    <p className="text-xs text-typography-600 mt-0.5 whitespace-pre-wrap">
+                    <p className="text-xs text-typography-600 mt-0.5 whitespace-pre-wrap break-words">
                       {finding.decisionNote}
                     </p>
                   )}
@@ -621,6 +652,177 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     String(finding.rediscoveredCount),
                   )}
                 </p>
+              )}
+
+              {/* Where the independent finding verifier stands (OPP-0780). */}
+              {finding.independentVerification && (
+                <div data-testid="independent-verification" className="flex items-center gap-1">
+                  <span
+                    className={`text-xs font-medium ${
+                      finding.independentVerification === "confirmed"
+                        ? "text-green-700"
+                        : finding.independentVerification === "pending"
+                          ? "text-typography-600"
+                          : "text-amber-700"
+                    }`}
+                  >
+                    {finding.independentVerification === "pending"
+                      ? en.bugHunter.drawerIndependentPending
+                      : finding.independentVerification === "confirmed"
+                        ? en.bugHunter.drawerIndependentConfirmed
+                        : finding.independentVerification === "refuted"
+                          ? en.bugHunter.drawerIndependentRefuted
+                          : en.bugHunter.drawerIndependentUnsure}
+                  </span>
+                  <Tooltip label={en.bugHunter.drawerIndependentTooltip} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
+
+              {/* The Verifier's verdict on the current fix PR (OPP-0779): the
+                  second opinion a reviewer reads before the diff. */}
+              {finding.latestFixVerdict && (
+                <div data-testid="fix-verdict" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-xs font-medium ${
+                        finding.latestFixVerdict.verdict === "pass"
+                          ? "text-green-700"
+                          : "text-amber-700"
+                      }`}
+                    >
+                      {finding.latestFixVerdict.verdict === "pass"
+                        ? en.bugHunter.drawerVerdictPass
+                        : en.bugHunter.drawerVerdictFail}
+                    </span>
+                    {finding.latestFixVerdict.by.engine && (
+                      <span className="text-xs text-typography-600">
+                        ·{" "}
+                        {en.bugHunter.drawerVerdictBy.replace(
+                          "{engine}",
+                          finding.latestFixVerdict.by.engine,
+                        )}
+                      </span>
+                    )}
+                    <Tooltip label={en.bugHunter.drawerVerdictTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.latestFixVerdict.summary && (
+                    <p className="text-xs text-typography-700">
+                      {finding.latestFixVerdict.summary}
+                    </p>
+                  )}
+                  <ul className="text-xs text-typography-600 flex flex-col gap-0.5">
+                    {finding.latestFixVerdict.checks.map(check => (
+                      <li key={check.name} className="flex gap-1.5">
+                        <span className={`font-mono ${check.ok === false ? "text-amber-700" : ""}`}>
+                          {check.skipped ? "–" : check.ok ? "✓" : "✗"}
+                        </span>
+                        <span className="font-mono">{check.name}</span>
+                        <span className="min-w-0 break-words">
+                          {check.skipped
+                            ? en.bugHunter.drawerVerdictCheckSkipped.replace(
+                                "{reason}",
+                                check.skipped,
+                              )
+                            : (check.evidence ?? "")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* The case file's budget (OPP-0775): what this bug has cost so
+                  far against its caps. Always shown, because "nothing spent"
+                  is itself a fact a reader wants before pressing Start. */}
+              {finding.budget && (
+                <div data-testid="budget" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-typography-700">
+                      {en.bugHunter.drawerBudgetLabel}:
+                    </span>
+                    <span className="text-xs font-medium tabular-nums text-typography-900">
+                      {en.bugHunter.drawerBudgetSummary
+                        .replace("{sessions}", String(finding.budget.used.sessions))
+                        .replace("{sessionsCap}", String(finding.budget.caps.sessions))
+                        .replace("{attempts}", String(finding.budget.used.attempts))
+                        .replace("{attemptsCap}", String(finding.budget.caps.attempts))
+                        .replace("{usd}", finding.budget.used.usd.toFixed(2))
+                        .replace("{usdCap}", finding.budget.caps.usd.toFixed(2))}
+                    </span>
+                    <Tooltip label={en.bugHunter.drawerBudgetTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.budget.exhausted && (
+                    <p className="text-xs text-amber-700">
+                      {en.bugHunter.drawerBudgetExhausted.replace(
+                        "{kind}",
+                        finding.budget.exhausted.kind,
+                      )}
+                    </p>
+                  )}
+                  {finding.budget.overriddenAt && (
+                    <p className="text-xs text-typography-600">
+                      {en.bugHunter.drawerBudgetOverridden.replace(
+                        "{date}",
+                        formatDateTime(finding.budget.overriddenAt),
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* The miss record (OPP-0774). Only reported bugs carry one; it
+                  sits with the other evidence about how far to trust this row
+                  because the reader's question is the same: what does Bug
+                  Hunter itself know about how this bug reached a person. */}
+              {finding.miss && (
+                <div data-testid="miss-record" className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-typography-700">
+                      {en.bugHunter.drawerMissTitle}:
+                    </span>
+                    <span className="text-xs font-medium text-typography-900">
+                      {BUG_FINDING_MISS_REASON_LABELS[finding.miss.reason] ?? finding.miss.reason}
+                    </span>
+                    <Tooltip label={en.bugHunter.drawerMissTooltip} align="top">
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </div>
+                  {finding.miss.sense && (
+                    <p className="text-xs text-typography-600">
+                      {en.bugHunter.drawerMissWouldNeed.replace(
+                        "{sense}",
+                        BUG_FINDING_MISS_SENSE_LABELS[finding.miss.sense] ?? finding.miss.sense,
+                      )}
+                    </p>
+                  )}
+                  {finding.miss.rationale && (
+                    <p className="text-xs text-typography-600 whitespace-pre-wrap">
+                      {finding.miss.rationale}
+                    </p>
+                  )}
+                  {finding.miss.matchedFindingId && (
+                    <a
+                      href={`?bug=${finding.miss.matchedFindingId}`}
+                      className="text-xs text-primary-600 underline w-fit"
+                    >
+                      {en.bugHunter.drawerMissSeeMatched}
+                    </a>
+                  )}
+                </div>
               )}
 
               {finding.regressionOf && (
@@ -650,7 +852,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerPostmortemTitle}
                 </p>
                 <Tooltip label={en.bugHunter.drawerPostmortemTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -872,7 +1077,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     : en.bugHunter.drawerStartFixSession}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerFixSessionTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -890,7 +1098,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerStopFixSession}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerStopFixSessionTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -913,7 +1124,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   {en.bugHunter.drawerMerge}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerMergeTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -933,7 +1147,10 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     : en.bugHunter.drawerRelease}
                 </Button>
                 <Tooltip label={en.bugHunter.drawerReleaseTooltip} align="top">
-                  <button type="button" className="cursor-pointer inline-flex items-center">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
                     <TooltipIcon />
                   </button>
                 </Tooltip>
@@ -991,7 +1208,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
 
               {finding.escalationAnswer ? (
                 <div>
-                  <p className="text-sm text-typography-900 whitespace-pre-wrap">
+                  <p className="text-sm text-typography-900 whitespace-pre-wrap break-words">
                     {finding.escalationAnswer}
                   </p>
                   {finding.escalationAnsweredBy != null && (
@@ -1040,14 +1257,17 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             ) : (
               <ul className="flex flex-col gap-1">
                 {events.map(event => (
-                  <li key={event.id} className="text-sm text-typography-800 flex gap-2">
+                  <li
+                    key={event.id}
+                    className="text-sm text-typography-800 flex flex-wrap gap-x-2 md:flex-nowrap md:gap-2"
+                  >
                     <span className="text-typography-500 whitespace-nowrap tabular-nums">
                       {formatTimestamp(event.createdAt)}
                     </span>
                     <span className="font-medium text-typography-700 whitespace-nowrap">
                       {BUG_HUNT_EVENT_STAGE_LABELS[event.stage]}
                     </span>
-                    <span>{event.summary}</span>
+                    <span className="min-w-0 break-words">{event.summary}</span>
                   </li>
                 ))}
               </ul>
@@ -1120,13 +1340,33 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
           primaryButton={{
             label: en.bugHunter.drawerFixSessionStart,
             onClick: handleStartFixSession,
-            disabled: isStartingSession,
+            disabled: isStartingSession || (budgetSpent && !forceFix),
           }}
           secondaryButton={{ label: en.bugHunter.cancel, onClick: () => setConfirmAction(null) }}
         >
           {/* Only for a bug with no repo. One with a repo already says where
               it will work, and a picker beside that would be a second answer
               to a question already settled. */}
+          {/* Past the budget, Start is disabled until the admin ticks the
+              override: the refusal the server would give is shown here first,
+              so nobody learns about the budget from an error toast. */}
+          {budgetSpent && (
+            <div className="mt-3 text-left" data-testid="budget-override">
+              <p className="text-xs text-amber-700 mb-2">
+                {en.bugHunter.drawerBudgetExhausted.replace(
+                  "{kind}",
+                  finding?.budget.exhausted?.kind ?? "",
+                )}
+              </p>
+              <Checkbox
+                id={`drawer-${id}-force`}
+                labelText={en.bugHunter.drawerFixSessionForceLabel}
+                helperText={en.bugHunter.drawerFixSessionForceHelp}
+                checked={forceFix}
+                onChange={(_e: unknown, { checked }: { checked: boolean }) => setForceFix(checked)}
+              />
+            </div>
+          )}
           {!finding?.repo && (
             <div className="mt-3 text-left" data-testid="repo-picker">
               <Select
@@ -1197,7 +1437,7 @@ const PostmortemLine = ({
   <div>
     <p className="text-[11px] text-typography-500">{label}</p>
     <p
-      className={`text-xs whitespace-pre-wrap ${mono ? "font-mono" : ""} ${
+      className={`text-xs whitespace-pre-wrap break-words ${mono ? "font-mono" : ""} ${
         emphasis ? "text-typography-900 font-medium" : "text-typography-700"
       }`}
     >

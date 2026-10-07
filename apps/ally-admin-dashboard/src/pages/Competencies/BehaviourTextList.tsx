@@ -49,12 +49,12 @@ export const BehaviourTextList: FC<BehaviourTextListProps> = ({ label, values, o
                 value={value}
                 onChange={e => update(index, e.target.value)}
                 placeholder="Type a behaviour…"
-                className="flex-1 rounded border border-border-light px-3 py-2 bg-white text-base focus-within:ring-1 focus-within:ring-primary"
+                className="flex-1 min-w-0 rounded border border-border-light px-3 py-2 bg-white text-base focus-within:ring-1 focus-within:ring-primary"
               />
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="text-typography-600 hover:text-destructive-500 shrink-0"
+                className="text-typography-600 hover:text-destructive-500 shrink-0 max-md:p-2 max-md:-m-1"
                 aria-label="Remove behaviour"
               >
                 <Close />

@@ -12,6 +12,9 @@ vi.mock("@api", () => ({
   // The panel invalidates the findings and suggestions queues itself, once it
   // sees a scan finish — so it reaches for the store's util alongside the hooks.
   baseAPI: { util: { invalidateTags: vi.fn() } },
+  // The Today board sits on the Work tab and reads its own query; it renders
+  // nothing until data lands, so an empty answer keeps these tests quiet.
+  useGetBugHunterTodayQuery: vi.fn(() => ({ data: undefined, isError: false })),
   useGetBugHunterSettingsQuery: vi.fn(),
   useUpdateBugHunterSettingsMutation: vi.fn(),
   useGetBugHuntRunsQuery: vi.fn(),
@@ -31,8 +34,16 @@ vi.mock("@api", () => ({
   useGetBugHunterMetricsQuery: vi.fn(() => ({ data: undefined, isLoading: false, isError: false })),
   // The Notebook tab's own hooks. Empty rather than absent: mounted only when
   // that section is open, but the module mock has to supply them.
-  useGetBugHunterMemoryQuery: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false })),
-  useGetBugHunterRetiredMemoryQuery: vi.fn(() => ({ data: { items: [] }, isLoading: false, isError: false })),
+  useGetBugHunterMemoryQuery: vi.fn(() => ({
+    data: { items: [] },
+    isLoading: false,
+    isError: false,
+  })),
+  useGetBugHunterRetiredMemoryQuery: vi.fn(() => ({
+    data: { items: [] },
+    isLoading: false,
+    isError: false,
+  })),
   useRestoreBugHunterMemoryMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useAddBugHunterMemoryMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useRetireBugHunterMemoryMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),

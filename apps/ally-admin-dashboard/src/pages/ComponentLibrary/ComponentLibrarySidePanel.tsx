@@ -155,12 +155,12 @@ export const ComponentLibrarySidePanel: FC<ComponentLibrarySidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
 
-      <div className="w-[50%] relative min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-border-light">
+      <div className="w-full md:w-[50%] relative md:min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-border-light">
           <button
             onClick={onClose}
             type="button"
-            className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
+            className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 max-md:min-h-10"
           >
             <DoubleArrowRight width={14} height={14} />
             <span className="text-base font-tertiary font-[500]">
@@ -171,7 +171,7 @@ export const ComponentLibrarySidePanel: FC<ComponentLibrarySidePanelProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
+        <div className="flex-1 px-4 md:px-10 pt-4 md:pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
           <ComponentLibraryEditorContext.Provider value={true}>
             <FormProvider {...methods}>
               <ItemEditorCanvas

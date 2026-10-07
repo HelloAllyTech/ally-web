@@ -76,12 +76,15 @@ export const EmptyBox: FC<{ children: ReactNode; testId?: string }> = ({ childre
 export const LoadFailed: FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => {
   const { t } = useTranslation();
   return (
-    <div role="alert" className="flex items-center gap-3 font-primary text-sm text-typography-800">
+    <div
+      role="alert"
+      className="flex flex-wrap items-center gap-3 font-primary text-sm text-typography-800"
+    >
       {message}
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary"
+        className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 hover:bg-background-secondary md:min-h-0"
       >
         {t("helplineWorkspace.gate.retry")}
       </button>

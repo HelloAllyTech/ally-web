@@ -219,7 +219,7 @@ export const StrategyRankingManager: React.FC = () => {
         </div>
 
         <div className="flex items-end gap-2">
-          <div className="grow">
+          <div className="min-w-0 grow">
             <TextInput
               id="new-strategy-goal"
               labelText="Add a goal"
@@ -261,7 +261,7 @@ export const StrategyRankingManager: React.FC = () => {
                 >
                   {isEditing ? (
                     <>
-                      <div className="grow">
+                      <div className="min-w-0 grow">
                         <TextInput
                           id={`strategy-goal-${goal.id}`}
                           labelText="Goal name"
@@ -284,7 +284,9 @@ export const StrategyRankingManager: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span className="text-typography-primary grow">{goal.name}</span>
+                      <span className="text-typography-primary min-w-0 grow break-words">
+                        {goal.name}
+                      </span>
                       {/* Only shown when non-zero: "0 unassessed" is noise on a healthy row,
                               and the point of this number is to be noticed when it is not zero. */}
                       {goal.unassessed > 0 && (
@@ -376,7 +378,7 @@ export const StrategyRankingManager: React.FC = () => {
 
               return (
                 <li key={factor.key} className="flex items-start gap-3">
-                  <div className="grow">
+                  <div className="min-w-0 grow">
                     <p className="text-typography-primary text-sm">{factor.label}</p>
                     <p className="text-typography-secondary mt-0.5 text-xs">{factor.hint}</p>
                   </div>
@@ -386,6 +388,7 @@ export const StrategyRankingManager: React.FC = () => {
                       labelText={factor.label}
                       hideLabel
                       type="number"
+                      inputMode="numeric"
                       min={0}
                       max={10}
                       value={weightDrafts[factor.key] ?? String(value)}

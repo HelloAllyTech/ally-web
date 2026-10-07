@@ -276,29 +276,33 @@ export const OrganizationDetail: FC = () => {
   };
 
   return (
-    <div className="flex flex-col font-primary h-[100vh] overflow-hidden">
+    // Phones let the page scroll as a whole; the fixed-height frame with an inner scroller is md+.
+    <div className="flex flex-col font-primary md:h-[100vh] md:overflow-hidden">
       <div className="flex-shrink-0">
         {/* Breadcrumbs */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-base">
+          <div className="flex items-center gap-2 text-base min-w-0">
             <button
+              type="button"
               onClick={() => handleNavigate()}
-              className="text-typography-800 hover:text-typography-900"
+              className="shrink-0 min-h-[40px] md:min-h-0 text-typography-800 hover:text-typography-900"
             >
               {en.userManagement.organization}
             </button>
             <span className="-rotate-90">
               <ArrowDown />
             </span>
-            <span className="text-primary-500">{organization.name}</span>
+            <span className="text-primary-500 truncate">{organization.name}</span>
           </div>
         </div>
 
         {/* Organization Header */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-medium text-typography-900">{organization.name}</h1>
-            <div className="flex items-center gap-2 text-sm text-typography-800">
+          <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-3 min-w-0">
+            <h1 className="text-2xl font-medium text-typography-900 break-words min-w-0">
+              {organization.name}
+            </h1>
+            <div className="flex items-center gap-2 text-sm text-typography-800 whitespace-nowrap">
               <span>
                 {en.userManagement.code}: {organization.code}
               </span>
@@ -324,7 +328,7 @@ export const OrganizationDetail: FC = () => {
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
+      <div className="md:flex-1 md:overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
     </div>
   );
 };

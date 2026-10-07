@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Button, InlineNotification, SkeletonText, Tag } from "@ally-ui-mono/ui-shared";
+import { Button, InlineNotification, SidePanel, SkeletonText, Tag } from "@ally-ui-mono/ui-shared";
 import {
   useCancelBuilderSessionMutation,
   useGetBuilderPullRequestsQuery,
@@ -153,6 +153,8 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
   const [status, setStatus] = useState<BuilderSessionStatus | null>(null);
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  // Below `lg` both PRD asides are hidden, so the document opens as a sheet instead.
+  const [showPrdSheet, setShowPrdSheet] = useState(false);
   // Set when the server session vanishes mid-turn (SSE `session_not_found`,
   // e.g. a local DB reset) — the interview can't continue against an id that
   // no longer exists, so the composer is replaced by a "start over" state
@@ -257,7 +259,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
 
   if (isLoading || !prd || !readiness) {
     return (
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <SkeletonText paragraph lineCount={5} />
       </div>
     );
@@ -265,7 +267,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
 
   if (isError || !session) {
     return (
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <InlineNotification kind="error" lowContrast hideCloseButton title={strings.loadFailed} />
       </div>
     );
@@ -319,7 +321,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
     <Button
       kind="primary"
       size="md"
-      className="w-full"
+      className="w-full max-lg:!w-full max-lg:!max-w-none"
       // Terminal blocks a fresh start, except the states a person would
       // obviously want to build again from — see RESTARTABLE.
       disabled={isTerminal && !canRestart}
@@ -335,7 +337,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-neutral-200 px-4 py-3 md:flex-nowrap">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             kind="ghost"
@@ -353,7 +355,12 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 md:shrink-0 md:flex-nowrap">
+          <span className="lg:hidden">
+            <Button kind="ghost" size="sm" onClick={() => setShowPrdSheet(true)}>
+              {en.builder.prd.heading}
+            </Button>
+          </span>
           <Tag type={BUILDER_STATUS_TAG_TYPE[effectiveStatus]} size="sm">
             {strings.status[effectiveStatus] ?? effectiveStatus}
           </Tag>
@@ -382,7 +389,9 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
             being squeezed into the chat column it grew out of. */}
         {hasBuild ? (
           <>
-            <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200">
+            {/* Below md the feed's fixed-height siblings (rails, todo list, steer box) can outgrow a
+                phone screen, so the column scrolls as a whole there instead of clipping them. */}
+            <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 max-lg:border-r-0 max-md:overflow-y-auto">
               <ErrorBoundary variant="panel" resetKey={sessionId} className="m-4">
                 <BuildView
                   sessionError={session.error}
@@ -424,7 +433,7 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
           </>
         ) : (
           <>
-            <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200">
+            <section className="flex min-w-0 flex-1 flex-col border-r border-neutral-200 max-lg:border-r-0">
               <div className="flex-1 overflow-y-auto p-4">
                 {messages.length === 0 ? (
                   <div className="mt-8 text-center">
@@ -481,9 +490,9 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
                   the only Start-build trigger) is hidden entirely — this is
                   the same action, reachable without it, so a narrow window is
                   never a dead end for starting a build. */}
-              <div className="flex flex-col items-center gap-2 border-t border-neutral-200 p-3 lg:hidden">
+              <div className="flex flex-wrap items-center gap-3 border-t border-neutral-200 p-3 lg:hidden">
                 <ReadinessRing readiness={readiness} size={48} />
-                {startBuildAction}
+                <div className="min-w-[9rem] flex-1">{startBuildAction}</div>
               </div>
             </section>
 
@@ -535,6 +544,29 @@ export const BuilderSession: React.FC<BuilderSessionProps> = ({
         retryError={retryError}
         onStarted={() => setStatus("BUILDING")}
       />
+      {showPrdSheet && (
+        <SidePanel
+          open
+          onClose={() => setShowPrdSheet(false)}
+          title={en.builder.prd.heading}
+          className="w-[32rem]"
+          bodyClassName="!p-0"
+        >
+          <ErrorBoundary variant="panel" resetKey={sessionId} className="m-4">
+            <PrdDocPanel
+              prd={prd}
+              readiness={readiness}
+              versionNumber={versionNumber}
+              editable={prdEditable}
+              onSaveSection={handleSaveSection}
+              sessionTitle={session.title}
+              repos={session.repos ?? []}
+              createdByName={session.createdByName}
+              transcript={messages}
+            />
+          </ErrorBoundary>
+        </SidePanel>
+      )}
       <ConfirmCancelDialog
         isOpen={showCancelConfirm}
         onClose={() => setShowCancelConfirm(false)}

@@ -1130,12 +1130,13 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         return renderStep(
           <div
             className={`grid ${
-              copilotCollapsed ? "grid-cols-1" : "grid-cols-2 gap-6"
-            } h-full min-h-0 relative`}
+              copilotCollapsed ? "grid-cols-1" : "grid-cols-1 gap-6 lg:grid-cols-2"
+            } lg:h-full min-h-0 relative`}
           >
             {/* Left half — mirror of Basic Settings, independent vertical scroll.
-                Spans the full canvas when the Copilot is collapsed. */}
-            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar">
+                Spans the full canvas when the Copilot is collapsed. Below lg the
+                halves stack and the form scrolls with the tab content. */}
+            <div className="min-h-0 lg:h-full lg:overflow-y-auto custom-scrollbar">
               <CreateSimulationSubSection
                 items={basicSettingsSection?.fields ?? []}
                 formMethods={formMethods}
@@ -1160,14 +1161,14 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
                 (the wizard pins its composer and scrolls the chat internally).
                 Hidden when collapsed. */}
             {!copilotCollapsed && (
-              <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6 flex flex-col">
+              <div className="min-h-0 h-[80dvh] lg:h-full overflow-hidden border-t lg:border-t-0 lg:border-l border-border-light pt-4 lg:pt-0 lg:pl-6 flex flex-col">
                 <div className="shrink-0 flex justify-end pb-2">
                   <button
                     type="button"
                     onClick={() => setIsCopilotCollapsed(true)}
                     title="Hide Copilot"
                     aria-label="Hide Copilot"
-                    className="flex items-center justify-center h-[32px] w-[32px] rounded text-typography-700 hover:bg-secondary-50 transition-colors"
+                    className="flex items-center justify-center h-10 w-10 lg:h-[32px] lg:w-[32px] rounded text-typography-700 hover:bg-secondary-50 transition-colors"
                   >
                     <DoubleArrowRight size={18} />
                   </button>
@@ -1272,22 +1273,29 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     // box exactly — a nested h-[100vh] overflowed by the wrapper's padding
     // and clipped the form's bottom. Mirrors the Roleplays page, which fills
     // the same wrapper rather than re-declaring viewport height.
-    <div className="h-full font-primary flex flex-col">
+    // Phones (< md) let the whole page scroll instead of pinning the header and
+    // scrolling only the tab content: the header wraps to several rows there
+    // and would leave the editor a sliver.
+    <div className="md:h-full font-primary flex flex-col">
       {/* Header — aligned with the Roleplays page header: no extra
           horizontal padding (the PrivateLayout gutter is shared) and the
           title uses font-secondary, so the title position and typeface stay
           put when navigating Roleplays → Edit. Breadcrumb + actions added. */}
-      <div className="flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-typography-800 cursor-pointer" onClick={handlePageBack}>
+      <div className="flex flex-wrap gap-y-2 justify-between items-center shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="text-typography-800 cursor-pointer max-md:min-h-10"
+            onClick={handlePageBack}
+          >
             {en.simulation.rolePlays}
-          </span>
+          </button>
           <span className="-rotate-90">
             <ArrowDown />
           </span>
-          <h1 className="text-2xl text-typography-900 font-secondary">{pageTitle}</h1>
+          <h1 className="text-xl md:text-2xl text-typography-900 font-secondary">{pageTitle}</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           {viewMode && (
             <span className="flex items-center gap-1.5 text-xs text-typography-500">
               <span className="h-1.5 w-1.5 rounded-full bg-typography-500" />
@@ -1326,7 +1334,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
                   isVersionPanelOpen ? "bg-secondary-50" : "hover:bg-secondary-50"
                 }`}
               >
-                <span className="text-base max-w-[220px] truncate">
+                <span className="text-base max-w-[160px] md:max-w-[220px] truncate">
                   {currentVersion
                     ? formatVersionLabel(currentVersion)
                     : en.simulation.versions.title}
@@ -1454,7 +1462,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       {showAdvancedEventsLatencyWarning && (
         <div
           role="alert"
-          className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shrink-0 font-primary"
+          className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 md:px-4 py-3 text-sm text-amber-800 shrink-0 font-primary"
         >
           <WarningAlt className="w-4 h-4 mt-0.5 shrink-0" />
           <span>{en.simulation.advancedEventsLatencyWarning(advancedEventsCount)}</span>
@@ -1474,22 +1482,22 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
         activeId={currentStep}
         onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}
         showCount={false}
-        className="mb-2 mt-6 border-b border-border-light font-primary shrink-0"
+        className="mb-2 mt-4 md:mt-6 border-b border-border-light font-primary shrink-0"
       />
 
       {/* Scrollable content in a centered, readable column. The full-width
           chrome above matches the parent; the editable form is bounded
           (~Notion's editor width) and centered so whitespace is balanced on
           both sides instead of stretching fields edge-to-edge. */}
-      <div ref={containerRef} className="relative flex-1 overflow-y-auto custom-scrollbar">
+      <div ref={containerRef} className="relative flex-1 md:overflow-y-auto custom-scrollbar">
         {/* The Agent Builder Copilot tab is a full-width split screen, so it
             opts out of the centered, max-width reading column the other tabs
             use. */}
         <div
           className={
             currentStep === stepIds.agentBuilderCopilot
-              ? "w-full h-full min-h-0 py-6"
-              : "w-full max-w-[1040px] mx-auto py-6"
+              ? "w-full lg:h-full min-h-0 py-4 md:py-6"
+              : "w-full max-w-[1040px] mx-auto py-4 md:py-6"
           }
         >
           {renderCurrentStep()}

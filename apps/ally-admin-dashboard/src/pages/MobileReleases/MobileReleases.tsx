@@ -498,20 +498,28 @@ export const MobileReleases: FC = () => {
               Release actions
             </p>
             <div className="flex flex-wrap gap-2">
-              <Tooltip label="Skips the 2-day cadence and immediately builds and uploads both platforms to their internal tracks (Play Store internal track, TestFlight). Tests still gate the build.">
+              <Tooltip
+                label="Skips the 2-day cadence and immediately builds and uploads both platforms to their internal tracks (Play Store internal track, TestFlight). Tests still gate the build."
+                className="max-sm:w-full"
+              >
                 <Button
                   kind="tertiary"
                   size="md"
+                  className="max-sm:!w-full max-sm:!max-w-none"
                   disabled={isTriggering}
                   onClick={() => setIsConfirmingTrigger(true)}
                 >
                   Trigger release now
                 </Button>
               </Tooltip>
-              <Tooltip label="Promotes the current internal-track Android build to the Play Store production track at a staged rollout percentage you choose. Real users start receiving it.">
+              <Tooltip
+                label="Promotes the current internal-track Android build to the Play Store production track at a staged rollout percentage you choose. Real users start receiving it."
+                className="max-sm:w-full"
+              >
                 <Button
                   kind="danger--tertiary"
                   size="md"
+                  className="max-sm:!w-full max-sm:!max-w-none"
                   disabled={
                     isPromotingAndroid ||
                     isVersionsLoading ||
@@ -523,10 +531,14 @@ export const MobileReleases: FC = () => {
                   Promote Android to Production
                 </Button>
               </Tooltip>
-              <Tooltip label="Submits the current iOS build for Apple's full App Store review — real public distribution, not TestFlight. Assumes the App Store Connect listing is already ready.">
+              <Tooltip
+                label="Submits the current iOS build for Apple's full App Store review — real public distribution, not TestFlight. Assumes the App Store Connect listing is already ready."
+                className="max-sm:w-full"
+              >
                 <Button
                   kind="danger--tertiary"
                   size="md"
+                  className="max-sm:!w-full max-sm:!max-w-none"
                   disabled={
                     isSubmittingAppStoreReview ||
                     isTestflightStatusLoading ||
@@ -545,8 +557,16 @@ export const MobileReleases: FC = () => {
               Force-update settings
             </p>
             <div className="flex flex-wrap gap-2">
-              <Tooltip label="Raises the minimum app version users are allowed to run — anyone below it sees a non-dismissable force-update screen on next launch, effective immediately.">
-                <Button kind="tertiary" size="md" onClick={handleOpenMinVersionDialog}>
+              <Tooltip
+                label="Raises the minimum app version users are allowed to run — anyone below it sees a non-dismissable force-update screen on next launch, effective immediately."
+                className="max-sm:w-full"
+              >
+                <Button
+                  kind="tertiary"
+                  size="md"
+                  className="max-sm:!w-full max-sm:!max-w-none"
+                  onClick={handleOpenMinVersionDialog}
+                >
                   Update Minimum Version
                 </Button>
               </Tooltip>

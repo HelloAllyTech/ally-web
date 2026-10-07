@@ -713,7 +713,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                 <span>{REPORT_GENERATION_MESSAGES.TEST_CONFIGURATION}</span>
                 <ArrowDown />
               </summary>
-              <div className="px-6 py-4 border-t border-gray-200">
+              <div className="px-4 md:px-6 py-4 border-t border-gray-200">
                 <PromptConfiguration
                   selectedLanguage={selectedLanguage}
                   prompt={helperAgentPrompt}
@@ -954,7 +954,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     };
 
     const headerContent = reportData ? (
-      <div className="sticky flex gap-8 flex-row top-0 z-10 pt-3 mx-6 border-b border-border-light">
+      <div className="md:sticky flex gap-6 md:gap-8 flex-row top-0 z-10 pt-3 md:mx-6 border-b border-border-light overflow-x-auto">
         <TabButton
           label={REPORT_GENERATION_MESSAGES.GENERATE_REPORT}
           isActive={primaryActiveTab === TABS.primary.report}
@@ -967,7 +967,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         />
       </div>
     ) : (
-      <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
+      <div className="md:sticky flex flex-row justify-between top-0 z-10 pt-3 md:mx-6 pb-4 border-b border-border-light">
         <h2 className="text-lg font-medium text-typography-900">
           {REPORT_GENERATION_MESSAGES.REPORT}
         </h2>
@@ -977,7 +977,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     return (
       <div className="flex flex-col h-full w-100%">
         {headerContent}
-        <div className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
+        <div className="py-4 md:p-6 md:pt-4 overflow-y-auto h-full custom-scrollbar">
           {primaryActiveTab === TABS.primary.history ? renderHistoryList() : renderContent()}
         </div>
       </div>

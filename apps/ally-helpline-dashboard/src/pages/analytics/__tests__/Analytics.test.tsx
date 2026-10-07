@@ -136,7 +136,7 @@ describe("Analytics Component", () => {
   describe("Component Structure", () => {
     it("should render main container with correct classes", () => {
       const { container } = render(<Analytics />);
-      const mainContainer = container.querySelector("div.flex.flex-col.justify-center.m-6");
+      const mainContainer = container.querySelector("div.flex.flex-col.justify-center.m-4");
       expect(mainContainer).toBeInTheDocument();
       expect(mainContainer?.className).toContain("overflow-hidden");
       expect(mainContainer?.className).toContain("h-[calc(100dvh-100px)]");

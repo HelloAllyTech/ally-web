@@ -146,7 +146,7 @@ export const AgentProfileCard: FC = () => {
             exists to carry. Suppressed while settings are still loading rather
             than guessing at a status from a half-loaded page. */}
         {!isLoading && !isError && (
-          <p className="text-sm text-typography-800 min-w-0 flex-1 basis-[16rem] truncate">
+          <p className="text-sm text-typography-800 min-w-0 flex-1 basis-[16rem] sm:truncate">
             {status.detail}
           </p>
         )}
@@ -156,14 +156,17 @@ export const AgentProfileCard: FC = () => {
 
         {/* ── Working style: the kill switch, as a fact about this colleague ── */}
         {!isLoading && !isError && (
-          <div className="ml-auto flex flex-wrap items-center gap-2">
+          <div className="ml-auto flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
             <span className="text-xs text-typography-600">{en.bugHunter.modeLabel}</span>
             {/* Carbon splits a ContentSwitcher's width evenly across its
                 switches, so the container has to fit the longest label
                 ("Checks with you"), not the average one — at 22rem it was
                 clipping to "Checks wit…" on the live page. */}
-            <div className="w-[27rem] max-w-full">
+            {/* Below sm the three labels cannot share a phone's width without "Checks with
+                you" truncating, so the switcher keeps its full width and scrolls in its own box. */}
+            <div className="w-full max-w-full overflow-x-auto sm:w-[27rem] sm:overflow-visible">
               <ContentSwitcher
+                className="min-w-[27rem] sm:min-w-0"
                 key={`${settings?.mode}-${resetToken}`}
                 selectedIndex={currentIndex}
                 onChange={({ index }: { index?: number }) => {
@@ -179,7 +182,10 @@ export const AgentProfileCard: FC = () => {
               </ContentSwitcher>
             </div>
             <Tooltip label={en.bugHunter.modeTooltip} align="bottom">
-              <button type="button" className="cursor-pointer inline-flex items-center">
+              <button
+                type="button"
+                className="cursor-pointer inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto"
+              >
                 <TooltipIcon />
               </button>
             </Tooltip>

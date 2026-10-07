@@ -210,7 +210,7 @@ const AgentAnswer = ({
     <div className="min-w-0">
       {response.outcome === "answer" ? (
         <>
-          <div className="text-sm text-typography-900">
+          <div className="break-words text-sm text-typography-900">
             <ReactMarkdown components={sharedMarkdownComponents} remarkPlugins={[remarkGfm]}>
               {response.answer}
             </ReactMarkdown>
@@ -284,7 +284,7 @@ const AgentAnswer = ({
                 key={followUp}
                 kind="ghost"
                 size="sm"
-                className="text-left"
+                className="text-left max-sm:!max-w-full"
                 onClick={() => onFollowUp(followUp)}
               >
                 {followUp}
@@ -451,7 +451,13 @@ export const AnalyticsAgentTab = () => {
           <p className="text-sm text-typography-600 mt-1">{strings.emptySubtitle}</p>
           <div className="flex flex-col items-start gap-1 mt-3">
             {strings.samples.map(sample => (
-              <Button key={sample} kind="ghost" size="sm" onClick={() => submit(sample)}>
+              <Button
+                key={sample}
+                kind="ghost"
+                size="sm"
+                className="max-sm:!max-w-full"
+                onClick={() => submit(sample)}
+              >
                 {sample}
               </Button>
             ))}
@@ -462,7 +468,7 @@ export const AnalyticsAgentTab = () => {
           {messages.map(message =>
             message.role === "user" ? (
               <div key={message.id} className="flex justify-end">
-                <div className="max-w-[80%] rounded bg-neutral-100 px-3 py-2 text-sm text-typography-900">
+                <div className="max-w-[80%] break-words rounded bg-neutral-100 px-3 py-2 text-sm text-typography-900">
                   {message.question}
                 </div>
               </div>
@@ -492,11 +498,15 @@ export const AnalyticsAgentTab = () => {
               </Tile>
             ),
           )}
-          <div ref={threadEndRef} />
+          {/* The scroll margin keeps the newest answer clear of the composer,
+              which is pinned to the bottom of the screen on phones. */}
+          <div ref={threadEndRef} className="max-md:scroll-mb-32" />
         </div>
       )}
 
-      <div className="flex items-end gap-2 border-t border-border-light pt-3">
+      {/* Pinned to the bottom on phones, so the composer stays in reach (and
+          above the keyboard) however long the thread grows. */}
+      <div className="flex items-end gap-2 border-t border-border-light pt-3 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-white max-md:pb-3">
         <div className="flex-1 min-w-0">
           <TextArea
             id="analytics-agent-question"

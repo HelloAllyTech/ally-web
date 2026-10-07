@@ -51,7 +51,7 @@ export const MonthLane: React.FC<MonthLaneProps> = ({
   const hidden = lane.total - lane.items.length;
 
   return (
-    <section className="flex w-72 shrink-0 flex-col">
+    <section className="flex w-[85vw] shrink-0 flex-col sm:w-72">
       <header
         className={`flex items-baseline justify-between gap-2 border-b px-1 pb-2 ${
           isCurrentMonth ? "border-primary-500" : "border-border-light"

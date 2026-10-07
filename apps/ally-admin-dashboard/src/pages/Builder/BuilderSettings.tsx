@@ -69,7 +69,10 @@ const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode 
       <span className="text-sm font-medium text-typography-900">{label}</span>
       {hint && (
         <Tooltip label={hint} align="top">
-          <button type="button" className="inline-flex cursor-pointer items-center">
+          <button
+            type="button"
+            className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+          >
             <TooltipIcon />
           </button>
         </Tooltip>
@@ -154,7 +157,7 @@ export const BuilderSettings: React.FC = () => {
   const repoMaps = repoMapsData?.maps ?? [];
 
   return (
-    <div className="mx-auto flex h-full max-w-3xl flex-col gap-6 overflow-y-auto p-6">
+    <div className="mx-auto flex h-full max-w-3xl flex-col gap-6 overflow-y-auto md:p-6">
       <header>
         <Button kind="ghost" size="sm" onClick={() => navigate(ROUTES.BUILDER)}>
           ← {strings.backToBuilder}
@@ -343,7 +346,10 @@ export const BuilderSettings: React.FC = () => {
                 {strings.modelsHeading}
               </h3>
               <Tooltip label={strings.modelsHelp} align="top">
-                <button type="button" className="inline-flex cursor-pointer items-center">
+                <button
+                  type="button"
+                  className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>
@@ -396,7 +402,10 @@ export const BuilderSettings: React.FC = () => {
                 {strings.repoMapsHeading}
               </h3>
               <Tooltip label={strings.repoMapsHelp} align="top">
-                <button type="button" className="inline-flex cursor-pointer items-center">
+                <button
+                  type="button"
+                  className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>
@@ -431,7 +440,12 @@ export const BuilderSettings: React.FC = () => {
           </section>
 
           <div>
-            <Button kind="primary" disabled={isSaving} onClick={() => void handleSave()}>
+            <Button
+              kind="primary"
+              className="max-sm:!w-full max-sm:!max-w-none"
+              disabled={isSaving}
+              onClick={() => void handleSave()}
+            >
               {strings.save}
             </Button>
           </div>

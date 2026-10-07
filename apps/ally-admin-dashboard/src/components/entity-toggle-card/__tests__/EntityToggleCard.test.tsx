@@ -178,7 +178,8 @@ describe("EntityToggleCard", () => {
     const { container } = render(<EntityToggleCard {...defaultProps} />);
 
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass("h-[80px]");
+    // Fixed from md up; phones let the controls wrap onto a second line.
+    expect(card).toHaveClass("min-h-[80px]", "md:h-[80px]");
   });
 
   it("has border bottom styling", () => {

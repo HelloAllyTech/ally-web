@@ -130,7 +130,7 @@ export const ListenerProfileDrawer: FC<ListenerProfileDrawerProps> = ({
               {offered.map(code => (
                 <label
                   key={code}
-                  className="inline-flex items-center gap-2 text-base text-typography-900"
+                  className="inline-flex min-h-[40px] items-center gap-2 text-base text-typography-900 md:min-h-0"
                 >
                   <input
                     type="checkbox"

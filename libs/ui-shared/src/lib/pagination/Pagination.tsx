@@ -1,10 +1,14 @@
 import React from "react";
 
 const MAX_VISIBLE_PAGES = 7;
+// Touch sizing: below `sm` every control is 40px tall (page numbers 32px wide
+// so seven of them plus prev/next still fit a 375px phone), and the
+// first/last jumps hide — prev/next and the numbered ends already cover them.
 const PAGINATION_BUTTON_CLASSES =
-  "text-xl text-gray-400 hover:text-black disabled:text-gray-200 px-1";
+  "inline-flex h-10 w-10 items-center justify-center text-xl text-gray-400 hover:text-black disabled:text-gray-200 sm:h-auto sm:w-auto sm:px-1";
+const PAGINATION_EDGE_BUTTON_CLASSES = `${PAGINATION_BUTTON_CLASSES} max-sm:hidden`;
 const PAGE_NUMBER_CLASSES =
-  "w-8 h-8 rounded-full flex items-center justify-center text-base font-medium transition-colors";
+  "min-w-8 h-10 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-base font-medium transition-colors";
 const PAGE_NUMBER_ACTIVE_CLASSES = "bg-gray-200 text-black";
 const PAGE_NUMBER_INACTIVE_CLASSES = "text-gray-700 hover:bg-gray-100";
 
@@ -54,10 +58,10 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-center gap-2 py-4 select-none">
+    <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 py-4 select-none">
       {/* First Page */}
       <button
-        className={PAGINATION_BUTTON_CLASSES}
+        className={PAGINATION_EDGE_BUTTON_CLASSES}
         onClick={() => onPageChange(1)}
         disabled={page === 1}
         aria-label="First page"
@@ -105,7 +109,7 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
       </button>
       {/* Last Page */}
       <button
-        className={PAGINATION_BUTTON_CLASSES}
+        className={PAGINATION_EDGE_BUTTON_CLASSES}
         onClick={() => onPageChange(totalPages)}
         disabled={page === totalPages || totalPages === 0}
         aria-label="Last page"

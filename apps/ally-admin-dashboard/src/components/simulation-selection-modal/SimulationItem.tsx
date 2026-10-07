@@ -102,7 +102,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
       <div
         ref={setNodeRef}
         style={style}
-        className={`flex p-3 pr-12 relative group rounded-md shadow-sm hover:shadow-lg  min-w-[800px] w-full border items-center ${
+        className={`flex p-3 pr-12 relative group rounded-md shadow-sm hover:shadow-lg  min-w-0 md:min-w-[800px] w-full border items-center ${
           isDragging ? "border-primary-500 border-2" : "border-gray-300"
         }`}
       >
@@ -110,8 +110,9 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
         {!isDisabled && (
           <button
             onClick={() => handleRemoveCard(index)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition z-10"
+            className="absolute right-3 max-md:right-1 top-1/2 -translate-y-1/2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition z-10 max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
             type="button"
+            aria-label={en.common.delete}
           >
             <CloseRed />
           </button>
@@ -124,17 +125,17 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
           className={isDisabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}
         >
           <DragIndicator
-            className={`w-5 h-5 mr-5 mt-1 ${isDisabled ? "text-gray-300" : "text-gray-500"}`}
+            className={`w-5 h-5 mr-3 md:mr-5 mt-1 ${isDisabled ? "text-gray-300" : "text-gray-500"}`}
           />
         </div>
 
-        <div className="flex items-start justify-between w-full">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-0 items-start justify-between w-full min-w-0">
+          <div className="flex items-center gap-3 min-w-0 max-md:w-full">
             <span className="w-6 h-6 flex items-center justify-center text-md text-typography-900">
               {simulation.order}
             </span>
 
-            <div className="w-32 h-20 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+            <div className="w-20 h-12 md:w-32 md:h-20 shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
               <CustomImage
                 src={simulation.coverImageUrl}
                 alt={simulation.title}
@@ -142,7 +143,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               />
             </div>
 
-            <div className="flex flex-col max-w-xl">
+            <div className="flex flex-col max-w-xl min-w-0">
               <span className="text-sm text-typography-900 font-primary">{simulation.title}</span>
               <span className="text-xs text-typography-800 font-primary truncate max-w-xl">
                 {simulation.description}
@@ -151,7 +152,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
           </div>
 
           {/* Minimum score section */}
-          <div className="flex items-center gap-3 self-center">
+          <div className="flex items-center gap-3 md:self-center">
             <Tooltip label={en.simulation.minScoreTooltip} align="top">
               <button type="button" className="inline-flex items-center">
                 <TooltipIcon />

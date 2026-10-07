@@ -37,7 +37,7 @@ export const Archives: FC = () => {
   };
 
   return (
-    <div className="px-6 pb-6 h-full flex flex-col" data-testid="archives-page">
+    <div className="px-4 md:px-6 pb-6 h-full flex flex-col" data-testid="archives-page">
       <motion.div
         data-testid="archives-header"
         layout="position"
@@ -56,7 +56,7 @@ export const Archives: FC = () => {
           >
             <button
               type="button"
-              className="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-0 md:mr-2"
               onClick={handleGoBack}
               data-testid="archives-back-button"
               aria-label={t("calls.archives.backAria")}
@@ -64,11 +64,17 @@ export const Archives: FC = () => {
               <LeftArrow className="w-5 h-5" />
             </button>
             {t("calls.archives.title")}
-            <Refresh
-              data-testid="archives-refresh-button"
-              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+            <button
+              type="button"
+              aria-label={t("common.refresh")}
               onClick={handleRefresh}
-            />
+              className="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+            >
+              <Refresh
+                data-testid="archives-refresh-button"
+                className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              />
+            </button>
           </div>
         </div>
       </motion.div>

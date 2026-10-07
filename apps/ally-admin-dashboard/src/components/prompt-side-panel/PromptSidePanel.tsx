@@ -359,14 +359,20 @@ const BlockEditorPopup: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-border-light flex justify-between items-center">
-          <h3 className="text-xl font-secondary text-typography-900">Edit Block: {block.name}</h3>
-          <button onClick={onClose} className="text-typography-500 hover:text-typography-900">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90dvh]">
+        <div className="p-4 md:p-6 border-b border-border-light flex justify-between items-center gap-3">
+          <h3 className="text-xl font-secondary text-typography-900 min-w-0 break-words">
+            Edit Block: {block.name}
+          </h3>
+          <button
+            onClick={onClose}
+            aria-label={en.common.close}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center md:h-auto md:w-auto text-typography-500 hover:text-typography-900"
+          >
             ✕
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-4 md:p-6 overflow-y-auto flex-1">
           <div className="space-y-4">
             <div>
               <span className="text-sm font-medium text-typography-600 block mb-1">
@@ -391,7 +397,7 @@ const BlockEditorPopup: React.FC<{
             </div>
           </div>
         </div>
-        <div className="p-6 border-t border-border-light flex justify-end gap-3">
+        <div className="p-4 md:p-6 border-t border-border-light flex justify-end gap-3">
           <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
             Cancel
           </Button>
@@ -951,12 +957,12 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between p-6">
+      <div className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
+        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2 p-4 md:p-6">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={handleClose}
-              className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 shrink-0"
+              className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 shrink-0 max-md:min-h-10"
             >
               <DoubleArrowRight width={14} height={14} />
               <span className="text-base font-tertiary font-[500] text-typography-900">
@@ -1016,7 +1022,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
           </div>
         </div>
 
-        <div className="h-[calc(100vh-100px)] px-8 pt-2 overflow-y-auto custom-scrollbar">
+        <div className="h-[calc(100dvh-72px)] md:h-[calc(100vh-100px)] px-4 md:px-8 pt-2 overflow-y-auto custom-scrollbar">
           <div className="space-y-6">
             <Field label="UUID">
               <div className="w-full select-all border-b border-border-light bg-secondary-50 px-3 py-2 font-mono text-base text-neutral-700 break-all">

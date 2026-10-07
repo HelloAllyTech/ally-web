@@ -174,7 +174,7 @@ export const ArticleItemEditor: FC<ArticleItemEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveQuestion(index, question.id)}
-                    className="text-destructive-500 hover:text-destructive-600"
+                    className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
                     aria-label={`Delete question ${position + 1}`}
                   >
                     <Trash className="w-4 h-4" />

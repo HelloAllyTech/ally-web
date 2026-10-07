@@ -91,7 +91,7 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
         {isCompleted && (
           <button
             onClick={handleViewSummary}
-            className="flex-shrink-0 text-primary-500 font-medium text-sm hover:underline whitespace-nowrap"
+            className="flex-shrink-0 text-primary-500 font-medium text-sm hover:underline whitespace-nowrap max-md:min-h-11"
           >
             {t("common.viewSummary")}
           </button>

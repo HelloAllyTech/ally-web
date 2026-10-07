@@ -80,7 +80,7 @@ const Content: FC<ContentProps> = ({
 );
 
 const LoadingState: FC = () => (
-  <div className="grid grid-cols-3 gap-5">
+  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
     {[...Array(SKELETON_COUNT)].map((_, index) => (
       <div
         key={`skeleton-${index}`}
@@ -101,7 +101,7 @@ const ImageGrid: FC<ImageGridProps> = ({ images, selectedImage, onImageClick }) 
   const validImages = useMemo(() => images.filter(img => img.imageUrl), [images]);
 
   return (
-    <div className="grid grid-cols-3 gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
       {validImages.map((img, index) => (
         <ImageCard
           key={`${img.id}-${index}`}
@@ -227,7 +227,7 @@ export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect 
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
       <div
-        className="relative bg-white rounded-lg shadow-xl flex flex-col w-[40%] h-[60%] min-w-[400px]"
+        className="relative bg-white rounded-lg shadow-xl flex flex-col w-[calc(100%-2rem)] md:w-[40%] h-[80dvh] md:h-[60%] md:min-w-[400px]"
         onClick={e => e.stopPropagation()}
       >
         <Header />

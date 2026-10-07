@@ -5,7 +5,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
   data-testid="browser-router"
 >
   <div
-    class="w-screen h-dvh bg-[#29261f] flex justify-center items-center"
+    class="relative w-screen h-dvh overflow-hidden bg-[#29261f] flex justify-center items-center max-md:px-4 max-md:text-center"
   >
     <div
       class="z-50 flex items-center justify-center"
@@ -16,7 +16,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
       data-transition="{\\"duration\\":2}"
     >
       <span
-        class="text-white text-5xl font-secondary"
+        class="text-white text-5xl font-secondary max-md:text-3xl"
       >
         <span>
           You
@@ -32,7 +32,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
         </span>
         <span>
           <span
-            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic"
+            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic max-md:px-4"
           >
             best
           </span>
@@ -66,7 +66,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
   data-testid="browser-router"
 >
   <div
-    class="w-screen h-dvh bg-[#29261f] flex justify-center items-center"
+    class="relative w-screen h-dvh overflow-hidden bg-[#29261f] flex justify-center items-center max-md:px-4 max-md:text-center"
   >
     <div
       class="z-50 flex items-center justify-center"
@@ -77,7 +77,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
       data-transition="{\\"duration\\":2}"
     >
       <span
-        class="text-white text-5xl font-secondary"
+        class="text-white text-5xl font-secondary max-md:text-3xl"
       >
         <span>
           You
@@ -93,7 +93,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
         </span>
         <span>
           <span
-            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic"
+            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic max-md:px-4"
           >
             best
           </span>

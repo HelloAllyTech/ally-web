@@ -55,14 +55,14 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] min-h-0 flex flex-col overflow-hidden font-primary ${containerClassName}`}
+        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90dvh] min-h-0 flex flex-col overflow-hidden font-primary ${containerClassName}`}
         ref={previewRef}
       >
         {/* Header + body: scrolls so footer stays inside the modal */}
         <div
           className={`min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 pb-4 ${headerClassName}`}
         >
-          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-secondary">
+          <h2 className="text-2xl sm:text-4xl text-typography-900 mb-4 font-thin font-secondary">
             <span>{headerTitle}</span>
             <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
           </h2>
@@ -98,11 +98,14 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             </div>
 
             {/* Content Section */}
-            <div className="space-y-3 w-full max-h-[30vh] overflow-y-auto">
+            <div className="space-y-3 w-full sm:max-h-[30vh] sm:overflow-y-auto">
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
-                <RichTextRenderer content={description} className="max-h-[300px] overflow-y-auto" />
+                <RichTextRenderer
+                  content={description}
+                  className="sm:max-h-[300px] sm:overflow-y-auto"
+                />
                 {triggerWarnings?.length > 0 && (
                   <div className="flex flex-col pt-2">
                     <div className="text-base font-semibold text-typography-800 mb-1">

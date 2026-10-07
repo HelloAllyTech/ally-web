@@ -8,6 +8,10 @@ export enum BugHuntTrigger {
   MANUAL = "manual",
   /** One admin, one bug, one click — a run scoped to a single finding. */
   FIX_SESSION = "fix_session",
+  /** The Verifier's read-only pass over one fix PR, on the other vendor's model (OPP-0779). */
+  VERIFY_FIX = "verify_fix",
+  /** The independent verifier's pass over a closed sweep's unproven findings (OPP-0780). */
+  VERIFY_FINDINGS = "verify_findings",
 }
 
 /**
@@ -153,6 +157,111 @@ export enum BugFindingDecisionReason {
   WONT_FIX = "wont_fix",
   TOO_RISKY = "too_risky",
   OTHER = "other",
+}
+
+/**
+ * Why Bug Hunter did not find a human-reported bug first — mirrors ally-be's
+ * `BugFindingMissReason` (OPP-0774). Every report a person files is a miss by
+ * definition; this says which kind.
+ */
+export enum BugFindingMissReason {
+  /** No current sense could have seen it; a new sense is needed. */
+  NO_SENSE = "no_sense",
+  /** An existing sense covers this kind of bug and did not flag it. */
+  SENSE_MISSED = "sense_missed",
+  /** A sense found it (or its cause) and a person declined it. */
+  DETECTED_DECLINED = "detected_declined",
+  /** A sense found it (or its cause) and it was not yet fixed or released. */
+  DETECTED_NOT_FIXED = "detected_not_fixed",
+  /** Test entry, duplicate report, feature request, or nothing to find. */
+  NOT_A_MISS = "not_a_miss",
+}
+
+/** The sense that would have caught a missed bug, or failed to. Mirrors ally-be's `BUG_FINDING_MISS_SENSES`. */
+export type BugFindingMissSense =
+  | "production_log"
+  | "browser_errors"
+  | "ux_signal"
+  | "code_review"
+  | "tests"
+  | "user_journey"
+  | "data_integrity"
+  | "voice_qa"
+  | "api_contract"
+  | "visual"
+  | "locale_parity"
+  | "mobile_crash"
+  | "static_content"
+  | "llm_output_eval";
+
+/** The case file's budget on a bug — mirrors ally-be's `BugCaseBudget` (OPP-0775). */
+export type BugCaseBudgetKind = "sessions" | "attempts" | "escalations" | "usd" | "minutes";
+
+export interface BugCaseBudget {
+  caps: Record<BugCaseBudgetKind, number>;
+  used: Record<BugCaseBudgetKind, number>;
+  /** The first cap reached and when; null while under budget or after an override. */
+  exhausted: { kind: BugCaseBudgetKind; at: string } | null;
+  overriddenBy: number | null;
+  overriddenAt: string | null;
+}
+
+/** One repo's day on the Work tab's board — mirrors ally-be's `BugHunterTodayRepo`. */
+export interface BugHunterTodayRepo {
+  repo: string;
+  sweeps: { completed: number; failed: number; skipped: number; running: number };
+  found: number;
+  verified: number;
+  refuted: number;
+  fixSessions: { byPerson: number; byAgent: number; running: number; failed: number };
+  fixesPassed: number;
+  fixesFailed: number;
+  /** Fix PRs open right now, whatever day they were opened. */
+  prsOpen: number;
+  merged: number;
+  released: number;
+  spendUsd: number;
+}
+
+export interface BugHunterToday {
+  date: string;
+  timeZone: string;
+  since: string;
+  repos: BugHunterTodayRepo[];
+  totals: Omit<BugHunterTodayRepo, "repo">;
+}
+
+/** The Verifier's judgement on a fix PR — mirrors ally-be's `BugFixVerdict` (OPP-0779). */
+export interface BugFixVerdictCheck {
+  name: string;
+  ok: boolean | null;
+  evidence: string | null;
+  skipped: string | null;
+}
+
+export interface BugFixVerdict {
+  verdict: "pass" | "fail";
+  confidence: number | null;
+  checks: BugFixVerdictCheck[];
+  scopeExceeded: boolean;
+  wouldBeWrongIf: string | null;
+  summary: string | null;
+  by: { engine: string | null; model: string | null };
+  prUrl: string | null;
+  prHeadSha: string | null;
+  runId: string | null;
+  at: string;
+}
+
+export interface BugFindingMiss {
+  reason: BugFindingMissReason;
+  /** Null only for `not_a_miss`. */
+  sense: BugFindingMissSense | null;
+  /** For detected_*: the earlier finding that was this bug or its cause. */
+  matchedFindingId: string | null;
+  confidence: number | null;
+  rationale: string;
+  classifiedAt: string;
 }
 
 /**
@@ -322,6 +431,21 @@ export interface BugFinding {
   regressed: boolean;
   /** How many sweeps have re-found this bug since it was declined. */
   rediscoveredCount: number;
+  /**
+   * On a human-reported bug: why Bug Hunter did not find it first and which
+   * sense would have. Null until the classifier has run, and on every other
+   * source.
+   */
+  miss: BugFindingMiss | null;
+  /** Caps and spend on this bug. Defaults with nothing spent until a move has been metered. */
+  budget: BugCaseBudget;
+  /** The Verifier's latest verdict on the current fix PR, or null until one has run. */
+  latestFixVerdict: BugFixVerdict | null;
+  /**
+   * Where an unproven finding stands with the independent verifier (OPP-0780).
+   * Null for proven findings, human reports, and findings from before it existed.
+   */
+  independentVerification: "pending" | "confirmed" | "refuted" | "unsure" | null;
   /**
    * What the last failed fix session left behind, or null. Written by the
    * fix protocol with `status: failed`; the next session reads it in its

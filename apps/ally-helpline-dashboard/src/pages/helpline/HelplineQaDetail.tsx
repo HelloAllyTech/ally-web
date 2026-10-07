@@ -220,7 +220,7 @@ export const HelplineQaDetail: FC = () => {
   const back = (
     <Link
       to={ROUTES.HELPLINE_QA}
-      className="inline-flex min-h-[36px] items-center gap-1 self-start rounded-full pr-2 font-primary text-sm text-typography-800 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      className="inline-flex min-h-[40px] items-center gap-1 self-start rounded-full pr-2 font-primary text-sm md:min-h-[36px] text-typography-800 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
     >
       <ChevronLeft aria-hidden="true" className="h-4 w-4" />
       {isReviewer ? t("helplineWorkspace.qa.backAll") : t("helplineWorkspace.qa.backMine")}
@@ -248,7 +248,7 @@ export const HelplineQaDetail: FC = () => {
           <button
             type="button"
             onClick={() => void refetch()}
-            className="self-start rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary"
+            className="min-h-[40px] self-start rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary md:min-h-0"
           >
             {t("helplineWorkspace.gate.retry")}
           </button>
@@ -336,7 +336,7 @@ export const HelplineQaDetail: FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAllImprovements(true)}
-                  className="self-start rounded-full border border-border-medium px-3 py-1 font-primary text-sm text-typography-900 hover:bg-background-secondary"
+                  className="min-h-[40px] self-start rounded-full border border-border-medium px-3 py-1 font-primary text-sm text-typography-900 hover:bg-background-secondary md:min-h-0"
                 >
                   {t("helplineWorkspace.qa.showMore", { count: hiddenCount })}
                 </button>

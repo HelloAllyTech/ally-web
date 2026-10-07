@@ -10,6 +10,10 @@ export const en = {
     searchMenu: "Search menu...",
     noMenuResults: "No matching tabs",
     clearSearch: "Clear search",
+    filter: "Filter",
+    removeFilter: "Remove filter",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
     searchOrCreate: "Search or create",
     loading: "Loading...",
     loadMore: "Load more",
@@ -31,6 +35,7 @@ export const en = {
     disabled: "Disabled",
     edit: "Edit",
     view: "View",
+    moreActions: "More actions",
     or: "OR",
     retry: "Retry",
     characters: "characters",
@@ -2796,6 +2801,92 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the Work tab's "Today, by repo" board ──────────────────────────────
+    today: {
+      title: "Today, by repo",
+      subtitle: "{date}, since midnight India time",
+      colRepo: "Repo",
+      colSweeps: "Sweeps",
+      colFound: "Found",
+      colVerified: "Verifier on findings",
+      colSessions: "Fix sessions",
+      colFixVerdicts: "Verifier on fixes",
+      colPrsOpen: "PRs open",
+      colMerged: "Merged",
+      colReleased: "Released",
+      colSpend: "Spend",
+      total: "Total",
+      sweepsDone: "done",
+      sweepsFailed: "failed",
+      sweepsRunning: "running",
+      sweepsSkipped: "skipped",
+      verifiedWord: "confirmed",
+      refutedWord: "refuted",
+      passedWord: "passed",
+      failedWord: "failed",
+      sessionsAuto: "by me",
+      sessionsByYou: "by you",
+      sessionsRunning: "running",
+      sessionsFailed: "failed",
+    },
+
+    // ── the independent verifier's view of a finding (OPP-0780) ───────────
+    drawerIndependentPending: "My independent verifier is still reading this",
+    drawerIndependentConfirmed: "Confirmed by my independent verifier",
+    drawerIndependentRefuted: "Refuted by my independent verifier",
+    drawerIndependentUnsure: "My independent verifier could not settle this; it is yours to decide",
+    drawerIndependentTooltip:
+      "After a sweep closes, a separate run on a different model reproduces each unproven finding and tries to refute it. I fix nothing in AI mode until it has confirmed the bug.",
+
+    // ── the Verifier's verdict on a fix (OPP-0779) ────────────────────────
+    drawerVerdictPass: "My Verifier passed this fix",
+    drawerVerdictFail: "My Verifier refused this fix",
+    drawerVerdictTooltip:
+      "After I open a fix PR, a separate run on a different model reads it with fresh eyes: does the regression test fail before and pass after, is the suite green, does the diff do only what the bug needs, do data files keep their counts. I merge only on a pass, and only where this repo lets me.",
+    drawerVerdictBy: "Read on {engine}",
+    drawerVerdictCheckSkipped: "skipped: {reason}",
+
+    // ── the case file's budget (OPP-0775) ─────────────────────────────────
+    drawerBudgetLabel: "What I've spent on this bug",
+    drawerBudgetTooltip:
+      "Every bug has a budget: fix sessions, attempts, times I asked for help, dollars and minutes. I stop starting new sessions once any of them is spent, so trying again is a decision you make, not a reflex I have.",
+    drawerBudgetSummary:
+      "{sessions} of {sessionsCap} sessions · {attempts} of {attemptsCap} attempts · ${usd} of ${usdCap}",
+    drawerBudgetExhausted: "Budget spent ({kind}). I won't start another session on my own.",
+    drawerBudgetOverridden: "You started a session past the budget on {date}.",
+    drawerFixSessionForceLabel: "Start anyway, past the budget",
+    drawerFixSessionForceHelp:
+      "Read what the last session left behind first. I'll note that you overrode the budget.",
+
+    // ── why a reported bug was missed (OPP-0774) ───────────────────────────
+    // Written by the miss classifier a moment after a person files a bug. The
+    // reader is whoever decides what Bug Hunter should learn to look at next,
+    // so the sense is named as a thing to build or fix, not as an enum.
+    drawerMissTitle: "Why I didn't find this first",
+    drawerMissTooltip:
+      "Every bug a person reports is one I should have caught. I write down which kind of miss it was and which sense would have seen it, so the next thing I learn to look at is the thing people keep finding for me.",
+    drawerMissWouldNeed: "What would have caught it: {sense}",
+    drawerMissSeeMatched: "See what I had already found",
+    missNoSense: "I have no sense that could have seen this",
+    missSenseMissed: "A sense I have should have caught this and didn't",
+    missDetectedDeclined: "I had found this, and it was turned down",
+    missDetectedNotFixed: "I had found this, and it wasn't fixed or released in time",
+    missNotAMiss: "Not a miss on my part",
+    missSenseProductionLog: "my production-log reader",
+    missSenseBrowserErrors: "my browser-error reader",
+    missSenseUxSignal: "my UX-signal scan",
+    missSenseCodeReview: "my nightly diff review",
+    missSenseTests: "the test and lint run",
+    missSenseUserJourney: "walking the real screens in a browser or on a device",
+    missSenseDataIntegrity: "a nightly check over production data",
+    missSenseVoiceQa: "listening to live roleplay audio",
+    missSenseApiContract: "exercising the API with seeded data",
+    missSenseVisual: "a design-consistency pass over screens",
+    missSenseLocaleParity: "comparing locale files and rendered text against English",
+    missSenseMobileCrash: "a crash signal from the mobile app",
+    missSenseStaticContent: "a check for placeholder text in shipped HTML and meta tags",
+    missSenseLlmOutputEval: "judging generated text against its brief",
+
     // ── the post-mortem a failed fix session leaves behind ─────────────────
     // Read by two audiences: the admin deciding whether to press "Ask me to
     // try again", and (through the dossier) the session that retries. The
@@ -2991,6 +3082,8 @@ export const en = {
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
     triggerFixSession: "Fix session",
+    triggerVerifyFix: "Verifier (fixes)",
+    triggerVerifyFindings: "Verifier (findings)",
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",

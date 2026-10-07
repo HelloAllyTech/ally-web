@@ -99,7 +99,7 @@ export const BotSettingsTab: React.FC = () => {
   }
 
   return (
-    <div className="pt-4 flex flex-col gap-8 max-w-3xl">
+    <div className="pt-4 flex flex-col gap-6 md:gap-8 max-w-3xl">
       <p className="text-sm text-typography-600">{en.whatsappBot.settings.subtitle}</p>
 
       {/* The kill switch sits first and alone: it is the one control someone reaches for in an
@@ -200,7 +200,7 @@ export const BotSettingsTab: React.FC = () => {
 
       <Section title={en.whatsappBot.settings.limitsSection}>
         <p className="text-xs text-typography-500">{en.whatsappBot.settings.limitsHelp}</p>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Num
             label={en.whatsappBot.settings.perMinute}
             value={draft.rateLimit.perMinute}
@@ -223,7 +223,7 @@ export const BotSettingsTab: React.FC = () => {
       </Section>
 
       <Section title={en.whatsappBot.settings.retrievalSection}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Num
             label={en.whatsappBot.settings.topK}
             value={draft.retrieval.topK}
@@ -287,7 +287,7 @@ export const BotSettingsTab: React.FC = () => {
       </Section>
 
       <Section title={en.whatsappBot.settings.replySection}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Num
             label={en.whatsappBot.settings.maxAnswerChars}
             value={draft.maxAnswerChars}
@@ -349,6 +349,7 @@ export const BotSettingsTab: React.FC = () => {
       <div>
         <Button
           variant={ButtonVariant.PRIMARY}
+          className="w-full sm:w-auto"
           onClick={() => void handleSave()}
           disabled={isSaving}
         >

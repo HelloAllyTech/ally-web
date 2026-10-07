@@ -191,7 +191,7 @@ export const SavedViewTabs: React.FC<SavedViewTabsProps> = ({
                 type="button"
                 aria-label="New view"
                 onClick={() => setIsNaming(true)}
-                className="text-typography-secondary hover:text-typography-primary inline-flex cursor-pointer items-center"
+                className="text-typography-secondary hover:text-typography-primary inline-flex h-10 w-10 cursor-pointer items-center justify-center md:h-auto md:w-auto"
               >
                 <Add size={18} />
               </button>

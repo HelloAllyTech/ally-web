@@ -24,24 +24,32 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
     if (!note || note.length === 0) {
       return (
         <Tooltip label={t("review.details.addNote")} align="top">
-          <div
+          <button
+            type="button"
             onClick={onAddNote}
-            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer"
+            // The visible square stays 16px; the padding is the phone hit area.
+            className="inline-flex p-3 -m-3 md:p-0 md:m-0"
           >
-            <AddIcon className="w-2 h-2" />
-          </div>
+            <span className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer">
+              <AddIcon className="w-2 h-2" />
+            </span>
+          </button>
         </Tooltip>
       );
     }
     if (isEditable) {
       return (
         <Tooltip label={t("review.details.editNote")} align="top">
-          <div
+          <button
+            type="button"
             onClick={onEditNote}
-            className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer"
+            // The visible square stays 16px; the padding is the phone hit area.
+            className="inline-flex p-3 -m-3 md:p-0 md:m-0"
           >
-            <PencilIcon className="w-2 h-2" />
-          </div>
+            <span className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#d6cdbe] text-center items-center justify-center flex cursor-pointer">
+              <PencilIcon className="w-2 h-2" />
+            </span>
+          </button>
         </Tooltip>
       );
     }

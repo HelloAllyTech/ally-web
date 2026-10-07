@@ -99,7 +99,9 @@ export const GlossaryAdherenceTab: FC<AnalyticsTabFilters> = ({ language, onSele
           {kpis.map(kpi => (
             <Tile key={kpi.label} className="analytics-kpi">
               <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-              <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+              <p className="break-words text-2xl font-medium text-typography-900 sm:text-3xl">
+                {kpi.value}
+              </p>
             </Tile>
           ))}
         </div>
@@ -241,7 +243,8 @@ const SingleLanguageView: FC<{
             max={365}
             value={sinceDays}
             onChange={e => onSinceDaysChange(Number(e.target.value) || 30)}
-            className="w-16 rounded border border-border-light px-2 py-1 text-sm"
+            inputMode="numeric"
+            className="w-16 rounded border border-border-light px-2 py-1 text-sm max-sm:min-h-10"
           />
           <span className="text-xs text-typography-700">days</span>
           <Button kind="tertiary" size="sm" disabled={rescanning} onClick={onRescan}>
@@ -254,7 +257,9 @@ const SingleLanguageView: FC<{
         {kpis.map(kpi => (
           <Tile key={kpi.label} className="analytics-kpi">
             <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-            <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+            <p className="break-words text-2xl font-medium text-typography-900 sm:text-3xl">
+              {kpi.value}
+            </p>
           </Tile>
         ))}
       </div>

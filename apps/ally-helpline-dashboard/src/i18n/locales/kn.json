@@ -60,7 +60,9 @@
     "draggableArea": {
       "text": "ಇಲ್ಲಿ ಎಳೆಯಿರಿ ಮತ್ತು ಬಿಡಿ ಅಥವಾ <0>ಆಯ್ಕೆ ಮಾಡಿ</0> {{extensions}} ಫೈಲ್ ({{size}} ಗಿಂತ ಕಡಿಮೆ)"
     },
-    "practiceAgain": "ಮತ್ತೆ ಅಭ್ಯಾಸ ಮಾಡಿ"
+    "practiceAgain": "ಮತ್ತೆ ಅಭ್ಯಾಸ ಮಾಡಿ",
+    "refresh": "ನವೀಕರಿಸಿ",
+    "play": "ಪ್ಲೇ ಮಾಡಿ"
   },
   "carousel": {
     "slides": {

@@ -55,7 +55,9 @@ const NotificationBell: FC<NotificationBellProps> = ({ isExpanded }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 z-50">
+        // In the phone nav drawer (which scrolls, so clips sideways) the panel
+        // takes the drawer column's width instead of its desktop 20rem.
+        <div className="absolute bottom-full left-0 mb-2 z-50 max-md:right-0">
           <NotificationPanel onClose={() => setIsOpen(false)} />
         </div>
       )}

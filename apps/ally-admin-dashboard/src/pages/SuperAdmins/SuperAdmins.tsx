@@ -195,14 +195,15 @@ export const SuperAdmins: React.FC = () => {
   const renderAddPanel = () => {
     if (!isAddPanelOpen) return null;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4 md:px-0">
         <div className="fixed inset-0 bg-black bg-opacity-50" onClick={closeAddPanel} />
-        <div className="relative bg-white shadow-xl max-w-lg w-full p-6 max-h-[80vh] flex flex-col overflow-hidden">
+        <div className="relative bg-white shadow-xl max-w-lg w-full p-4 md:p-6 max-h-[80dvh] flex flex-col overflow-hidden">
           <h2 className="text-xl text-typography-900 font-secondary mb-4">
             {strings.addPlatformAdmin}
           </h2>
           <input
-            type="text"
+            type="search"
+            enterKeyHint="search"
             value={candidateSearch}
             onChange={event => setCandidateSearch(event.target.value)}
             placeholder={strings.searchPlaceholder}
@@ -242,7 +243,7 @@ export const SuperAdmins: React.FC = () => {
               ))
             )}
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex flex-wrap justify-end gap-2 mt-4">
             <Button variant={ButtonVariant.SECONDARY} onClick={closeAddPanel}>
               {strings.cancel}
             </Button>
@@ -279,7 +280,9 @@ export const SuperAdmins: React.FC = () => {
         }}
       />
       {/* 260px ≈ User Management header + tab strip + this tab's own chrome. */}
-      <div className="mt-[20px] overflow-y-auto h-[calc(100vh-260px)]">{renderAdminsTable()}</div>
+      <div className="mt-[20px] md:overflow-y-auto md:h-[calc(100vh-260px)]">
+        {renderAdminsTable()}
+      </div>
 
       {renderAddPanel()}
 

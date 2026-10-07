@@ -215,7 +215,8 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
           <h3 className="text-sm font-semibold text-typography-900">{label}</h3>
           {section && !section.ok && section.hint && (
             <Tooltip label={section.hint} align="top">
-              <Tag type="warm-gray" size="sm">
+              {/* Focusable so a tap (touch has no hover) can open the hint. */}
+              <Tag type="warm-gray" size="sm" tabIndex={0}>
                 !
               </Tag>
             </Tooltip>
@@ -271,7 +272,7 @@ export const PrdDocPanel: React.FC<PrdDocPanelProps> = ({
           }
         />
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Button kind="ghost" size="sm" onClick={() => setShowPreview(prev => !prev)}>
           {showPreview ? strings.write : strings.preview}
         </Button>

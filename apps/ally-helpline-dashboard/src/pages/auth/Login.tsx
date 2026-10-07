@@ -298,6 +298,7 @@ export const Login: FunctionComponent = () => {
               fieldSize="medium"
               type="email"
               inputMode="email"
+              autoComplete="email"
               label={t("auth.login.email.label")}
               value={email}
               onChange={handleEmailChange}
@@ -315,7 +316,10 @@ export const Login: FunctionComponent = () => {
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="cursor-pointer text-[15px] text-typography-800">
+              <label
+                htmlFor="remember"
+                className="inline-flex min-h-[44px] cursor-pointer items-center text-[15px] text-typography-800 md:min-h-0"
+              >
                 {t("landing.signIn.rememberEmail")}
               </label>
             </div>

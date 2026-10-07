@@ -101,7 +101,7 @@ export const ClusterPanel: FC<ClusterPanelProps> = ({ cluster, competencies, onC
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-6 gap-5 overflow-y-auto custom-scrollbar">
+      <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-4 md:p-6 gap-5 overflow-y-auto custom-scrollbar">
         <h2 className="text-xl font-secondary text-typography-900">
           {isEditMode ? "Edit cluster" : "New cluster"}
         </h2>

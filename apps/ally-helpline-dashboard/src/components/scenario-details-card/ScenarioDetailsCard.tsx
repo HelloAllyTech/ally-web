@@ -149,7 +149,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         </div>
       )}
       <button
-        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-typography-700 transition-colors hover:bg-white"
+        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-typography-700 transition-colors hover:bg-white max-md:h-11 max-md:w-11"
         onClick={handleShareScenario}
         aria-label={t("learn.scenario.shareAria")}
         title={t("learn.scenario.shareTitle")}
@@ -163,7 +163,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     <>
       <motion.div
         layout
-        className="flex max-h-full w-full max-w-[600px] flex-col overflow-hidden rounded-lg border border-[#e3dbce] bg-white origin-top transition-all duration-300"
+        className="flex max-h-full w-full max-w-[600px] flex-col overflow-hidden rounded-lg border border-[#e3dbce] bg-white origin-top transition-all duration-300 max-md:overflow-visible"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -240,8 +240,10 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         {/* Sticky footer — always visible regardless of description length,
             image size, or whether the middle region's scroll math is even
             correct: it's a fixed sibling at the bottom of the card, not the
-            last item in a scrolling flow. */}
-        <div className="shrink-0 border-t border-[#e3dbce] p-5 font-primary">
+            last item in a scrolling flow. On a phone the card is unbounded and
+            the page scrolls instead, so the footer sticks to the screen's
+            bottom edge (hence overflow-visible on the card below md). */}
+        <div className="shrink-0 border-t border-[#e3dbce] p-5 font-primary max-md:sticky max-md:bottom-0 max-md:z-10 max-md:rounded-b-lg max-md:bg-white">
           <AppTooltip location={TooltipLocation.START_SIMULATION_BUTTON}>
             <Button
               onClick={handleStartSimulation}

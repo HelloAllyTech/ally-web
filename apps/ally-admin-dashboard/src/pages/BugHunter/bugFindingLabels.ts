@@ -1,6 +1,8 @@
 import { en } from "@constants";
 import {
   BugFindingDecisionReason,
+  BugFindingMissReason,
+  BugFindingMissSense,
   BugFindingSeverity,
   BugFindingSource,
   BugFindingStage,
@@ -129,4 +131,34 @@ export const BUG_FINDING_STATUS_LABELS: Record<BugFindingStatus, string> = {
   [BugFindingStatus.REJECTED]: en.bugHunter.findingStatusRejected,
   [BugFindingStatus.FAILED]: en.bugHunter.findingStatusFailed,
   [BugFindingStatus.CANCELLED]: en.bugHunter.findingStatusCancelled,
+};
+
+/**
+ * Why a human-reported bug was missed, in Bug Hunter's own words — the five
+ * reasons ally-be's miss classifier can write (OPP-0774).
+ */
+export const BUG_FINDING_MISS_REASON_LABELS: Record<BugFindingMissReason, string> = {
+  [BugFindingMissReason.NO_SENSE]: en.bugHunter.missNoSense,
+  [BugFindingMissReason.SENSE_MISSED]: en.bugHunter.missSenseMissed,
+  [BugFindingMissReason.DETECTED_DECLINED]: en.bugHunter.missDetectedDeclined,
+  [BugFindingMissReason.DETECTED_NOT_FIXED]: en.bugHunter.missDetectedNotFixed,
+  [BugFindingMissReason.NOT_A_MISS]: en.bugHunter.missNotAMiss,
+};
+
+/** The sense named on a miss, as a short phrase a reader can act on. */
+export const BUG_FINDING_MISS_SENSE_LABELS: Record<BugFindingMissSense, string> = {
+  production_log: en.bugHunter.missSenseProductionLog,
+  browser_errors: en.bugHunter.missSenseBrowserErrors,
+  ux_signal: en.bugHunter.missSenseUxSignal,
+  code_review: en.bugHunter.missSenseCodeReview,
+  tests: en.bugHunter.missSenseTests,
+  user_journey: en.bugHunter.missSenseUserJourney,
+  data_integrity: en.bugHunter.missSenseDataIntegrity,
+  voice_qa: en.bugHunter.missSenseVoiceQa,
+  api_contract: en.bugHunter.missSenseApiContract,
+  visual: en.bugHunter.missSenseVisual,
+  locale_parity: en.bugHunter.missSenseLocaleParity,
+  mobile_crash: en.bugHunter.missSenseMobileCrash,
+  static_content: en.bugHunter.missSenseStaticContent,
+  llm_output_eval: en.bugHunter.missSenseLlmOutputEval,
 };

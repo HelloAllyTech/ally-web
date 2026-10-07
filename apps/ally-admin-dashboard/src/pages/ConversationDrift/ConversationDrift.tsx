@@ -325,10 +325,11 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
     <div className="analytics-carbon font-primary">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-end gap-4 mb-2">
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             {/* Scenario + version scope. Version only applies once a scenario
-                  is picked (versions are per-scenario). */}
-            <div className="w-56">
+                  is picked (versions are per-scenario). Full-width and stacked
+                  on phones, where the pair is wider than the screen. */}
+            <div className="w-full sm:w-56">
               <Dropdown
                 id="drift-scenario"
                 size="sm"
@@ -342,7 +343,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
               />
             </div>
             {scenarioId != null && (
-              <div className="w-44">
+              <div className="w-full sm:w-44">
                 <Dropdown
                   id="drift-version"
                   size="sm"
@@ -399,7 +400,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
         ) : isLoading ? (
           <SkeletonPlaceholder className="analytics-chart-skeleton" />
         ) : (
-          <Tile className="p-6">
+          <Tile className="p-4 md:p-6">
             {/* STATUS & TREND — all session-level */}
             <SubHeading>Status &amp; trend</SubHeading>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-2">
@@ -499,7 +500,7 @@ export const ConversationDrift = ({ query, language }: AnalyticsTabFilters) => {
             </div>
 
             {/* EXPERIMENT SLICE — one chart with a dimension selector */}
-            <div className="flex items-center justify-between gap-4 mt-8 mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 mt-8 mb-3">
               <p className="text-xs font-medium uppercase tracking-wide text-typography-500">
                 By experiment
               </p>

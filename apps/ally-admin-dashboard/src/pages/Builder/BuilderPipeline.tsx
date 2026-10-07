@@ -88,8 +88,8 @@ export const BuilderPipeline: React.FC = () => {
   const empty = !isLoading && phases.length === 0 && gates.length === 0 && outcomes.length === 0;
 
   return (
-    <div className="mx-auto flex h-full max-w-6xl flex-col gap-6 overflow-y-auto p-6">
-      <header className="flex items-start justify-between gap-3">
+    <div className="mx-auto flex h-full max-w-6xl flex-col gap-6 overflow-y-auto md:p-6">
+      <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <Button kind="ghost" size="sm" onClick={() => navigate(ROUTES.BUILDER)}>
             ← {strings.backToBuilder}

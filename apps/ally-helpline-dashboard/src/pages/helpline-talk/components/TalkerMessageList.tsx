@@ -155,7 +155,7 @@ export const TalkerMessageList: FC<TalkerMessageListProps> = ({
                       <button
                         type="button"
                         onClick={() => onRetry(message.clientMessageId as string)}
-                        className="min-h-[32px] rounded-full border border-destructive-300 px-3 font-medium text-destructive-700 hover:bg-destructive-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        className="min-h-[40px] rounded-full border border-destructive-300 px-3 font-medium md:min-h-[32px] text-destructive-700 hover:bg-destructive-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                       >
                         {t("helplineTalker.chat.retry")}
                       </button>

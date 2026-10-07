@@ -120,7 +120,7 @@ export const CoursesTab: FC<CoursesTabProps> = ({
     return (
       <div
         key={course.id}
-        className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
+        className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 md:gap-4 py-3 md:py-4 md:pr-4 border-b border-border-light hover:bg-background-secondary transition-colors min-h-[80px] md:h-[80px]"
       >
         {/* Course Image */}
         <div className="w-[64px] sm:w-[72px] md:w-[80px] lg:w-[96px] h-[56px] flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100">
@@ -153,7 +153,7 @@ export const CoursesTab: FC<CoursesTabProps> = ({
         </div>
 
         {/* Toggle and Status */}
-        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
+        <div className="flex items-center gap-3 flex-shrink-0 basis-full md:basis-auto min-w-[140px] justify-end mr-0 md:mr-5">
           {/* Only for assigned rows: restricting content the org does not have
               would be a control with nothing to act on. */}
           {course.isAssignedToTenant ? renderRestrictionCell(course.id, course.title) : null}
@@ -194,7 +194,7 @@ export const CoursesTab: FC<CoursesTabProps> = ({
             <div className="col-span-11 text-typography-600 text-sm">
               {en.userManagement.courses}
             </div>
-            <div className="col-span-1 text-sm text-typography-600 pr-8">
+            <div className="hidden md:block col-span-1 text-sm text-typography-600 pr-8">
               {en.userManagement.access}
             </div>
           </div>
@@ -205,7 +205,7 @@ export const CoursesTab: FC<CoursesTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isCoursesFetching}
-                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium min-h-[40px] md:min-h-0 py-1 px-1 hover:text-typography-900"
                 >
                   + {isCoursesFetching ? en.common.loading : en.common.loadMore}
                 </button>

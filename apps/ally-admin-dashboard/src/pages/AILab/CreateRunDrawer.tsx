@@ -231,12 +231,12 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={running ? undefined : onClose} />
-      <div className="w-[50%] min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="flex items-center justify-between p-6">
+      <div className="w-full md:w-[50%] md:min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="flex items-center justify-between gap-3 p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">{en.aiLab.runs.drawerTitle}</span>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-6">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar space-y-6">
           {/* Per-skill failures from the last attempt */}
           {failures.length > 0 && (
             <div className="border border-destructive-200 bg-destructive-50 rounded-md px-4 py-3">
@@ -364,7 +364,7 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
         </div>
 
         {/* Footer: progress bar while running, else actions */}
-        <div className="border-t border-border-light px-10 py-4">
+        <div className="border-t border-border-light px-4 md:px-10 py-4">
           {running ? (
             <div>
               <div className="flex justify-between text-sm text-typography-700 mb-2">

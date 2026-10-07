@@ -60,7 +60,9 @@
     "draggableArea": {
       "text": "ड्रॅग और ड्रॉप करें या <0>चुनें</0> {{extensions}} फ़ाइल ({{size}} से कम)"
     },
-    "practiceAgain": "फिर से अभ्यास करें"
+    "practiceAgain": "फिर से अभ्यास करें",
+    "refresh": "रिफ्रेश करें",
+    "play": "चलाएँ"
   },
   "carousel": {
     "slides": {

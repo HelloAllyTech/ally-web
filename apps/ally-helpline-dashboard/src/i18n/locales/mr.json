@@ -60,7 +60,9 @@
     "draggableArea": {
       "text": "ड्रॅग आणि ड्रॉप करा किंवा <0>निवडा</0> {{extensions}} फाइल ({{size}} पेक्षा कमी)"
     },
-    "practiceAgain": "पुन्हा सराव करा"
+    "practiceAgain": "पुन्हा सराव करा",
+    "refresh": "रिफ्रेश करा",
+    "play": "प्ले करा"
   },
   "carousel": {
     "slides": {

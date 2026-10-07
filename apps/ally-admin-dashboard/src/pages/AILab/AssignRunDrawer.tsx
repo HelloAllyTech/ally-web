@@ -100,15 +100,15 @@ export const AssignRunDrawer: React.FC<AssignRunDrawerProps> = ({ run, onClose }
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[46%] min-w-[620px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="p-6">
+      <div className="w-full md:w-[46%] md:min-w-[620px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">{en.aiLab.assign.drawerTitle}</span>
           <p className="text-sm text-typography-600 mt-1">
             {run.skillName} — {en.aiLab.assign.subtitle}
           </p>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar pb-4">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar pb-4">
           {isFetching ? (
             <p className="text-typography-600 py-8 text-center">{en.common.loading}</p>
           ) : evaluators.length === 0 ? (
@@ -134,7 +134,9 @@ export const AssignRunDrawer: React.FC<AssignRunDrawerProps> = ({ run, onClose }
                       onChange={() => toggle(evaluator.id)}
                       disabled={submitted || busy}
                     />
-                    <span className="flex-1 text-base text-typography-900">{evaluator.email}</span>
+                    <span className="flex-1 min-w-0 break-all text-base text-typography-900">
+                      {evaluator.email}
+                    </span>
                     {submitted && (
                       <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
                         {en.aiLab.assign.submittedLock}
@@ -147,7 +149,7 @@ export const AssignRunDrawer: React.FC<AssignRunDrawerProps> = ({ run, onClose }
           )}
         </div>
 
-        <div className="border-t border-border-light px-10 py-4 flex gap-3 justify-end">
+        <div className="border-t border-border-light px-4 md:px-10 py-4 flex gap-3 justify-end">
           <Button variant={ButtonVariant.SECONDARY} onClick={onClose} disabled={busy}>
             {en.common.cancel}
           </Button>

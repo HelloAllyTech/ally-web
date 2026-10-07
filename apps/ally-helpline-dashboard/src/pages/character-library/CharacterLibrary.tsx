@@ -166,11 +166,11 @@ export const CharacterLibrary: React.FC = () => {
   if (!canView) return <AccessDenied />;
 
   return (
-    <div className="p-8 font-primary">
+    <div className="p-4 md:p-8 font-primary">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-6">
         <h1 className="text-2xl text-typography-900 font-secondary">{strings.characters}</h1>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full max-w-xs sm:w-64">
+          <div className="relative w-full sm:max-w-xs sm:w-64">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-typography-500">
               <SearchIcon />
             </span>
@@ -186,7 +186,7 @@ export const CharacterLibrary: React.FC = () => {
                 type="button"
                 onClick={clearSearch}
                 aria-label={strings.clearSearch}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-typography-500 hover:bg-surface-100 hover:text-typography-800"
+                className="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 rounded p-2.5 md:p-1 text-typography-500 hover:bg-surface-100 hover:text-typography-800"
               >
                 <CloseIcon width={12} height={12} />
               </button>

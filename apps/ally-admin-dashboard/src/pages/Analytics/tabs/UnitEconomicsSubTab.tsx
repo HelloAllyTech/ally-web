@@ -260,7 +260,7 @@ export const UnitEconomicsSubTab = () => {
           errorSubtitle="There was a problem fetching cost metrics."
           onRetry={() => void unitCost.refetch()}
           controls={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <RangePicker
                 id="unit-cost-range"
                 value={unitControls.range}
@@ -317,7 +317,7 @@ export const UnitEconomicsSubTab = () => {
           errorSubtitle="There was a problem fetching cost metrics."
           onRetry={() => void splitCost.refetch()}
           controls={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {splitPicker}
               <RangePicker
                 id="cost-split-range"

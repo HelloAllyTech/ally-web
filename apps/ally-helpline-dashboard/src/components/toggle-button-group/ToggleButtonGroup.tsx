@@ -27,7 +27,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
     <div
       role="group"
       className={cn(
-        "inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary",
+        "inline-flex h-10 md:h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary",
         className,
       )}
     >

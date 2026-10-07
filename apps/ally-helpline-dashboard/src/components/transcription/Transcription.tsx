@@ -325,7 +325,7 @@ const Transcription: FC<TranscriptionProps> = ({
                 <div className="text-neutral-500">
                   {convertSecondsToTime(transcript.startSeconds ?? 0)}
                 </div>
-                <div>
+                <div className="min-w-0 break-words">
                   <span className="font-medium pr-1">
                     {transcript.senderId === -1 ? (
                       <span className="text-typography-900">

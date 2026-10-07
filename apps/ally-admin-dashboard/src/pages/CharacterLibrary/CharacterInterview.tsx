@@ -183,10 +183,12 @@ export const CharacterInterview: React.FC = () => {
   };
 
   return (
-    <div className="py-[2px] font-primary h-[calc(100vh-40px)] flex flex-col">
-      <div className="flex items-center gap-2 pb-6 shrink-0">
+    // h-full below md: the phone shell's page region is already sized to the
+    // screen, so the composer stays pinned above the keyboard.
+    <div className="py-[2px] font-primary h-full md:h-[calc(100vh-40px)] flex flex-col">
+      <div className="flex flex-wrap items-center gap-2 pb-4 md:pb-6 shrink-0">
         <span
-          className="flex items-center gap-2 text-typography-800 cursor-pointer shrink-0"
+          className="flex items-center gap-2 text-typography-800 cursor-pointer shrink-0 max-md:min-h-10"
           onClick={handleBack}
           onKeyUp={e => e.key === "Enter" && handleBack()}
           role="button"
@@ -197,7 +199,7 @@ export const CharacterInterview: React.FC = () => {
             <ArrowDown />
           </span>
         </span>
-        <h1 className="text-2xl text-typography-900 font-secondary">{strings.title}</h1>
+        <h1 className="text-xl md:text-2xl text-typography-900 font-secondary">{strings.title}</h1>
 
         {/*
           Curating the corpus lives HERE, next to the interview it grounds, rather than on a
@@ -214,7 +216,7 @@ export const CharacterInterview: React.FC = () => {
             type="button"
             onClick={() => setCorpusOpen(true)}
             data-testid="character-corpus-trigger"
-            className="ml-auto shrink-0 text-sm text-primary-600"
+            className="ml-auto shrink-0 text-sm text-primary-600 max-md:min-h-10"
           >
             {en.characterCorpus.trigger}
           </button>

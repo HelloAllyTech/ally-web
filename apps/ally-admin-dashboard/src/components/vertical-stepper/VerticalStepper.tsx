@@ -69,25 +69,28 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({
 
   return (
     <div
-      className={`min-w-[150px] lg:min-w-[200px] border-r border-border-light px-2 py-3 transition-opacity ${disabled ? "opacity-50" : ""}`}
+      className={`min-w-[150px] lg:min-w-[200px] max-md:min-w-0 border-r border-border-light max-md:border-r-0 max-md:border-b px-2 py-3 transition-opacity ${disabled ? "opacity-50" : ""}`}
     >
-      <nav>
+      {/* Below md the steps sit in a single horizontal row above the form. */}
+      <nav className="max-md:flex max-md:gap-x-5 max-md:overflow-x-auto">
         {steps.map((step, index) => {
           const status = getStepStatus(step, index);
           return (
             <div
               key={step.id}
-              className={disabled ? "cursor-not-allowed" : "cursor-pointer"}
+              className={`max-md:flex max-md:min-h-10 max-md:shrink-0 max-md:items-center ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
               onClick={() => !disabled && onStepClick?.(step.id)}
             >
               <div className={getStepStyles(step, index)}>
                 <div className={getCircleStyles(step, index)}>
                   {status === stepStatusMap.active && <div className={getDotStyles(step, index)} />}
                 </div>
-                <span className="text-xs lg:text-base">{step.title}</span>
+                <span className="text-xs lg:text-base max-md:whitespace-nowrap max-md:text-base">
+                  {step.title}
+                </span>
               </div>
               <div
-                className={`h-[24px] bg-neutral-200 w-[2px] ml-[7px] lg:ml-[11px] ${index === steps.length - 1 && "hidden"}`}
+                className={`h-[24px] bg-neutral-200 w-[2px] ml-[7px] lg:ml-[11px] max-md:hidden ${index === steps.length - 1 && "hidden"}`}
               />
             </div>
           );

@@ -567,6 +567,7 @@ export const ApiEndpoints = {
     FINDING_MERGE: (id: string) => `/v1/bug-hunter/findings/${id}/merge`,
     FINDING_RELEASE: (id: string) => `/v1/bug-hunter/findings/${id}/release`,
     METRICS: "/v1/bug-hunter/metrics",
+    TODAY: "/v1/bug-hunter/today",
     METRICS_OPERATIONS: "/v1/bug-hunter/metrics/operations",
     NOTIFICATIONS: "/v1/bug-hunter/notifications",
     NOTIFICATION_READ: (id: string) => `/v1/bug-hunter/notifications/${id}/read`,

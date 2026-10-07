@@ -183,14 +183,14 @@ export const AgentTestCases: FC = () => {
 
   return (
     <div className="h-full font-primary flex flex-col">
-      <div className="flex justify-between items-center shrink-0">
+      <div className="flex flex-wrap gap-3 justify-between items-center shrink-0">
         <h1 className="text-2xl text-typography-900 font-secondary">Agent Test Cases</h1>
         <Button variant={ButtonVariant.PRIMARY} onClick={openCreate} className="h-[40px] px-5">
           Create test case
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar mt-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar mt-4 md:mt-6">
         {isLoading ? (
           <p className="text-typography-700">Loading…</p>
         ) : testCases.length === 0 ? (
@@ -198,7 +198,7 @@ export const AgentTestCases: FC = () => {
             No agent test cases yet. Click “Create test case” to add one.
           </p>
         ) : (
-          <Table className="w-full text-left border-collapse">
+          <Table className="w-full min-w-[720px] md:min-w-0 text-left border-collapse">
             <TableHead>
               <TableRow className="border-b border-border-light text-sm text-typography-700">
                 <TableHeader className="py-3 pr-4 font-medium w-1/5">Title</TableHeader>
@@ -227,13 +227,13 @@ export const AgentTestCases: FC = () => {
                   <TableCell className="py-3 pr-4">
                     <div className="flex gap-3">
                       <button
-                        className="text-primary-500 hover:underline"
+                        className="text-primary-500 hover:underline max-md:py-2"
                         onClick={() => openEdit(testCase)}
                       >
                         Edit
                       </button>
                       <button
-                        className="text-destructive-500 hover:underline"
+                        className="text-destructive-500 hover:underline max-md:py-2"
                         onClick={() => setTestCasePendingDelete(testCase)}
                       >
                         Delete
@@ -251,7 +251,7 @@ export const AgentTestCases: FC = () => {
       {isPanelOpen && (
         <div className="fixed inset-0 z-40 flex justify-end">
           <div className="absolute inset-0 bg-black/30" onClick={closePanel} />
-          <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-6 gap-5 overflow-y-auto custom-scrollbar">
+          <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-4 md:p-6 gap-5 overflow-y-auto custom-scrollbar">
             <h2 className="text-xl font-secondary text-typography-900">
               {editing ? "Edit agent test case" : "Create agent test case"}
             </h2>

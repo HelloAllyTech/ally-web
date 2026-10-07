@@ -159,4 +159,28 @@ describe("Tabs", () => {
     const tabButton = screen.getByText(/Tab 1/);
     expect(tabButton.textContent?.trim()).toBe("Tab 1 0");
   });
+
+  it("scrolls an off-screen active tab into view within the strip", () => {
+    const rect = (left: number, width: number) =>
+      ({ left, width, right: left + width, top: 0, bottom: 40, height: 40 }) as DOMRect;
+    const stripRect = vi
+      .spyOn(HTMLDivElement.prototype, "getBoundingClientRect")
+      .mockReturnValue(rect(0, 300));
+    const tabRect = vi
+      .spyOn(HTMLButtonElement.prototype, "getBoundingClientRect")
+      .mockReturnValue(rect(500, 100));
+
+    render(<Tabs items={mockItems} activeId="tab3" onChange={vi.fn()} />);
+
+    // Tab centre (550) moved to the strip centre (150).
+    expect(screen.getByTestId("tabs").scrollLeft).toBe(400);
+    stripRect.mockRestore();
+    tabRect.mockRestore();
+  });
+
+  it("leaves the strip alone when the active tab is already visible", () => {
+    render(<Tabs items={mockItems} activeId="tab1" onChange={vi.fn()} />);
+
+    expect(screen.getByTestId("tabs").scrollLeft).toBe(0);
+  });
 });

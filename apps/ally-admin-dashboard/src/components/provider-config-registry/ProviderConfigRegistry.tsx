@@ -114,7 +114,7 @@ export const ProviderConfigRegistry: React.FC<ProviderConfigRegistryProps> = ({
 
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
-      <div className="flex items-center gap-3 pb-6">
+      <div className="flex items-center gap-3 pb-4 md:pb-6">
         <h1 className="text-2xl text-typography-900 font-secondary">{title}</h1>
       </div>
 
@@ -132,7 +132,7 @@ export const ProviderConfigRegistry: React.FC<ProviderConfigRegistryProps> = ({
         }}
       />
 
-      <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
+      <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-4 md:mt-[20px]">
         <NotionTable
           tableData={{ data: tableData, columns }}
           // NotionTable hands back the row *index*, not the row object. Index

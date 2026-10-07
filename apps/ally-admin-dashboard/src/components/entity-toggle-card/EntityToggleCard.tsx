@@ -31,7 +31,7 @@ export const EntityToggleCard: React.FC<EntityToggleCardProps> = ({
   rowAction,
 }) => {
   return (
-    <div className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]">
+    <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 md:gap-4 py-3 md:py-4 md:pr-4 border-b border-border-light hover:bg-background-secondary transition-colors min-h-[80px] md:h-[80px]">
       {/* Image */}
       <div
         className={`w-[18%] md:w-[10%] lg:w-[7%] h-[56px] rounded-lg overflow-hidden flex-shrink-0 ${imageContainerClassName}`}
@@ -52,7 +52,7 @@ export const EntityToggleCard: React.FC<EntityToggleCardProps> = ({
       </div>
 
       {/* Toggle and Status */}
-      <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
+      <div className="flex items-center gap-3 flex-shrink-0 basis-full md:basis-auto min-w-[140px] justify-end mr-0 md:mr-5">
         {rowAction}
         <ToggleSwitch
           enabled={hasAccess}

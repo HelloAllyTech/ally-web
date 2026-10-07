@@ -287,7 +287,9 @@ export const CreateTrack: FC = () => {
 
   return (
     <FormProvider {...formMethods}>
-      <div className="h-[100vh] overflow-hidden font-primary">
+      {/* Below lg the outline rail sits above the editor and the page scrolls as
+          one; side by side, the rail leaves the editor too narrow to use. */}
+      <div className="lg:h-[100vh] lg:overflow-hidden font-primary">
         <div className="relative">
           <Header
             isValid={canPublish}
@@ -300,18 +302,18 @@ export const CreateTrack: FC = () => {
             type="Track"
           />
           {!canPublish && (
-            <div className="absolute right-2 top-[92px] z-20">
+            <div className="relative pb-2 lg:pb-0 lg:absolute lg:right-2 lg:top-[92px] z-20">
               <button
                 type="button"
                 onClick={() => setShowErrorPopover(prev => !prev)}
-                className="inline-flex items-center gap-1 text-xs text-destructive-500 hover:text-destructive-600"
+                className="inline-flex items-center gap-1 text-sm lg:text-xs text-destructive-500 hover:text-destructive-600 max-lg:min-h-10"
               >
                 <WarningAlt className="w-4 h-4" />
                 {publishErrors.length} issue{publishErrors.length === 1 ? "" : "s"} to fix before
                 publishing
               </button>
               {showErrorPopover && (
-                <div className="absolute right-0 mt-1 w-80 max-h-72 overflow-y-auto bg-white border border-border-light rounded-md shadow-lg p-3 z-30">
+                <div className="absolute left-0 lg:left-auto lg:right-0 mt-1 w-80 max-w-[calc(100vw-2rem)] max-h-72 overflow-y-auto bg-white border border-border-light rounded-md shadow-lg p-3 z-30">
                   <ul className="flex flex-col gap-1.5">
                     {publishErrors.map((error, index) => (
                       <li
@@ -329,7 +331,7 @@ export const CreateTrack: FC = () => {
           )}
         </div>
 
-        <div className="flex h-[calc(100vh-140px)]">
+        <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-140px)]">
           <TrackOutlineRail
             sections={sections}
             selection={selection}
@@ -345,7 +347,9 @@ export const CreateTrack: FC = () => {
             onReorderSections={handleReorderSections}
             onReorderItems={handleReorderItems}
           />
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">{renderCanvas()}</div>
+          <div className="flex-1 min-w-0 lg:overflow-y-auto custom-scrollbar py-4 lg:p-6">
+            {renderCanvas()}
+          </div>
         </div>
 
         <ActionConfirmationPopup

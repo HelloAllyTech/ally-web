@@ -3,7 +3,7 @@
 exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="px-6 pb-6 h-full flex flex-col"
+    class="px-4 md:px-6 pb-6 h-full flex flex-col"
     data-testid="calls-page"
   >
     <div
@@ -15,7 +15,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
       transition="[object Object]"
     >
       <div
-        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        class="sm:p-4 p-0 rounded-lg flex flex-wrap gap-4 sm:justify-between justify-start bg-transparent items-center"
         data-testid="calls-header-content"
       >
         <div
@@ -23,15 +23,21 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
           data-testid="calls-title"
         >
           Scribe Logs
-          <div
-            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
-            data-testid="refresh-icon"
+          <button
+            aria-label="Refresh"
+            class="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+            type="button"
           >
-            Refresh
-          </div>
+            <div
+              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              data-testid="refresh-icon"
+            >
+              Refresh
+            </div>
+          </button>
         </div>
         <div
-          class="flex gap-2 items-center font-tertiary"
+          class="flex flex-wrap gap-2 items-center font-tertiary"
           data-testid="calls-action-buttons"
         >
           <button
@@ -49,15 +55,17 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
       <div
         class="flex justify-end items-center gap-2"
       >
-        <div
-          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
+        <button
+          aria-label="More options"
+          class="cursor-pointer w-10 h-10 md:w-7 md:h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
+          type="button"
         >
           <div
             data-testid="more-vert-icon"
           >
             MoreVert
           </div>
-        </div>
+        </button>
       </div>
     </div>
     <div
@@ -108,7 +116,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
 exports[`Calls Component > Snapshot Testing > should match snapshot with admin role 1`] = `
 <DocumentFragment>
   <div
-    class="px-6 pb-6 h-full flex flex-col"
+    class="px-4 md:px-6 pb-6 h-full flex flex-col"
     data-testid="calls-page"
   >
     <div
@@ -120,7 +128,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
       transition="[object Object]"
     >
       <div
-        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        class="sm:p-4 p-0 rounded-lg flex flex-wrap gap-4 sm:justify-between justify-start bg-transparent items-center"
         data-testid="calls-header-content"
       >
         <div
@@ -128,15 +136,21 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
           data-testid="calls-title"
         >
           Scribe Logs
-          <div
-            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
-            data-testid="refresh-icon"
+          <button
+            aria-label="Refresh"
+            class="inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+            type="button"
           >
-            Refresh
-          </div>
+            <div
+              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              data-testid="refresh-icon"
+            >
+              Refresh
+            </div>
+          </button>
         </div>
         <div
-          class="flex gap-2 items-center font-tertiary"
+          class="flex flex-wrap gap-2 items-center font-tertiary"
           data-testid="calls-action-buttons"
         >
           <button
@@ -154,15 +168,17 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
       <div
         class="flex justify-end items-center gap-2"
       >
-        <div
-          class="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
+        <button
+          aria-label="More options"
+          class="cursor-pointer w-10 h-10 md:w-7 md:h-7 flex items-center justify-center rounded-sm hover:bg-[#eae7de] active:bg-[#eae7de] ml-auto"
+          type="button"
         >
           <div
             data-testid="more-vert-icon"
           >
             MoreVert
           </div>
-        </div>
+        </button>
       </div>
     </div>
     <div

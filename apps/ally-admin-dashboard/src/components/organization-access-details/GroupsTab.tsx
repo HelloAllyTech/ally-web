@@ -294,8 +294,8 @@ export const GroupsTab: FC<GroupsTabProps> = ({ organizationId }) => {
       </section>
 
       {(isCreating || editing) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded bg-white p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 md:px-0">
+          <div className="w-full max-w-md rounded bg-white p-4 md:p-6">
             <h4 className="mb-4 text-base font-medium text-typography-900">
               {editing ? "Rename group" : "New group"}
             </h4>

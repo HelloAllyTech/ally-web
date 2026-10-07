@@ -49,9 +49,9 @@ export const RecommendedActionBanner: FC<RecommendedActionBannerProps> = ({
 
   return (
     <div
-      className={`rounded border px-4 py-3 flex items-center justify-between gap-4 ${style.container}`}
+      className={`rounded border px-4 py-3 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between md:gap-4 ${style.container}`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         {Icon && <Icon size={20} className={`shrink-0 mt-0.5 ${style.iconClass}`} />}
         <div>
           <p className="text-sm font-medium text-typography-900">{action.title}</p>
@@ -59,7 +59,12 @@ export const RecommendedActionBanner: FC<RecommendedActionBannerProps> = ({
         </div>
       </div>
       {action.actionKind === "submit-ios-review" && (
-        <Button kind="primary" size="md" className="shrink-0" onClick={onSubmitReview}>
+        <Button
+          kind="primary"
+          size="md"
+          className="shrink-0 max-md:!w-full max-md:!max-w-none"
+          onClick={onSubmitReview}
+        >
           Submit for Review
         </Button>
       )}

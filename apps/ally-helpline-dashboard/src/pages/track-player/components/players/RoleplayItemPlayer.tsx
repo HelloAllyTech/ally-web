@@ -139,7 +139,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
 
   return (
     <div
-      className={`flex h-full min-h-0 flex-col items-center overflow-y-auto px-6 py-10 text-center ${
+      className={`flex h-full min-h-0 flex-col items-center overflow-y-auto px-4 py-6 text-center sm:px-6 sm:py-10 ${
         logExpanded ? "justify-start" : "justify-center"
       }`}
     >
@@ -228,7 +228,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
         <button
           onClick={launch}
           disabled={isStarting}
-          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50 max-md:min-h-11"
         >
           {alreadyCompleted && !isCase ? (
             <>

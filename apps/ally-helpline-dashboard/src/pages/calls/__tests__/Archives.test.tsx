@@ -209,7 +209,7 @@ describe("Archives Component", () => {
         </TestWrapper>,
       );
       const mainContainer = container.querySelector('[data-testid="archives-page"]');
-      expect(mainContainer).toHaveClass("px-6", "pb-6", "h-full", "flex", "flex-col");
+      expect(mainContainer).toHaveClass("px-4", "md:px-6", "pb-6", "h-full", "flex", "flex-col");
     });
 
     it("should render archives header", () => {

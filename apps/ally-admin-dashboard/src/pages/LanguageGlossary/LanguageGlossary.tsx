@@ -312,22 +312,23 @@ export const LanguageGlossary: React.FC = () => {
   const tier0Over = tier0Tokens > tier0Cap * 0.9;
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+    <div className="md:p-8 max-w-[1200px] mx-auto">
+      <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between mb-4 md:mb-6">
+        <div className="min-w-0">
           <button
-            className="text-sm text-gray-500 hover:text-gray-800"
+            type="button"
+            className="min-h-[40px] md:min-h-0 text-sm text-gray-500 hover:text-gray-800"
             onClick={() => navigate(ROUTES.MANAGE_SCENARIO_LANGUAGES)}
           >
             ← Languages
           </button>
-          <h1 className="text-2xl font-semibold mt-1">
+          <h1 className="text-2xl font-semibold mt-1 break-words">
             {language?.label ?? `Language ${languageId}`} — glossary
           </h1>
         </div>
-        <div className="text-right">
+        <div className="md:text-right">
           <div className="text-xs text-gray-500">Every-turn budget (published sections)</div>
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-2 md:justify-end">
             <div className="w-28 h-1.5 bg-gray-200 rounded overflow-hidden">
               <div
                 className={`h-full ${tier0Over ? "bg-red-500" : "bg-green-600"}`}
@@ -341,11 +342,16 @@ export const LanguageGlossary: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-[280px_1fr] gap-6">
+      {/* Below md the section list sits above the editor instead of beside it. */}
+      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-6">
         <div className="border border-gray-200 rounded flex flex-col">
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
             <span className="text-sm font-medium">Sections</span>
-            <button className="text-sm text-primary-500" onClick={addSection}>
+            <button
+              type="button"
+              className="min-h-[40px] md:min-h-0 text-sm text-primary-500"
+              onClick={addSection}
+            >
               + Add
             </button>
           </div>
@@ -458,7 +464,7 @@ export const LanguageGlossary: React.FC = () => {
                   </select>
                 </div>
               )}
-              <div className="grid grid-cols-[1fr_220px] gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-3">
                 <TextInput
                   id="glossary-title"
                   labelText="Title"
@@ -476,7 +482,7 @@ export const LanguageGlossary: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <label className="text-sm text-gray-600 flex items-center gap-2">
                   Used
                   <select
@@ -535,18 +541,20 @@ export const LanguageGlossary: React.FC = () => {
                       key={proposal.id}
                       className="flex items-start justify-between gap-3 bg-white border border-amber-200 rounded p-2"
                     >
-                      <pre className="text-sm whitespace-pre-wrap flex-1 font-sans">
+                      <pre className="text-sm whitespace-pre-wrap break-words flex-1 min-w-0 font-sans">
                         {proposal.markdown}
                       </pre>
                       <span className="flex gap-2 shrink-0">
                         <button
-                          className="text-sm text-green-700 underline"
+                          type="button"
+                          className="text-sm text-green-700 underline py-2 md:py-0"
                           onClick={() => handleProposal(proposal.id, true)}
                         >
                           Accept
                         </button>
                         <button
-                          className="text-sm text-red-700 underline"
+                          type="button"
+                          className="text-sm text-red-700 underline py-2 md:py-0"
                           onClick={() => handleProposal(proposal.id, false)}
                         >
                           Reject
@@ -567,7 +575,7 @@ export const LanguageGlossary: React.FC = () => {
                   global section only.
                 </div>
               )}
-              <div className="flex gap-3 pt-2 border-t border-gray-200">
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-200">
                 <Button
                   variant={ButtonVariant.PRIMARY}
                   onClick={handleSave}

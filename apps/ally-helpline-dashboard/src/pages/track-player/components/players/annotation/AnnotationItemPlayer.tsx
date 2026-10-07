@@ -156,8 +156,10 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
               readOnly={showingResult}
             />
 
+            {/* Single column below lg: the palette goes first, since nothing in
+                the artifact can be marked until a label is picked from it. */}
             {!showingResult && (
-              <div className="lg:sticky lg:top-0 lg:self-start">
+              <div className="max-lg:order-first lg:sticky lg:top-0 lg:self-start">
                 <ArtifactLabelPalette
                   labels={annotation.labels}
                   armedLabelId={armedLabelId}
@@ -179,7 +181,7 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
             {canRetry && (
               <button
                 onClick={handleRetry}
-                className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
               >
                 {t("tracks2.annotation.tryAgain")}
               </button>
@@ -195,7 +197,7 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
             <button
               onClick={handleSubmit}
               disabled={!marks.length || isSubmitting || alreadyCompleted}
-              className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+              className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
             >
               {t("tracks2.annotation.submit")}
             </button>

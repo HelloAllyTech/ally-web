@@ -50,7 +50,7 @@ const WaitingRow: FC<{
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-primary text-base font-medium text-typography-900">
+          <span className="min-w-0 max-w-full truncate font-primary text-base font-medium text-typography-900">
             {entry.displayName}
           </span>
           <LanguageChip code={entry.language} />

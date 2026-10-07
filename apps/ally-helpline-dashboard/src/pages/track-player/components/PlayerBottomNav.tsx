@@ -39,7 +39,7 @@ export const PlayerBottomNav: FC<PlayerBottomNavProps> = ({
         <button
           onClick={onPrev}
           disabled={!hasPrev}
-          className="inline-flex items-center gap-2 rounded-full border border-border-light px-4 py-2 text-sm font-medium text-typography-800 transition-colors hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-full border border-border-light px-4 py-2 text-sm font-medium text-typography-800 transition-colors hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("tracks2.player.prev")}
@@ -54,7 +54,7 @@ export const PlayerBottomNav: FC<PlayerBottomNavProps> = ({
               ? { scale: [1, 1.06, 1], transition: { duration: 0.4, ease: "easeOut" } }
               : { scale: 1 }
           }
-          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
         >
           {nextLabel}
           <ArrowRight className="h-4 w-4" />

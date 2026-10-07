@@ -207,11 +207,11 @@ export const RunsTab: React.FC = () => {
         ) : (
           <>
             {selectedIds.size > 0 && (
-              <div className="flex items-center justify-between bg-primary-50 border border-primary-200 rounded-md px-4 py-2 mb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-primary-50 border border-primary-200 rounded-md px-4 py-2 mb-3">
                 <span className="text-sm font-medium text-primary-800">
                   {en.aiLab.runs.selectedCount(selectedIds.size)}
                 </span>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   {selectedKind === "unpublished" && (
                     <Button
                       variant={ButtonVariant.PRIMARY}
@@ -226,8 +226,9 @@ export const RunsTab: React.FC = () => {
                     </Button>
                   )}
                   <button
+                    type="button"
                     onClick={clearSelection}
-                    className="text-sm text-typography-600 hover:text-typography-900 underline"
+                    className="min-h-10 text-sm text-typography-600 hover:text-typography-900 underline md:min-h-0"
                   >
                     {en.aiLab.runs.clearSelection}
                   </button>
@@ -331,14 +332,14 @@ export const RunsTab: React.FC = () => {
                           {new Date(run.createdAt).toLocaleString()}
                         </TableCell>
                         <TableCell className="px-4 py-3 align-top">
-                          <div className="flex items-center justify-end gap-3 text-typography-600">
+                          <div className="flex items-center justify-end gap-1 text-typography-600 md:gap-3">
                             {!!run.batchId && (batchCounts.get(run.batchId) ?? 0) > 1 && (
                               <button
                                 onClick={e => {
                                   e.stopPropagation();
                                   setCompareRun(run);
                                 }}
-                                className="hover:text-primary-600"
+                                className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                                 aria-label={en.aiLab.compare.action}
                                 title={en.aiLab.compare.action}
                               >
@@ -351,7 +352,7 @@ export const RunsTab: React.FC = () => {
                                   e.stopPropagation();
                                   setAutoEvalRun(run);
                                 }}
-                                className="hover:text-primary-600"
+                                className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                                 aria-label={en.aiLab.autoEval.action}
                                 title={en.aiLab.autoEval.action}
                               >
@@ -364,7 +365,7 @@ export const RunsTab: React.FC = () => {
                                   e.stopPropagation();
                                   setPublishRun(run);
                                 }}
-                                className="hover:text-primary-600"
+                                className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                                 aria-label={en.aiLab.publish.action}
                                 title={en.aiLab.publish.action}
                               >
@@ -378,7 +379,7 @@ export const RunsTab: React.FC = () => {
                                     e.stopPropagation();
                                     setAssignRun(run);
                                   }}
-                                  className="hover:text-primary-600"
+                                  className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                                   aria-label={en.aiLab.assign.action}
                                   title={en.aiLab.assign.action}
                                 >
@@ -389,7 +390,7 @@ export const RunsTab: React.FC = () => {
                                     e.stopPropagation();
                                     setResultsRun(run);
                                   }}
-                                  className="hover:text-primary-600"
+                                  className="inline-flex h-10 w-10 items-center justify-center hover:text-primary-600 md:block md:h-auto md:w-auto"
                                   aria-label={en.aiLab.results.action}
                                   title={en.aiLab.results.action}
                                 >
@@ -402,7 +403,7 @@ export const RunsTab: React.FC = () => {
                                 e.stopPropagation();
                                 setDeleteTarget(run);
                               }}
-                              className="hover:text-destructive-600"
+                              className="inline-flex h-10 w-10 items-center justify-center hover:text-destructive-600 md:block md:h-auto md:w-auto"
                               aria-label="Delete"
                               title="Delete"
                             >
@@ -417,7 +418,7 @@ export const RunsTab: React.FC = () => {
               </Table>
             </div>
             {(canPrev || canNext) && (
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
                 <span className="text-sm text-typography-500">
                   {en.aiLab.runs.paginationRange
                     .replace("{start}", String(rangeStart))

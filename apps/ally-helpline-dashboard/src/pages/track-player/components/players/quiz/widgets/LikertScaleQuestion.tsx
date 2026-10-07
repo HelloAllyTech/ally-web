@@ -66,7 +66,7 @@ export const LikertScaleQuestion: FC<LikertScaleQuestionProps> = ({
                     role="radio"
                     aria-checked={isSelected}
                     onClick={() => rate(statement.id, point.id)}
-                    className={`rounded-[10px] border px-2 py-2 text-center text-sm leading-tight transition-colors ${
+                    className={`rounded-[10px] border px-2 py-2 text-center text-sm leading-tight transition-colors max-md:min-h-11 ${
                       isSelected
                         ? "border-primary-500 bg-primary-50 font-medium text-primary-700"
                         : "border-border-light bg-white text-typography-800 hover:border-primary-300"

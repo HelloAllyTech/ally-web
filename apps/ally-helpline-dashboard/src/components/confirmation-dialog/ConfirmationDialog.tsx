@@ -48,13 +48,15 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.2 }}
-            className="absolute top-3 right-3"
+            className="absolute top-3 right-3 max-md:right-1 max-md:top-1"
           >
-            <CloseIcon onClick={onClose} className="cursor-pointer" />
+            {/* On phones the svg's own padding makes the tap area 44px; the
+                offset above shrinks to match so the icon doesn't move. */}
+            <CloseIcon onClick={onClose} className="cursor-pointer max-md:box-content max-md:p-2" />
           </motion.div>
 
           <motion.div
-            className="text-4xl font-secondary text-typography-800"
+            className="text-4xl font-secondary text-typography-800 max-md:px-7 max-md:text-3xl"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.3 }}

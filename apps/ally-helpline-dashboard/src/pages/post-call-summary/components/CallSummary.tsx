@@ -510,7 +510,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         {isFailedSummary ? (
           // Summary generation failed but the transcript was saved: let the
           // user retry generation or fill the fields in manually and save.
-          <div className="flex items-center justify-between gap-3 rounded-md border border-[#c4901f] bg-[#f3e6c9] px-4 py-3 mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#c4901f] bg-[#f3e6c9] px-4 py-3 mb-2">
             <span className="text-[#6b4f22] font-primary text-sm">
               {t("summary.generationFailedEditable")}
             </span>
