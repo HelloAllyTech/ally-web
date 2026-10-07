@@ -182,9 +182,9 @@ export const AndroidReleasePipeline: FC<AndroidReleasePipelineProps> = ({
             </div>
             {index < stages.length - 1 && <div className="w-px flex-1 bg-border-light my-1" />}
           </div>
-          <div className={`flex-1 ${index < stages.length - 1 ? "pb-4" : ""}`}>
+          <div className={`min-w-0 flex-1 ${index < stages.length - 1 ? "pb-4" : ""}`}>
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium text-typography-900">{stage.title}</p>
                 <Tag type={stage.tag.type} size="sm">
                   {stage.tag.label}

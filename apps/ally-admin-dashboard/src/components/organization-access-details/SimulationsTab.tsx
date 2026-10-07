@@ -133,7 +133,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
             <div className="col-span-11 text-typography-600 text-sm">
               {en.userManagement.simulations}
             </div>
-            <div className="col-span-1 text-sm text-typography-600 pr-8">
+            <div className="hidden md:block col-span-1 text-sm text-typography-600 pr-8">
               {en.userManagement.access}
             </div>
           </div>
@@ -162,7 +162,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isSimulationsFetching}
-                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium min-h-[40px] md:min-h-0 py-1 px-1 hover:text-typography-900"
                 >
                   + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
                 </button>

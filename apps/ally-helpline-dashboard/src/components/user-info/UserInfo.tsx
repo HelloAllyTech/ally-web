@@ -112,7 +112,7 @@ const UserInfo: FC<{
       {showLogout && (
         <div
           data-testid="user-info-dropdown"
-          className={`absolute z-50 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
+          className={`absolute z-50 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"} max-md:left-0 max-md:bottom-full max-md:mb-2 max-md:w-full`}
         >
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2" data-testid="user-info-credits-header">
@@ -160,7 +160,7 @@ const UserInfo: FC<{
                 track(ANALYTICS_EVENTS.PROFILE_SETTINGS_OPENED);
                 onProfileSettings();
               }}
-              className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+              className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-2.5 md:py-1 px-2 rounded justify-start w-full border-gray-200"
             >
               <ManageAccount />
               {t("profile.settings.title")}
@@ -170,7 +170,7 @@ const UserInfo: FC<{
                 track(ANALYTICS_EVENTS.DATA_POLICY_VIEWED);
                 openLinkInNewTab(ALLY_DATA_POLICY_URL);
               }}
-              className="flex items-center gap-3 text-typography-700 hover:bg-gray-100 p-1  rounded justify-start w-full border-gray-200"
+              className="flex items-center gap-3 text-typography-700 hover:bg-gray-100 p-1 max-md:py-2.5  rounded justify-start w-full border-gray-200"
             >
               <DataPolicy />
               {t("user.dataPolicy")}
@@ -179,7 +179,7 @@ const UserInfo: FC<{
               <button
                 data-testid="user-info-logout-button"
                 onClick={onLogout}
-                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-2.5 md:py-1 px-2 rounded justify-start w-full border-gray-200"
               >
                 <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
                 {t("user.logout")}

@@ -129,7 +129,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
           {prompts.map((prompt, index) => (
             <div
               key={prompt.id}
-              className="rounded-[16px] border border-border-light bg-white p-5 shadow-sm"
+              className="rounded-[16px] border border-border-light bg-white p-4 shadow-sm sm:p-5"
             >
               <div className="mb-3 flex items-start gap-3">
                 <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 text-sm font-semibold text-white">
@@ -170,7 +170,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
           <button
             onClick={handleSubmit}
             disabled={!allRequiredAnswered || isSubmitting}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="w-full rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11 sm:w-auto"
           >
             {t("tracks2.journal.submit")}
           </button>

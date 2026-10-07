@@ -154,7 +154,7 @@ export const CohortRetentionCard = ({ tenantId }: { tenantId?: string }) => {
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="w-72">
+          <div className="w-full sm:w-72">
             <Dropdown
               id="cohort-active-definition"
               size="md"

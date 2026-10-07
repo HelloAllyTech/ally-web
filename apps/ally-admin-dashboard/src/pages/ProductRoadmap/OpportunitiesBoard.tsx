@@ -238,7 +238,11 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   Total votes
                 </SortHeader>
                 <TableHeader className="w-24">Your votes</TableHeader>
-                <SortHeader field="description">Opportunity</SortHeader>
+                {/* A floor on phones only: the table scrolls sideways there, and without one the six
+                    fixed-width columns squeeze the description to a word per line. */}
+                <SortHeader field="description" className="min-w-[14rem] md:min-w-0">
+                  Opportunity
+                </SortHeader>
                 <TableHeader className="w-32">Stage</TableHeader>
                 <TableHeader className="w-32">Owner</TableHeader>
                 <SortHeader field="createdAt" className="w-28">

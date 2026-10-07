@@ -225,7 +225,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
     return (
       <span
         className={cn(
-          "shrink-0 rounded-full px-2 py-0.5 text-[11px] leading-tight",
+          "shrink-0 rounded-full px-2 py-0.5 text-[11px] leading-tight max-md:text-xs",
           secured ? "bg-primary-50 text-primary-700" : "bg-neutral-100 text-typography-700",
         )}
         // The headline already says whether the streak is secured or at risk, so
@@ -245,7 +245,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
     if (!summary || !hasDistinctDailyGoal(summary, ACTIVE_DAY_MINUTES)) return null;
 
     return (
-      <div className="mt-0.5 text-[11px] text-typography-500">
+      <div className="mt-0.5 text-[11px] text-typography-500 max-md:text-xs">
         {t("practiceStreak.today.goal", {
           done: Math.round(summary.minutesToday),
           goal: Math.round(summary.dailyGoalMinutes),
@@ -266,7 +266,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
           event.stopPropagation();
           onStartPractice();
         }}
-        className="shrink-0 rounded-[4px] bg-primary-500 px-2.5 py-1 text-[12px] font-medium text-white outline-none transition-colors hover:bg-primary-600 focus-visible:ring-2 focus-visible:ring-primary-300"
+        className="shrink-0 rounded-[4px] bg-primary-500 px-2.5 py-1 text-[12px] font-medium text-white outline-none transition-colors hover:bg-primary-600 focus-visible:ring-2 focus-visible:ring-primary-300 max-md:min-h-10 max-md:px-3"
       >
         {t(key)}
       </button>
@@ -303,7 +303,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
   );
 
   const renderLegend = () => (
-    <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] text-typography-500">
+    <div className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] text-typography-500 max-md:text-xs">
       <span>{t("practiceStreak.legend.less")}</span>
       {HEATMAP_LEVEL_CLASSES.map((cls, level) => (
         <span key={level} className={cn("h-3 w-3 rounded-[2px]", cls)} />
@@ -361,7 +361,10 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
    * scroll container.
    */
   const renderReadout = () => (
-    <div className="mt-2 min-h-[1rem] text-[11px] text-typography-600" aria-live="polite">
+    <div
+      className="mt-2 min-h-[1rem] text-[11px] text-typography-600 max-md:text-xs"
+      aria-live="polite"
+    >
       {readout ?? t("practiceStreak.a11y.readoutEmpty")}
     </div>
   );
@@ -391,7 +394,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
           <button
             type="button"
             onClick={() => refetch()}
-            className="rounded-[4px] border border-border-medium px-2 py-0.5 text-[12px] text-typography-800 outline-none transition-colors hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300"
+            className="rounded-[4px] border border-border-medium px-2 py-0.5 text-[12px] text-typography-800 outline-none transition-colors hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 max-md:min-h-10 max-md:px-3"
           >
             {t("practiceStreak.retry")}
           </button>
@@ -444,9 +447,11 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
             >
               {copy?.headline}
             </div>
-            <div className="mt-0.5 truncate text-[11px] text-typography-600">{copy?.sub}</div>
+            <div className="mt-0.5 truncate text-[11px] text-typography-600 max-md:text-xs">
+              {copy?.sub}
+            </div>
             {renderGoalLine()}
-            <div className="mt-1 truncate text-[11px] text-typography-500">
+            <div className="mt-1 truncate text-[11px] text-typography-500 max-md:text-xs">
               {milestone && <span>{milestone}</span>}
               {milestone && <span className="mx-1.5">·</span>}
               {t("practiceStreak.stats.personalBest", {

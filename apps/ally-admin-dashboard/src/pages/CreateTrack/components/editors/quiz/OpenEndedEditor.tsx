@@ -121,7 +121,7 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath, graded
                   {...nameField}
                   value={nameField.value ?? ""}
                   placeholder="Criterion name"
-                  className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
+                  className="flex-1 min-w-0 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
                 />
               )}
             />
@@ -149,7 +149,8 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath, graded
             <button
               type="button"
               onClick={() => remove(index)}
-              className="text-destructive-500 hover:text-destructive-600"
+              className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
+              aria-label="Remove"
             >
               <Trash className="w-4 h-4" />
             </button>

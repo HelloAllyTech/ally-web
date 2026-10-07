@@ -54,10 +54,10 @@ export const BlogPost: FC = () => {
     <div className="blog-serif flex min-h-dvh flex-col bg-[#FAF9F5] text-[#29261f]">
       <BlogHeader />
 
-      <div className="mx-auto w-full max-w-2xl flex-1 px-6 pb-16 pt-12">
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-12">
         <Link
           to={ROUTES.BLOG}
-          className="text-sm text-[#928b7c] transition-colors hover:text-[#29261f]"
+          className="text-sm text-[#928b7c] transition-colors hover:text-[#29261f] max-md:inline-flex max-md:min-h-[44px] max-md:items-center"
         >
           ← All posts
         </Link>
@@ -96,7 +96,7 @@ export const BlogPost: FC = () => {
             <RichTextRenderer
               content={post.body}
               allowImages
-              className="mt-8 max-w-none text-[17px] leading-[1.75] text-[#33322F] [&_h1]:text-3xl [&_h1]:text-[#29261f] [&_h1]:mt-10 [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:text-[#29261f] [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:text-[#29261f] [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:my-4 [&_a]:underline [&_a]:underline-offset-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_li]:my-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D97757] [&_blockquote]:pl-5 [&_blockquote]:my-6 [&_blockquote]:text-lg [&_blockquote]:text-[#565045] [&_img]:rounded-xl"
+              className="mt-8 max-w-none break-words text-[17px] leading-[1.75] [&_img]:h-auto [&_img]:max-w-full [&_pre]:overflow-x-auto text-[#33322F] [&_h1]:text-3xl [&_h1]:text-[#29261f] [&_h1]:mt-10 [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:text-[#29261f] [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:text-[#29261f] [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:my-4 [&_a]:underline [&_a]:underline-offset-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4 [&_li]:my-1 [&_blockquote]:border-l-2 [&_blockquote]:border-[#D97757] [&_blockquote]:pl-5 [&_blockquote]:my-6 [&_blockquote]:text-lg [&_blockquote]:text-[#565045] [&_img]:rounded-xl"
             />
 
             {post.tags?.length > 0 && (
@@ -105,7 +105,7 @@ export const BlogPost: FC = () => {
                   <Link
                     key={tag}
                     to={`${ROUTES.BLOG}?tag=${encodeURIComponent(tag)}`}
-                    className="rounded-full border border-[#29261f]/10 bg-white px-3 py-1 text-sm text-[#565045] transition-colors hover:border-[#29261f]/30 hover:text-[#29261f]"
+                    className="inline-flex min-h-[40px] items-center rounded-full border border-[#29261f]/10 bg-white px-3 py-1 text-sm text-[#565045] md:min-h-0 transition-colors hover:border-[#29261f]/30 hover:text-[#29261f]"
                   >
                     #{tag}
                   </Link>

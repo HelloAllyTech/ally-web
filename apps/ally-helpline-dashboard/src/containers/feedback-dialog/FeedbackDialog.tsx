@@ -44,7 +44,9 @@ const FeedbackDialog: FC<FeedbackDialogProps> = ({
   return (
     <AnimatePresence>
       <ComposedModal open={open} onClose={onClose} size="sm" className="font-primary">
-        <ModalBody className="overflow-hidden p-6">
+        {/* Scrolls on phones: with the keyboard up for the comment box there
+            can be less height than the form, and clipping hid Submit. */}
+        <ModalBody className="overflow-hidden p-6 max-md:overflow-y-auto max-md:p-4">
           <motion.div
             initial={motionVariants.initial}
             animate={motionVariants.animate}

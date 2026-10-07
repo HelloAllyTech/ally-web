@@ -17,10 +17,10 @@ export const Health = () => {
 
   return (
     <div className="min-h-dvh bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center sm:p-8">
         <div className="flex items-center justify-center space-x-3 mb-6">
           <LifelineLogo className="h-10 w-10" />
-          <h1 className="text-3xl font-bold text-typography-800 dark:text-white font-primary">
+          <h1 className="text-2xl font-bold text-typography-800 dark:text-white font-primary sm:text-3xl">
             Application Health Status
           </h1>
         </div>

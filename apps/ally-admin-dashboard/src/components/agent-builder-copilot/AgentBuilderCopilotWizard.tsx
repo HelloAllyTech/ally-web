@@ -154,10 +154,10 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
 
         {history.map((entry, index) => (
           <div key={index} className="flex flex-col gap-2">
-            <div className="self-start max-w-[85%] rounded-lg bg-background-secondary px-4 py-2 text-sm text-typography-800">
+            <div className="self-start max-w-[85%] break-words rounded-lg bg-background-secondary px-4 py-2 text-sm text-typography-800">
               {entry.question}
             </div>
-            <div className="self-end max-w-[85%] rounded-lg bg-primary-50 px-4 py-2 text-sm text-typography-900 whitespace-pre-wrap">
+            <div className="self-end max-w-[85%] break-words rounded-lg bg-primary-50 px-4 py-2 text-sm text-typography-900 whitespace-pre-wrap">
               {entry.answer}
             </div>
           </div>

@@ -194,7 +194,7 @@ export const ReferenceImagesField: React.FC<ReferenceImagesFieldProps> = ({
                     type="button"
                     aria-label={`Remove ${image.caption || `reference image ${index + 1}`}`}
                     onClick={() => removeAt(index)}
-                    className="bg-white/90 text-typography-700 hover:text-destructive-500 absolute top-1 right-1 inline-flex cursor-pointer items-center rounded-full p-1 transition-colors"
+                    className="bg-white/90 text-typography-700 hover:text-destructive-500 absolute top-1 right-1 inline-flex cursor-pointer items-center rounded-full p-2 transition-colors md:p-1"
                   >
                     <Close size={14} />
                   </button>

@@ -212,7 +212,7 @@ export const ComponentLibrary: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+        <h1 className="text-2xl text-typography-900 pb-4 md:pb-6 font-secondary">
           {en.componentLibrary.title}
         </h1>
         <div className="relative">
@@ -241,7 +241,7 @@ export const ComponentLibrary: React.FC = () => {
                   key={type}
                   type="button"
                   onClick={() => handlePickCreateType(type)}
-                  className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-secondary-50 text-typography-900"
+                  className="w-full text-left rounded-md px-2 py-2.5 md:py-2 text-sm hover:bg-secondary-50 text-typography-900"
                 >
                   {TRACK_ITEM_TYPE_LABELS[type]}
                 </button>
@@ -249,7 +249,7 @@ export const ComponentLibrary: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
+        <div className="flex flex-col gap-4 h-[70dvh] md:h-[calc(100vh-100px)] relative mt-4 md:mt-[20px]">
           {templates.length === 0 && !isLoading ? (
             <p className="text-sm text-typography-500 px-2 py-6 text-center">
               {en.componentLibrary.emptyState}

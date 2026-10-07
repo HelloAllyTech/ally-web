@@ -86,9 +86,9 @@ const formatLifecycleDetail = (detail: Record<string, unknown> | null): string =
 };
 
 const Field: FC<{ label: string; value: ReactNode }> = ({ label, value }) => (
-  <div className="flex flex-col gap-1">
+  <div className="flex flex-col gap-1 min-w-0">
     <span className="text-xs text-typography-700">{label}</span>
-    <span className="text-sm text-typography-900">{value}</span>
+    <span className="text-sm text-typography-900 break-words">{value}</span>
   </div>
 );
 
@@ -334,7 +334,7 @@ export const RoleplaySessionLogDetail: FC = () => {
         <Button variant={ButtonVariant.TEXT} onClick={goBack} className="h-[36px] px-0">
           ← Back to logs
         </Button>
-        <h1 className="text-2xl text-typography-900 font-secondary mt-2">
+        <h1 className="text-2xl text-typography-900 font-secondary mt-2 break-words">
           {data.scenarioTitle || "Roleplay session"}
         </h1>
       </div>
@@ -484,41 +484,43 @@ export const RoleplaySessionLogDetail: FC = () => {
             />
           </SectionCard>
           {data.usage.byServiceModel.length > 0 && (
-            <table className="w-full text-left border-collapse mt-3">
-              <thead>
-                <tr className="border-b border-border-light text-sm text-typography-700">
-                  <th className="py-2 pr-4 font-medium">Service</th>
-                  <th className="py-2 pr-4 font-medium">Provider</th>
-                  <th className="py-2 pr-4 font-medium">Model</th>
-                  <th className="py-2 pr-4 font-medium">Usage</th>
-                  <th className="py-2 pr-4 font-medium">Calls</th>
-                  <th className="py-2 pr-4 font-medium">Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.usage.byServiceModel.map((b, i) => (
-                  <tr
-                    key={`${b.service}-${b.provider}-${b.model}-${i}`}
-                    className="border-b border-border-light text-sm text-typography-900"
-                  >
-                    <td className="py-2 pr-4 uppercase text-typography-700">{b.service}</td>
-                    <td className="py-2 pr-4">{b.provider}</td>
-                    <td className="py-2 pr-4">{b.model}</td>
-                    <td className="py-2 pr-4 whitespace-nowrap">
-                      {b.service === "llm"
-                        ? `${formatNumber(b.totalTokens)} tok`
-                        : b.service === "stt"
-                          ? formatAudio(b.audioMs)
-                          : `${formatNumber(b.characters)} chars`}
-                    </td>
-                    <td className="py-2 pr-4">{formatNumber(b.calls)}</td>
-                    <td className="py-2 pr-4 whitespace-nowrap">
-                      {formatCost(b.estimatedCostUsd, b.priced)}
-                    </td>
+            <div className="overflow-x-auto mt-3">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-light text-sm text-typography-700">
+                    <th className="py-2 pr-4 font-medium">Service</th>
+                    <th className="py-2 pr-4 font-medium">Provider</th>
+                    <th className="py-2 pr-4 font-medium">Model</th>
+                    <th className="py-2 pr-4 font-medium">Usage</th>
+                    <th className="py-2 pr-4 font-medium">Calls</th>
+                    <th className="py-2 pr-4 font-medium">Cost</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.usage.byServiceModel.map((b, i) => (
+                    <tr
+                      key={`${b.service}-${b.provider}-${b.model}-${i}`}
+                      className="border-b border-border-light text-sm text-typography-900"
+                    >
+                      <td className="py-2 pr-4 uppercase text-typography-700">{b.service}</td>
+                      <td className="py-2 pr-4">{b.provider}</td>
+                      <td className="py-2 pr-4">{b.model}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {b.service === "llm"
+                          ? `${formatNumber(b.totalTokens)} tok`
+                          : b.service === "stt"
+                            ? formatAudio(b.audioMs)
+                            : `${formatNumber(b.characters)} chars`}
+                      </td>
+                      <td className="py-2 pr-4">{formatNumber(b.calls)}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {formatCost(b.estimatedCostUsd, b.priced)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       )}
@@ -689,7 +691,7 @@ export const RoleplaySessionLogDetail: FC = () => {
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="text-xs text-typography-700">{m.label}</span>
                         <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded ${
+                          className={`text-xs md:text-[10px] px-1.5 py-0.5 rounded ${
                             WEAK_METRIC_STATE_CLASS[m.state] ?? ""
                           }`}
                         >
@@ -996,31 +998,33 @@ export const RoleplaySessionLogDetail: FC = () => {
                 ⚠ The agent never joined this session.
               </p>
             )}
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border-light text-sm text-typography-700">
-                  <th className="py-2 pr-4 font-medium">Time</th>
-                  <th className="py-2 pr-4 font-medium">Event</th>
-                  <th className="py-2 pr-4 font-medium">Detail</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data.lifecycle ?? []).map(item => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-border-light text-sm text-typography-900 align-top"
-                  >
-                    <td className="py-2 pr-4 whitespace-nowrap text-typography-700">
-                      {formatDate(item.occurredAt)}
-                    </td>
-                    <td className="py-2 pr-4">{lifecycleLabel(item.type)}</td>
-                    <td className="py-2 pr-4 text-typography-700">
-                      {formatLifecycleDetail(item.detail)}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-light text-sm text-typography-700">
+                    <th className="py-2 pr-4 font-medium">Time</th>
+                    <th className="py-2 pr-4 font-medium">Event</th>
+                    <th className="py-2 pr-4 font-medium">Detail</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(data.lifecycle ?? []).map(item => (
+                    <tr
+                      key={item.id}
+                      className="border-b border-border-light text-sm text-typography-900 align-top"
+                    >
+                      <td className="py-2 pr-4 whitespace-nowrap text-typography-700">
+                        {formatDate(item.occurredAt)}
+                      </td>
+                      <td className="py-2 pr-4">{lifecycleLabel(item.type)}</td>
+                      <td className="py-2 pr-4 text-typography-700">
+                        {formatLifecycleDetail(item.detail)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </section>
@@ -1033,34 +1037,36 @@ export const RoleplaySessionLogDetail: FC = () => {
         {data.events.length === 0 ? (
           <p className="text-sm text-typography-700">No events recorded for this session.</p>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border-light text-sm text-typography-700">
-                <th className="py-2 pr-4 font-medium">Time</th>
-                <th className="py-2 pr-4 font-medium">Event</th>
-                <th className="py-2 pr-4 font-medium">Score</th>
-                <th className="py-2 pr-4 font-medium">Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.events.map(event => (
-                <tr
-                  key={event.id}
-                  className="border-b border-border-light text-sm text-typography-900 align-top"
-                >
-                  <td className="py-2 pr-4 whitespace-nowrap text-typography-700">
-                    {formatDate(event.occurredAt)}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {event.emoji ? `${event.emoji} ` : ""}
-                    {event.eventName || event.eventId}
-                  </td>
-                  <td className="py-2 pr-4">{event.score ?? "—"}</td>
-                  <td className="py-2 pr-4 text-typography-700">{event.message || "—"}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border-light text-sm text-typography-700">
+                  <th className="py-2 pr-4 font-medium">Time</th>
+                  <th className="py-2 pr-4 font-medium">Event</th>
+                  <th className="py-2 pr-4 font-medium">Score</th>
+                  <th className="py-2 pr-4 font-medium">Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.events.map(event => (
+                  <tr
+                    key={event.id}
+                    className="border-b border-border-light text-sm text-typography-900 align-top"
+                  >
+                    <td className="py-2 pr-4 whitespace-nowrap text-typography-700">
+                      {formatDate(event.occurredAt)}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {event.emoji ? `${event.emoji} ` : ""}
+                      {event.eventName || event.eventId}
+                    </td>
+                    <td className="py-2 pr-4">{event.score ?? "—"}</td>
+                    <td className="py-2 pr-4 text-typography-700">{event.message || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
@@ -1111,7 +1117,7 @@ export const RoleplaySessionLogDetail: FC = () => {
                         }
                       : undefined
                   }
-                  className={`max-w-[80%] rounded-lg px-3 py-2 border-2 ${
+                  className={`max-w-[80%] break-words rounded-lg px-3 py-2 border-2 ${
                     isActive ? "border-primary-500" : "border-transparent"
                   } ${canSeek ? "cursor-pointer" : ""} ${
                     isUser
@@ -1119,7 +1125,7 @@ export const RoleplaySessionLogDetail: FC = () => {
                       : "self-start bg-neutral-100 text-typography-900"
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-xs text-typography-700 mb-1">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-typography-700 mb-1">
                     <span className="font-medium">{isUser ? "User" : "Ally"}</span>
                     {turn.startSeconds !== null && <span>{formatOffset(turn.startSeconds)}</span>}
                     {annotations.map((a, i) => (

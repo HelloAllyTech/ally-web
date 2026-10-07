@@ -130,7 +130,7 @@ export const LifecycleBucketChips: FC<LifecycleBucketChipsProps> = ({
             // promise panels that do not exist.
             aria-pressed={isSelected}
             onClick={() => onChange(chip.key)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium cursor-pointer transition-colors hover:bg-neutral-50 ${tone} ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium md:py-1 cursor-pointer transition-colors hover:bg-neutral-50 ${tone} ${
               isSelected ? SELECTED_RING : ""
             }`}
           >

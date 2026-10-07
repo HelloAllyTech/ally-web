@@ -95,7 +95,7 @@ export const TalkerDialog: FC<TalkerDialogProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
-        className="w-full max-w-sm rounded-2xl bg-white p-5 font-primary shadow-lg"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-5 font-primary shadow-lg"
       >
         <h2 id={titleId} className="text-xl font-medium text-typography-900">
           {title}

@@ -65,7 +65,7 @@ const Thumbs: FC<{
         aria-pressed={value === "UP"}
         disabled={disabled}
         onClick={() => onRate("UP")}
-        className={`inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+        className={`inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:h-8 md:w-8 ${
           value === "UP" ? "text-primary-600" : "text-typography-600"
         }`}
       >
@@ -81,7 +81,7 @@ const Thumbs: FC<{
         aria-pressed={value === "DOWN"}
         disabled={disabled}
         onClick={() => onRate("DOWN")}
-        className={`inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+        className={`inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:h-8 md:w-8 ${
           value === "DOWN" ? "text-primary-600" : "text-typography-600"
         }`}
       >
@@ -246,7 +246,7 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
               <button
                 type="button"
                 onClick={onEditFinalSummary}
-                className="rounded-full border border-border-medium px-3 py-1 font-primary text-xs text-typography-900 hover:bg-background-secondary"
+                className="min-h-[40px] rounded-full border border-border-medium px-3 py-1 font-primary text-xs text-typography-900 hover:bg-background-secondary md:min-h-0"
               >
                 {t("helplineWorkspace.copilot.editSummary")}
               </button>
@@ -315,7 +315,7 @@ export const CopilotPanel: FC<CopilotPanelProps> = ({
                               type="button"
                               aria-label={t("helplineWorkspace.copilot.useLabel")}
                               onClick={() => onUseSuggestion(suggestion, suggestionMessage.id)}
-                              className="min-h-[32px] rounded-full bg-white px-3 font-primary text-xs font-medium text-typography-900 shadow-sm hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                              className="min-h-[40px] rounded-full bg-white px-3 font-primary text-xs font-medium text-typography-900 shadow-sm md:min-h-[32px] hover:bg-background-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                             >
                               {t("helplineWorkspace.copilot.use")}
                             </button>

@@ -989,8 +989,12 @@ export const KpiTile = ({
         </>
       ) : (
         <>
-          <div className="flex items-end justify-between gap-2">
-            <p className="text-3xl font-medium text-typography-900">{value}</p>
+          {/* Wraps rather than overflows: two-up on a phone, a tile is too
+              narrow for a long count beside its sparkline. */}
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <p className="min-w-0 break-words text-2xl font-medium text-typography-900 sm:text-3xl">
+              {value}
+            </p>
             {spark && spark.length > 1 && <Sparkline values={spark} label={`${label} trend`} />}
           </div>
           <div className="mt-1 min-h-4">
@@ -1223,7 +1227,7 @@ export const ChartCard = ({
     </div>
   ) : thin ? (
     <div
-      className="flex flex-col items-center justify-center gap-1 rounded border border-dashed border-[#e0e0e0] text-center"
+      className="flex flex-col items-center justify-center gap-1 rounded border border-dashed border-[#e0e0e0] text-center max-sm:px-4"
       style={{ height }}
     >
       <p className="text-sm font-medium text-typography-600">Not enough data to show a trend</p>
@@ -1233,7 +1237,7 @@ export const ChartCard = ({
     </div>
   ) : empty ? (
     <div
-      className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500"
+      className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500 max-sm:px-4 max-sm:text-center"
       style={{ height }}
     >
       {emptyText}
@@ -1274,8 +1278,12 @@ export const ChartCard = ({
   const body = (
     <>
       {(title || onExpand || controls || chartId) && (
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+        // On a phone the controls drop under the title when both do not fit,
+        // rather than squeezing the title into a narrow column beside them. The
+        // title leaves exactly one icon button's room (3rem), so a lone expand
+        // button still sits beside it and anything wider wraps.
+        <div className="flex items-start justify-between gap-2 max-sm:flex-wrap">
+          <div className="min-w-0 max-sm:basis-[calc(100%_-_3rem)]">
             <div className="flex items-center gap-2">
               {title && (
                 /* The native `title` attribute only accepts a string; a node
@@ -1292,7 +1300,7 @@ export const ChartCard = ({
             </div>
             {caption && !collapseMeta && <p className="text-xs text-typography-500">{caption}</p>}
           </div>
-          <div className="flex items-start gap-1 shrink-0">
+          <div className="analytics-card-controls ml-auto flex shrink-0 items-start gap-1 max-sm:min-w-0 max-sm:shrink max-sm:flex-wrap max-sm:justify-end">
             {controls}
             {onExpand && (
               <Button
@@ -1303,6 +1311,7 @@ export const ChartCard = ({
                 tooltipPosition="left"
                 renderIcon={Maximize}
                 onClick={onExpand}
+                className="max-sm:!h-10 max-sm:!w-10"
               />
             )}
           </div>

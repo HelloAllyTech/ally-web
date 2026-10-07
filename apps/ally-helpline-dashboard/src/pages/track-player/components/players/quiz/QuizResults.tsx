@@ -236,7 +236,7 @@ export const QuizResults: FC<QuizResultsProps> = ({
             <button
               onClick={onRegrade}
               disabled={isRegrading}
-              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11 disabled:opacity-50"
             >
               {isRegrading
                 ? t("tracks2.quiz.results.grading")
@@ -246,7 +246,7 @@ export const QuizResults: FC<QuizResultsProps> = ({
           {!hasPending && result.passed && (
             <button
               onClick={onNext}
-              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
             >
               {t("tracks2.quiz.results.next")}
             </button>
@@ -254,7 +254,7 @@ export const QuizResults: FC<QuizResultsProps> = ({
           {!hasPending && !result.passed && canRetry && (
             <button
               onClick={onRetry}
-              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
             >
               {t("tracks2.quiz.results.retry")}
             </button>

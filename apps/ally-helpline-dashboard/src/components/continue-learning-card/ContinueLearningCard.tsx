@@ -64,12 +64,17 @@ export const ContinueLearningCard: FC<ContinueLearningCardProps> = ({ tracks }) 
       className="w-full mb-4 rounded-[16px] border border-border-light bg-primary-50 p-3 sm:p-4 flex items-center gap-3 sm:gap-4"
       data-testid="continue-learning-card"
     >
+      {/* CustomImage wraps the <img> in a w-full h-full box, which as a flex
+          item claimed the whole row and squeezed the text column to nothing —
+          this box gives the cover a fixed slot instead. */}
       {track.coverImageUrl && (
-        <CustomImage
-          src={track.coverImageUrl}
-          alt={track.title}
-          className="hidden sm:block w-[88px] h-[56px] rounded-[10px] object-cover flex-shrink-0 bg-background-secondary"
-        />
+        <div className="hidden sm:block w-[88px] h-[56px] flex-shrink-0">
+          <CustomImage
+            src={track.coverImageUrl}
+            alt={track.title}
+            className="w-full h-full rounded-[10px] object-cover bg-background-secondary"
+          />
+        </div>
       )}
       <div className="flex-shrink-0">
         <CircularProgress
@@ -97,7 +102,7 @@ export const ContinueLearningCard: FC<ContinueLearningCardProps> = ({ tracks }) 
       </div>
       <button
         onClick={handleContinue}
-        className="flex-shrink-0 px-4 sm:px-6 py-2 bg-primary-500 text-white rounded-full text-sm font-medium hover:bg-primary-600 transition-colors font-primary"
+        className="flex-shrink-0 px-4 sm:px-6 py-2 max-md:min-h-11 bg-primary-500 text-white rounded-full text-sm font-medium hover:bg-primary-600 transition-colors font-primary"
       >
         {t("common.continue")}
       </button>

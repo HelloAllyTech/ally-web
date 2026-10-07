@@ -95,7 +95,7 @@ export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({ goals,
       </p>
 
       <div className="flex items-end gap-2">
-        <div className="grow">
+        <div className="min-w-0 grow">
           <TextInput
             id="new-product-goal"
             labelText="Add a goal"
@@ -135,7 +135,7 @@ export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({ goals,
               >
                 {isEditing ? (
                   <>
-                    <div className="grow">
+                    <div className="min-w-0 grow">
                       <TextInput
                         id={`goal-${goal.id}`}
                         labelText="Goal name"
@@ -158,7 +158,9 @@ export const ProductGoalsManager: React.FC<ProductGoalsManagerProps> = ({ goals,
                   </>
                 ) : (
                   <>
-                    <span className="text-typography-primary grow">{goal.name}</span>
+                    <span className="text-typography-primary min-w-0 grow break-words">
+                      {goal.name}
+                    </span>
                     <span className="text-typography-secondary shrink-0 text-xs">
                       {isUsageLoading ? "…" : `${inUse} opportunit${inUse === 1 ? "y" : "ies"}`}
                     </span>

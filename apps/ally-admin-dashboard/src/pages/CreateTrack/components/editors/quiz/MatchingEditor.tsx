@@ -82,18 +82,18 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath, graded =
       </label>
       <div className="flex flex-col gap-2">
         {left.map((leftEntry, index) => (
-          <div key={leftEntry.id} className="flex items-center gap-2">
+          <div key={leftEntry.id} className="flex flex-wrap lg:flex-nowrap items-center gap-2">
             <input
               value={leftEntry.text}
               onChange={event => updateLeftText(index, event.target.value)}
               placeholder={`Left ${index + 1}`}
-              className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
+              className="flex-1 min-w-0 max-lg:min-w-[7rem] border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
             />
             <input
               value={right[index]?.text ?? ""}
               onChange={event => updateRightText(index, event.target.value)}
               placeholder={`Right ${index + 1}`}
-              className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
+              className="flex-1 min-w-0 max-lg:min-w-[7rem] border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
             />
             <Select
               id={`matching-${leftEntry.id}`}
@@ -116,7 +116,8 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath, graded =
               <button
                 type="button"
                 onClick={() => removePairRow(index)}
-                className="text-destructive-500 hover:text-destructive-600"
+                className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
+                aria-label="Remove"
               >
                 <Trash className="w-4 h-4" />
               </button>
@@ -151,12 +152,13 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath, graded =
                   )
                 }
                 placeholder="Distractor answer"
-                className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
+                className="flex-1 min-w-0 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
               />
               <button
                 type="button"
                 onClick={() => removeRight(entry.id)}
-                className="text-destructive-500 hover:text-destructive-600"
+                className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
+                aria-label="Remove"
               >
                 <Trash className="w-4 h-4" />
               </button>

@@ -72,7 +72,7 @@ export const PostInput: FC<PostInputProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-full px-4 py-1.5 text-sm font-medium text-typography-700 hover:bg-neutral-100"
+              className="rounded-full px-4 py-1.5 text-sm font-medium text-typography-700 hover:bg-neutral-100 max-md:min-h-10"
             >
               {t("tracks2.discussion.cancel")}
             </button>
@@ -81,7 +81,7 @@ export const PostInput: FC<PostInputProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="rounded-full bg-primary-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full bg-primary-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 max-md:min-h-10"
           >
             {submitLabel}
           </button>

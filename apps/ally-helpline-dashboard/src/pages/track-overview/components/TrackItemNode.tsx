@@ -25,7 +25,7 @@ const StateChip: FC<{ item: TrackDetailItem; isNext: boolean }> = ({ item, isNex
 
   if (item.status === TrackItemStatus.COMPLETED) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-success-800">
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-success-800 max-md:shrink-0 max-md:whitespace-nowrap">
         <TickGreenBackground className="w-4 h-4" />
         {t("tracks2.status.completed")}
       </span>
@@ -33,14 +33,14 @@ const StateChip: FC<{ item: TrackDetailItem; isNext: boolean }> = ({ item, isNex
   }
   if (item.status === TrackItemStatus.UNLOCKED && item.startedAt) {
     return (
-      <span className="px-2 py-[2px] text-xs font-semibold rounded-full bg-warning-50 text-warning-800">
+      <span className="px-2 py-[2px] text-xs font-semibold rounded-full bg-warning-50 text-warning-800 max-md:shrink-0 max-md:whitespace-nowrap">
         {t("tracks2.status.inProgress")}
       </span>
     );
   }
   if (item.status === TrackItemStatus.UNLOCKED && isNext) {
     return (
-      <span className="px-2 py-[2px] text-xs font-semibold rounded-full bg-primary-100 text-primary-700">
+      <span className="px-2 py-[2px] text-xs font-semibold rounded-full bg-primary-100 text-primary-700 max-md:shrink-0 max-md:whitespace-nowrap">
         {t("common.next")}
       </span>
     );
@@ -75,7 +75,9 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
 
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="flex items-center gap-2">
-          <span className="truncate text-base font-medium text-typography-900">{item.title}</span>
+          <span className="truncate text-base font-medium text-typography-900 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words max-md:leading-snug">
+            {item.title}
+          </span>
           <StateChip item={item} isNext={isNext} />
         </span>
         <span className="text-xs text-typography-700">{getTrackItemMeta(item, t)}</span>

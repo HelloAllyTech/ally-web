@@ -61,17 +61,21 @@ export const Header: FC<HeaderProps> = ({
 
   return (
     <>
-      <div className="flex items-center px-2 py-4 gap-2">
-        <span className="text-typography-800 cursor-pointer" onClick={onBack}>
+      <div className="flex items-center px-0 md:px-2 py-2 md:py-4 gap-2">
+        <button
+          type="button"
+          className="text-typography-800 cursor-pointer max-md:min-h-10"
+          onClick={onBack}
+        >
           {en.simulation.rolePlays}
-        </span>
+        </button>
         <span className="-rotate-90">
           <ArrowDown />
         </span>
-        <span className="text-typography-900">{title}</span>
+        <span className="text-typography-900 min-w-0 truncate">{title}</span>
       </div>
-      <div className="flex items-center justify-between w-full px-2 pb-2 h-[80px] relative">
-        <h1 className="text-2xl text-typography-900 whitespace-nowrap">{title}</h1>
+      <div className="flex flex-wrap md:flex-nowrap gap-y-2 items-center justify-between w-full px-0 md:px-2 pb-2 md:h-[80px] relative">
+        <h1 className="text-xl md:text-2xl text-typography-900 md:whitespace-nowrap">{title}</h1>
         <div className="flex items-center gap-3">
           <Button
             variant={ButtonVariant.TEXT}

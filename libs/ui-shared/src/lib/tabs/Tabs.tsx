@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 
 export interface TabItem {
@@ -22,8 +22,26 @@ export const Tabs: React.FC<TabsProps> = ({
   showCount = true,
   tabStyles,
 }) => {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // On a phone the strip scrolls sideways, so a tab opened from a deep link
+  // (e.g. ?tab=super-admins) or picked by code could start off-screen. Bring
+  // the active tab into view by scrolling the strip only — never the page.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    const tab = tabRefs.current[activeId];
+    if (!scroller || !tab) return;
+    const strip = scroller.getBoundingClientRect();
+    const rect = tab.getBoundingClientRect();
+    if (rect.left < strip.left || rect.right > strip.right) {
+      scroller.scrollLeft += rect.left + rect.width / 2 - (strip.left + strip.width / 2);
+    }
+  }, [activeId]);
+
   return (
     <div
+      ref={scrollerRef}
       className={`overflow-x-auto border-b border-border-light ${className ?? ""}`}
       data-testid="tabs"
     >
@@ -33,6 +51,9 @@ export const Tabs: React.FC<TabsProps> = ({
           return (
             <button
               key={item.id}
+              ref={el => {
+                tabRefs.current[item.id] = el;
+              }}
               data-testid={`tab-${item.id}`}
               onClick={() => onChange(item.id)}
               className={`relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 ${

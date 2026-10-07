@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 
+import { Close } from "@assets";
 import { en } from "@constants";
 import { LabRun } from "@types";
 
@@ -36,15 +37,24 @@ export const ComparisonDrawer: React.FC<ComparisonDrawerProps> = ({ run, allRuns
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[70%] min-w-[860px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="flex items-center justify-between p-6">
+      <div className="w-full lg:w-[70%] lg:min-w-[860px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="flex items-center justify-between gap-3 p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">{en.aiLab.compare.drawerTitle}</span>
           <span className="text-sm text-typography-600">
             {batchRuns.length} {en.aiLab.runs.heading.toLowerCase()}
           </span>
+          {/* Phone only: the panel is full-width below lg there, so there is no backdrop to tap. */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={en.common.close}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-typography-600 hover:text-neutral-800 lg:hidden"
+          >
+            <Close />
+          </button>
         </div>
 
-        <div className="flex-1 min-h-0 px-6 pt-2 overflow-auto custom-scrollbar pb-8">
+        <div className="flex-1 min-h-0 px-4 md:px-6 pt-2 overflow-auto custom-scrollbar pb-8">
           <p className="text-sm text-typography-600 mb-4">{en.aiLab.compare.subtitle}</p>
           {batchRuns.length <= 1 ? (
             <p className="text-sm text-typography-500">{en.aiLab.compare.empty}</p>
@@ -53,7 +63,7 @@ export const ComparisonDrawer: React.FC<ComparisonDrawerProps> = ({ run, allRuns
               {batchRuns.map(r => (
                 <div
                   key={r.id}
-                  className="w-[340px] shrink-0 border border-border-light rounded-md flex flex-col"
+                  className="w-[85vw] sm:w-[340px] shrink-0 border border-border-light rounded-md flex flex-col"
                 >
                   <div className="border-b border-border-light px-4 py-3 space-y-2">
                     <div className="font-medium text-typography-900">{r.skillName}</div>

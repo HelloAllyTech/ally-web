@@ -65,13 +65,13 @@ export const ConversationDrawer: React.FC<ConversationDrawerProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="wa-thread-title"
-        className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col"
+        className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col"
       >
-        <div className="flex items-center justify-between p-6">
+        <div className="flex items-center justify-between p-4 md:p-6">
           <button
             ref={closeRef}
             onClick={onClose}
-            className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
+            className="flex min-h-10 flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 md:min-h-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
           >
             <DoubleArrowRight width={14} height={14} />
             <span id="wa-thread-title" className="text-base font-tertiary font-[500]">
@@ -81,13 +81,13 @@ export const ConversationDrawer: React.FC<ConversationDrawerProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pb-10 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 px-4 pb-6 md:px-10 md:pb-10 overflow-y-auto custom-scrollbar">
           {/* Which organisation's documents this thread was answered from, at the top rather than
               beside each message: it is a property of the contact, and it is the first thing to
               check when someone reports that the bot refused them or answered from the wrong
               material. */}
           {data?.contact && (
-            <div className="flex items-center gap-2 pb-4 text-sm">
+            <div className="flex flex-wrap items-center gap-2 pb-4 text-sm">
               <span className="text-typography-500">
                 {en.whatsappBot.conversations.organisation}
               </span>
@@ -165,7 +165,7 @@ const MessageBubble: React.FC<{
           isInbound ? "bg-neutral-100" : "bg-primary-50"
         }`}
       >
-        <div className="flex items-center gap-2 pb-1 text-xs text-typography-500">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pb-1 text-xs text-typography-500">
           <span>
             {isInbound ? en.whatsappBot.conversations.worker : en.whatsappBot.conversations.bot}
           </span>
@@ -182,7 +182,7 @@ const MessageBubble: React.FC<{
           {message.latencyMs !== null && <span>· {(message.latencyMs / 1000).toFixed(1)}s</span>}
         </div>
 
-        <p className="whitespace-pre-wrap text-typography-900">{message.body}</p>
+        <p className="whitespace-pre-wrap break-words text-typography-900">{message.body}</p>
 
         {message.errorMessage && (
           // The server's reason verbatim. A generic "failed" makes a provider rejection
@@ -271,7 +271,7 @@ const CitationPopup: React.FC<{
         role="dialog"
         aria-modal="true"
         aria-labelledby="wa-passage-title"
-        className="relative w-[600px] max-h-[70vh] overflow-y-auto custom-scrollbar rounded-lg bg-white p-6 shadow-xl"
+        className="relative w-[calc(100%-2rem)] max-w-[600px] max-h-[70dvh] overflow-y-auto custom-scrollbar rounded-lg bg-white p-4 sm:p-6 shadow-xl"
       >
         <p id="wa-passage-title" className="text-base font-[500] text-typography-900">
           {en.whatsappBot.conversations.passageHeading}
@@ -293,11 +293,14 @@ const CitationPopup: React.FC<{
           <p className="pt-4 text-sm text-red-700">{en.whatsappBot.conversations.passageFailed}</p>
         )}
         {data && (
-          <p className="pt-4 whitespace-pre-wrap text-sm text-typography-800">{data.text}</p>
+          <p className="pt-4 whitespace-pre-wrap break-words text-sm text-typography-800">
+            {data.text}
+          </p>
         )}
 
         <button
-          className="mt-6 rounded border border-border px-3 py-1 text-sm text-typography-700"
+          type="button"
+          className="mt-6 rounded border border-border px-3 py-2 text-sm text-typography-700 md:py-1"
           onClick={onClose}
         >
           {en.whatsappBot.conversations.close}

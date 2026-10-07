@@ -110,7 +110,7 @@ export const RoleplaySessionLogPanel: FC<RoleplaySessionLogPanelProps> = ({ sess
         className="px-4"
         showCount={false}
       />
-      <div className="max-h-[50vh] overflow-y-auto p-4">{activeContent}</div>
+      <div className="max-h-[50dvh] overflow-y-auto p-4">{activeContent}</div>
     </div>
   );
 };

@@ -84,7 +84,7 @@ describe("Search Component", () => {
       const { container } = render(<Search />);
       const mainContainer = container.querySelector("div");
       expect(mainContainer?.className).toContain("sm:px-[15%]");
-      expect(mainContainer?.className).toContain("px-[2%]");
+      expect(mainContainer?.className).toContain("px-0");
     });
 
     it("should have proper height calculations", () => {
@@ -402,7 +402,7 @@ describe("Search Component", () => {
       const mainContainer = container.querySelector("div");
 
       // Check that both mobile and desktop padding classes are present
-      expect(mainContainer?.className).toContain("px-[2%]"); // Mobile
+      expect(mainContainer?.className).toContain("px-0"); // Mobile
       expect(mainContainer?.className).toContain("sm:px-[15%]"); // Desktop
     });
 

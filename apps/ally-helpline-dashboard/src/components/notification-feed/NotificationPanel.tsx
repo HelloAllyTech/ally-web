@@ -63,7 +63,7 @@ const NotificationPanel: FC<NotificationPanelProps> = ({ onClose }) => {
   return (
     <div
       data-testid="notification-panel"
-      className="w-80 max-h-[28rem] flex flex-col bg-white rounded-lg shadow-lg border border-border-light overflow-hidden font-primary"
+      className="w-80 max-md:w-full max-h-[min(28rem,70dvh)] md:max-h-[28rem] flex flex-col bg-white rounded-lg shadow-lg border border-border-light overflow-hidden font-primary"
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
         <p className="text-sm font-semibold text-gray-900">Notifications</p>
@@ -71,7 +71,7 @@ const NotificationPanel: FC<NotificationPanelProps> = ({ onClose }) => {
           {hasUnread && (
             <button
               data-testid="notification-mark-all-read"
-              className="text-xs text-blue-600 hover:underline"
+              className="text-xs text-blue-600 hover:underline py-2 md:py-0"
               onClick={() => markAllRead()}
             >
               Mark all read
@@ -79,7 +79,7 @@ const NotificationPanel: FC<NotificationPanelProps> = ({ onClose }) => {
           )}
           <button
             data-testid="notification-panel-close"
-            className="text-xs text-gray-400 hover:text-gray-600"
+            className="text-xs text-gray-400 hover:text-gray-600 inline-flex items-center justify-center min-h-10 min-w-10 -mr-3 md:min-h-0 md:min-w-0 md:mr-0"
             onClick={onClose}
             aria-label="Close notifications"
           >

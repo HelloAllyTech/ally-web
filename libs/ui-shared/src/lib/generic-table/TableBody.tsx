@@ -48,7 +48,13 @@ const TableBody = <T extends Record<string, any>>({
       <tbody>
         <tr>
           <td colSpan={visibleColumns.length} className="px-4 py-6 text-center text-gray-400">
-            {fallbackUI || "No data found."}
+            {/* The cell spans the table's full min-width, which on a phone is
+                several screens wide, so a centred message landed off-screen.
+                Below md it sticks to the visible part of the scroller
+                (viewport minus the 1rem page gutters and this cell's px-4). */}
+            <div className="max-md:sticky max-md:left-4 max-md:w-[calc(100vw-4rem)]">
+              {fallbackUI || "No data found."}
+            </div>
           </td>
         </tr>
       </tbody>

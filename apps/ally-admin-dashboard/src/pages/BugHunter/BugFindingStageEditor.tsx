@@ -72,7 +72,10 @@ export const BugFindingStageEditor: React.FC<{
               {en.bugHunter.stageEditLabel}
             </Button>
             <Tooltip label={en.bugHunter.stageEditHint} align="bottom">
-              <button type="button" className="cursor-pointer inline-flex items-center">
+              <button
+                type="button"
+                className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+              >
                 <TooltipIcon />
               </button>
             </Tooltip>
@@ -107,7 +110,7 @@ export const BugFindingStageEditor: React.FC<{
             ))}
           </Select>
           <p className="text-xs text-typography-500">{en.bugHunter.stageEditHint}</p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" kind="primary" disabled={isLoading} onClick={() => void save(draft)}>
               {en.bugHunter.stageSave}
             </Button>

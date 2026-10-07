@@ -80,8 +80,9 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
         </label>
         {canEdit && (
           <button
+            type="button"
             onClick={() => setShowAddModal(true)}
-            className="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors"
+            className="min-h-[40px] md:min-h-0 text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors"
           >
             {en.userManagement.addOrganizationLabel}
           </button>
@@ -116,10 +117,12 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
               </div>
               {canEdit && (
                 <button
+                  type="button"
                   onClick={() => handleRemove(tenant.id)}
                   disabled={isRemoving}
                   title={en.userManagement.remove}
-                  className="ml-3 flex-shrink-0 text-destructive-400 hover:text-destructive-600 disabled:opacity-40 transition-colors"
+                  aria-label={en.userManagement.remove}
+                  className="ml-3 inline-flex h-10 w-10 -my-2 -mr-2 items-center justify-center md:h-auto md:w-auto md:my-0 md:mr-0 flex-shrink-0 text-destructive-400 hover:text-destructive-600 disabled:opacity-40 transition-colors"
                 >
                   <Trash width={15} height={15} />
                 </button>
@@ -140,7 +143,7 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
             }
           }}
         >
-          <div className="bg-white rounded-[10px] shadow-2xl min-w-[360px] max-w-[90vw] max-h-[80vh] flex flex-col p-5 gap-4 font-primary animate-fadeIn">
+          <div className="bg-white rounded-[10px] shadow-2xl w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[360px] max-w-[90vw] max-h-[80dvh] flex flex-col p-4 sm:p-5 gap-4 font-primary animate-fadeIn">
             {/* Modal header */}
             <h3 className="text-lg font-semibold text-typography-900">
               {en.userManagement.selectOrganizations}

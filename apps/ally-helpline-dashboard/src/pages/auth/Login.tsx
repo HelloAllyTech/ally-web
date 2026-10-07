@@ -266,7 +266,7 @@ export const Login: FunctionComponent = () => {
           <div className="flex flex-col text-4xl font-secondary">
             <span>{t("auth.login.greetingLine1")}</span>
             <h1>
-              <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="inline-flex flex-wrap items-center gap-2 sm:flex-nowrap sm:whitespace-nowrap">
                 {t("auth.login.greetingLine2", { app: "" })} <Ally className="mt-2" />
               </span>
             </h1>
@@ -277,6 +277,7 @@ export const Login: FunctionComponent = () => {
               fieldSize="medium"
               type="email"
               inputMode="email"
+              autoComplete="email"
               label={t("auth.login.email.label")}
               value={email}
               onChange={handleEmailChange}
@@ -294,7 +295,10 @@ export const Login: FunctionComponent = () => {
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm text-typography-700 cursor-pointer">
+              <label
+                htmlFor="remember"
+                className="inline-flex min-h-[44px] items-center text-sm text-typography-700 cursor-pointer md:min-h-0"
+              >
                 {t("auth.login.rememberMe")}
               </label>
             </div>
@@ -332,19 +336,21 @@ export const Login: FunctionComponent = () => {
               ) : null}
             </div>
             {t("auth.login.proceedAgree")}{" "}
-            <span
+            <button
+              type="button"
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               {t("auth.login.terms")}
-            </span>{" "}
+            </button>{" "}
             {t("auth.login.and")}{" "}
-            <span
+            <button
+              type="button"
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               {t("auth.login.privacy")}
-            </span>
+            </button>
           </div>
         </motion.div>
       );
@@ -374,7 +380,7 @@ export const Login: FunctionComponent = () => {
         <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>
-          <span className="font-semibold text-2xl">{email}</span>
+          <span className="font-semibold text-2xl break-words">{email}</span>
         </div>
         <div className="flex flex-col gap-3">
           <OTP value={otp} onChange={setOtp} />
@@ -439,7 +445,7 @@ export const Login: FunctionComponent = () => {
           />
         </div>
       </div>
-      <div className="w-full static sm:absolute sm:flex-1 min-h-[35vh] p-5 rounded-[10px] sm:bottom-[10%] sm:right-[25%] sm:left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
+      <div className="w-full static grow shrink-0 sm:absolute sm:flex-1 min-h-[35vh] p-5 rounded-[10px] sm:bottom-[10%] sm:right-[25%] sm:left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
         <div className="w-full max-w-md flex flex-col gap-6">
           <div className="flex flex-col">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>

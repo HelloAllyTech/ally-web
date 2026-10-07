@@ -234,7 +234,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
         trailing={layoutToggle}
       />
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {/*
           The window stepper is MONTH-ONLY. A stage or owner board has no window — the server
           ignores from/to there and returns every lane — so leaving the arrows up would offer a
@@ -242,7 +242,7 @@ export const MonthBoard: React.FC<MonthBoardProps> = props => {
           The window itself is kept in state, so switching to Month returns to where you were.
         */}
         {groupBy === RoadmapBoardGroupBy.MONTH ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={() => stepWindow(-WINDOW_STEP_MONTHS)}

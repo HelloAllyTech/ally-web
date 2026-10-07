@@ -318,7 +318,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
         <button
           onClick={() => setCurrent(c => Math.max(0, c - 1))}
           disabled={current === 0}
-          className="inline-flex items-center gap-2 rounded-full border border-border-light px-4 py-2 text-sm font-medium text-typography-800 transition-colors hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-full border border-border-light px-4 py-2 text-sm font-medium text-typography-800 transition-colors hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("tracks2.quiz.question.back")}
@@ -327,7 +327,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
           <button
             onClick={handleSubmit}
             disabled={!answered || isSubmitting}
-            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
           >
             {t("tracks2.quiz.question.submit")}
           </button>
@@ -335,7 +335,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
           <button
             onClick={() => setCurrent(c => Math.min(questions.length - 1, c + 1))}
             disabled={!answered}
-            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
           >
             {t("tracks2.quiz.question.next")}
             <ArrowRight className="h-4 w-4" />

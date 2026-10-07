@@ -59,8 +59,8 @@ interface FieldProps {
 }
 
 const Field: React.FC<FieldProps> = ({ label, children, required = false, error }) => (
-  <div className="flex flex-row items-start gap-4 mb-6">
-    <label className="text-base font-regular text-typography-800 w-[40%] flex-shrink-0 mt-2">
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2 sm:gap-4 mb-6">
+    <label className="text-base font-regular text-typography-800 w-full sm:w-[40%] flex-shrink-0 mt-0 sm:mt-2">
       {label}
       {required && (
         <span aria-hidden className="text-red-500 ml-1">
@@ -383,7 +383,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
         // viewport, pushing the panel's own footer buttons off-screen.
         className="w-full sm:w-[50%] relative sm:min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col"
       >
-        <div className="flex items-center justify-between p-6">
+        <div className="flex items-center justify-between p-4 sm:p-6">
           <button
             onClick={requestClose}
             className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
@@ -399,13 +399,13 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
             type="button"
             onClick={requestClose}
             aria-label={strings.closeForm}
-            className="rounded p-1 text-typography-600 hover:bg-surface-100 hover:text-neutral-800"
+            className="rounded p-3 sm:p-1 text-typography-600 hover:bg-surface-100 hover:text-neutral-800"
           >
             <CloseIcon width={14} height={14} />
           </button>
         </div>
 
-        <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
+        <div className="flex-1 px-4 sm:px-10 pt-2 sm:pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
           <Field label={t("characterLibrary.name")} required error={errorFor("name")}>
             <TextInput
               id="character-name"
@@ -426,6 +426,7 @@ export const CharacterFormPanel: React.FC<CharacterFormPanelProps> = ({
           <Field label={t("characterLibrary.age")} required error={errorFor("age")}>
             <input
               type="number"
+              inputMode="numeric"
               ref={node => {
                 fieldRefs.current.age = node;
               }}

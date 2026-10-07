@@ -171,7 +171,7 @@ const UploadProgressDialog: FC = () => {
       <div className="flex items-center justify-center mr-[-4px]">
         <ProgressCircle progress={progress} />
         <Cancel
-          className="hidden group-hover:block cursor-pointer w-4 h-4"
+          className="hidden group-hover:block max-md:block max-md:ml-3 cursor-pointer w-4 h-4 max-md:w-6 max-md:h-6"
           onClick={() => onUploadCancel(reportId)}
         />
       </div>
@@ -181,8 +181,8 @@ const UploadProgressDialog: FC = () => {
   if (socketUploads.length === 0 || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 right-6 z-40 font-primary">
-      <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
+    <div className="fixed bottom-0 left-2 right-2 sm:left-auto sm:right-6 z-40 font-primary">
+      <div className="w-full sm:w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={displayedUploads}
           expanded={expanded}

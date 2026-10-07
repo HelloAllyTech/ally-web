@@ -91,7 +91,7 @@ export const QuestionMedia: FC<QuestionMediaProps> = ({ media }) => {
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-typography-900"
+              className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-typography-900 max-md:min-h-11"
             >
               {t("tracks2.question.media.close")}
             </button>

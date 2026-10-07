@@ -77,11 +77,12 @@ export const PlatformAdminDetail: React.FC<PlatformAdminDetailProps> = ({ admin,
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className="py-[2px] font-primary overflow-y-auto h-[calc(100vh-220px)]">
+    <div className="py-[2px] font-primary md:overflow-y-auto md:h-[calc(100vh-220px)]">
       <div className="flex items-center gap-2 text-sm mb-4">
         <button
+          type="button"
           onClick={onBack}
-          className="flex items-center gap-1 text-typography-800 hover:text-typography-900"
+          className="flex items-center gap-1 min-h-[40px] md:min-h-0 text-typography-800 hover:text-typography-900"
         >
           <span className="rotate-90">
             <ArrowDown />
@@ -90,7 +91,7 @@ export const PlatformAdminDetail: React.FC<PlatformAdminDetailProps> = ({ admin,
         </button>
       </div>
 
-      <h2 className="text-xl text-typography-900 font-secondary mb-1">
+      <h2 className="text-xl text-typography-900 font-secondary mb-1 break-words">
         {admin.name || admin.email}
       </h2>
       <p className="text-sm text-typography-600 pb-6">
@@ -106,7 +107,10 @@ export const PlatformAdminDetail: React.FC<PlatformAdminDetailProps> = ({ admin,
               <h3 className="text-base font-secondary text-typography-900 mb-2">{group.section}</h3>
               <div className="flex flex-col divide-y divide-border-light border border-border-light rounded-md">
                 {group.items.map(item => (
-                  <div key={item.key} className="flex items-center gap-4 px-4 py-3">
+                  <div
+                    key={item.key}
+                    className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-3"
+                  >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-typography-900">{item.label}</p>
                       <p className="text-sm text-typography-600">{item.description}</p>

@@ -127,7 +127,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
           <Fragment key={item.id}>
             <div
               ref={item.id === "checklistType" ? checklistTypeRef : null}
-              className={item.fullWidth ? "w-full" : "w-[48%]"}
+              className={item.fullWidth ? "w-full" : "w-full md:w-[48%]"}
             >
               <FormField config={item} formMethods={formMethods} readOnly={readOnly} />
             </div>

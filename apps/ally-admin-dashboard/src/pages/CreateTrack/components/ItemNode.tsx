@@ -42,7 +42,7 @@ export const ItemNode: FC<ItemNodeProps> = ({
       ref={setNodeRef}
       style={style}
       onClick={onSelect}
-      className={`group flex items-center gap-1.5 pl-6 pr-2 py-1.5 rounded-md cursor-pointer ${
+      className={`group flex items-center gap-1.5 pl-6 pr-2 py-1.5 max-lg:min-h-10 rounded-md cursor-pointer ${
         isSelected ? "bg-primary-50 text-primary-700" : "hover:bg-secondary-50 text-typography-800"
       }`}
     >
@@ -52,13 +52,13 @@ export const ItemNode: FC<ItemNodeProps> = ({
           {...listeners}
           type="button"
           onClick={event => event.stopPropagation()}
-          className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
+          className="cursor-grab active:cursor-grabbing text-typography-400 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 max-lg:p-2 max-lg:-m-1"
           aria-label="Reorder item"
         >
           <DragIndicator className="w-3.5 h-3.5" />
         </button>
       </Tooltip>
-      <span className="text-[11px] uppercase tracking-wide text-typography-400 flex-shrink-0">
+      <span className="text-xs lg:text-[11px] uppercase tracking-wide text-typography-400 flex-shrink-0">
         {TRACK_ITEM_TYPE_LABELS[item.type].slice(0, 4)}
       </span>
       <span className="text-sm truncate flex-1">{label}</span>

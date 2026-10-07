@@ -25,6 +25,9 @@ vi.mock("@components", async () => {
 // Mock constants
 vi.mock("@constants", () => ({
   en: {
+    common: {
+      moreActions: "More actions",
+    },
     userManagement: {
       user: "User",
       telephonyId: "Telephony ID",

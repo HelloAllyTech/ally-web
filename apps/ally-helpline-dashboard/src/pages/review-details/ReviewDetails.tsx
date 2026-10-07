@@ -98,7 +98,7 @@ export const ReviewDetails = () => {
   const [changedReply, setChangedReply] = useState<CommentItem | null>(null);
   const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
 
-  const selectEmojiRef = useRef<HTMLDivElement>(null);
+  const selectEmojiRef = useRef<HTMLButtonElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
@@ -412,7 +412,7 @@ export const ReviewDetails = () => {
 
   const renderBottomSection = () => {
     return (
-      <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full pointer-events-none">
+      <div className="absolute z-10 max-lg:z-30 flex justify-center bottom-9 left-0 right-0 w-full pointer-events-none">
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl max-w-[95vw] overflow-x-auto pointer-events-auto">
           {isFeedOwner && (
             <div
@@ -438,7 +438,9 @@ export const ReviewDetails = () => {
               <div className="border-l border-border h-5" />
             </div>
           )}
-          <div
+          <button
+            type="button"
+            aria-expanded={showCommentsSidepanel}
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
             className="group flex items-center h-full w-fit cursor-pointer hover:border-[#264d8e] gap-2.5 rounded-full border justify-center px-3 shrink-0"
           >
@@ -446,11 +448,13 @@ export const ReviewDetails = () => {
             <div className="text-typography-900 font-primary group-hover:text-[#264d8e] text-sm whitespace-nowrap">
               {t("review.details.comments")}
             </div>
-          </div>
+          </button>
           <div className="relative w-fit">
-            <div
+            <button
+              type="button"
+              aria-label={t("review.feedCard.reactions")}
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className={`flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer justify-center ${selectedEmoji ? "border-primary-400" : "border-neutral-300"}`}
+              className={`flex relative items-center h-10 min-w-10 md:h-9 md:min-w-9 rounded-full border cursor-pointer justify-center ${selectedEmoji ? "border-primary-400" : "border-neutral-300"}`}
               ref={selectEmojiRef}
             >
               {selectedEmoji ? (
@@ -460,7 +464,7 @@ export const ReviewDetails = () => {
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#264d8e]" />
               )}
-            </div>
+            </button>
             {showEmojiPicker && (
               <ReactionSelector
                 anchorElement={selectEmojiRef.current}
@@ -491,38 +495,44 @@ export const ReviewDetails = () => {
   };
 
   return (
-    <div className="h-full overflow-y-hidden">
-      <div className="flex px-6 items-center gap-4 py-4 border-b-[0.5px] border-border-light">
-        <div
-          className="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full"
+    // Below lg the header wraps to any height, so the page is a flex column and
+    // the body takes what is left (desktop keeps its fixed 103px header maths).
+    <div className="h-full overflow-y-hidden max-lg:flex max-lg:flex-col">
+      <div className="flex px-4 md:px-6 items-center gap-2 md:gap-4 py-3 md:py-4 border-b-[0.5px] border-border-light max-lg:shrink-0">
+        <button
+          type="button"
+          aria-label={t("achievements.backAria")}
+          className="w-10 h-10 md:w-9 md:h-9 shrink-0 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full"
           onClick={handleGoBack}
         >
           <LeftArrow className=" w-5 h-5" />
-        </div>
+        </button>
         {isGetReviewDetailsLoading ? (
           <Loader />
         ) : (
-          <div className="flex flex-col justify-center gap-1.5 font-primary">
-            <div className="font-medium text-typography-900 flex flex-row items-center">
+          <div className="flex flex-col justify-center gap-1.5 font-primary min-w-0">
+            <div className="font-medium text-typography-900 flex flex-row items-center min-w-0">
               <div
-                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#f3e6c9] text-[#E65100]" : "bg-[#ede4e8] text-[#5a3f50]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
+                className={`text-xs md:text-[10px] shrink-0 font-normal ${isScribeReview ? "bg-[#f3e6c9] text-[#E65100]" : "bg-[#ede4e8] text-[#5a3f50]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
                 {isScribeReview ? t("common.scribe") : t("common.simulation")}
               </div>
-              <span className="text-xl line-clamp-1">
+              <span className="text-lg md:text-xl line-clamp-1 min-w-0">
                 {reviewDetails?.scenario?.title || reviewDetails?.scribeSession?.summaryName}
               </span>
               {!isScribeReview && (
-                <div
+                <button
+                  type="button"
+                  aria-label={t("learn.details.modal.headerTitle")}
                   onClick={() => setShowSimulationDetailsModal(true)}
-                  className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
+                  className="text-xs cursor-pointer text-neutral-500 ml-[4px] shrink-0 inline-flex items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
                 >
                   <InfoIcon />
-                </div>
+                </button>
               )}
             </div>
-            <div className="flex gap-2 items-center text-gray-500 text-base">
-              <div className="w-[28px] h-[28px] rounded-full">
+            <div className="flex flex-wrap gap-x-2 gap-y-1 items-center text-gray-500 text-sm md:text-base">
+              <div className="w-[28px] h-[28px] rounded-full shrink-0">
                 <CustomImage
                   src={reviewDetails?.createdBy?.profileImage}
                   alt={reviewDetails?.createdBy?.name ?? t("common.profile")}
@@ -560,10 +570,12 @@ export const ReviewDetails = () => {
         )}
       </div>
 
-      <div className="flex w-full h-[calc(100%-103px)]">
+      <div className="flex w-full max-lg:flex-1 max-lg:min-h-0 lg:h-[calc(100%-103px)]">
+        {/* Phone/tablet: one full-width pane (bottom padding clears the floating
+            action pill); the comments panel overlays it instead of sitting beside. */}
         <div
           ref={transcriptScrollRef}
-          className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
+          className="pt-5 mx-auto px-4 lg:px-10 w-full lg:w-[calc(100%-384px)] h-[99%] pb-28 lg:pb-20 max-lg:overflow-y-auto transition-all duration-400 custom-scrollbar"
         >
           {showAddReviewNotesSection && (
             <div className="pb-6">
@@ -649,12 +661,17 @@ export const ReviewDetails = () => {
           handleGeneralCommentsLoadMore={handleGeneralCommentsLoadMore}
           hasMoreGeneralComments={hasMoreGeneralComments}
           setComments={setGeneralComments}
-          className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
+          className={
+            showCommentsSidepanel
+              ? "max-lg:fixed max-lg:inset-x-0 max-lg:top-14 max-lg:bottom-0 max-lg:h-auto max-lg:pb-24 md:max-lg:top-0 md:max-lg:left-auto md:max-lg:w-[400px] lg:min-w-[300px] lg:w-[30%]"
+              : "w-0 border-none max-lg:hidden"
+          }
           deletedReplyId={deletedReplyId}
           setDeletedReplyId={setDeletedReplyId}
           handleReplyChange={handleReplyChange}
           changedReply={changedReply}
           isScribeReview={isScribeReview}
+          onClose={() => setShowCommentsSidepanel(false)}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}

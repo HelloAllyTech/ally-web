@@ -151,13 +151,19 @@ export const PostCallSummary = () => {
   // after a save). That reset CallSummary's local edit state and dropped input
   // focus mid-typing.
   const header = (
-    <div className="flex items-center gap-2 font-secondary justify-between">
+    <div className="flex flex-wrap items-center gap-2 font-secondary justify-between">
       <div className="flex items-center gap-2">
-        <button onClick={() => navigate(ROUTES.SCRIBE_LOGS)}>
+        <button
+          type="button"
+          aria-label={t("summaryLoading.backToSessionLogs")}
+          onClick={() => navigate(ROUTES.SCRIBE_LOGS)}
+        >
           <BackCircle />
         </button>
-        <span className="text-4xl">{t("postCallSummary.header.session")}</span>
-        <span className="text-4xl font-semibold italic">{t("postCallSummary.header.summary")}</span>
+        <span className="text-2xl md:text-4xl">{t("postCallSummary.header.session")}</span>
+        <span className="text-2xl md:text-4xl font-semibold italic">
+          {t("postCallSummary.header.summary")}
+        </span>
       </div>
       <div className="flex items-center gap-2">
         {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
@@ -185,6 +191,7 @@ export const PostCallSummary = () => {
             <div className="border-l border-border h-5" />
             <Tooltip label={t("postCallSummary.header.comments")} align="top">
               <button
+                aria-label={t("postCallSummary.header.comments")}
                 onClick={() =>
                   navigate(
                     ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
@@ -284,7 +291,7 @@ export const PostCallSummary = () => {
   );
 
   return (
-    <div className="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
+    <div className="h-[100dvh] w-full px-4 lg:px-0 lg:w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
       {isDeeplink ? (
         content
       ) : (

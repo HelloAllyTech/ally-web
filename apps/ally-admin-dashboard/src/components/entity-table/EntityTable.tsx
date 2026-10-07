@@ -170,14 +170,15 @@ export function EntityTable<T extends { id: string }>({
               ))}
               {hasActions && (
                 <TableCell className="px-4 py-3 align-top">
-                  <div className="flex items-center justify-end gap-3 text-typography-600">
+                  <div className="flex items-center justify-end gap-1 md:gap-3 text-typography-600">
                     {actions
                       ?.filter(action => !action.hidden?.(row))
                       .map(action => (
                         <button
+                          type="button"
                           key={action.key}
                           onClick={() => action.onClick(row)}
-                          className={`hover:text-primary-600 ${action.className ?? ""}`}
+                          className={`inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto hover:text-primary-600 ${action.className ?? ""}`}
                           aria-label={action.label}
                           title={action.label}
                         >
@@ -186,8 +187,9 @@ export function EntityTable<T extends { id: string }>({
                       ))}
                     {onEdit && (
                       <button
+                        type="button"
                         onClick={() => onEdit(row)}
-                        className="hover:text-primary-600"
+                        className="inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto hover:text-primary-600"
                         aria-label="Edit"
                         title="Edit"
                       >
@@ -196,8 +198,9 @@ export function EntityTable<T extends { id: string }>({
                     )}
                     {onDelete && (
                       <button
+                        type="button"
                         onClick={() => onDelete(row)}
-                        className="hover:text-destructive-600"
+                        className="inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto hover:text-destructive-600"
                         aria-label="Delete"
                         title="Delete"
                       >

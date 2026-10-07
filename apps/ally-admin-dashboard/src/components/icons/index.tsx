@@ -73,6 +73,7 @@ import {
   ListNumbered as CListNumbered,
   Logout as CLogout,
   Maximize as CMaximize,
+  Menu as CMenu,
   Microphone as CMicrophone,
   Minimize as CMinimize,
   Misuse as CMisuse,
@@ -191,6 +192,7 @@ export const SortDescending = createCarbonIcon(CSortDescending);
 export const Currency = createCarbonIcon(CCurrency);
 export const CheckCircle = createCarbonIcon(CCheckmarkOutline);
 export const Close = createCarbonIcon(CClose);
+export const Menu = createCarbonIcon(CMenu);
 export const Compress = createCarbonIcon(CMinimize);
 export const Copy = createCarbonIcon(CCopy);
 export const Delete = createCarbonIcon(CTrashCan);

@@ -255,7 +255,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-dvh bg-white">
+      <div className="flex items-center justify-center min-h-full bg-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
       </div>
     );
@@ -263,11 +263,11 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-dvh bg-white">
+      <div className="flex flex-col items-center justify-center min-h-full bg-white px-4 text-center">
         <div className="text-typography-700 text-lg mb-4">{currentLabels.notFound}</div>
         <button
           onClick={() => navigate(ROUTES.LEARN)}
-          className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+          className="px-4 py-2 max-md:min-h-11 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
         >
           {t("common.backToLearn")}
         </button>
@@ -276,18 +276,20 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   }
 
   const renderBreadcrumb = () => (
-    <div className="pt-6 pb-3 flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2 text-sm text-typography-700 min-w-0">
+    <div className="pt-2 sm:pt-6 pb-3 flex items-center justify-between gap-2 max-sm:flex-wrap max-sm:gap-y-1">
+      {/* Full row below sm: beside the credits meter the item title kept
+          about 80px and showed as "Foun…". */}
+      <div className="flex items-center gap-2 text-sm text-typography-700 min-w-0 max-sm:w-full">
         <button
           onClick={() => navigate(-1)}
-          className="hover:text-primary-500 transition-colors whitespace-nowrap"
+          className="hover:text-primary-500 transition-colors whitespace-nowrap max-md:min-h-11"
         >
           {currentLabels.breadcrumb}
         </button>
         <ArrowRight />
         <span className="text-primary-500 font-medium truncate">{data.title}</span>
       </div>
-      <div className="flex items-center gap-2 text-sm text-typography-700 flex-shrink-0">
+      <div className="flex items-center gap-2 text-sm text-typography-700 flex-shrink-0 max-sm:ml-auto">
         <CreditsDisplay />
       </div>
     </div>
@@ -336,7 +338,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
       {!isComplete && (
         <button
           onClick={handleStartOrContinueSimulation}
-          className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
+          className="w-full sm:w-auto px-6 py-2 max-md:min-h-11 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
         >
           {hasProgress ? t("common.continue") : t("common.start")}
         </button>
@@ -394,7 +396,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   return (
     <>
-      <div className="min-h-dvh w-full max-w-3xl mx-auto bg-white px-4 sm:px-6 font-primary">
+      <div className="min-h-full w-full max-w-3xl mx-auto bg-white px-4 sm:px-6 font-primary">
         {renderHeaderSection()}
         {renderScenariosList()}
       </div>

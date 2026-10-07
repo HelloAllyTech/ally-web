@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -64,6 +65,17 @@ import { BuilderNavBadge } from "./BuilderNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
 
 const EXPANDED_WIDTH = 1200;
+// Below Tailwind's `md` the sidebar is an off-canvas drawer opened from the
+// top bar in PrivateLayout. It always shows labels there — an icon-only rail
+// is a desktop space saver and gives a phone user nothing to read.
+const MOBILE_MAX_WIDTH = 768;
+
+interface SidebarProps {
+  /** Phone only: whether the drawer is slid in. Ignored at `md` and up. */
+  isMobileOpen?: boolean;
+  /** Phone only: close the drawer (overlay tap, close button, navigation). */
+  onMobileClose?: () => void;
+}
 
 const defaultProfileUploadValues: {
   profileImageUrl: string;
@@ -71,7 +83,7 @@ const defaultProfileUploadValues: {
   profileImageUrl: "",
 };
 
-export const Sidebar: React.FC = () => {
+export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobileClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -88,8 +100,12 @@ export const Sidebar: React.FC = () => {
 
   // Press-and-drag: a click below the activation distance still navigates,
   // a press-and-move past it starts a reorder (and the trailing click is
-  // suppressed by dnd-kit).
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  // suppressed by dnd-kit). Touch gets a press-and-hold instead, so a finger
+  // swiping the nav scrolls it rather than dragging the tab under it.
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     // Reordering is disabled while filtering — the rendered list is a subset, so
@@ -108,6 +124,8 @@ export const Sidebar: React.FC = () => {
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const showExpanded = isExpanded || isMobileViewport;
   const [openSettings, setOpenSettings] = useState(false);
   const [navSearch, setNavSearch] = useState("");
 
@@ -133,6 +151,7 @@ export const Sidebar: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
+      setIsMobileViewport(window.innerWidth < MOBILE_MAX_WIDTH);
       if (window.innerWidth < EXPANDED_WIDTH) {
         setIsExpanded(false);
       }
@@ -146,6 +165,7 @@ export const Sidebar: React.FC = () => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
+    onMobileClose?.();
   };
 
   const handleUserMenuToggle = () => {
@@ -336,7 +356,7 @@ export const Sidebar: React.FC = () => {
   const sidebarItems = (
     <div className="flex-1 min-h-0 flex flex-col pt-4">
       {/* Kept outside the scrollable nav below so it stays visible ("sticky") at any scroll position. */}
-      {isExpanded && (
+      {showExpanded && (
         <div className="relative flex items-center px-2 mb-3 flex-shrink-0">
           <span className="absolute left-5 flex items-center text-typography-600 pointer-events-none">
             <Search size={16} />
@@ -374,14 +394,14 @@ export const Sidebar: React.FC = () => {
                   item={item}
                   icon={renderIcon(item.id)}
                   isActive={isTabItemActive(item.path)}
-                  isExpanded={isExpanded}
+                  isExpanded={showExpanded}
                   canReorder={canReorder && !isSearching}
                   onNavigate={handleNavigation}
                   badge={renderBadge(item.id)}
                 />
               ))}
             </ul>
-            {isExpanded && isSearching && displayedNavItems.length === 0 && (
+            {showExpanded && isSearching && displayedNavItems.length === 0 && (
               <p className="px-3 py-2 text-sm text-typography-600">{en.common.noMenuResults}</p>
             )}
           </SortableContext>
@@ -412,14 +432,14 @@ export const Sidebar: React.FC = () => {
               )}
             </div>
 
-            {isExpanded && (
+            {showExpanded && (
               <div className="flex-1 min-w-0 text-left">
                 <div className="text-lg text-typography-900 truncate">{user?.name}</div>
                 <div className="text-xs mb-1 text-typography-800 truncate">{user?.email}</div>
               </div>
             )}
           </div>
-          {isExpanded && (
+          {showExpanded && (
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
             >
@@ -432,7 +452,7 @@ export const Sidebar: React.FC = () => {
         {isUserMenuOpen && (
           <div
             onBlur={handleUserMenuToggle}
-            className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
+            className={`absolute bottom-[10px] ${showExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] max-md:left-3 max-md:right-3 max-md:bottom-24 max-md:min-w-0 z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
           >
             <div className="py-1">
               <button
@@ -471,26 +491,51 @@ export const Sidebar: React.FC = () => {
   );
 
   return (
-    <div
-      className={`flex flex-col h-screen bg-white border-r border-border-light transition-all duration-300 relative ${
-        isExpanded ? "w-64" : "w-24"
-      } p-[12px] font-primary`}
-    >
-      <div className="flex justify-between border-b border-border-light relative">
-        <div className={`px-2 pr-5 py-4  flex items-center justify-between`}>
-          <Ally />
+    <>
+      {/* Phone: an off-canvas drawer over the page (z-50) and its overlay
+          (z-40). `invisible` while closed takes the off-screen links out of
+          the tab order; visibility transitions discretely, so the slide-out
+          still animates. At md and up this is the in-flow rail it always was. */}
+      <div
+        id="admin-nav-sidebar"
+        data-testid="admin-sidebar"
+        className={`flex flex-col h-dvh md:h-screen bg-white border-r border-border-light transition-all duration-300 fixed inset-y-0 left-0 z-50 max-w-[85vw] md:relative md:z-auto md:max-w-none md:translate-x-0 md:visible ${
+          isMobileOpen ? "translate-x-0" : "-translate-x-full invisible"
+        } ${showExpanded ? "w-64" : "w-24"} p-[12px] font-primary`}
+      >
+        <div className="flex justify-between items-center border-b border-border-light relative">
+          <div className={`px-2 pr-5 py-4  flex items-center justify-between`}>
+            <Ally />
+          </div>
+          <button
+            onClick={handleToggleSidebar}
+            className={`hidden md:block ${showExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[20px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-background-secondary hover:rounded-md my-2`}
+            title={showExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <DockToRight />
+          </button>
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label={en.common.closeMenu}
+            data-testid="admin-sidebar-close"
+            className="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-background-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
+          >
+            <Close size={20} aria-hidden="true" />
+          </button>
         </div>
-        <button
-          onClick={handleToggleSidebar}
-          className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[20px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-background-secondary hover:rounded-md my-2`}
-          title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-        >
-          <DockToRight />
-        </button>
-      </div>
 
-      {sidebarItems}
-      {profileSection}
-    </div>
+        {sidebarItems}
+        {profileSection}
+      </div>
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+          data-testid="admin-sidebar-overlay"
+        />
+      )}
+    </>
   );
 };

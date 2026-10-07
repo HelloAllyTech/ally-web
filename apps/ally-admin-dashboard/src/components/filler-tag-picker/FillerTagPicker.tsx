@@ -264,7 +264,7 @@ export const FillerTagPicker: React.FC<FillerTagPickerProps> = ({
           <span>{tag?.name}</span>
           <button
             type="button"
-            className="cursor-pointer ml-2 opacity-0 group-hover/tag:opacity-100"
+            className="cursor-pointer ml-2 opacity-100 md:opacity-0 md:group-hover/tag:opacity-100 md:group-focus-within/tag:opacity-100 max-md:p-1.5 max-md:-m-1.5"
             onClick={() => removeTag(tag)}
           >
             <Close />
@@ -275,10 +275,10 @@ export const FillerTagPicker: React.FC<FillerTagPickerProps> = ({
         {tags?.length < maxTags && (
           <div
             ref={triggerRef}
-            className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+            className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100" : "opacity-100"}`}
             onClick={addTagButton}
           >
-            <button type="button" className="text-primary text-sm p-1">
+            <button type="button" className="text-primary text-sm p-1 max-md:p-2">
               <Plus />
             </button>
           </div>

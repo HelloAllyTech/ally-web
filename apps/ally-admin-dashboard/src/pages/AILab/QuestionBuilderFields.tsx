@@ -132,7 +132,7 @@ export const QuestionBuilderFields: React.FC<QuestionBuilderFieldsProps> = ({
             {questions.length > 1 && (
               <button
                 onClick={() => removeQuestion(index)}
-                className="text-typography-500 hover:text-destructive-600"
+                className="-my-2 inline-flex h-8 w-8 items-center justify-center md:my-0 md:block md:h-auto md:w-auto text-typography-500 hover:text-destructive-600"
                 aria-label={en.aiLab.publish.remove}
                 title={en.aiLab.publish.remove}
               >

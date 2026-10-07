@@ -122,7 +122,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   };
 
   const SidebarTitle = (
-    <div className="text-base flex items-center justify-between w-full gap-2">
+    <div className="text-base flex flex-wrap items-center justify-between w-full gap-2">
       <div className="flex items-center gap-2">
         <span className="font-semibold font-tertiary text-typography-800">
           {t("common.summary", "Summary")}
@@ -164,6 +164,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
                       ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", summary.reviewId),
                     )
                   }
+                  aria-label={t("postCallSummary.header.comments")}
                   className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
                 >
                   <Comment className="w-6 h-6 shrink-0" />

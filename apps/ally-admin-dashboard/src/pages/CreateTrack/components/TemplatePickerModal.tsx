@@ -65,7 +65,7 @@ export const TemplatePickerModal: FC<TemplatePickerModalProps> = ({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative z-10 w-[420px] max-h-[70vh] bg-white rounded-md shadow-xl flex flex-col">
+      <div className="relative z-10 w-[calc(100%-2rem)] max-w-[420px] max-h-[70vh] bg-white rounded-md shadow-xl flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
           <span className="text-sm font-semibold text-typography-900">
             {TRACK_ITEM_TYPE_LABELS[type]} templates

@@ -135,7 +135,7 @@ export const AlertSupervisorButton: FC<AlertSupervisorButtonProps> = ({
             <button
               type="button"
               onClick={close}
-              className="min-h-[36px] rounded-full border border-border-medium px-3 text-sm text-typography-900 hover:bg-background-secondary"
+              className="min-h-[40px] rounded-full border border-border-medium px-3 text-sm text-typography-900 hover:bg-background-secondary md:min-h-[36px]"
             >
               {t("helplineWorkspace.info.cancel")}
             </button>
@@ -143,7 +143,7 @@ export const AlertSupervisorButton: FC<AlertSupervisorButtonProps> = ({
               type="button"
               onClick={() => void send()}
               disabled={alert.sending}
-              className="min-h-[36px] rounded-full bg-typography-900 px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+              className="min-h-[40px] rounded-full bg-typography-900 px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60 md:min-h-[36px]"
             >
               {alert.sending
                 ? t("helplineWorkspace.alertSupervisor.sending")

@@ -67,7 +67,9 @@ export const SimulationListSkeleton: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col">
+    // overflow-hidden: the fixed-width bars outgrow the percentage cells on a
+    // phone and would otherwise push the page sideways.
+    <div className="flex flex-col overflow-hidden">
       {renderTableHeaderSkeleton()}
       {Array.from({ length: 10 }).map((_, index) => (
         <SimulationSkeleton key={index} />

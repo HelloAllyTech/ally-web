@@ -1,6 +1,14 @@
 import { FC, useState, useEffect, useRef } from "react";
 
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
@@ -236,19 +244,25 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   );
 
   const renderMessage = (messageTitle: string, messageContent: string, index: number) => (
-    <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-[800px] group">
+    <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-full md:w-[800px] group">
       <div
         ref={element => (messageRefs.current[index] = element)}
         className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center"
       >
         <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
         {!isDisabled && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
-            <button className="text-xs text-primary-500" onClick={() => handleMessageClick(index)}>
+          <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
+            <button
+              className="text-xs text-primary-500 max-md:min-h-10 max-md:px-2"
+              onClick={() => handleMessageClick(index)}
+            >
               {en.common.edit}
             </button>
 
-            <button className="text-xs" onClick={() => handleDeleteMessage(index)}>
+            <button
+              className="text-xs max-md:min-h-10 max-md:px-2"
+              onClick={() => handleDeleteMessage(index)}
+            >
               {en.common.delete}
             </button>
           </div>
@@ -260,6 +274,14 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       </div>
     </div>
   );
+  // Mouse drags start at once, as before; touch needs a press-and-hold on the
+  // handle so a finger swiping the list scrolls the page instead of dragging.
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
   const handleDragEnd = event => {
     if (isDisabled) return;
 
@@ -278,7 +300,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   };
 
   const renderSimulationList = () => (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
         items={selectedSimulations.map(scenario => String(scenario.scenarioId))}
         strategy={verticalListSortingStrategy}
@@ -307,7 +329,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-xl w-full animate-in fade-in-0 zoom-in-95 duration-200 px-6 py-4"
+          className="relative bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90dvh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200 px-4 sm:px-6 py-4"
           onClick={event => event.stopPropagation()}
         >
           <h1 className="text-lg">
@@ -346,7 +368,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                   return (
                     <div
                       key={simulation.id}
-                      className="flex items-center gap-5 py-2 hover:bg-secondary-50 rounded-md px-2 cursor-pointer"
+                      className="flex items-center gap-3 sm:gap-5 py-2 hover:bg-secondary-50 rounded-md px-2 cursor-pointer"
                       onClick={() =>
                         handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))
                       }
@@ -367,7 +389,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-sm text-typography-900 font-primary truncate max-w-[200px]">
+                      <span className="text-sm text-typography-900 font-primary truncate min-w-0 max-w-[200px]">
                         {simulation.title}
                       </span>
                     </div>
@@ -389,12 +411,12 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           <div className="flex justify-end gap-3 border-t pt-3">
             <Button
               variant={ButtonVariant.SECONDARY}
-              className="w-1/3 !text-base"
+              className="w-1/2 sm:w-1/3 !text-base"
               onClick={clearAndToggle}
             >
               {en.common.cancel}
             </Button>
-            <Button className="w-1/3 !text-base" onClick={toggleSelection}>
+            <Button className="w-1/2 sm:w-1/3 !text-base" onClick={toggleSelection}>
               {isSingleSelect ? "Select" : en.simulation.addSelected}
             </Button>
           </div>

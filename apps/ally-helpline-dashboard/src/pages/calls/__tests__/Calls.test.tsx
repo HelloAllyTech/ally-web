@@ -365,7 +365,7 @@ describe("Calls Component", () => {
   describe("Component Structure", () => {
     it("should render main container with correct classes", () => {
       const { container } = renderCalls();
-      const mainContainer = container.querySelector("div.px-6.pb-6.h-full.flex.flex-col");
+      const mainContainer = container.querySelector("div.px-4.pb-6.h-full.flex.flex-col");
       expect(mainContainer).not.toBeNull();
     });
 

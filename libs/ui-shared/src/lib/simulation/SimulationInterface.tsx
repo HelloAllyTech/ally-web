@@ -290,11 +290,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           chat has nothing to hear, and its early messages are held by the
           page-level chat state instead. */}
       {!isTextChat && <RoomAudioRenderer />}
-      <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
+      <div className="flex md:flex-row flex-col-reverse justify-between md:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
         {showSidebar && (
           <div
             data-testid="simulation-sidebar-column"
-            className="order-3 md:order-2 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[45vh] md:max-h-none"
+            className="order-3 md:order-2 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[35dvh] md:max-h-none"
           >
             <SessionSidebar
               reminders={sessionReminders}

@@ -38,10 +38,13 @@ export const ChangeWhiskers = ({
 }) => {
   const extent = whiskerExtent(rows);
   const x = (v: number) => `${((v + extent) / (2 * extent)) * 100}%`;
+  // Below `sm` the three columns stack — label, whisker, numbers — because
+  // label and numbers alone are wider than a phone. Every whisker then spans
+  // the full width, so they still share one axis.
   return (
     <div className="flex flex-col">
-      <div className="mb-1 grid grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] gap-3 text-[11px] text-typography-500">
-        <span />
+      <div className="mb-1 grid grid-cols-1 gap-1 text-[11px] text-typography-500 sm:grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] sm:gap-3">
+        <span className="hidden sm:block" />
         <span className="flex justify-between tabular-nums">
           <span>{signed(-extent, decimals)}</span>
           <span>0</span>
@@ -54,7 +57,7 @@ export const ChangeWhiskers = ({
         return (
           <div
             key={r.key}
-            className="grid grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] items-center gap-3 border-t border-[#f0f0f0] py-1.5"
+            className="grid grid-cols-1 items-center gap-1 border-t border-[#f0f0f0] py-1.5 sm:grid-cols-[minmax(9rem,14rem)_1fr_10.5rem] sm:gap-3"
           >
             <span className="flex flex-col">
               <span className="text-xs text-typography-900">{r.label}</span>

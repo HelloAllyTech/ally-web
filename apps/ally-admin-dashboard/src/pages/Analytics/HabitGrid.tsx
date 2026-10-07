@@ -58,7 +58,7 @@ export const HabitGrid = ({
                   <th className="py-1 pr-3 text-left font-normal">
                     <button
                       type="button"
-                      className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline"
+                      className="cursor-pointer text-left text-[#264D8E] underline-offset-2 hover:underline max-sm:min-h-8"
                       onClick={() => onOpen(l.id)}
                     >
                       {learnerName(l)}

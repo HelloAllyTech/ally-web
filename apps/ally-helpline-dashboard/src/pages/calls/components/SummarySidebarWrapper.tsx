@@ -54,7 +54,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
         <ShortSessionUI summaryData={summaryData} className="!min-w-[50vw]" />
       ) : (
         <>
-          <div className="flex h-full min-h-0 w-[50vw] flex-col">
+          <div className="flex h-full min-h-0 w-full sm:w-[50vw] flex-col">
             {/* One tab is not a choice — the strip would only repeat the
                 heading the tab's own content already renders. */}
             {(tabList?.length ?? 0) > 1 && (

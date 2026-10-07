@@ -57,7 +57,7 @@ export const StatusStrip: FC<StatusStripProps> = ({ status, running, isError }) 
 
   return (
     <div
-      className="flex flex-wrap items-end gap-x-8 gap-y-3 mt-6 p-4 border border-border-light bg-background-secondary"
+      className="flex flex-wrap items-end gap-x-6 md:gap-x-8 gap-y-3 mt-4 md:mt-6 p-4 border border-border-light bg-background-secondary"
       data-testid="product-updates-status"
     >
       <Stat label={t.status.schedule}>

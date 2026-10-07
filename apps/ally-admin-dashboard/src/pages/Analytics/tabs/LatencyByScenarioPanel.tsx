@@ -203,7 +203,7 @@ export const LatencyByScenarioPanel = ({
                     <Button
                       variant={ButtonVariant.SECONDARY}
                       onClick={() => onSelectScenario(row.scenarioId)}
-                      className="h-[32px] px-3 text-xs"
+                      className="px-3 text-xs sm:h-[32px]"
                     >
                       View sessions
                     </Button>
@@ -213,7 +213,7 @@ export const LatencyByScenarioPanel = ({
             </TableBody>
           </Table>
 
-          <div className="flex items-center justify-between shrink-0 border-t border-border-light pt-3 mt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-t border-border-light pt-3 mt-2">
             <span className="text-sm text-typography-700">
               Showing {rangeStart}–{rangeEnd} of {rows.length}
             </span>
@@ -222,7 +222,7 @@ export const LatencyByScenarioPanel = ({
                 variant={ButtonVariant.SECONDARY}
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="h-[36px] px-4"
+                className="px-4 sm:h-[36px]"
               >
                 Previous
               </Button>
@@ -230,7 +230,7 @@ export const LatencyByScenarioPanel = ({
                 variant={ButtonVariant.SECONDARY}
                 onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
                 disabled={page >= pageCount - 1}
-                className="h-[36px] px-4"
+                className="px-4 sm:h-[36px]"
               >
                 Next
               </Button>

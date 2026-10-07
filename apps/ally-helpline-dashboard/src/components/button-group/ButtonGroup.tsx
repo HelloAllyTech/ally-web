@@ -5,7 +5,7 @@ import { Button } from "@components";
 import { ButtonGroupProps } from "./types";
 
 const ButtonGroup: FC<ButtonGroupProps> = ({ buttonList }) => (
-  <div className="flex w-fit rounded-[8px] bg-[#282B31] overflow-hidden">
+  <div className="flex w-fit max-sm:w-[calc(100vw-2rem)] rounded-[8px] bg-[#282B31] overflow-hidden">
     {buttonList
       .filter(button => button.show)
       .map(({ action, isActive, isDisabled, leftIcon, text }, buttonIndex) => {
@@ -17,7 +17,9 @@ const ButtonGroup: FC<ButtonGroupProps> = ({ buttonList }) => (
             onClick={action}
             disabled={isDisabled}
             variant="text"
-            className={`sm:w-[120px] md:w-[140px] lg:w-[196px] h-12 flex items-center justify-center px-15 py-3 rounded-none leading-[16px] text-wrap ${isActive ? "!bg-[#faf9f5]" : ""}
+            // Below sm the three call controls share the row equally, icon above
+            // label, so End session never runs off a phone screen.
+            className={`sm:w-[120px] md:w-[140px] lg:w-[196px] h-12 flex items-center justify-center px-15 py-3 rounded-none leading-[16px] text-wrap max-sm:min-w-0 max-sm:flex-1 max-sm:flex-col max-sm:gap-1 max-sm:h-auto max-sm:min-h-14 max-sm:px-2 ${isActive ? "!bg-[#faf9f5]" : ""}
               ${isLastButton ? "" : "!border-solid border-r-[0.5px] border-[#565045]"}`}
           >
             {leftIcon}

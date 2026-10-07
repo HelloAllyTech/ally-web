@@ -75,7 +75,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
         <div className="flex text-sm items-center gap-2">
           <span>{t("audioCall.sidebar.isHelpful")}</span>
           <button
-            className="rounded-lg transition-colors"
+            className="rounded-lg transition-colors p-2 md:p-0"
             onClick={() => handleFeedback(nudge, 0)}
             disabled={isLoading}
           >
@@ -109,11 +109,20 @@ const CallSidebar: FC<CallSidebarProps> = ({
           animate={{ width: isFocusMode ? 0 : "70%" }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full bg-[#29261f] overflow-hidden border-l-[0.5px] border-l-[#565045] z-20"
+          // Below md the sidebar overlays the call screen full-width instead of
+          // squeezing it into the remaining 30%.
+          className={`h-full bg-[#29261f] overflow-hidden border-l-[0.5px] border-l-[#565045] z-20 max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:overflow-y-auto ${isFocusMode ? "" : "max-md:!w-full"}`}
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />
-            <Close className="cursor-pointer" onClick={onClose} />
+            <button
+              type="button"
+              aria-label={t("common.close")}
+              onClick={onClose}
+              className="inline-flex items-center justify-center min-h-11 min-w-11 md:min-h-0 md:min-w-0"
+            >
+              <Close className="cursor-pointer" />
+            </button>
           </div>
           {stage && (
             <div className="px-6 py-4 mx-4 mb-4 border border-ai-700 font-primary rounded-lg bg-ai-900/40">

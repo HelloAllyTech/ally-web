@@ -129,7 +129,7 @@ export const PopupWrapper: FC<PopupWrapperProps> = ({
       {/* Popup */}
       <div
         ref={popupRef}
-        className={`fixed z-50 bg-white rounded-none border border-border-light shadow-[0_2px_6px_rgba(0,0,0,0.2)]
+        className={`fixed z-50 max-w-[calc(100vw-1rem)] bg-white rounded-none border border-border-light shadow-[0_2px_6px_rgba(0,0,0,0.2)]
           ${position ? "animate-slideInFromRight" : "opacity-0"} 
           ${className}`}
         style={popupStyle}

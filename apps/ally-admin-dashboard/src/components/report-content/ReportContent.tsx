@@ -114,7 +114,7 @@ const ReportContent: FC<ReportContentProps> = ({
       )}
       {activeTab === "report" ? (
         <div className="flex flex-col gap-6 pt-4">
-          <div className="border border-gray-200 rounded-lg p-6">
+          <div className="border border-gray-200 rounded-lg p-4 md:p-6">
             <div className="flex justify-between items-center">
               <span className="text-base font-normal text-typography-900">
                 {REPORT_GENERATION_MESSAGES.SIMULATION_SCORE}
@@ -126,13 +126,13 @@ const ReportContent: FC<ReportContentProps> = ({
           </div>
 
           {reportData.reportMarkdown ? (
-            <div className="border border-gray-200 rounded-lg p-6">
+            <div className="border border-gray-200 rounded-lg p-4 md:p-6">
               <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
                 {reportData.reportMarkdown}
               </ReactMarkdown>
             </div>
           ) : hasMetrics ? (
-            <div className="border border-gray-200 rounded-lg p-6">
+            <div className="border border-gray-200 rounded-lg p-4 md:p-6">
               <h3 className="text-base font-medium text-typography-900 mb-6">
                 {REPORT_GENERATION_MESSAGES.METRICS}
               </h3>
@@ -164,7 +164,7 @@ const ReportContent: FC<ReportContentProps> = ({
               </div>
             </div>
           ) : (
-            <div className="border border-gray-200 rounded-lg p-6">
+            <div className="border border-gray-200 rounded-lg p-4 md:p-6">
               <p className="text-gray-500 text-sm">No report available yet</p>
             </div>
           )}

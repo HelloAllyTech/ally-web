@@ -119,7 +119,7 @@ export const VideoInterjectionOverlay: FC<VideoInterjectionOverlayProps> = ({
             <button
               type="button"
               onClick={onContinue}
-              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+              className="rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
             >
               {t("tracks2.video.interjection.continue")}
             </button>
@@ -129,7 +129,7 @@ export const VideoInterjectionOverlay: FC<VideoInterjectionOverlayProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={!answered || isLoading}
-            className="mt-4 w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40"
+            className="mt-4 w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-40 max-md:min-h-11"
           >
             {t("tracks2.video.interjection.submit")}
           </button>

@@ -34,7 +34,10 @@ export const NextCheckPanel: FC<NextCheckPanelProps> = ({
           label="A daily job that bumps the version and ships a build automatically — but only if there are new commits since the last release and tests are green. It never runs a second time before both platforms have finished the previous run."
           align="top"
         >
-          <button type="button" className="cursor-pointer inline-flex items-center">
+          <button
+            type="button"
+            className="-m-1 cursor-pointer inline-flex items-center p-1 md:m-0 md:p-0"
+          >
             <TooltipIcon />
           </button>
         </Tooltip>

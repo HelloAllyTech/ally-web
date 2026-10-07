@@ -363,4 +363,25 @@ describe("NavbarWrapper", () => {
     const contentRegion = screen.getByTestId("navbar-content-region");
     expect(contentRegion).toHaveClass("min-h-0", "flex-1");
   });
+
+  it("closes the open mobile drawer on Escape", () => {
+    mockUseUser.mockReturnValue({
+      user: { id: 1, name: "Test User" },
+      checkAuth: vi.fn(),
+    });
+
+    renderWithProviders(
+      <NavbarWrapper>
+        <div>Test Content</div>
+      </NavbarWrapper>,
+    );
+
+    const menuButton = screen.getByTestId("nav-sidebar-hamburger");
+    fireEvent.click(menuButton);
+    expect(menuButton).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "false");
+    expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  });
 });

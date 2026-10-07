@@ -85,7 +85,7 @@ export const SummaryReviewModal: FC<SummaryReviewModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="ph-no-capture flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl bg-white font-primary shadow-lg focus:outline-none"
+        className="ph-no-capture flex max-h-[90dvh] w-full max-w-xl flex-col rounded-2xl bg-white font-primary shadow-lg focus:outline-none"
         data-testid="summary-review"
       >
         <div className="border-b border-border-light p-5">
@@ -152,7 +152,7 @@ export const SummaryReviewModal: FC<SummaryReviewModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border-light p-4">
+        <div className="flex flex-wrap justify-end gap-2 border-t border-border-light p-4">
           <button
             type="button"
             onClick={onSkip}

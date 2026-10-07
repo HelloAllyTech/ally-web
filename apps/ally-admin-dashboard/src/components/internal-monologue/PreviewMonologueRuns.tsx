@@ -165,8 +165,8 @@ export const PreviewMonologueRuns: React.FC<PreviewMonologueRunsProps> = ({
         aria-hidden
       />
       <div className="fixed inset-0 flex items-center justify-center px-4">
-        <div className="flex h-[85vh] w-full max-w-[1100px] flex-col rounded-lg bg-white shadow-2xl">
-          <header className="flex items-start justify-between border-b border-border-light px-5 py-4">
+        <div className="flex h-[85dvh] w-full max-w-[1100px] flex-col rounded-lg bg-white shadow-2xl">
+          <header className="flex items-start justify-between gap-3 border-b border-border-light px-4 md:px-5 py-4">
             <div>
               <h2 className="text-base font-medium text-typography-900">{t.title}</h2>
               <p className="mt-0.5 text-xs text-typography-600">{t.subtitle}</p>
@@ -174,14 +174,15 @@ export const PreviewMonologueRuns: React.FC<PreviewMonologueRunsProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="text-sm text-typography-600 hover:text-typography-900"
+              className="text-sm text-typography-600 hover:text-typography-900 shrink-0 max-md:min-h-10 max-md:px-2"
             >
               {t.close}
             </button>
           </header>
 
-          <div className="flex min-h-0 flex-1">
-            <div className="custom-scrollbar flex w-[260px] shrink-0 flex-col gap-2 overflow-y-auto border-r border-border-light p-3">
+          {/* Below md the run list stacks above the reader with a capped height. */}
+          <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+            <div className="custom-scrollbar flex w-full md:w-[260px] max-h-[35%] md:max-h-none shrink-0 flex-col gap-2 overflow-y-auto border-b md:border-b-0 md:border-r border-border-light p-3">
               {renderList()}
             </div>
             <div className="min-h-0 flex-1 overflow-hidden p-3">{renderReader()}</div>

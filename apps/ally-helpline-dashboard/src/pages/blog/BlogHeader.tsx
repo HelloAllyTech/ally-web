@@ -26,7 +26,7 @@ type BlogHeaderProps = {
 export const BlogHeader: FC<BlogHeaderProps> = ({ containerClassName = "max-w-6xl", search }) => (
   <header className="sticky top-0 z-20 border-b border-gray-900/10 bg-gray-50/95 backdrop-blur">
     <div
-      className={`mx-auto flex w-full ${containerClassName} flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4`}
+      className={`mx-auto flex w-full ${containerClassName} flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6`}
     >
       <Link to={ROUTES.BLOG} aria-label={BLOG_NAME} className="order-1 shrink-0 text-gray-900">
         <BuildingAlly role="img" aria-hidden="true" className="h-6 w-auto sm:h-7" />
@@ -50,6 +50,7 @@ export const BlogHeader: FC<BlogHeaderProps> = ({ containerClassName = "max-w-6x
           </svg>
           <input
             type="search"
+            enterKeyHint="search"
             value={search.value}
             onChange={event => search.onChange(event.target.value)}
             placeholder="Search posts"

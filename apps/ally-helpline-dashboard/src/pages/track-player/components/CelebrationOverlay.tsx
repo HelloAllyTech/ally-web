@@ -61,7 +61,7 @@ export const CelebrationOverlay: FC<CelebrationOverlayProps> = ({
     <AnimatePresence>
       {kind && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 sm:px-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -69,7 +69,7 @@ export const CelebrationOverlay: FC<CelebrationOverlayProps> = ({
           aria-modal="true"
         >
           <motion.div
-            className="w-full max-w-sm rounded-[20px] bg-white p-6 text-center shadow-xl"
+            className="max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-[20px] bg-white p-6 text-center shadow-xl"
             initial={{ scale: 0.85, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -98,14 +98,14 @@ export const CelebrationOverlay: FC<CelebrationOverlayProps> = ({
             {isTrack ? (
               <button
                 onClick={onBackToLearn}
-                className="w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                className="w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
               >
                 {t("tracks2.celebration.backToLearn")}
               </button>
             ) : (
               <button
                 onClick={onContinue}
-                className="w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                className="w-full rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
               >
                 {t("tracks2.celebration.continue")}
               </button>

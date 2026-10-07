@@ -203,7 +203,7 @@ export const VideoItemEditor: FC<VideoItemEditorProps> = ({
                 value={embedInput}
                 onChange={event => setEmbedInput(event.target.value)}
                 placeholder="Paste a YouTube, Vimeo or Loom link"
-                className="flex-1 border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400"
+                className="flex-1 min-w-0 border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400"
               />
               <Button
                 variant={ButtonVariant.SECONDARY}
@@ -271,14 +271,15 @@ export const VideoItemEditor: FC<VideoItemEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => removeInterjection(index)}
-                      className="text-destructive-500 hover:text-destructive-600"
+                      className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
+                      aria-label="Remove"
                     >
                       <Trash className="w-4 h-4" />
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <label className="text-sm font-medium text-typography-800">Show at</label>
                       <Controller
                         control={control}

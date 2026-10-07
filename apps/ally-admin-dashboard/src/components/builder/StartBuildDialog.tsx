@@ -196,7 +196,10 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
                 {strings.reposLabel}
               </label>
               <Tooltip label={strings.reposHint} align="top">
-                <button type="button" className="inline-flex cursor-pointer items-center">
+                <button
+                  type="button"
+                  className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>
@@ -231,7 +234,10 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
             <div className="mb-1 flex items-center gap-1.5">
               <span className="text-sm font-medium text-typography-900">{strings.budgetLabel}</span>
               <Tooltip label={strings.budgetHint} align="top">
-                <button type="button" className="inline-flex cursor-pointer items-center">
+                <button
+                  type="button"
+                  className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>
@@ -255,7 +261,10 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
                 {strings.modelOverridesHeading}
               </span>
               <Tooltip label={strings.modelOverridesHint} align="top">
-                <button type="button" className="inline-flex cursor-pointer items-center">
+                <button
+                  type="button"
+                  className="-m-1 inline-flex cursor-pointer items-center p-1 md:m-0 md:p-0"
+                >
                   <TooltipIcon />
                 </button>
               </Tooltip>
@@ -285,11 +294,16 @@ export const StartBuildDialog: React.FC<StartBuildDialogProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button kind="tertiary" onClick={onClose}>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button kind="tertiary" className="max-sm:!w-full max-sm:!max-w-none" onClick={onClose}>
               {en.builder.prd.cancel}
             </Button>
-            <Button kind="primary" disabled={isStarting} onClick={() => void handleSubmit()}>
+            <Button
+              kind="primary"
+              className="max-sm:!w-full max-sm:!max-w-none"
+              disabled={isStarting}
+              onClick={() => void handleSubmit()}
+            >
               {submitLabel}
             </Button>
           </div>

@@ -118,15 +118,16 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
         }}
       >
         {filteredOptionList?.map((filteredOption, index) => (
-          <div
+          <button
+            type="button"
             key={filteredOption}
-            className={`px-4 py-2 cursor-pointer hover:bg-background-secondary transition-colors ${
+            className={`block w-full text-left px-4 py-3 md:py-2 cursor-pointer hover:bg-background-secondary transition-colors ${
               index !== filteredOptionList.length - 1 ? "border-b border-neutral-100" : ""
             } ${filteredOption === UserMenuOptions.SUSPEND_USER ? "text-destructive-500" : "text-black"}`}
             onClick={() => handleOptionClick(filteredOption)}
           >
             {filteredOption}
-          </div>
+          </button>
         ))}
       </div>
     </>

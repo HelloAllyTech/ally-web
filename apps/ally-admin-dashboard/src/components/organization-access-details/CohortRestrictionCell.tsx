@@ -130,16 +130,16 @@ export const CohortRestrictionCell: FC<CohortRestrictionCellProps> = ({
             className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setIsOpen(false)}
           />
-          <div className="relative mx-4 w-full max-w-md bg-white px-[32px] py-[24px] font-primary text-typography-900 shadow-xl">
+          <div className="relative mx-4 w-full max-w-md max-h-[90dvh] overflow-y-auto bg-white px-4 sm:px-[32px] py-[24px] font-primary text-typography-900 shadow-xl">
             <button
               onClick={() => setIsOpen(false)}
               aria-label={en.common.close}
-              className="absolute top-[8px] right-[8px] text-typography-600 transition-colors hover:text-typography-800"
+              className="absolute top-[8px] right-[8px] inline-flex h-10 w-10 items-center justify-center md:h-auto md:w-auto text-typography-600 transition-colors hover:text-typography-800"
             >
               <Close width={24} height={24} />
             </button>
 
-            <h2 className="mb-2 text-lg font-medium">
+            <h2 className="mb-2 pr-8 md:pr-0 text-lg font-medium">
               {en.userManagement.cohortRestrictionTitle(contentTitle)}
             </h2>
 

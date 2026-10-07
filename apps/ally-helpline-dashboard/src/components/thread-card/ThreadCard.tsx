@@ -18,11 +18,11 @@ const ThreadCard = ({ thread, isFeedOwner, isScribeReview }: ThreadCardProps) =>
   };
   return (
     <div
-      className="w-full min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
+      className="w-full min-w-0 md:min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
       key={thread.id}
     >
       <div className="flex items-center min-h-9 border-b-[0.5px] pb-2">
-        <div className="text-[14px] font-primary line-clamp-2 text-typography-900">
+        <div className="text-[14px] font-primary line-clamp-2 break-words min-w-0 text-typography-900">
           Selected text: "{thread.selection.text}"
         </div>
       </div>

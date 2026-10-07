@@ -549,28 +549,36 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
                   // one and not the other let the stack overflow or under-fill.
                   const failPct = s.tried > 0 ? Math.round((s.failed / s.tried) * 1000) / 10 : 0;
                   const okPct = s.tried > 0 ? 100 - failPct : 0;
+                  // On a phone the bar takes the full width under its label and
+                  // numbers, which do not fit beside it.
                   return (
-                    <div key={s.provider} className="flex items-center gap-3 text-xs">
+                    <div
+                      key={s.provider}
+                      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:flex-nowrap sm:gap-3"
+                    >
                       <div
-                        className="w-28 shrink-0 truncate capitalize text-typography-700"
+                        className="min-w-0 flex-1 break-words capitalize text-typography-700 sm:w-28 sm:flex-none sm:truncate"
                         title={s.provider}
                       >
                         {s.provider}
                       </div>
                       <div
-                        className="flex-1 h-5 rounded overflow-hidden flex"
+                        className="order-last h-5 basis-full rounded overflow-hidden flex sm:order-none sm:flex-1"
                         style={{ background: "#f0f0f0" }}
                       >
                         <div style={{ width: `${okPct}%`, background: PALETTE.teal }} />
                         <div style={{ width: `${failPct}%`, background: PALETTE.red }} />
                       </div>
-                      <div className="w-20 shrink-0 text-right font-medium text-typography-900">
+                      <div className="shrink-0 text-right font-medium text-typography-900 sm:w-20">
                         {failPct}% fail
                       </div>
                       {/* The denominator is on the surface, not in a hover title:
                           1 failure of 1 try and 1,000 of 1,000 both read as
                           "100% fail" and mean entirely different things. */}
-                      <div className="w-32 shrink-0 text-right" style={{ color: CONTEXT.strong }}>
+                      <div
+                        className="shrink-0 text-right sm:w-32"
+                        style={{ color: CONTEXT.strong }}
+                      >
                         {s.failed.toLocaleString()} of {s.tried.toLocaleString()} tries
                       </div>
                     </div>

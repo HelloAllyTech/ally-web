@@ -79,7 +79,8 @@ export const JournalItemEditor: FC<JournalItemEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => remove(promptIndex)}
-                      className="text-destructive-500 hover:text-destructive-600"
+                      className="text-destructive-500 hover:text-destructive-600 max-lg:p-2.5 max-lg:-m-2.5"
+                      aria-label="Remove"
                     >
                       <Trash className="w-4 h-4" />
                     </button>

@@ -137,7 +137,7 @@ const ReviewWithTabs: FC = () => {
   const renderSimulationControls = () => (
     <div className="py-3 sm:py-4 md:py-6 w-full flex flex-col gap-3">
       <ToggleButtonGroup
-        className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
+        className="w-full font-primary text-xs md:text-sm leading-[1.5]"
         value={simulationReadFilter}
         onValueChange={newFilter => {
           if (newFilter === simulationReadFilter) return;
@@ -155,7 +155,7 @@ const ReviewWithTabs: FC = () => {
   const renderScribeControls = () => (
     <div className="py-3 sm:py-4 md:py-6 w-full flex flex-col gap-3">
       <ToggleButtonGroup
-        className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
+        className="w-full font-primary text-xs md:text-sm leading-[1.5]"
         value={scribeReadFilter}
         onValueChange={newFilter => {
           if (newFilter === scribeReadFilter) return;

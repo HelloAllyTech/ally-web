@@ -353,7 +353,7 @@ export const CharacterCorpusPanel: React.FC<CharacterCorpusPanelProps> = ({ isOp
         data-testid="character-corpus-panel"
         className="fixed right-0 top-0 z-50 h-full w-full max-w-xl bg-white shadow-xl flex flex-col"
       >
-        <header className="p-6 pb-4 shrink-0">
+        <header className="p-4 md:p-6 pb-4 shrink-0">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg text-typography-900 font-secondary">{strings.title}</h2>
@@ -363,7 +363,7 @@ export const CharacterCorpusPanel: React.FC<CharacterCorpusPanelProps> = ({ isOp
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="text-typography-500 text-xl leading-none shrink-0"
+              className="text-typography-500 text-xl leading-none shrink-0 max-md:-mr-2 max-md:-mt-2 max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
             >
               ×
             </button>
@@ -388,7 +388,7 @@ export const CharacterCorpusPanel: React.FC<CharacterCorpusPanelProps> = ({ isOp
           )}
         </header>
 
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 pb-6">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 md:px-6 pb-6">
           {isLoading && <SkeletonText paragraph />}
 
           {!isLoading && !documents.length && (

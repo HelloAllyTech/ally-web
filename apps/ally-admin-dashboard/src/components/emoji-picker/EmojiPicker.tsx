@@ -72,6 +72,9 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
       if (left + pickerWidth > viewportWidth) {
         left = buttonRect.right + window.scrollX - pickerWidth;
       }
+      // Keep the picker on screen when the trigger sits near an edge of a narrow (phone) viewport.
+      left = Math.max(0, Math.min(left, viewportWidth - pickerWidth));
+      top = Math.max(0, top);
 
       setPosition({ top, left });
     }

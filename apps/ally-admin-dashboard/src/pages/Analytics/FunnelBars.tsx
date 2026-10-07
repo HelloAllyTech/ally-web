@@ -78,13 +78,25 @@ export const FunnelBars = ({ stages, unit = "" }: FunnelBarsProps) => {
         const barPct = pct(stage.reached, entered) ?? 0;
         const fill = stage.terminal ? PALETTE.teal : PALETTE.blue;
 
+        // Four fixed columns side by side are wider than a phone, so there the
+        // label and numbers share a line and the bar takes the full width under
+        // them — every bar on the same track width, so lengths still compare.
         return (
-          <div key={stage.label} className="flex items-center gap-3 text-xs">
-            <div className="w-32 shrink-0 truncate text-typography-700" title={stage.label}>
+          <div
+            key={stage.label}
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:flex-nowrap sm:gap-3"
+          >
+            <div
+              className="min-w-0 flex-1 text-typography-700 sm:w-32 sm:flex-none sm:truncate"
+              title={stage.label}
+            >
               {stage.label}
             </div>
 
-            <div className="relative h-5 flex-1 rounded" style={{ backgroundColor: "#f0f0f0" }}>
+            <div
+              className="relative order-last h-5 basis-full rounded sm:order-none sm:flex-1"
+              style={{ backgroundColor: "#f0f0f0" }}
+            >
               <div
                 className="absolute inset-y-0 left-0 rounded"
                 style={{
@@ -94,14 +106,14 @@ export const FunnelBars = ({ stages, unit = "" }: FunnelBarsProps) => {
               />
             </div>
 
-            <div className="w-20 shrink-0 text-right font-medium text-typography-900">
+            <div className="shrink-0 text-right font-medium text-typography-900 sm:w-20">
               {stage.reached.toLocaleString()}
             </div>
 
             {/* Step-to-step conversion is the number a reader acts on — where
                 the drop happened, not just that the bar is shorter. The first
                 stage has nothing to convert from, so it states the base. */}
-            <div className="w-28 shrink-0 text-right" style={{ color: CONTEXT.strong }}>
+            <div className="shrink-0 text-right sm:w-28" style={{ color: CONTEXT.strong }}>
               {i === 0
                 ? ofEntered === null
                   ? "—"

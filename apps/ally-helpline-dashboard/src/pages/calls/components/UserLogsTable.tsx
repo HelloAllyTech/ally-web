@@ -55,6 +55,25 @@ import {
   DenormalizedCustomFieldValue,
 } from "./utils";
 
+// Below md the learner's own roleplay log reads as a list of cards instead of a
+// six-column table whose "Summary" action sits off-screen to the right. JS (not
+// CSS) so only one of the two layouts is ever mounted; tests mock matchMedia to
+// desktop.
+const PHONE_QUERY = "(max-width: 767px)";
+const useIsBelowMd = () => {
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && Boolean(window.matchMedia?.(PHONE_QUERY)?.matches),
+  );
+  useEffect(() => {
+    const mql = window.matchMedia?.(PHONE_QUERY);
+    if (!mql?.addEventListener) return undefined;
+    const onChange = () => setMatches(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return matches;
+};
+
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -76,6 +95,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
+  const isBelowMd = useIsBelowMd();
 
   const { data: customFieldsEnabled } = useCustomFieldsEnabled();
   const customFieldsActive = customFieldsEnabled !== false;
@@ -409,6 +429,16 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     };
   };
 
+  const openSimulationSummary = (row: ReturnType<typeof getSimulationDisplayData>) => {
+    // `sessionId` is the human-readable session name shown in the Call
+    // ID column (e.g. SS-3816-2026-08-24), which is what the analytics
+    // spec's `call_id` refers to — not the internal row id.
+    track(ANALYTICS_EVENTS.ROLEPLAY_LOG_SUMMARY_VIEWED, {
+      [ANALYTICS_PROPS.CALL_ID]: row.sessionId,
+    });
+    setSummary(row.raw);
+  };
+
   const simulationColumns: Column<any>[] = [
     {
       key: "sessionId",
@@ -446,15 +476,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
-          onClick={() => {
-            // `sessionId` is the human-readable session name shown in the Call
-            // ID column (e.g. SS-3816-2026-08-24), which is what the analytics
-            // spec's `call_id` refers to — not the internal row id.
-            track(ANALYTICS_EVENTS.ROLEPLAY_LOG_SUMMARY_VIEWED, {
-              [ANALYTICS_PROPS.CALL_ID]: row.sessionId,
-            });
-            setSummary(row.raw);
-          }}
+          onClick={() => openSimulationSummary(row)}
           fullWidth={true}
           variant="icon"
           data-testid={`user-logs-simulation-review-button-${row.id}`}
@@ -479,6 +501,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           description={
             isCall ? t("calls.fallback.callEmptyDesc") : t("calls.fallback.simEmptyDesc")
           }
+          // The empty table is still a full-width scroller on a phone; keep the
+          // message in the visible part of it instead of centred off-screen.
           className="py-[100px]"
         />
       );
@@ -529,6 +553,66 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
         );
     }
   };
+
+  const renderSimulationCards = () => (
+    <div className="pb-6 font-primary" data-testid="user-logs-simulation-cards">
+      {displayData.length === 0 ? (
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={t("calls.fallback.simEmptyTitle")}
+          description={t("calls.fallback.simEmptyDesc")}
+          className="py-16 px-4"
+        />
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {displayData.map(row => (
+            <li key={row.id}>
+              <button
+                type="button"
+                onClick={() => openSimulationSummary(row)}
+                className="w-full rounded-xl border border-border-light bg-white p-4 text-left hover:bg-background-tertiary"
+                data-testid={`user-logs-simulation-card-${row.id}`}
+              >
+                <span className="block break-words text-lg text-typography-900">
+                  {row.scenarioTitle}
+                </span>
+                <span className="mt-0.5 block break-words text-sm text-typography-600">
+                  {row.sessionId}
+                </span>
+                <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-typography-800">
+                  <span>{row.dateAndTime}</span>
+                  <span>{row.duration}</span>
+                  <span>
+                    {t("calls.table.sessionScore")}: {row.sessionScore}
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {logs.length > 0 && hasMore && (
+        <Button
+          variant="secondary"
+          fullWidth
+          className="mt-4"
+          disabled={isLoadingMore}
+          onClick={handleLoadMore}
+        >
+          {t("common.loadMore")}
+        </Button>
+      )}
+    </div>
+  );
+
+  if (isSimulation && isBelowMd) {
+    return (
+      <>
+        {renderSimulationCards()}
+        {summary && summary.id && getSummarySideBar()}
+      </>
+    );
+  }
 
   return (
     <>

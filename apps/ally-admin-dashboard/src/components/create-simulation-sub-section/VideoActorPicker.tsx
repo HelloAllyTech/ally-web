@@ -252,14 +252,14 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
 
       {!isFetching && !!faces?.length && (
         <>
-          <div className="flex flex-row items-center gap-3">
+          <div className="flex flex-row flex-wrap items-center gap-3">
             <input
               type="text"
               data-testid="video-actor-face-search"
               value={search}
               onChange={event => setSearch(event.target.value)}
               placeholder="Search faces"
-              className="bg-background-secondary w-64 rounded px-3 py-2 text-sm focus:outline-none"
+              className="bg-background-secondary w-full sm:w-64 rounded px-3 py-2 text-sm focus:outline-none"
             />
             <span className="text-typography-500 text-sm">
               {selectedFace
@@ -296,7 +296,7 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
             <span className="text-typography-500 text-sm">No face matches that name.</span>
           )}
 
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row flex-wrap items-center gap-4">
             {selectedFace && (
               <button
                 type="button"
@@ -337,7 +337,7 @@ export const VideoActorPicker: FC<VideoActorPickerProps> = ({
             })
           }
           placeholder="Face id"
-          className="border-border-light w-64 rounded-md border p-2 text-sm"
+          className="border-border-light w-full sm:w-64 rounded-md border p-2 text-sm"
         />
       )}
 

@@ -137,7 +137,7 @@ const TranscriptItem = ({
         {convertSecondsToTime(transcript.startSeconds ?? 0)}
       </div>
 
-      <div className="flex-1 ph-mask">
+      <div className="flex-1 ph-mask max-md:min-w-0 max-md:break-words">
         <div className={`font-semibold text-base ${isAIClient ? "text-ai-700" : "text-[#565045]"}`}>
           {speakerName}
         </div>

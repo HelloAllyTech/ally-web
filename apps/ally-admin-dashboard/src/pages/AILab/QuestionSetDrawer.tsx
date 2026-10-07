@@ -175,8 +175,8 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
-      <div className="w-[50%] min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="p-6">
+      <div className="w-full md:w-[50%] md:min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">
             {isReadOnly
               ? en.aiLab.questionSets.view
@@ -189,7 +189,7 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
           )}
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-4 pb-4">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar space-y-4 pb-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-typography-900 font-primary">
               {en.aiLab.questionSets.nameLabel}
@@ -230,11 +230,11 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
                     <span className="text-destructive-500 ml-1">*</span>
                   </label>
                   {!isReadOnly && (
-                    <div className="flex items-center gap-2 text-typography-500">
+                    <div className="flex items-center gap-1 text-typography-500 md:gap-2">
                       <button
                         onClick={() => moveQuestion(index, -1)}
                         disabled={index === 0}
-                        className="hover:text-primary-600 disabled:opacity-30 disabled:hover:text-typography-500"
+                        className="-my-2 inline-flex h-8 w-8 items-center justify-center md:my-0 md:block md:h-auto md:w-auto hover:text-primary-600 disabled:opacity-30 disabled:hover:text-typography-500"
                         aria-label={en.aiLab.questionSets.moveUp}
                         title={en.aiLab.questionSets.moveUp}
                       >
@@ -243,7 +243,7 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
                       <button
                         onClick={() => moveQuestion(index, 1)}
                         disabled={index === questions.length - 1}
-                        className="hover:text-primary-600 disabled:opacity-30 disabled:hover:text-typography-500"
+                        className="-my-2 inline-flex h-8 w-8 items-center justify-center md:my-0 md:block md:h-auto md:w-auto hover:text-primary-600 disabled:opacity-30 disabled:hover:text-typography-500"
                         aria-label={en.aiLab.questionSets.moveDown}
                         title={en.aiLab.questionSets.moveDown}
                       >
@@ -251,7 +251,7 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
                       </button>
                       <button
                         onClick={() => removeQuestion(index)}
-                        className="hover:text-destructive-600"
+                        className="-my-2 inline-flex h-8 w-8 items-center justify-center md:my-0 md:block md:h-auto md:w-auto hover:text-destructive-600"
                         aria-label={en.aiLab.questionSets.remove}
                         title={en.aiLab.questionSets.remove}
                       >
@@ -330,7 +330,7 @@ export const QuestionSetDrawer: React.FC<QuestionSetDrawerProps> = ({
           </div>
         </div>
 
-        <div className="border-t border-border-light px-10 py-4 flex gap-3 justify-end">
+        <div className="border-t border-border-light px-4 md:px-10 py-4 flex gap-3 justify-end">
           <Button variant={ButtonVariant.SECONDARY} onClick={onClose} disabled={isSaving}>
             {isReadOnly ? en.common.close : en.common.cancel}
           </Button>

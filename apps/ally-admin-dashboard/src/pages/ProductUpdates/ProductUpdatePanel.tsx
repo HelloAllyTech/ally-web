@@ -303,7 +303,7 @@ export const ProductUpdatePanel: React.FC<ProductUpdatePanelProps> = ({ update, 
             />
           </CountedField>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="product-update-kind" className="text-sm text-typography-900">
                 {t.panel.kindLabel}

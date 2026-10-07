@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { SkeletonPlaceholder, Tabs } from "@ally-ui-mono/ui-shared";
+import { CloseIcon } from "@assets";
 import { GeneralCommentsToShow, ThreadsToShow } from "@components";
 import { CommentItem, Thread } from "@types";
 
@@ -27,6 +28,8 @@ interface ReviewCommentsSidepanelProps {
   handleReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
   isScribeReview?: boolean;
+  /** Below lg the panel overlays the page; this renders a close button there. */
+  onClose?: () => void;
 }
 
 type TabType = "inline" | "general";
@@ -46,6 +49,7 @@ const ReviewCommentsSidepanel = ({
   handleReplyChange,
   changedReply,
   isScribeReview,
+  onClose,
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("inline");
@@ -76,6 +80,16 @@ const ReviewCommentsSidepanel = ({
         <div className="text-typography-900 font-medium text-lg">
           {t("review.details.comments")}
         </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            className="lg:hidden -mr-2 inline-flex h-10 w-10 items-center justify-center text-typography-700"
+          >
+            <CloseIcon />
+          </button>
+        )}
       </div>
       <div className="w-full px-4">
         <Tabs

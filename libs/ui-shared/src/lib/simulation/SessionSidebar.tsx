@@ -125,7 +125,7 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
       {activeTab && (
         <>
           {/* Tab header */}
-          <div className="flex gap-2 border-b border-[#3D4045]" role="tablist">
+          <div className="flex gap-2 overflow-x-auto border-b border-[#3D4045]" role="tablist">
             {tabs.map(tab => {
               const isActive = activeTab === tab.id;
               const badgeCount = tab.id === SidebarTab.SUPERVISOR && !isActive ? unreadNotes : 0;
@@ -137,7 +137,7 @@ export const SessionSidebar: FC<SessionSidebarProps> = ({
                   aria-selected={isActive}
                   data-testid={`session-sidebar-tab-${tab.id}`}
                   onClick={() => setSelectedTab(tab.id)}
-                  className={`relative px-3 py-2 text-[14px] font-medium transition-colors ${
+                  className={`relative shrink-0 whitespace-nowrap px-3 py-2 text-[14px] font-medium transition-colors ${
                     isActive ? "text-white" : "text-[#9CA3AF] hover:text-white"
                   }`}
                 >

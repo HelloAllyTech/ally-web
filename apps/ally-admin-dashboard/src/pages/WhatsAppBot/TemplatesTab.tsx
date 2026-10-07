@@ -241,7 +241,7 @@ export const TemplatesTab: React.FC = () => {
           {en.whatsappBot.templates.tester}
         </h3>
         <div className="flex gap-3 items-end">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <TextInput
               id="wa-template-test"
               labelText=""

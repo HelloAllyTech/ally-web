@@ -106,6 +106,7 @@ export const TurnDetectionTab: React.FC = () => {
           variant={ButtonVariant.PRIMARY}
           onClick={handleSave}
           disabled={isSaving || isLoading || !isValid}
+          className="w-full sm:w-auto"
         >
           {isSaving ? en.settings.saving : en.settings.save}
         </Button>

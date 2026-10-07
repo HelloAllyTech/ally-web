@@ -189,7 +189,8 @@ describe("CreateSimulationSubSection", () => {
         </TestWrapper>,
       );
 
-      const fieldContainers = container.querySelectorAll(".w-\\[48\\%\\]");
+      // Half width from md up; full width on phones.
+      const fieldContainers = container.querySelectorAll(".md\\:w-\\[48\\%\\]");
       expect(fieldContainers.length).toBe(3);
     });
 
@@ -218,7 +219,7 @@ describe("CreateSimulationSubSection", () => {
       );
 
       const fullWidthFields = container.querySelectorAll(".w-full");
-      const halfWidthFields = container.querySelectorAll(".w-\\[48\\%\\]");
+      const halfWidthFields = container.querySelectorAll(".md\\:w-\\[48\\%\\]");
 
       expect(fullWidthFields.length).toBeGreaterThan(0);
       expect(halfWidthFields.length).toBeGreaterThan(0);

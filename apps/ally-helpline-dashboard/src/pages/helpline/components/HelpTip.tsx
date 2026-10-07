@@ -16,7 +16,7 @@ export const HelpTip: FC<{ label: string; ariaLabel: string; align?: Align }> = 
     <button
       type="button"
       aria-label={ariaLabel}
-      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-typography-700 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-typography-700 md:h-6 md:w-6 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
     >
       <Info aria-hidden="true" className="h-4 w-4" />
     </button>

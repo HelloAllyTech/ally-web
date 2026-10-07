@@ -125,7 +125,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
 
   const BoxBreathingComponent = (
     <div
-      className={`w-full h-full bg-black flex flex-col justify-center items-center relative font-primary text-white ${isMaximized ? "p-16 gap-6" : "p-4 gap-3"}`}
+      className={`w-full h-full bg-black flex flex-col justify-center items-center relative font-primary text-white max-md:overflow-hidden ${isMaximized ? "p-16 gap-6 max-md:px-4" : "p-4 gap-3"}`}
     >
       <BoxBreathingTopGradient className="absolute right-0 z-0 h-full" />
       <BoxBreathingBottomGradient className="absolute bottom-0 left-0 z-0 h-[70%]" />
@@ -144,7 +144,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       <div className={`${isMaximized ? "text-4xl" : "text-2xl"} font-tertiary z-10`}>{seconds}</div>
 
       {/* Box Breathing Steps */}
-      <div className="flex gap-6 z-10">
+      <div className="flex gap-6 z-10 max-md:gap-3 max-md:text-center">
         {BOX_BREATHING_STEPS.map((step, index) => (
           <div key={getKeyFromIndex(index, "step")} className="flex flex-col items-center">
             <span>

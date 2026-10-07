@@ -166,7 +166,11 @@ export const EndedScreen: FC<EndedScreenProps> = ({
               </p>
             )}
 
-            <TalkerButton type="submit" className="mt-4" disabled={!rating || isSubmittingFeedback}>
+            <TalkerButton
+              type="submit"
+              className="mt-4 w-full sm:w-auto"
+              disabled={!rating || isSubmittingFeedback}
+            >
               {isSubmittingFeedback
                 ? t("helplineTalker.ended.submitting")
                 : t("helplineTalker.ended.submit")}

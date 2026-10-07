@@ -163,32 +163,38 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
       }
       return (
         <div className="w-full flex flex-col gap-[10px]">
-          <div className="flex gap-5 items-center w-full border-[0.5px] border-[#d6cdbe] rounded-[8px] px-6">
-            <div
-              className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#eae7de]" : "bg-[#f0eee7]"} cursor-pointer grid place-items-center`}
+          <div className="flex gap-3 md:gap-5 items-center w-full border-[0.5px] border-[#d6cdbe] rounded-[8px] px-3 md:px-6">
+            <button
+              type="button"
+              aria-label={isPlaying ? t("calls.createNote.voice.pause") : t("common.play")}
+              onClick={isPlaying ? onPauseClick : onPlayClick}
+              className={`w-10 h-10 shrink-0 rounded-full ${isPlaying ? "bg-[#eae7de]" : "bg-[#f0eee7]"} cursor-pointer grid place-items-center`}
             >
               {isPlaying ? (
-                <PauseIcon className="text-primary-500" onClick={onPauseClick} />
+                <PauseIcon className="text-primary-500" />
               ) : (
-                <PlayIcon className="text-typography-800" onClick={onPlayClick} />
+                <PlayIcon className="text-typography-800" />
               )}
-            </div>
+            </button>
             <span className="text-xs text-typography-800 min-w-[36px]">
               {formatTime(currentSec)}
             </span>
-            <div className="relative flex-1">
-              <WavesurferPlayer
-                url={audioUrl}
-                height={100}
-                width={300}
-                waveColor="#d6cdbe"
-                barGap={4}
-                barWidth={2}
-                onFinish={() => setIsPlaying(false)}
-                onReady={onAudioReady}
-                progressColor="#264d8e"
-                cursorColor="transparent"
-              />
+            {/* Waveform keeps its 300px on desktop and shrinks with the row on a phone. */}
+            <div className="relative flex-1 min-w-0">
+              <div className="w-full max-w-[300px]">
+                <WavesurferPlayer
+                  url={audioUrl}
+                  height={100}
+                  width="100%"
+                  waveColor="#d6cdbe"
+                  barGap={4}
+                  barWidth={2}
+                  onFinish={() => setIsPlaying(false)}
+                  onReady={onAudioReady}
+                  progressColor="#264d8e"
+                  cursorColor="transparent"
+                />
+              </div>
               {isWaveformLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
                   <div className="flex flex-col items-center gap-2">
@@ -205,13 +211,20 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
             </span>
           </div>
           <div className="flex gap-2 w-full justify-between items-center font-primary">
-            <div className="flex gap-2 items-center">
-              <span className="text-xs text-black">{audioFile?.name}</span>
+            <div className="flex gap-2 items-center min-w-0">
+              <span className="text-xs text-black break-all">{audioFile?.name}</span>
               <span className="text-[10px] text-typography-800 bg-[#f0eee7] rounded-[2px] p-1">
                 {getFileSize()} MB
               </span>
             </div>
-            <Delete className="text-destructive-500 cursor-pointer" onClick={onAudioDelete} />
+            <button
+              type="button"
+              aria-label={t("calls.dialog.delete.primary")}
+              onClick={onAudioDelete}
+              className="inline-flex shrink-0 items-center justify-center min-h-10 min-w-10 md:min-h-0 md:min-w-0"
+            >
+              <Delete className="text-destructive-500 cursor-pointer" />
+            </button>
           </div>
         </div>
       );

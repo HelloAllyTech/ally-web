@@ -478,13 +478,17 @@ export const FileUpload = ({
     if (!isNonEmptyString(uploadedFileUrl)) return null;
 
     return (
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex flex-col">
+      <div className="flex items-center justify-between gap-2 mt-2">
+        <div className="flex flex-col min-w-0">
           {uploadedFile && (
             <span className="text-typography-900 truncate">{uploadedFile.name}</span>
           )}
         </div>
-        <button type="button" onClick={handleDeleteFile}>
+        <button
+          type="button"
+          onClick={handleDeleteFile}
+          className="shrink-0 max-md:inline-flex max-md:h-10 max-md:w-10 max-md:items-center max-md:justify-center"
+        >
           <Trash />
         </button>
       </div>

@@ -89,7 +89,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
         )}
         <hr className="border-t border-border-light py-0 my-0" />
         {/* Language, Turns, and Button */}
-        <div className="flex gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">
+        <div className="flex flex-wrap md:flex-nowrap gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">
           <div className="flex-1">
             <CustomDropdownField
               options={scenarioLanguage}
@@ -113,15 +113,15 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
             />
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 max-md:w-full">
             {buttonDisabled && buttonTooltip ? (
               <Tooltip label={buttonTooltip} align="top">
-                <span>
+                <span className="max-md:block max-md:w-full">
                   <Button
                     variant={ButtonVariant.PRIMARY}
                     onClick={onButtonClick}
                     disabled={buttonDisabled}
-                    className="px-6 py-2.5 h-[36px]"
+                    className="px-6 py-2.5 h-[36px] max-md:w-full"
                   >
                     {buttonText}
                   </Button>
@@ -132,7 +132,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
                 variant={ButtonVariant.PRIMARY}
                 onClick={onButtonClick}
                 disabled={buttonDisabled}
-                className="px-6 py-2.5 h-[36px]"
+                className="px-6 py-2.5 h-[36px] max-md:w-full"
               >
                 {buttonText}
               </Button>

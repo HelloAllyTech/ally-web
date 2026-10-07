@@ -46,14 +46,15 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
           >
-            <span
-              class="inline-flex"
+            <button
+              class="inline-flex p-2 -m-2"
+              type="button"
             >
               <svg
                 class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
-            </span>
+            </button>
           </div>
         </div>
         <textarea
@@ -74,10 +75,10 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
         />
       </div>
       <div
-        class="flex flex-row gap-8 items-center justify-center mt-6 "
+        class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-primary"
+          class=" w-full sm:w-40 font-primary"
           data-variant="secondary"
         >
           Back to session logs
@@ -150,14 +151,15 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
           >
-            <span
-              class="inline-flex"
+            <button
+              class="inline-flex p-2 -m-2"
+              type="button"
             >
               <svg
                 class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
-            </span>
+            </button>
           </div>
         </div>
         <textarea
@@ -178,16 +180,16 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
         />
       </div>
       <div
-        class="flex flex-row gap-8 items-center justify-center mt-6 "
+        class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-primary"
+          class=" w-full sm:w-40 font-primary"
           data-variant="text"
         >
           I'll check later
         </button>
         <button
-          class=" w-40 font-primary"
+          class=" w-full sm:w-40 font-primary"
           data-variant="secondary"
         >
           See if its ready
@@ -253,14 +255,15 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
           >
-            <span
-              class="inline-flex"
+            <button
+              class="inline-flex p-2 -m-2"
+              type="button"
             >
               <svg
                 class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
-            </span>
+            </button>
           </div>
         </div>
         <textarea
@@ -281,10 +284,10 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         />
       </div>
       <div
-        class="flex flex-row gap-8 items-center justify-center mt-6 "
+        class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-primary"
+          class=" w-full sm:w-40 font-primary"
           data-variant="secondary"
         >
           Back to session logs
@@ -346,14 +349,15 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
           >
-            <span
-              class="inline-flex"
+            <button
+              class="inline-flex p-2 -m-2"
+              type="button"
             >
               <svg
                 class="w-[12px] h-[12px] text-[#29261f] cursor-pointer"
                 data-testid="info-icon"
               />
-            </span>
+            </button>
           </div>
         </div>
         <textarea
@@ -374,7 +378,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
         />
       </div>
       <div
-        class="flex flex-row gap-8 items-center justify-center mt-6 "
+        class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-8 items-center justify-center mt-6 "
       >
         <button
           class="w-72"

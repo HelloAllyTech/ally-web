@@ -329,7 +329,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   ];
 
   const SidebarTitle = (
-    <div className="text-base flex items-center justify-between w-full gap-2">
+    <div className="text-base flex flex-wrap items-center justify-between w-full gap-2">
       <span className="font-semibold font-tertiary text-typography-800">
         {t("common.summary", "Summary")}
       </span>
@@ -388,7 +388,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                         ),
                       )
                     }
-                    className="flex items-center justify-center"
+                    aria-label={t("postCallSummary.header.comments")}
+                    className="flex items-center justify-center h-10 w-10 md:h-auto md:w-auto"
                   >
                     <Comment className="w-6 h-6 shrink-0" />
                     {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}

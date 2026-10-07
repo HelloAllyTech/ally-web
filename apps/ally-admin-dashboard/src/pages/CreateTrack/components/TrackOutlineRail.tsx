@@ -4,7 +4,8 @@ import {
   DndContext,
   DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -60,8 +61,11 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
   onReorderSections,
   onReorderItems,
 }) => {
+  // Touch gets a press-and-hold on the drag handle, so a finger swiping the
+  // outline scrolls it instead of starting a reorder.
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -76,11 +80,11 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
   const settingsHasError = errorKeys.has("settings");
 
   return (
-    <div className="w-[300px] flex-shrink-0 border-r border-border-light h-full overflow-y-auto custom-scrollbar p-3">
+    <div className="w-full lg:w-[300px] flex-shrink-0 border-b lg:border-b-0 lg:border-r border-border-light max-h-[50dvh] lg:max-h-none lg:h-full overflow-y-auto custom-scrollbar py-3 lg:p-3">
       <button
         type="button"
         onClick={onSelectSettings}
-        className={`w-full flex items-center gap-2 px-2 py-2 rounded-md mb-2 ${
+        className={`w-full flex items-center gap-2 px-2 py-2 max-lg:min-h-10 rounded-md mb-2 ${
           isSettingsSelection(selection)
             ? "bg-primary-50 text-primary-700"
             : "hover:bg-secondary-50 text-typography-800"
@@ -94,7 +98,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
       <button
         type="button"
         onClick={onSelectTranslations}
-        className={`w-full flex items-center gap-2 px-2 py-2 rounded-md mb-2 ${
+        className={`w-full flex items-center gap-2 px-2 py-2 max-lg:min-h-10 rounded-md mb-2 ${
           isTranslationsSelection(selection)
             ? "bg-primary-50 text-primary-700"
             : "hover:bg-secondary-50 text-typography-800"
@@ -103,7 +107,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
         <Languages className="w-4 h-4" />
         <span className="text-sm font-medium flex-1 text-left">Languages</span>
         {publishedLanguageCount > 0 && (
-          <span className="rounded-full bg-success-50 px-1.5 py-0.5 text-[10px] text-success-700">
+          <span className="rounded-full bg-success-50 px-1.5 py-0.5 text-xs lg:text-[10px] text-success-700">
             {publishedLanguageCount}
           </span>
         )}
@@ -138,7 +142,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
       <button
         type="button"
         onClick={onAddSection}
-        className="w-full inline-flex items-center justify-center gap-1 border border-dashed border-border-dark rounded-md py-2 text-sm text-typography-600 hover:bg-secondary-50 mt-2"
+        className="w-full inline-flex items-center justify-center gap-1 border border-dashed border-border-dark rounded-md py-2.5 lg:py-2 text-sm text-typography-600 hover:bg-secondary-50 mt-2"
       >
         <Plus className="w-4 h-4" />
         Add section

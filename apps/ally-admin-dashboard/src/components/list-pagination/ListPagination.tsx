@@ -43,7 +43,7 @@ export const ListPagination: React.FC<ListPaginationProps> = ({
   const rangeEnd = Math.min(offset + pageSize, total);
 
   return (
-    <div className="flex items-center justify-between shrink-0 border-t border-border-light pt-3 mt-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 border-t border-border-light pt-3 mt-2">
       <span className="text-sm text-typography-700">
         {en.common.showing} {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} {en.common.of}{" "}
         {total.toLocaleString()}
@@ -54,7 +54,7 @@ export const ListPagination: React.FC<ListPaginationProps> = ({
           variant={ButtonVariant.SECONDARY}
           onClick={() => onChange(Math.max(0, offset - pageSize))}
           disabled={!canPrev}
-          className="h-[36px] px-4"
+          className="h-10 md:h-[36px] px-4"
         >
           {en.common.previous}
         </Button>
@@ -62,7 +62,7 @@ export const ListPagination: React.FC<ListPaginationProps> = ({
           variant={ButtonVariant.SECONDARY}
           onClick={() => onChange(offset + pageSize)}
           disabled={!canNext}
-          className="h-[36px] px-4"
+          className="h-10 md:h-[36px] px-4"
         >
           {en.common.next}
         </Button>

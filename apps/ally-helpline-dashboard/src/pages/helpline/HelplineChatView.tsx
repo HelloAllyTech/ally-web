@@ -447,7 +447,7 @@ export const HelplineChatView: FC = () => {
         <div className="flex gap-2">
           <Link
             to={ROUTES.HELPLINE}
-            className="rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary"
+            className="inline-flex min-h-[40px] items-center rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary md:min-h-0"
           >
             {t("helplineWorkspace.chat.back")}
           </Link>
@@ -455,7 +455,7 @@ export const HelplineChatView: FC = () => {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary"
+              className="min-h-[40px] rounded-full border border-border-medium px-4 py-2 text-sm text-typography-900 hover:bg-background-secondary md:min-h-0"
             >
               {t("helplineWorkspace.chat.retry")}
             </button>
@@ -483,7 +483,7 @@ export const HelplineChatView: FC = () => {
       <header className="flex flex-wrap items-center gap-2 border-b border-border-light px-4 py-2">
         <Link
           to={ROUTES.HELPLINE}
-          className="inline-flex min-h-[36px] items-center gap-1 rounded-full pr-2 font-primary text-sm text-typography-800 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          className="inline-flex min-h-[40px] items-center gap-1 rounded-full pr-2 font-primary text-sm text-typography-800 md:min-h-[36px] hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         >
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
           {t("helplineWorkspace.chat.back")}
@@ -501,7 +501,7 @@ export const HelplineChatView: FC = () => {
             <button
               type="button"
               onClick={() => setConfirmEnd(true)}
-              className="mr-1 inline-flex min-h-[36px] items-center rounded-full border border-destructive-300 px-3 font-primary text-sm font-medium text-destructive-700 hover:bg-destructive-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              className="mr-1 inline-flex min-h-[40px] items-center rounded-full border border-destructive-300 px-3 font-primary text-sm font-medium text-destructive-700 md:min-h-[36px] hover:bg-destructive-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               {t("helplineWorkspace.info.endChat")}
             </button>
@@ -521,7 +521,7 @@ export const HelplineChatView: FC = () => {
                 ? t("helplineWorkspace.chat.hideCopilot")
                 : t("helplineWorkspace.chat.showCopilot")
             }
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-typography-800 hover:bg-background-secondary disabled:opacity-50"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-typography-800 hover:bg-background-secondary disabled:opacity-50 md:h-9 md:w-9"
           >
             <Sparkles aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -535,7 +535,7 @@ export const HelplineChatView: FC = () => {
             title={
               infoOpen ? t("helplineWorkspace.chat.hideInfo") : t("helplineWorkspace.chat.showInfo")
             }
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-typography-800 hover:bg-background-secondary"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-typography-800 hover:bg-background-secondary md:h-9 md:w-9"
           >
             {infoOpen ? (
               <PanelRightClose aria-hidden="true" className="h-4 w-4" />
@@ -573,7 +573,7 @@ export const HelplineChatView: FC = () => {
         </p>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="relative flex min-h-0 flex-1 flex-col lg:flex-row">
         <section
           className="flex min-h-0 min-w-0 flex-1 flex-col"
           aria-label={t("helplineWorkspace.chat.transcriptLabel")}
@@ -604,7 +604,9 @@ export const HelplineChatView: FC = () => {
         </section>
 
         {showCopilot && (
-          <aside className="max-h-[50vh] overflow-y-auto border-t border-border-light bg-background-secondary lg:max-h-none lg:w-[360px] lg:border-l lg:border-t-0">
+          // Phones: capped to a share of the chat area (not the screen), so the transcript and the
+          // composer keep most of it — also with the keyboard up, when that area shrinks.
+          <aside className="max-h-[40%] overflow-y-auto border-t border-border-light bg-background-secondary md:max-h-[50vh] lg:max-h-none lg:w-[360px] lg:border-l lg:border-t-0">
             <CopilotPanel
               detail={detail}
               settings={me.settings}
@@ -621,7 +623,16 @@ export const HelplineChatView: FC = () => {
         )}
 
         {infoOpen && (
-          <aside className="overflow-y-auto border-t border-border-light lg:w-[260px] lg:border-l lg:border-t-0">
+          // Phones: one pane at a time — talker details cover the chat area until hidden again.
+          <aside className="overflow-y-auto border-t border-border-light max-md:absolute max-md:inset-0 max-md:z-10 max-md:bg-white lg:w-[260px] lg:border-l lg:border-t-0">
+            <button
+              type="button"
+              onClick={() => setInfoOpen(false)}
+              className="inline-flex min-h-[44px] items-center gap-1 px-3 font-primary text-sm text-typography-800 hover:text-typography-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:hidden"
+            >
+              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              {t("helplineWorkspace.chat.hideInfo")}
+            </button>
             <TalkerInfoPanel chat={chat} actions={actions} />
           </aside>
         )}

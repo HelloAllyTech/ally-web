@@ -36,7 +36,7 @@ export const PlayerTopBar: FC<PlayerTopBarProps> = ({
         <button
           onClick={onExit}
           aria-label={t("tracks2.player.exit")}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-typography-700 transition-colors hover:bg-neutral-100"
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-typography-700 transition-colors hover:bg-neutral-100 max-md:h-11 max-md:w-11"
         >
           <Close className="h-4 w-4" />
         </button>

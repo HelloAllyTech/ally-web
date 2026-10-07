@@ -128,11 +128,16 @@ export const RaiseBudgetDialog: React.FC<RaiseBudgetDialogProps> = ({
             <p className="mt-1 text-xs text-typography-500">{strings.newHint}</p>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button kind="tertiary" onClick={onClose}>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button kind="tertiary" className="max-sm:!w-full max-sm:!max-w-none" onClick={onClose}>
               {en.builder.prd.cancel}
             </Button>
-            <Button kind="primary" disabled={isLoading} onClick={() => void handleSubmit()}>
+            <Button
+              kind="primary"
+              className="max-sm:!w-full max-sm:!max-w-none"
+              disabled={isLoading}
+              onClick={() => void handleSubmit()}
+            >
               {isHeld ? strings.submitHeld : strings.submit}
             </Button>
           </div>

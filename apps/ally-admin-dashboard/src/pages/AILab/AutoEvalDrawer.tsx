@@ -7,6 +7,7 @@ import {
   useCreateAutoEvaluationMutation,
   useGetAutofillModelsQuery,
 } from "@api";
+import { Close } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS } from "@constants";
@@ -63,15 +64,25 @@ export const AutoEvalDrawer: React.FC<AutoEvalDrawerProps> = ({ run, onClose }) 
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={running ? undefined : onClose} />
-      <div className="w-[50%] min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
-        <div className="flex items-center justify-between p-6">
+      <div className="w-full md:w-[50%] md:min-w-[720px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
+        <div className="flex items-center justify-between gap-3 p-4 md:p-6">
           <span className="text-base font-tertiary font-[500]">
             {en.aiLab.autoEval.drawerTitle}
           </span>
           <span className="text-sm text-typography-600">{run.skillName}</span>
+          {/* Phone only: the panel is full-width there, so there is no backdrop to tap. */}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={running}
+            aria-label={en.common.close}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-typography-600 hover:text-neutral-800 md:hidden"
+          >
+            <Close />
+          </button>
         </div>
 
-        <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-5 pb-8">
+        <div className="flex-1 min-h-0 px-4 md:px-10 pt-2 overflow-y-auto custom-scrollbar space-y-5 pb-8">
           <p className="text-sm text-typography-600">{en.aiLab.autoEval.subtitle}</p>
 
           <div className="flex flex-col gap-1.5">

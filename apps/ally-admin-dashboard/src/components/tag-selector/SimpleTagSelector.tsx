@@ -87,7 +87,7 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
   );
 
   const renderDropdown = () => (
-    <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg z-50 w-[300px]">
+    <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg z-50 w-[300px] max-w-[calc(100vw-2rem)]">
       <div className="relative p-2">
         <input
           type="text"

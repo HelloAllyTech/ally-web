@@ -16,7 +16,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           00:00
         </div>
-        <div>
+        <div
+          class="min-w-0 break-words"
+        >
           <span
             class="font-medium pr-1"
           >
@@ -52,7 +54,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           01:05
         </div>
-        <div>
+        <div
+          class="min-w-0 break-words"
+        >
           <span
             class="font-medium pr-1"
           >
@@ -88,7 +92,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           02:10
         </div>
-        <div>
+        <div
+          class="min-w-0 break-words"
+        >
           <span
             class="font-medium pr-1"
           >

@@ -580,22 +580,24 @@ const CommentCard = ({
           {showDivider && <div className="w-1 h-1 bg-[#d6cdbe] rounded-full" />}
           {showReply && (
             <>
-              <div
-                className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
+              <button
+                type="button"
+                className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2 py-2 md:py-0"
                 onClick={handleReplyClick}
               >
                 {t("review.details.replyAction")}
-              </div>
+              </button>
             </>
           )}
           {replyCount > 0 && (
-            <div
-              className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1`}
+            <button
+              type="button"
+              className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1 py-2 md:py-0`}
               onClick={onReplyClick}
             >
               {replyCount}{" "}
               {replyCount > 1 ? t("review.feedCard.replies") : t("review.feedCard.reply")}
-            </div>
+            </button>
           )}
         </div>
       </>
@@ -683,7 +685,7 @@ const CommentCard = ({
               <div className="flex flex-row justify-between items-center">
                 <button
                   onClick={handleMenuOpen}
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
+                  className="p-2.5 md:p-1 hover:bg-gray-100 rounded-full transition-colors tr"
                   aria-label={t("review.details.commentOptions")}
                 >
                   <MoreVertIcon className="w-5 h-5 text-gray-600" />

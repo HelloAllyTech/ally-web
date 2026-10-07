@@ -108,11 +108,11 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <span className="inline-flex items-center rounded-full bg-primary-50 text-primary-600 text-xs font-medium px-3 py-1">
           {TRACK_ITEM_TYPE_LABELS[type]}
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {canSaveAsTemplate && (
             <button
               type="button"

@@ -191,7 +191,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
 
   /** Outlined when the control is open or carrying something, muted when it is neither. */
   const chipClass = (isActive: boolean) =>
-    `border px-2 py-1 ${
+    `border px-3 py-2 md:px-2 md:py-1 ${
       isActive
         ? "border-primary-500 text-primary-600"
         : "border-border-light text-typography-secondary"
@@ -260,11 +260,11 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
           {chips.map(chip => (
             <span
               key={chip.id}
-              className="text-typography-900 border-border-light flex items-center rounded-[20px] border px-2 py-0.5"
+              className="text-typography-900 border-border-light flex min-w-0 max-w-full items-center rounded-[20px] border px-2 py-0.5"
             >
               <span className="text-typography-secondary mr-1 text-xs">{chip.label}:</span>
               <Tooltip label={chip.values.join(", ")} align="top">
-                <span className="mr-1 max-w-[16rem] truncate text-xs font-medium">
+                <span className="mr-1 block max-w-[16rem] truncate text-xs font-medium">
                   {chip.values.join(", ")}
                 </span>
               </Tooltip>
@@ -272,7 +272,7 @@ export const RoadmapFilterBar: React.FC<RoadmapFilterBarProps> = props => {
                 type="button"
                 onClick={() => clearFacet(chip.id)}
                 aria-label={`Clear ${chip.label} filter`}
-                className="text-typography-800 hover:text-typography-900"
+                className="text-typography-800 hover:text-typography-900 -my-1 inline-flex shrink-0 p-1 md:my-0 md:block md:p-0"
               >
                 <Close />
               </button>

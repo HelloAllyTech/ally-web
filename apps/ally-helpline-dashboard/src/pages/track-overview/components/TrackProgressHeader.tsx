@@ -51,7 +51,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
       <div className="pt-4 pb-3 flex items-center gap-2 text-sm text-typography-700 min-w-0">
         <button
           onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
-          className="hover:text-primary-500 transition-colors whitespace-nowrap"
+          className="hover:text-primary-500 transition-colors whitespace-nowrap max-md:min-h-11"
         >
           {t("tracks2.breadcrumb")}
         </button>
@@ -115,7 +115,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
 
         {track.description && (
           <div
-            className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed"
+            className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed break-words"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(track.description),
             }}
@@ -126,7 +126,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
           <button
             onClick={onStartOrContinue}
             disabled={isStarting}
-            className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors disabled:opacity-60"
+            className="w-full sm:w-auto px-6 py-2 max-md:min-h-11 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors disabled:opacity-60"
           >
             {isStarting ? t("common.starting") : ctaLabel}
           </button>

@@ -48,7 +48,7 @@ export const QuizIntro: FC<QuizIntroProps> = ({ quiz, attemptsUsed, maxAttempts,
       <button
         onClick={onStart}
         disabled={!canStart}
-        className="mt-6 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50"
+        className="mt-6 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50 max-md:min-h-11"
       >
         {canStart ? t("tracks2.quiz.intro.start") : t("tracks2.quiz.intro.noAttemptsLeft")}
       </button>

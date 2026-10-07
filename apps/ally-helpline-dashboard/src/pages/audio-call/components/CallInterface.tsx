@@ -83,7 +83,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="text-white text-4xl font-normal">{message}</div>
+        <div className="text-white text-2xl md:text-4xl font-normal text-center px-4 md:px-0">
+          {message}
+        </div>
         {isUserJoined === false && !isMicrophoneMode && (
           <div className="text-white text-sm text-center mt-1">
             {t("audioCall.notes.waitOrEnd")}
@@ -107,14 +109,21 @@ const CallInterface: FC<CallInterfaceProps> = ({
       {isUserJoined && !socketDisconnectionReason ? (
         <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative">
           {isExotelMode && showExotelBanner && (
-            <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
+            <div className="w-fit max-w-[calc(100vw-2rem)] flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
               <div className="flex items-center gap-[2px] ">
                 <WarningTriangle />
-                <span className="text-typography-900 text-sm whitespace-nowrap">
+                <span className="text-typography-900 text-sm sm:whitespace-nowrap">
                   {t("audioCall.notes.scribeStopWarning")}
                 </span>
               </div>
-              <X className="w-4 h-4 cursor-pointer" onClick={() => setShowExotelBanner(false)} />
+              <button
+                type="button"
+                aria-label={t("common.close")}
+                onClick={() => setShowExotelBanner(false)}
+                className="inline-flex shrink-0 items-center justify-center p-2 -m-2"
+              >
+                <X className="w-4 h-4 cursor-pointer" />
+              </button>
             </div>
           )}
           <div className="text-white flex justify-center items-center flex-col gap-2">
@@ -131,9 +140,10 @@ const CallInterface: FC<CallInterfaceProps> = ({
               {getDescriptionText()}
             </div>
           </div>
-          <div className="relative gap-1 flex rounded-lg">
+          {/* The two 200px visualisers shrink (canvas scales) to fit a phone. */}
+          <div className="relative gap-1 flex rounded-lg max-w-[calc(100vw-2rem)] [&_canvas]:max-w-full [&_canvas]:h-auto">
             {mediaRecorder && (
-              <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
+              <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px] min-w-0">
                 <LiveAudioVisualizer
                   mediaRecorder={mediaRecorder}
                   width={200}
@@ -144,7 +154,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               </div>
             )}
             {mediaRecorder && (
-              <div className="z-0">
+              <div className="z-0 min-w-0">
                 <LiveAudioVisualizer
                   mediaRecorder={mediaRecorder}
                   width={200}

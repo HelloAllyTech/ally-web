@@ -378,24 +378,27 @@ export const PostSimulationSummary: FC = () => {
           <div className="mt-8 flex w-full shrink-0 items-center gap-2 text-sm text-typography-700 min-w-0">
             <button
               onClick={() => guardExit(() => navigate(`${ROUTES.LEARN}?tab=courses`))}
-              className="hover:text-primary-500 transition-colors whitespace-nowrap"
+              className="hover:text-primary-500 transition-colors whitespace-nowrap max-md:min-h-11"
             >
               {t("tracks2.breadcrumb")}
             </button>
             <ArrowRight />
             <button
               onClick={() => guardExit(() => navigate(buildTrackRoute(trackContext.trackId)))}
-              className="text-primary-500 font-medium truncate hover:underline"
+              className="text-primary-500 font-medium truncate hover:underline max-md:min-h-11"
             >
               {trackDetail?.title ?? t("common.loading")}
             </button>
           </div>
         )}
         <div
-          className={`${trackContext ? "mt-2" : "mt-8"} flex w-full shrink-0 items-center justify-between`}
+          className={`${trackContext ? "mt-2" : "mt-8"} flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-3`}
         >
-          <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
-            <button onClick={() => guardExit(() => navigate(-1))}>
+          <div className="flex flex-wrap items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
+            <button
+              onClick={() => guardExit(() => navigate(-1))}
+              aria-label={t("achievements.backAria")}
+            >
               <BackCircle />
             </button>
             {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
@@ -410,6 +413,7 @@ export const PostSimulationSummary: FC = () => {
                   {t("postSim.common.shareForReview")}
                 </span>
                 <ToggleSwitch
+                  label={t("postSim.common.shareForReview")}
                   enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
                   onChange={(value: boolean) => {
                     handleToggleChange(
@@ -429,7 +433,8 @@ export const PostSimulationSummary: FC = () => {
                         ROUTES.SIMULATION_REVIEW_DETAILS.replace(":reviewId", summary.reviewId),
                       )
                     }
-                    className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
+                    className="flex items-center justify-center h-[40px] w-[40px] p-0 relative max-md:h-11 max-md:w-11"
+                    aria-label={t("review.details.comments")}
                   >
                     <Comment className="w-6 h-6 shrink-0" />
                   </button>
@@ -491,10 +496,10 @@ export const PostSimulationSummary: FC = () => {
               !summary?.caseSessionItemId && (
                 <div
                   data-testid="post-sim-footer"
-                  className="flex w-full shrink-0 flex-col items-center gap-3 bg-white p-[20px]"
+                  className="flex w-full shrink-0 flex-col items-center gap-3 bg-white px-0 py-[20px] sm:p-[20px]"
                 >
                   {nextChallenge && (
-                    <div className="w-full max-w-4xl px-4 sm:px-6">
+                    <div className="w-full max-w-4xl sm:px-6">
                       <NextChallengeCard recommendation={nextChallenge} />
                     </div>
                   )}

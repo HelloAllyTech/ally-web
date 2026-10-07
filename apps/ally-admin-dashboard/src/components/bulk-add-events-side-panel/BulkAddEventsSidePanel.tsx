@@ -17,10 +17,10 @@ interface BulkAddEventsSidePanelProps {
 }
 
 const PanelHeader: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <div className="flex items-center justify-between p-6 border-b border-border-light">
+  <div className="flex items-center justify-between p-4 md:p-6 border-b border-border-light">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-800 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-800 hover:text-neutral-800 max-md:min-h-10"
     >
       <span className="inline-flex w-[14px] h-[14px]">
         <DoubleArrowRight />
@@ -196,10 +196,10 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
 
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
+      <div className="w-full md:w-[50%] md:min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader onClose={handleClose} />
 
-        <div className="h-[calc(100vh-100px)] px-10 pt-6 overflow-y-auto custom-scrollbar">
+        <div className="h-[calc(100dvh-72px)] md:h-[calc(100vh-100px)] px-4 md:px-10 pt-6 overflow-y-auto custom-scrollbar">
           {/* Tag Selection Section */}
           <div className="mb-6">
             {availableTags.length > 0 ? (
