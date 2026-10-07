@@ -622,7 +622,6 @@ export const useLiveKitRoom = (
       // Cleanup on route change to avoid duplicate listeners and ensure disconnect
       cleanupRoom();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -630,7 +629,6 @@ export const useLiveKitRoom = (
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
       cleanupRoom();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
