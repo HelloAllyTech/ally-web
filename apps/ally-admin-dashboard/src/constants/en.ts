@@ -2796,6 +2796,14 @@ export const en = {
     drawerRediscovered:
       "I have found this again {count} time(s) since. I am not re-filing it while your decision stands.",
 
+    // ── the independent verifier's view of a finding (OPP-0780) ───────────
+    drawerIndependentPending: "My independent verifier is still reading this",
+    drawerIndependentConfirmed: "Confirmed by my independent verifier",
+    drawerIndependentRefuted: "Refuted by my independent verifier",
+    drawerIndependentUnsure: "My independent verifier could not settle this; it is yours to decide",
+    drawerIndependentTooltip:
+      "After a sweep closes, a separate run on a different model reproduces each unproven finding and tries to refute it. I fix nothing in AI mode until it has confirmed the bug.",
+
     // ── the Verifier's verdict on a fix (OPP-0779) ────────────────────────
     drawerVerdictPass: "My Verifier passed this fix",
     drawerVerdictFail: "My Verifier refused this fix",
@@ -3040,7 +3048,8 @@ export const en = {
     triggerScheduled: "Nightly",
     triggerManual: "On demand",
     triggerFixSession: "Fix session",
-    triggerVerifyFix: "Verifier",
+    triggerVerifyFix: "Verifier (fixes)",
+    triggerVerifyFindings: "Verifier (findings)",
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",

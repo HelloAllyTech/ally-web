@@ -10,6 +10,8 @@ export enum BugHuntTrigger {
   FIX_SESSION = "fix_session",
   /** The Verifier's read-only pass over one fix PR, on the other vendor's model (OPP-0779). */
   VERIFY_FIX = "verify_fix",
+  /** The independent verifier's pass over a closed sweep's unproven findings (OPP-0780). */
+  VERIFY_FINDINGS = "verify_findings",
 }
 
 /**
@@ -414,6 +416,11 @@ export interface BugFinding {
   budget: BugCaseBudget;
   /** The Verifier's latest verdict on the current fix PR, or null until one has run. */
   latestFixVerdict: BugFixVerdict | null;
+  /**
+   * Where an unproven finding stands with the independent verifier (OPP-0780).
+   * Null for proven findings, human reports, and findings from before it existed.
+   */
+  independentVerification: "pending" | "confirmed" | "refuted" | "unsure" | null;
   /**
    * What the last failed fix session left behind, or null. Written by the
    * fix protocol with `status: failed`; the next session reads it in its

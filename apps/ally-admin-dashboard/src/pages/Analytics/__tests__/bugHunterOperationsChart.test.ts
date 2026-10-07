@@ -286,8 +286,8 @@ describe("spend over time", () => {
     expect(table.columns[0]).toBe("Month (UTC)");
     expect(table.columns).toContain("Total (USD)");
     expect(table.rows).toEqual([
-      ["2026-09", 1.1, 0, 0, 0, 1.1, 1],
-      ["2026-10", 2.2, 0, 0.5, 0, 2.7, 2],
+      ["2026-09", 1.1, 0, 0, 0, 0, 1.1, 1],
+      ["2026-10", 2.2, 0, 0.5, 0, 0, 2.7, 2],
     ]);
   });
 

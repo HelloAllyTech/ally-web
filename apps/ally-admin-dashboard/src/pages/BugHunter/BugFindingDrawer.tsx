@@ -575,6 +575,7 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             finding.rediscoveredCount > 0 ||
             finding.miss ||
             finding.latestFixVerdict ||
+            finding.independentVerification ||
             finding.budget) && (
             <div className="border border-border-light rounded p-3 flex flex-col gap-2">
               {finding.confidence != null && (
@@ -642,6 +643,34 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                     String(finding.rediscoveredCount),
                   )}
                 </p>
+              )}
+
+              {/* Where the independent finding verifier stands (OPP-0780). */}
+              {finding.independentVerification && (
+                <div data-testid="independent-verification" className="flex items-center gap-1">
+                  <span
+                    className={`text-xs font-medium ${
+                      finding.independentVerification === "confirmed"
+                        ? "text-green-700"
+                        : finding.independentVerification === "pending"
+                          ? "text-typography-600"
+                          : "text-amber-700"
+                    }`}
+                  >
+                    {finding.independentVerification === "pending"
+                      ? en.bugHunter.drawerIndependentPending
+                      : finding.independentVerification === "confirmed"
+                        ? en.bugHunter.drawerIndependentConfirmed
+                        : finding.independentVerification === "refuted"
+                          ? en.bugHunter.drawerIndependentRefuted
+                          : en.bugHunter.drawerIndependentUnsure}
+                  </span>
+                  <Tooltip label={en.bugHunter.drawerIndependentTooltip} align="top">
+                    <button type="button" className="cursor-pointer inline-flex items-center">
+                      <TooltipIcon />
+                    </button>
+                  </Tooltip>
+                </div>
               )}
 
               {/* The Verifier's verdict on the current fix PR (OPP-0779): the
