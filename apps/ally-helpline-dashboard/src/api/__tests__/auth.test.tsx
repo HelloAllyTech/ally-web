@@ -3,7 +3,7 @@ import React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 
 import {
   useLoginMutation,
