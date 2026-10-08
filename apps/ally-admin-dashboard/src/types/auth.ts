@@ -974,7 +974,35 @@ export interface BugAgentPerformanceFoundDay {
   rollingAvg7: number | null;
 }
 
+/** One week of Bug Hunter's goal numbers — mirrors ally-be's GoalWeekDto (OPP-0778). */
+export interface BugAgentPerformanceGoalWeek {
+  week: string;
+  humanReports: number;
+  agentBugs: number;
+  /** agentBugs / (agentBugs + humanReports); null when nobody found anything. */
+  firstFinderShare: number | null;
+  escapes: number;
+  escapeRate: number | null;
+  timeToFixHoursMedian: number | null;
+}
+
+export interface BugAgentPerformanceGoalWindow {
+  humanReports: number;
+  agentBugs: number;
+  firstFinderShare: number | null;
+  escapes: number;
+  escapeRate: number | null;
+  timeToFixHoursMedian: number | null;
+  /** Counts per miss reason over the window, plus "unclassified". */
+  missReasons: Record<string, number>;
+}
+
 export interface BugAgentPerformanceResponse {
+  /** The goal numbers: is Bug Hunter finding bugs before people do? */
+  goal: {
+    weekly: BugAgentPerformanceGoalWeek[];
+    window: BugAgentPerformanceGoalWindow;
+  };
   precision: {
     weekly: BugAgentPerformancePrecisionWeek[];
     bySource: BugAgentPerformanceSourceAccuracy[];

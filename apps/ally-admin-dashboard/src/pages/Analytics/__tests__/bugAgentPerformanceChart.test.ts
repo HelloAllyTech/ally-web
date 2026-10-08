@@ -13,12 +13,17 @@ import {
 import {
   buildCostTrend,
   buildFoundTrend,
+  buildGoalTrend,
+  buildMissReasons,
   buildPrecisionTrend,
   buildReliabilityTrend,
   buildSourceAccuracyBreakdown,
   buildSpeedTrend,
   buildThroughputTrend,
   foundTakeaway,
+  GOAL_ESCAPE_GROUP,
+  GOAL_FIRST_FINDER_GROUP,
+  goalTakeaway,
 } from "../bugAgentPerformanceChart";
 
 const precisionWeek = (
@@ -234,5 +239,87 @@ describe("foundTakeaway", () => {
     expect(
       foundTakeaway(series([...Array(10).fill(99), ...Array(7).fill(8), ...Array(7).fill(4)])),
     ).toBe("4.0 bugs/day over the last 7 days · down 50% on the week before (8.0/day)");
+  });
+});
+
+describe("the goal (OPP-0778)", () => {
+  const week = (over: Record<string, unknown>) => ({
+    week: "2026-01-05",
+    humanReports: 0,
+    agentBugs: 0,
+    firstFinderShare: null,
+    escapes: 0,
+    escapeRate: null,
+    timeToFixHoursMedian: null,
+    ...over,
+  });
+
+  it("plots the two rates and skips a week with nothing to rate", () => {
+    const data = buildGoalTrend([
+      week({ firstFinderShare: 0.6667, escapeRate: 1 }),
+      week({ week: "2026-01-12", firstFinderShare: 0, escapeRate: null }),
+      week({ week: "2026-01-19" }),
+    ]);
+    expect(data).toEqual([
+      { group: GOAL_FIRST_FINDER_GROUP, key: "2026-01-05", value: 0.6667 },
+      { group: GOAL_ESCAPE_GROUP, key: "2026-01-05", value: 1 },
+      { group: GOAL_FIRST_FINDER_GROUP, key: "2026-01-12", value: 0 },
+    ]);
+  });
+
+  it("labels miss reasons in the drawer's words, biggest first, dropping zeros", () => {
+    expect(
+      buildMissReasons({
+        no_sense: 18,
+        sense_missed: 7,
+        not_a_miss: 0,
+        unclassified: 2,
+        odd_reason: 1,
+      }),
+    ).toEqual([
+      { group: "No sense could see it", value: 18 },
+      { group: "A sense missed it", value: 7 },
+      { group: "Not classified yet", value: 2 },
+      { group: "odd_reason", value: 1 },
+    ]);
+  });
+
+  it("writes the window takeaway in plain words, in hours under two days and days above", () => {
+    expect(goalTakeaway(undefined)).toBeUndefined();
+    expect(
+      goalTakeaway({
+        humanReports: 0,
+        agentBugs: 0,
+        firstFinderShare: null,
+        escapes: 0,
+        escapeRate: null,
+        timeToFixHoursMedian: null,
+        missReasons: {},
+      }),
+    ).toBe("No real bugs found by anyone in this window.");
+    expect(
+      goalTakeaway({
+        humanReports: 10,
+        agentBugs: 30,
+        firstFinderShare: 0.75,
+        escapes: 4,
+        escapeRate: 0.4,
+        timeToFixHoursMedian: 26,
+        missReasons: {},
+      }),
+    ).toBe(
+      "Bug Hunter found 30 of 40 real bugs first (75%); people reported 10, of which 4 had slipped past a sweep in the week before; median 26 h from filing to merge.",
+    );
+    expect(
+      goalTakeaway({
+        humanReports: 1,
+        agentBugs: 1,
+        firstFinderShare: 0.5,
+        escapes: 0,
+        escapeRate: 0,
+        timeToFixHoursMedian: 100,
+        missReasons: {},
+      })?.endsWith("median 4 days from filing to merge."),
+    ).toBe(true);
   });
 });

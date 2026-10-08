@@ -1,6 +1,8 @@
 import {
   BugAgentPerformanceCostWeek,
   BugAgentPerformanceFoundDay,
+  BugAgentPerformanceGoalWeek,
+  BugAgentPerformanceGoalWindow,
   BugAgentPerformancePrecisionWeek,
   BugAgentPerformanceReliabilityWeek,
   BugAgentPerformanceSourceAccuracy,
@@ -204,4 +206,63 @@ export const foundTakeaway = (days: BugAgentPerformanceFoundDay[]): string | und
   if (Math.abs(change) < 0.005) return `${perDay} · flat on the week before`;
   const direction = change < 0 ? "down" : "up";
   return `${perDay} · ${direction} ${Math.round(Math.abs(change) * 100)}% on the week before (${beforeMean.toFixed(1)}/day)`;
+};
+
+/* ── the goal: finding bugs before people do (OPP-0778) ─────────────────── */
+
+export const GOAL_FIRST_FINDER_GROUP = "Found by Bug Hunter first";
+export const GOAL_ESCAPE_GROUP = "Escaped a recent sweep";
+
+export const GOAL_SCALE: ColorScale = {
+  [GOAL_FIRST_FINDER_GROUP]: PALETTE.green,
+  [GOAL_ESCAPE_GROUP]: PALETTE.red,
+};
+
+/** Two rates per week: the share of real bugs Bug Hunter found first, and the share of human reports that got past a sweep. Weeks with nothing to rate are left out of that line. */
+export function buildGoalTrend(weekly: BugAgentPerformanceGoalWeek[]): WeeklyDatum[] {
+  const out: WeeklyDatum[] = [];
+  for (const w of weekly) {
+    if (w.firstFinderShare != null)
+      out.push({ group: GOAL_FIRST_FINDER_GROUP, key: w.week, value: w.firstFinderShare });
+    if (w.escapeRate != null)
+      out.push({ group: GOAL_ESCAPE_GROUP, key: w.week, value: w.escapeRate });
+  }
+  return out;
+}
+
+/** The miss reasons, in the words the drawer uses, worst first. */
+export const MISS_REASON_LABELS: Record<string, string> = {
+  no_sense: "No sense could see it",
+  sense_missed: "A sense missed it",
+  detected_declined: "Found, then turned down",
+  detected_not_fixed: "Found, not fixed in time",
+  not_a_miss: "Not a miss",
+  unclassified: "Not classified yet",
+};
+
+export type MissReasonDatum = { group: string; value: number };
+
+export function buildMissReasons(reasons: Record<string, number>): MissReasonDatum[] {
+  return Object.entries(reasons)
+    .filter(([, value]) => value > 0)
+    .map(([reason, value]) => ({ group: MISS_REASON_LABELS[reason] ?? reason, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
+/** One sentence under the goal chart: the window's share, its escapes, and the median time to fix. */
+export const goalTakeaway = (
+  window: BugAgentPerformanceGoalWindow | undefined,
+): string | undefined => {
+  if (!window) return undefined;
+  const total = window.agentBugs + window.humanReports;
+  if (total === 0) return "No real bugs found by anyone in this window.";
+  const share =
+    window.firstFinderShare == null ? "—" : `${Math.round(window.firstFinderShare * 100)}%`;
+  const fix =
+    window.timeToFixHoursMedian == null
+      ? "no fix merged yet"
+      : window.timeToFixHoursMedian < 48
+        ? `median ${Math.round(window.timeToFixHoursMedian)} h from filing to merge`
+        : `median ${Math.round(window.timeToFixHoursMedian / 24)} days from filing to merge`;
+  return `Bug Hunter found ${window.agentBugs} of ${total} real bugs first (${share}); people reported ${window.humanReports}, of which ${window.escapes} had slipped past a sweep in the week before; ${fix}.`;
 };

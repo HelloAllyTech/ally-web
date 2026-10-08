@@ -8,6 +8,8 @@ import { AnalyticsTabFilters, asOf, windowLabel } from "./analyticsFilters";
 import {
   buildCostTrend,
   buildFoundTrend,
+  buildGoalTrend,
+  buildMissReasons,
   buildPrecisionTrend,
   buildReliabilityTrend,
   buildSourceAccuracyBreakdown,
@@ -16,6 +18,8 @@ import {
   COST_SCALE,
   FOUND_SCALE,
   foundTakeaway,
+  GOAL_SCALE,
+  goalTakeaway,
   PRECISION_SCALE,
   RELIABILITY_SCALE,
   SPEED_SCALE,
@@ -69,6 +73,9 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
   const costWeekly = useMemo(() => data?.cost ?? [], [data]);
   const reliabilityWeekly = useMemo(() => data?.reliability ?? [], [data]);
   const foundDaily = useMemo(() => data?.found ?? [], [data]);
+  const goalWeekly = useMemo(() => data?.goal?.weekly ?? [], [data]);
+  const goalTrend = useMemo(() => buildGoalTrend(goalWeekly), [goalWeekly]);
+  const missReasons = useMemo(() => buildMissReasons(data?.goal?.window.missReasons ?? {}), [data]);
 
   const precisionTrend = useMemo(() => buildPrecisionTrend(precisionWeekly), [precisionWeekly]);
   const sourceAccuracy = useMemo(() => buildSourceAccuracyBreakdown(bySource), [bySource]);
@@ -125,6 +132,18 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
     () => lineOpts({ leftTitle: "Bugs found", colorScale: FOUND_SCALE }),
     [],
   );
+  const goalOptions = useMemo(
+    () => withPercentTicks(lineOpts({ leftTitle: "Share", colorScale: GOAL_SCALE })),
+    [],
+  );
+  const missOptions = useMemo(
+    () =>
+      barOpts({
+        leftTitle: "Human reports",
+        colorScale: buildColorScale(missReasons.map(d => d.group)),
+      }),
+    [missReasons],
+  );
   const reliabilityOptions = useMemo(
     () => withPercentTicks(lineOpts({ leftTitle: "Rate", colorScale: RELIABILITY_SCALE })),
     [],
@@ -139,6 +158,52 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* The goal, first (OPP-0778): Bug Hunter exists to find a bug before any
+          staff member or live user does. Everything below is how; this is
+          whether. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ChartCard
+          title="Are we finding bugs before people do?"
+          caption="Per week: the share of real bugs Bug Hunter's own senses filed rather than a person, and the share of human reports whose repo a sweep had completed in the previous seven days — a bug it had read past. Declines as not a bug, duplicate or wrong repo are left out of both."
+          source={source(
+            "bug_findings by createdAt week and source, less finder-error declines; escapes join human reports to completed sweeps on the same repo within 7 days; time to fix joins merged events to the finding's filing",
+          )}
+          takeaway={goalTakeaway(data?.goal?.window)}
+          loading={isLoading && !data}
+          error={isError}
+          onRetry={refetch}
+          errorTitle="Couldn't load the goal numbers"
+          empty={goalTrend.length === 0}
+          emptyText="Nothing found by anyone yet in this window"
+          height={CHART_HEIGHT}
+          chartId="AAQ-233"
+        >
+          <ScrollableChart data={goalTrend}>
+            <LineChart data={goalTrend} options={goalOptions} />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          title="Why people found bugs first"
+          caption="Every human report in the window, by why Bug Hunter did not find it first, as its miss classifier judged it. The biggest bar is the next sense to build or fix."
+          source={source(
+            "bug_findings.metadata.miss.reason on reported_bug rows in the window; rows the classifier has not reached yet count as not classified",
+          )}
+          loading={isLoading && !data}
+          error={isError}
+          onRetry={refetch}
+          errorTitle="Couldn't load the miss reasons"
+          empty={missReasons.length === 0}
+          emptyText="No human reports in this window"
+          height={CHART_HEIGHT}
+          chartId="AAQ-234"
+        >
+          <ScrollableChart data={missReasons} on="group">
+            <SimpleBarChart data={missReasons} options={missOptions} />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       {/* The headline the governor asked for, ahead of the weekly rates: is
           the agent finding FEWER bugs as the codebases get cleaner? Daily,
           not weekly like everything below it, because the sweeps are nightly
