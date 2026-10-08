@@ -12,9 +12,11 @@ const releaseFinding = vi.fn();
 const editDescription = vi.fn();
 const setStage = vi.fn();
 const getBugFinding = vi.fn();
+const getFindingDecisions = vi.fn(() => ({ data: [], isError: false }));
 
 vi.mock("@api", () => ({
   useGetBugFindingQuery: (...args: unknown[]) => getBugFinding(...args),
+  useGetBugFindingDecisionsQuery: () => getFindingDecisions(),
   useApproveBugFindingMutation: () => [vi.fn(), { isLoading: false }],
   useRejectBugFindingMutation: () => [vi.fn(), { isLoading: false }],
   useAnswerBugFindingMutation: () => [vi.fn(), { isLoading: false }],
@@ -171,6 +173,66 @@ const renderDrawer = (data: Record<string, unknown>, canTriage = true) => {
   getBugFinding.mockReturnValue({ data, isLoading: false, isError: false });
   return render(<BugFindingDrawer id="finding-1" onClose={vi.fn()} canTriage={canTriage} />);
 };
+
+describe("BugFindingDrawer — the decision log (OPP-0776)", () => {
+  it("shows every orchestration choice about the bug, with the pick not taken", () => {
+    getFindingDecisions.mockReturnValueOnce({
+      data: [
+        {
+          id: "dec-5",
+          runId: null,
+          findingId: "finding-1",
+          repo: "ally-be",
+          point: "D5",
+          owner: "model",
+          menu: ["fix", "ask_human"],
+          pick: "fix",
+          shadowOwner: "rule",
+          shadowPick: "fix",
+          reason: "verified with a reproduction",
+          inputs: null,
+          model: "gemini-2.5-flash",
+          outcome: null,
+          createdAt: "2026-10-08T10:00:00Z",
+        },
+        {
+          id: "dec-7",
+          runId: "run-verify",
+          findingId: "finding-1",
+          repo: "ally-be",
+          point: "D7",
+          owner: "rule",
+          menu: ["retry_fix", "escalate_model", "ask_human", "close"],
+          pick: "retry_fix",
+          shadowOwner: "model",
+          shadowPick: "ask_human",
+          reason: "Rule-owned point; the model shadows.",
+          inputs: null,
+          model: "gemini-2.5-flash",
+          outcome: null,
+          createdAt: "2026-10-08T11:00:00Z",
+        },
+      ],
+      isError: false,
+    });
+    renderDrawer(finding());
+    const log = screen.getByTestId("finding-decisions");
+    expect(log).toHaveTextContent("How I decided");
+    const d5 = screen.getByTestId("decision-D5");
+    expect(d5).toHaveTextContent("fix");
+    expect(d5).toHaveTextContent("by the model");
+    expect(d5).toHaveTextContent("both agreed");
+    const d7 = screen.getByTestId("decision-D7");
+    expect(d7).toHaveTextContent("retry_fix");
+    expect(d7).toHaveTextContent("by the rule");
+    expect(d7).toHaveTextContent("the model would have: ask_human");
+  });
+
+  it("shows no log for a bug nothing has decided about yet", () => {
+    renderDrawer(finding());
+    expect(screen.queryByTestId("finding-decisions")).toBeNull();
+  });
+});
 
 describe("BugFindingDrawer — fix session", () => {
   beforeEach(() => {

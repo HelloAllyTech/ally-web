@@ -5,12 +5,18 @@ import {
   BugFindingDetail,
   BugFindingRef,
   BugFindingStage,
+  BugHuntDecision,
+  BugHuntDecisionOwner,
+  BugHuntDecisionOwners,
+  BugHuntDecisionPoint,
+  BugHuntDecisionReplay,
   BugHunterMemoryEntry,
   BugHunterMetrics,
   BugHunterMode,
   BugHunterModelSettings,
   BugHunterNotification,
   BugHunterOperationsMetrics,
+  BugHunterScoreboard,
   BugHunterSettings,
   BugHunterToday,
   BugHuntRun,
@@ -216,6 +222,67 @@ export const bugHunterAPI = baseAPI.injectEndpoints({
      * zone). Polled by the board itself; tagged with findings and runs so a
      * triage or a dispatch refreshes it without waiting for the poll.
      */
+    // ── the decision log, scoreboard and replay (OPP-0776, OPP-0783) ──────
+    getBugFindingDecisions: builder.query<BugHuntDecision[], string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.FINDING_DECISIONS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_result, _error, id) => [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id }],
+    }),
+
+    getBugHuntRunDecisions: builder.query<BugHuntDecision[], string>({
+      query: id => ({
+        url: ApiEndpoints.BUG_HUNTER.RUN_DECISIONS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_result, _error, id) => [{ type: TAG_TYPES.BUG_HUNTER_RUNS, id }],
+    }),
+
+    getBugHunterScoreboard: builder.query<BugHunterScoreboard, { repo: string; days?: number }>({
+      query: ({ repo, days }) => ({
+        url: ApiEndpoints.BUG_HUNTER.SCOREBOARD,
+        method: HttpMethod.GET,
+        params: days ? { repo, days } : { repo },
+      }),
+      providesTags: [{ type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" }],
+    }),
+
+    getBugHunterDecisionReplay: builder.query<BugHuntDecisionReplay, { days?: number } | void>({
+      query: arg => {
+        const days = arg && typeof arg === "object" ? arg.days : undefined;
+        return {
+          url: ApiEndpoints.BUG_HUNTER.DECISION_REPLAY,
+          method: HttpMethod.GET,
+          params: days ? { days } : undefined,
+        };
+      },
+      providesTags: [
+        { type: TAG_TYPES.BUG_HUNTER_FINDINGS, id: "LIST" },
+        TAG_TYPES.BUG_HUNTER_DECISION_OWNERS,
+      ],
+    }),
+
+    getBugHunterDecisionOwners: builder.query<BugHuntDecisionOwners, void>({
+      query: () => ({
+        url: ApiEndpoints.BUG_HUNTER.DECISION_OWNERS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.BUG_HUNTER_DECISION_OWNERS],
+    }),
+
+    updateBugHunterDecisionOwner: builder.mutation<
+      BugHuntDecisionOwners,
+      { point: BugHuntDecisionPoint; owner: BugHuntDecisionOwner | null }
+    >({
+      query: body => ({
+        url: ApiEndpoints.BUG_HUNTER.DECISION_OWNERS,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.BUG_HUNTER_DECISION_OWNERS],
+    }),
+
     getBugHunterToday: builder.query<BugHunterToday, { timeZone: string }>({
       query: ({ timeZone }) => ({
         url: ApiEndpoints.BUG_HUNTER.TODAY,
@@ -514,6 +581,12 @@ export const {
   useReleaseBugFindingMutation,
   useGetBugHunterMetricsQuery,
   useGetBugHunterTodayQuery,
+  useGetBugFindingDecisionsQuery,
+  useGetBugHuntRunDecisionsQuery,
+  useGetBugHunterScoreboardQuery,
+  useGetBugHunterDecisionReplayQuery,
+  useGetBugHunterDecisionOwnersQuery,
+  useUpdateBugHunterDecisionOwnerMutation,
   useGetBugHunterOperationsMetricsQuery,
   useGetBugHunterNotificationsQuery,
   useMarkBugHunterNotificationReadMutation,

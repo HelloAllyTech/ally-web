@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@components", () => ({ cellTypes: {} }));
@@ -34,10 +34,15 @@ const updateBugHunterSettings = vi.fn().mockReturnValue({ unwrap: () => Promise.
 const updateBuilderSettings = vi.fn().mockReturnValue({ unwrap: () => Promise.resolve({}) });
 let bugHunterResult: any;
 let builderResult: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let ownersResult: any;
+const updateOwner = vi.fn();
 
 vi.mock("@api", () => ({
   useGetBugHunterModelSettingsQuery: () => bugHunterResult,
   useUpdateBugHunterModelSettingsMutation: () => [updateBugHunterSettings, { isLoading: false }],
+  useGetBugHunterDecisionOwnersQuery: () => ownersResult,
+  useUpdateBugHunterDecisionOwnerMutation: () => [updateOwner, { isLoading: false }],
   useGetBuilderSettingsQuery: () => builderResult,
   useUpdateBuilderSettingsMutation: () => [updateBuilderSettings, { isLoading: false }],
 }));
@@ -60,6 +65,62 @@ describe("AiModelsTab", () => {
       isLoading: false,
       isError: false,
     };
+    updateOwner.mockReset();
+    updateOwner.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          owners: {
+            D1: "model",
+            D2: "model",
+            D3: "model",
+            D4: "rule",
+            D5: "model",
+            D6: "model",
+            D7: "model",
+            D8: "rule",
+          },
+          defaults: {
+            D1: "model",
+            D2: "model",
+            D3: "model",
+            D4: "rule",
+            D5: "model",
+            D6: "model",
+            D7: "rule",
+            D8: "rule",
+          },
+          fixed: ["D4", "D8"],
+          overrides: { D7: "model" },
+        }),
+    });
+    ownersResult = {
+      data: {
+        owners: {
+          D1: "model",
+          D2: "model",
+          D3: "model",
+          D4: "rule",
+          D5: "model",
+          D6: "model",
+          D7: "rule",
+          D8: "rule",
+        },
+        defaults: {
+          D1: "model",
+          D2: "model",
+          D3: "model",
+          D4: "rule",
+          D5: "model",
+          D6: "model",
+          D7: "rule",
+          D8: "rule",
+        },
+        fixed: ["D4", "D8"],
+        overrides: {},
+      },
+      isLoading: false,
+      isError: false,
+    };
     builderResult = {
       data: {
         id: "settings-1",
@@ -74,6 +135,20 @@ describe("AiModelsTab", () => {
       isLoading: false,
       isError: false,
     };
+  });
+
+  it("lists who owns each decision point, fixes D4 and D8, and hands a point over on change (OPP-0783)", async () => {
+    render(<AiModelsTab />);
+    const section = screen.getByTestId("decision-owners");
+    expect(section).toHaveTextContent("Who decides each move");
+    expect(screen.getByTestId("owner-D4")).toHaveTextContent("Fixed in code");
+    expect(screen.getByTestId("owner-D8")).toHaveTextContent("Fixed in code");
+
+    const d7 = screen.getByTestId("owner-D7").querySelector("select") as HTMLSelectElement;
+    expect(d7.value).toBe("");
+    fireEvent.change(d7, { target: { value: "model" } });
+    await waitFor(() => expect(updateOwner).toHaveBeenCalledWith({ point: "D7", owner: "model" }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("D7 now decided by the model."));
   });
 
   it("shows both sections, each loaded from its own backend", () => {

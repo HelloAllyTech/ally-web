@@ -893,3 +893,94 @@ export interface WriteBugHunterMemoryBody {
   tags?: string[];
   pinned?: boolean;
 }
+
+// ── the decision log, scoreboard and replay (OPP-0776 / OPP-0783) ─────────
+
+/** The eight orchestration points — mirrors ally-be's `DecisionPoint`. */
+export type BugHuntDecisionPoint = "D1" | "D2" | "D3" | "D4" | "D5" | "D6" | "D7" | "D8";
+export type BugHuntDecisionOwner = "rule" | "model";
+
+/** One row of `bug_hunt_decisions`: a choice about how to work, the pick, and the pick not taken. */
+export interface BugHuntDecision {
+  id: string;
+  runId: string | null;
+  findingId: string | null;
+  repo: string | null;
+  point: BugHuntDecisionPoint;
+  owner: BugHuntDecisionOwner;
+  menu: unknown;
+  pick: unknown;
+  shadowOwner: BugHuntDecisionOwner | null;
+  shadowPick: unknown;
+  reason: string | null;
+  /** The context both owners saw; `veto` is set when a budget or safety veto acted. */
+  inputs: (Record<string, unknown> & { veto?: { by: string; reason: string } }) | null;
+  model: string | null;
+  /** Set by the replay: did the pick lead to a better outcome than the shadow would have? */
+  outcome: "better" | "same" | "worse" | null;
+  createdAt: string;
+}
+
+export interface BugHunterScoreboardCounts {
+  filed: number;
+  accepted: number;
+  declined: number;
+  pending: number;
+}
+
+export interface BugHunterScoreboardRow extends BugHunterScoreboardCounts {
+  repo: string;
+  sense: string;
+  engine: string | null;
+  model: string | null;
+}
+
+export interface BugHunterScoreboardFixRow {
+  sessions: number;
+  merged: number;
+  failed: number;
+  passVerdicts: number;
+  failVerdicts: number;
+}
+
+/** What each sense and model has produced on a repo — mirrors ally-be's `Scoreboard`. */
+export interface BugHunterScoreboard {
+  repo: string;
+  days: number;
+  since: string;
+  rows: BugHunterScoreboardRow[];
+  bySense: Record<string, BugHunterScoreboardCounts>;
+  byModel: Record<string, BugHunterScoreboardCounts>;
+  /** Keyed `engine/model`: what each pair did as a fixer. */
+  fixByModel: Record<string, BugHunterScoreboardFixRow>;
+}
+
+export interface BugHuntDecisionReplayPoint {
+  point: BugHuntDecisionPoint;
+  owner: BugHuntDecisionOwner;
+  fixed: boolean;
+  decisions: number;
+  withShadow: number;
+  agreed: number;
+  disagreed: number;
+  ownerWins: number;
+  shadowWins: number;
+  undecided: number;
+  vetoes: number;
+  flipThreshold: number;
+  verdict: "flip" | "keep" | "not_enough_cases" | "fixed";
+}
+
+export interface BugHuntDecisionReplay {
+  days: number;
+  since: string;
+  generatedAt: string;
+  points: BugHuntDecisionReplayPoint[];
+}
+
+export interface BugHuntDecisionOwners {
+  owners: Record<BugHuntDecisionPoint, BugHuntDecisionOwner>;
+  defaults: Record<BugHuntDecisionPoint, BugHuntDecisionOwner>;
+  fixed: BugHuntDecisionPoint[];
+  overrides: Record<string, string>;
+}

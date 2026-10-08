@@ -50,6 +50,7 @@ import {
 import { BugFindingStageEditor } from "./BugFindingStageEditor";
 import { BugFindingStatusBadge } from "./BugFindingStatusBadge";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
+import { FindingDecisions } from "./DecisionLog";
 import { canSubmitDecline, DeclineReasonPicker } from "./DeclineReasonPicker";
 import { PipelineRail } from "./PipelineRail";
 import { stageFromFindingStatus } from "./pipelineStage";
@@ -738,6 +739,9 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                   </ul>
                 </div>
               )}
+              {/* The decision log (OPP-0776): every orchestration choice
+                  about this bug, with the pick not taken beside the pick. */}
+              <FindingDecisions findingId={finding.id} />
 
               {/* The case file's budget (OPP-0775): what this bug has cost so
                   far against its caps. Always shown, because "nothing spent"

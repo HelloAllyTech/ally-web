@@ -21,6 +21,7 @@ import { formatDateTime, formatTimestamp } from "@utils";
 import { useBugHunterUrlState } from "./bugHunterUrlState";
 import { BUG_HUNT_EVENT_STAGE_LABELS } from "./bugHuntEventLabels";
 import { BugHuntStatusBadge } from "./BugHuntStatusBadge";
+import { RunDecisions } from "./DecisionLog";
 import { BUG_FINDINGS_TABLE_ANCHOR_ID } from "./findingsTableAnchor";
 
 const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
@@ -142,6 +143,7 @@ const RunDetailRow: FC<{ runId: string }> = ({ runId }) => {
             ))}
           </ul>
         )}
+        <RunDecisions runId={runId} />
       </TableCell>
     </TableRow>
   );

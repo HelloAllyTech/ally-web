@@ -9,10 +9,12 @@ import { RunHistoryTable } from "../RunHistoryTable";
 
 const getRuns = vi.fn();
 const getRun = vi.fn();
+const getRunDecisions = vi.fn(() => ({ data: [], isError: false }));
 
 vi.mock("@api", () => ({
   useGetBugHuntRunsQuery: (...args: unknown[]) => getRuns(...args),
   useGetBugHuntRunQuery: (id: string) => getRun(id),
+  useGetBugHuntRunDecisionsQuery: (id: string) => getRunDecisions(id),
 }));
 
 vi.mock("@utils", () => ({
@@ -94,6 +96,7 @@ const rowIndexOf = (text: string | RegExp) => {
 describe("RunHistoryTable — expanded run detail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getRunDecisions.mockReturnValue({ data: [], isError: false });
     getRun.mockImplementation((id: string) => ({
       data: {
         id,
@@ -113,6 +116,44 @@ describe("RunHistoryTable — expanded run detail", () => {
       isError: false,
       refetch: vi.fn(),
     });
+
+  it("shows the Finder's plan under the events when the run has decisions (OPP-0776)", () => {
+    getRunDecisions.mockReturnValue({
+      data: [
+        {
+          id: "dec-1",
+          runId: "run-a",
+          findingId: null,
+          repo: "ally-be",
+          point: "D1",
+          owner: "model",
+          menu: ["tests", "code_review"],
+          pick: ["code_review"],
+          shadowOwner: "rule",
+          shadowPick: ["code_review", "tests"],
+          reason: "only the diff changed",
+          inputs: null,
+          model: "gemini-2.5-flash",
+          outcome: null,
+          createdAt: "2026-10-08T01:00:00Z",
+        },
+      ],
+      isError: false,
+    });
+    mockRuns([run("run-a", "ally-be")]);
+    const { rerender } = renderTable();
+    fireEvent.click(screen.getByText("ally-be"));
+    rerender(
+      <MemoryRouter>
+        <RunHistoryTable />
+      </MemoryRouter>,
+    );
+    const log = screen.getByTestId("run-decisions");
+    expect(log).toHaveTextContent("D1");
+    expect(log).toHaveTextContent("code_review");
+    expect(log).toHaveTextContent("by the model");
+    expect(log).toHaveTextContent("the rule would have: code_review, tests");
+  });
 
   it("opens the detail directly beneath the run it belongs to", () => {
     mockRuns([run("run-a", "ally-be"), run("run-b", "ally-web")]);
@@ -311,7 +352,10 @@ describe("RunHistoryTable — the Found count links to that sweep's bugs", () =>
   it("does not expand the run's event timeline as a side effect", () => {
     mockRuns([found("run-a", "ally-be", 4)]);
     getRun.mockReturnValue({
-      data: { id: "run-a", events: [{ id: "e", stage: "merged", summary: "detail of run-a", createdAt: "x" }] },
+      data: {
+        id: "run-a",
+        events: [{ id: "e", stage: "merged", summary: "detail of run-a", createdAt: "x" }],
+      },
       isLoading: false,
       isError: false,
     });

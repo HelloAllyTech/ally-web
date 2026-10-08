@@ -25,6 +25,7 @@ import {
   SPEED_SCALE,
   THROUGHPUT_SCALE,
 } from "./bugAgentPerformanceChart";
+import { BugHunterDecisionsPanel } from "./BugHunterDecisionsPanel";
 import { BugHunterOperationsCards } from "./BugHunterOperationsCards";
 import {
   CHART_HEIGHT,
@@ -371,6 +372,10 @@ export const BugAgentPerformance = (filters: AnalyticsTabFilters) => {
         </p>
       </div>
       <BugHunterOperationsCards {...filters} />
+
+      {/* The cells the orchestrator reads before it decides, and the replay
+          that says whether its owners should change (OPP-0776 / OPP-0783). */}
+      <BugHunterDecisionsPanel {...filters} />
 
       {/* The per-run ledger every number above aggregates: status, trigger,
           cost and the GitHub run for each sweep and fix session. The only view

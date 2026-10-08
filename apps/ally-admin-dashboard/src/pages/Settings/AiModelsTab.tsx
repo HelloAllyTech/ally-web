@@ -11,14 +11,16 @@ import {
   Tooltip,
 } from "@ally-ui-mono/ui-shared";
 import {
+  useGetBugHunterDecisionOwnersQuery,
   useGetBugHunterModelSettingsQuery,
   useGetBuilderSettingsQuery,
+  useUpdateBugHunterDecisionOwnerMutation,
   useUpdateBugHunterModelSettingsMutation,
   useUpdateBuilderSettingsMutation,
 } from "@api";
 import { TooltipIcon } from "@assets";
 import { en } from "@constants";
-import { BugHunterModelSettings } from "@types";
+import { BugHuntDecisionOwner, BugHuntDecisionPoint, BugHunterModelSettings } from "@types";
 
 /**
  * The Claude Code models Bug Hunter's pipeline runs on, and Builder's when
@@ -407,9 +409,121 @@ const BuilderModelSection: React.FC = () => {
  * `/builder/settings` too; this doesn't replace that page, only adds a
  * second, combined way to reach the same data.
  */
+/**
+ * Who owns each of the orchestrator's decision points (OPP-0783): the rule
+ * or the model. Reads the effective owner per point and lets an admin hand a
+ * point to the other owner, or back to its default, one Select per point.
+ * D4 and D8 are fixed in code and shown as such. The replay on Analytics →
+ * Bug Agent is what says when a flip has been earned; this is where it is
+ * done.
+ */
+const DecisionOwnersSection: React.FC = () => {
+  const strings = en.settings.aiModels;
+  const labels = en.bugHunter.decisions;
+  const { data, isLoading, isError } = useGetBugHunterDecisionOwnersQuery();
+  const [updateOwner, { isLoading: isSaving }] = useUpdateBugHunterDecisionOwnerMutation();
+
+  const ownerWord = (owner: BugHuntDecisionOwner) =>
+    owner === "model" ? strings.decisionOwnerModel : strings.decisionOwnerRule;
+
+  const handleChange = async (point: BugHuntDecisionPoint, value: string) => {
+    const owner = value === "rule" || value === "model" ? value : null;
+    try {
+      const next = await updateOwner({ point, owner }).unwrap();
+      toast.success(
+        strings.decisionOwnerSaved
+          .replace("{point}", point)
+          .replace("{owner}", ownerWord(next.owners[point]).toLowerCase()),
+      );
+    } catch {
+      toast.error(strings.decisionOwnersSaveFailed);
+    }
+  };
+
+  return (
+    <section
+      data-testid="decision-owners"
+      className="mt-6 rounded-md border border-border-light p-4"
+    >
+      <div className="flex items-center gap-1.5">
+        <h3 className="text-base font-secondary text-typography-900">
+          {strings.decisionOwnersHeading}
+        </h3>
+        <Tooltip label={strings.decisionOwnersHelp} align="top">
+          <button type="button" className="inline-flex cursor-pointer items-center">
+            <TooltipIcon />
+          </button>
+        </Tooltip>
+      </div>
+
+      {isError && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          hideCloseButton
+          title={strings.decisionOwnersLoadFailed}
+        />
+      )}
+
+      {isLoading || !data ? (
+        <SkeletonText paragraph lineCount={4} className="mt-3" />
+      ) : (
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {(Object.keys(data.defaults) as BugHuntDecisionPoint[]).map(point => {
+            const fixed = data.fixed.includes(point);
+            const override = data.overrides[point];
+            const pointLabel = {
+              D1: labels.pointD1,
+              D2: labels.pointD2,
+              D3: labels.pointD3,
+              D4: labels.pointD4,
+              D5: labels.pointD5,
+              D6: labels.pointD6,
+              D7: labels.pointD7,
+              D8: labels.pointD8,
+            }[point];
+            return (
+              <Field key={point} label={`${point} — ${pointLabel}`}>
+                {fixed ? (
+                  <span data-testid={`owner-${point}`} className="text-sm text-typography-600">
+                    {strings.decisionOwnerFixed}
+                  </span>
+                ) : (
+                  <div data-testid={`owner-${point}`}>
+                    <Select
+                      id={`settings-decision-owner-${point}`}
+                      labelText={`${point} — ${pointLabel}`}
+                      hideLabel
+                      size="sm"
+                      disabled={isSaving}
+                      value={override === "rule" || override === "model" ? override : ""}
+                      onChange={event => handleChange(point, event.target.value)}
+                    >
+                      <SelectItem
+                        value=""
+                        text={strings.decisionOwnerDefault.replace(
+                          "{owner}",
+                          ownerWord(data.defaults[point]).toLowerCase(),
+                        )}
+                      />
+                      <SelectItem value="rule" text={strings.decisionOwnerRule} />
+                      <SelectItem value="model" text={strings.decisionOwnerModel} />
+                    </Select>
+                  </div>
+                )}
+              </Field>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
+
 export const AiModelsTab: React.FC = () => (
   <div>
     <BugHunterModelSection />
+    <DecisionOwnersSection />
     <BuilderModelSection />
   </div>
 );

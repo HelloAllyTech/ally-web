@@ -579,6 +579,12 @@ export const ApiEndpoints = {
     // What the agent retired on its own recently, with its reason (OPP-0752), and the undo.
     MEMORY_RETIRED: "/v1/bug-hunter/memory/retired",
     MEMORY_RESTORE: (id: string) => `/v1/bug-hunter/memory/${id}/restore`,
+    // The decision log, scoreboard and replay (OPP-0776, OPP-0783).
+    FINDING_DECISIONS: (id: string) => `/v1/bug-hunter/findings/${id}/decisions`,
+    RUN_DECISIONS: (id: string) => `/v1/bug-hunter/runs/${id}/decisions`,
+    SCOREBOARD: "/v1/bug-hunter/scoreboard",
+    DECISION_REPLAY: "/v1/bug-hunter/decisions/replay",
+    DECISION_OWNERS: "/v1/bug-hunter/decisions/owners",
   },
   BUILDER: {
     SESSIONS: "/v1/builder/sessions",
@@ -932,6 +938,8 @@ export const TAG_TYPES = {
   BUG_HUNTER_NOTIFICATIONS: "bugHunterNotifications",
   // Bug Hunter's notebook. Also registered in baseApi.ts's `tagTypes`.
   BUG_HUNTER_MEMORY: "bugHunterMemory",
+  // Who owns each orchestration decision point (OPP-0783). Also registered in baseApi.ts's `tagTypes`.
+  BUG_HUNTER_DECISION_OWNERS: "bugHunterDecisionOwners",
   // UX Signals scan log. Also registered in baseApi.ts's `tagTypes`.
   UX_SIGNAL_SCANS: "uxSignalScans",
   // Builder. Also registered in baseApi.ts's `tagTypes` — an unregistered tag
