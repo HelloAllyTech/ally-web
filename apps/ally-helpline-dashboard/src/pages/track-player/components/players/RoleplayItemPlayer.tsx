@@ -138,110 +138,113 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   const primaryLabel = isCase ? t("tracks2.roleplay.openCase") : t("tracks2.roleplay.start");
 
   return (
-    <div
-      className={`flex h-full min-h-0 flex-col items-center overflow-y-auto px-4 py-6 text-center sm:px-6 sm:py-10 ${
-        logExpanded ? "justify-start" : "justify-center"
-      }`}
-    >
-      <div className="w-full max-w-sm">
-        <ScenarioCard
-          coverImage={coverImage || ""}
-          title={item.title}
-          description=""
-          triggerWarnings={isCase ? undefined : scenario?.triggerWarnings}
-          onClick={launch}
-        />
-      </div>
-
-      <p className="mt-5 max-w-md text-sm text-typography-700">{t("tracks2.roleplay.intro")}</p>
-
-      {challengeDescription && (
-        <div className="mt-5 w-full max-w-sm text-left">
-          <div className="text-base font-semibold text-typography-900">
-            {t("learn.scenario.scenarioLabel")}
-          </div>
-          <RichTextRenderer content={challengeDescription} />
+    <div className="flex h-full min-h-0 flex-col items-center overflow-y-auto px-4 py-6 text-center sm:px-6 sm:py-10">
+      {/* Centred with auto margins, not justify-center: justify-center pushes
+          overflow above the scroll origin where it can't be scrolled to, so a
+          screen taller than the viewport (a long brief, the taller header)
+          clipped the card's top and opened scrolled away from the language
+          picker and start button. Auto margins collapse to 0 on overflow. */}
+      <div className={`flex w-full flex-col items-center ${logExpanded ? "" : "my-auto"}`}>
+        <div className="w-full max-w-sm">
+          <ScenarioCard
+            coverImage={coverImage || ""}
+            title={item.title}
+            description=""
+            triggerWarnings={isCase ? undefined : scenario?.triggerWarnings}
+            onClick={launch}
+          />
         </div>
-      )}
 
-      {alreadyCompleted && lastScenarioSessionId && item.completedAt ? (
-        <button
-          type="button"
-          onClick={() => setLogExpanded(prev => !prev)}
-          aria-expanded={logExpanded}
-          className="mt-4 flex w-full max-w-sm items-center justify-between gap-3 rounded-2xl border border-success-100 bg-success-50 px-4 py-2.5 text-left transition-colors hover:bg-success-100"
-        >
-          <span className="flex min-w-0 items-center gap-2">
-            <TickGreenBackground className="h-4 w-4 shrink-0" />
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-success-800">
-                {item.title}
-              </span>
-              <span className="block text-xs text-success-700">
-                {t("tracks2.roleplay.completedOn", {
-                  date: getFormattedDateTime(item.completedAt, "MMM d, yyyy"),
-                })}
+        <p className="mt-5 max-w-md text-sm text-typography-700">{t("tracks2.roleplay.intro")}</p>
+
+        {challengeDescription && (
+          <div className="mt-5 w-full max-w-sm text-left">
+            <div className="text-base font-semibold text-typography-900">
+              {t("learn.scenario.scenarioLabel")}
+            </div>
+            <RichTextRenderer content={challengeDescription} />
+          </div>
+        )}
+
+        {alreadyCompleted && lastScenarioSessionId && item.completedAt ? (
+          <button
+            type="button"
+            onClick={() => setLogExpanded(prev => !prev)}
+            aria-expanded={logExpanded}
+            className="mt-4 flex w-full max-w-sm items-center justify-between gap-3 rounded-2xl border border-success-100 bg-success-50 px-4 py-2.5 text-left transition-colors hover:bg-success-100"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <TickGreenBackground className="h-4 w-4 shrink-0" />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-success-800">
+                  {item.title}
+                </span>
+                <span className="block text-xs text-success-700">
+                  {t("tracks2.roleplay.completedOn", {
+                    date: getFormattedDateTime(item.completedAt, "MMM d, yyyy"),
+                  })}
+                </span>
               </span>
             </span>
-          </span>
-          <ArrowDownFilled
-            className={`h-3 w-3 shrink-0 text-success-700 transition-transform ${
-              logExpanded ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-      ) : (
-        alreadyCompleted && (
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-success-50 px-4 py-1.5 text-sm font-medium text-success-800">
-            <TickGreenBackground className="h-4 w-4" />
-            {t("tracks2.roleplay.completed")}
+            <ArrowDownFilled
+              className={`h-3 w-3 shrink-0 text-success-700 transition-transform ${
+                logExpanded ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        ) : (
+          alreadyCompleted && (
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-success-50 px-4 py-1.5 text-sm font-medium text-success-800">
+              <TickGreenBackground className="h-4 w-4" />
+              {t("tracks2.roleplay.completed")}
+            </div>
+          )
+        )}
+
+        {logExpanded && lastScenarioSessionId && (
+          <RoleplaySessionLogPanel sessionId={lastScenarioSessionId} />
+        )}
+
+        {availableLanguages.length > 0 && (
+          <div className="mt-6 w-full max-w-sm text-left">
+            <DropdownField
+              label={t("tracks2.roleplay.language")}
+              options={availableLanguages.map(lang => lang.label)}
+              value={selectedLanguage?.label || ""}
+              onChange={handleLanguageChange}
+              valueClassName="text-typography-900 font-primary"
+            />
           </div>
-        )
-      )}
+        )}
 
-      {logExpanded && lastScenarioSessionId && (
-        <RoleplaySessionLogPanel sessionId={lastScenarioSessionId} />
-      )}
-
-      {availableLanguages.length > 0 && (
-        <div className="mt-6 w-full max-w-sm text-left">
-          <DropdownField
-            label={t("tracks2.roleplay.language")}
-            options={availableLanguages.map(lang => lang.label)}
-            value={selectedLanguage?.label || ""}
-            onChange={handleLanguageChange}
-            valueClassName="text-typography-900 font-primary"
+        {textChatAvailable && (
+          <InteractionModePicker
+            className="mt-6 w-full max-w-sm text-left"
+            value={preferredMode}
+            onChange={setPreferredMode}
+            disabled={isStarting}
           />
+        )}
+
+        <div className="mt-6 flex items-center gap-3">
+          <button
+            onClick={launch}
+            disabled={isStarting}
+            className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50 max-md:min-h-11"
+          >
+            {alreadyCompleted && !isCase ? (
+              <>
+                <Refresh className="h-4 w-4" />
+                {t("tracks2.roleplay.replay")}
+              </>
+            ) : (
+              <>
+                <PlayIcon className="h-4 w-4" />
+                {primaryLabel}
+              </>
+            )}
+          </button>
         </div>
-      )}
-
-      {textChatAvailable && (
-        <InteractionModePicker
-          className="mt-6 w-full max-w-sm text-left"
-          value={preferredMode}
-          onChange={setPreferredMode}
-          disabled={isStarting}
-        />
-      )}
-
-      <div className="mt-6 flex items-center gap-3">
-        <button
-          onClick={launch}
-          disabled={isStarting}
-          className="inline-flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:pointer-events-none disabled:opacity-50 max-md:min-h-11"
-        >
-          {alreadyCompleted && !isCase ? (
-            <>
-              <Refresh className="h-4 w-4" />
-              {t("tracks2.roleplay.replay")}
-            </>
-          ) : (
-            <>
-              <PlayIcon className="h-4 w-4" />
-              {primaryLabel}
-            </>
-          )}
-        </button>
       </div>
     </div>
   );
