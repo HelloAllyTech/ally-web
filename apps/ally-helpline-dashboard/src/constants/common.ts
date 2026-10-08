@@ -57,6 +57,8 @@ export const SESSION_STORAGE_KEYS = {
 export const AUTH_RETRY_CONFIG = {
   MAX_ATTEMPTS: 4,
   RETRY_DELAY_MS: 1000,
+  /** After MAX_ATTEMPTS quick retries, how often to keep checking while the server is unavailable. */
+  UNAVAILABLE_RETRY_DELAY_MS: 5000,
 } as const;
 
 export const CAROUSEL_SLIDES: CarouselSlideType[] = [

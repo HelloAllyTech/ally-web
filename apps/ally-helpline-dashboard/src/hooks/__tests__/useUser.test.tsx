@@ -122,4 +122,42 @@ describe("useUser", () => {
     expect(localStorage.getItem("refreshToken")).toBeNull();
     expect(store.getState().user.isAuthenticated).toBe(false);
   });
+
+  it.each([
+    ["user", { error: { status: 503 } }, { data: ["X"] }],
+    ["permissions", { data: { id: 1 } }, { error: { status: "FETCH_ERROR" } }],
+  ])(
+    "a failed %s request during an outage keeps the session and stores nothing",
+    async (_which, userResult, permissionsResult) => {
+      apiMocks.getUser.mockReset();
+      apiMocks.getPermissions.mockReset();
+      // The state from a good earlier session, as redux-persist restores it.
+      localStorage.setItem("accessToken", "t");
+      apiMocks.getUser.mockResolvedValueOnce({ data: { id: 1 } });
+      apiMocks.getPermissions.mockResolvedValueOnce({ data: ["X"] });
+      let api!: ReturnType<typeof useUser>;
+      render(
+        <Wrapper>
+          <Harness onReady={a => (api = a)} />
+        </Wrapper>,
+      );
+      await act(async () => {
+        await api.checkAuth();
+      });
+
+      // RTK Query triggers resolve with { error } instead of throwing.
+      apiMocks.getUser.mockResolvedValueOnce(userResult);
+      apiMocks.getPermissions.mockResolvedValueOnce(permissionsResult);
+      let result: any;
+      await act(async () => {
+        result = await api.verifySession();
+      });
+
+      expect(result).toEqual({ status: "unavailable" });
+      expect(store.getState().user.user).toEqual({ id: 1 });
+      expect(store.getState().user.permissions).toEqual(["X"]);
+      expect(store.getState().user.isAuthenticated).toBe(true);
+      expect(localStorage.getItem("accessToken")).toBe("t");
+    },
+  );
 });

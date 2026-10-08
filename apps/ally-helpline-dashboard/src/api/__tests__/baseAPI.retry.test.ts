@@ -146,4 +146,24 @@ describe("baseQueryWithRetry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN)).toBe("new-access");
   });
+
+  it("keeps the session when the token refresh hits an outage, and retries", async () => {
+    // 2026-10-08: ally-be ran out of memory and restarted. A 401 that needed
+    // a refresh got a 503 from the refresh call, and that was treated as an
+    // expired session — counsellors were logged out and lost unsaved notes.
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(401))
+      .mockResolvedValueOnce(jsonResponse(503))
+      .mockResolvedValueOnce(jsonResponse(401))
+      .mockResolvedValueOnce(
+        jsonResponse(200, { accessToken: "new-access", refreshToken: "new-refresh" }),
+      )
+      .mockResolvedValueOnce(jsonResponse(200, { data: [], count: 0 }));
+
+    const result = await baseQueryWithRetry("/v1/chats/call-logs", api, noBackoff);
+
+    expect(result.error).toBeUndefined();
+    expect(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN)).toBe("new-access");
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
 });

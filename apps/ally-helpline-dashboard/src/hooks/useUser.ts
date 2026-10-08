@@ -9,14 +9,30 @@ import {
   useUploadProfileImageMutation,
 } from "@api";
 import { baseAPI } from "@api/baseAPI";
-import { LOCAL_STORAGE_KEYS } from "@constants";
+import { LOCAL_STORAGE_KEYS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
+
+/**
+ * Outcome of checking the stored session against the server.
+ * - `ok`: the user and permissions loaded and are in the store.
+ * - `signed-out`: there is no session, or the account is suspended.
+ * - `unavailable`: a request failed (server down, network, a 5xx). The session
+ *   may well be fine, so nothing is cleared — the caller should try again.
+ */
+const NO_PERMISSIONS: Permissions[] = [];
+
+export type SessionCheck =
+  | { status: "ok"; user: NonNullable<RootState["user"]["user"]> }
+  | { status: "signed-out" }
+  | { status: "unavailable" };
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
-  const permissions = useSelector((state: RootState) => state.user.permissions);
+  // Always an array: every caller does `permissions.includes(...)`, and an
+  // undefined here crashed the whole page ("reading 'includes'").
+  const permissions = useSelector((state: RootState) => state.user.permissions) ?? NO_PERMISSIONS;
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
@@ -42,40 +58,59 @@ export const useUser = () => {
   };
 
   /**
-   * Checks user authentication status and fetches user data if authenticated.
-   * - Checks for access token in localStorage
-   * - Fetches user data and permissions if token exists
-   * - Updates Redux store with user information
-   * - Handles authentication errors by logging out
-   * @returns {Promise<Object|null>} User data object if authenticated, null otherwise
+   * Checks the stored session against the server and, when it is valid, loads
+   * the user and permissions into the store. Logs out only when there is no
+   * session or the account is suspended — never because a request failed.
+   */
+  const verifySession = async (): Promise<SessionCheck> => {
+    const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+      logout();
+      return { status: "signed-out" };
+    }
+
+    // RTK Query's lazy triggers resolve with `{ error }` rather than throwing.
+    // This used to read `.data` regardless, so during an API outage it stored
+    // user = undefined and permissions = undefined, marked the session
+    // authenticated, and every page then crashed on `permissions.includes`.
+    // A failed request says nothing about the session — a genuine 401 has
+    // already been refreshed or logged out by baseQueryWithReauth — so leave
+    // the store and tokens alone and let the caller retry.
+    const userResult = await getUser();
+    if (userResult.error || !userResult.data) {
+      logger.info(`Session check: user request failed, ${JSON.stringify(userResult.error)}`);
+      return { status: "unavailable" };
+    }
+    if (userResult.data.status === "SUSPENDED") {
+      logout();
+      return { status: "signed-out" };
+    }
+    const permissionsResult = await getPermissions();
+    if (permissionsResult.error || !Array.isArray(permissionsResult.data)) {
+      logger.info(
+        `Session check: permissions request failed, ${JSON.stringify(permissionsResult.error)}`,
+      );
+      return { status: "unavailable" };
+    }
+
+    store.dispatch(setUser(userResult.data));
+    store.dispatch(setPermissions(permissionsResult.data));
+    store.dispatch(authenticate());
+    return { status: "ok", user: userResult.data };
+  };
+
+  /**
+   * Checks the stored session and loads the user and permissions into the store.
+   * @returns the user when the session is valid, otherwise null. A null from a
+   * server outage does NOT log the user out — use `verifySession` to tell the
+   * two apart.
    */
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-      if (token) {
-        try {
-          const userData = await getUser();
-          if (userData?.data?.status === "SUSPENDED") {
-            logout();
-            return null;
-          }
-          const permissionsData = await getPermissions();
-          store.dispatch(setUser(userData?.data));
-          store.dispatch(setPermissions(permissionsData?.data));
-          store.dispatch(authenticate());
-          return userData?.data;
-        } catch (error) {
-          logger.info(`Error fetching user or permissions:, ${error}`);
-          logout();
-          return null;
-        }
-      } else {
-        logout();
-        return null;
-      }
+      const result = await verifySession();
+      return result.status === "ok" ? result.user : null;
     } catch (error) {
       logger.info(`Error authenticating - ${error}`);
-      logout();
       return null;
     }
   };
@@ -108,6 +143,7 @@ export const useUser = () => {
   return {
     availableChatTypes,
     checkAuth,
+    verifySession,
     isAuthLoading: isUserLoading || isPermissionsLoading,
     isAuthenticated,
     logout,

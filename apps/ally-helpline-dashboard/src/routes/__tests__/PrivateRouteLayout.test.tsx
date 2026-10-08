@@ -113,6 +113,7 @@ vi.mock("@constants", () => ({
   AUTH_RETRY_CONFIG: {
     MAX_ATTEMPTS: 3,
     RETRY_DELAY_MS: 0,
+    UNAVAILABLE_RETRY_DELAY_MS: 0,
   },
   Permissions: {
     VIEW_SCENARIO_SESSION: "view:scenario-session",
@@ -225,7 +226,9 @@ describe("PrivateRouteLayout", () => {
   it("renders without crashing", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -240,7 +243,7 @@ describe("PrivateRouteLayout", () => {
   it("returns empty fragment when user is not present", async () => {
     mockUseUser.mockReturnValue({
       user: null,
-      checkAuth: vi.fn().mockResolvedValue(null),
+      verifySession: vi.fn().mockResolvedValue({ status: "signed-out" }),
       permissions: [],
     });
 
@@ -263,7 +266,9 @@ describe("PrivateRouteLayout", () => {
 
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -280,7 +285,7 @@ describe("PrivateRouteLayout", () => {
   it("handles authentication failure gracefully", async () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue(null),
+      verifySession: vi.fn().mockResolvedValue({ status: "signed-out" }),
       permissions: [],
     });
 
@@ -301,7 +306,9 @@ describe("PrivateRouteLayout", () => {
   it("renders for ADMIN role", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -318,7 +325,9 @@ describe("PrivateRouteLayout", () => {
   it("renders for LEARNER role", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.LEARNER },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.LEARNER }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.LEARNER } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -335,7 +344,9 @@ describe("PrivateRouteLayout", () => {
   it("renders for COUNSELLOR role", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.COUNSELLOR },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.COUNSELLOR }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.COUNSELLOR } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -352,7 +363,9 @@ describe("PrivateRouteLayout", () => {
   it("renders all private routes", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      verifySession: vi
+        .fn()
+        .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } }),
       permissions: ["view:settings:chat-types"],
     });
 
@@ -367,11 +380,13 @@ describe("PrivateRouteLayout", () => {
   });
 
   it("handles authentication retry logic", async () => {
-    const mockCheckAuth = vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN });
+    const mockVerifySession = vi
+      .fn()
+      .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } });
 
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: mockCheckAuth,
+      verifySession: mockVerifySession,
       permissions: ["view:settings:chat-types"],
     });
 
@@ -381,9 +396,8 @@ describe("PrivateRouteLayout", () => {
 
     renderWithRouter(<PrivateRouteLayout />);
 
-    // Should call checkAuth
     await waitFor(() => {
-      expect(mockCheckAuth).toHaveBeenCalled();
+      expect(mockVerifySession).toHaveBeenCalled();
     });
   });
 
@@ -395,7 +409,7 @@ describe("PrivateRouteLayout", () => {
     const listener = { id: 7, role: UserRole.LISTENER, roles: [UserRole.LISTENER] };
     mockUseUser.mockReturnValue({
       user: listener,
-      checkAuth: vi.fn().mockResolvedValue(listener),
+      verifySession: vi.fn().mockResolvedValue({ status: "ok", user: listener }),
       permissions: ["view:helpline:lobby", "edit:helpline:claim"],
     });
     mockUseGetChatTypesQuery.mockReturnValue({ data: [] });
@@ -412,26 +426,50 @@ describe("PrivateRouteLayout", () => {
     }
   });
 
-  it("handles authentication errors gracefully", async () => {
-    const mockCheckAuth = vi.fn().mockRejectedValue(new Error("Network error"));
-
+  it("keeps the session through an API outage instead of logging out", async () => {
+    // A thrown check and an "unavailable" answer both mean the server didn't
+    // respond — e.g. ally-be restarting. Both used to exhaust the retries and
+    // send the user to /login, losing unsaved notes.
+    const mockVerifySession = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Network error"))
+      .mockResolvedValueOnce({ status: "unavailable" })
+      .mockResolvedValueOnce({ status: "unavailable" })
+      .mockResolvedValueOnce({ status: "unavailable" })
+      .mockResolvedValue({ status: "ok", user: { id: 1, role: UserRole.ADMIN } });
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: mockCheckAuth,
+      verifySession: mockVerifySession,
       permissions: [],
     });
-
-    mockUseGetChatTypesQuery.mockReturnValue({
-      data: [],
-    });
+    mockUseGetChatTypesQuery.mockReturnValue({ data: [] });
 
     renderWithRouter(<PrivateRouteLayout />);
-
-    // Should render without crashing even on auth errors
     expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
 
+    // Retries past MAX_ATTEMPTS (3) until the server answers.
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/login");
+      expect(mockVerifySession).toHaveBeenCalledTimes(5);
     });
+    expect(mockNavigate).not.toHaveBeenCalledWith("/login");
+    expect(localStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it("stops retrying once unmounted", async () => {
+    const mockVerifySession = vi.fn().mockResolvedValue({ status: "unavailable" });
+    mockUseUser.mockReturnValue({
+      user: { id: 1, role: UserRole.ADMIN },
+      verifySession: mockVerifySession,
+      permissions: [],
+    });
+    mockUseGetChatTypesQuery.mockReturnValue({ data: [] });
+
+    const { unmount } = renderWithRouter(<PrivateRouteLayout />);
+    await waitFor(() => expect(mockVerifySession).toHaveBeenCalled());
+    unmount();
+    const callsAtUnmount = mockVerifySession.mock.calls.length;
+    await new Promise(resolve => setTimeout(resolve, 20));
+    expect(mockVerifySession.mock.calls.length).toBeLessThanOrEqual(callsAtUnmount + 1);
+    expect(mockNavigate).not.toHaveBeenCalledWith("/login");
   });
 });

@@ -31,7 +31,9 @@ const userSlice = createSlice({
       state.user = action.payload;
     },
     setPermissions(state, action: PayloadAction<string[]>) {
-      state.permissions = action.payload as Permissions[];
+      // Never store a non-list: pages call `permissions.includes(...)` and an
+      // undefined here crashes them all.
+      state.permissions = (Array.isArray(action.payload) ? action.payload : []) as Permissions[];
     },
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;

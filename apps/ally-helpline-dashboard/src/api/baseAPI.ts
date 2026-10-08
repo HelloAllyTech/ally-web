@@ -129,6 +129,13 @@ export const baseQueryWithReauth: BaseQueryFn<
         );
 
         if (!refreshResult.data) {
+          // A refresh that never got an answer (API down, a 502/503) says
+          // nothing about the refresh token. Logging out here signed
+          // counsellors out during a two-minute outage and lost their unsaved
+          // notes; hand the error back so the retry layer tries again instead.
+          if (isTransientError(refreshResult.error)) {
+            return { error: refreshResult.error as FetchBaseQueryError };
+          }
           handleLogout();
           return new Promise(() => {});
         }

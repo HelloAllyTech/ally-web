@@ -264,7 +264,9 @@ describe("User Reducer", () => {
 
       const state = testStore.getState();
       expect(state.user.user).toBeUndefined();
-      expect(state.user.permissions).toBeUndefined();
+      // Never undefined: every page calls permissions.includes(...), and an
+      // undefined here crashed them all during the 2026-10-08 API outage.
+      expect(state.user.permissions).toEqual([]);
       expect(state.user.availableChatTypes).toBeUndefined();
     });
 

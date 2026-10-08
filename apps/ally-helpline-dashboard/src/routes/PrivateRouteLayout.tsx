@@ -11,7 +11,7 @@ import {
   ROUTES,
   CALL_PERMISSIONS,
 } from "@constants";
-import { useUser, useAutoActiveCallRedirect, useCanViewAnalytics } from "@hooks";
+import { useUser, useAutoActiveCallRedirect, useCanViewAnalytics, SessionCheck } from "@hooks";
 import {
   Calls,
   Archives,
@@ -54,7 +54,7 @@ import {
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
 const PrivateRouteLayout: FC = () => {
-  const { user, checkAuth, permissions, isAuthenticated } = useUser();
+  const { user, verifySession, permissions, isAuthenticated } = useUser();
   const navigate = useNavigate();
   useAutoActiveCallRedirect(isAuthenticated);
 
@@ -73,44 +73,43 @@ const PrivateRouteLayout: FC = () => {
   }, [chatTypes]);
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      const attemptAuthentication = async (attempt: number): Promise<any> => {
-        try {
-          const data = await checkAuth();
+    let cancelled = false;
 
-          if (data) {
-            return data;
-          }
+    // Retries until the server answers. Only a definite "signed out" ends the
+    // session: a failed request during an API outage used to exhaust these
+    // retries and wipe the tokens, logging counsellors out mid-note and losing
+    // what they had typed.
+    const verifyAuth = async (attempt: number): Promise<void> => {
+      let result: SessionCheck;
+      try {
+        result = await verifySession();
+      } catch (error) {
+        logger.info(`Authentication attempt ${attempt} failed: ${JSON.stringify(error)}`);
+        result = { status: "unavailable" };
+      }
+      if (cancelled || result.status === "ok") return;
 
-          // If this is not the last attempt, wait before retrying
-          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
-            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
-            return attemptAuthentication(attempt + 1);
-          }
-
-          return null;
-        } catch (error) {
-          logger.info(`Authentication attempt ${attempt} failed: ${JSON.stringify(error)}`);
-
-          // If this is not the last attempt, wait before retrying
-          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
-            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
-            return attemptAuthentication(attempt + 1);
-          }
-
-          return null;
-        }
-      };
-
-      const userData = await attemptAuthentication(1);
-      if (!userData) {
+      if (result.status === "signed-out") {
         localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
         store.dispatch(unauthenticate());
         navigate(ROUTES.LOGIN);
+        return;
       }
+
+      // Unavailable: keep the persisted session and try again, backing off.
+      const delay =
+        attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS
+          ? AUTH_RETRY_CONFIG.RETRY_DELAY_MS
+          : AUTH_RETRY_CONFIG.UNAVAILABLE_RETRY_DELAY_MS;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      if (!cancelled) await verifyAuth(attempt + 1);
     };
-    verifyAuth();
+    verifyAuth(1);
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const getLandingPageByRole = () => {
