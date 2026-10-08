@@ -85,4 +85,28 @@ describe("DropdownField", () => {
     fireEvent.mouseDown(document.body);
     expect(screen.queryByText("A")).not.toBeInTheDocument();
   });
+
+  it("keeps a portaled list readable and on screen when the trigger is narrow at the edge", () => {
+    // The scribe drawer leaves "Name of Institution:" a ~30px trigger near the
+    // window's right edge; a list sized to that was cut off at the edge.
+    const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      left: window.innerWidth - 40,
+      right: window.innerWidth - 10,
+      width: 30,
+      top: 100,
+      bottom: 120,
+      height: 20,
+      x: window.innerWidth - 40,
+      y: 100,
+      toJSON: () => ({}),
+    } as DOMRect);
+
+    render(<DropdownField portal value="Value" onChange={vi.fn()} options={["A"]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+
+    const wrapper = screen.getByText("A").closest("div[style]") as HTMLElement;
+    expect(wrapper.style.width).toBe("280px");
+    expect(wrapper.style.left).toBe(`${window.innerWidth - 280 - 8}px`);
+    rect.mockRestore();
+  });
 });

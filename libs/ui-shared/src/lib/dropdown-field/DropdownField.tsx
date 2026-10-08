@@ -7,6 +7,9 @@ import { createPortal } from "react-dom";
 import { Dropdown } from ".";
 import { DropdownFieldProps } from "./types";
 
+/** Narrowest a portaled list may be, however narrow its trigger is. */
+const PORTAL_MIN_WIDTH = 280;
+
 /**
  * DropdownField component displays a dropdown with search and selection capabilities.
  * @component
@@ -69,7 +72,10 @@ const DropdownField: FC<DropdownFieldProps> = ({
       const estimatedDropdownHeight = 296;
       const gap = 8;
       const minOptionsHeight = 120;
-      const reservedInputHeight = 56;
+      // Everything in the panel except the list: its padding, plus the search
+      // box and its margin. A portaled panel has nothing to fall back on if
+      // this is short — it runs off the window — so count it in full there.
+      const reservedInputHeight = portal ? (hideSearch ? 16 : 64) + gap : 56;
 
       const spaceBelow = viewportHeight - rect.bottom - gap;
       const spaceAbove = rect.top - gap;
@@ -80,10 +86,18 @@ const DropdownField: FC<DropdownFieldProps> = ({
       setOptionsMaxHeight(Math.max(availableSpace - reservedInputHeight, minOptionsHeight));
 
       if (portal) {
+        // The trigger can be very narrow — in the 24rem scribe drawer a long
+        // label like "Name of Institution:" leaves it ~30px at the right edge —
+        // so a list sized to it squeezed every option to a word per line and
+        // ran off the window. Give it a readable width, and shift it left to
+        // stay on screen.
+        const viewportWidth = window.innerWidth;
+        const width = Math.min(Math.max(rect.width, PORTAL_MIN_WIDTH), viewportWidth - 2 * gap);
+        const left = Math.max(gap, Math.min(rect.left, viewportWidth - width - gap));
         setPortalStyle({
           position: "fixed",
-          left: rect.left,
-          width: rect.width,
+          left,
+          width,
           height: 0,
           zIndex: 9999,
           ...(shouldOpenUpward
@@ -104,7 +118,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
       window.removeEventListener("scroll", place, true);
       window.removeEventListener("resize", place);
     };
-  }, [isOpen, portal]);
+  }, [isOpen, portal, hideSearch]);
 
   const dropdown = (
     <Dropdown
@@ -118,8 +132,8 @@ const DropdownField: FC<DropdownFieldProps> = ({
       className={`left-0 min-w-full font-secondary ${
         portal
           ? openUpward
-            ? "bottom-0"
-            : "top-0"
+            ? "w-full bottom-0"
+            : "w-full top-0"
           : openUpward
             ? "bottom-full mb-2"
             : "top-full mt-2"
