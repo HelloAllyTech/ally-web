@@ -28,7 +28,7 @@ const requested = Number.parseInt(process.env.VITEST_MAX_WORKERS ?? "", 10);
 const explicit = Number.isFinite(requested) && requested > 0 ? requested : null;
 
 /** Resolved cap, or null to leave Vitest's own defaults in place. */
-export const MAX_TEST_WORKERS = explicit ?? (isCI ? null : 4);
+export const MAX_TEST_WORKERS = explicit ?? 4;
 
 /**
  * Spread into a project's `test` block. Keeps file-level parallelism (the
