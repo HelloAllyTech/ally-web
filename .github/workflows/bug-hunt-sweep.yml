@@ -212,6 +212,9 @@ jobs:
           # Also the model a gemini-engine sweep falls back to if it gets
           # stuck — see "Run the sweep"'s own fallback logic.
           echo "escalation_model=$ESCALATION_MODEL" >> "$GITHUB_OUTPUT"
+          # The Finder's D1 senses (OPP-0781), comma-joined. Empty on an ally-be
+          # that predates it. Read by the script-driven senses below (OPP-0782).
+          echo "senses=$(printf '%s' "$RESP" | jq -r '(.senses // []) | join(",")')" >> "$GITHUB_OUTPUT"
           if [ "$ENGINE" = "gemini" ]; then
             echo "Engine is gemini — bug-escalation.md is only read if this run falls back to Claude below."
           fi
@@ -274,6 +277,47 @@ jobs:
           curl -sS -X POST "${{ steps.cfg.outputs.api }}/api/v1/bug-hunter/runs/${{ steps.cfg.outputs.run_id }}/model" \
             -H "Content-Type: application/json" -H "x-api-key: $ALLY_BE_API_KEY" \
             -d "{\"engine\":\"$ENGINE\",\"model\":\"$DEFAULT_MODEL\"}" || true
+
+      - name: Locale parity sense (a script, no model)
+        # OPP-0782. The Finder's D1 chose `locale_parity` for this run, so the
+        # workflow runs it here, before any engine starts: every locale file
+        # against en.json, one proven finding per file out of parity, posted
+        # straight to Bug Hunter with the key list as evidence. Deterministic
+        # and seconds long. It exists because on 2026-10-01 keys added to
+        # en.json alone, and then a sync that wrote 385 blanks per language,
+        # threw nothing, failed no test and were found by a person. A failure
+        # in this step never stops the sweep: the sense reports and moves on.
+        if: steps.cfg.outputs.skip != 'true' && contains(steps.models.outputs.senses, 'locale_parity')
+        env:
+          ALLY_BE_API_KEY: ${{ secrets.ALLY_BE_API_KEY }}
+        run: |
+          API="${{ steps.cfg.outputs.api }}/api/v1/bug-hunter"
+          RUN="${{ steps.cfg.outputs.run_id }}"
+          REPO="${{ steps.cfg.outputs.repo }}"
+          report() {
+            curl -sS -m 20 -X POST "$API/runs/$RUN/report" -H "Content-Type: application/json" -H "x-api-key: $ALLY_BE_API_KEY" \
+              -d "{\"repo\":\"$REPO\",\"stage\":\"$1\",\"summary\":\"$2\"}" || true
+          }
+          if ! node scripts/i18n-parity.mjs --findings "$REPO" > /tmp/locale-parity.json; then
+            echo "::warning::scripts/i18n-parity.mjs failed to run; the sense reports the error and the sweep goes on"
+            report error "locale_parity: scripts/i18n-parity.mjs failed to run"
+            exit 0
+          fi
+          node scripts/i18n-parity.mjs || true
+          COUNT=$(jq '.findings | length' /tmp/locale-parity.json)
+          if [ "$COUNT" -gt 0 ]; then
+            if curl -sS -m 30 -f -X POST "$API/runs/$RUN/findings" -H "Content-Type: application/json" -H "x-api-key: $ALLY_BE_API_KEY" \
+                 --data-binary @/tmp/locale-parity.json > /tmp/locale-parity-filed.json; then
+              SUMMARY="locale_parity: $COUNT locale file(s) out of parity with en.json, filed"
+            else
+              echo "::warning::could not file the locale parity findings with Bug Hunter"
+              SUMMARY="locale_parity: $COUNT locale file(s) out of parity with en.json, but filing them failed"
+            fi
+          else
+            SUMMARY="locale_parity: every locale file matches en.json"
+          fi
+          report finder_result "$SUMMARY"
+          echo "$SUMMARY"
 
       - name: Install the coding engine
         if: steps.cfg.outputs.skip != 'true'

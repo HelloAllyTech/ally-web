@@ -134,6 +134,8 @@ export enum BugFindingSource {
   REPORTED_BUG = "reported_bug",
   ANALYTICS_SUGGESTION = "analytics_suggestion",
   UX_SIGNAL = "ux_signal",
+  /** The sweep workflow's own locale-file check, a script and not a model (OPP-0782). */
+  LOCALE_PARITY = "locale_parity",
 }
 
 export enum BugFindingSeverity {

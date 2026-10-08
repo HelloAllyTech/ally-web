@@ -134,6 +134,7 @@ export const SOURCE_ORDER: BugFindingSource[] = [
   BugFindingSource.LINT_ERROR,
   BugFindingSource.REPORTED_BUG,
   BugFindingSource.UX_SIGNAL,
+  BugFindingSource.LOCALE_PARITY,
   BugFindingSource.ANALYTICS_SUGGESTION,
 ];
 
@@ -148,6 +149,7 @@ export const SOURCE_SCALE: ColorScale = {
   [sourceLabel(BugFindingSource.LINT_ERROR)]: PALETTE.gold,
   [sourceLabel(BugFindingSource.REPORTED_BUG)]: PALETTE.magenta,
   [sourceLabel(BugFindingSource.UX_SIGNAL)]: PALETTE.cyan,
+  [sourceLabel(BugFindingSource.LOCALE_PARITY)]: PALETTE.purple,
   [sourceLabel(BugFindingSource.ANALYTICS_SUGGESTION)]: PALETTE.gray,
 };
 

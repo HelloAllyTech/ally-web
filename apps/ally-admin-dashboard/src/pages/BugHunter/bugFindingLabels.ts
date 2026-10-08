@@ -18,6 +18,7 @@ export const BUG_FINDING_SOURCE_LABELS: Record<BugFindingSource, string> = {
   [BugFindingSource.REPORTED_BUG]: en.bugHunter.findingSourceReportedBug,
   [BugFindingSource.ANALYTICS_SUGGESTION]: en.bugHunter.findingSourceAnalyticsSuggestion,
   [BugFindingSource.UX_SIGNAL]: en.bugHunter.findingSourceUxSignal,
+  [BugFindingSource.LOCALE_PARITY]: en.bugHunter.findingSourceLocaleParity,
 };
 
 /**

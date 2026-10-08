@@ -2592,6 +2592,7 @@ export const en = {
     findingSourceReportedBug: "Reported by team",
     findingSourceAnalyticsSuggestion: "Analytics suggestion",
     findingSourceUxSignal: "UX signal",
+    findingSourceLocaleParity: "Locale parity",
     findingSeverityLow: "Low",
     findingSeverityMedium: "Medium",
     findingSeverityHigh: "High",
