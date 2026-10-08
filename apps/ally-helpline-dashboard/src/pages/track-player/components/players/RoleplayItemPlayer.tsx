@@ -65,7 +65,10 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   const scenarioId = payload.type === "ROLEPLAY" ? payload.scenarioId : 0;
   const lastScenarioSessionId = payload.type === "ROLEPLAY" ? payload.lastScenarioSessionId : null;
 
-  const { data: scenario } = useGetScenarioQuery({ scenarioId, isPrivate: true }, { skip: isCase });
+  const { data: scenario } = useGetScenarioQuery(
+    { scenarioId, isPrivate: false },
+    { skip: isCase },
+  );
   const { data: caseDetails } = useGetScenarioCaseDetailsQuery(
     { caseId: payload.type === "CASE" ? payload.caseId : "" },
     { skip: !isCase },
@@ -75,7 +78,7 @@ export const RoleplayItemPlayer: FC<RoleplayItemPlayerProps> = ({
   // response — the same source the standalone scenario page reads — so fall
   // back to it when the detail payload doesn't include them.
   const { catalogLanguages } = useGetScenariosQuery(
-    { isPrivate: true, languageCode: i18n.language },
+    { isPrivate: false, languageCode: i18n.language },
     {
       skip: isCase,
       selectFromResult: ({ data }) => ({
