@@ -30,6 +30,7 @@ const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.FIX_SESSION]: en.bugHunter.triggerFixSession,
   [BugHuntTrigger.VERIFY_FIX]: en.bugHunter.triggerVerifyFix,
   [BugHuntTrigger.VERIFY_FINDINGS]: en.bugHunter.triggerVerifyFindings,
+  [BugHuntTrigger.PR_REVIEW]: en.bugHunter.triggerPrReview,
 };
 
 /** "—" for runs closed before token counts were tracked, not just cost. */

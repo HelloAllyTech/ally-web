@@ -12,6 +12,8 @@ export enum BugHuntTrigger {
   VERIFY_FIX = "verify_fix",
   /** The independent verifier's pass over a closed sweep's unproven findings (OPP-0780). */
   VERIFY_FINDINGS = "verify_findings",
+  /** A read-only review of one open pull request a person opened, on its head (OPP-0785). */
+  PR_REVIEW = "pr_review",
 }
 
 /**
@@ -441,6 +443,8 @@ export interface BugFinding {
   miss: BugFindingMiss | null;
   /** Caps and spend on this bug. Defaults with nothing spent until a move has been metered. */
   budget: BugCaseBudget;
+  /** The open pull request this finding was found on by a PR review run (OPP-0785), with the review comment's URL once Bug Hunter has spoken there. */
+  pr: { number: number; url: string; headSha: string; commentUrl?: string | null } | null;
   /** The Verifier's latest verdict on the current fix PR, or null until one has run. */
   latestFixVerdict: BugFixVerdict | null;
   /**

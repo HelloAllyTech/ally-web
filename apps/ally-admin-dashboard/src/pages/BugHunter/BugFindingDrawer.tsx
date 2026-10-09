@@ -655,6 +655,26 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
                 </p>
               )}
 
+              {/* A finding from a PR review run (OPP-0785): the PR it is about. */}
+              {finding.pr && (
+                <div data-testid="finding-pr" className="flex items-center gap-1 text-xs">
+                  <a
+                    href={finding.pr.commentUrl ?? finding.pr.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary-600 underline inline-flex items-center gap-1"
+                  >
+                    {en.bugHunter.drawerPrReview.replace("{number}", String(finding.pr.number))}
+                    <Launch aria-hidden="true" />
+                  </a>
+                  {finding.pr.commentUrl && (
+                    <span className="text-typography-600">
+                      {en.bugHunter.drawerPrReviewCommented}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Where the independent finding verifier stands (OPP-0780). */}
               {finding.independentVerification && (
                 <div data-testid="independent-verification" className="flex items-center gap-1">

@@ -304,6 +304,7 @@ export const TRIGGER_LABELS: Record<BugHuntTrigger, string> = {
   [BugHuntTrigger.FIX_SESSION]: "Fix session",
   [BugHuntTrigger.VERIFY_FIX]: "Verifier (fixes)",
   [BugHuntTrigger.VERIFY_FINDINGS]: "Verifier (findings)",
+  [BugHuntTrigger.PR_REVIEW]: "PR review",
 };
 
 export const TRIGGER_SCALE: ColorScale = {
@@ -312,6 +313,7 @@ export const TRIGGER_SCALE: ColorScale = {
   [TRIGGER_LABELS[BugHuntTrigger.FIX_SESSION]]: PALETTE.teal,
   [TRIGGER_LABELS[BugHuntTrigger.VERIFY_FIX]]: PALETTE.purple,
   [TRIGGER_LABELS[BugHuntTrigger.VERIFY_FINDINGS]]: PALETTE.magenta,
+  [TRIGGER_LABELS[BugHuntTrigger.PR_REVIEW]]: PALETTE.green,
 };
 
 const dayTokens = (d: BugHunterOperationsDay, trigger: BugHuntTrigger): number => {

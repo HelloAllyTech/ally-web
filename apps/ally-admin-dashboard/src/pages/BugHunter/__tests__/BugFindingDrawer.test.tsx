@@ -146,6 +146,7 @@ const finding = (overrides: Record<string, unknown> = {}) => ({
   miss: null,
   latestFixVerdict: null,
   independentVerification: null,
+  pr: null,
   budget: {
     caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
     used: { sessions: 0, attempts: 0, escalations: 0, usd: 0, minutes: 0 },
@@ -231,6 +232,27 @@ describe("BugFindingDrawer — the decision log (OPP-0776)", () => {
   it("shows no log for a bug nothing has decided about yet", () => {
     renderDrawer(finding());
     expect(screen.queryByTestId("finding-decisions")).toBeNull();
+  });
+});
+
+describe("BugFindingDrawer — a finding from a PR review (OPP-0785)", () => {
+  it("links to the pull request it was found on, and to the comment once made", () => {
+    renderDrawer(
+      finding({
+        pr: {
+          number: 42,
+          url: "https://github.com/HelloAllyTech/ally-be/pull/42",
+          headSha: "abc",
+          commentUrl: "https://github.com/HelloAllyTech/ally-be/pull/42#pullrequestreview-1",
+        },
+      }),
+    );
+    const pr = screen.getByTestId("finding-pr");
+    expect(pr).toHaveTextContent("Found reviewing pull request #42");
+    expect(pr).toHaveTextContent("my comment is on the PR");
+    expect(pr.querySelector("a")?.getAttribute("href")).toBe(
+      "https://github.com/HelloAllyTech/ally-be/pull/42#pullrequestreview-1",
+    );
   });
 });
 
