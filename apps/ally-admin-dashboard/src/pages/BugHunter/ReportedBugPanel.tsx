@@ -12,6 +12,14 @@ import { ReportedBugContext } from "@types";
  * dropped an unknown key would lose exactly the field somebody added last week.
  */
 const KNOWN_CONTEXT_LABELS: Record<string, string> = {
+  surface: en.bugHunter.reporterContextSurface,
+  expected: en.bugHunter.reporterContextExpected,
+  steps: en.bugHunter.reporterContextSteps,
+  happenedAt: en.bugHunter.reporterContextHappenedAt,
+  frequency: en.bugHunter.reporterContextFrequency,
+  impact: en.bugHunter.reporterContextImpact,
+  identifiers: en.bugHunter.reporterContextIdentifiers,
+  language: en.bugHunter.reporterContextLanguage,
   screen: en.bugHunter.reporterContextScreen,
   device: en.bugHunter.reporterContextDevice,
   os: en.bugHunter.reporterContextOs,

@@ -33,6 +33,8 @@ export interface BugReportFormLabels {
   cancel: string;
   rateLimitedError: string;
   genericError: string;
+  /** Shown under the box while the description is shorter than `minLength`; `{remaining}` is filled in. */
+  tooShort: string;
 }
 
 export const DEFAULT_BUG_REPORT_LABELS: BugReportFormLabels = {
@@ -44,6 +46,7 @@ export const DEFAULT_BUG_REPORT_LABELS: BugReportFormLabels = {
   cancel: "Cancel",
   rateLimitedError: "You've submitted a few reports recently — please try again in a bit.",
   genericError: "Something went wrong sending that. Please try again.",
+  tooShort: "A sentence or two is enough — {remaining} more characters.",
 };
 
 /**
@@ -78,6 +81,16 @@ export interface BugReportFormProps {
   onSuccess: () => void;
   /** Defaults to `BUG_REPORT_DESCRIPTION_MAX`, mirroring the backend limit. */
   maxLength?: number;
+  /**
+   * Fewest characters the description needs before it can be sent. Default 1,
+   * which is the consumer form's rule; the staff form asks for a sentence,
+   * since one-word reports cost a verifier run and go nowhere.
+   */
+  minLength?: number;
+  /** The caller's own required fields, rendered in `extraFields`: false holds Send until they are filled. */
+  canSubmitExtra?: boolean;
+  /** Mirrors the description as it is typed, for a caller that reacts to it (a duplicate hint, say). */
+  onDescriptionChange?: (value: string) => void;
   /** Override any subset of the copy — e.g. to route it through the app's own i18n. */
   labels?: Partial<BugReportFormLabels>;
   /**
@@ -103,6 +116,9 @@ export const BugReportForm: FC<BugReportFormProps> = ({
   onSubmit,
   onSuccess,
   maxLength = BUG_REPORT_DESCRIPTION_MAX,
+  minLength = 1,
+  canSubmitExtra = true,
+  onDescriptionChange,
   labels: labelOverrides,
   extraFields,
 }) => {
@@ -112,7 +128,13 @@ export const BugReportForm: FC<BugReportFormProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const trimmed = description.trim();
-  const canSubmit = trimmed.length > 0 && trimmed.length <= maxLength && !submitting;
+  const remaining = Math.max(0, minLength - trimmed.length);
+  const canSubmit =
+    trimmed.length > 0 &&
+    remaining === 0 &&
+    trimmed.length <= maxLength &&
+    canSubmitExtra &&
+    !submitting;
 
   const handleClose = () => {
     if (submitting) return;
@@ -145,11 +167,19 @@ export const BugReportForm: FC<BugReportFormProps> = ({
           labelText={labels.prompt}
           placeholder={labels.placeholder}
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={e => {
+            setDescription(e.target.value);
+            onDescriptionChange?.(e.target.value);
+          }}
           maxCount={maxLength}
           enableCounter
           rows={5}
           disabled={submitting}
+          helperText={
+            trimmed.length > 0 && remaining > 0
+              ? labels.tooShort.replace("{remaining}", String(remaining))
+              : undefined
+          }
         />
         {extraFields}
         {error && (

@@ -52,6 +52,15 @@ export interface RoadmapBugReportContext {
   device?: string;
   os?: string;
   clientTimestamp?: string;
+  /** The staff form's structured answers (2026-10-09); ally-be folds them into the brief Bug Hunter reads. */
+  expected?: string;
+  steps?: string;
+  surface?: string;
+  happenedAt?: string;
+  frequency?: string;
+  impact?: string;
+  identifiers?: string;
+  language?: string;
 }
 
 export interface RoadmapBugReportBody {
