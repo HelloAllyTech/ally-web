@@ -62,7 +62,8 @@ export type SortKey =
   | "status"
   | "repo"
   | "source"
-  | "stage";
+  | "stage"
+  | "cost";
 
 export const SORT_KEYS: SortKey[] = [
   "discovered",
@@ -73,6 +74,7 @@ export const SORT_KEYS: SortKey[] = [
   "repo",
   "source",
   "stage",
+  "cost",
 ];
 
 export type SortDirection = "asc" | "desc";
@@ -94,7 +96,22 @@ export const DEFAULT_SORT_DIRECTION: Record<SortKey, SortDirection> = {
   repo: "asc",
   source: "asc",
   stage: "asc",
+  cost: "desc",
 };
+
+/**
+ * What has been spent on a bug so far: every fix session's cost, charged to
+ * the case file's budget as it runs (OPP-0775). Sweep cost is not here — a
+ * sweep reads the whole repo and no one bug owns it. Zero for a bug nothing
+ * has worked on.
+ */
+export const costOf = (finding: BugFinding): number => {
+  const usd = finding.budget?.used?.usd;
+  return typeof usd === "number" && Number.isFinite(usd) && usd > 0 ? usd : 0;
+};
+
+/** `$0.42`, or a dash for a bug nothing has been spent on yet. */
+export const formatCost = (usd: number): string => (usd > 0 ? `$${usd.toFixed(2)}` : "—");
 
 /** High first when descending — the order an admin means by "sort by severity". */
 const SEVERITY_RANK: Record<BugFindingSeverity, number> = {
@@ -389,6 +406,8 @@ const compare = (a: BugFinding, b: BugFinding, sortKey: SortKey, sign: number): 
       return STAGE_RANK[a.stage] - STAGE_RANK[b.stage];
     case "source":
       return a.source.localeCompare(b.source);
+    case "cost":
+      return costOf(a) - costOf(b);
     case "repo":
       // Multiplied back out by the caller, so the sign is passed in to keep
       // "no repo" at the bottom whichever way the column is pointing.

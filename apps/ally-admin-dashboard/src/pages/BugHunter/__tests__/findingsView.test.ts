@@ -4,9 +4,11 @@ import { BugFinding, BugFindingSeverity, BugFindingSource, BugFindingStatus } fr
 
 import {
   buildFindingsView,
+  costOf,
   duplicateKey,
   EMPTY_FILTERS,
   FindingsFilters,
+  formatCost,
   hasActiveFilters,
   reposInWindow,
   updatedAt,
@@ -33,7 +35,10 @@ const finding = (overrides: Partial<BugFinding> & { id: string }): BugFinding =>
     ...overrides,
   }) as unknown as BugFinding;
 
-const view = (findings: BugFinding[], overrides: Partial<Parameters<typeof buildFindingsView>[0]> = {}) =>
+const view = (
+  findings: BugFinding[],
+  overrides: Partial<Parameters<typeof buildFindingsView>[0]> = {},
+) =>
   buildFindingsView({
     findings,
     total: findings.length,
@@ -65,9 +70,9 @@ describe("filtering", () => {
 
   it("ignores case and surrounding whitespace, since a pasted repo name carries both", () => {
     const findings = [finding({ id: "a", title: "Terms Link Broken" })];
-    expect(view(findings, { filters: { ...EMPTY_FILTERS, search: "  TERMS  " } }).rows).toHaveLength(
-      1,
-    );
+    expect(
+      view(findings, { filters: { ...EMPTY_FILTERS, search: "  TERMS  " } }).rows,
+    ).toHaveLength(1);
   });
 
   it("filters by lifecycle bucket rather than by one status at a time", () => {
@@ -110,10 +115,11 @@ describe("filtering", () => {
       repos: ["ally-be", "ally-web"],
       severities: [BugFindingSeverity.HIGH],
     };
-    expect(view(findings, { filters }).rows.map(r => r.finding.id).sort()).toEqual([
-      "be-high",
-      "web-high",
-    ]);
+    expect(
+      view(findings, { filters })
+        .rows.map(r => r.finding.id)
+        .sort(),
+    ).toEqual(["be-high", "web-high"]);
   });
 
   it("treats an empty facet as no opinion rather than as matching nothing", () => {
@@ -139,6 +145,26 @@ describe("sorting", () => {
 
     const sorted = view(findings, { sortKey: "severity", sortDirection: "desc" });
     expect(sorted.rows.map(r => r.finding.id)).toEqual(["high", "medium", "low", "none"]);
+  });
+
+  it("orders by what has been spent, most first when descending, with untouched bugs last (OPP-0748)", () => {
+    const spent = (usd: number) => ({
+      caps: { sessions: 2, attempts: 4, escalations: 1, usd: 15, minutes: 120 },
+      used: { sessions: usd > 0 ? 1 : 0, attempts: 0, escalations: 0, usd, minutes: 0 },
+      exhausted: null,
+      overriddenBy: null,
+      overriddenAt: null,
+    });
+    const findings = [
+      finding({ id: "cheap", budget: spent(0.4) }),
+      finding({ id: "free", budget: spent(0) }),
+      finding({ id: "dear", budget: spent(6.25) }),
+    ];
+    const sorted = view(findings, { sortKey: "cost", sortDirection: "desc" });
+    expect(sorted.rows.map(r => r.finding.id)).toEqual(["dear", "cheap", "free"]);
+    expect(costOf(findings[2])).toBe(6.25);
+    expect(formatCost(6.25)).toBe("$6.25");
+    expect(formatCost(0)).toBe("—");
   });
 
   it("never reorders the array it was handed", () => {
@@ -299,8 +325,8 @@ describe("updatedAt", () => {
     // NaN would sort the row to an arbitrary place in the table instead of to
     // one end — a defect nobody reads as a date-parsing problem.
     const created = "2026-08-17T00:00:00.000Z";
-    expect(
-      updatedAt(finding({ id: "a", createdAt: created, updatedAt: "not a date" })),
-    ).toBe(new Date(created).getTime());
+    expect(updatedAt(finding({ id: "a", createdAt: created, updatedAt: "not a date" }))).toBe(
+      new Date(created).getTime(),
+    );
   });
 });

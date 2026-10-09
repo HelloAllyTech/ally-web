@@ -60,6 +60,8 @@ import {
   severitiesInWindow,
   SortDirection,
   SortKey,
+  costOf,
+  formatCost,
   sourcesInWindow,
   stagesInWindow,
   statusesInWindow,
@@ -674,6 +676,8 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
    * compare the two before concluding they say the same thing.
    */
   const showUpdated = useMemo(() => findings.some(wasTouchedSinceDiscovery), [findings]);
+  // Est. cost (OPP-0748): shown once any bug in view has been spent on.
+  const showCost = useMemo(() => findings.some(finding => costOf(finding) > 0), [findings]);
 
   const rows = view.rows;
 
@@ -1193,6 +1197,17 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                       className={`whitespace-nowrap ${SECONDARY_COLUMN}`}
                     />
                   )}
+                  {showCost && (
+                    <SortableHeader
+                      sortKey="cost"
+                      label={en.bugHunter.findingColumnCost}
+                      tooltip={en.bugHunter.findingColumnCostTooltip}
+                      activeKey={sortKey}
+                      direction={sortDirection}
+                      onSort={toggleSort}
+                      className={`whitespace-nowrap text-right ${SECONDARY_COLUMN}`}
+                    />
+                  )}
                   {showPr && (
                     <TableHeader
                       className={`py-2.5 pr-3 font-medium whitespace-nowrap ${STICKY_HEADER}`}
@@ -1466,6 +1481,19 @@ export const BugFindingsTable: FC<BugFindingsTableProps> = ({
                               Math.max(0, (Date.now() - updatedAt(finding)) / 86_400_000),
                             )}
                           </span>
+                        </TableCell>
+                      )}
+
+                      {showCost && (
+                        <TableCell
+                          data-testid="finding-cost"
+                          className={`${rowPadding} pr-3 whitespace-nowrap text-right tabular-nums ${SECONDARY_COLUMN}`}
+                        >
+                          {/* The shift log's dollars, per bug: what every fix session on
+
+                            this row has cost, from the case file's budget. */}
+
+                          <span className="text-typography-700">{formatCost(costOf(finding))}</span>
                         </TableCell>
                       )}
 

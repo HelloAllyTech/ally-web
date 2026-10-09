@@ -3354,6 +3354,11 @@ export const en = {
     // so this tooltip is never explaining a column of repeated Age values.
     findingColumnUpdatedTooltip:
       "When anything last happened to a bug — I re-read it on a sweep, its status moved, or someone rewrote it. Age is how long it's been on my list; this is whether it's been touched lately. On a bug your team reported weeks ago and I only looked at last night, those two are very far apart.",
+    // Only shows once some bug in view has cost anything, so a table of
+    // untouched reports is not a column of dashes.
+    findingColumnCost: "Est. cost",
+    findingColumnCostTooltip:
+      "What my fix sessions on this bug have cost so far: the engine's own figure where it reported one, else my token estimate. Sweep cost is not counted — a sweep reads the whole repo and no one bug owns it. Sort by it to see which bugs have burned the most. The drawer has the per-session breakdown.",
     runScopeBanner: "Showing only the bugs my {repo} sweep at {timestamp} touched.",
     runScopeBannerLoading: "Showing only the bugs one sweep touched.",
     // The point of the sentence. "Found 10" meant ten rows touched, and most of
