@@ -134,6 +134,21 @@ export default {
           alarm: "rgb(var(--color-tone-alarm) / <alpha-value>)",
         },
         /*
+         * The sign-in page's night scene (see index.css). Scenery only — the
+         * sky, hills, ridges and sun of the hero — so it never themes a control.
+         */
+        night: {
+          sky: "rgb(var(--color-night-sky) / <alpha-value>)",
+          "hill-far": "rgb(var(--color-night-hill-far) / <alpha-value>)",
+          "hill-mid": "rgb(var(--color-night-hill-mid) / <alpha-value>)",
+          "hill-near": "rgb(var(--color-night-hill-near) / <alpha-value>)",
+          "ridge-far": "rgb(var(--color-night-ridge-far) / <alpha-value>)",
+          "ridge-mid": "rgb(var(--color-night-ridge-mid) / <alpha-value>)",
+          "ridge-near": "rgb(var(--color-night-ridge-near) / <alpha-value>)",
+          mist: "rgb(var(--color-night-mist) / <alpha-value>)",
+          sun: "rgb(var(--color-night-sun) / <alpha-value>)",
+        },
+        /*
          * Heat levels for the changelog's code-activity heatmap: level 0 is a
          * day with no changes, then a one-hue ramp around the blog's terracotta
          * accent, light to dark. A sequential data ramp — each step encodes a

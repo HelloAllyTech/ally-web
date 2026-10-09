@@ -62,7 +62,7 @@
   "apps/ally-helpline-dashboard/src/pages/blog/Blog.tsx": 25,
   "apps/ally-helpline-dashboard/src/pages/blog/BlogFooter.tsx": 8,
   "apps/ally-helpline-dashboard/src/pages/blog/BlogPost.tsx": 22,
-  "apps/ally-helpline-dashboard/src/pages/blog/Changelog.tsx": 3,
+  "apps/ally-helpline-dashboard/src/pages/blog/Changelog.tsx": 2,
   "apps/ally-helpline-dashboard/src/pages/blog/ShareActions.tsx": 4,
   "apps/ally-helpline-dashboard/src/pages/blog/__tests__/Blog.test.tsx": 1,
   "apps/ally-helpline-dashboard/src/pages/calls/Calls.tsx": 2,

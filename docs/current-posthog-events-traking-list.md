@@ -28,19 +28,19 @@ Currently Tracked Events Reference
 
 ### Calls
 
-| Constant                  | Event Name                | Description                   | Fires at |
-| ------------------------- | ------------------------- | ----------------------------- | -------- |
+| Constant                  | Event Name                | Description                                                                                                                                                                 | Fires at                                      |
+| ------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | `CALL_STARTED`            | `call_started`            | Counselor begins a call. Keyed on the `isUserJoined` transition, so both start paths (the `USER_JOINED` socket event and rejoining an already-ACTIVE chat) are covered once | `pages/audio-call/hooks/useMicrophoneMode.ts` |
-| `CALL_ENDED`              | `call_ended`              | Call ends. Carries `call_duration_seconds`; paired with `call_started` by a ref, so a call ending via both the API and `AUDIO_CHAT_ENDED` emits once | `pages/audio-call/hooks/useMicrophoneMode.ts` |
-| `CALL_FEEDBACK_SUBMITTED` | `call_feedback_submitted` | Post-call feedback submitted  | — |
+| `CALL_ENDED`              | `call_ended`              | Call ends. Carries `call_duration_seconds`; paired with `call_started` by a ref, so a call ending via both the API and `AUDIO_CHAT_ENDED` emits once                        | `pages/audio-call/hooks/useMicrophoneMode.ts` |
+| `CALL_FEEDBACK_SUBMITTED` | `call_feedback_submitted` | Post-call feedback submitted                                                                                                                                                | —                                             |
 
 ### Simulation
 
-| Constant                  | Event Name                | Description                 | Fires at |
-| ------------------------- | ------------------------- | --------------------------- | -------- |
+| Constant                  | Event Name                | Description                                                                                                                                                                                                   | Fires at                                              |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `SIMULATION_STARTED`      | `simulation_started`      | The agent actually joined and the learner can practise — **not** merely that a room opened. A session that never got an agent emits nothing, so an infrastructure failure cannot read as a completion problem | `hooks/useLiveKitRoom.ts` (`transitionToAgentJoined`) |
-| `SIMULATION_COMPLETED`    | `simulation_completed`    | Room disconnected after a real start. Carries `duration_seconds` and `ended_by_learner`, which separates a finished practice from one that dropped | `hooks/useLiveKitRoom.ts` (`onRoomDisconnect`) |
-| `SIMULATION_CREDITS_USED` | `simulation_credits_used` | Credits consumed            | — |
+| `SIMULATION_COMPLETED`    | `simulation_completed`    | Room disconnected after a real start. Carries `duration_seconds` and `ended_by_learner`, which separates a finished practice from one that dropped                                                            | `hooks/useLiveKitRoom.ts` (`onRoomDisconnect`)        |
+| `SIMULATION_CREDITS_USED` | `simulation_credits_used` | Credits consumed                                                                                                                                                                                              | —                                                     |
 
 A **text-chat** roleplay adds `interaction_mode: "TEXT"` to `simulation_started` and
 `simulation_completed`. Voice sessions send no `interaction_mode` at all, so their payload is
@@ -63,10 +63,10 @@ rather than `!= VOICE`.
 
 ### Search
 
-| Constant                | Event Name              | Description                 | Fires at |
-| ----------------------- | ----------------------- | --------------------------- | -------- |
+| Constant                | Event Name              | Description                                                                                                                                                                                                                                                        | Fires at                                                            |
+| ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
 | `SEARCH_PERFORMED`      | `search_performed`      | A search ran — typed query, category change, or the query-param restore on load. **Sends `query_length` and `result_count`, never the query text**: helpline search terms carry clinical detail about a caller, so `SEARCH_QUERY` is declared but must not be used | `components/search-resources/SearchResources.tsx` (`triggerSearch`) |
-| `SEARCH_RESULT_CLICKED` | `search_result_clicked` | User clicks a search result. Unwired because the shared `ResourceSearch` component handles result clicks internally and exposes no callback — wiring this means adding one to its public API | — |
+| `SEARCH_RESULT_CLICKED` | `search_result_clicked` | User clicks a search result. Unwired because the shared `ResourceSearch` component handles result clicks internally and exposes no callback — wiring this means adding one to its public API                                                                       | —                                                                   |
 
 ### Analytics Page
 
@@ -229,8 +229,8 @@ the logout dialog, not on opening it — the dialog can be cancelled.
 a disabled input and the form only carries `profileImageUrl`. It is sent anyway so the payload
 matches the spec if the field opens up.
 
-`language.changed` sends `source` as `sidebar` or `roleplay_confirmation_modal` (see
-`LANGUAGE_CHANGE_SOURCE`). The sidebar selector reports the English language name rather than
+`language.changed` sends `source` as `sidebar`, `login` or `roleplay_confirmation_modal` (see
+`LANGUAGE_CHANGE_SOURCE`). The sidebar selector — also shown on the sign-in page, as `login` — reports the English language name rather than
 the native display label, so the value stays stable as labels are localised; the roleplay
 confirmation picker reports the label the scenario's language list supplies.
 
@@ -246,30 +246,30 @@ uuid (`chat_id`) and coarse enums/counts. The talker page root and the listener 
 and summary containers carry `ph-no-capture`, so session replay and autocapture skip them too.
 Talker events have no signed-in user, so `user_role` is `unknown`.
 
-| Constant                          | Event Name                        | Description | Fires at |
-| --------------------------------- | --------------------------------- | ----------- | -------- |
-| `TALKER_SESSION_STARTED`          | `talker_session_started`          | A talker accepted consent and joined the queue. Sends `chat_id`, `language`, `has_display_name` (boolean, never the name), `chat_status` | `pages/helpline-talk/useTalkerSession.ts` |
-| `TALKER_QUEUE_LEFT`               | `talker_queue_left`               | A waiting talker left the queue (Leave → confirm). Sends `chat_id`, `wait_seconds` | `pages/helpline-talk/useTalkerSession.ts` |
-| `TALKER_CHAT_ENDED`               | `talker_chat_ended`               | A talker ended an active chat (End chat → confirm). Sends `chat_id` | `pages/helpline-talk/useTalkerSession.ts` |
-| `TALKER_FEEDBACK_SUBMITTED`       | `talker_feedback_submitted`       | The one-question rating after a chat. Sends `chat_id`, `rating` (1–5), `has_feedback_text` (boolean, never the comment) | `pages/helpline-talk/useTalkerSession.ts` |
-| `TALKER_CONVERSATION_DELETED`     | `talker_conversation_deleted`     | A talker erased their conversation. Sends `chat_id`, `screen` | `pages/helpline-talk/useTalkerSession.ts` |
-| `TALKER_QUICK_EXIT_USED`          | `talker_quick_exit_used`          | Quick exit pressed. Sends `screen` and `chat_id` when there is a chat | `pages/helpline-talk/useTalkerSession.ts` |
-| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds` | `pages/helpline/HelplineLobby.tsx` |
-| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index` | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note) | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count` | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_TRANSFER_REQUESTED`     | `helpline_transfer_requested`     | The listener of record or a supervisor asked for a chat to be passed on (Request transfer → confirm). Sends `chat_id`, `actor` (`listener` \| `supervisor`), `has_target` (boolean, never who) | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_CHAT_ASSIGNED`          | `helpline_chat_assigned`          | A supervisor pointed a waiting chat at one listener from the Monitor (Assign to… → confirm). Sends `chat_id`, `risk_level` | `pages/helpline/HelplineMonitor.tsx` |
-| `HELPLINE_CHAT_TAKEN_OVER`        | `helpline_chat_taken_over`        | A supervisor took over a chat as its listener (Take over → confirm). Sends `chat_id`, `risk_level` | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_WHISPER_SENT`           | `helpline_whisper_sent`           | A supervisor sent a whisper to the listener (staff-only). Sends `chat_id` only — never the whisper | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_TALKER_BLOCKED`         | `helpline_talker_blocked`         | A supervisor blocked a talker (Block talker → confirm). Sends `chat_id`, `has_reason` (boolean, never the reason) | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_SUPERVISOR_ALERTED`     | `helpline_supervisor_alerted`     | The listener of record pressed **Alert a supervisor**. Sends `chat_id`, `has_note` (boolean, never the note), `alerted_count` (how many supervisors the server reached; 0 means none is set up) | `pages/helpline/HelplineChatView.tsx` |
-| `HELPLINE_QA_VIEWED`              | `helpline_qa_viewed`              | Someone opened a chat's helping-skills feedback. Sends `chat_id`, `viewer` (`self` for the listener's own feedback, `supervisor` otherwise) — never scores or behaviours | `pages/helpline/HelplineQaDetail.tsx` |
+| Constant                          | Event Name                        | Description                                                                                                                                                                                     | Fires at                                  |
+| --------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `TALKER_SESSION_STARTED`          | `talker_session_started`          | A talker accepted consent and joined the queue. Sends `chat_id`, `language`, `has_display_name` (boolean, never the name), `chat_status`                                                        | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUEUE_LEFT`               | `talker_queue_left`               | A waiting talker left the queue (Leave → confirm). Sends `chat_id`, `wait_seconds`                                                                                                              | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CHAT_ENDED`               | `talker_chat_ended`               | A talker ended an active chat (End chat → confirm). Sends `chat_id`                                                                                                                             | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_FEEDBACK_SUBMITTED`       | `talker_feedback_submitted`       | The one-question rating after a chat. Sends `chat_id`, `rating` (1–5), `has_feedback_text` (boolean, never the comment)                                                                         | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_CONVERSATION_DELETED`     | `talker_conversation_deleted`     | A talker erased their conversation. Sends `chat_id`, `screen`                                                                                                                                   | `pages/helpline-talk/useTalkerSession.ts` |
+| `TALKER_QUICK_EXIT_USED`          | `talker_quick_exit_used`          | Quick exit pressed. Sends `screen` and `chat_id` when there is a chat                                                                                                                           | `pages/helpline-talk/useTalkerSession.ts` |
+| `HELPLINE_CHAT_CLAIMED`           | `helpline_chat_claimed`           | A listener claimed a waiting chat. Sends `chat_id`, `risk_level`, `wait_seconds`                                                                                                                | `pages/helpline/HelplineLobby.tsx`        |
+| `HELPLINE_SUGGESTION_INSERTED`    | `helpline_suggestion_inserted`    | A listener pressed **Use** on a copilot suggestion (inserted into the composer, never sent). Sends `chat_id`, `skill_key`, `suggestion_index`                                                   | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_RISK_ACKNOWLEDGED`      | `helpline_risk_acknowledged`      | A listener acknowledged a risk flag. Sends `chat_id`, `risk_level`, `risk_source`, `risk_outcome` (never the signal or note)                                                                    | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_CHAT_ENDED_BY_LISTENER` | `helpline_chat_ended_by_listener` | A listener ended a chat (End chat → confirm). Sends `chat_id`, `risk_level`, `message_count`                                                                                                    | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_TRANSFER_REQUESTED`     | `helpline_transfer_requested`     | The listener of record or a supervisor asked for a chat to be passed on (Request transfer → confirm). Sends `chat_id`, `actor` (`listener` \| `supervisor`), `has_target` (boolean, never who)  | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_CHAT_ASSIGNED`          | `helpline_chat_assigned`          | A supervisor pointed a waiting chat at one listener from the Monitor (Assign to… → confirm). Sends `chat_id`, `risk_level`                                                                      | `pages/helpline/HelplineMonitor.tsx`      |
+| `HELPLINE_CHAT_TAKEN_OVER`        | `helpline_chat_taken_over`        | A supervisor took over a chat as its listener (Take over → confirm). Sends `chat_id`, `risk_level`                                                                                              | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_WHISPER_SENT`           | `helpline_whisper_sent`           | A supervisor sent a whisper to the listener (staff-only). Sends `chat_id` only — never the whisper                                                                                              | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_TALKER_BLOCKED`         | `helpline_talker_blocked`         | A supervisor blocked a talker (Block talker → confirm). Sends `chat_id`, `has_reason` (boolean, never the reason)                                                                               | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_SUPERVISOR_ALERTED`     | `helpline_supervisor_alerted`     | The listener of record pressed **Alert a supervisor**. Sends `chat_id`, `has_note` (boolean, never the note), `alerted_count` (how many supervisors the server reached; 0 means none is set up) | `pages/helpline/HelplineChatView.tsx`     |
+| `HELPLINE_QA_VIEWED`              | `helpline_qa_viewed`              | Someone opened a chat's helping-skills feedback. Sends `chat_id`, `viewer` (`self` for the listener's own feedback, `supervisor` otherwise) — never scores or behaviours                        | `pages/helpline/HelplineQaDetail.tsx`     |
 
 ### Errors (automatic — no component code needed)
 
-| Constant             | Event Name           | Description                                                            | Fires at |
-| -------------------- | -------------------- | ---------------------------------------------------------------------- | -------- |
+| Constant             | Event Name           | Description                                                                                                                                                            | Fires at                      |
+| -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `API_ERROR_OCCURRED` | `api_error_occurred` | Any failed RTK Query request — fired automatically by Redux middleware. Carries the endpoint name, which is what the API-error-spike and error-loop detectors group by | `store/index.ts` (middleware) |
 
 ### PostHog's own events (no constant, no component code)
@@ -277,21 +277,21 @@ Talker events have no signed-in user, so `user_role` is `unknown`.
 Captured by `posthog-js` from its `init` options in `utils/analytics.ts`, and read by the UX Signals
 detectors:
 
-| Event Name     | Enabled by                | Read by |
-| -------------- | ------------------------- | ------- |
-| `$pageview`    | `PageviewTracker` (manual — `capture_pageview` is false) | route-abandonment, funnel detectors |
-| `$pageleave`   | `capture_pageleave: true` | route abandonment |
-| `$rageclick`   | `autocapture: true`       | rage-click clusters |
-| `$dead_click`  | `capture_dead_clicks: true` | dead-click clusters |
+| Event Name    | Enabled by                                               | Read by                             |
+| ------------- | -------------------------------------------------------- | ----------------------------------- |
+| `$pageview`   | `PageviewTracker` (manual — `capture_pageview` is false) | route-abandonment, funnel detectors |
+| `$pageleave`  | `capture_pageleave: true`                                | route abandonment                   |
+| `$rageclick`  | `autocapture: true`                                      | rage-click clusters                 |
+| `$dead_click` | `capture_dead_clicks: true`                              | dead-click clusters                 |
 
 ---
 
 ### Admin & Organization
 
-| Constant               | Event Name              | Description                                          |
-| ---------------------- | ----------------------- | ---------------------------------------------------- |
-| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown`  | An upgrade prompt or paywall is shown to a learner or admin |
-| `UPGRADE_CLICKED`      | `upgrade.clicked`       | Learner or admin clicks an upgrade call-to-action     |
+| Constant               | Event Name             | Description                                                 |
+| ---------------------- | ---------------------- | ----------------------------------------------------------- |
+| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown` | An upgrade prompt or paywall is shown to a learner or admin |
+| `UPGRADE_CLICKED`      | `upgrade.clicked`      | Learner or admin clicks an upgrade call-to-action           |
 
 `upgrade.prompt_shown` sends `org_id`, `trigger_source`, `current_plan`; `upgrade.clicked` sends
 `org_id`, `current_plan`, `target_plan`. Both are **registered but not yet emitted** — this app has

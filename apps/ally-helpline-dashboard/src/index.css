@@ -152,6 +152,23 @@
     --color-tone-ochre: 136 89 27; /* #88591B — needs practice, in progress */
     --color-tone-alarm: 160 62 51; /* #A03E33 — failed, ended, bad */
 
+    /*
+     * Night scene — the sign-in page's hero, redrawn from the hills
+     * illustration it used to show as a photo (assets/images/LoginImage.png):
+     * a deep sky, three hill bands back to front, a lighter ridge line on each,
+     * and the orange sun. Scenery, not UI: nothing interactive takes these, and
+     * text on the sky uses `mist`, which clears 4.5:1 against `sky`.
+     */
+    --color-night-sky: 22 48 63; /* #16303F */
+    --color-night-hill-far: 31 68 86; /* #1F4456 */
+    --color-night-hill-mid: 42 94 99; /* #2A5E63 */
+    --color-night-hill-near: 60 122 112; /* #3C7A70 */
+    --color-night-ridge-far: 143 176 187; /* #8FB0BB */
+    --color-night-ridge-mid: 169 196 204; /* #A9C4CC */
+    --color-night-ridge-near: 191 211 211; /* #BFD3D3 */
+    --color-night-mist: 217 228 230; /* #D9E4E6 */
+    --color-night-sun: 232 131 58; /* #E8833A */
+
     --color-scrollbar-track: 234 231 222;
     --color-scrollbar-thumb: 181 172 156;
     --color-scrollbar-thumbHover: 146 139 124;

@@ -12,8 +12,9 @@ import { useAnalytics } from "@hooks";
 
 import i18n from "../../i18n";
 
-// Map language codes to native display labels (kept consistent with existing UI)
-const LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
+// Map language codes to native display labels (kept consistent with existing UI).
+// Exported so the sign-in page can list the same languages it offers here.
+export const LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
   { code: "en", label: "English" },
   { code: "hi", label: "हिंदी" },
   { code: "mr", label: "मराठी" },

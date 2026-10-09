@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, FunctionComponent, useRef } from "rea
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,12 +14,10 @@ import {
   usePutTermsAndAgreementMutation,
   useVerifyOTPMutation,
 } from "@api";
-import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
 import { AppTooltip, Button, OTP, TermsAndAgreement, TextField } from "@components";
 import {
   ALLY_PRIVACY_POLICY_URL,
   ALLY_TERMS_URL,
-  ALLY_URL,
   LOCAL_STORAGE_KEYS,
   LoginSection,
   ROUTES,
@@ -28,7 +26,13 @@ import {
 } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
-import { openLinkInNewTab, validateEmail } from "@utils";
+import { validateEmail } from "@utils";
+
+import { LandingHero, LandingNav } from "./landing/LandingHero";
+import { ArrowLeftIcon } from "./landing/LandingIcons";
+import { LandingSections } from "./landing/LandingSections";
+import { SECTION_IDS } from "./landing/links";
+import { NightHills, NightStars } from "./landing/NightScene";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
@@ -252,6 +256,24 @@ export const Login: FunctionComponent = () => {
     toast.error(t("auth.login.google.error"));
   };
 
+  const legalLink = (href: string) => (
+    // Opens in a new tab so reading the terms never loses what was typed here.
+    // Trans fills the anchor's text from the `<terms>`/`<privacy>` tags in the copy.
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary-500 underline underline-offset-2 hover:text-primary-600"
+    />
+  );
+
+  const primaryButtonClass =
+    "w-full !h-[52px] !rounded-[10px] !bg-secondary-900 !text-[17px] !font-semibold hover:!bg-secondary-800 font-primary";
+
+  const spinner = (
+    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+  );
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -261,16 +283,15 @@ export const Login: FunctionComponent = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 50 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-6"
         >
-          <div className="flex flex-col text-4xl font-secondary">
-            <span>{t("auth.login.greetingLine1")}</span>
-            <h1>
-              <span className="inline-flex flex-wrap items-center gap-2 sm:flex-nowrap sm:whitespace-nowrap">
-                {t("auth.login.greetingLine2", { app: "" })} <Ally className="mt-2" />
-              </span>
-            </h1>
-            <span className="text-2xl mt-[24px]">{t("auth.login.subtitle")}</span>
+          <div className="flex flex-col gap-2">
+            <h2 className="m-0 font-primary text-[30px] font-medium leading-[38px] tracking-[-0.01em]">
+              {t("landing.signIn.title")}
+            </h2>
+            <p className="m-0 font-secondary text-lg leading-[26px] text-secondary-600">
+              {t("landing.signIn.subtitle")}
+            </p>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
@@ -287,71 +308,65 @@ export const Login: FunctionComponent = () => {
               className="w-full rounded-xs"
             />
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-h-[28px] items-center gap-2.5">
               <input
                 type="checkbox"
                 id="remember"
-                className="h-4 w-4 rounded border-2 border-border-light text-primary-500 focus:ring-primary-500 cursor-pointer"
+                className="h-[18px] w-[18px] cursor-pointer accent-primary-500"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
               <label
                 htmlFor="remember"
-                className="inline-flex min-h-[44px] items-center text-sm text-typography-700 cursor-pointer md:min-h-0"
+                className="inline-flex min-h-[44px] cursor-pointer items-center text-[15px] text-typography-800 md:min-h-0"
               >
-                {t("auth.login.rememberMe")}
+                {t("landing.signIn.rememberEmail")}
               </label>
             </div>
           </div>
-          <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
-            <Button
-              type="button"
-              className="w-full rounded-[5px] mt-6"
-              disabled={isLoading || isSubmitDisabled}
-              onClick={handleNext}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                  {t("auth.login.generatingOtp")}
+          <div className="flex flex-col gap-4">
+            <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
+              <Button
+                type="button"
+                className={primaryButtonClass}
+                disabled={isLoading || isSubmitDisabled}
+                onClick={handleNext}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    {spinner}
+                    {t("landing.signIn.sendingCode")}
+                  </div>
+                ) : (
+                  t("landing.signIn.sendCode")
+                )}
+              </Button>
+            </AppTooltip>
+            {import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex-grow border-t border-border" />
+                  <span className="text-sm text-secondary-600">{t("auth.login.divider")}</span>
+                  <div className="flex-grow border-t border-border" />
                 </div>
-              ) : (
-                t("common.next")
-              )}
-            </Button>
-          </AppTooltip>
-          <div className="text-sm text-typography-800">
-            <div className="mb-3">
-              <div className="flex items-center mb-3">
-                <div className="flex-grow border-t border-gray-300" />
-                <span className="mx-3 text-xs text-gray-500">{t("auth.login.divider")}</span>
-                <div className="flex-grow border-t border-gray-300" />
-              </div>
-              {import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID ? (
                 <GoogleSignInButton
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
                   text={t("auth.login.google.button")}
                 />
-              ) : null}
-            </div>
-            {t("auth.login.proceedAgree")}{" "}
-            <button
-              type="button"
-              className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
-            >
-              {t("auth.login.terms")}
-            </button>{" "}
-            {t("auth.login.and")}{" "}
-            <button
-              type="button"
-              className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
-            >
-              {t("auth.login.privacy")}
-            </button>
+              </>
+            ) : null}
           </div>
+          <p className="m-0 font-secondary text-sm leading-[21px] text-secondary-600">
+            <Trans
+              i18nKey="landing.signIn.legal"
+              components={{
+                terms: legalLink(ALLY_TERMS_URL),
+                privacy: legalLink(ALLY_PRIVACY_POLICY_URL),
+              }}
+            />{" "}
+            {t("landing.signIn.help")}
+          </p>
         </motion.div>
       );
     }
@@ -362,57 +377,72 @@ export const Login: FunctionComponent = () => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="flex flex-col justify-start gap-6"
+        className="flex flex-col justify-start gap-5"
       >
-        <BackCircle
-          className="self-start cursor-pointer ml-[-10px]"
+        <button
+          type="button"
           onClick={handleBack}
-          role="button"
-          tabIndex={0}
-          aria-label={t("auth.login.back")}
           onKeyDown={e => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               handleBack();
             }
           }}
-        />
-        <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
-        <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>
-          <span className="font-semibold text-2xl break-words">{email}</span>
+          aria-label={t("landing.code.back")}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white text-typography-900"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </button>
+        <div className="flex flex-col gap-2">
+          <h2 className="m-0 font-primary text-[30px] font-medium leading-[38px] tracking-[-0.01em]">
+            {t("landing.code.title")}
+          </h2>
+          <p className="m-0 font-secondary text-lg leading-[26px] text-secondary-600 break-words">
+            <Trans
+              i18nKey="landing.code.sentTo"
+              values={{ email }}
+              components={{ strong: <strong className="font-semibold text-typography-900" /> }}
+            />
+          </p>
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-xs text-typography-900">
-            {t("auth.login.otp.expires", {
-              minutes: otpExpiryText,
-            })}
-            <span
-              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
+          <div className="flex items-center justify-between gap-3 font-secondary text-base text-secondary-600">
+            <span>{t("landing.code.expires", { time: otpExpiryText })}</span>
+            <button
+              type="button"
               onClick={handleResendCode}
+              disabled={countdown > 0 || isGeneratingOTP}
+              className="min-h-[44px] text-primary-500 underline underline-offset-2 disabled:text-secondary-600 disabled:no-underline"
             >
               {countdown > 0
-                ? t("auth.login.otp.resendWithCountdown", { seconds: `${countdown}s` })
-                : t("auth.login.otp.resend")}
-            </span>
+                ? t("landing.code.resendIn", { seconds: countdown })
+                : t("landing.code.resend")}
+            </button>
           </div>
         </div>
         <Button
           type="button"
-          className="w-full rounded-[5px] mt-2  font-tertiary"
+          className={primaryButtonClass}
           disabled={isLoading || isSubmitDisabled}
           onClick={handleVerify}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-              {t("auth.login.otp.signingIn")}
+              {spinner}
+              {t("landing.code.verifying")}
             </div>
           ) : (
-            t("auth.login.otp.verify")
+            t("landing.code.verify")
           )}
         </Button>
+        <button
+          type="button"
+          onClick={handleBack}
+          className="min-h-[44px] self-center px-2 font-secondary text-base text-primary-500 underline underline-offset-2"
+        >
+          {t("landing.code.changeEmail")}
+        </button>
       </motion.div>
     );
   };
@@ -421,37 +451,24 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex flex-col font-primary md:flex-row h-dvh overflow-y-auto lg:p-8">
-      <div className="hidden sm:block sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
-        <img
-          src={LoginImage}
-          alt={t("auth.login.imageAlt")}
-          className="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
-        />
-        <div
-          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab(ALLY_URL)}
-        >
-          <div className="flex flex-col mr-4 font-secondary">
-            <Ally className="w-10 h-10" />
-            <span className="text-sm font-medium text-typography-800">
-              {t("auth.login.helloAlly")}
-            </span>
-          </div>
-          <RedirectIcon
-            width={36}
-            height={36}
-            className="border border-border-light rounded-sm p-2"
-          />
-        </div>
-      </div>
-      <div className="w-full static grow shrink-0 sm:absolute sm:flex-1 min-h-[35vh] p-5 rounded-[10px] sm:bottom-[10%] sm:right-[25%] sm:left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
-        <div className="w-full max-w-md flex flex-col gap-6">
-          <div className="flex flex-col">
+    // Same full-height scroll container the old two-pane page used; the
+    // in-page section links scroll within it.
+    <div className="h-dvh overflow-y-auto bg-background font-primary text-typography-900">
+      <section
+        id={SECTION_IDS.top}
+        className="relative overflow-hidden bg-night-sky px-[clamp(20px,5vw,72px)] pb-60 text-white"
+      >
+        <NightStars />
+        <NightHills />
+        <LandingNav />
+        <div className="relative z-10 mx-auto flex max-w-[1296px] flex-wrap items-center gap-12 pt-12">
+          <LandingHero />
+          <div className="min-w-0 flex-[0_1_432px] rounded-[20px] bg-white p-6 text-typography-900 shadow-2xl sm:p-10">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
           </div>
         </div>
-      </div>
+      </section>
+      <LandingSections />
       <TermsAndAgreement
         isOpen={isOpenTermsAndAgreement}
         handleAgreeButtonClick={handleAgreeButtonClick}

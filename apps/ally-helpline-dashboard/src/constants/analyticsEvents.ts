@@ -158,6 +158,7 @@ export const REVIEW_ACTOR_TYPE = {
 export const LANGUAGE_CHANGE_SOURCE = {
   SIDEBAR: "sidebar",
   ROLEPLAY_CONFIRMATION_MODAL: "roleplay_confirmation_modal",
+  LOGIN: "login",
 } as const;
 
 /**

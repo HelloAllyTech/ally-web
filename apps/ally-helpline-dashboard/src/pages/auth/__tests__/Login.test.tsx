@@ -22,6 +22,7 @@ import { describe, expect, it, vi, beforeAll, beforeEach, afterAll, afterEach } 
 
 import { useGenerateOTPMutation } from "@api";
 
+import i18n from "../../../i18n";
 import { Login } from "../Login";
 
 // Mock @react-oauth/google
@@ -92,21 +93,6 @@ vi.mock("@assets", () => ({
       Ally
     </div>
   ),
-  BackCircle: (props: any) => (
-    <div data-testid="back-circle" {...props}>
-      BackCircle
-    </div>
-  ),
-  LoginImage: ({ className }: { className: string }) => (
-    <div data-testid="login-image" className={className}>
-      LoginImage
-    </div>
-  ),
-  RedirectIcon: ({ className }: { className: string }) => (
-    <div data-testid="redirect-icon" className={className}>
-      RedirectIcon
-    </div>
-  ),
 }));
 
 vi.mock("@components", () => ({
@@ -158,6 +144,11 @@ vi.mock("@constants", () => ({
     EMAIL: "email",
     OTP: "otp",
   },
+  ROUTES: {
+    BLOG: "/blog",
+    CHANGELOG: "/blog/changelog",
+    SUSPENDED_USER: "/suspended-user",
+  },
   TooltipLocation: {
     LOGIN_BUTTON: "login_button",
   },
@@ -168,6 +159,7 @@ vi.mock("@hooks", () => ({
     isAuthenticated: false,
     checkAuth: vi.fn(),
   }),
+  useAnalytics: () => ({ track: vi.fn() }),
 }));
 
 vi.mock("@utils", () => ({
@@ -585,6 +577,54 @@ describe("Login Component", () => {
       // Keyboard activation should trigger the same navigation as a mouse
       // click — back to the email step, where the email field reappears.
       expect(screen.getByTestId("textfield-input")).not.toBeNull();
+    });
+  });
+  /**
+   * TEST GROUP: The public site around the sign-in card
+   *
+   * The sign-in page doubles as Ally's basic website, and every word on it is a
+   * translation key so the admin console's Translation Management can change it.
+   * A published edit reaches the page as a resource bundle layered over the
+   * shipped one (see i18n/dynamic.ts) — the same addResource path used here.
+   */
+  describe("Public site content", () => {
+    const renderLogin = () =>
+      render(
+        <TestWrapper store={mockStore}>
+          <Login />
+        </TestWrapper>,
+      );
+
+    it("renders the site sections around the sign-in card", () => {
+      renderLogin();
+
+      expect(
+        screen.getByRole("heading", {
+          level: 1,
+          name: /training and support tools for helplines/i,
+        }),
+      ).not.toBeNull();
+      expect(
+        screen.getByRole("heading", { name: /practise, take notes and answer chats/i }),
+      ).not.toBeNull();
+      expect(
+        screen.getByRole("heading", { name: /built for sensitive conversations/i }),
+      ).not.toBeNull();
+      expect(screen.getByRole("link", { name: /get in touch/i })).not.toBeNull();
+    });
+
+    it("shows copy published from the admin console instead of the shipped wording", () => {
+      const key = "landing.hero.title";
+      const shipped = i18n.t(key);
+      i18n.addResource("en", "translation", key, "Practice that feels real.");
+      try {
+        renderLogin();
+        expect(
+          screen.getByRole("heading", { level: 1, name: "Practice that feels real." }),
+        ).not.toBeNull();
+      } finally {
+        i18n.addResource("en", "translation", key, shipped);
+      }
     });
   });
 });
