@@ -190,83 +190,100 @@ export const FileUpload = ({
     });
   };
 
-  const uploadFile = async (file: File) => {
-    try {
-      setIsUploading(true);
-      clearErrors(id);
+  const uploadFile = useCallback(
+    async (file: File) => {
+      try {
+        setIsUploading(true);
+        clearErrors(id);
 
-      const isVideo = file.type.startsWith("video/");
+        const isVideo = file.type.startsWith("video/");
 
-      if (isVideo) {
-        try {
-          const duration = await getVideoDuration(file);
+        if (isVideo) {
+          try {
+            const duration = await getVideoDuration(file);
 
-          const response = await getCoverVideoUrl({
+            const response = await getCoverVideoUrl({
+              fileName: file.name,
+              fileSize: file.size,
+              duration,
+              contentType: file.type,
+            }).unwrap();
+            await uploadToS3(file, response.presignedUrl);
+
+            setUploadedFile(file);
+            setPendingRetryFile(null);
+            setValue(id, response.coverVideoUrl, { shouldValidate: true });
+          } catch (error) {
+            // Previously toast-only — the one upload path with no inline field
+            // error, unlike the image path below (via the outer catch). The
+            // toast fades; the field error is what's still there when the
+            // admin looks back at the form.
+            const message = (error as any)?.data?.message || en.errors.videoUploadFailed;
+            setError(id, { type: "manual", message });
+            toast.error(message);
+            setPendingRetryFile(file);
+          }
+        } else {
+          const response = await getCoverImageUrl({
             fileName: file.name,
             fileSize: file.size,
-            duration,
             contentType: file.type,
           }).unwrap();
-          await uploadToS3(file, response.presignedUrl);
+
+          if (response.presignedUrl) {
+            await uploadToS3(file, response.presignedUrl);
+          }
 
           setUploadedFile(file);
           setPendingRetryFile(null);
-          setValue(id, response.coverVideoUrl, { shouldValidate: true });
-        } catch (error) {
-          // Previously toast-only — the one upload path with no inline field
-          // error, unlike the image path below (via the outer catch). The
-          // toast fades; the field error is what's still there when the
-          // admin looks back at the form.
-          const message = (error as any)?.data?.message || en.errors.videoUploadFailed;
-          setError(id, { type: "manual", message });
-          toast.error(message);
-          setPendingRetryFile(file);
+          setValue(id, response.coverImageUrl, { shouldValidate: true });
         }
-      } else {
-        const response = await getCoverImageUrl({
-          fileName: file.name,
-          fileSize: file.size,
-          contentType: file.type,
-        }).unwrap();
-
-        if (response.presignedUrl) {
-          await uploadToS3(file, response.presignedUrl);
-        }
-
-        setUploadedFile(file);
-        setPendingRetryFile(null);
-        setValue(id, response.coverImageUrl, { shouldValidate: true });
+      } catch {
+        setError(id, { type: "manual", message: en.errors.fileUploadFailed });
+        setPendingRetryFile(file);
+      } finally {
+        setIsUploading(false);
       }
-    } catch {
-      setError(id, { type: "manual", message: en.errors.fileUploadFailed });
-      setPendingRetryFile(file);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    },
+    [
+      id,
+      clearErrors,
+      getCoverVideoUrl,
+      uploadToS3,
+      setValue,
+      setError,
+      getCoverImageUrl,
+      setIsUploading,
+      setUploadedFile,
+      setPendingRetryFile,
+    ],
+  );
 
-  const validateImageAspectRatio = (file: File): Promise<boolean> => {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const aspectRatio = img.width / img.height;
-        const isValidRatio = Math.abs(aspectRatio - ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
-        if (!isValidRatio) {
-          const errorMessage = en.errors.imageMustHave169AspectRatio;
-          setError(id, { type: "manual", message: errorMessage });
-          toast.error(errorMessage);
+  const validateImageAspectRatio = useCallback(
+    (file: File): Promise<boolean> => {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.width / img.height;
+          const isValidRatio = Math.abs(aspectRatio - ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
+          if (!isValidRatio) {
+            const errorMessage = en.errors.imageMustHave169AspectRatio;
+            setError(id, { type: "manual", message: errorMessage });
+            toast.error(errorMessage);
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        };
+        img.onerror = () => {
+          toast.error(en.errors.fileUploadFailed);
           resolve(false);
-        } else {
-          resolve(true);
-        }
-      };
-      img.onerror = () => {
-        toast.error(en.errors.fileUploadFailed);
-        resolve(false);
-      };
-      img.src = URL.createObjectURL(file);
-    });
-  };
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    },
+    [id, setError],
+  );
 
   const processFile = useCallback(
     async (file: File) => {
@@ -277,7 +294,7 @@ export const FileUpload = ({
 
       await uploadFile(file);
     },
-    [fileType, id, setError],
+    [fileType, uploadFile, validateImageAspectRatio],
   );
   // File handlers
   const handleFileSelect = useCallback(

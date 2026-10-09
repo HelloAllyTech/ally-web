@@ -160,6 +160,18 @@ export default [
       // script: every warning in this repo is this rule, so that number IS the
       // count of unreviewed dependency arrays. Adding one fails the build.
       // Lower the ceiling when you remove one; never raise it.
+      //
+      // The ceiling is a ratchet, NOT a budget: it must equal the current count
+      // exactly. Any slack is a hole, not headroom — it had drifted to 209 while
+      // the real count was 124, so 85 new unreviewed dependency arrays could have
+      // landed without CI noticing. If `npm run lint` passes with warnings to
+      // spare, the number is stale: lower it in the same PR that removed them.
+      //
+      // Suppressing is not removing. A file-level
+      // `/* eslint-disable react-hooks/exhaustive-deps */` takes the file out of
+      // the count entirely and hides every future mistake in it, which is how
+      // useLiveKitRoom.ts went unchecked. Prefer a line-level disable on the one
+      // deliberate dependency array, so the rest of the file stays covered.
       "react-hooks/exhaustive-deps": "warn",
 
       // Project-specific overrides
