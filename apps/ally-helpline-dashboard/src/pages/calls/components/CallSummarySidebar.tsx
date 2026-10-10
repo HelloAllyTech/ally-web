@@ -376,9 +376,9 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                     );
                   }}
                 />
-              </div>
+               </div>
               {individualCallSummary?.reviewId && (
-                <Tooltip label="Comments" align="top">
+                <Tooltip label={t("tooltips.comments")} align="top">
                   <button
                     onClick={() =>
                       navigate(
@@ -388,7 +388,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                         ),
                       )
                     }
-                    aria-label={t("postCallSummary.header.comments")}
+                    aria-label="comments-tooltip"
                     className="flex items-center justify-center h-10 w-10 md:h-auto md:w-auto"
                   >
                     <Comment className="w-6 h-6 shrink-0" />

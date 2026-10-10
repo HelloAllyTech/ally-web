@@ -64,6 +64,10 @@
     "refresh": "Refresh",
     "play": "Play"
   },
+  "tooltips": {
+    "comments": "Comments",
+    "addCustomField": "Add custom field"
+  },
   "carousel": {
     "slides": {
       "noRecording": "We do not save audio recordings",

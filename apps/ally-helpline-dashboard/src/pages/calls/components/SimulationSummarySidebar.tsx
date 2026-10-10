@@ -157,14 +157,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <Tooltip label="Comments" align="top">
+              <Tooltip label={t("tooltips.comments")} align="top">
                 <button
                   onClick={() =>
                     navigate(
                       ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", summary.reviewId),
                     )
                   }
-                  aria-label={t("postCallSummary.header.comments")}
+                  aria-label="comments-tooltip"
                   className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
                 >
                   <Comment className="w-6 h-6 shrink-0" />
