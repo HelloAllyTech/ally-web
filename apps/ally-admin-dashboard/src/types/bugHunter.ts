@@ -46,6 +46,8 @@ export enum BugHuntEventStage {
   SKIPPED_QUIET = "skipped_quiet",
   FINDER_RESULT = "finder_result",
   VERIFY = "verify",
+  /** A fix session's study of the feature, posted before it changed any code — see BugFixStudy. */
+  STUDY = "study",
   FIX_ATTEMPT = "fix_attempt",
   TEST_WRITTEN = "test_written",
   DOC_UPDATED = "doc_updated",
@@ -371,6 +373,39 @@ export interface BugHuntEvent {
   createdAt: string;
 }
 
+export type BugFixStudyValueHome =
+  | "database"
+  | "locale_file"
+  | "config"
+  | "code"
+  | "other_repo"
+  | "mixed";
+
+/**
+ * Mirrors ally-be's BugFixStudy: what a fix session read and planned BEFORE
+ * it changed any code — how the feature works today, where the value lives,
+ * the fix that follows — plus a second model's review of it. The drawer shows
+ * it so a reviewer sees the reasoning behind a diff, not only the diff.
+ */
+export interface BugFixStudy {
+  feature: string;
+  entryPoints: string[];
+  howItWorksToday: string[];
+  valueLivesIn: BugFixStudyValueHome;
+  workingSibling: string | null;
+  rootCause: string;
+  approach: string;
+  filesToChange: string[];
+  leaveAlone: string[];
+  otherRepos: string[];
+  risks: string[];
+  testPlan: string;
+  previousStudyWasWrongBecause: string | null;
+  recordedAt: string;
+  runId: string | null;
+  review: { concerns: string[]; model: string | null; at: string } | null;
+}
+
 /** Mirrors ally-be's FixPostmortemDto plus the two fields setStatus stamps on it. */
 export interface BugFixPostmortem {
   attempts?: number;
@@ -458,6 +493,8 @@ export interface BugFinding {
    * dossier and an admin reads it here before deciding whether to retry.
    */
   postmortem: BugFixPostmortem | null;
+  /** The latest study a fix session wrote before changing code, or null until one has. */
+  study: BugFixStudy | null;
   /** GitHub Actions run doing the fixing. Null until the backend correlates the dispatch to a run. */
   sessionRunUrl: string | null;
   /** GitHub Actions run id for the fix session, once resolved. What "Stop fix session" cancels. */

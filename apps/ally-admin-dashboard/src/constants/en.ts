@@ -2988,6 +2988,37 @@ export const en = {
     drawerPostmortemTryNext: "What a retry should do differently",
     drawerPostmortemGotcha: "A trap in this repo I hit (now in my notebook)",
 
+    // ── the study a fix session writes before it changes any code ─────────
+    // Shown so a reviewer reads the reasoning behind a diff, not only the
+    // diff: where I said the value lives decides whether the fix is the
+    // right shape at all.
+    drawerStudyTitle: "How I understood it before fixing",
+    drawerStudyTooltip:
+      "Before I change any code I read the feature end to end — where the value lives, what carries it to the screen, what the client sends — and write it down. A second model reviews it, the Verifier compares my diff with it, and a retry reads it to see where I went wrong.",
+    drawerStudyRecorded: "From my session of {date}",
+    drawerStudyFeature: "The feature",
+    drawerStudyHowItWorks: "How it works today",
+    drawerStudyValueLivesIn: "Where the value lives",
+    drawerStudyValueHomes: {
+      database: "a database table an admin edits",
+      locale_file: "the locale JSON files",
+      config: "configuration",
+      code: "code",
+      other_repo: "another codebase",
+      mixed: "more than one place",
+    },
+    drawerStudySibling: "The working example I compared against",
+    drawerStudyRootCause: "Root cause",
+    drawerStudyApproach: "The fix I planned",
+    drawerStudyFiles: "Files I planned to change",
+    drawerStudyLeaveAlone: "Left alone on purpose",
+    drawerStudyOtherRepos: "Other codebases a complete fix needs",
+    drawerStudyRisks: "Risks",
+    drawerStudyTestPlan: "The regression test",
+    drawerStudyPreviousWrong: "What my earlier study got wrong",
+    drawerStudyReviewNone: "Reviewed by {model}: no concerns.",
+    drawerStudyReviewConcerns: "Reviewed by {model} — concerns I had to answer:",
+
     // ── confidence and regressions ─────────────────────────────────────────
     drawerConfidenceLabel: "How sure my checkers were",
     drawerConfidenceTooltip:

@@ -567,6 +567,55 @@ describe("BugFindingDrawer — release to production", () => {
     expect(screen.getByText("Ask me to try again")).toBeInTheDocument();
   });
 
+  it("shows how the session understood the feature before fixing, leading with where the value lives", () => {
+    renderDrawer(
+      finding({
+        status: BugFindingStatus.PR_OPENED,
+        study: {
+          feature: "CMS tooltips shown in the selected language",
+          entryPoints: ["AppTooltip.tsx"],
+          howItWorksToday: [
+            "tooltips + tooltip_translations tables, edited under Manage Tooltips",
+            "GET /v1/tooltips/active translates by language",
+            "AppTooltip.tsx fetches without a language",
+          ],
+          valueLivesIn: "database",
+          workingSibling: "Checklist.tsx passes languageCode: i18n.language",
+          rootCause: "The app never sends its language, so the server answers in English.",
+          approach: "Send languageCode from AppTooltip and accept it on the endpoint.",
+          filesToChange: ["AppTooltip.tsx", "api/tooltips.ts"],
+          leaveAlone: ["en.json — tooltips are not locale keys"],
+          otherRepos: ["ally-be"],
+          risks: [],
+          testPlan: "AppTooltip.test.tsx asserts the hook is called with the language",
+          previousStudyWasWrongBecause: null,
+          recordedAt: "2026-10-10T08:00:00.000Z",
+          runId: "run-3",
+          review: {
+            concerns: ["Name the client that sends languageCode on the backend half."],
+            model: "gemini-2.5-flash",
+            at: "2026-10-10T08:00:10.000Z",
+          },
+        },
+      }),
+    );
+    expect(screen.getByText("How I understood it before fixing")).toBeInTheDocument();
+    expect(screen.getByText("a database table an admin edits")).toBeInTheDocument();
+    expect(screen.getByText("GET /v1/tooltips/active translates by language")).toBeInTheDocument();
+    expect(
+      screen.getByText("Checklist.tsx passes languageCode: i18n.language"),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed by gemini-2.5-flash — concerns/)).toBeInTheDocument();
+    expect(
+      screen.getByText("Name the client that sends languageCode on the backend half."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows no study box before a session has studied the bug", () => {
+    renderDrawer(finding({ status: BugFindingStatus.APPROVED, study: null }));
+    expect(screen.queryByText("How I understood it before fixing")).not.toBeInTheDocument();
+  });
+
   it("shows no post-mortem box for a bug no session has given up on", () => {
     renderDrawer(finding({ status: BugFindingStatus.FAILED, postmortem: null }));
     expect(screen.queryByText("Why my last fix session failed")).not.toBeInTheDocument();

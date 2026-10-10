@@ -864,6 +864,132 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
             </div>
           )}
 
+          {/* What the session read and planned BEFORE it changed code. Sits
+              ahead of the post-mortem because it is the earlier record: a
+              reviewer asking "is this diff the right shape" reads where the
+              value lives and the working sibling first, and a wrong fix is
+              usually traceable to a line in here. */}
+          {finding.study && (
+            <div
+              data-testid="finding-study"
+              className="border border-sky-200 bg-sky-50 rounded p-3 flex flex-col gap-1.5"
+            >
+              <div className="flex items-center gap-1">
+                <p className="text-xs font-medium text-sky-900">{en.bugHunter.drawerStudyTitle}</p>
+                <Tooltip label={en.bugHunter.drawerStudyTooltip} align="top">
+                  <button
+                    type="button"
+                    className="cursor-pointer inline-flex items-center -m-1 p-1 md:m-0 md:p-0"
+                  >
+                    <TooltipIcon />
+                  </button>
+                </Tooltip>
+              </div>
+              {finding.study.recordedAt && (
+                <p className="text-[11px] text-typography-500">
+                  {en.bugHunter.drawerStudyRecorded.replace(
+                    "{date}",
+                    formatDateTime(finding.study.recordedAt),
+                  )}
+                </p>
+              )}
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyFeature}
+                value={finding.study.feature}
+              />
+              <div>
+                <p className="text-[11px] text-typography-500">
+                  {en.bugHunter.drawerStudyHowItWorks}
+                </p>
+                <ol className="list-decimal pl-5 text-xs text-typography-700 flex flex-col gap-0.5">
+                  {finding.study.howItWorksToday.map((step, i) => (
+                    <li key={i} className="break-words">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyValueLivesIn}
+                value={
+                  en.bugHunter.drawerStudyValueHomes[finding.study.valueLivesIn] ??
+                  finding.study.valueLivesIn
+                }
+                emphasis
+              />
+              {finding.study.workingSibling && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerStudySibling}
+                  value={finding.study.workingSibling}
+                  mono
+                />
+              )}
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyRootCause}
+                value={finding.study.rootCause}
+              />
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyApproach}
+                value={finding.study.approach}
+                emphasis
+              />
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyFiles}
+                value={finding.study.filesToChange.join("\n")}
+                mono
+              />
+              {finding.study.leaveAlone.length > 0 && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerStudyLeaveAlone}
+                  value={finding.study.leaveAlone.join("\n")}
+                />
+              )}
+              {finding.study.otherRepos.length > 0 && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerStudyOtherRepos}
+                  value={finding.study.otherRepos.join(", ")}
+                  mono
+                />
+              )}
+              {finding.study.risks.length > 0 && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerStudyRisks}
+                  value={finding.study.risks.join("\n")}
+                />
+              )}
+              <PostmortemLine
+                label={en.bugHunter.drawerStudyTestPlan}
+                value={finding.study.testPlan}
+              />
+              {finding.study.previousStudyWasWrongBecause && (
+                <PostmortemLine
+                  label={en.bugHunter.drawerStudyPreviousWrong}
+                  value={finding.study.previousStudyWasWrongBecause}
+                  emphasis
+                />
+              )}
+              {finding.study.review && (
+                <div>
+                  <p className="text-[11px] text-typography-500">
+                    {(finding.study.review.concerns.length
+                      ? en.bugHunter.drawerStudyReviewConcerns
+                      : en.bugHunter.drawerStudyReviewNone
+                    ).replace("{model}", finding.study.review.model ?? "a second model")}
+                  </p>
+                  {finding.study.review.concerns.length > 0 && (
+                    <ul className="list-disc pl-5 text-xs text-typography-700">
+                      {finding.study.review.concerns.map((c, i) => (
+                        <li key={i} className="break-words">
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* What the last failed session wrote for whoever retries. Its own
               box, after the confidence/history evidence and before the actions:
               the reader's next question after "how sure should I be" is

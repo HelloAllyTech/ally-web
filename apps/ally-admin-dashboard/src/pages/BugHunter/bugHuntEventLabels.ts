@@ -6,6 +6,7 @@ export const BUG_HUNT_EVENT_STAGE_LABELS: Record<BugHuntEventStage, string> = {
   [BugHuntEventStage.SKIPPED_QUIET]: "Skipped — quiet night",
   [BugHuntEventStage.FINDER_RESULT]: "Found",
   [BugHuntEventStage.VERIFY]: "Verified",
+  [BugHuntEventStage.STUDY]: "Studied how it works",
   [BugHuntEventStage.FIX_ATTEMPT]: "Fix attempt",
   [BugHuntEventStage.TEST_WRITTEN]: "Regression test written",
   [BugHuntEventStage.DOC_UPDATED]: "Doc updated",
