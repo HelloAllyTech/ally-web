@@ -64,6 +64,10 @@
     "refresh": "रिफ्रेश करा",
     "play": "प्ले करा"
   },
+  "tooltips": {
+    "comments": "टिप्पण्या",
+    "addCustomField": "सानुकूल फील्ड जोडा"
+  },
   "carousel": {
     "slides": {
       "noRecording": "आम्ही ऑडिओ रेकॉर्डिंग्ज सेव्ह करत नाही",
