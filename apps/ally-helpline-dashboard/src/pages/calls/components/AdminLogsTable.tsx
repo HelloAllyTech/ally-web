@@ -415,7 +415,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             key: "addCustomField",
             header: "",
             headerNode: (
-              <Tooltip label={t("tooltips.addCustomField")} align="top">
+              <Tooltip label="Add custom field" align="top">
                 <button
                   type="button"
                   onClick={() => setIsManageFieldsOpen(true)}
