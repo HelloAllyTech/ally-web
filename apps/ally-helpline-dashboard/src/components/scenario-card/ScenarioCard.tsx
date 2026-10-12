@@ -99,7 +99,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
               id="scenario-title"
               className="font-[500] leading-tight text-typography-900 text-base line-clamp-2 pt-[6px]"
             >
-              {title}
+              {t(title)}
             </div>
 
             {triggerWarnings?.length > 0 ? (
@@ -115,7 +115,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
             ) : (
               description?.length > 0 && (
                 <div className="text-sm text-typography-800  leading-tight pt-[6px]">
-                  <p style={scenarioDescriptionStyle}>{htmlToPlainText(description)}</p>
+                  <p style={scenarioDescriptionStyle}>{t(htmlToPlainText(description))}</p>
                 </div>
               )
             )}
