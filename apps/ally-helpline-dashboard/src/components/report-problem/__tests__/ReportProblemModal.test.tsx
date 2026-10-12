@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { I18nextProvider } from "react-i18next";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import i18n from "../../../i18n";
 import { ReportProblemModal } from "../ReportProblemModal";
 
 const mockCreateBugReport = vi.fn();
@@ -26,9 +28,11 @@ vi.mock("sonner", () => ({
 
 const renderModal = (onClose = vi.fn()) =>
   render(
-    <MemoryRouter initialEntries={["/learn/track/42"]}>
-      <ReportProblemModal open onClose={onClose} />
-    </MemoryRouter>,
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter initialEntries={["/learn/track/42"]}>
+        <ReportProblemModal open onClose={onClose} />
+      </MemoryRouter>
+    </I18nextProvider>,
   );
 
 describe("ReportProblemModal", () => {
@@ -37,6 +41,7 @@ describe("ReportProblemModal", () => {
   });
 
   it("submits with silently-captured context and toasts + closes on success", async () => {
+    await i18n.changeLanguage("en");
     mockCreateBugReport.mockReturnValue({ unwrap: () => Promise.resolve({ id: "1", stage: "new" }) });
     const onClose = vi.fn();
     renderModal(onClose);
@@ -56,6 +61,7 @@ describe("ReportProblemModal", () => {
   });
 
   it("shows the rate-limit message on a 429", async () => {
+    await i18n.changeLanguage("en");
     mockCreateBugReport.mockReturnValue({
       unwrap: () => Promise.reject({ status: 429, data: { statusCode: 429 } }),
     });
@@ -68,5 +74,13 @@ describe("ReportProblemModal", () => {
 
     expect(await screen.findByText(/submitted a few reports recently/i)).toBeInTheDocument();
     expect(mockToastSuccess).not.toHaveBeenCalled();
+  });
+
+  it("shows the close button tooltip in Marathi when the language is switched", async () => {
+    await i18n.changeLanguage("mr");
+    renderModal();
+    // This will fail before the fix, because the name will be "Close"
+    const closeButton = screen.getByRole("button", { name: "बंद करा" });
+    expect(closeButton).toBeInTheDocument();
   });
 });

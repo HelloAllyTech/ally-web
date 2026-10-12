@@ -66,6 +66,7 @@ export const ReportProblemModal: FC<ReportProblemModalProps> = ({ open, onClose 
         submit: t("bugReport.submit"),
         submitting: t("bugReport.submitting"),
         cancel: t("bugReport.cancel"),
+        close: t("common.close"),
         rateLimitedError: t("bugReport.rateLimited"),
         genericError: t("bugReport.genericError"),
       }}
