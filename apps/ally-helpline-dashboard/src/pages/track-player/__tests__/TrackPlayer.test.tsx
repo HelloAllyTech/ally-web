@@ -1,17 +1,24 @@
 
 import { vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@store";
 import { TrackPlayer } from "../TrackPlayer";
 import * as api from "@api";
-import { TrackDetail, TrackItemStatus, TrackItemType } from "@types";
+import { QuizAttemptResult, TrackDetail, TrackItemStatus, TrackItemType } from "@types";
+
+vi.mock("canvas-confetti", () => ({
+    __esModule: true,
+    default: vi.fn(),
+}));
 
 vi.mock("@api", async () => ({
   ...(await vi.importActual<typeof api>("@api")),
   useGetLearnTrackDetailQuery: vi.fn(),
   useStartTrackItemMutation: vi.fn(),
+  useSubmitQuizAttemptMutation: vi.fn(),
+  useRegradeQuizAttemptMutation: vi.fn(),
 }));
 
 const mockTrackDetail: TrackDetail = {
@@ -50,11 +57,31 @@ const mockTrackDetail: TrackDetail = {
           score: null,
           attemptCount: null,
           maxWatchedPct: null,
+          hasDiscussion: false,
         },
       ],
     },
   ],
 };
+
+const mockQuizTrackDetail = (hasDiscussion: boolean): TrackDetail => ({
+    ...mockTrackDetail,
+    sections: [
+        {
+            ...mockTrackDetail.sections[0],
+            items: [
+                {
+                    ...mockTrackDetail.sections[0].items[0],
+                    id: "quiz1",
+                    type: TrackItemType.QUIZ,
+                    title: "Test Quiz",
+                    hasDiscussion,
+                },
+            ],
+        },
+    ],
+});
+
 
 // RTK Query's trigger returns a thenable carrying `unwrap()` synchronously —
 // the player calls `startTrackItem(...).unwrap()`, so the trigger itself must
@@ -66,6 +93,52 @@ const mockStartTrackItemMutation = [
       html: "<p>Hello</p>",
     }),
   }),
+];
+
+const mockStartQuizItemMutation = [
+    vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockResolvedValue({
+            type: TrackItemType.QUIZ,
+            quiz: {
+                id: "q1",
+                title: "Test Quiz",
+                questions: [{ id: "qq1", type: "true_false", prompt: "Is this a test?" }],
+                settings: {
+                    passScore: 80,
+                }
+            },
+            attemptsUsed: 0,
+            maxAttempts: null,
+        }),
+    }),
+];
+
+const mockSubmitQuizAttemptMutation = (trackCompleted: boolean) => [
+    vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockResolvedValue({
+            passed: true,
+            itemCompleted: true,
+            trackCompleted,
+            sectionCompleted: true,
+            status: "PASSED",
+            questions: [],
+            scorePct: 100,
+        } as QuizAttemptResult),
+    }),
+    { isLoading: false },
+];
+
+const mockRegradeQuizAttemptMutation = () => [
+    vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockResolvedValue({
+            passed: true,
+            itemCompleted: true,
+            trackCompleted: true,
+            sectionCompleted: true,
+            status: "PASSED",
+        } as QuizAttemptResult),
+    }),
+    { isLoading: false },
 ];
 
 describe("TrackPlayer", () => {
@@ -98,5 +171,81 @@ describe("TrackPlayer", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Mark as read" })).toBeInTheDocument(),
     );
+  });
+
+  it("does not show celebration overlay for a completed track if the last item has a discussion", async () => {
+    (api.useGetLearnTrackDetailQuery as vi.Mock).mockReturnValue({
+      data: mockQuizTrackDetail(true),
+      isError: false,
+      refetch: vi.fn(),
+    });
+    (api.useStartTrackItemMutation as vi.Mock).mockReturnValue(mockStartQuizItemMutation);
+    (api.useSubmitQuizAttemptMutation as vi.Mock).mockReturnValue(mockSubmitQuizAttemptMutation(true));
+    (api.useRegradeQuizAttemptMutation as vi.Mock).mockReturnValue(mockRegradeQuizAttemptMutation());
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/track/track1/quiz1"]}>
+          <Routes>
+            <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    );
+
+    await waitFor(() => expect(screen.getByText("Test Quiz")).toBeInTheDocument());
+
+    const startButton = screen.getByRole("button", { name: "Start quiz" });
+    fireEvent.click(startButton);
+
+    await waitFor(() => expect(screen.getByText("Is this a test?")).toBeInTheDocument());
+    
+    const trueButton = screen.getByRole("radio", { name: "True" });
+    fireEvent.click(trueButton);
+    
+    const nextButton = screen.getByRole("button", { name: /submit/i });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+        expect(screen.queryByText("Course complete!")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows celebration overlay for a completed track if the last item does not have a discussion", async () => {
+    (api.useGetLearnTrackDetailQuery as vi.Mock).mockReturnValue({
+      data: mockQuizTrackDetail(false),
+      isError: false,
+      refetch: vi.fn(),
+    });
+    (api.useStartTrackItemMutation as vi.Mock).mockReturnValue(mockStartQuizItemMutation);
+    (api.useSubmitQuizAttemptMutation as vi.Mock).mockReturnValue(mockSubmitQuizAttemptMutation(true));
+    (api.useRegradeQuizAttemptMutation as vi.Mock).mockReturnValue(mockRegradeQuizAttemptMutation());
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/track/track1/quiz1"]}>
+          <Routes>
+            <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    );
+    
+    await waitFor(() => expect(screen.getByText("Test Quiz")).toBeInTheDocument());
+
+    const startButton = screen.getByRole("button", { name: "Start quiz" });
+    fireEvent.click(startButton);
+
+    await waitFor(() => expect(screen.getByText("Is this a test?")).toBeInTheDocument());
+    
+    const trueButton = screen.getByRole("radio", { name: "True" });
+    fireEvent.click(trueButton);
+    
+    const nextButton = screen.getByRole("button", { name: /submit/i });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+        expect(screen.getByText("Course complete!")).toBeInTheDocument();
+    });
   });
 });
