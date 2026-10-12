@@ -66,6 +66,7 @@ export const TrackPlayer: FC = () => {
   // Items completed in this player session (drives Next gating optimistically).
   const [justCompleted, setJustCompleted] = useState<Set<string>>(new Set());
   const [celebration, setCelebration] = useState<CelebrationKind | null>(null);
+  const [isPendingTrackCompletion, setIsPendingTrackCompletion] = useState(false);
 
   const nav = useTrackPlayerNavigation(track, trackId, itemId, justCompleted);
 
@@ -108,18 +109,26 @@ export const TrackPlayer: FC = () => {
       if (!result.completed) return;
       setJustCompleted(prev => new Set(prev).add(itemId));
       if (result.trackCompleted) {
-        setCelebration("track");
+        if (nav.current?.item.hasDiscussion) {
+          setIsPendingTrackCompletion(true);
+        } else {
+          setCelebration("track");
+        }
       } else if (result.sectionCompleted) {
         setCelebration("section");
       }
     },
-    [itemId],
+    [itemId, nav],
   );
 
   const goNextOrOverview = useCallback(() => {
+    if (isPendingTrackCompletion && !nav.hasNext) {
+      setCelebration("track");
+      return;
+    }
     if (nav.hasNext) nav.goNext();
     else nav.exitToOverview();
-  }, [nav]);
+  }, [nav, isPendingTrackCompletion]);
 
   // Keyboard arrows for page turning.
   useEffect(() => {

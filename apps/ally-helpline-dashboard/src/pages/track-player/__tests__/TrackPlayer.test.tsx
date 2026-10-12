@@ -12,6 +12,7 @@ vi.mock("@api", async () => ({
   ...(await vi.importActual<typeof api>("@api")),
   useGetLearnTrackDetailQuery: vi.fn(),
   useStartTrackItemMutation: vi.fn(),
+  useSubmitQuizAttemptMutation: vi.fn(),
   useGetCourseDiscussionQuery: vi.fn(),
 }));
 
@@ -147,5 +148,85 @@ describe("TrackPlayer", () => {
     const scrollContainer = screen.getByTestId("track-item-scroll");
     // The bug is that the first child of the scroll container has h-full
     expect(scrollContainer.firstChild).not.toHaveClass("h-full");
+  });
+
+  it("defers the track-complete celebration when the last item has a discussion", async () => {
+    const mockTrackWithDiscussion = {
+      ...mockTrackDetail,
+      sections: [
+        {
+          ...mockTrackDetail.sections[0],
+          items: [
+            { ...mockTrackDetail.sections[0].items[0], type: TrackItemType.QUIZ, hasDiscussion: true },
+          ],
+        },
+      ],
+    };
+    (api.useGetLearnTrackDetailQuery as vi.Mock).mockReturnValue({
+      data: mockTrackWithDiscussion,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    const mockSubmitQuizAttempt = vi.fn().mockResolvedValue({
+      passed: true,
+      itemCompleted: true,
+      unlockedItemIds: [],
+      sectionCompleted: true,
+      trackCompleted: true,
+      attemptsUsed: 1,
+    });
+    (api.useStartTrackItemMutation as vi.Mock).mockReturnValue([
+      vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockResolvedValue({
+          type: TrackItemType.QUIZ,
+quiz: {
+            id: "q1",
+            title: "Test Quiz",
+            settings: { passScore: 80 },
+            questions: [{ id: "q1-1", type: "true_false", prompt: "Is this a test?" }],
+          },
+        }),
+      }),
+    ]);
+    (api.useSubmitQuizAttemptMutation as vi.Mock).mockReturnValue([mockSubmitQuizAttempt, { isLoading: false }]);
+    (api.useGetCourseDiscussionQuery as vi.Mock).mockReturnValue({
+      data: { enabled: true, isLocked: false, postCount: 0, posts: [], viewer: { canPost: true, maxLength: 1000, canModerate: false } },
+    });
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/track/track1/item1"]}>
+          <Routes>
+            <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    );
+
+    // 1. Start the quiz
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Start" })).toBeInTheDocument();
+    });
+    screen.getByRole("button", { name: "Start" }).click();
+
+    // 2. Answer the question and submit
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "True" })).toBeInTheDocument();
+    });
+    screen.getByRole("radio", { name: "True" }).click();
+    screen.getByRole("button", { name: "Submit" }).click();
+
+    // 3. The results screen is shown, but NOT the celebration overlay
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Quiz Results" })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("heading", { name: "Course complete!" })).not.toBeInTheDocument();
+
+    // 4. Clicking Next on the results screen triggers the deferred celebration
+    screen.getByRole("button", { name: "Next" }).click();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Course complete!" })).toBeInTheDocument();
+    });
   });
 });
