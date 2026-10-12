@@ -31,6 +31,7 @@ export interface BugReportFormLabels {
   submit: string;
   submitting: string;
   cancel: string;
+  close: string;
   rateLimitedError: string;
   genericError: string;
   /** Shown under the box while the description is shorter than `minLength`; `{remaining}` is filled in. */
@@ -44,6 +45,7 @@ export const DEFAULT_BUG_REPORT_LABELS: BugReportFormLabels = {
   submit: "Send report",
   submitting: "Sending…",
   cancel: "Cancel",
+  close: "Close",
   rateLimitedError: "You've submitted a few reports recently — please try again in a bit.",
   genericError: "Something went wrong sending that. Please try again.",
   tooShort: "A sentence or two is enough — {remaining} more characters.",
@@ -160,7 +162,7 @@ export const BugReportForm: FC<BugReportFormProps> = ({
 
   return (
     <ComposedModal open={open} onClose={handleClose} size="sm">
-      <ModalHeader title={labels.title} />
+      <ModalHeader title={labels.title} iconDescription={labels.close} />
       <ModalBody>
         <TextArea
           id="bug-report-description"
