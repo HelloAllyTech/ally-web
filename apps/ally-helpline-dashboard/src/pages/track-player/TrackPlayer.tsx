@@ -107,13 +107,16 @@ export const TrackPlayer: FC = () => {
     (result: TrackItemCompletionResult) => {
       if (!result.completed) return;
       setJustCompleted(prev => new Set(prev).add(itemId));
+      if (result.trackCompleted && nav.current?.item.hasDiscussion) {
+        return;
+      }
       if (result.trackCompleted) {
         setCelebration("track");
       } else if (result.sectionCompleted) {
         setCelebration("section");
       }
     },
-    [itemId],
+    [itemId, nav],
   );
 
   const goNextOrOverview = useCallback(() => {
