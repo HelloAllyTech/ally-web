@@ -1,12 +1,15 @@
-
 import { vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@store";
 import { TrackPlayer } from "../TrackPlayer";
 import * as api from "@api";
 import { TrackDetail, TrackItemStatus, TrackItemType } from "@types";
+
+// The quiz player fires confetti on a pass; jsdom has no canvas context,
+// so the real module throws inside a requestAnimationFrame callback.
+vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 
 vi.mock("@api", async () => ({
   ...(await vi.importActual<typeof api>("@api")),
@@ -86,7 +89,7 @@ describe("TrackPlayer", () => {
             <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
           </Routes>
         </MemoryRouter>
-      </Provider>
+      </Provider>,
     );
 
     expect(screen.getByRole("heading", { level: 1, name: "Test Item Title" })).toBeInTheDocument();
@@ -138,7 +141,7 @@ describe("TrackPlayer", () => {
             <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
           </Routes>
         </MemoryRouter>
-      </Provider>
+      </Provider>,
     );
 
     await waitFor(() => {
@@ -157,7 +160,11 @@ describe("TrackPlayer", () => {
         {
           ...mockTrackDetail.sections[0],
           items: [
-            { ...mockTrackDetail.sections[0].items[0], type: TrackItemType.QUIZ, hasDiscussion: true },
+            {
+              ...mockTrackDetail.sections[0].items[0],
+              type: TrackItemType.QUIZ,
+              hasDiscussion: true,
+            },
           ],
         },
       ],
@@ -168,30 +175,60 @@ describe("TrackPlayer", () => {
       refetch: vi.fn(),
     });
 
-    const mockSubmitQuizAttempt = vi.fn().mockResolvedValue({
-      passed: true,
-      itemCompleted: true,
-      unlockedItemIds: [],
-      sectionCompleted: true,
-      trackCompleted: true,
-      attemptsUsed: 1,
+    const mockSubmitQuizAttempt = vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({
+        attemptId: "attempt1",
+        attemptNumber: 1,
+        status: "GRADED",
+        scorePct: 100,
+        passed: true,
+        passScore: 80,
+        attemptsUsed: 1,
+        maxAttempts: null,
+        questions: [{ questionId: "q1-1", correct: true, graded: true }],
+        itemCompleted: true,
+        unlockedItemIds: [],
+        sectionCompleted: true,
+        trackCompleted: true,
+      }),
     });
     (api.useStartTrackItemMutation as vi.Mock).mockReturnValue([
       vi.fn().mockReturnValue({
         unwrap: vi.fn().mockResolvedValue({
           type: TrackItemType.QUIZ,
-quiz: {
-            id: "q1",
-            title: "Test Quiz",
-            settings: { passScore: 80 },
-            questions: [{ id: "q1-1", type: "true_false", prompt: "Is this a test?" }],
+          quiz: {
+            settings: { passScore: 80, maxAttempts: null, showExplanations: "always" },
+            totalPoints: 1,
+            questions: [
+              {
+                id: "q1-1",
+                type: "true_false",
+                prompt: "Is this a test?",
+                points: 1,
+                graded: true,
+              },
+            ],
           },
+          attemptsUsed: 0,
+          maxAttempts: null,
         }),
       }),
     ]);
-    (api.useSubmitQuizAttemptMutation as vi.Mock).mockReturnValue([mockSubmitQuizAttempt, { isLoading: false }]);
+    (api.useSubmitQuizAttemptMutation as vi.Mock).mockReturnValue([
+      mockSubmitQuizAttempt,
+      { isLoading: false },
+    ]);
     (api.useGetCourseDiscussionQuery as vi.Mock).mockReturnValue({
-      data: { enabled: true, isLocked: false, postCount: 0, posts: [], viewer: { canPost: true, maxLength: 1000, canModerate: false } },
+      data: {
+        enabled: true,
+        isLocked: false,
+        postCount: 0,
+        posts: [],
+        viewer: { canPost: true, maxLength: 1000, canModerate: false },
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
     });
 
     render(
@@ -201,32 +238,27 @@ quiz: {
             <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
           </Routes>
         </MemoryRouter>
-      </Provider>
+      </Provider>,
     );
 
-    // 1. Start the quiz
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Start" })).toBeInTheDocument();
-    });
-    screen.getByRole("button", { name: "Start" }).click();
+    // 1. Start the quiz from its intro card.
+    const startButton = await screen.findByRole("button", { name: "Start quiz" });
+    fireEvent.click(startButton);
 
-    // 2. Answer the question and submit
-    await waitFor(() => {
-      expect(screen.getByRole("radio", { name: "True" })).toBeInTheDocument();
-    });
-    screen.getByRole("radio", { name: "True" }).click();
-    screen.getByRole("button", { name: "Submit" }).click();
+    // 2. Answer the only question and submit the attempt.
+    fireEvent.click(await screen.findByRole("radio", { name: "True" }));
+    fireEvent.click(screen.getByRole("button", { name: "Submit quiz" }));
 
-    // 3. The results screen is shown, but NOT the celebration overlay
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Quiz Results" })).toBeInTheDocument();
-    });
+    // 3. The results screen is shown, but the course-complete overlay is
+    //    held back so the learner can still reach the discussion below.
+    await screen.findByText("Passed");
+    expect(mockSubmitQuizAttempt).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("heading", { name: "Course complete!" })).not.toBeInTheDocument();
 
-    // 4. Clicking Next on the results screen triggers the deferred celebration
-    screen.getByRole("button", { name: "Next" }).click();
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Course complete!" })).toBeInTheDocument();
-    });
+    // 4. Next on the results screen (this is the last item, so the bottom
+    //    nav reads "Finish" and the only "Next" is the quiz's) fires the
+    //    deferred celebration.
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(await screen.findByRole("heading", { name: "Course complete!" })).toBeInTheDocument();
   });
 });
