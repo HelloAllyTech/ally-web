@@ -287,7 +287,7 @@ export const TrackPlayer: FC = () => {
           >
             {hasDiscussion ? (
               <div data-testid="track-item-scroll" className="h-full min-h-0 overflow-y-auto">
-                <div className="h-full min-h-0">
+                <div className="min-h-0">
                   <ErrorBoundary variant="panel" resetKey={itemId}>
                     {renderItem()}
                   </ErrorBoundary>

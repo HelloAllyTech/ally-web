@@ -12,6 +12,7 @@ vi.mock("@api", async () => ({
   ...(await vi.importActual<typeof api>("@api")),
   useGetLearnTrackDetailQuery: vi.fn(),
   useStartTrackItemMutation: vi.fn(),
+  useGetCourseDiscussionQuery: vi.fn(),
 }));
 
 const mockTrackDetail: TrackDetail = {
@@ -98,5 +99,53 @@ describe("TrackPlayer", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Mark as read" })).toBeInTheDocument(),
     );
+  });
+
+  it("shows the discussion thread below the content when hasDiscussion is true", async () => {
+    const mockTrackWithDiscussion = {
+      ...mockTrackDetail,
+      sections: [
+        {
+          ...mockTrackDetail.sections[0],
+          items: [{ ...mockTrackDetail.sections[0].items[0], hasDiscussion: true }],
+        },
+      ],
+    };
+    (api.useGetLearnTrackDetailQuery as vi.Mock).mockReturnValue({
+      data: mockTrackWithDiscussion,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    (api.useStartTrackItemMutation as vi.Mock).mockReturnValue(mockStartTrackItemMutation);
+    (api.useGetCourseDiscussionQuery as vi.Mock).mockReturnValue({
+      data: {
+        enabled: true,
+        isLocked: false,
+        postCount: 0,
+        posts: [],
+        viewer: { canPost: true, maxLength: 1000, canModerate: false },
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/track/track1/item1"]}>
+          <Routes>
+            <Route path="/track/:trackId/:itemId" element={<TrackPlayer />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("discussion-thread")).toBeInTheDocument();
+    });
+
+    const scrollContainer = screen.getByTestId("track-item-scroll");
+    // The bug is that the first child of the scroll container has h-full
+    expect(scrollContainer.firstChild).not.toHaveClass("h-full");
   });
 });
