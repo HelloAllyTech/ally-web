@@ -139,7 +139,13 @@ export const useLiveKitRoom = (
   const { id } = useParams();
 
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
-  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
+  let roomData = null;
+  try {
+    roomData = roomDataString ? JSON.parse(roomDataString) : null;
+  } catch (e) {
+    logger.error(`Failed to parse roomData from localStorage: ${e}`);
+    setError("There was a problem starting the simulation. Please try again.");
+  }
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
   // A text-chat roleplay: same room and agent, typed both ways, so the
