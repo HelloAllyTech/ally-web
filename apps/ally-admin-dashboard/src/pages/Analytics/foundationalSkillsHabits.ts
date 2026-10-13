@@ -1,6 +1,7 @@
-import type { WhiskerRow } from "./ChangeWhiskers";
 import { CONTEXT, STAT } from "./chartScales";
 import { ciText, signed } from "./foundationalSkillsProgressChart";
+
+import type { WhiskerRow } from "./ChangeWhiskers";
 
 /**
  * Types and pure helpers for the Habits views on Highlights → Helping skills,
