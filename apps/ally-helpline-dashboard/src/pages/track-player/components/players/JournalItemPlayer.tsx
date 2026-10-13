@@ -1,4 +1,4 @@
-import { FC, useCallback, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -76,9 +76,10 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     (prompt, i) => !prompt.required || (responses[i] ?? "").trim().length > 0,
   );
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!allRequiredAnswered || isSubmitting || submitted) return;
     try {
+      // Persist one last time
       await persist();
       const result = await submitJournal({ itemId }).unwrap();
       setSubmitted(true);
@@ -86,7 +87,24 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     } catch {
       toast.error(t("common.somethingWentWrong"));
     }
-  };
+  }, [
+    allRequiredAnswered,
+    isSubmitting,
+    submitted,
+    persist,
+    submitJournal,
+    itemId,
+    onCompleted,
+    t,
+  ]);
+
+  useEffect(() => {
+    const allOptional = prompts.every(p => !p.required);
+    if (allOptional && !alreadyCompleted) {
+      handleSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const renderAutosave = () => {
     if (submitted) {
