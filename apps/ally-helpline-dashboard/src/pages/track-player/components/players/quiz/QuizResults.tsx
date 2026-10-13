@@ -40,7 +40,7 @@ const QuestionRow: FC<{
   const isPending = isPendingResult(result);
   const graded = isGraded(result);
   // Ungraded with no key: there is no right or wrong to report.
-  const hasVerdict = result.correct !== null;
+  const hasVerdict = result.correct !== null && graded;
 
   const statusIcon = isPending ? (
     <span className="inline-block h-4 w-4 rounded-full bg-warning-300" aria-hidden />

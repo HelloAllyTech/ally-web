@@ -228,4 +228,29 @@ describe("QuizResults - survey, ungraded and correct answers", () => {
     );
     expect(screen.getByText("Finish grading")).toBeInTheDocument();
   });
+
+  it("shows an ungraded question as neutral even when `correct` is false", () => {
+    renderResults(
+      baseResult({
+        scorePct: 100,
+        passed: true,
+        questions: [
+          {
+            questionId: "tf",
+            correct: false,
+            graded: false,
+            pointsAwarded: 0,
+            pointsPossible: 0,
+          },
+        ],
+      }),
+      [trueFalse],
+    );
+    // Should not show incorrect icon
+    expect(screen.queryByTestId("cross-icon")).not.toBeInTheDocument();
+    // Should not show incorrect label
+    expect(screen.queryByText("Incorrect")).not.toBeInTheDocument();
+    // Should show "Not scored"
+    expect(screen.getByText("Not scored")).toBeInTheDocument();
+  });
 });
