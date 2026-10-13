@@ -166,6 +166,18 @@ export const BugFindingDrawer: FC<BugFindingDrawerProps> = ({ id, onClose, canTr
   const [descriptionDraft, setDescriptionDraft] = useState<string | null>(null);
   const [showOriginalDescription, setShowOriginalDescription] = useState(false);
 
+  useEffect(() => {
+    setFixRepo("");
+    setForceFix(false);
+    setForceMerge(false);
+    setConfirmAction(null);
+    setDeclineReason(null);
+    setDeclineNote("");
+    setAnswerText("");
+    setDescriptionDraft(null);
+    setShowOriginalDescription(false);
+  }, [id]);
+
   /**
    * Copies the address bar, which now identifies this exact bug.
    *

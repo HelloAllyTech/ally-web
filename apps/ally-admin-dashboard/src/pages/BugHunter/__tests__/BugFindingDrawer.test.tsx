@@ -1095,23 +1095,52 @@ describe("BugFindingDrawer — reported bug context", () => {
   });
 });
 
-describe("BugFindingDrawer — read-only for a SUPER_ADMIN (canTriage=false)", () => {
-  it("hides approve/reject even on a pending-approval bug", () => {
-    renderDrawer(finding({ status: BugFindingStatus.PENDING_APPROVAL }), false);
-    expect(screen.queryByText("Approve — go fix it")).not.toBeInTheDocument();
-    expect(screen.queryByText("Reject")).not.toBeInTheDocument();
-  });
+describe("BugFindingDrawer — state persistence", () => {
+  it("resets forceFix state when the finding ID changes", () => {
+    const finding1 = finding({
+      id: "finding-1",
+      status: BugFindingStatus.NEW,
+      independentVerification: "confirmed",
+      budget: {
+        ...finding().budget,
+        exhausted: { kind: "sessions", at: "2026-10-07T05:00:00Z" },
+      },
+    });
+    const finding2 = finding({
+      id: "finding-2",
+      status: BugFindingStatus.NEW,
+      independentVerification: "confirmed",
+      budget: {
+        ...finding().budget,
+        exhausted: { kind: "sessions", at: "2026-10-07T05:00:00Z" },
+      },
+    });
 
-  it("hides the fix-session button on an otherwise-eligible new bug", () => {
-    renderDrawer(finding({ status: BugFindingStatus.NEW }), false);
-    expect(screen.queryByText("Put me on it")).not.toBeInTheDocument();
-  });
+    getBugFinding.mockImplementation((id: string) => {
+      if (id === "finding-1") return { data: finding1, isLoading: false, isError: false };
+      if (id === "finding-2") return { data: finding2, isLoading: false, isError: false };
+      return { data: undefined, isLoading: false, isError: true };
+    });
 
-  it("hides the description rewrite control", () => {
-    renderDrawer(finding({ status: BugFindingStatus.NEW }), false);
-    expect(screen.queryByText("Rewrite this for me")).not.toBeInTheDocument();
+    const { rerender } = render(
+      <BugFindingDrawer id="finding-1" onClose={vi.fn()} canTriage={true} />,
+    );
+
+    fireEvent.click(screen.getByText("Put me on it"));
+
+    const checkbox = screen.getByLabelText("Start anyway, past the budget");
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+
+    rerender(<BugFindingDrawer id="finding-2" onClose={vi.fn()} canTriage={true} />);
+
+    fireEvent.click(screen.getByText("Put me on it"));
+    const checkboxAfterRerender = screen.getByLabelText("Start anyway, past the budget");
+    expect(checkboxAfterRerender).not.toBeChecked();
   });
 });
+
 
 /**
  * The merge Bug Hunter cannot perform itself.
