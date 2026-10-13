@@ -415,7 +415,10 @@ export const Builder: React.FC = () => {
           <>
             <ListToolbar
               searchValue={searchQuery}
-              onSearchChange={setSearchQuery}
+              onSearchChange={(value: string) => {
+                setSearchQuery(value);
+                setArchivedOffset(0);
+              }}
               placeholder={strings.searchPlaceholder}
               filterChips={filterChips}
               addFilterCta={{
@@ -430,9 +433,10 @@ export const Builder: React.FC = () => {
               sections={[
                 { id: "status", label: strings.filterStatusLabel, options: statusOptions },
               ]}
-              onApplyFilters={next =>
-                setStatusFilter((next.status ?? []) as BuilderSessionStatus[])
-              }
+              onApplyFilters={next => {
+                setStatusFilter((next.status ?? []) as BuilderSessionStatus[]);
+                setArchivedOffset(0);
+              }}
               anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
               currentFilters={{ status: statusFilter }}
             />
