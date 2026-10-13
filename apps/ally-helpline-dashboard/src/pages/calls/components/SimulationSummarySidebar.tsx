@@ -157,7 +157,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <Tooltip label="Comments" align="top">
+              <Tooltip label={t("common.comments")} align="top">
                 <button
                   onClick={() =>
                     navigate(

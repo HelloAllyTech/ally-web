@@ -324,7 +324,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         setIsArchiveDialogOpen(true);
       },
       show: hasAdequatePermission(Permissions.ARCHIVE_CALL_LOG) && showArchiveButton,
-      text: isArchived ? "Unarchive session" : "Archive session",
+      text: isArchived ? t("common.unarchiveSession") : t("common.archiveSession"),
     },
   ];
 
@@ -378,7 +378,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                 />
               </div>
               {individualCallSummary?.reviewId && (
-                <Tooltip label="Comments" align="top">
+                <Tooltip label={t("common.comments")} align="top">
                   <button
                     onClick={() =>
                       navigate(

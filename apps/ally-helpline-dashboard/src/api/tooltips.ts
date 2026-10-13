@@ -5,8 +5,11 @@ import { baseAPI } from "./baseAPI";
 
 const tooltipsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    getActiveTooltips: builder.query<ActiveTooltip[], void>({
-      query: () => ({ url: ApiEndpoints.TOOLTIPS.GET_ACTIVE_TOOLTIPS }),
+    getActiveTooltips: builder.query<ActiveTooltip[], { languageCode: string }>({
+      query: ({ languageCode }) => ({
+        url: ApiEndpoints.TOOLTIPS.GET_ACTIVE_TOOLTIPS,
+        params: { languageCode },
+      }),
       providesTags: [{ type: TAG_TYPES.TOOLTIPS, id: "ACTIVE" }],
     }),
   }),

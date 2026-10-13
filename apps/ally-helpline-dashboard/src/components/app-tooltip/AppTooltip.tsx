@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetActiveTooltipsQuery } from "@api";
@@ -22,6 +23,7 @@ const RETRY_COOLDOWN_MS = 30_000;
 let nextRetryAt = 0;
 
 const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
+  const { t, i18n } = useTranslation();
   const skipRetry = Date.now() < nextRetryAt;
 
   // Refresh the active-tooltip list so a superadmin toggling a tooltip off (or on)
@@ -35,12 +37,15 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
     data: tooltips = [],
     isLoading,
     isError,
-  } = useGetActiveTooltipsQuery(undefined, {
-    skip: skipRetry,
-    refetchOnMountOrArgChange: 30,
-    refetchOnFocus: true,
-    refetchOnReconnect: true,
-  });
+  } = useGetActiveTooltipsQuery(
+    { languageCode: i18n.language },
+    {
+      skip: skipRetry,
+      refetchOnMountOrArgChange: 30,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
 
   useEffect(() => {
     if (isError) {
@@ -54,7 +59,7 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
 
   if (!tooltip) return children;
 
-  const title = tooltip.tipText;
+  const title = t(tooltip.tipText);
 
   return (
     <Tooltip label={title} align="top" autoAlign>

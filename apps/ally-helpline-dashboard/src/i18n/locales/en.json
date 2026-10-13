@@ -62,7 +62,11 @@
     },
     "practiceAgain": "Practise again",
     "refresh": "Refresh",
-    "play": "Play"
+    "play": "Play",
+    "comments": "Comments",
+    "addCustomField": "Add custom field",
+    "archiveSession": "Archive session",
+    "unarchiveSession": "Unarchive session"
   },
   "carousel": {
     "slides": {
