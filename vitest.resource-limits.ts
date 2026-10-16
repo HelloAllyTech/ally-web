@@ -1,5 +1,5 @@
 /**
- * Vitest resource caps for LOCAL runs. CI is deliberately left alone.
+ * Vitest resource caps for all runs, local and CI.
  *
  * Vitest defaults its fork pool to one worker per CPU core. On a 10-core dev
  * machine that is 10 Node processes each holding its own jsdom, and the admin
@@ -11,24 +11,20 @@
  * `npx vitest run` — a person or an agent — gets the safe pool without having
  * to remember a flag.
  *
- * Why CI is exempt: the failure mode is a workstation running the suite next to
- * an editor, a browser, Docker and a second test run. A runner is a clean box
- * doing one thing, its core count is already low, and throttling it would slow
- * every pipeline to fix a problem it does not have. `CI` is set by GitHub
- * Actions (and by every other runner worth naming).
+ * The admin suite has proven to be resource-intensive enough to exhaust CI
+ * runners when uncapped, leading to hangs. The cap is now applied everywhere
+ * by default.
  *
  * Overrides:
  *   VITEST_MAX_WORKERS=8   raise it on a machine with headroom
  *   VITEST_MAX_WORKERS=1   serialise, to debug a cross-file leak
  * Either applies in CI too, if a pipeline ever needs to pin the pool.
  */
-const isCI = Boolean(process.env.CI);
-
 const requested = Number.parseInt(process.env.VITEST_MAX_WORKERS ?? "", 10);
 const explicit = Number.isFinite(requested) && requested > 0 ? requested : null;
 
 /** Resolved cap, or null to leave Vitest's own defaults in place. */
-export const MAX_TEST_WORKERS = isCI ? null : (explicit ?? 4);
+export const MAX_TEST_WORKERS = explicit ?? 4;
 
 /**
  * Spread into a project's `test` block. Keeps file-level parallelism (the

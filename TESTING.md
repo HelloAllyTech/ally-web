@@ -24,9 +24,9 @@ We provide two approaches for running tests:
 ## Quick Start
 
 > **Run one suite at a time.** [`vitest.resource-limits.ts`](vitest.resource-limits.ts) caps
-> every project's worker pool at 4 **locally** — Vitest otherwise starts one fork per CPU
+> every project's worker pool at 4 by default — Vitest otherwise starts one fork per CPU
 > core, each holding its own jsdom, and the admin app alone is ~290 files / ~5000 tests.
-> CI is deliberately exempt. The cap bounds a single run; it does not make two concurrent
+> This cap is applied in all environments, including CI, to prevent resource exhaustion. The cap bounds a single run; it does not make two concurrent
 > runs safe, and running this suite alongside ally-be's Jest suite has exhausted a 16 GB
 > machine.
 >
