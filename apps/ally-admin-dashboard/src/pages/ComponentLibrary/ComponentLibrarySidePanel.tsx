@@ -84,7 +84,6 @@ export const ComponentLibrarySidePanel: FC<ComponentLibrarySidePanelProps> = ({
     // Recomputed only when the panel is (re)mounted for a different
     // template/type — the caller keys this component so a new target always
     // remounts it fresh rather than relying on this memo to reset mid-life.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const methods = useForm<TrackFormValues>({ defaultValues, mode: "onChange" });

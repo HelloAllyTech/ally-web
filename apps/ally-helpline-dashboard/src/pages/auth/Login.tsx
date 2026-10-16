@@ -103,7 +103,6 @@ export const Login: FunctionComponent = () => {
   // loop that blanked the whole app in production (2026-09-28).
   useEffect(() => {
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

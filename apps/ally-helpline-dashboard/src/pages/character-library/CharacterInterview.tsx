@@ -168,7 +168,6 @@ export const CharacterInterview: React.FC = () => {
       }
     })();
     // Runs once on mount only — bootedRef guards StrictMode's double-invoke.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView]);
 
   useEffect(() => {

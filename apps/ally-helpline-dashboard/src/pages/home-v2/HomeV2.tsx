@@ -76,7 +76,6 @@ export const HomeV2: FunctionComponent = () => {
   // no token it dispatches logout actions that re-render this page.
   useEffect(() => {
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signedIn = isAuthenticated && !!user;

@@ -73,7 +73,6 @@ const HelplineTalkPage: FC = () => {
     if (!chat && offered.length && !offered.includes(pageLanguage)) {
       session.applyLanguage(consentLanguage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offered.join(","), pageLanguage, chat]);
 
   const org = chat?.org ?? status?.org ?? null;

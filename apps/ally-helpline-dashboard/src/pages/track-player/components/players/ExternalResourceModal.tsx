@@ -55,7 +55,6 @@ export const ExternalResourceModal: FC<ExternalResourceModalProps> = ({ resource
     // Intentionally only re-arms if the resource itself changes — `onClose`
     // and `t` are stable enough in practice that re-running this per render
     // would just restart the countdown on every unrelated re-render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resource.url]);
 
   const handleLoad = () => {

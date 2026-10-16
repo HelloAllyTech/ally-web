@@ -149,7 +149,6 @@ export const useTalkerSession = (tenantCode: string) => {
   useEffect(() => {
     initialise();
     // Only on mount and when the helpline itself changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantCode]);
 
   /** Pull the chat and anything missed over HTTP (reconnect, end). */
@@ -241,7 +240,7 @@ export const useTalkerSession = (tenantCode: string) => {
       },
     }),
     // stateRef/dispatch are stable; handlers are read through a ref by the socket hook.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [showListenerTyping, syncOverHttp],
   );
 

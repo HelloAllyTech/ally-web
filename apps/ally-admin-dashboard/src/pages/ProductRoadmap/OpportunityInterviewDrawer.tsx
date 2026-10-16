@@ -153,7 +153,6 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
     if (openedRef.current) return;
     openedRef.current = true;
     void takeTurn([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**

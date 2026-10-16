@@ -103,7 +103,6 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     if (allOptional && !alreadyCompleted) {
       handleSubmit();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderAutosave = () => {

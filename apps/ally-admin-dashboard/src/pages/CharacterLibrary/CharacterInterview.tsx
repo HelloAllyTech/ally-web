@@ -127,7 +127,6 @@ export const CharacterInterview: React.FC = () => {
       if (freshId) setNeedsKickoff(true);
     })();
     // Runs once on mount only — bootedRef guards StrictMode's double-invoke.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fires the hidden kickoff message once sessionId has actually landed in

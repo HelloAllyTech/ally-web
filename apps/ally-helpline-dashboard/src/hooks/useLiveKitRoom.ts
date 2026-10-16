@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Room, RoomEvent, Participant, RemoteTrackPublication, Track } from "livekit-client";

@@ -34,7 +34,7 @@ export const BulkPublishDrawer: React.FC<BulkPublishDrawerProps> = ({ runs, onCl
   const runIdsKey = runs.map(r => r.id).join(",");
   useEffect(() => {
     if (runs.length > 0) setQuestions([{ ...NEW_QUESTION }]);
-  }, [runIdsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [runIdsKey]);
 
   const isValid = questions.length >= 1 && questions.every(q => q.question.trim().length > 0);
 
