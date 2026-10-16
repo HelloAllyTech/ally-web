@@ -14,10 +14,19 @@
 export function htmlToPlainText(value: string | undefined | null): string {
   if (!value) return "";
 
-  const stripped = value
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]*>/g, " ");
+  // 1. Drop script and style tags entirely
+  let stripped = value
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "");
+
+  // 2. Replace block-level tags with a space to prevent text merging
+  // (e.g. "<p>a</p><p>b</p>" -> "a b")
+  stripped = stripped.replace(/<\/(p|div|h[1-6]|li|blockquote|pre)>/gi, " ");
+  stripped = stripped.replace(/<(p|div|h[1-6]|li|blockquote|pre|br)[^>]*>/gi, " ");
+
+  // 3. Strip all remaining tags (inline formatting like strong, em, etc.)
+  // without inserting spaces.
+  stripped = stripped.replace(/<[^>]*>/g, "");
 
   if (typeof DOMParser === "undefined") {
     return stripped.replace(/\s+/g, " ").trim();
