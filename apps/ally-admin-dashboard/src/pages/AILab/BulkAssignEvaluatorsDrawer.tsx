@@ -96,7 +96,6 @@ export const BulkAssignEvaluatorsDrawer: React.FC<BulkAssignEvaluatorsDrawerProp
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runIdsKey]);
 
   const assignedCountFor = useCallback(

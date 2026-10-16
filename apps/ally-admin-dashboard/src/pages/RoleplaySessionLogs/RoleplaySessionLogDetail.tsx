@@ -129,7 +129,6 @@ const RecordingPlayer = forwardRef<
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = playbackRate;
     // Only on mount: applies the stored/default rate before the user touches the control.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRateChange = (event: ChangeEvent<HTMLSelectElement>) => {

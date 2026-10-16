@@ -58,7 +58,6 @@ export const AnnotationItemPlayer: FC<AnnotationItemPlayerProps> = ({
     if (lastResult) return;
     const saved = loadItemProgress<AnnotationMarkInput[]>("annotation", itemId);
     if (saved?.length) setMarks(saved);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

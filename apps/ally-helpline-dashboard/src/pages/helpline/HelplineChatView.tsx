@@ -138,12 +138,10 @@ export const HelplineChatView: FC = () => {
   useEffect(() => {
     if (!chatId) return undefined;
     return realtime.watchChat(chatId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId]);
   const loadedChatId = detail?.chat.id;
   useEffect(() => {
     if (loadedChatId) void realtime.syncChat(loadedChatId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedChatId]);
 
   // The chat ending while it's on screen (by me, the talker, or a supervisor)

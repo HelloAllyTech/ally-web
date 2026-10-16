@@ -112,7 +112,7 @@ export const CourseLanding: FC = () => {
         toast.error(t("common.somethingWentWrong"));
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [trackId, i18n.language],
   );
 
@@ -120,7 +120,7 @@ export const CourseLanding: FC = () => {
   // has confirmed the link is live.
   useEffect(() => {
     if (outline && isSignedIn()) void continueSignedIn(false);
-  }, [outline?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [outline?.id]);
 
   const openLogin = (startAfter: boolean) => {
     startAfterLoginRef.current = startAfter;

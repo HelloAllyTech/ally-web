@@ -69,7 +69,7 @@ export const RoadmapCardPanel: React.FC<RoadmapCardPanelProps> = ({
   const initial = useMemo(
     () => toForm(item, defaults),
     // `defaults` is a fresh object on every render of the tab; its two fields are what matter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [item, defaults.category, defaults.stage],
   );
   const [form, setForm] = useState<FormState>(initial);

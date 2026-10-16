@@ -61,7 +61,6 @@ export const SummaryReviewModal: FC<SummaryReviewModalProps> = ({
       clearTimeout(timeoutTimer);
     };
     // onRefetch is a fresh closure each render; the timers belong to this opening.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Fill from the draft when it lands — unless the listener has started typing.
