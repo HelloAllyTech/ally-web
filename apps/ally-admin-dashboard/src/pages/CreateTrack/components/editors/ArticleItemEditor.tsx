@@ -3,7 +3,7 @@ import { FC, useMemo } from "react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { TextArea, Tooltip, htmlToPlainText, escapeHtml } from "@ally-ui-mono/ui-shared";
 import { TooltipIcon, Trash } from "@assets";
 import { RichTextEditor } from "@components/rich-text-editor";
 import { MAX_ARTICLE_QUESTIONS, MAX_ARTICLE_RESOURCES } from "@constants";
@@ -218,15 +218,23 @@ export const ArticleItemEditor: FC<ArticleItemEditorProps> = ({
                   <label className="text-sm font-medium text-typography-800">Question</label>
                   <Controller
                     control={control}
-                    name={`${questionPath}.prompt`}
+                    name={`${questionPath}.promptHtml`}
                     render={({ field: promptField }) => (
-                      <TextArea
-                        id={`${questionPath}.prompt`}
-                        labelText="Question"
-                        hideLabel
-                        {...promptField}
-                        value={promptField.value ?? ""}
-                        rows={2}
+                      <RichTextEditor
+                        value={
+                          promptField.value && promptField.value.length > 0
+                            ? promptField.value
+                            : (questions[index]?.prompt ?? "")
+                                .split("\n")
+                                .map(line => `<p>${escapeHtml(line)}</p>`)
+                                .join("")
+                        }
+                        onChange={html => {
+                          promptField.onChange(html);
+                          setValue(`${questionPath}.prompt`, htmlToPlainText(html), {
+                            shouldDirty: true,
+                          });
+                        }}
                         placeholder="Question text"
                         className="w-full"
                       />

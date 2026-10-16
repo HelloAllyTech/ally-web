@@ -87,6 +87,7 @@ export interface VideoInterjection {
 export interface JournalPromptDef {
   id: string; // uuid
   prompt: string;
+  promptHtml?: string;
   required?: boolean;
   placeholder?: string;
 }
@@ -137,6 +138,7 @@ export interface QuestionMedia {
 interface QuizQuestionBase {
   id: string; // uuid
   prompt: string;
+  promptHtml?: string;
   explanation?: string;
   points?: number; // default 1
   /** Optional picture or clip shown above the answer controls. */

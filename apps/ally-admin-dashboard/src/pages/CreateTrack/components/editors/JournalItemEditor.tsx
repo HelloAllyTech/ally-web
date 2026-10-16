@@ -1,10 +1,11 @@
 import { FC } from "react";
 
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
+import { htmlToPlainText, escapeHtml } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
+import { RichTextEditor } from "@components/rich-text-editor";
 import { MAX_JOURNAL_PROMPTS, MIN_JOURNAL_PROMPTS } from "@constants";
 import { TrackFormValues, TrackItemType } from "@types";
 
@@ -23,7 +24,7 @@ export const JournalItemEditor: FC<JournalItemEditorProps> = ({
   itemIndex,
   onDelete,
 }) => {
-  const { control } = useFormContext<TrackFormValues>();
+  const { control, setValue } = useFormContext<TrackFormValues>();
   const base = `sections.${sectionIndex}.items.${itemIndex}` as const;
 
   const { fields, append, remove, move } = useFieldArray({
@@ -31,6 +32,8 @@ export const JournalItemEditor: FC<JournalItemEditorProps> = ({
     name: `${base}.journal.prompts`,
     keyName: "fieldId",
   });
+
+  const prompts = useWatch({ control, name: `${base}.journal.prompts` }) || [];
 
   const canAdd = fields.length < MAX_JOURNAL_PROMPTS;
   const canRemove = fields.length > MIN_JOURNAL_PROMPTS;
@@ -90,14 +93,23 @@ export const JournalItemEditor: FC<JournalItemEditorProps> = ({
 
               <Controller
                 control={control}
-                name={`${promptBase}.prompt`}
+                name={`${promptBase}.promptHtml`}
                 render={({ field: promptField }) => (
-                  <TextArea
-                    id={`${promptBase}.prompt`}
-                    labelText={`Prompt ${promptIndex + 1}`}
-                    hideLabel
-                    {...promptField}
-                    rows={2}
+                  <RichTextEditor
+                    value={
+                      promptField.value && promptField.value.length > 0
+                        ? promptField.value
+                        : (prompts[promptIndex]?.prompt ?? "")
+                            .split("\n")
+                            .map(line => `<p>${escapeHtml(line)}</p>`)
+                            .join("")
+                    }
+                    onChange={html => {
+                      promptField.onChange(html);
+                      setValue(`${promptBase}.prompt`, htmlToPlainText(html), {
+                        shouldDirty: true,
+                      });
+                    }}
                     placeholder="What should the learner reflect on?"
                     className="w-full"
                   />

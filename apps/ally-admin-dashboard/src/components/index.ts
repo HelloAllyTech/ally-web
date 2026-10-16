@@ -108,3 +108,4 @@ export * from "./list-pagination";
 export * from "./markdown";
 export * from "./internal-monologue";
 export * from "./voice-option";
+export * from "./rich-text-editor";

@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Tooltip, RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import {
   useGetTrackTranslationQuery,
   useGetTrackTranslationsQuery,
@@ -657,7 +657,13 @@ const FieldGroup: FC<FieldGroupProps> = ({
                     </Tooltip>
                   )}
                 </div>
-                <p className="whitespace-pre-wrap text-xs text-typography-600">{field.english}</p>
+                {field.kind === "HTML" ? (
+                  <div className="prose prose-sm max-w-none text-xs text-typography-600 border border-border-light rounded p-2 bg-gray-50/30">
+                    <RichTextRenderer content={field.english} />
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap text-xs text-typography-600">{field.english}</p>
+                )}
               </div>
               <textarea
                 className={`${inputClass} min-h-[64px] resize-y`}

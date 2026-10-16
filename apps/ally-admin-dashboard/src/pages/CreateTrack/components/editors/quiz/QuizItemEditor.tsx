@@ -2,9 +2,10 @@ import { FC, useState } from "react";
 
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
-import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { TextArea, Tooltip, htmlToPlainText, escapeHtml } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
+import { RichTextEditor } from "@components/rich-text-editor";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import { QuizQuestion, QuizQuestionType, TrackFormValues, TrackItemType } from "@types";
 
@@ -80,7 +81,7 @@ export const renderTypeBody = (
 };
 
 export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemIndex, onDelete }) => {
-  const { control } = useFormContext<TrackFormValues>();
+  const { control, setValue } = useFormContext<TrackFormValues>();
   const base = `sections.${sectionIndex}.items.${itemIndex}` as const;
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -185,15 +186,23 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                     <label className="text-sm font-medium text-typography-800">Question</label>
                     <Controller
                       control={control}
-                      name={`${questionPath}.prompt`}
+                      name={`${questionPath}.promptHtml`}
                       render={({ field }) => (
-                        <TextArea
-                          id={`${questionPath}.prompt`}
-                          labelText="Question"
-                          hideLabel
-                          {...field}
-                          value={field.value ?? ""}
-                          rows={2}
+                        <RichTextEditor
+                          value={
+                            field.value && field.value.length > 0
+                              ? field.value
+                              : (activeQuestion.prompt ?? "")
+                                  .split("\n")
+                                  .map(line => `<p>${escapeHtml(line)}</p>`)
+                                  .join("")
+                          }
+                          onChange={html => {
+                            field.onChange(html);
+                            setValue(`${questionPath}.prompt`, htmlToPlainText(html), {
+                              shouldDirty: true,
+                            });
+                          }}
                           placeholder="Question text"
                           className="w-full"
                         />

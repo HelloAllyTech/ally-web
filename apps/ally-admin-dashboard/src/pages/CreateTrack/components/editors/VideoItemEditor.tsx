@@ -3,10 +3,10 @@ import { FC, useRef, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { TextArea, Tooltip, htmlToPlainText, escapeHtml } from "@ally-ui-mono/ui-shared";
 import { Plus, TooltipIcon, Trash } from "@assets";
-import { SegmentedToggle } from "@components";
-import { Button } from "@components";
+import { SegmentedToggle, Button } from "@components";
+import { RichTextEditor } from "@components/rich-text-editor";
 import { ButtonVariant } from "@components/types";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import {
@@ -317,15 +317,23 @@ export const VideoItemEditor: FC<VideoItemEditorProps> = ({
                           </label>
                           <Controller
                             control={control}
-                            name={`${questionPath}.prompt`}
+                            name={`${questionPath}.promptHtml`}
                             render={({ field: promptField }) => (
-                              <TextArea
-                                id={`${questionPath}.prompt`}
-                                labelText="Question"
-                                hideLabel
-                                {...promptField}
-                                value={promptField.value ?? ""}
-                                rows={2}
+                              <RichTextEditor
+                                value={
+                                  promptField.value && promptField.value.length > 0
+                                    ? promptField.value
+                                    : (question.prompt ?? "")
+                                        .split("\n")
+                                        .map(line => `<p>${escapeHtml(line)}</p>`)
+                                        .join("")
+                                }
+                                onChange={html => {
+                                  promptField.onChange(html);
+                                  setValue(`${questionPath}.prompt`, htmlToPlainText(html), {
+                                    shouldDirty: true,
+                                  });
+                                }}
                                 placeholder="Question text"
                                 className="w-full"
                               />

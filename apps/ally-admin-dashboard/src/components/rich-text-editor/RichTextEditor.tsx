@@ -17,7 +17,24 @@ const EMPTY_DOC_HTML = new Set(["", "<p></p>", "<p><br></p>"]);
 
 const normalizeForCompare = (html: string) => {
   const trimmed = (html ?? "").trim();
-  return EMPTY_DOC_HTML.has(trimmed) ? "" : trimmed;
+  if (EMPTY_DOC_HTML.has(trimmed)) return "";
+
+  let normalized = trimmed;
+  // If it doesn't look like HTML, it's legacy plain text; wrap it in <p>
+  // to match Tiptap's default normalization.
+  if (trimmed && !trimmed.startsWith("<")) {
+    normalized = `<p>${trimmed}</p>`;
+  }
+
+  // Use DOM-based normalization to handle HTML entities (like & vs &amp;)
+  // and other Tiptap normalization artifacts during comparison.
+  if (typeof document !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = normalized;
+    return div.innerHTML;
+  }
+
+  return normalized;
 };
 
 interface RichTextEditorProps {

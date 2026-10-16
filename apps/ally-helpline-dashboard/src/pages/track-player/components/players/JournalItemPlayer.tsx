@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
+import { TextArea, RichTextRenderer, htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { useSaveJournalDraftMutation, useSubmitJournalMutation } from "@api";
 import { Cloud, RoundCheckmark, CrossRedBackground, TickGreenBackground } from "@assets";
 import { useDebounce } from "@hooks";
@@ -153,14 +153,20 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
                 <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-500 text-sm font-semibold text-white">
                   {index + 1}
                 </span>
-                <p className="pt-1 text-base font-medium leading-relaxed text-typography-900">
-                  {prompt.prompt}
+                <div className="flex flex-col gap-1 pt-1">
+                  <div className="text-base font-medium leading-relaxed text-typography-900">
+                    {prompt.promptHtml && htmlToPlainText(prompt.promptHtml).trim().length > 0 ? (
+                      <RichTextRenderer content={prompt.promptHtml} />
+                    ) : (
+                      prompt.prompt
+                    )}
+                  </div>
                   {prompt.required && (
-                    <span className="ml-1 text-xs font-normal text-destructive-500">
+                    <span className="text-xs font-normal text-destructive-500">
                       ({t("tracks2.journal.required")})
                     </span>
                   )}
-                </p>
+                </div>
               </div>
               <TextArea
                 id={`journal-response-${prompt.id}`}
