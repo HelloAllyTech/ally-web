@@ -4,7 +4,7 @@ import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
-  getProviderSchemaFields,
+  getProviderSchema,
   ProviderConfigField,
   ProviderConfigSchema,
   readConfigField,
@@ -122,12 +122,18 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
     }
   }, [onTest, selected?.id]);
 
-  const fields = useMemo(() => getProviderSchemaFields(schema, provider), [schema, provider]);
+  const providerSchema = useMemo(() => getProviderSchema(schema, provider), [schema, provider]);
+  const fields = useMemo(() => providerSchema?.fields ?? [], [providerSchema]);
 
   const validationError = useMemo(() => {
     if (!name.trim()) return "Name is required.";
-    return validateProviderConfig(schema, provider, config)[0] ?? null;
-  }, [name, schema, provider, config]);
+    return validateProviderConfig(schema, provider, config, !selected)[0] ?? null;
+  }, [name, schema, provider, config, selected]);
+
+  const deprecationWarning = useMemo(
+    () => (typeof providerSchema?.deprecated === "string" ? providerSchema.deprecated : null),
+    [providerSchema],
+  );
 
   const isDirty = useMemo(() => {
     if (!selected) return !!name.trim() || Object.keys(config).length > 0;
@@ -286,6 +292,16 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
               className="border-none focus:outline-none text-2xl font-light w-full"
             />
           </div>
+
+          {deprecationWarning && (
+            <div
+              data-testid="provider-deprecation-warning"
+              className="mb-4 rounded-md border border-warning-500 bg-warning-50 px-4 py-3 text-sm text-typography-800"
+            >
+              <div className="font-medium">This provider is deprecated</div>
+              <div className="mt-1 text-typography-700">{deprecationWarning}</div>
+            </div>
+          )}
 
           <div className="space-y-3">
             <Field label="Provider">

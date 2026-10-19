@@ -18,7 +18,7 @@ vi.mock("@components", () => ({
 // back into the notion-table module and fail under vitest's module order. Only
 // the schema helpers matter here.
 vi.mock("@constants", () => ({
-  getProviderSchemaFields: (schema: any, provider: string) => schema?.[provider] ?? [],
+  getProviderSchema: (schema: any, provider: string) => schema?.[provider],
   readConfigField: (config: any, field: any) => config?.[field.key],
   validateProviderConfig: () => [],
 }));
@@ -26,7 +26,9 @@ vi.mock("@constants", () => ({
 import { ProviderConfigSidePanel } from "../ProviderConfigSidePanel";
 
 const SCHEMA = {
-  openai: [{ key: "model", label: "Model", required: true, type: "string" as const }],
+  openai: {
+    fields: [{ key: "model", label: "Model", required: true, type: "string" as const }],
+  },
 };
 
 const savedRow = {
@@ -48,6 +50,37 @@ const defaultProps = {
 };
 
 const testButton = () => screen.getByText("Test model");
+
+describe("ProviderConfigSidePanel — deprecation warning", () => {
+  it("shows a warning for a deprecated provider", () => {
+    const DEPRECATED_SCHEMA = {
+      deepgram: {
+        fields: [{ key: "model", label: "Model", required: true, type: "string" as const }],
+        deprecated: "Deepgram is out of credits.",
+      },
+    };
+
+    const deepgramRow = {
+      id: "cfg-2",
+      name: "Deepgram config",
+      provider: "deepgram",
+      config: { model: "nova-2" },
+      active: true,
+    };
+
+    render(
+      <ProviderConfigSidePanel
+        {...defaultProps}
+        schema={DEPRECATED_SCHEMA as any}
+        selected={deepgramRow}
+        providerOptions={[{ value: "deepgram", label: "Deepgram" }]}
+      />,
+    );
+
+    expect(screen.getByText("This provider is deprecated")).toBeInTheDocument();
+    expect(screen.getByText("Deepgram is out of credits.")).toBeInTheDocument();
+  });
+});
 
 describe("ProviderConfigSidePanel — model test", () => {
   it("offers no test control when the registry supplies none", () => {

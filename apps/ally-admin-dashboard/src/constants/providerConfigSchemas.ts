@@ -21,34 +21,41 @@ const MODEL_FIELD = {
 };
 
 export const STT_PROVIDER_SCHEMA: ProviderConfigSchema = {
-  deepgram: [{ ...MODEL_FIELD, placeholder: "nova-3" }],
-  sarvam: [{ ...MODEL_FIELD, placeholder: "saarika:v2.5" }],
-  elevenlabs: [
-    {
-      ...MODEL_FIELD,
-      placeholder: "scribe_v2_realtime",
-      hint: "Only scribe_v2_realtime streams; the batch scribe models emit no interim transcripts in a live turn.",
-    },
-  ],
-  google: [
-    { ...MODEL_FIELD, placeholder: "chirp_2" },
-    {
-      key: "location",
-      label: "Location",
-      required: false,
-      type: "string",
-      placeholder: "asia-southeast1",
-      hint: "Google regional endpoint.",
-    },
-    {
-      key: "languageCode",
-      label: "Language code override",
-      required: false,
-      type: "string",
-      placeholder: "pa-Guru-IN",
-      hint: "Only when the provider needs a script-qualified code that differs from the session language.",
-    },
-  ],
+  deepgram: {
+    fields: [{ ...MODEL_FIELD, placeholder: "nova-3" }],
+    deprecated: "The Deepgram account has no credits (every call 402s since 2026-10-18).",
+  },
+  sarvam: { fields: [{ ...MODEL_FIELD, placeholder: "saarika:v2.5" }] },
+  elevenlabs: {
+    fields: [
+      {
+        ...MODEL_FIELD,
+        placeholder: "scribe_v2_realtime",
+        hint: "Only scribe_v2_realtime streams; the batch scribe models emit no interim transcripts in a live turn.",
+      },
+    ],
+  },
+  google: {
+    fields: [
+      { ...MODEL_FIELD, placeholder: "chirp_2" },
+      {
+        key: "location",
+        label: "Location",
+        required: false,
+        type: "string",
+        placeholder: "asia-southeast1",
+        hint: "Google regional endpoint.",
+      },
+      {
+        key: "languageCode",
+        label: "Language code override",
+        required: false,
+        type: "string",
+        placeholder: "pa-Guru-IN",
+        hint: "Only when the provider needs a script-qualified code that differs from the session language.",
+      },
+    ],
+  },
 };
 
 const TEMPERATURE_FIELD = {
@@ -64,15 +71,19 @@ const TEMPERATURE_FIELD = {
 
 /** Ollama and vLLM serve whatever the server is running, so model is optional. */
 export const LLM_PROVIDER_SCHEMA: ProviderConfigSchema = {
-  openai: [{ ...MODEL_FIELD, placeholder: "gpt-4o-mini" }, TEMPERATURE_FIELD],
-  google: [{ ...MODEL_FIELD, placeholder: "gemini-2.0-flash-exp" }, TEMPERATURE_FIELD],
-  gemini: [{ ...MODEL_FIELD, placeholder: "gemini-2.0-flash-exp" }, TEMPERATURE_FIELD],
-  ollama: [
-    { ...MODEL_FIELD, required: false, hint: "Optional — the server decides." },
-    TEMPERATURE_FIELD,
-  ],
-  vllm: [
-    { ...MODEL_FIELD, required: false, hint: "Optional — the server decides." },
-    TEMPERATURE_FIELD,
-  ],
+  openai: { fields: [{ ...MODEL_FIELD, placeholder: "gpt-4o-mini" }, TEMPERATURE_FIELD] },
+  google: { fields: [{ ...MODEL_FIELD, placeholder: "gemini-2.0-flash-exp" }, TEMPERATURE_FIELD] },
+  gemini: { fields: [{ ...MODEL_FIELD, placeholder: "gemini-2.0-flash-exp" }, TEMPERATURE_FIELD] },
+  ollama: {
+    fields: [
+      { ...MODEL_FIELD, required: false, hint: "Optional — the server decides." },
+      TEMPERATURE_FIELD,
+    ],
+  },
+  vllm: {
+    fields: [
+      { ...MODEL_FIELD, required: false, hint: "Optional — the server decides." },
+      TEMPERATURE_FIELD,
+    ],
+  },
 };

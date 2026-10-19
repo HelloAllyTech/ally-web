@@ -14,11 +14,11 @@ import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import {
+  VOICE_CONFIG_SCHEMA,
   TTS_PROVIDER_OPTIONS,
   VoiceConfigField,
   VoiceGender,
   getProviderLabel,
-  getProviderSchema,
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
@@ -29,6 +29,7 @@ import {
   validateVoiceConfig,
   TTS_CATALOG_FIELD_KEY,
 } from "@constants/voiceProviders";
+import { getProviderSchema } from "@constants";
 import { ScenarioVoice, ScenarioLanguage, ElevenLabsVoiceSyncResult } from "@types";
 import { isObject } from "@utils/common";
 
@@ -194,7 +195,10 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   }, [selectedVoice]);
 
   const config = useMemo(() => formData.config ?? {}, [formData.config]);
-  const providerSchema = useMemo(() => getProviderSchema(formData.provider), [formData.provider]);
+  const providerSchema = useMemo(
+    () => getProviderSchema(VOICE_CONFIG_SCHEMA, formData.provider),
+    [formData.provider],
+  );
   const unknownKeys = useMemo(
     () => getUnknownConfigKeys(formData.provider, config),
     [formData.provider, config],
@@ -411,9 +415,9 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   }, [catalogFieldKey, catalogFieldOptions, voiceIdFieldOptions]);
 
   const effectiveProviderSchema = useMemo(() => {
-    if (!catalogBackedFields.size && !syncedCategory) return providerSchema;
+    if (!catalogBackedFields.size && !syncedCategory) return providerSchema?.fields ?? [];
 
-    return providerSchema.map(field => {
+    return providerSchema?.fields.map(field => {
       let next = field;
       const options = catalogBackedFields.get(field.key);
       if (options) {
@@ -582,7 +586,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     // points at its real input, whether or not it currently has a value —
     // otherwise it would appear twice, once as a proper field and once as an
     // "ignored" key.
-    const schemaMatch = providerSchema.find(
+    const schemaMatch = providerSchema?.fields.find(
       field => field.key === key || (field.aliases ?? []).includes(key),
     );
     if (schemaMatch) {
