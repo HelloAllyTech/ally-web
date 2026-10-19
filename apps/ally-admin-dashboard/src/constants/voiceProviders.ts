@@ -2,9 +2,10 @@ import {
   getProviderLabelFrom,
   getProviderSchemaFields,
   ProviderConfigField,
-  ProviderConfigSchema,
+  ProviderConfigSchema ,
   readConfigField,
   validateProviderConfig,
+  getProviderSchema,
 } from "./providerConfigSchema";
 
 /**
@@ -287,190 +288,205 @@ export const getElevenLabsV3Warning = (
 export const isMissingGender = (config?: Record<string, any>): boolean =>
   !String(config?.gender ?? "").trim();
 
-export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
-  [TtsProvider.DEEPGRAM]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    {
-      key: "model",
-      label: "Model",
-      required: true,
-      type: "string",
-      placeholder: "aura-asteria-en",
-      hint: "Deepgram voice model id.",
-    },
-  ],
-  [TtsProvider.ELEVENLABS]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    // Right after Gender, ahead of Model/Voice type: for a new voice, typing
-    // this is what triggers the debounced auto-lookup (keyed on this field's
-    // value, regardless of render order) that fills those two fields in —
-    // putting it first means it has already fired by the time an admin
-    // scrolls down to them, instead of the fields it feeds coming first.
-    {
-      key: "voice_id",
-      label: "Voice ID",
-      required: true,
-      aliases: ["voiceId"],
-      type: "string",
-      placeholder: "21m00Tcm4TlvDq8ikWAM",
-      hint: "The voice's id in ElevenLabs, not its display name.",
-    },
-    {
-      key: "model",
-      label: "Model",
-      required: true,
-      type: "string",
-      placeholder: "eleven_turbo_v2_5",
-    },
-    {
-      key: "voice_type",
-      label: "Voice type",
-      required: false,
-      type: "select",
-      options: [
-        { value: "", label: "Not recorded" },
-        { value: "pvc", label: "Custom-trained from recordings" },
-        { value: "ivc", label: "Quick clone from a short sample" },
-        { value: "voice_design", label: "Generated with Voice Design" },
-        { value: "premade", label: "ElevenLabs stock voice" },
-        { value: "unknown", label: "Unclear — needs checking" },
-      ],
-      hint: 'Decides how this voice sounds on the v3 and v4 models. Use "Re-check with ElevenLabs" to fill it in rather than guessing.',
-    },
-  ],
-  [TtsProvider.SARVAM]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    // Model first because it decides which speaker ids are even valid:
-    // bulbul:v3 takes bare names ("ishita"), bulbul:v4-flash takes persona
-    // ids ("ishita_hi_ads") and rejects the bare v3 names. bulbul:v2 is
-    // retired and returns a 400.
-    {
-      key: "model",
-      label: "Model",
-      required: true,
-      type: "string",
-      placeholder: "bulbul:v4-flash",
-      hint: 'Live models: "bulbul:v3" (classic speakers) or "bulbul:v4-flash" (persona voices). "bulbul:v2" is retired.',
-    },
-    {
-      key: "speaker",
-      label: "Speaker",
-      required: true,
-      type: "string",
-      placeholder: "ishita_hi_ads",
-      hint: 'Lower-case Sarvam speaker id. bulbul:v3 uses bare names like "ishita"; bulbul:v4-flash uses persona ids like "ishita_hi_ads" from Sarvam\'s voices page. Each model has its own list.',
-    },
-  ],
-  [TtsProvider.GOOGLE]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    // Ahead of Voice name, because it decides which voices are even valid:
-    // Google's Gemini voices are the bare-named ones ("Puck", "Kore") and are
-    // rejected outright unless a Gemini model is named — "This voice requires a
-    // model name to be specified" — while the language-prefixed Chirp3-HD names
-    // want chirp_3. Same reasoning as ElevenLabs' Voice ID before Model and
-    // Hume's Voice source before Voice name: choose the scope, then the voice.
-    {
-      key: "model_name",
-      label: "Model name",
-      required: false,
-      type: "string",
-      placeholder: "chirp_3",
-      hint: "chirp_3 for the Chirp3-HD voices; gemini-2.5-flash-tts for the bare-named Gemini ones, which will not play without it. Leave empty for Standard, Neural2 and Wavenet.",
-    },
-    {
-      key: "voice_name",
-      label: "Voice name",
-      required: false,
-      type: "string",
-      placeholder: "en-IN-Chirp3-HD-Achernar",
-      hint: "Leave empty to let Google pick by gender and language.",
-    },
-    {
-      key: "voice_cloning_key",
-      label: "Voice cloning key",
-      required: false,
-      type: "string",
-      hint: "Only for Google custom cloned voices.",
-    },
-  ],
-  [TtsProvider.HUME]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    // Right after Gender, ahead of Voice name: this decides WHICH catalog
-    // the Voice name picker below pulls from (Hume's own library vs a
-    // custom-cloned voice) — same reasoning as ElevenLabs' Voice ID coming
-    // before Model. Picking this first means Voice name already reflects the
-    // right scope by the time an admin reaches it, instead of defaulting to
-    // HUME_AI and needing a second look after changing this.
-    {
-      key: "voice_provider",
-      label: "Voice source",
-      required: false,
-      type: "select",
-      options: [
-        { value: "HUME_AI", label: "Hume library (HUME_AI)" },
-        { value: "CUSTOM_VOICE", label: "Custom voice (CUSTOM_VOICE)" },
-      ],
-    },
-    {
-      key: "voice_name",
-      label: "Voice name",
-      required: true,
-      type: "string",
-      placeholder: "Priya",
-    },
-    {
-      key: "instant_mode",
-      label: "Instant mode",
-      required: false,
-      type: "boolean",
-    },
-  ],
-  [TtsProvider.CARTESIA]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    {
-      key: "voice",
-      label: "Voice",
-      required: true,
-      type: "string",
-      placeholder: "f786b574-daa5-4673-aa0c-cbe3e8534c02",
-      hint: "The voice's id (a UUID) from Cartesia's voice library.",
-    },
-    {
-      key: "model",
-      label: "Model",
-      required: false,
-      type: "string",
-      placeholder: "sonic-3",
-      hint: "Leave empty to use Cartesia's default model (sonic-3).",
-    },
-  ],
-  [TtsProvider.SMALLESTAI]: [
-    GENDER_FIELD,
-    AGE_FIELD,
-    {
-      key: "voice_id",
-      label: "Voice ID",
-      required: true,
-      aliases: ["voiceId"],
-      type: "string",
-      placeholder: "emily",
-      hint: "The voice's id in Smallest.ai.",
-    },
-    {
-      key: "model",
-      label: "Model",
-      required: false,
-      type: "string",
-      placeholder: "lightning_v3.1_pro",
-      hint: "Leave empty to use Smallest.ai's default model (lightning_v3.1_pro).",
-    },
-  ],
+export const VOICE_CONFIG_SCHEMA: ProviderConfigSchema = {
+  [TtsProvider.DEEPGRAM]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      {
+        key: "model",
+        label: "Model",
+        required: true,
+        type: "string",
+        placeholder: "aura-asteria-en",
+        hint: "Deepgram voice model id.",
+      },
+    ],
+    deprecated: "The Deepgram account has no credits (every call 402s since 2026-10-18).",
+  },
+  [TtsProvider.ELEVENLABS]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      // Right after Gender, ahead of Model/Voice type: for a new voice, typing
+      // this is what triggers the debounced auto-lookup (keyed on this field's
+      // value, regardless of render order) that fills those two fields in —
+      // putting it first means it has already fired by the time an admin
+      // scrolls down to them, instead of the fields it feeds coming first.
+      {
+        key: "voice_id",
+        label: "Voice ID",
+        required: true,
+        aliases: ["voiceId"],
+        type: "string",
+        placeholder: "21m00Tcm4TlvDq8ikWAM",
+        hint: "The voice's id in ElevenLabs, not its display name.",
+      },
+      {
+        key: "model",
+        label: "Model",
+        required: true,
+        type: "string",
+        placeholder: "eleven_turbo_v2_5",
+      },
+      {
+        key: "voice_type",
+        label: "Voice type",
+        required: false,
+        type: "select",
+        options: [
+          { value: "", label: "Not recorded" },
+          { value: "pvc", label: "Custom-trained from recordings" },
+          { value: "ivc", label: "Quick clone from a short sample" },
+          { value: "voice_design", label: "Generated with Voice Design" },
+          { value: "premade", label: "ElevenLabs stock voice" },
+          { value: "unknown", label: "Unclear — needs checking" },
+        ],
+        hint: 'Decides how this voice sounds on the v3 and v4 models. Use "Re-check with ElevenLabs" to fill it in rather than guessing.',
+      },
+    ],
+  },
+  [TtsProvider.SARVAM]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      // Model first because it decides which speaker ids are even valid:
+      // bulbul:v3 takes bare names ("ishita"), bulbul:v4-flash takes persona
+      // ids ("ishita_hi_ads") and rejects the bare v3 names. bulbul:v2 is
+      // retired and returns a 400.
+      {
+        key: "model",
+        label: "Model",
+        required: true,
+        type: "string",
+        placeholder: "bulbul:v4-flash",
+        hint: 'Live models: "bulbul:v3" (classic speakers) or "bulbul:v4-flash" (persona voices). "bulbul:v2" is retired.',
+      },
+      {
+        key: "speaker",
+        label: "Speaker",
+        required: true,
+        type: "string",
+        placeholder: "ishita_hi_ads",
+        hint: 'Lower-case Sarvam speaker id. bulbul:v3 uses bare names like "ishita"; bulbul:v4-flash uses persona ids like "ishita_hi_ads" from Sarvam\'s voices page. Each model has its own list.',
+      },
+    ],
+  },
+  [TtsProvider.GOOGLE]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      // Ahead of Voice name, because it decides which voices are even valid:
+      // Google's Gemini voices are the bare-named ones ("Puck", "Kore") and are
+      // rejected outright unless a Gemini model is named — "This voice requires a
+      // model name to be specified" — while the language-prefixed Chirp3-HD names
+      // want chirp_3. Same reasoning as ElevenLabs' Voice ID before Model and
+      // Hume's Voice source before Voice name: choose the scope, then the voice.
+      {
+        key: "model_name",
+        label: "Model name",
+        required: false,
+        type: "string",
+        placeholder: "chirp_3",
+        hint: "chirp_3 for the Chirp3-HD voices; gemini-2.5-flash-tts for the bare-named Gemini ones, which will not play without it. Leave empty for Standard, Neural2 and Wavenet.",
+      },
+      {
+        key: "voice_name",
+        label: "Voice name",
+        required: false,
+        type: "string",
+        placeholder: "en-IN-Chirp3-HD-Achernar",
+        hint: "Leave empty to let Google pick by gender and language.",
+      },
+      {
+        key: "voice_cloning_key",
+        label: "Voice cloning key",
+        required: false,
+        type: "string",
+        hint: "Only for Google custom cloned voices.",
+      },
+    ],
+  },
+  [TtsProvider.HUME]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      // Right after Gender, ahead of Voice name: this decides WHICH catalog
+      // the Voice name picker below pulls from (Hume's own library vs a
+      // custom-cloned voice) — same reasoning as ElevenLabs' Voice ID coming
+      // before Model. Picking this first means Voice name already reflects the
+      // right scope by the time an admin reaches it, instead of defaulting to
+      // HUME_AI and needing a second look after changing this.
+      {
+        key: "voice_provider",
+        label: "Voice source",
+        required: false,
+        type: "select",
+        options: [
+          { value: "HUME_AI", label: "Hume library (HUME_AI)" },
+          { value: "CUSTOM_VOICE", label: "Custom voice (CUSTOM_VOICE)" },
+        ],
+      },
+      {
+        key: "voice_name",
+        label: "Voice name",
+        required: true,
+        type: "string",
+        placeholder: "Priya",
+      },
+      {
+        key: "instant_mode",
+        label: "Instant mode",
+        required: false,
+        type: "boolean",
+      },
+    ],
+  },
+  [TtsProvider.CARTESIA]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      {
+        key: "voice",
+        label: "Voice",
+        required: true,
+        type: "string",
+        placeholder: "f786b574-daa5-4673-aa0c-cbe3e8534c02",
+        hint: "The voice's id (a UUID) from Cartesia's voice library.",
+      },
+      {
+        key: "model",
+        label: "Model",
+        required: false,
+        type: "string",
+        placeholder: "sonic-3",
+        hint: "Leave empty to use Cartesia's default model (sonic-3).",
+      },
+    ],
+  },
+  [TtsProvider.SMALLESTAI]: {
+    fields: [
+      GENDER_FIELD,
+      AGE_FIELD,
+      {
+        key: "voice_id",
+        label: "Voice ID",
+        required: true,
+        aliases: ["voiceId"],
+        type: "string",
+        placeholder: "emily",
+        hint: "The voice's id in Smallest.ai.",
+      },
+      {
+        key: "model",
+        label: "Model",
+        required: false,
+        type: "string",
+        placeholder: "lightning_v3.1_pro",
+        hint: "Leave empty to use Smallest.ai's default model (lightning_v3.1_pro).",
+      },
+    ],
+  },
 };
 
 export const TTS_PROVIDER_OPTIONS = Object.values(TtsProvider).map(provider => ({
@@ -635,8 +651,6 @@ export const buildGroupedVoiceOptions = (
     )
     .map(({ value, label, groupLabel }) => ({ value, label, groupLabel }));
 
-export const getProviderSchema = (provider?: string): VoiceConfigField[] =>
-  getProviderSchemaFields(VOICE_CONFIG_SCHEMA as ProviderConfigSchema, provider);
 
 /**
  * Keys present in a config that its provider's schema doesn't describe.
@@ -653,7 +667,10 @@ export const getUnknownConfigKeys = (
 ): string[] => {
   if (!config) return [];
   const known = new Set(
-    getProviderSchema(provider).flatMap(field => [field.key, ...(field.aliases ?? [])]),
+    getProviderSchemaFields(VOICE_CONFIG_SCHEMA, provider).flatMap(field => [
+      field.key,
+      ...(field.aliases ?? []),
+    ]),
   );
   return Object.keys(config).filter(key => !known.has(key));
 };
@@ -675,7 +692,7 @@ export const validateVoiceConfig = (
       `Unsupported voice provider "${provider}". Supported: ${TTS_PROVIDER_OPTIONS.map(option => option.label).join(", ")}.`,
     ];
   }
-  return validateProviderConfig(VOICE_CONFIG_SCHEMA as ProviderConfigSchema, provider, config);
+  return validateProviderConfig(VOICE_CONFIG_SCHEMA, provider, config, false);
 };
 
 /** Short one-line summary of a config, for the voices table. */
@@ -683,7 +700,7 @@ export const summarizeVoiceConfig = (
   provider: string | undefined,
   config: Record<string, any> | undefined,
 ): string => {
-  const parts = getProviderSchema(provider)
+  const parts = getProviderSchemaFields(VOICE_CONFIG_SCHEMA, provider)
     .filter(field => field.key !== "gender")
     .map(field => {
       const value = readConfigField(config, field);

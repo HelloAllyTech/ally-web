@@ -30,16 +30,29 @@ export interface ProviderConfigField {
 }
 
 /** provider key (as stored) → the fields that provider's client reads. */
-export type ProviderConfigSchema = Record<string, ProviderConfigField[]>;
+export type ProviderConfigSchema = Record<
+  string,
+  {
+    fields: ProviderConfigField[];
+    deprecated?: string | boolean;
+  }
+>;
 
 /** Case-insensitive lookup: voices store "GOOGLE", STT/LLM store "google". */
+export const getProviderSchema = (
+  schema: ProviderConfigSchema,
+  provider?: string,
+): { fields: ProviderConfigField[]; deprecated?: string | boolean } | undefined => {
+  const lookup = String(provider ?? "").toLowerCase();
+  const key = Object.keys(schema).find(candidate => candidate.toLowerCase() === lookup);
+  return key ? schema[key] : undefined;
+};
+
 export const getProviderSchemaFields = (
   schema: ProviderConfigSchema,
   provider?: string,
 ): ProviderConfigField[] => {
-  const lookup = String(provider ?? "").toLowerCase();
-  const key = Object.keys(schema).find(candidate => candidate.toLowerCase() === lookup);
-  return key ? schema[key] : [];
+  return getProviderSchema(schema, provider)?.fields ?? [];
 };
 
 /**
@@ -66,11 +79,17 @@ export const validateProviderConfig = (
   schema: ProviderConfigSchema,
   provider: string | undefined,
   config: Record<string, any> | undefined,
+  isNew: boolean,
 ): string[] => {
-  const fields = getProviderSchemaFields(schema, provider);
-  if (!fields.length) {
+  const providerSchema = getProviderSchema(schema, provider);
+  if (!providerSchema) {
     return [`Unsupported provider "${provider}".`];
   }
+  if (isNew && providerSchema.deprecated) {
+    return [`Provider "${provider}" is deprecated and cannot be used for new configurations.`];
+  }
+
+  const { fields } = providerSchema;
 
   const errors: string[] = [];
   for (const field of fields) {
