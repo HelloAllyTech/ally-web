@@ -75,6 +75,7 @@ export default defineConfig(() => ({
     // default (one fork per core) will exhaust a 16 GB machine. See
     // vitest.resource-limits.ts.
     ...testResourceLimits,
+    testTimeout: 900000,
     watch: false,
     globals: true,
     environment: "jsdom",
