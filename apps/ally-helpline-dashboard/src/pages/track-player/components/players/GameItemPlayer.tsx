@@ -21,7 +21,7 @@ const gameUrl = (key: TrackGameKey) => `/games/${key.toLowerCase()}/index.html`;
  * it is given, so this is the one thing about a game the host has to know: the
  * runner is a 150px canvas, a board game needs room for a board.
  */
-const FRAME_HEIGHT: Record<TrackGameKey, string> = {
+const FRAME_HEIGHT: Partial<Record<TrackGameKey, string>> = {
   [TrackGameKey.TREX_RUNNER]: "h-[200px] sm:h-[280px]",
   [TrackGameKey.TIC_TAC_TOE]: "h-[420px] sm:h-[440px]",
   [TrackGameKey.MEMORY_MATCH]: "h-[380px] sm:h-[470px]",
@@ -211,9 +211,10 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
     return () => window.removeEventListener("message", onMessage);
   }, [frameStrings, handleRunFinished]);
 
-  const isSupported = payload.gameKey in FRAME_HEIGHT;
+  const heightClass = FRAME_HEIGHT[payload.gameKey];
+  const isSupported = !!heightClass;
 
-  if (!isSupported) {
+  if (!heightClass) {
     return (
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
@@ -242,7 +243,7 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
 
           <div className="overflow-hidden rounded-xl border border-border-light bg-white">
             {frameFailed ? (
-              <div className={`flex items-center justify-center ${FRAME_HEIGHT[payload.gameKey]}`}>
+              <div className={`flex items-center justify-center ${heightClass}`}>
                 <FallbackUI
                   icon={<NoResults />}
                   mainMessage={t("tracks2.game.loadFailed")}
@@ -259,7 +260,7 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
                 // No allow-same-origin: the bundle needs no storage or cookies,
                 // and without it the frame cannot touch anything of ours.
                 sandbox="allow-scripts"
-                className={`block w-full border-0 ${FRAME_HEIGHT[payload.gameKey]}`}
+                className={`block w-full border-0 ${heightClass}`}
                 // Reliable only for a genuine load failure on the initial
                 // document (e.g. a 404 on the bundle) — an in-app JS error
                 // inside the sandboxed frame won't trigger this. Still
