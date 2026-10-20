@@ -10,7 +10,8 @@ import {
   useDeleteCoverImageMutation,
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
-  useGenerateCoverImageMutation,
+  useLazyGetCoverImageJobQuery,
+  useStartCoverImageJobMutation,
 } from "@api";
 import { DragUpload, Trash, VideoCamera } from "@assets";
 import { Button, CustomDropdownField, ImageLibrary } from "@components";
@@ -25,7 +26,8 @@ import {
   ASPECT_RATIO,
   ASPECT_RATIO_TOLERANCE,
 } from "@constants";
-import { CoverImageProvider } from "@types";
+import { ImageGenerationError, useImageGenerationJob } from "@hooks";
+import { CoverImageProvider, GenerateCoverImageRequest } from "@types";
 import { isNonEmptyString } from "@utils";
 
 /** Local/dev only: set `VITE_BYPASS_COVER_IMAGE_VALIDATION=true` in `.env` to skip 16:9 checks. */
@@ -81,7 +83,14 @@ export const FileUpload = ({
   const [deleteCoverImage] = useDeleteCoverImageMutation();
   const [getCoverVideoUrl] = useGetCoverVideoUrlMutation();
   const [deleteCoverVideo] = useDeleteCoverVideoMutation();
-  const [generateCoverImage, { isLoading: isGeneratingImage }] = useGenerateCoverImageMutation();
+  const [startCoverImageJob] = useStartCoverImageJobMutation();
+  const [pollCoverImageJob] = useLazyGetCoverImageJobQuery();
+  // A background job polled to completion: generation outlasts the load
+  // balancer's 60 s timeout, which cut the old single request off in production.
+  const { generate: generateCoverImage, isGenerating: isGeneratingImage } = useImageGenerationJob(
+    (input: GenerateCoverImageRequest) => startCoverImageJob(input).unwrap(),
+    (jobId: string) => pollCoverImageJob(jobId).unwrap(),
+  );
 
   const [aiProvider, setAiProvider] = useState<CoverImageProvider>("openai");
   const [aiStyleHint, setAiStyleHint] = useState("");
@@ -365,7 +374,7 @@ export const FileUpload = ({
     const currentLocation = watch("currentLocation");
 
     try {
-      const result = await generateCoverImage({
+      const imageUrl = await generateCoverImage({
         title: scenarioTitle.trim(),
         name: personaName.trim(),
         ...(typeof description === "string" &&
@@ -378,14 +387,18 @@ export const FileUpload = ({
           currentLocation.trim() && { currentLocation: currentLocation.trim() }),
         ...(aiStyleHint && { styleHints: aiStyleHint }),
         provider: aiProvider,
-      }).unwrap();
+      });
+      // Null: the form unmounted while the image was being made.
+      if (!imageUrl) return;
 
       clearErrors(id);
       setUploadedFile(null);
-      setValue(id, result.imageUrl, { shouldValidate: true, shouldDirty: true });
+      setValue(id, imageUrl, { shouldValidate: true, shouldDirty: true });
       toast.success(en.simulation.imageGeneratedSuccessfully);
     } catch (error) {
-      toast.error((error as any)?.data?.message || en.simulation.imageGenerationFailed);
+      toast.error(
+        error instanceof ImageGenerationError ? error.message : en.simulation.imageGenerationFailed,
+      );
     }
   };
 

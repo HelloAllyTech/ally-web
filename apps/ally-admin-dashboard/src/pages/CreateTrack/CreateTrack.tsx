@@ -26,10 +26,16 @@ import {
 } from "@types";
 
 import { ItemEditorCanvas } from "./components/ItemEditorCanvas";
+import { LandingPageEditor } from "./components/landing/LandingPageEditor";
 import { TrackOutlineRail } from "./components/TrackOutlineRail";
 import { TrackSettingsEditor } from "./components/TrackSettingsEditor";
 import { TrackTranslationsEditor } from "./components/TrackTranslationsEditor";
-import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./components/types";
+import {
+  TrackSelection,
+  isLandingSelection,
+  isSettingsSelection,
+  isTranslationsSelection,
+} from "./components/types";
 import {
   createEmptySection,
   createItemFormValueFromTemplate,
@@ -211,7 +217,15 @@ export const CreateTrack: FC = () => {
         await updateTrackMetadata({ id: currentId, data: { status } }).unwrap();
       }
 
-      reset(getValues());
+      // Reset from the server's copy, not the form's: a section or component
+      // added in this session only gets its id here. Without it the next save
+      // would create it again, and the Landing page could not key a chapter's
+      // teaser to it. A failed refetch falls back to what was just sent.
+      try {
+        reset(deserializeTrack(await getTrackById(currentId).unwrap()));
+      } catch {
+        reset(getValues());
+      }
       return currentId;
     } catch (error: any) {
       const message =
@@ -272,6 +286,14 @@ export const CreateTrack: FC = () => {
         />
       );
     }
+    if (isLandingSelection(selection)) {
+      return (
+        <LandingPageEditor
+          trackId={trackId}
+          isPublished={trackDetail?.status === SimulationStatus.ACTIVE}
+        />
+      );
+    }
     if (isTranslationsSelection(selection)) {
       return <TrackTranslationsEditor trackId={trackId} isDirty={isDirty} />;
     }
@@ -318,52 +340,53 @@ export const CreateTrack: FC = () => {
       </Tooltip>
     ) : undefined;
 
+  // Under Save and Publish, inside the header row (see Header's `actionsFooter`), so it can never
+  // sit on top of the buttons it is about.
+  const publishIssues = canPublish ? undefined : (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setShowErrorPopover(prev => !prev)}
+        className="inline-flex items-center gap-1 text-sm lg:text-xs text-destructive-500 hover:text-destructive-600 max-md:min-h-10"
+      >
+        <WarningAlt className="w-4 h-4" />
+        {publishErrors.length} issue{publishErrors.length === 1 ? "" : "s"} to fix before publishing
+      </button>
+      {showErrorPopover && (
+        <div className="absolute left-0 md:left-auto md:right-0 mt-1 w-80 max-w-[calc(100vw-2rem)] max-h-72 overflow-y-auto bg-white border border-border-light rounded-md shadow-lg p-3 z-30">
+          <ul className="flex flex-col gap-1.5">
+            {publishErrors.map((error, index) => (
+              <li
+                key={`${error.nodeKey}-${index}`}
+                className="text-xs text-typography-700 flex gap-1.5"
+              >
+                <WarningAlt className="w-3.5 h-3.5 text-destructive-500 flex-shrink-0 mt-0.5" />
+                {error.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <FormProvider {...formMethods}>
       {/* Below lg the outline rail sits above the editor and the page scrolls as
           one; side by side, the rail leaves the editor too narrow to use. */}
       <div className="lg:h-[100vh] lg:overflow-hidden font-primary">
-        <div className="relative">
-          <Header
-            isValid={canPublish}
-            isPublishing={isSaving}
-            onBack={handleBack}
-            onPublish={handlePublish}
-            onSaveDraft={handleSaveDraft}
-            title={title}
-            showPreview={false}
-            type="Track"
-            extraActions={askCopilotButton}
-          />
-          {!canPublish && (
-            <div className="relative pb-2 lg:pb-0 lg:absolute lg:right-2 lg:top-[92px] z-20">
-              <button
-                type="button"
-                onClick={() => setShowErrorPopover(prev => !prev)}
-                className="inline-flex items-center gap-1 text-sm lg:text-xs text-destructive-500 hover:text-destructive-600 max-lg:min-h-10"
-              >
-                <WarningAlt className="w-4 h-4" />
-                {publishErrors.length} issue{publishErrors.length === 1 ? "" : "s"} to fix before
-                publishing
-              </button>
-              {showErrorPopover && (
-                <div className="absolute left-0 lg:left-auto lg:right-0 mt-1 w-80 max-w-[calc(100vw-2rem)] max-h-72 overflow-y-auto bg-white border border-border-light rounded-md shadow-lg p-3 z-30">
-                  <ul className="flex flex-col gap-1.5">
-                    {publishErrors.map((error, index) => (
-                      <li
-                        key={`${error.nodeKey}-${index}`}
-                        className="text-xs text-typography-700 flex gap-1.5"
-                      >
-                        <WarningAlt className="w-3.5 h-3.5 text-destructive-500 flex-shrink-0 mt-0.5" />
-                        {error.message}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <Header
+          isValid={canPublish}
+          isPublishing={isSaving}
+          onBack={handleBack}
+          onPublish={handlePublish}
+          onSaveDraft={handleSaveDraft}
+          title={title}
+          showPreview={false}
+          type="Track"
+          extraActions={askCopilotButton}
+          actionsFooter={publishIssues}
+        />
 
         <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-140px)]">
           <TrackOutlineRail
@@ -371,6 +394,7 @@ export const CreateTrack: FC = () => {
             selection={selection}
             errorKeys={errorKeys}
             onSelectSettings={() => setSelection("settings")}
+            onSelectLanding={() => setSelection("landing")}
             onSelectTranslations={() => setSelection("translations")}
             publishedLanguageCount={publishedLanguageCount}
             onSelectItem={(sectionIndex, itemIndex) => setSelection({ sectionIndex, itemIndex })}

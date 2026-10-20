@@ -5,6 +5,7 @@ import {
   CourseCopilotBudget,
   CourseCopilotSessionDetail,
   CourseCopilotSessionSummary,
+  TrackLandingPageDraftResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -168,6 +169,20 @@ export const courseCopilotAPI = baseAPI.injectEndpoints({
         TAG_TYPES.COURSE_COPILOT_SESSIONS,
       ],
     }),
+
+    /**
+     * Drafts the story fields of a SAVED course's landing page from its sections, items and
+     * roleplay summaries. A POST because it spends a model call, but it writes nothing: the
+     * caller merges the draft into the form's empty fields and the author saves as usual.
+     * 404 when the course does not exist; a readable `{message}` when the model's output could
+     * not be parsed.
+     */
+    draftTrackLandingPage: builder.mutation<TrackLandingPageDraftResponse, string>({
+      query: trackId => ({
+        url: ApiEndpoints.COURSE_COPILOT.TRACK_LANDING_PAGE_DRAFT(trackId),
+        method: HttpMethod.POST,
+      }),
+    }),
   }),
 });
 
@@ -183,4 +198,5 @@ export const {
   useGetCourseCopilotBudgetQuery,
   useRaiseCourseCopilotBudgetMutation,
   useArchiveCourseCopilotSessionMutation,
+  useDraftTrackLandingPageMutation,
 } = courseCopilotAPI;

@@ -497,7 +497,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
         : "This opportunity has no description yet — a roadmap manager needs to add one first"
       : opportunity?.builderSessionId
         ? "Resume in Builder Agent — reopens the existing interview, the brief is already in it"
-        : "Open in Builder Agent — starts a PRD interview seeded with this description and notes";
+        : "Open in Builder Agent — starts a PRD interview from this opportunity, picking up what was settled when it was filed";
 
   /**
    * Close, flushing anything the debounce still owes.

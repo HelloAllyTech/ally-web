@@ -10,6 +10,7 @@ import {
   RoadmapComment,
   RoadmapDuplicateMatch,
   RoadmapFacets,
+  RoadmapInterviewMessage,
   RoadmapInterviewNote,
   RoadmapListEnvelope,
   RoadmapOpportunitiesQuery,
@@ -276,6 +277,12 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
          * minted over it, so it cannot be edited on the way in; omit it to file the draft alone.
          */
         brief?: RoadmapOpportunityBrief;
+        /**
+         * The copilot conversation the draft came out of. Stored with the opportunity so the
+         * Builder session started from it begins where this conversation ended, instead of
+         * asking the filer the same questions again. Never returned by any read.
+         */
+        interviewTranscript?: RoadmapInterviewMessage[];
       }
     >({
       query: body => ({

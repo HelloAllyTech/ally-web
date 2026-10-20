@@ -133,6 +133,10 @@ export const ANALYTICS_EVENTS = {
   HOME_V2_PRACTICE_RESPONSE_CHOSEN: "home_v2_practice_response_chosen",
   HOME_V2_SUPPORT_SHOWN: "home_v2_support_shown",
   HOME_V2_SIGN_IN_STARTED: "home_v2_sign_in_started",
+
+  // Course landing page (`/course/:trackId`), usually signed out. Sends the
+  // course id and which reply was picked — never the reply text.
+  COURSE_LANDING_FIRST_MOVE_CHOSEN: "course_landing_first_move_chosen",
 } as const;
 
 /** `source` values for the /v2 homepage's `home_v2_*` events. */
@@ -318,4 +322,8 @@ export const ANALYTICS_PROPS = {
   HOME_V2_QUESTION_TEXT: "question_text",
   HOME_V2_PRACTICE_CHOICE: "practice_choice",
   HOME_V2_AUTH_METHOD: "auth_method",
+
+  // Course landing page context
+  COURSE_ID: "course_id",
+  REPLY_INDEX: "reply_index",
 } as const;

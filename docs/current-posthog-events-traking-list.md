@@ -285,6 +285,17 @@ carry `ph-no-capture`. Sign-in itself is reported by ally-be's `auth.*` funnel.
 | `HOME_V2_SUPPORT_SHOWN`            | `home_v2_support_shown`            | The Tele-MANAS card was shown. Sends `source` (`header`, `suggestion`, `typed`) — never what was typed                              | `pages/home-v2/HomeV2.tsx` |
 | `HOME_V2_SIGN_IN_STARTED`          | `home_v2_sign_in_started`          | A sign-in began from the page. Sends `auth_method` (`email`, `google`) and, for email, `source` (`typed`, `remembered`)             | `pages/home-v2/HomeV2.tsx` |
 
+### Course landing page (`/course/:trackId`)
+
+The public share-link page, usually signed out, so `user_role` is often `unknown`. Only the story
+layout (a course whose author wrote a hook) has a first move. The event carries the course id and
+the position of the reply picked, never the reply's text: the replies are the author's copy, and the
+index is enough to see which ones land.
+
+| Constant                           | Event Name                         | Description                                                                                | Fires at                                 |
+| ---------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `COURSE_LANDING_FIRST_MOVE_CHOSEN` | `course_landing_first_move_chosen` | A reply was picked in the page's first move. Sends `course_id` and `reply_index` (0-based) | `pages/course-landing/CourseLanding.tsx` |
+
 ### Errors (automatic — no component code needed)
 
 | Constant             | Event Name           | Description                                                                                                                                                            | Fires at                      |

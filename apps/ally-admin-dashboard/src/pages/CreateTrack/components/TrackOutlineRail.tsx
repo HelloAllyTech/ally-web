@@ -16,17 +16,24 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { Languages, Plus, Settings, WarningAlt } from "@assets";
+import { Document, Languages, Plus, Settings, WarningAlt } from "@assets";
+import { en } from "@constants";
 import { CompletionCriteria, TrackItemContent, TrackItemType, TrackSectionFormValue } from "@types";
 
 import { SectionNode } from "./SectionNode";
-import { TrackSelection, isSettingsSelection, isTranslationsSelection } from "./types";
+import {
+  TrackSelection,
+  isLandingSelection,
+  isSettingsSelection,
+  isTranslationsSelection,
+} from "./types";
 
 interface TrackOutlineRailProps {
   sections: TrackSectionFormValue[];
   selection: TrackSelection;
   errorKeys: Set<string>;
   onSelectSettings: () => void;
+  onSelectLanding: () => void;
   onSelectTranslations: () => void;
   /** Published translation count, shown as a badge on the Languages node. */
   publishedLanguageCount: number;
@@ -51,6 +58,7 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
   selection,
   errorKeys,
   onSelectSettings,
+  onSelectLanding,
   onSelectTranslations,
   publishedLanguageCount,
   onSelectItem,
@@ -93,6 +101,19 @@ export const TrackOutlineRail: FC<TrackOutlineRailProps> = ({
         <Settings className="w-4 h-4" />
         <span className="text-sm font-medium flex-1 text-left">Track settings</span>
         {settingsHasError && <WarningAlt className="w-3.5 h-3.5 text-destructive-500" />}
+      </button>
+
+      <button
+        type="button"
+        onClick={onSelectLanding}
+        className={`w-full flex items-center gap-2 px-2 py-2 max-lg:min-h-10 rounded-md mb-2 ${
+          isLandingSelection(selection)
+            ? "bg-primary-50 text-primary-700"
+            : "hover:bg-secondary-50 text-typography-800"
+        }`}
+      >
+        <Document className="w-4 h-4" />
+        <span className="text-sm font-medium flex-1 text-left">{en.courseLanding.railLabel}</span>
       </button>
 
       <button

@@ -9,6 +9,11 @@ import { useCourseCopilotSocket } from "./useCourseCopilotSocket";
 import { useCourseCopilotStream } from "./useCourseCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
+import {
+  IMAGE_GENERATION_FAILED_MESSAGE,
+  ImageGenerationError,
+  useImageGenerationJob,
+} from "./useImageGenerationJob";
 import { useIsPlaceholderUsed } from "./useIsPlaceholderUsed";
 import { useLiveKitRoom } from "./useLiveKitRoom";
 import { useResolvedPrimaryLanguageId } from "./useResolvedPrimaryLanguageId";
@@ -49,4 +54,7 @@ export {
   useCanUseCourseCopilot,
   useCourseCopilotStream,
   useCourseCopilotSocket,
+  useImageGenerationJob,
+  ImageGenerationError,
+  IMAGE_GENERATION_FAILED_MESSAGE,
 };

@@ -1,17 +1,19 @@
-import { FC, useRef } from "react";
+import { FC, useRef, useState } from "react";
 
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { CustomImage, Tooltip } from "@ally-ui-mono/ui-shared";
-import { TooltipIcon, Trash } from "@assets";
+import { TooltipIcon, Trash, WandStars } from "@assets";
 import { Button, ToggleSwitch } from "@components";
 import { RichTextEditor } from "@components/rich-text-editor";
 import { ButtonVariant } from "@components/types";
 import { TrackFormValues } from "@types";
 
+import { buildDefaultCoverPrompt } from "../coverImagePrompt";
 import { useTrackMediaUpload } from "../useTrackMediaUpload";
 import { CourseShareLink, CourseShareLinkState } from "./CourseShareLink";
+import { GenerateCoverImageModal } from "./GenerateCoverImageModal";
 import { TrackCompetenciesField } from "./TrackCompetenciesField";
 
 const labelClass = "text-sm font-medium text-typography-800";
@@ -40,8 +42,14 @@ export const TrackSettingsEditor: FC<TrackSettingsEditorProps> = ({
   } = useFormContext<TrackFormValues>();
   const { upload, isUploading } = useTrackMediaUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  // The trainer's last prompt survives closing the pop-up; until they edit,
+  // the default is rebuilt from the course as it is now.
+  const [editedCoverPrompt, setEditedCoverPrompt] = useState<string | null>(null);
 
   const coverImageUrl = useWatch({ control, name: "coverImageUrl" });
+  const title = useWatch({ control, name: "title" });
+  const description = useWatch({ control, name: "description" });
   const isPublicView = useWatch({ control, name: "isPublicView" }) ?? false;
   const publicViewUnsaved = !!dirtyFields.isPublicView;
 
@@ -65,6 +73,14 @@ export const TrackSettingsEditor: FC<TrackSettingsEditorProps> = ({
       setValue("coverImageUrl", publicUrl, { shouldDirty: true });
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const defaultCoverPrompt = buildDefaultCoverPrompt(title, description);
+
+  const handleGeneratedCoverAccepted = (imageUrl: string) => {
+    setValue("coverImageUrl", imageUrl, { shouldDirty: true });
+    setIsGenerateOpen(false);
+    toast.success("Cover image applied. Save the course to keep it.");
   };
 
   return (
@@ -98,7 +114,23 @@ export const TrackSettingsEditor: FC<TrackSettingsEditorProps> = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className={labelClass}>Cover image</label>
+        <div className="flex items-center justify-between gap-2">
+          <label className={labelClass}>Cover image</label>
+          <Tooltip
+            label="Generate a cover image with AI from a prompt you can edit. You see the result first and choose whether to use it."
+            align="top"
+          >
+            <button
+              type="button"
+              onClick={() => setIsGenerateOpen(true)}
+              disabled={isUploading}
+              aria-label="Generate cover image with AI"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-md text-primary-500 hover:bg-secondary-50 hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <WandStars className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -139,6 +171,18 @@ export const TrackSettingsEditor: FC<TrackSettingsEditorProps> = ({
           >
             {isUploading ? "Uploading…" : "+ Upload cover image"}
           </button>
+        )}
+        {isGenerateOpen && (
+          <GenerateCoverImageModal
+            initialPrompt={editedCoverPrompt ?? defaultCoverPrompt}
+            defaultPrompt={defaultCoverPrompt}
+            trackTitle={title}
+            onPromptChange={prompt =>
+              setEditedCoverPrompt(prompt === defaultCoverPrompt ? null : prompt)
+            }
+            onAccept={handleGeneratedCoverAccepted}
+            onClose={() => setIsGenerateOpen(false)}
+          />
         )}
       </div>
 

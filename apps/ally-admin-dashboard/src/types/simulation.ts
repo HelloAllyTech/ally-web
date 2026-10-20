@@ -609,11 +609,6 @@ export interface GenerateCoverImageRequest {
   provider?: CoverImageProvider;
 }
 
-export interface GenerateCoverImageResponse {
-  imageUrl: string;
-  provider: string;
-}
-
 export interface CoverImageLibraryItem {
   id: string;
   imageUrl: string;

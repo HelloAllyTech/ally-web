@@ -15,11 +15,13 @@ import {
 import { Ally } from "@assets";
 import { LoginDialog } from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES, buildTrackItemRoute, buildTrackRoute } from "@constants";
-import { useUser } from "@hooks";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics, useUser } from "@hooks";
 import { TrackAccessDenialReason } from "@types";
 import { sanitizeHtml } from "@utils";
 
 import { CourseOutline } from "./components/CourseOutline";
+import { StoryLanding } from "./story/StoryLanding";
 import { usePageMeta } from "../blog/usePageMeta";
 
 const isSignedIn = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
@@ -42,12 +44,17 @@ type LandingPhase = "browsing" | "checking" | "starting" | "denied";
  * a learner the course is assigned to is enrolled and taken to the first
  * step; anyone else is told it is not available to them. A learner who
  * arrives already signed in with access goes straight to the course page.
+ *
+ * Once the author has written a hook the page uses the story layout
+ * (`story/StoryLanding`); without one it is the classic outline below. Both
+ * share the same Start flow and states.
  */
 export const CourseLanding: FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { trackId = "" } = useParams<{ trackId: string }>();
   const { user } = useUser();
+  const { track } = useAnalytics();
 
   const {
     data: outline,
@@ -145,10 +152,14 @@ export const CourseLanding: FC = () => {
   // slim bar with the wordmark and, where the page can act on it, Log in.
   // The wordmark is the brand SVG the login page uses, not "ally" typed in a
   // font — a share link is often someone's first sight of Ally.
-  const renderHeader = (withLogin: boolean) =>
+  const renderHeader = (withLogin: boolean, wide = false) =>
     !user && (
       <header className="sticky top-0 z-20 border-b border-border-light bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
+        <div
+          className={`mx-auto flex w-full items-center justify-between px-4 py-3 sm:px-6 ${
+            wide ? "max-w-4xl" : "max-w-3xl"
+          }`}
+        >
           <Ally role="img" aria-label="Ally" className="h-7 w-auto text-typography-900" />
           {withLogin && !isSignedIn() && (
             <button
@@ -209,6 +220,57 @@ export const CourseLanding: FC = () => {
   const isBusy = phase === "checking" || phase === "starting";
   const hasDuration = !!outline.estimatedDurationMinutes;
 
+  const deniedBox = (
+    <div
+      role="status"
+      className="mb-6 rounded-xl border border-warning-200 bg-warning-50 p-4"
+      data-testid="course-landing-denied"
+    >
+      <p className="mb-1 font-semibold text-typography-900">
+        {deniedReason === TrackAccessDenialReason.NOT_AVAILABLE
+          ? t("courseLanding.denied.closedTitle")
+          : t("courseLanding.denied.title")}
+      </p>
+      <p className="mb-3 text-sm text-typography-800">
+        {deniedReason === TrackAccessDenialReason.NOT_AVAILABLE
+          ? t("courseLanding.denied.closedBody")
+          : user?.email
+            ? t("courseLanding.denied.bodyWithEmail", { email: user.email })
+            : t("courseLanding.denied.body")}
+      </p>
+      <button
+        type="button"
+        onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
+        className="rounded-full bg-primary-500 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
+      >
+        {t("courseLanding.goToCourses")}
+      </button>
+    </div>
+  );
+
+  if (outline.story) {
+    return (
+      <div className="flex min-h-full flex-col bg-background font-primary">
+        {renderHeader(true, true)}
+        <StoryLanding
+          outline={outline}
+          story={outline.story}
+          onStart={phase === "denied" ? null : handleStart}
+          isBusy={isBusy}
+          isSignedIn={isSignedIn()}
+          denied={deniedBox}
+          onFirstMovePick={replyIndex =>
+            track(ANALYTICS_EVENTS.COURSE_LANDING_FIRST_MOVE_CHOSEN, {
+              [ANALYTICS_PROPS.COURSE_ID]: outline.id,
+              [ANALYTICS_PROPS.REPLY_INDEX]: replyIndex,
+            })
+          }
+        />
+        {loginDialog}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-full flex-col bg-white font-primary">
       {renderHeader(true)}
@@ -247,31 +309,7 @@ export const CourseLanding: FC = () => {
           )}
 
           {phase === "denied" ? (
-            <div
-              role="status"
-              className="mb-6 rounded-xl border border-warning-200 bg-warning-50 p-4"
-              data-testid="course-landing-denied"
-            >
-              <p className="mb-1 font-semibold text-typography-900">
-                {deniedReason === TrackAccessDenialReason.NOT_AVAILABLE
-                  ? t("courseLanding.denied.closedTitle")
-                  : t("courseLanding.denied.title")}
-              </p>
-              <p className="mb-3 text-sm text-typography-800">
-                {deniedReason === TrackAccessDenialReason.NOT_AVAILABLE
-                  ? t("courseLanding.denied.closedBody")
-                  : user?.email
-                    ? t("courseLanding.denied.bodyWithEmail", { email: user.email })
-                    : t("courseLanding.denied.body")}
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
-                className="rounded-full bg-primary-500 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 max-md:min-h-11"
-              >
-                {t("courseLanding.goToCourses")}
-              </button>
-            </div>
+            deniedBox
           ) : (
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
               <button

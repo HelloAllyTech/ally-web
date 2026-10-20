@@ -203,6 +203,9 @@ export const OpportunityInterviewDrawer: React.FC<OpportunityInterviewDrawerProp
         // here. Editing the description happens in the drawer that opens next.
         readinessToken: readinessToken ?? undefined,
         ...(brief ? { brief } : {}),
+        // The conversation itself, so the Builder session opened from this opportunity starts
+        // from what was decided here rather than asking it all again.
+        interviewTranscript: toWire(messages),
       }).unwrap();
       onCreated(created.id);
     } catch (error) {

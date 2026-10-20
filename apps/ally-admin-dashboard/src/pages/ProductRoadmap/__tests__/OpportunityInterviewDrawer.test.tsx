@@ -260,9 +260,43 @@ describe("OpportunityInterviewDrawer", () => {
         effort: "s",
         readinessToken: "signed-token",
         brief: BRIEF,
+        interviewTranscript: [
+          {
+            role: "agent",
+            content: "All covered — you can file it. A baseline would make it stronger.",
+          },
+        ],
       }),
     );
     expect(onCreated).toHaveBeenCalledWith("opp-1");
+  });
+
+  /**
+   * The conversation goes with the draft, so the Builder session opened from the opportunity
+   * starts from what was decided here. A session handed only the description re-asked the
+   * filer questions they had already answered.
+   */
+  it("files the whole conversation, in order, without the research trail", async () => {
+    runTurn.mockResolvedValueOnce(turn()).mockResolvedValueOnce({
+      ...readyTurn,
+      activity: [{ id: "a1", label: "Searched the board", summary: "3 hits", ok: true }],
+    });
+    createOpportunity.mockResolvedValue({ id: "opp-1" });
+    renderDrawer();
+    await waitFor(() => expect(runTurn).toHaveBeenCalledTimes(1));
+
+    answer("Counsellors writing notes.");
+    fireEvent.click(await screen.findByRole("button", { name: "File and review" }));
+
+    await waitFor(() => expect(createOpportunity).toHaveBeenCalled());
+    expect(createOpportunity.mock.calls[0][0].interviewTranscript).toEqual([
+      { role: "agent", content: "Who is this for?" },
+      { role: "admin", content: "Counsellors writing notes." },
+      {
+        role: "agent",
+        content: "All covered — you can file it. A baseline would make it stronger.",
+      },
+    ]);
   });
 
   it("files without a brief when the copilot produced none", async () => {

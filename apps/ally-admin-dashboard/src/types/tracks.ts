@@ -482,6 +482,11 @@ export interface TrackDetail {
    * of the course's roleplays). Absent on a backend that predates the column.
    */
   competencyIds?: string[] | null;
+  /**
+   * `tracks.landingPage`: the story-led layout of the course's public page. Null until an author
+   * fills something in; absent on a backend that predates the column.
+   */
+  landingPage?: TrackLandingPage | null;
   updatedAt?: string;
   sections: TrackSectionDetail[];
 }
@@ -498,6 +503,8 @@ export interface TrackMetadataInput {
    * must be shared competencies; ids already on the course are never rejected.
    */
   competencyIds?: string[];
+  /** Omit to leave the page unchanged; `null` clears it. */
+  landingPage?: TrackLandingPage | null;
 }
 
 export interface UpdateTrackInput extends TrackMetadataInput {
@@ -557,6 +564,127 @@ export interface TrackMediaUploadUrlResponse {
   publicUrl: string;
 }
 
+/** Track settings → Generate cover image. The prompt is sent exactly as edited. Starts a job. */
+export interface GenerateTrackCoverImageInput {
+  prompt: string;
+  /** Names the stored file only; omitted for an untitled course. */
+  trackTitle?: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Story-led landing page (tracks.landingPage)                                */
+/* -------------------------------------------------------------------------- */
+
+/** Position of a chapter on the story-arc curve. */
+export enum StoryBeat {
+  SETUP = "SETUP",
+  CONFLICT = "CONFLICT",
+  CHALLENGE = "CHALLENGE",
+  CLIMAX = "CLIMAX",
+  RESOLUTION = "RESOLUTION",
+}
+
+/** How long one sitting is expected to take. */
+export enum LandingSittingLength {
+  /** 5-10 min */
+  SHORT = "SHORT",
+  /** 10-15 min */
+  MEDIUM = "MEDIUM",
+  /** 15-20 min */
+  LONG = "LONG",
+}
+
+export interface LandingReply {
+  text: string;
+  label: string;
+  why: string | null;
+}
+
+export interface LandingChapter {
+  /** `track_sections.id` of the section this chapter configures. */
+  sectionId: string;
+  beat: StoryBeat | null;
+  teaser: string | null;
+}
+
+/**
+ * Mirrors ally-be's `TrackLandingPage`. The backend always stores the full shape (every key
+ * present, strings trimmed, "" stored as null), so the builder always edits the full shape too.
+ */
+export interface TrackLandingPage {
+  version: 1;
+  hero: {
+    hook: string | null;
+    question: string | null;
+    courseLine: string | null;
+    buttonLabel: string | null;
+  };
+  persona: {
+    name: string | null;
+    descriptor: string | null;
+    imageUrl: string | null;
+    /** Character Library id, kept for traceability only. The public page never reads the row. */
+    characterId: string | null;
+  };
+  firstMove: {
+    enabled: boolean;
+    sceneLine: string | null;
+    personaLine: string | null;
+    prompt: string | null;
+    replies: LandingReply[];
+  };
+  arc: {
+    enabled: boolean;
+    chapters: LandingChapter[];
+    hardCallSectionId: string | null;
+  };
+  outcomes: { enabled: boolean; items: string[] };
+  howItPlays: { enabled: boolean; sittingLength: LandingSittingLength | null };
+  cast: {
+    enabled: boolean;
+    callerLine: string | null;
+    guide: { name: string | null; role: string | null; line: string | null };
+  };
+  xp: { enabled: boolean };
+  contentNotes: { extraNote: string | null };
+}
+
+/** `POST /v1/course-copilot/tracks/:trackId/landing-page-draft`. Nothing is saved server-side. */
+export interface TrackLandingPageDraftResponse {
+  draft: TrackLandingPage;
+}
+
+/**
+ * Limits the backend enforces on PUT (400 on a violation) and the Copilot draft truncates to.
+ * Characters unless named `MAX_*` counts.
+ */
+export const LANDING_LIMITS = {
+  hookMax: 140,
+  questionMax: 100,
+  courseLineMax: 200,
+  buttonLabelMax: 32,
+  personaNameMax: 60,
+  personaDescriptorMax: 160,
+  personaImageUrlMax: 2048,
+  sceneLineMax: 80,
+  personaLineMax: 240,
+  promptMax: 100,
+  repliesMax: 4,
+  repliesMin: 2,
+  replyTextMax: 200,
+  replyLabelMax: 60,
+  replyWhyMax: 280,
+  chaptersMax: 100,
+  teaserMax: 160,
+  outcomesMax: 3,
+  outcomeMax: 120,
+  callerLineMax: 160,
+  guideNameMax: 60,
+  guideRoleMax: 60,
+  guideLineMax: 200,
+  extraNoteMax: 300,
+} as const;
+
 /* -------------------------------------------------------------------------- */
 /* Builder form state                                                         */
 /* -------------------------------------------------------------------------- */
@@ -609,6 +737,8 @@ export interface TrackFormValues {
   estimatedDurationMinutes?: number | null;
   /** Competency ids this course teaches; `[]` = untagged. */
   competencyIds?: string[];
+  /** The story-led landing page. Null for a course that has not been saved yet. */
+  landingPage?: TrackLandingPage | null;
   sections: TrackSectionFormValue[];
 }
 

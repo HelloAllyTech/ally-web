@@ -2,8 +2,10 @@ import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   CreateTrackResponse,
+  GenerateTrackCoverImageInput,
   GetTracksQueryParams,
   GetTracksResponse,
+  ImageGenerationJob,
   TrackDetail,
   TrackMediaUploadUrlInput,
   TrackMediaUploadUrlResponse,
@@ -109,6 +111,23 @@ const tracksApi = baseAPI.injectEndpoints({
         }),
       },
     ),
+
+    /** Returns at once with a job; poll getTrackCoverImageJob until it settles. */
+    startTrackCoverImageJob: builder.mutation<ImageGenerationJob, GenerateTrackCoverImageInput>({
+      query: body => ({
+        url: ApiEndpoints.TRACKS.GENERATE_COVER_IMAGE,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    getTrackCoverImageJob: builder.query<ImageGenerationJob, string>({
+      query: jobId => ({
+        url: ApiEndpoints.TRACKS.COVER_IMAGE_JOB(jobId),
+        method: HttpMethod.GET,
+      }),
+      keepUnusedDataFor: 0,
+    }),
 
     deleteTrackMedia: builder.mutation<{ success: boolean }, { url: string }>({
       query: body => ({
@@ -243,6 +262,8 @@ export const {
   useRemoveTracksFromTenantMutation,
   useGetTrackMediaUploadUrlMutation,
   useDeleteTrackMediaMutation,
+  useStartTrackCoverImageJobMutation,
+  useLazyGetTrackCoverImageJobQuery,
   useGetTrackTranslationsQuery,
   useSetTrackLanguagesMutation,
   useTranslateTrackMutation,

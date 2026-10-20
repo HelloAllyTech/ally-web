@@ -32,6 +32,10 @@ vi.mock("@constants", () => ({
       resolution: "resolution of 1920x1080 and under 2MB.",
       imageMaxSizeLabel: "2MB",
       videoMaxSizeLabel: "15MB",
+      generateWithAi: "Generate with AI",
+      generatingImage: "Generating image...",
+      imageGeneratedSuccessfully: "Image generated",
+      imageGenerationFailed: "Failed to generate image",
     },
   },
   imageTypes: {
@@ -138,12 +142,12 @@ vi.mock("@api", async importOriginal => {
         unwrap: () => deleteCoverVideoMock(),
       }),
     ],
-    useGenerateCoverImageMutation: () => [
+    useStartCoverImageJobMutation: () => [
       () => ({
         unwrap: () => generateCoverImageMock(),
       }),
-      { isLoading: false },
     ],
+    useLazyGetCoverImageJobQuery: () => [() => ({ unwrap: vi.fn() })],
   };
 });
 
@@ -222,6 +226,60 @@ describe("FileUpload", () => {
     (getCoverImageUrlMock as any).mockResolvedValue({
       presignedUrl: "https://s3/upload",
       coverImageUrl: "https://cdn/image.jpg",
+    });
+  });
+
+  describe("Generate with AI", () => {
+    const renderWithAi = () => {
+      valueStore = { title: "Difficult Feedback", name: "Amit" };
+      render(
+        <FileUpload
+          id={id}
+          formMethods={makeFormMethods()}
+          isMandatory={false}
+          label="Cover"
+          enableAiGeneration
+        />,
+      );
+    };
+
+    it("starts a background job and puts the finished image in the form", async () => {
+      generateCoverImageMock.mockResolvedValue({
+        jobId: "job-1",
+        status: "succeeded",
+        imageUrl: "https://cdn/generated.png",
+        startedAt: "2026-10-20T00:00:00Z",
+      });
+      renderWithAi();
+
+      fireEvent.click(screen.getByRole("button", { name: "Generate with AI" }));
+
+      await waitFor(() =>
+        expect(setValue).toHaveBeenCalledWith(id, "https://cdn/generated.png", {
+          shouldValidate: true,
+          shouldDirty: true,
+        }),
+      );
+      expect(toastSuccess).toHaveBeenCalledWith("Image generated");
+    });
+
+    it("shows the job's own failure wording, not a generic one", async () => {
+      generateCoverImageMock.mockResolvedValue({
+        jobId: "job-2",
+        status: "failed",
+        error: "Image generation is busy right now. Try again in a minute.",
+        startedAt: "2026-10-20T00:00:00Z",
+      });
+      renderWithAi();
+
+      fireEvent.click(screen.getByRole("button", { name: "Generate with AI" }));
+
+      await waitFor(() =>
+        expect(toastError).toHaveBeenCalledWith(
+          "Image generation is busy right now. Try again in a minute.",
+        ),
+      );
+      expect(setValue).not.toHaveBeenCalled();
     });
   });
 

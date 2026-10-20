@@ -331,6 +331,7 @@ export const DEFAULT_TRACK_FORM_VALUES: TrackFormValues = {
   isPublicView: false,
   estimatedDurationMinutes: null,
   competencyIds: [],
+  landingPage: null,
   sections: [],
 };
 

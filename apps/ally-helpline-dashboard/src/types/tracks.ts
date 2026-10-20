@@ -192,6 +192,59 @@ export interface PublicTrackOutlineSection {
   items: PublicTrackOutlineItem[];
 }
 
+/** Where a chapter sits in the course's story (mirrors ally-be `StoryBeat`). */
+export enum StoryBeat {
+  SETUP = "SETUP",
+  CONFLICT = "CONFLICT",
+  CHALLENGE = "CHALLENGE",
+  CLIMAX = "CLIMAX",
+  RESOLUTION = "RESOLUTION",
+}
+
+/** How long one sitting runs (mirrors ally-be `LandingSittingLength`). */
+export enum LandingSittingLength {
+  SHORT = "SHORT",
+  MEDIUM = "MEDIUM",
+  LONG = "LONG",
+}
+
+/**
+ * The story layout of a course's landing page — present only once the author
+ * has written a hook. The server applies every show/hide rule before sending
+ * it: a block that is switched off, or too empty to show, arrives as null.
+ */
+export interface PublicTrackStory {
+  hook: string;
+  question: string | null;
+  courseLine: string | null;
+  buttonLabel: string | null;
+  persona: { name: string; descriptor: string | null; imageUrl: string | null } | null;
+  firstMove: {
+    sceneLine: string | null;
+    personaLine: string;
+    prompt: string | null;
+    replies: { text: string; label: string; why: string | null }[];
+  } | null;
+  arc: {
+    /** One per public section, in course order. */
+    chapters: { sectionId: string; beat: StoryBeat | null; teaser: string | null }[];
+    hardCallSectionId: string | null;
+  } | null;
+  outcomes: string[] | null;
+  howItPlays: { sittingLength: LandingSittingLength | null } | null;
+  cast: {
+    caller: { name: string; line: string | null; imageUrl: string | null } | null;
+    guide: { name: string; role: string | null; line: string | null } | null;
+  } | null;
+  /** An upper bound from the XP rules — roleplay practice minutes come on top. */
+  xp: { activityXp: number; hasRoleplays: boolean } | null;
+  contentNotes: {
+    /** `chapters` are 1-based positions, ascending. */
+    warnings: { name: string; chapters: number[] }[];
+    extraNote: string | null;
+  } | null;
+}
+
 /** `GET /v1/learn/tracks/:id/public` — served only while public view is on and the course is published. */
 export interface PublicTrackOutline {
   id: string;
@@ -203,6 +256,8 @@ export interface PublicTrackOutline {
   estimatedDurationMinutes: number | null;
   languageCode: string;
   sections: PublicTrackOutlineSection[];
+  /** Null (or absent from an older server) means the classic outline page. */
+  story?: PublicTrackStory | null;
 }
 
 /** Why a signed-in learner cannot take a course (mirrors ally-be `TrackAccessDenialReason`). */

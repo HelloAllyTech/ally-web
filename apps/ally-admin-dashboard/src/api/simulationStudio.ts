@@ -79,7 +79,7 @@ import {
   GetReportTranscriptInput,
   GetReportTranscriptResponse,
   GenerateCoverImageRequest,
-  GenerateCoverImageResponse,
+  ImageGenerationJob,
   SttConfig,
   SttConfigPayload,
   LlmConfig,
@@ -1208,20 +1208,39 @@ export const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Generate a scenario cover image with AI. Stateless: the backend renders
-     * the managed `cover_image_generation` prompt (editable via Prompt
-     * Management) with the given title/description, returns the image URL
-     * (already stored in S3 and the shared image library); the client saves
-     * it on the scenario through the normal update flow.
+     * Start generating a scenario cover image with AI. The backend renders the
+     * managed `cover_image_generation` prompt (editable via Prompt Management)
+     * with the given title/description and returns a job at once — generation
+     * outlasts the load balancer's 60 s timeout, so it is polled, not awaited.
+     * A succeeded job's image is already in S3 and the shared image library;
+     * the client saves it on the scenario through the normal update flow.
      */
-    generateCoverImage: builder.mutation<GenerateCoverImageResponse, GenerateCoverImageRequest>({
+    startCoverImageJob: builder.mutation<ImageGenerationJob, GenerateCoverImageRequest>({
       query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_COVER_IMAGE,
+        url: ApiEndpoints.SIMULATION_STUDIO.COVER_IMAGE_JOBS,
         method: HttpMethod.POST,
         body,
       }),
-      // Generated images land in the shared library — refresh the picker.
-      invalidatesTags: [TAG_TYPES.IMAGE_LIBRARY],
+    }),
+
+    getCoverImageJob: builder.query<ImageGenerationJob, string>({
+      query: jobId => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COVER_IMAGE_JOB(jobId),
+        method: HttpMethod.GET,
+      }),
+      keepUnusedDataFor: 0,
+      // A succeeded job's image is now in the shared library — refresh the
+      // picker. Here rather than on the start, when nothing new existed yet.
+      async onQueryStarted(_jobId, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data.status === "succeeded") {
+            dispatch(baseAPI.util.invalidateTags([TAG_TYPES.IMAGE_LIBRARY]));
+          }
+        } catch {
+          // A failed poll is the caller's to handle.
+        }
+      },
     }),
 
     getHelperTags: builder.query<HelperTagInput, GetHelperTagsQueryParams>({
@@ -1706,7 +1725,8 @@ export const {
   useCreateCharacterMutation,
   useUpdateCharacterMutation,
   useDeleteCharacterMutation,
-  useGenerateCoverImageMutation,
+  useStartCoverImageJobMutation,
+  useLazyGetCoverImageJobQuery,
   useGetHelperTagsQuery,
   useCreateHelperTagMutation,
   useGetFillerTagsQuery,

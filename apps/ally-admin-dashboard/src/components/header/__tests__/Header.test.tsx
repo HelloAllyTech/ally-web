@@ -102,9 +102,7 @@ describe("Header", () => {
 
     const extra = screen.getByText("Ask Copilot");
     const save = screen.getByText("Save");
-    expect(
-      extra.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(extra.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     rerender(
       <Header
@@ -116,6 +114,27 @@ describe("Header", () => {
       />,
     );
     expect(screen.queryByText("Ask Copilot")).not.toBeInTheDocument();
+  });
+
+  // CreateTrack's "N issues to fix before publishing". It used to be positioned over the header
+  // from outside and covered Save and Publish; inside the action group it can only come after them.
+  it("renders actionsFooter after the action buttons, inside the same group", () => {
+    render(
+      <Header
+        isValid={false}
+        onBack={onBack}
+        onSaveDraft={onSaveDraft}
+        onPublish={onPublish}
+        title="Edit Course"
+        actionsFooter={<button>2 issues to fix before publishing</button>}
+      />,
+    );
+
+    const footer = screen.getByText("2 issues to fix before publishing");
+    const publish = screen.getByText("Publish");
+    expect(publish.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Same wrapper as the buttons, so it is laid out in their column rather than over them.
+    expect(footer.parentElement).toBe(screen.getByText("Save").closest("div")?.parentElement);
   });
 
   it("renders edit breadcrumb when id present", async () => {

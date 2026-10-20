@@ -1611,6 +1611,122 @@
       "bodyWithEmail": "You're logged in as {{email}}. This course hasn't been made available to your organisation or group — if you think you should have it, ask your organisation's admin.",
       "closedTitle": "This course is closed",
       "closedBody": "It's no longer open to new learners."
+    },
+    "story": {
+      "start": "Take the case",
+      "eyebrow_one": "A case in {{count}} chapter",
+      "eyebrow_other": "A case in {{count}} chapters",
+      "durationMinutes_one": "About {{count}} min",
+      "durationMinutes_other": "About {{count}} min",
+      "durationHours_one": "About {{count}} hour",
+      "durationHours_other": "About {{count}} hours",
+      "roleplayCount_one": "{{count}} roleplay",
+      "roleplayCount_other": "{{count}} roleplays",
+      "sitting": {
+        "short": "5–10 min sittings",
+        "medium": "10–15 min sittings",
+        "long": "15–20 min sittings"
+      },
+      "firstMove": {
+        "eyebrow": "Your first move · a moment from chapter one",
+        "noScore": "No score",
+        "continue": "Continue",
+        "tryAnother": "Try another reply",
+        "loginHint": "Continue opens the login. Nothing you pick here is saved."
+      },
+      "arc": {
+        "eyebrow": "The story",
+        "title_one": "One chapter",
+        "title_other": "{{count}} chapters",
+        "curveLabel": "How the story builds, chapter by chapter, to the hard call",
+        "hardCall": "The hard call",
+        "chapterShort": "Ch. {{number}}",
+        "contentNote": "Content note"
+      },
+      "beats": {
+        "setup": "Setup",
+        "conflict": "Conflict",
+        "challenge": "Challenge",
+        "climax": "Climax",
+        "resolution": "Resolution"
+      },
+      "kinds": {
+        "game": "Game"
+      },
+      "outcomes": {
+        "title": "By the end, you'll be able to"
+      },
+      "howItPlays": {
+        "title": "How it plays",
+        "retry": "Retry any roleplay as often as you like.",
+        "debrief": "Every roleplay ends in a debrief on what you did.",
+        "keep": "Nothing you earn is ever taken away.",
+        "kinds": {
+          "roleplay": {
+            "title_one": "Roleplay",
+            "title_other": "Roleplays",
+            "hint": "Voice practice",
+            "withPersona": "Voice practice with {{name}}"
+          },
+          "case": {
+            "title_one": "Case study",
+            "title_other": "Case studies",
+            "hint": "Linked conversations"
+          },
+          "quiz": {
+            "title_one": "Quick check",
+            "title_other": "Quick checks",
+            "hint": "A few questions each"
+          },
+          "article": {
+            "title_one": "Reading",
+            "title_other": "Readings",
+            "hint": "Short and to the point"
+          },
+          "video": {
+            "title_one": "Video",
+            "title_other": "Videos",
+            "hint": "Watch and notice"
+          },
+          "journal": {
+            "title_one": "Reflection",
+            "title_other": "Reflections",
+            "hint": "In your own words"
+          },
+          "annotation": {
+            "title_one": "Transcript",
+            "title_other": "Transcripts",
+            "hint": "Mark what you notice"
+          },
+          "game": {
+            "title_one": "Game",
+            "title_other": "Games",
+            "hint": "Just for fun"
+          }
+        }
+      },
+      "cast": {
+        "title": "Who you'll meet",
+        "caller": "{{name}} · the caller"
+      },
+      "xp": {
+        "title": "What you'll earn",
+        "withPractice": "Up to {{xp}} XP for the activities, plus XP for every minute you practise.",
+        "activitiesOnly": "Up to {{xp}} XP for the activities.",
+        "keep": "XP counts towards your level and is never taken away."
+      },
+      "notes": {
+        "title": "Before you start",
+        "includes": "This course includes {{warnings}}.",
+        "warningWithChapters_one": "{{name}} (chapter {{chapters}})",
+        "warningWithChapters_other": "{{name}} (chapters {{chapters}})",
+        "pause": "You can pause or leave any roleplay, and you won't lose anything if you do.",
+        "listAnd": "{{rest}} and {{last}}"
+      },
+      "closing": {
+        "title": "Ready when you are",
+        "body": "Log in with your organisation account to start."
+      }
     }
   },
   "tracks2": {

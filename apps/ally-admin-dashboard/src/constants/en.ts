@@ -1,3 +1,15 @@
+/** How "How it plays" names each kind of course item, singular then plural. Keyed by TrackItemType. */
+const LANDING_ITEM_NOUNS: Record<string, [string, string]> = {
+  ROLEPLAY: ["roleplay", "roleplays"],
+  CASE: ["case", "cases"],
+  QUIZ: ["quiz", "quizzes"],
+  ARTICLE: ["article", "articles"],
+  VIDEO: ["video", "videos"],
+  JOURNAL: ["journal", "journals"],
+  ANNOTATED_ARTIFACT: ["annotation", "annotations"],
+  GAME: ["game", "games"],
+};
+
 export const en = {
   common: {
     apply: "Apply",
@@ -4424,6 +4436,265 @@ export const en = {
       selectedCountLabel: (count: number) => (count === 1 ? "1 selected" : `${count} selected`),
       minSelectionsHint: (min: number) => `pick at least ${min}`,
       answeredLabel: "Answered",
+    },
+  },
+  // Course builder -> Landing page: the story-led layout of the course's public share page.
+  // Every limit quoted here mirrors LANDING_LIMITS (types/tracks.ts), which mirrors ally-be.
+  courseLanding: {
+    railLabel: "Landing page",
+    title: "Landing page",
+    explainer:
+      "What visitors see at the course's share link. The story layout turns on once the Hero has a hook; without one, the page shows the standard outline.",
+    readiness: (ready: number, total: number) =>
+      `${ready} of ${total} ${total === 1 ? "block" : "blocks"} ready`,
+    blockListLabel: "Landing page blocks",
+
+    draftWithCopilot: "Draft with Copilot",
+    drafting: "Drafting…",
+    draftHint:
+      "Writes a first version of the empty fields from your saved course. Anything you've written stays as it is.",
+    // The copilot reads the SAVED course, so the draft waits for a save (same reason as Ask Copilot).
+    draftUnsaved:
+      "Save your changes first — the copilot works on the saved version of this course.",
+    draftFilled: (count: number) =>
+      count === 1
+        ? "Copilot filled 1 empty field. Review it, then save."
+        : `Copilot filled ${count} empty fields. Review them, then save.`,
+    draftNothing: "Nothing to fill — every field already has text.",
+    draftFailed: "Couldn't draft the landing page. Try again.",
+
+    openPage: "Open page",
+    openPageHint: "Opens the public page in a new tab. It shows the last saved version.",
+    openPageUnsaved: "Save the course to get its link.",
+    openPageNeedsPublicView: "Turn on Public view in Track settings to open the page.",
+    openPagePendingPublicView: "Save your changes to turn the link on.",
+    openPageNeedsPublish: "The link starts working once you publish the course.",
+
+    status: {
+      SET: "Set",
+      AUTO: "Auto",
+      NEEDS_INPUT: "Needs input",
+      OFF: "Off",
+    } as Record<string, string>,
+    toggleLabel: (block: string) => `Show ${block}`,
+    offNote: "This block is off, so the page leaves it out. Switch it on in the list to show it.",
+    contentNotesLockHint:
+      "Shown automatically when any roleplay in the course has a trigger warning.",
+    charactersLeft: (used: number, max: number) => `${used}/${max}`,
+
+    blocks: {
+      hero: "Hero",
+      firstMove: "First move",
+      arc: "Story arc",
+      outcomes: "Outcomes",
+      howItPlays: "How it plays",
+      cast: "Cast",
+      xp: "XP line",
+      contentNotes: "Content notes",
+    } as Record<string, string>,
+
+    // What the public page does when a block is empty or off.
+    fallback: {
+      hero: "Without a hook, the page shows the standard outline.",
+      firstMove: "Off or fewer than two replies: the hero's button goes straight to login.",
+      arc: "No teaser: the chapter shows its section description.",
+      outcomes: "Empty: the block is hidden.",
+      howItPlays: "Off: the block is hidden.",
+      cast: "No guide: only the caller shows.",
+      xp: "Off: no XP line.",
+      contentNotes: "No warnings and no note: the block is hidden.",
+    } as Record<string, string>,
+
+    hero: {
+      hook: {
+        label: "Hook",
+        placeholder: "She says she's fine. Is she?",
+        hint: "The headline of the page. One line that makes someone want to take the case.",
+      },
+      question: {
+        label: "The question",
+        placeholder: "What would you say next?",
+        hint: "Shown in italics under the hook.",
+      },
+      courseLine: {
+        label: "Course line",
+        placeholder: "Learn to hold a hard first conversation.",
+        hint: "Shown after the course title.",
+      },
+      buttonLabel: {
+        label: "Button label",
+        placeholder: "Take the case",
+        hint: "The main button. Leave it empty to use the default.",
+      },
+      personaHeading: "Persona",
+      personaHint: "The person in the case. Shown on a card beside the hero.",
+      personaName: { label: "Name", placeholder: "Meera, 19" },
+      personaDescriptor: {
+        label: "Descriptor",
+        placeholder: "First-year student, calls at 2 a.m.",
+      },
+      personaImage: {
+        label: "Image",
+        upload: "+ Upload image",
+        uploading: "Uploading…",
+        replace: "Replace",
+        remove: "Remove",
+        notAnImage: "Choose an image file.",
+        alt: "Persona",
+      },
+      characterPicker: {
+        open: "Fill from Character Library",
+        close: "Close",
+        searchPlaceholder: "Search characters",
+        searchLabel: "Search the Character Library",
+        loading: "Loading characters…",
+        empty: "No characters found.",
+        hint: "Copies the name (with age), image and link to the character into the persona.",
+      },
+    },
+
+    firstMove: {
+      helper:
+        "Shown before login. No score. Write a fresh moment — a graded quiz question here would publish its answer.",
+      sceneLine: {
+        label: "Scene line",
+        placeholder: "2:07 a.m. The helpline rings.",
+        hint: "Sets the scene in one short line.",
+      },
+      personaLine: {
+        label: "Persona's line",
+        placeholder: "I just need someone to talk to. It's nothing, really.",
+        hint: "What the persona says. Shown as a pull-quote.",
+      },
+      prompt: {
+        label: "Prompt",
+        placeholder: "What do you say?",
+        hint: "The question the visitor answers by choosing a reply.",
+      },
+      repliesHeading: "Replies",
+      repliesHint: (min: number, max: number) => `Add ${min} to ${max} replies.`,
+      replyHeading: (position: number) => `Reply ${position}`,
+      replyText: { label: "Reply text", placeholder: "That sounds heavy. I'm here." },
+      replyLabel: {
+        label: "What it shows",
+        placeholder: "Reassures first",
+        tooltip:
+          "A short name for what this reply shows about the person who chose it. The visitor sees it after they pick the reply.",
+      },
+      replyWhy: {
+        label: "Why",
+        placeholder: "Naming the feeling keeps the caller talking before you problem-solve.",
+        hint: "A sentence on why this reply works or doesn't. Shown after the pick.",
+      },
+      addReply: "Add reply",
+      remove: "Remove",
+      removeReply: (position: number) => `Remove reply ${position}`,
+      maxReplies: (max: number) => `A first move has at most ${max} replies.`,
+    },
+
+    arc: {
+      helper: "Teasers never give away a roleplay's hidden events or a quiz answer.",
+      empty: "This course has no sections yet. Add one to shape its story arc.",
+      chapterHeading: (position: number) => `Chapter ${position}`,
+      unsaved: "Save the course to add a teaser for this chapter.",
+      beat: {
+        label: "Beat",
+        none: "No beat",
+        tooltip:
+          "Where this chapter sits in the story. Beats shape the curve drawn above the chapter list.",
+        options: {
+          SETUP: "Setup",
+          CONFLICT: "Conflict",
+          CHALLENGE: "Challenge",
+          CLIMAX: "Climax",
+          RESOLUTION: "Resolution",
+        } as Record<string, string>,
+      },
+      teaser: {
+        label: "Teaser",
+        placeholder: "Something she says doesn't add up.",
+      },
+      hardCall: {
+        label: "Hard call",
+        tooltip:
+          "The one chapter the course builds toward. The curve peaks here and the row is emphasised on the page. Pick one per course.",
+        clear: "Clear hard call",
+      },
+    },
+
+    outcomes: {
+      helper: "Start with a verb. Write what they'll do, not what they'll know.",
+      itemLabel: (position: number) => `Outcome ${position}`,
+      placeholders: [
+        "Name what a caller is feeling before offering advice",
+        "Ask about safety in plain words",
+        "Close a call so the caller knows what happens next",
+      ],
+    },
+
+    howItPlays: {
+      countsHeading: "In this course",
+      countsEmpty: "No activities yet.",
+      itemCount: (type: string, count: number) => {
+        const [singular, plural] = LANDING_ITEM_NOUNS[type] ?? [type, type];
+        return `${count} ${count === 1 ? singular : plural}`;
+      },
+      durationLabel: "Estimated duration",
+      durationValue: (minutes: number) => `About ${minutes} min`,
+      durationUnset: "Not set",
+      durationPointer: "Edit this in Track settings.",
+      sittingLength: {
+        label: "Sitting length",
+        none: "Not shown",
+        tooltip:
+          "How long one sitting should take, shown as a chip on the page. It is separate from the estimated duration for the whole course.",
+        options: {
+          SHORT: "Short (5 to 10 min)",
+          MEDIUM: "Medium (10 to 15 min)",
+          LONG: "Long (15 to 20 min)",
+        } as Record<string, string>,
+      },
+      promisesHeading: "Always shown",
+      promises: {
+        retry: "Retry any roleplay as often as you like",
+        debrief: "Every roleplay ends in a debrief on what you did",
+        keep: "Nothing you earn is ever taken away",
+      },
+      promisesNote: "The first two appear only when the course has a roleplay.",
+    },
+
+    cast: {
+      callerName: "Caller",
+      callerNameFromHero: "The caller's name comes from the Hero persona.",
+      callerNameUnset: "Not set. Add a name to the persona in the Hero block.",
+      callerLine: {
+        label: "Caller line",
+        placeholder: "Calls at night, rarely says what's wrong.",
+        hint: "A line about the caller, shown beside their name.",
+      },
+      guideHeading: "Guide",
+      guideName: { label: "Guide name", placeholder: "Dr. Rao" },
+      guideRole: { label: "Guide role", placeholder: "Clinical supervisor" },
+      guideLine: {
+        label: "Guide line",
+        placeholder: "Debriefs every call with you.",
+      },
+    },
+
+    xp: {
+      explainer:
+        'Shows "Up to N XP for the activities", worked out from the XP rules. There is nothing to write here.',
+      offHint: "Switch it off in the block list to hide the line.",
+    },
+
+    contentNotes: {
+      explainer:
+        "Warnings are collected from the course's roleplays and listed with the chapters they appear in. This block can't be switched off while a warning exists.",
+      extraNote: {
+        label: "Extra note",
+        placeholder: "Roleplays are fictional. You can stop any of them at any time.",
+        hint: "Shown after the warnings. Optional.",
+      },
     },
   },
   // Course Copilot — the chat-first course authoring agent. The right-hand work pane's copy lives

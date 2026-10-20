@@ -31,6 +31,9 @@ import {
   FillBlankQuestion,
   GameContent,
   JournalContent,
+  LandingReply,
+  LandingSittingLength,
+  LANDING_LIMITS,
   LikertScaleQuestion,
   MatchingQuestion,
   McqMultiQuestion,
@@ -42,12 +45,14 @@ import {
   QuizContent,
   QuizQuestion,
   QuizQuestionType,
+  StoryBeat,
   TrackDetail,
   TrackFormValues,
   TrackGameKey,
   TrackItemContent,
   TrackItemFormValue,
   TrackItemType,
+  TrackLandingPage,
   TrackMetadataInput,
   TrackSectionFormValue,
   TrackStructureInput,
@@ -1019,6 +1024,209 @@ export const serializeTrackForm = (values: TrackFormValues): TrackStructureInput
   })),
 });
 
+/* -------------------------------------------------------------------------- */
+/* Landing page                                                               */
+/* -------------------------------------------------------------------------- */
+
+type DeepPartial<T> = T extends (infer U)[]
+  ? DeepPartial<U>[]
+  : T extends object
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T;
+
+/**
+ * The page the backend starts a course with: every block switched on, nothing written. Matches
+ * ally-be's defaults for a missing key (`enabled` true, strings null, arrays empty). A fresh
+ * object every call — the form edits it.
+ */
+export const emptyLandingPage = (): TrackLandingPage => ({
+  version: 1,
+  hero: { hook: null, question: null, courseLine: null, buttonLabel: null },
+  persona: { name: null, descriptor: null, imageUrl: null, characterId: null },
+  firstMove: { enabled: true, sceneLine: null, personaLine: null, prompt: null, replies: [] },
+  arc: { enabled: true, chapters: [], hardCallSectionId: null },
+  outcomes: { enabled: true, items: [] },
+  howItPlays: { enabled: true, sittingLength: null },
+  cast: { enabled: true, callerLine: null, guide: { name: null, role: null, line: null } },
+  xp: { enabled: true },
+  contentNotes: { extraNote: null },
+});
+
+const landingString = (value: unknown): string | null => (typeof value === "string" ? value : null);
+const landingFlag = (value: unknown): boolean => (typeof value === "boolean" ? value : true);
+
+/** Text counts as written once it has something other than whitespace. */
+export const isLandingTextFilled = (value: string | null | undefined): boolean =>
+  typeof value === "string" && value.trim() !== "";
+
+/**
+ * Completes a possibly partial landing page with the backend's defaults, copying as it goes: the
+ * input is often an RTK Query cache entry, which Immer has deep-frozen. Unknown beats and sitting
+ * lengths are read as unset rather than carried into a `<select>` that cannot show them.
+ */
+export const withLandingDefaults = (
+  page?: DeepPartial<TrackLandingPage> | null,
+): TrackLandingPage => {
+  const source: DeepPartial<TrackLandingPage> = page ?? {};
+  const beats: string[] = Object.values(StoryBeat);
+  const sittings: string[] = Object.values(LandingSittingLength);
+  return {
+    version: 1,
+    hero: {
+      hook: landingString(source.hero?.hook),
+      question: landingString(source.hero?.question),
+      courseLine: landingString(source.hero?.courseLine),
+      buttonLabel: landingString(source.hero?.buttonLabel),
+    },
+    persona: {
+      name: landingString(source.persona?.name),
+      descriptor: landingString(source.persona?.descriptor),
+      imageUrl: landingString(source.persona?.imageUrl),
+      characterId: landingString(source.persona?.characterId),
+    },
+    firstMove: {
+      enabled: landingFlag(source.firstMove?.enabled),
+      sceneLine: landingString(source.firstMove?.sceneLine),
+      personaLine: landingString(source.firstMove?.personaLine),
+      prompt: landingString(source.firstMove?.prompt),
+      replies: (source.firstMove?.replies ?? []).map(reply => ({
+        text: landingString(reply?.text) ?? "",
+        label: landingString(reply?.label) ?? "",
+        why: landingString(reply?.why),
+      })),
+    },
+    arc: {
+      enabled: landingFlag(source.arc?.enabled),
+      chapters: (source.arc?.chapters ?? []).flatMap(chapter =>
+        chapter?.sectionId
+          ? [
+              {
+                sectionId: chapter.sectionId,
+                beat: beats.includes(chapter.beat as string) ? (chapter.beat as StoryBeat) : null,
+                teaser: landingString(chapter.teaser),
+              },
+            ]
+          : [],
+      ),
+      hardCallSectionId: landingString(source.arc?.hardCallSectionId),
+    },
+    outcomes: {
+      enabled: landingFlag(source.outcomes?.enabled),
+      items: (source.outcomes?.items ?? []).filter(
+        (item): item is string => typeof item === "string",
+      ),
+    },
+    howItPlays: {
+      enabled: landingFlag(source.howItPlays?.enabled),
+      sittingLength: sittings.includes(source.howItPlays?.sittingLength as string)
+        ? (source.howItPlays?.sittingLength as LandingSittingLength)
+        : null,
+    },
+    cast: {
+      enabled: landingFlag(source.cast?.enabled),
+      callerLine: landingString(source.cast?.callerLine),
+      guide: {
+        name: landingString(source.cast?.guide?.name),
+        role: landingString(source.cast?.guide?.role),
+        line: landingString(source.cast?.guide?.line),
+      },
+    },
+    xp: { enabled: landingFlag(source.xp?.enabled) },
+    contentNotes: { extraNote: landingString(source.contentNotes?.extraNote) },
+  };
+};
+
+const isReplyBlank = (reply: LandingReply): boolean =>
+  !isLandingTextFilled(reply.text) &&
+  !isLandingTextFilled(reply.label) &&
+  !isLandingTextFilled(reply.why);
+
+/**
+ * Whether an author has done anything to the page: written any text, picked a beat, hard call or
+ * sitting length, or switched a block off. A page that is still the backend's default is "empty"
+ * and is saved as null, so a course nobody wrote a landing page for does not carry a full object
+ * of nulls. A switched-off block counts as something done, because the author chose it.
+ */
+export const hasLandingPageContent = (page?: DeepPartial<TrackLandingPage> | null): boolean => {
+  if (!page) return false;
+  const p = withLandingDefaults(page);
+  const texts = [
+    p.hero.hook,
+    p.hero.question,
+    p.hero.courseLine,
+    p.hero.buttonLabel,
+    p.persona.name,
+    p.persona.descriptor,
+    p.persona.imageUrl,
+    p.persona.characterId,
+    p.firstMove.sceneLine,
+    p.firstMove.personaLine,
+    p.firstMove.prompt,
+    p.arc.hardCallSectionId,
+    p.cast.callerLine,
+    p.cast.guide.name,
+    p.cast.guide.role,
+    p.cast.guide.line,
+    p.contentNotes.extraNote,
+  ];
+  return (
+    texts.some(isLandingTextFilled) ||
+    p.firstMove.replies.some(reply => !isReplyBlank(reply)) ||
+    p.arc.chapters.some(chapter => chapter.beat !== null || isLandingTextFilled(chapter.teaser)) ||
+    p.outcomes.items.some(isLandingTextFilled) ||
+    p.howItPlays.sittingLength !== null ||
+    !p.firstMove.enabled ||
+    !p.arc.enabled ||
+    !p.outcomes.enabled ||
+    !p.howItPlays.enabled ||
+    !p.cast.enabled ||
+    !p.xp.enabled
+  );
+};
+
+/**
+ * The landing page as PUT: null when there is nothing to save, else the page with the form's
+ * scaffolding stripped. Blank reply rows and blank outcome inputs are dropped, a chapter is kept
+ * only while its section is still in the course and has a beat or a teaser, and a hard call on a
+ * section that is gone is cleared. (The backend ignores stale section ids at read time anyway;
+ * this stops them piling up in the stored page.)
+ */
+export const serializeLandingPage = (
+  page: TrackLandingPage | null | undefined,
+  sections: TrackSectionFormValue[],
+): TrackLandingPage | null => {
+  if (!hasLandingPageContent(page)) return null;
+  const p = withLandingDefaults(page);
+  const sectionIds = new Set(
+    sections.map(section => section.serverId).filter((id): id is string => !!id),
+  );
+  return {
+    ...p,
+    firstMove: {
+      ...p.firstMove,
+      replies: p.firstMove.replies
+        .filter(reply => !isReplyBlank(reply))
+        .slice(0, LANDING_LIMITS.repliesMax),
+    },
+    arc: {
+      ...p.arc,
+      chapters: p.arc.chapters.filter(
+        chapter =>
+          sectionIds.has(chapter.sectionId) &&
+          (chapter.beat !== null || isLandingTextFilled(chapter.teaser)),
+      ),
+      hardCallSectionId:
+        p.arc.hardCallSectionId && sectionIds.has(p.arc.hardCallSectionId)
+          ? p.arc.hardCallSectionId
+          : null,
+    },
+    outcomes: {
+      ...p.outcomes,
+      items: p.outcomes.items.filter(isLandingTextFilled).slice(0, LANDING_LIMITS.outcomesMax),
+    },
+  };
+};
+
 export const extractTrackMetadata = (values: TrackFormValues): TrackMetadataInput => ({
   title: values.title,
   description: values.description,
@@ -1030,6 +1238,8 @@ export const extractTrackMetadata = (values: TrackFormValues): TrackMetadataInpu
   // null). Ids the picker could not list ride along untouched — the backend
   // never rejects an id the course already carries.
   competencyIds: values.competencyIds ?? [],
+  // Always sent (null clears it) so emptying the page in the builder empties the stored one.
+  landingPage: serializeLandingPage(values.landingPage, values.sections ?? []),
 });
 
 /** GET /tracks/:id response -> builder form values (fresh client localIds). */
@@ -1041,6 +1251,8 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
   isPublicView: detail.isPublicView ?? false,
   estimatedDurationMinutes: detail.estimatedDurationMinutes ?? null,
   competencyIds: detail.competencyIds ?? [],
+  // Always a full page, so the Landing page editor never meets a null.
+  landingPage: detail.landingPage ? withLandingDefaults(detail.landingPage) : emptyLandingPage(),
   sections: [...(detail.sections ?? [])]
     .sort((a, b) => a.order - b.order)
     .map(section => ({

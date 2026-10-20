@@ -24,6 +24,13 @@ interface HeaderProps {
    * header, which collided with the row's own wrapping at narrow widths.
    */
   extraActions?: ReactNode;
+  /**
+   * A line under the action buttons, right-aligned with them — CreateTrack's "N issues to fix
+   * before publishing". It lives inside the row so it can never cover the buttons: positioned
+   * over the header from outside at a fixed offset, it sat on top of Save and Publish at every
+   * desktop width and swallowed their clicks.
+   */
+  actionsFooter?: ReactNode;
 }
 
 export const Header: FC<HeaderProps> = ({
@@ -37,6 +44,7 @@ export const Header: FC<HeaderProps> = ({
   showPreview = true,
   type,
   extraActions,
+  actionsFooter,
 }) => {
   const handleSaveDraft = async () => {
     const response = await onSaveDraft();
@@ -83,30 +91,33 @@ export const Header: FC<HeaderProps> = ({
       </div>
       <div className="flex flex-wrap md:flex-nowrap gap-y-2 items-center justify-between w-full px-0 md:px-2 pb-2 md:h-[80px] relative">
         <h1 className="text-xl md:text-2xl text-typography-900 md:whitespace-nowrap">{title}</h1>
-        <div className="flex items-center gap-3">
-          {extraActions}
-          <Button
-            variant={ButtonVariant.TEXT}
-            onClick={handleSaveDraft}
-            className="px-4 py-1 h-[36px] text-typography-900"
-          >
-            {en.simulation.save}
-          </Button>
-          {showPreview &&
-            (isValid ? (
-              previewButton
+        <div className="flex flex-col items-start md:items-end gap-1">
+          <div className="flex items-center gap-3">
+            {extraActions}
+            <Button
+              variant={ButtonVariant.TEXT}
+              onClick={handleSaveDraft}
+              className="px-4 py-1 h-[36px] text-typography-900"
+            >
+              {en.simulation.save}
+            </Button>
+            {showPreview &&
+              (isValid ? (
+                previewButton
+              ) : (
+                <Tooltip label={en.simulation.previewTooltipMessage} align="top">
+                  <span>{previewButton}</span>
+                </Tooltip>
+              ))}
+            {isValid ? (
+              publishButton
             ) : (
-              <Tooltip label={en.simulation.previewTooltipMessage} align="top">
-                <span>{previewButton}</span>
+              <Tooltip label={en.simulation.publishTooltipMessage} align="top">
+                <span>{publishButton}</span>
               </Tooltip>
-            ))}
-          {isValid ? (
-            publishButton
-          ) : (
-            <Tooltip label={en.simulation.publishTooltipMessage} align="top">
-              <span>{publishButton}</span>
-            </Tooltip>
-          )}
+            )}
+          </div>
+          {actionsFooter}
         </div>
       </div>
     </>

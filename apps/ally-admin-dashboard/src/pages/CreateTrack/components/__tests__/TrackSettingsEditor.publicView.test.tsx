@@ -15,6 +15,7 @@ vi.mock("sonner", () => ({ toast: { success: mockToastSuccess, error: mockToastE
 vi.mock("@assets", () => ({
   TooltipIcon: () => <span data-testid="tooltip-icon" />,
   Trash: () => <span data-testid="trash" />,
+  WandStars: () => <span data-testid="wand-stars" />,
 }));
 
 vi.mock("@components", () => ({
@@ -48,6 +49,7 @@ vi.mock("../../useTrackMediaUpload", () => ({
 }));
 
 vi.mock("../TrackCompetenciesField", () => ({ TrackCompetenciesField: () => null }));
+vi.mock("../GenerateCoverImageModal", () => ({ GenerateCoverImageModal: () => null }));
 
 import { TrackSettingsEditor } from "../TrackSettingsEditor";
 
