@@ -212,7 +212,6 @@ export const GameItemPlayer: FC<GameItemPlayerProps> = ({ payload, itemId, onCom
   }, [frameStrings, handleRunFinished]);
 
   const heightClass = FRAME_HEIGHT[payload.gameKey];
-  const isSupported = !!heightClass;
 
   if (!heightClass) {
     return (

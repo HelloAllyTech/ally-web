@@ -10,6 +10,7 @@ import {
   AnnotationArtifactKind,
   AnnotationRevealKey,
   AnnotationSettings,
+  BreathingExerciseContent,
   CompletionCriteria,
   GameContent,
   QuizQuestionType,
