@@ -706,35 +706,35 @@ const validateItem = (item: TrackItemFormValue): string[] => {
         }
         if (
           typeof breathing.inhale !== "number" ||
-          Number.isNaN(breathing.inhale) ||
+          !Number.isFinite(breathing.inhale) ||
           breathing.inhale <= 0
         ) {
           errors.push("Breathing Exercise: inhale duration must be greater than 0");
         }
         if (
           typeof breathing.holdIn !== "number" ||
-          Number.isNaN(breathing.holdIn) ||
+          !Number.isFinite(breathing.holdIn) ||
           breathing.holdIn < 0
         ) {
           errors.push("Breathing Exercise: hold (in) duration cannot be negative");
         }
         if (
           typeof breathing.exhale !== "number" ||
-          Number.isNaN(breathing.exhale) ||
+          !Number.isFinite(breathing.exhale) ||
           breathing.exhale <= 0
         ) {
           errors.push("Breathing Exercise: exhale duration must be greater than 0");
         }
         if (
           typeof breathing.holdOut !== "number" ||
-          Number.isNaN(breathing.holdOut) ||
+          !Number.isFinite(breathing.holdOut) ||
           breathing.holdOut < 0
         ) {
           errors.push("Breathing Exercise: hold (out) duration cannot be negative");
         }
         if (
           typeof breathing.cycles !== "number" ||
-          Number.isNaN(breathing.cycles) ||
+          !Number.isInteger(breathing.cycles) ||
           breathing.cycles <= 0
         ) {
           errors.push("Breathing Exercise: cycles must be at least 1");

@@ -776,6 +776,29 @@ describe("Breathing Exercise", () => {
     expect(messages(form).join(" ")).toMatch(/cycles must be at least 1/);
   });
 
+  it("blocks publishing when cycles is fractional or infinite", () => {
+    const form = buildFormWithBreathing();
+    const breathing = form.sections[0].items[0].game!.breathingExercise!;
+
+    breathing.cycles = 1.5;
+    expect(messages(form).join(" ")).toMatch(/cycles must be at least 1/);
+
+    breathing.cycles = Infinity;
+    expect(messages(form).join(" ")).toMatch(/cycles must be at least 1/);
+  });
+
+  it("blocks publishing when durations are infinite", () => {
+    const form = buildFormWithBreathing();
+    const breathing = form.sections[0].items[0].game!.breathingExercise!;
+
+    breathing.inhale = Infinity;
+    expect(messages(form).join(" ")).toMatch(/inhale duration must be greater than 0/);
+
+    breathing.inhale = 4;
+    breathing.holdIn = Infinity;
+    expect(messages(form).join(" ")).toMatch(/hold \(in\) duration cannot be negative/);
+  });
+
   it("blocks publishing when instructional texts are missing", () => {
     const form = buildFormWithBreathing();
     const breathing = form.sections[0].items[0].game!.breathingExercise!;
