@@ -22,19 +22,14 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
         id={id}
         type="number"
         value={value}
-        onChange={(e) => onChange(null, { value: Number(e.target.value) })}
+        onChange={e => onChange(null, { value: Number(e.target.value) })}
       />
     </div>
   ),
   TextInput: ({ labelText, value, onChange, id }: any) => (
     <div>
       <label htmlFor={id}>{labelText}</label>
-      <input
-        id={id}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e)}
-      />
+      <input id={id} type="text" value={value} onChange={e => onChange(e)} />
     </div>
   ),
   Tooltip: ({ children }: any) => <div>{children}</div>,
