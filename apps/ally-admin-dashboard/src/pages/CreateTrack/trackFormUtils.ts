@@ -1,5 +1,6 @@
 import {
   DEFAULT_ANNOTATION_SETTINGS,
+  DEFAULT_BREATHING_EXERCISE_CONTENT,
   DEFAULT_COMPLETION_CRITERIA,
   DEFAULT_GAME_CONTENT,
   DEFAULT_LIKERT_SCALE_PRESET,
@@ -170,6 +171,9 @@ export const createItemFormValueFromTemplate = (template: {
       break;
     case TrackItemType.QUIZ:
       item.quiz = (template.content as QuizContent) ?? base.quiz;
+      break;
+    case TrackItemType.GAME:
+      item.game = (template.content as GameContent) ?? base.game;
       break;
     case TrackItemType.ANNOTATED_ARTIFACT: {
       const annotation = template.content as AnnotationContent | undefined;
@@ -700,19 +704,39 @@ const validateItem = (item: TrackItemFormValue): string[] => {
           errors.push("Breathing Exercise: configuration is missing");
           break;
         }
-        if (breathing.inhale <= 0) {
+        if (
+          typeof breathing.inhale !== "number" ||
+          Number.isNaN(breathing.inhale) ||
+          breathing.inhale <= 0
+        ) {
           errors.push("Breathing Exercise: inhale duration must be greater than 0");
         }
-        if (breathing.holdIn < 0) {
+        if (
+          typeof breathing.holdIn !== "number" ||
+          Number.isNaN(breathing.holdIn) ||
+          breathing.holdIn < 0
+        ) {
           errors.push("Breathing Exercise: hold (in) duration cannot be negative");
         }
-        if (breathing.exhale <= 0) {
+        if (
+          typeof breathing.exhale !== "number" ||
+          Number.isNaN(breathing.exhale) ||
+          breathing.exhale <= 0
+        ) {
           errors.push("Breathing Exercise: exhale duration must be greater than 0");
         }
-        if (breathing.holdOut < 0) {
+        if (
+          typeof breathing.holdOut !== "number" ||
+          Number.isNaN(breathing.holdOut) ||
+          breathing.holdOut < 0
+        ) {
           errors.push("Breathing Exercise: hold (out) duration cannot be negative");
         }
-        if (breathing.cycles <= 0) {
+        if (
+          typeof breathing.cycles !== "number" ||
+          Number.isNaN(breathing.cycles) ||
+          breathing.cycles <= 0
+        ) {
           errors.push("Breathing Exercise: cycles must be at least 1");
         }
 
@@ -1078,7 +1102,11 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
                 gameKey: game?.gameKey ?? DEFAULT_GAME_CONTENT.gameKey,
                 intro: game?.intro ?? "",
                 ...(game?.gameKey === TrackGameKey.BREATHING_EXERCISE
-                  ? { breathingExercise: game.breathingExercise }
+                  ? {
+                      breathingExercise: game.breathingExercise ?? {
+                        ...DEFAULT_BREATHING_EXERCISE_CONTENT,
+                      },
+                    }
                   : {}),
               };
               break;
