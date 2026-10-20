@@ -43,6 +43,7 @@ import {
   QuizQuestionType,
   TrackDetail,
   TrackFormValues,
+  TrackGameKey,
   TrackItemContent,
   TrackItemFormValue,
   TrackItemType,
@@ -692,6 +693,44 @@ const validateItem = (item: TrackItemFormValue): string[] => {
       }
       break;
     }
+    case TrackItemType.GAME: {
+      if (item.game?.gameKey === TrackGameKey.BREATHING_EXERCISE) {
+        const breathing = item.game.breathingExercise;
+        if (!breathing) {
+          errors.push("Breathing Exercise: configuration is missing");
+          break;
+        }
+        if (breathing.inhale <= 0) {
+          errors.push("Breathing Exercise: inhale duration must be greater than 0");
+        }
+        if (breathing.holdIn < 0) {
+          errors.push("Breathing Exercise: hold (in) duration cannot be negative");
+        }
+        if (breathing.exhale <= 0) {
+          errors.push("Breathing Exercise: exhale duration must be greater than 0");
+        }
+        if (breathing.holdOut < 0) {
+          errors.push("Breathing Exercise: hold (out) duration cannot be negative");
+        }
+        if (breathing.cycles <= 0) {
+          errors.push("Breathing Exercise: cycles must be at least 1");
+        }
+
+        if (isBlank(breathing.inhaleText)) {
+          errors.push("Breathing Exercise: inhale text is required");
+        }
+        if (isBlank(breathing.holdInText)) {
+          errors.push("Breathing Exercise: hold (in) text is required");
+        }
+        if (isBlank(breathing.exhaleText)) {
+          errors.push("Breathing Exercise: exhale text is required");
+        }
+        if (isBlank(breathing.holdOutText)) {
+          errors.push("Breathing Exercise: hold (out) text is required");
+        }
+      }
+      break;
+    }
   }
   return errors;
 };
@@ -716,7 +755,10 @@ export const validateTrackForPublish = (values: TrackFormValues): PublishError[]
   values.sections?.forEach((section, sectionIndex) => {
     const key = sectionNodeKey(sectionIndex);
     if (isBlank(section.title)) {
-      errors.push({ nodeKey: key, message: `Section ${sectionIndex + 1}: title is required` });
+      errors.push({
+        nodeKey: key,
+        message: `Section ${sectionIndex + 1}: title is required`,
+      });
     }
     if (!section.items || section.items.length === 0) {
       errors.push({
@@ -726,7 +768,10 @@ export const validateTrackForPublish = (values: TrackFormValues): PublishError[]
     }
     section.items?.forEach((item, itemIndex) => {
       for (const message of validateItem(item)) {
-        errors.push({ nodeKey: itemNodeKey(sectionIndex, itemIndex), message });
+        errors.push({
+          nodeKey: itemNodeKey(sectionIndex, itemIndex),
+          message,
+        });
       }
     });
   });
@@ -921,6 +966,9 @@ export const serializeItem = (item: TrackItemFormValue, order: number): TrackStr
         ? {
             gameKey: item.game.gameKey,
             ...(isBlank(item.game.intro) ? {} : { intro: item.game.intro }),
+            ...(item.game.gameKey === TrackGameKey.BREATHING_EXERCISE && item.game.breathingExercise
+              ? { breathingExercise: { ...item.game.breathingExercise } }
+              : {}),
           }
         : undefined;
       break;
@@ -1029,6 +1077,9 @@ export const deserializeTrack = (detail: TrackDetail): TrackFormValues => ({
               formItem.game = {
                 gameKey: game?.gameKey ?? DEFAULT_GAME_CONTENT.gameKey,
                 intro: game?.intro ?? "",
+                ...(game?.gameKey === TrackGameKey.BREATHING_EXERCISE
+                  ? { breathingExercise: game.breathingExercise }
+                  : {}),
               };
               break;
             }

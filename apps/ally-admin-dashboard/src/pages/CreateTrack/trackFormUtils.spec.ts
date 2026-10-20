@@ -721,3 +721,77 @@ describe("ungraded questions (isGraded: false) and showCorrectAnswer", () => {
     expect(rebuiltQuestion.showCorrectAnswer).toBe(false);
   });
 });
+
+describe("Breathing Exercise", () => {
+  const buildFormWithBreathing = () => {
+    const form = buildValidForm();
+    form.sections[0].items = [
+      {
+        localId: "i-breathing",
+        type: TrackItemType.GAME,
+        title: "Breathing Exercise",
+        description: "",
+        completionCriteria: {},
+        game: {
+          gameKey: TrackGameKey.BREATHING_EXERCISE,
+          intro: "Take a break",
+          breathingExercise: {
+            inhale: 4,
+            holdIn: 4,
+            exhale: 4,
+            holdOut: 4,
+            cycles: 4,
+            inhaleText: "Inhale",
+            holdInText: "Hold",
+            exhaleText: "Exhale",
+            holdOutText: "Hold",
+          },
+        },
+      },
+    ];
+    return form;
+  };
+
+  const messages = (form: TrackFormValues) =>
+    validateTrackForPublish(form).map(error => error.message);
+
+  it("publishes a valid breathing exercise", () => {
+    const form = buildFormWithBreathing();
+    expect(validateTrackForPublish(form)).toEqual([]);
+  });
+
+  it("blocks publishing when durations are invalid", () => {
+    const form = buildFormWithBreathing();
+    const breathing = form.sections[0].items[0].game!.breathingExercise!;
+
+    breathing.inhale = 0;
+    expect(messages(form).join(" ")).toMatch(/inhale duration must be greater than 0/);
+
+    breathing.inhale = 4;
+    breathing.holdIn = -1;
+    expect(messages(form).join(" ")).toMatch(/hold \(in\) duration cannot be negative/);
+
+    breathing.holdIn = 4;
+    breathing.cycles = 0;
+    expect(messages(form).join(" ")).toMatch(/cycles must be at least 1/);
+  });
+
+  it("blocks publishing when instructional texts are missing", () => {
+    const form = buildFormWithBreathing();
+    const breathing = form.sections[0].items[0].game!.breathingExercise!;
+
+    breathing.inhaleText = "";
+    expect(messages(form).join(" ")).toMatch(/inhale text is required/);
+  });
+
+  it("serializes the breathing exercise content correctly", () => {
+    const form = buildFormWithBreathing();
+    const structure = serializeTrackForm(form);
+    const item = structure.sections[0].items[0];
+    const content = item.content as any;
+
+    expect(content.gameKey).toBe(TrackGameKey.BREATHING_EXERCISE);
+    expect(content.intro).toBe("Take a break");
+    expect(content.breathingExercise).toEqual(form.sections[0].items[0].game!.breathingExercise);
+  });
+});

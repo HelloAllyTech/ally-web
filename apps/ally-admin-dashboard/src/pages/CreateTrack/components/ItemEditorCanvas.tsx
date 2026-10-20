@@ -1,9 +1,12 @@
 import { FC } from "react";
 
-import { TrackItemType } from "@types";
+import { useFormContext } from "react-hook-form";
+
+import { TrackFormValues, TrackGameKey, TrackItemType } from "@types";
 
 import { AnnotationItemEditor } from "./editors/annotation/AnnotationItemEditor";
 import { ArticleItemEditor } from "./editors/ArticleItemEditor";
+import { BreathingExerciseEditor } from "./editors/BreathingExerciseEditor";
 import { CaseItemEditor } from "./editors/CaseItemEditor";
 import { GameItemEditor } from "./editors/GameItemEditor";
 import { JournalItemEditor } from "./editors/JournalItemEditor";
@@ -25,6 +28,7 @@ export const ItemEditorCanvas: FC<ItemEditorCanvasProps> = ({
   type,
   onDelete,
 }) => {
+  const { watch } = useFormContext<TrackFormValues>();
   const props = { sectionIndex, itemIndex, onDelete };
 
   switch (type) {
@@ -42,8 +46,13 @@ export const ItemEditorCanvas: FC<ItemEditorCanvasProps> = ({
       return <QuizItemEditor {...props} />;
     case TrackItemType.ANNOTATED_ARTIFACT:
       return <AnnotationItemEditor {...props} />;
-    case TrackItemType.GAME:
+    case TrackItemType.GAME: {
+      const gameKey = watch(`sections.${sectionIndex}.items.${itemIndex}.game.gameKey`);
+      if (gameKey === TrackGameKey.BREATHING_EXERCISE) {
+        return <BreathingExerciseEditor {...props} />;
+      }
       return <GameItemEditor {...props} />;
+    }
     default:
       return null;
   }

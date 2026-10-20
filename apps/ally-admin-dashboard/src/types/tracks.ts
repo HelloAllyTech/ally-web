@@ -31,6 +31,7 @@ export enum TrackGameKey {
   CUB_N_PUP = "CUB_N_PUP",
   SNAKE = "SNAKE",
   SPROUT = "SPROUT",
+  BREATHING_EXERCISE = "BREATHING_EXERCISE",
 }
 
 /* -------------------------------------------------------------------------- */
@@ -312,6 +313,20 @@ export interface GameContent {
   gameKey: TrackGameKey;
   /** Optional framing shown above the game. */
   intro?: string;
+  /** Configuration for the breathing exercise. Only present when gameKey is BREATHING_EXERCISE. */
+  breathingExercise?: BreathingExerciseContent;
+}
+
+export interface BreathingExerciseContent {
+  inhale: number;
+  holdIn: number;
+  exhale: number;
+  holdOut: number;
+  cycles: number;
+  inhaleText: string;
+  holdInText: string;
+  exhaleText: string;
+  holdOutText: string;
 }
 
 export type TrackItemContent =

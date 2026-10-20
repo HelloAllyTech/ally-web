@@ -24,6 +24,7 @@ export enum TrackGameKey {
   CUB_N_PUP = "CUB_N_PUP",
   SNAKE = "SNAKE",
   SPROUT = "SPROUT",
+  BREATHING_EXERCISE = "BREATHING_EXERCISE",
 }
 
 /**

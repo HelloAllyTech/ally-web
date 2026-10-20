@@ -261,6 +261,18 @@ export const DEFAULT_GAME_CONTENT: GameContent = {
   intro: "",
 };
 
+export const DEFAULT_BREATHING_EXERCISE_CONTENT: BreathingExerciseContent = {
+  inhale: 4,
+  holdIn: 4,
+  exhale: 4,
+  holdOut: 4,
+  cycles: 4,
+  inhaleText: "Inhale",
+  holdInText: "Hold",
+  exhaleText: "Exhale",
+  holdOutText: "Hold",
+};
+
 /* ---- Annotation (ANNOTATED_ARTIFACT) ---- */
 
 export const MAX_ANNOTATION_UNITS = 300;

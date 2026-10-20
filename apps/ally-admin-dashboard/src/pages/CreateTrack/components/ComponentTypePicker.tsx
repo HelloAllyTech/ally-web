@@ -3,13 +3,14 @@ import { FC, useEffect, useRef, useState } from "react";
 import { ArrowSolid } from "@assets";
 import {
   CHOOSE_FROM_LIBRARY_LABEL,
+  DEFAULT_BREATHING_EXERCISE_CONTENT,
   isComponentLibrarySupportedType,
   START_BLANK_LABEL,
   TRACK_ITEM_TYPE_DESCRIPTIONS,
   TRACK_ITEM_TYPE_LABELS,
 } from "@constants";
 import { useCanViewComponentLibrary } from "@hooks";
-import { CompletionCriteria, TrackItemContent, TrackItemType } from "@types";
+import { CompletionCriteria, TrackGameKey, TrackItemContent, TrackItemType } from "@types";
 
 import { TemplatePickerModal } from "./TemplatePickerModal";
 
@@ -132,6 +133,29 @@ export const ComponentTypePicker: FC<ComponentTypePickerProps> = ({
             </button>
           ),
         )}
+
+        <button
+          type="button"
+          onClick={() => {
+            onSelectTemplate?.(
+              TrackItemType.GAME,
+              {
+                gameKey: TrackGameKey.BREATHING_EXERCISE,
+                intro: "",
+                breathingExercise: { ...DEFAULT_BREATHING_EXERCISE_CONTENT },
+              },
+              {},
+              "Breathing Exercise",
+            );
+            onClose();
+          }}
+          className="text-left rounded-md px-2 py-2 hover:bg-secondary-50"
+        >
+          <span className="block text-sm font-medium text-typography-900">Breathing Exercise</span>
+          <span className="block text-xs text-typography-500">
+            A guided box-breathing break for learners
+          </span>
+        </button>
       </div>
 
       {templateModalType && (
