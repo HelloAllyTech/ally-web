@@ -6,8 +6,8 @@ import { TrackFormValues, TrackGameKey, TrackItemType } from "@types";
 
 import { AnnotationItemEditor } from "./editors/annotation/AnnotationItemEditor";
 import { ArticleItemEditor } from "./editors/ArticleItemEditor";
-import { BreathingExerciseEditor } from "./editors/BreathingExerciseEditor";
 import { BranchingScenarioItemEditor } from "./editors/branching/BranchingScenarioItemEditor";
+import { BreathingExerciseEditor } from "./editors/BreathingExerciseEditor";
 import { CaseItemEditor } from "./editors/CaseItemEditor";
 import { GameItemEditor } from "./editors/GameItemEditor";
 import { JournalItemEditor } from "./editors/JournalItemEditor";
