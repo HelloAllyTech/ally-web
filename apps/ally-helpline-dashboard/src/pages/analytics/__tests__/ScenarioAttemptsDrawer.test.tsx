@@ -56,7 +56,10 @@ vi.mock("@constants", () => ({ Permissions: { EDIT_USER: "edit:user" } }));
 vi.mock("@utils", () => ({
   hasPermissions: (perms: string[], p: string) => perms.includes(p),
 }));
-vi.mock("@hooks", () => ({ useUser: () => ({ permissions: mockPermissions() }) }));
+vi.mock("@hooks", () => ({
+  useUser: () => ({ permissions: mockPermissions() }),
+  useAnalytics: () => ({ track: vi.fn() }),
+}));
 
 vi.mock("@assets", () => ({
   Download: () => <span />,

@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ActionableNotification, Loading } from "@ally-ui-mono/ui-shared";
 import { useGetLearnerScenarioAttemptsQuery, useResetBranchingAttemptsMutation } from "@api";
 import { Button, ButtonVariant, Drawer } from "@components";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
+import { useAnalytics } from "@hooks";
 import { LearnerScenarioAttempt } from "@types";
 
 interface ScenarioAttemptsDrawerProps {
@@ -32,6 +34,7 @@ export const ScenarioAttemptsDrawer: FunctionComponent<ScenarioAttemptsDrawerPro
   learnerName,
 }) => {
   const { t } = useTranslation();
+  const { track } = useAnalytics();
   const [confirming, setConfirming] = useState<LearnerScenarioAttempt | null>(null);
 
   // `skip` while closed: the table has one drawer per row set, and a request per
@@ -61,6 +64,11 @@ export const ScenarioAttemptsDrawer: FunctionComponent<ScenarioAttemptsDrawerPro
     if (!confirming) return;
     try {
       await resetAttempts({ trackItemId: confirming.trackItemId, userId }).unwrap();
+      track(ANALYTICS_EVENTS.LEARNER_SCENARIO_ATTEMPTS_REOPENED, {
+        [ANALYTICS_PROPS.LEARNER_ID]: userId,
+        [ANALYTICS_PROPS.LEARNER_NAME]: learnerName,
+        [ANALYTICS_PROPS.TRACK_ITEM_ID]: confirming.trackItemId,
+      });
       toast.success(t("organizationMetrics.scenarioAttempts.reopenSuccess"));
       setConfirming(null);
     } catch (err) {

@@ -24,6 +24,7 @@ vi.mock("@api", () => {
     baseAPI: apiStub("baseAPI"),
     evaluatorAPI: apiStub("evaluatorAPI"),
     useGetWeakPerformingMetricsQuery: (args: unknown) => queryMock(args),
+    useAnalytics: () => ({ track: vi.fn() }),
   };
 });
 
