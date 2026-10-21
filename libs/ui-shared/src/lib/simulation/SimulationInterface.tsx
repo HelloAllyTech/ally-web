@@ -636,7 +636,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   return (
     <motion.div
       data-testid="simulation-interface"
-      layout
+      layout="position"
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="w-full flex justify-center items-center flex-1 relative"
     >

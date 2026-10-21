@@ -177,3 +177,24 @@ describe("SimulationPage text-chat roleplay", () => {
     expect(room.registerTextStreamHandler).not.toHaveBeenCalled();
   });
 });
+
+describe("SimulationPage rendering", () => {
+  beforeEach(() => {
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+  
+  it("should not receive a warning about a non-boolean attribute `layout`", () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    renderPage();
+    expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Warning: Received `true` for a non-boolean attribute `layout`.")
+    );
+    consoleWarnSpy.mockRestore();
+  });
+});
+

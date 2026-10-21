@@ -444,7 +444,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         </div>
       </div>
 
-      <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
+      <motion.div layout="position" className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
         <SimulationInterface
           roomStatus={roomStatus}
           roomData={roomData}
