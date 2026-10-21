@@ -71,10 +71,11 @@ rather than `!= VOICE`.
 
 ### Analytics Page
 
-| Constant                   | Event Name                 | Description                       |
-| -------------------------- | -------------------------- | --------------------------------- |
-| `ANALYTICS_REPORT_VIEWED`  | `analytics_report_viewed`  | Analytics dashboard viewed        |
-| `ANALYTICS_FILTER_APPLIED` | `analytics_filter_applied` | A filter is applied to the report |
+| Constant                   | Event Name                 | Description                       | Fires at                                                               |
+| -------------------------- | -------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| `ANALYTICS_REPORT_VIEWED`  | `analytics_report_viewed`  | Analytics dashboard viewed        | —                                                                      |
+| `ANALYTICS_FILTER_APPLIED` | `analytics_filter_applied` | A filter is applied to the report | —                                                                      |
+| —                          | —                          | (UI only)                         | `apps/ally-helpline-dashboard/src/pages/analytics/ScenarioAttemptsDrawer.tsx` |
 
 ### Settings
 
