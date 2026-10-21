@@ -43,7 +43,6 @@ vi.mock("@api", () => ({
   useGetFoundationalSkillsJudgeAgreementQuery: (...args: unknown[]) => judgeMock(...args),
 }));
 
-import { AnalyticsOrgScopeProvider } from "../../analyticsOrgScope";
 import { FoundationalSkillsValiditySection } from "../../FoundationalSkillsValiditySection";
 
 const provenance = { derivation: "derivation", note: "note" };
@@ -231,18 +230,7 @@ describe("FoundationalSkillsValiditySection", () => {
     expect(transferMock).toHaveBeenLastCalledWith({ tenantId: "t-alpha" });
     expect(uptakeMock).toHaveBeenLastCalledWith({ tenantId: "t-alpha" });
     expect(convergenceMock).toHaveBeenLastCalledWith({ tenantId: "t-alpha" });
-    expect(judgeMock).toHaveBeenLastCalledWith(undefined, { skip: false });
-  });
-
-  it("neither requests nor shows judge agreement to an org-restricted admin — it spans every org", () => {
-    render(
-      <AnalyticsOrgScopeProvider value={{ restricted: true, tenantId: "t-alpha" }}>
-        <FoundationalSkillsValiditySection tenantId="t-alpha" windowLabel="All time" />
-      </AnalyticsOrgScopeProvider>,
-    );
-    expect(judgeMock).toHaveBeenLastCalledWith(undefined, { skip: true });
-    expect(screen.queryByText("AAQ-223")).not.toBeInTheDocument();
-    expect(screen.getByText("AAQ-220")).toBeInTheDocument();
+    expect(judgeMock).toHaveBeenLastCalledWith();
   });
 
   it("sends no tenant at all for every org", () => {

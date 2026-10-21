@@ -14,7 +14,6 @@ import {
 } from "@api";
 
 import { asOfStamp } from "../analyticsFilters";
-import { useAnalyticsOrgScope } from "../analyticsOrgScope";
 import { BenchmarkSlope } from "../BenchmarkSlope";
 import { ChangeWhiskers } from "../ChangeWhiskers";
 import { ChartDetailModal } from "../ChartDetailModal";
@@ -287,10 +286,7 @@ const sortLearners = (rows: FhsProgressLearner[], sort: SortKey): FhsProgressLea
  * learner's whole history.
  */
 export const FoundationalSkillsSubTab = () => {
-  // An org-restricted admin's org comes from the page picker; theirs is hidden.
-  const scope = useAnalyticsOrgScope();
-  const [pickedTenantId, setTenantId] = useState<string>(ALL_ORGS);
-  const tenantId = scope.restricted ? (scope.tenantId ?? ALL_ORGS) : pickedTenantId;
+  const [tenantId, setTenantId] = useState<string>(ALL_ORGS);
   const [cuts, setCuts] = useState<number | undefined>(undefined);
   const [baseline, setBaseline] = useState<"1" | "2">("1");
   const [levelWindow, setLevelWindow] = useState<WindowKey>("late");
@@ -327,10 +323,7 @@ export const FoundationalSkillsSubTab = () => {
   const bench = useGetFoundationalSkillsBenchmarkQuery(org);
   const habits = useGetFoundationalSkillsBehavioursQuery(org);
   // AAQ-187's human-rater stat reads AAQ-223's status (platform-wide, so no org arg).
-  // Not requested for an org-restricted admin: it is measured over every org.
-  const humanStat = humanRaterAgreementStat(
-    useGetFoundationalSkillsJudgeAgreementQuery(undefined, { skip: scope.restricted }).data,
-  );
+  const humanStat = humanRaterAgreementStat(useGetFoundationalSkillsJudgeAgreementQuery().data);
   const hb = habits.data;
   const habitCommon = {
     loading: habits.isLoading && !hb,
@@ -494,18 +487,14 @@ export const FoundationalSkillsSubTab = () => {
       {/* The org, the panel and the baseline: whose practice, which learners and which cuts every comparison uses. */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          {!scope.restricted && (
-            <>
-              <span className="text-sm font-medium text-typography-900">Org:</span>
-              <InlinePicker
-                id="fhs-org"
-                label="Org"
-                items={orgItems}
-                selected={tenantId}
-                onChange={pickOrg}
-              />
-            </>
-          )}
+          <span className="text-sm font-medium text-typography-900">Org:</span>
+          <InlinePicker
+            id="fhs-org"
+            label="Org"
+            items={orgItems}
+            selected={tenantId}
+            onChange={pickOrg}
+          />
           <span className="text-sm font-medium text-typography-900">
             Compare the same learners:
           </span>

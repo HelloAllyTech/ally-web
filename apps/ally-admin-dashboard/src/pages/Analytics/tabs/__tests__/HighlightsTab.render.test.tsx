@@ -74,7 +74,6 @@ vi.mock("@api/analytics", () => ({
   }),
 }));
 
-import { AnalyticsOrgScopeProvider } from "../../analyticsOrgScope";
 import { HighlightsTab } from "../HighlightsTab";
 
 /** Label, and one heading or card title that only that sub-tab renders. */
@@ -165,45 +164,5 @@ describe("HighlightsTab", () => {
       // rendered — not how many times it said its own name.
       expect((await screen.findAllByText(marker)).length).toBeGreaterThan(0);
     }
-  }, 60000);
-
-  /**
-   * An org-restricted admin gets only the sub-tabs that narrow to their org,
-   * and the two panels that hide platform-wide cards for them still mount
-   * with no data behind them — the hidden cards are exactly the ones that
-   * would read the fields the server withholds.
-   */
-  it("shows an org-restricted admin only the org-scoped sub-tabs, which still mount", async () => {
-    render(
-      <AnalyticsOrgScopeProvider value={{ restricted: true, tenantId: "org-a" }}>
-        <HighlightsTab {...filters} query={{ range: "all", tenantId: "org-a" }} />
-      </AnalyticsOrgScopeProvider>,
-    );
-
-    expect(screen.getAllByRole("tab").map(tab => tab.textContent)).toEqual([
-      "Effectiveness",
-      "Helping skills",
-      "Platform",
-      "Usage",
-      "Skill growth",
-      "Curriculum",
-      "Course impact",
-      "Quality & sentiment",
-      "Coaching & support",
-    ]);
-
-    // Effectiveness opens first: no org picker of its own, no platform cost.
-    expect(
-      (await screen.findAllByText(/Where learners fall out of the chain/i)).length,
-    ).toBeGreaterThan(0);
-    expect(screen.queryByText(/Cost per improved learner/i)).not.toBeInTheDocument();
-    expect(screen.queryByText("Org:")).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole("tab", { name: "Platform" }));
-    expect((await screen.findAllByText(/North star/i)).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/Completed simulations by organisation/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Total AI spend/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Users by role/i)).not.toBeInTheDocument();
-    expect(screen.queryByText("Active orgs")).not.toBeInTheDocument();
   }, 60000);
 });

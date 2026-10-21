@@ -1,9 +1,8 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { Tab, TabList, TabPanel, TabPanels, CarbonTabs as Tabs } from "@ally-ui-mono/ui-shared";
 
 import { AnalyticsTabFilters } from "../analyticsFilters";
-import { useAnalyticsOrgScope } from "../analyticsOrgScope";
 import { CoachingSupportSubTab } from "./CoachingSupportSubTab";
 import { CourseImpactSubTab } from "./CourseImpactSubTab";
 import { CurriculumSubTab } from "./CurriculumSubTab";
@@ -29,12 +28,6 @@ interface SubTabDef {
   label: string;
   blurb: string;
   render: (filters: AnalyticsTabFilters) => ReactNode;
-  /**
-   * Shown to a platform admin restricted to some organizations: everything it
-   * draws narrows to the page's org, or is hidden for them. Priority, Orgs and
-   * Unit economics are platform-wide by construction and stay hidden.
-   */
-  orgScoped?: true;
 }
 
 const SUB_TABS: SubTabDef[] = [
@@ -57,7 +50,6 @@ const SUB_TABS: SubTabDef[] = [
     // in how they help, each tile read from the tab that owns its definition.
     // All-time with its own org filter, so no page filters reach it.
     id: "effectiveness",
-    orgScoped: true,
     label: "Effectiveness",
     blurb:
       "Does practice on Ally change how people help? Each tile is one link in that chain; open the tile's tab for the detail.",
@@ -73,7 +65,6 @@ const SUB_TABS: SubTabDef[] = [
     // All-time like Priority, so no page filters reach it; it opens on all orgs
     // and carries its own org filter.
     id: "helping-skills",
-    orgScoped: true,
     label: "Helping skills",
     blurb:
       "Is practice moving the 14 foundational helping skills, scored on one fixed rubric whatever the scenario? The same learners start to now — with how precise the measure is, what helpers do, safety, a same-scenario benchmark, and who to coach.",
@@ -85,14 +76,12 @@ const SUB_TABS: SubTabDef[] = [
     // plus the north-star pair, which belongs on the first platform-history
     // screen a leader sees rather than a click away.
     id: "platform",
-    orgScoped: true,
     label: "Platform",
     blurb: "The whole-platform picture: the north star, growth, engagement, outcomes and adoption.",
     render: f => <PlatformSubTab {...f} />,
   },
   {
     id: "levels",
-    orgScoped: true,
     label: "Usage",
     blurb:
       "Whether learners start at all, whether they come back, and how much of their practice is long enough to count.",
@@ -103,7 +92,6 @@ const SUB_TABS: SubTabDef[] = [
     // question a reader has to answer before "are they getting better" means
     // anything.
     id: "skills",
-    orgScoped: true,
     label: "Skill growth",
     blurb:
       "Does practice raise learners' helping-skills score, slice by slice? The learning curve, how many individuals improved against their own start, which competencies the practice lands on, and any one learner's history — on the same 1–4 rubric as Helping skills.",
@@ -114,7 +102,6 @@ const SUB_TABS: SubTabDef[] = [
     // get and how well they do, and this one asks what the platform put in
     // front of them.
     id: "curriculum",
-    orgScoped: true,
     label: "Curriculum",
     blurb:
       "What learners practise and what they finish: completion by item format, the language mix, and the most- and least-used scenarios.",
@@ -126,7 +113,6 @@ const SUB_TABS: SubTabDef[] = [
     // rubric, so every course is on one scale whatever its scenarios. All-time
     // with its own org filter, like Helping skills, so no page filters reach it.
     id: "course-impact",
-    orgScoped: true,
     label: "Course impact",
     blurb:
       "Did each course leave its learners better at the 14 helping skills? Each learner's practice before starting against their practice after finishing, on one fixed rubric — with who each course can measure, skill by skill, and harmful habits.",
@@ -134,7 +120,6 @@ const SUB_TABS: SubTabDef[] = [
   },
   {
     id: "quality",
-    orgScoped: true,
     label: "Quality & sentiment",
     blurb:
       "Does the LLM judge agree with the learner? The same sessions read as an index, a proxy NPS, a distribution and a rating mix.",
@@ -143,7 +128,6 @@ const SUB_TABS: SubTabDef[] = [
   {
     // The only panels on this tab that measure people other than learners.
     id: "coaching",
-    orgScoped: true,
     label: "Coaching & support",
     blurb:
       "The human loop around the product: sessions shared for review, how fast they get a reply, and how widely live support is used.",
@@ -206,13 +190,8 @@ const SUB_TABS: SubTabDef[] = [
  * its definition is worse than no control.
  */
 export const HighlightsTab = (filters: AnalyticsTabFilters) => {
-  const { restricted } = useAnalyticsOrgScope();
-  const subTabs = useMemo(
-    () => (restricted ? SUB_TABS.filter(t => t.orgScoped) : SUB_TABS),
-    [restricted],
-  );
   const [selected, setSelected] = useState(0);
-  const active = subTabs[selected] ?? subTabs[0];
+  const active = SUB_TABS[selected] ?? SUB_TABS[0];
 
   return (
     <div className="flex flex-col gap-2">
@@ -221,7 +200,7 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
         onChange={({ selectedIndex }: { selectedIndex: number }) => setSelected(selectedIndex)}
       >
         <TabList aria-label="Highlights sections" contained>
-          {subTabs.map(tab => (
+          {SUB_TABS.map(tab => (
             <Tab key={tab.id}>{tab.label}</Tab>
           ))}
         </TabList>
@@ -233,7 +212,7 @@ export const HighlightsTab = (filters: AnalyticsTabFilters) => {
         ) : null}
 
         <TabPanels>
-          {subTabs.map((tab, i) => (
+          {SUB_TABS.map((tab, i) => (
             // No side padding on phones, as on the page's own tab panels.
             <TabPanel key={tab.id} className="max-sm:!px-0">
               {/* Rendered only while selected. Carbon keeps every TabPanel in

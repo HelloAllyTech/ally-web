@@ -931,16 +931,11 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
     // One learner's scored cuts, for the Skills tab's per-person panel.
-    // `tenantId` is set only for an org-restricted admin: the server then
-    // requires the learner to belong to that org and shows their cuts there.
-    getFoundationalSkillsLearner: builder.query<
-      FoundationalSkillsLearnersResponse,
-      { userId: number; tenantId?: string }
-    >({
-      query: ({ userId, tenantId }) => ({
+    getFoundationalSkillsLearner: builder.query<FoundationalSkillsLearnersResponse, number>({
+      query: userId => ({
         url: ApiEndpoints.ANALYTICS.FOUNDATIONAL_SKILLS_LEARNERS,
         method: HttpMethod.GET,
-        params: { userId, minCut: 1, limit: 1, ...(tenantId ? { tenantId } : {}) },
+        params: { userId, minCut: 1, limit: 1 },
       }),
     }),
     getSkillGrowth: builder.query<SkillGrowthResponse, AllTimeAnalyticsQuery>({
@@ -964,14 +959,10 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     }),
     // One learner's timeline. Fetched only when a row is opened — the panel
     // passes `skip` until then, so the list costs one request, not N.
-    getSkillGrowthLearnerSeries: builder.query<
-      SkillGrowthLearnerSeriesResponse,
-      { userId: number; tenantId?: string }
-    >({
-      query: ({ userId, tenantId }) => ({
+    getSkillGrowthLearnerSeries: builder.query<SkillGrowthLearnerSeriesResponse, number>({
+      query: userId => ({
         url: `${ApiEndpoints.ANALYTICS.SKILL_GROWTH_LEARNERS}/${userId}`,
         method: HttpMethod.GET,
-        params: tenantId ? { tenantId } : {},
       }),
     }),
     // Quality as a distribution (median + IQR) and satisfaction as a rating mix,

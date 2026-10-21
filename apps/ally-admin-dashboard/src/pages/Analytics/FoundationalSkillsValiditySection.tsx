@@ -8,7 +8,6 @@ import {
 } from "@api";
 
 import { asOfStamp } from "./analyticsFilters";
-import { useAnalyticsOrgScope } from "./analyticsOrgScope";
 import { ChangeWhiskers } from "./ChangeWhiskers";
 import { ChartDetailModal } from "./ChartDetailModal";
 import { ChartCard, buildSource } from "./chartKit";
@@ -356,12 +355,7 @@ export const FoundationalSkillsValiditySection = ({
   const transfer = stateOf(useGetFoundationalSkillsTransferQuery(org));
   const uptake = stateOf(useGetFoundationalSkillsFeedbackUptakeQuery(org));
   const convergence = stateOf(useGetMeasurementConvergenceQuery(org));
-  // Judge agreement is measured over every org's rated slices: not requested
-  // for (or shown to) an org-restricted admin.
-  const { restricted } = useAnalyticsOrgScope();
-  const judge = stateOf(
-    useGetFoundationalSkillsJudgeAgreementQuery(undefined, { skip: restricted }),
-  );
+  const judge = stateOf(useGetFoundationalSkillsJudgeAgreementQuery());
 
   const tr = transfer.data;
   const up = uptake.data;
@@ -525,38 +519,36 @@ export const FoundationalSkillsValiditySection = ({
           {cv && <ConvergenceMatrix data={cv} />}
         </ChartCard>
 
-        {!restricted && (
-          <ChartCard
-            wide
-            title="Judge vs human agreement"
-            caption={
-              ja
-                ? `People rate a stratified sample of slices (${ja.samplePerQuarter} per quarter) against the same rubric by ticking behaviour codes; each level is then derived with the judge's own rule, so agreement is about what each saw. κ: 1 = perfect, 0 = no better than chance. Weighted κ counts a near miss (3 vs 4) far less than a far one (1 vs 4). Human vs human is the ceiling the judge can reasonably be held to. — = fewer than ${ja.minSampleSize} rated slices, or κ undefined.`
-                : "The AI judge's levels against people rating the same slices."
-            }
-            source={jaSource}
-            takeaway={ja ? judgeAgreementTakeaway(ja) : undefined}
-            loading={judge.loading}
-            error={judge.error}
-            onRetry={judge.onRetry}
-            errorSubtitle={`The judge agreement ${NOT_DEPLOYED}`}
-            empty={notRated}
-            emptyText={
-              ja ? `${notYetMeasuredText(ja)} ${judgeCoverageText(ja.coverage)}.` : undefined
-            }
-            onExpand={ja && !notRated ? () => setExpanded("judge") : undefined}
-            chartId="AAQ-223"
-          >
-            {ja && (
-              <div className="flex flex-col gap-2">
-                <JudgeAgreementTable data={ja} />
-                <p className="text-[11px] leading-snug text-typography-500">
-                  {judgeCoverageText(ja.coverage)}.
-                </p>
-              </div>
-            )}
-          </ChartCard>
-        )}
+        <ChartCard
+          wide
+          title="Judge vs human agreement"
+          caption={
+            ja
+              ? `People rate a stratified sample of slices (${ja.samplePerQuarter} per quarter) against the same rubric by ticking behaviour codes; each level is then derived with the judge's own rule, so agreement is about what each saw. κ: 1 = perfect, 0 = no better than chance. Weighted κ counts a near miss (3 vs 4) far less than a far one (1 vs 4). Human vs human is the ceiling the judge can reasonably be held to. — = fewer than ${ja.minSampleSize} rated slices, or κ undefined.`
+              : "The AI judge's levels against people rating the same slices."
+          }
+          source={jaSource}
+          takeaway={ja ? judgeAgreementTakeaway(ja) : undefined}
+          loading={judge.loading}
+          error={judge.error}
+          onRetry={judge.onRetry}
+          errorSubtitle={`The judge agreement ${NOT_DEPLOYED}`}
+          empty={notRated}
+          emptyText={
+            ja ? `${notYetMeasuredText(ja)} ${judgeCoverageText(ja.coverage)}.` : undefined
+          }
+          onExpand={ja && !notRated ? () => setExpanded("judge") : undefined}
+          chartId="AAQ-223"
+        >
+          {ja && (
+            <div className="flex flex-col gap-2">
+              <JudgeAgreementTable data={ja} />
+              <p className="text-[11px] leading-snug text-typography-500">
+                {judgeCoverageText(ja.coverage)}.
+              </p>
+            </div>
+          )}
+        </ChartCard>
       </div>
 
       {tr && expanded === "transfer" && (

@@ -15,7 +15,6 @@ import {
 } from "@api";
 
 import { asOfStamp } from "../analyticsFilters";
-import { useAnalyticsOrgScope } from "../analyticsOrgScope";
 import { ChangeWhiskers } from "../ChangeWhiskers";
 import {
   RANGE_LABEL,
@@ -231,11 +230,7 @@ const ChainKpi = ({
  * a calendar window (spend accrues by date) and platform-wide by construction.
  */
 export const EffectivenessSubTab = () => {
-  // An org-restricted admin's org comes from the page picker; their own
-  // picker is hidden and the platform-wide cost card is not requested.
-  const scope = useAnalyticsOrgScope();
-  const [pickedTenantId, setTenantId] = useState<string>(ALL_ORGS);
-  const tenantId = scope.restricted ? (scope.tenantId ?? ALL_ORGS) : pickedTenantId;
+  const [tenantId, setTenantId] = useState<string>(ALL_ORGS);
   const [dimension, setDimension] = useState<SegmentDimension>("language");
   const [expanded, setExpanded] = useState<"funnel" | "segments" | "dose" | null>(null);
   const [doseAxis, setDoseAxis] = useState<DoseAxis>("cuts");
@@ -268,7 +263,7 @@ export const EffectivenessSubTab = () => {
   const costRange = controlsFor("costPerImprovement").range;
   const costQ = useGetEffectivenessCostPerImprovementQuery(
     { range: costRange },
-    { skip: hydrating || scope.restricted },
+    { skip: hydrating },
   );
   const cost = stateOf(costQ);
 
@@ -341,18 +336,14 @@ export const EffectivenessSubTab = () => {
   return (
     <div className="flex flex-col gap-6 md:gap-8">
       <div className="flex flex-wrap items-center gap-3">
-        {!scope.restricted && (
-          <>
-            <span className="text-sm font-medium text-typography-900">Org:</span>
-            <InlinePicker
-              id="effectiveness-org"
-              label="Org"
-              items={orgItems}
-              selected={tenantId}
-              onChange={pickOrg}
-            />
-          </>
-        )}
+        <span className="text-sm font-medium text-typography-900">Org:</span>
+        <InlinePicker
+          id="effectiveness-org"
+          label="Org"
+          items={orgItems}
+          selected={tenantId}
+          onChange={pickOrg}
+        />
         <span className="text-xs text-typography-500">{allTime}</span>
       </div>
 
@@ -559,43 +550,41 @@ export const EffectivenessSubTab = () => {
             {scatter && <ComboChart data={dosePoints} options={doseOpts} />}
           </ChartCard>
 
-          {!scope.restricted && (
-            <ChartCard
-              title="Cost per improved learner"
-              caption={`Learner-caused AI spend in the window divided by the learners whose improvement beyond their own noise landed in it. ${COST_CEILING_CAVEAT}`}
-              source={buildSource({
-                derivation: "Priced learner-caused AI calls ÷ learners improving beyond noise",
-                window: cost.data?.window.label ?? RANGE_SHORT[costRange],
-                extra: "estimate · USD · platform-wide",
-                asOf: asOfStamp(cost.data?.computedAt),
-              })}
-              loading={hydrating || cost.loading}
-              error={cost.error}
-              onRetry={cost.onRetry}
-              errorSubtitle="The cost-per-improvement endpoint did not respond — it may not be deployed yet."
-              controls={
-                <RangePicker
-                  id="effectiveness-cost-range"
-                  value={costRange}
-                  onChange={range => setRange("costPerImprovement", range)}
-                />
-              }
-              height="auto"
-              chartId="AAQ-218"
-              kpi={
-                cost.data
-                  ? {
-                      label: `USD per improved learner · ${RANGE_LABEL[costRange]}`,
-                      value: formatUsd(cost.data.costPerImprovedLearnerUsd),
-                      description: costDescription(cost.data, v => formatUsd(v), !!tenantId),
-                      n: cost.data.improvedLearners,
-                      nUnit: "improved learners",
-                      minN: cost.data.minSampleSize,
-                    }
-                  : undefined
-              }
-            />
-          )}
+          <ChartCard
+            title="Cost per improved learner"
+            caption={`Learner-caused AI spend in the window divided by the learners whose improvement beyond their own noise landed in it. ${COST_CEILING_CAVEAT}`}
+            source={buildSource({
+              derivation: "Priced learner-caused AI calls ÷ learners improving beyond noise",
+              window: cost.data?.window.label ?? RANGE_SHORT[costRange],
+              extra: "estimate · USD · platform-wide",
+              asOf: asOfStamp(cost.data?.computedAt),
+            })}
+            loading={hydrating || cost.loading}
+            error={cost.error}
+            onRetry={cost.onRetry}
+            errorSubtitle="The cost-per-improvement endpoint did not respond — it may not be deployed yet."
+            controls={
+              <RangePicker
+                id="effectiveness-cost-range"
+                value={costRange}
+                onChange={range => setRange("costPerImprovement", range)}
+              />
+            }
+            height="auto"
+            chartId="AAQ-218"
+            kpi={
+              cost.data
+                ? {
+                    label: `USD per improved learner · ${RANGE_LABEL[costRange]}`,
+                    value: formatUsd(cost.data.costPerImprovedLearnerUsd),
+                    description: costDescription(cost.data, v => formatUsd(v), !!tenantId),
+                    n: cost.data.improvedLearners,
+                    nUnit: "improved learners",
+                    minN: cost.data.minSampleSize,
+                  }
+                : undefined
+            }
+          />
         </div>
       </Section>
 

@@ -8,7 +8,6 @@ import {
   useGetFoundationalSkillsLearnerQuery,
 } from "@api";
 
-import { useAnalyticsOrgScope } from "./analyticsOrgScope";
 import { CHART_HEIGHT, ScrollableChart, lineOpts, single } from "./chartKit";
 import { ChartIdBadge } from "./chartKit";
 import { PALETTE } from "./chartScales";
@@ -53,17 +52,14 @@ export const FoundationalSkillsLearnerPanel = ({
   behaviours: FhsProgressBehaviour[];
   onClose: () => void;
 }) => {
-  // Set only for an org-restricted admin, whose drill-down is held to their org.
-  const { tenantId } = useAnalyticsOrgScope();
-  const { data, isFetching, isError } = useGetFoundationalSkillsLearnerQuery(
-    { userId: learnerId as number, tenantId },
-    { skip: learnerId === null },
-  );
+  const { data, isFetching, isError } = useGetFoundationalSkillsLearnerQuery(learnerId as number, {
+    skip: learnerId === null,
+  });
   const learner = data?.learners[0];
   // One learner's every behaviour (group figures still over everyone), fetched
   // only when the panel opens.
   const habitsQ = useGetFoundationalSkillsBehavioursQuery(
-    { userId: learnerId as number, ...(tenantId ? { tenantId } : {}) },
+    { userId: learnerId as number },
     { skip: learnerId === null },
   );
   const habitDefs = useMemo(

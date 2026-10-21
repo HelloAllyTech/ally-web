@@ -32,7 +32,6 @@ import {
   useGrainQueries,
   withoutInProgress,
 } from "../analyticsGrouping";
-import { useAnalyticsOrgScope } from "../analyticsOrgScope";
 import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
@@ -97,17 +96,6 @@ const SubHeading = ({ children }: { children: string }) => (
     {children}
   </h2>
 );
-
-/**
- * KPI tiles drawn from platform-wide sources: the overview endpoint (users)
- * and the /highlights sections withheld from an org-restricted admin.
- */
-const PLATFORM_WIDE_KPI_LABELS = new Set([
-  "Total users",
-  "Active users",
-  "Active orgs",
-  "AI cost / sim",
-]);
 
 /** Note appended to a panel that stayed platform-wide under a tenant filter. */
 const scopeNote = (unscoped: boolean) => (unscoped ? ` · ${PLATFORM_WIDE_NOTE}` : "");
@@ -225,11 +213,6 @@ const DEFAULT_GROUPINGS = {
  *    the export, flagged, which is where a provisional number belongs.
  */
 export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
-  // An org-restricted admin sees only what narrows to their org: the
-  // platform-wide overview endpoint is not requested, and the cards built on it
-  // or on the /highlights sections the server withholds from them (org
-  // adoption, AI spend) are not drawn.
-  const { restricted } = useAnalyticsOrgScope();
   const { groupingFor, setGrouping } = useChartGrouping<ChartId>(DEFAULT_GROUPINGS, DEFAULT_BUCKET);
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -302,25 +285,22 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
     ),
   };
   const oQ = {
-    day: useGetAnalyticsOverviewQuery(
-      { ...query, bucket: "day" },
-      { skip: restricted || !oBuckets.has("day") },
-    ),
+    day: useGetAnalyticsOverviewQuery({ ...query, bucket: "day" }, { skip: !oBuckets.has("day") }),
     week: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "week" },
-      { skip: restricted || !oBuckets.has("week") },
+      { skip: !oBuckets.has("week") },
     ),
     month: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "month" },
-      { skip: restricted || !oBuckets.has("month") },
+      { skip: !oBuckets.has("month") },
     ),
     quarter: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "quarter" },
-      { skip: restricted || !oBuckets.has("quarter") },
+      { skip: !oBuckets.has("quarter") },
     ),
     year: useGetAnalyticsOverviewQuery(
       { ...query, bucket: "year" },
-      { skip: restricted || !oBuckets.has("year") },
+      { skip: !oBuckets.has("year") },
     ),
   };
 
@@ -518,7 +498,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
   // No `delta` / `comparisonLabel` on any tile: the window is all-time, so the
   // server returns no comparison basis and there is nothing honest to compare
   // against. The tiles fall back to showing their sample size.
-  const allKpis = [
+  const kpis = [
     {
       label: "Total users",
       description: "Every registered account, all time.",
@@ -612,10 +592,6 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       onRetry: highlights.refetch,
     },
   ];
-
-  const kpis = restricted
-    ? allKpis.filter(kpi => !PLATFORM_WIDE_KPI_LABELS.has(kpi.label))
-    : allKpis;
 
   /* ---------------------- north star & learner counts ---------------------- */
 
@@ -982,7 +958,7 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
       {/* ------------------------- Growth & reach ------------------------- */}
       <SubHeading>Growth &amp; reach</SubHeading>
-      {restricted ? null : overview.isError ? (
+      {overview.isError ? (
         <ChartCard
           error
           onRetry={overview.refetch}
@@ -1086,33 +1062,31 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
 
       <SubHeading>Engagement</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {!restricted && (
-          <ChartCard
-            title="Completed simulations"
-            caption={`Volume context for the quality and cost figures.${inProgressCaption(
-              grain.sims,
-              simsInProgress,
-            )}`}
-            source={buildSource({
-              derivation: "Sessions with eventStatus COMPLETED, per period",
-              window: windowLabel(simsQ.data?.window),
-              extra: groupingNote(grain.sims),
-              asOf: asOf(simsQ.data?.window),
-            })}
-            loading={simsIsAllTime ? false : busy(simsQ)}
-            error={simsIsAllTime ? false : simsQ.isError}
-            onRetry={simsQ.refetch}
-            empty={simsIsAllTime ? false : !busy(simsQ) && sims.length === 0}
-            controls={picker("sims", ALL_TIME_GRAINS)}
-            onExpand={() => setExpanded("sims")}
-            kpi={simsIsAllTime ? simsKpi : undefined}
-            chartId="AAQ-027"
-          >
-            <ScrollableChart data={sims}>
-              <SimpleBarChart data={sims} options={simsOpts} />
-            </ScrollableChart>
-          </ChartCard>
-        )}
+        <ChartCard
+          title="Completed simulations"
+          caption={`Volume context for the quality and cost figures.${inProgressCaption(
+            grain.sims,
+            simsInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Sessions with eventStatus COMPLETED, per period",
+            window: windowLabel(simsQ.data?.window),
+            extra: groupingNote(grain.sims),
+            asOf: asOf(simsQ.data?.window),
+          })}
+          loading={simsIsAllTime ? false : busy(simsQ)}
+          error={simsIsAllTime ? false : simsQ.isError}
+          onRetry={simsQ.refetch}
+          empty={simsIsAllTime ? false : !busy(simsQ) && sims.length === 0}
+          controls={picker("sims", ALL_TIME_GRAINS)}
+          onExpand={() => setExpanded("sims")}
+          kpi={simsIsAllTime ? simsKpi : undefined}
+          chartId="AAQ-027"
+        >
+          <ScrollableChart data={sims}>
+            <SimpleBarChart data={sims} options={simsOpts} />
+          </ScrollableChart>
+        </ChartCard>
 
         {/* Sits in Engagement rather than in Growth & reach on purpose: this is
             a measure of what learners DID, not of how many of them there are.
@@ -1192,37 +1166,35 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
           grouping control here — these are trailing-window definitions sampled
           once per day, so a coarser grain would answer a different question
           rather than the same one at lower resolution. */}
-      {!restricted && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {activeMultiples.map(m => (
-            <ChartCard
-              key={m.label}
-              title={`Active users — ${m.label}`}
-              caption="Sampled daily, and not re-groupable: a trailing 7- or 30-day count read monthly would be a different measure. Each window has its own vertical scale; they are nested, so they are not comparable by height."
-              source={buildSource({
-                derivation: "Distinct users with session activity in the trailing window",
-                window: oWindow,
-              })}
-              loading={overviewLoading}
-              empty={!overviewLoading && m.series.length === 0}
-              chartId="AAQ-029"
-            >
-              <ScrollableChart data={m.series}>
-                <LineChart
-                  data={m.series}
-                  options={lineOpts({
-                    leftTitle: "Distinct users",
-                    bottomTitle: "Day",
-                    colorScale: m.scale,
-                    legend: false,
-                    extra: { points: { enabled: false } },
-                  })}
-                />
-              </ScrollableChart>
-            </ChartCard>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {activeMultiples.map(m => (
+          <ChartCard
+            key={m.label}
+            title={`Active users — ${m.label}`}
+            caption="Sampled daily, and not re-groupable: a trailing 7- or 30-day count read monthly would be a different measure. Each window has its own vertical scale; they are nested, so they are not comparable by height."
+            source={buildSource({
+              derivation: "Distinct users with session activity in the trailing window",
+              window: oWindow,
+            })}
+            loading={overviewLoading}
+            empty={!overviewLoading && m.series.length === 0}
+            chartId="AAQ-029"
+          >
+            <ScrollableChart data={m.series}>
+              <LineChart
+                data={m.series}
+                options={lineOpts({
+                  leftTitle: "Distinct users",
+                  bottomTitle: "Day",
+                  colorScale: m.scale,
+                  legend: false,
+                  extra: { points: { enabled: false } },
+                })}
+              />
+            </ScrollableChart>
+          </ChartCard>
+        ))}
+      </div>
 
       {/* --------------------------- Outcomes --------------------------- */}
       {/* Was "Outcomes & quality", holding this card beside "Roleplay quality"
@@ -1291,108 +1263,100 @@ export const PlatformSubTab = ({ query }: AnalyticsTabFilters) => {
       </ChartCard>
 
       {/* ---------------------------- Adoption ---------------------------- */}
-      {!restricted && (
-        <>
-          <SubHeading>Adoption</SubHeading>
-          <ChartCard
-            title="Completed simulations by organisation"
-            caption={
-              h?.topOrgsBelowFloor && h.topOrgsBelowFloor.orgs > 0
-                ? `Top orgs by volume, all time. ${h.topOrgsBelowFloor.orgs} smaller orgs are grouped unnamed — naming an org with a handful of sessions identifies its learners.`
-                : "Top orgs by volume, all time."
-            }
-            source={
-              buildSource({
-                derivation: "Completed sessions grouped by tenant",
-                window: hWindow,
-                asOf: asOf(h?.window),
-              }) + scopeNote(orgsUnscoped)
-            }
-            loading={highlightsLoading}
-            error={highlights.isError}
-            onRetry={highlights.refetch}
-            empty={!highlightsLoading && topOrgs.length === 0}
-            wide
-            chartId="AAQ-032"
-          >
-            <SimpleBarChart data={topOrgs} options={orgsOpts} />
-          </ChartCard>
-        </>
-      )}
+      <SubHeading>Adoption</SubHeading>
+      <ChartCard
+        title="Completed simulations by organisation"
+        caption={
+          h?.topOrgsBelowFloor && h.topOrgsBelowFloor.orgs > 0
+            ? `Top orgs by volume, all time. ${h.topOrgsBelowFloor.orgs} smaller orgs are grouped unnamed — naming an org with a handful of sessions identifies its learners.`
+            : "Top orgs by volume, all time."
+        }
+        source={
+          buildSource({
+            derivation: "Completed sessions grouped by tenant",
+            window: hWindow,
+            asOf: asOf(h?.window),
+          }) + scopeNote(orgsUnscoped)
+        }
+        loading={highlightsLoading}
+        error={highlights.isError}
+        onRetry={highlights.refetch}
+        empty={!highlightsLoading && topOrgs.length === 0}
+        wide
+        chartId="AAQ-032"
+      >
+        <SimpleBarChart data={topOrgs} options={orgsOpts} />
+      </ChartCard>
 
       {/* ------------------------- Unit economics ------------------------- */}
-      {!restricted && (
-        <>
-          <SubHeading>Unit economics</SubHeading>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <ChartCard
-              title="AI cost per completed simulation"
-              caption={`All platform AI spend (LLM + STT + TTS) divided by completed simulations. Gaps are periods with no completed simulations.${inProgressCaption(
-                grain.costPerSim,
-                costInProgress,
-              )}`}
-              source={
-                buildSource({
-                  derivation: "Estimated from the pricing table at read time — not a billed figure",
-                  window: windowLabel(costPerSimQ.data?.window),
-                  extra: groupingNote(grain.costPerSim),
-                  asOf: asOf(costPerSimQ.data?.window),
-                }) +
-                costUnpricedNote +
-                scopeNote(costUnscoped)
-              }
-              loading={costPerSimIsAllTime ? false : busy(costPerSimQ)}
-              error={costPerSimIsAllTime ? false : costPerSimQ.isError}
-              onRetry={costPerSimQ.refetch}
-              errorTitle="Couldn't load AI cost"
-              errorSubtitle="There was a problem fetching cost metrics."
-              empty={
-                costPerSimIsAllTime
-                  ? false
-                  : !busy(costPerSimQ) && costPerSim.every(d => d.value === null)
-              }
-              controls={picker("costPerSim", ALL_TIME_GRAINS)}
-              onExpand={() => setExpanded("costPerSim")}
-              kpi={costPerSimIsAllTime ? costPerSimKpi : undefined}
-              chartId="AAQ-033"
-            >
-              <ScrollableChart data={costPerSim}>
-                <LineChart data={costPerSim} options={costPerSimOpts} />
-              </ScrollableChart>
-            </ChartCard>
+      <SubHeading>Unit economics</SubHeading>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ChartCard
+          title="AI cost per completed simulation"
+          caption={`All platform AI spend (LLM + STT + TTS) divided by completed simulations. Gaps are periods with no completed simulations.${inProgressCaption(
+            grain.costPerSim,
+            costInProgress,
+          )}`}
+          source={
+            buildSource({
+              derivation: "Estimated from the pricing table at read time — not a billed figure",
+              window: windowLabel(costPerSimQ.data?.window),
+              extra: groupingNote(grain.costPerSim),
+              asOf: asOf(costPerSimQ.data?.window),
+            }) +
+            costUnpricedNote +
+            scopeNote(costUnscoped)
+          }
+          loading={costPerSimIsAllTime ? false : busy(costPerSimQ)}
+          error={costPerSimIsAllTime ? false : costPerSimQ.isError}
+          onRetry={costPerSimQ.refetch}
+          errorTitle="Couldn't load AI cost"
+          errorSubtitle="There was a problem fetching cost metrics."
+          empty={
+            costPerSimIsAllTime
+              ? false
+              : !busy(costPerSimQ) && costPerSim.every(d => d.value === null)
+          }
+          controls={picker("costPerSim", ALL_TIME_GRAINS)}
+          onExpand={() => setExpanded("costPerSim")}
+          kpi={costPerSimIsAllTime ? costPerSimKpi : undefined}
+          chartId="AAQ-033"
+        >
+          <ScrollableChart data={costPerSim}>
+            <LineChart data={costPerSim} options={costPerSimOpts} />
+          </ScrollableChart>
+        </ChartCard>
 
-            <ChartCard
-              title="Total AI spend"
-              caption={`Absolute spend per period. Separate from cost-per-sim because the two differ by orders of magnitude.${inProgressCaption(
-                grain.totalCost,
-                totalCostInProgress,
-              )}`}
-              source={
-                buildSource({
-                  derivation: "Estimated from the pricing table at read time — not a billed figure",
-                  window: windowLabel(totalCostQ.data?.window),
-                  extra: groupingNote(grain.totalCost),
-                  asOf: asOf(totalCostQ.data?.window),
-                }) +
-                costUnpricedNote +
-                scopeNote(costUnscoped)
-              }
-              loading={totalCostIsAllTime ? false : busy(totalCostQ)}
-              error={totalCostIsAllTime ? false : totalCostQ.isError}
-              onRetry={totalCostQ.refetch}
-              empty={totalCostIsAllTime ? false : !busy(totalCostQ) && totalCost.length === 0}
-              controls={picker("totalCost", ALL_TIME_GRAINS)}
-              onExpand={() => setExpanded("totalCost")}
-              kpi={totalCostIsAllTime ? totalCostKpi : undefined}
-              chartId="AAQ-034"
-            >
-              <ScrollableChart data={totalCost}>
-                <SimpleBarChart data={totalCost} options={totalCostOpts} />
-              </ScrollableChart>
-            </ChartCard>
-          </div>
-        </>
-      )}
+        <ChartCard
+          title="Total AI spend"
+          caption={`Absolute spend per period. Separate from cost-per-sim because the two differ by orders of magnitude.${inProgressCaption(
+            grain.totalCost,
+            totalCostInProgress,
+          )}`}
+          source={
+            buildSource({
+              derivation: "Estimated from the pricing table at read time — not a billed figure",
+              window: windowLabel(totalCostQ.data?.window),
+              extra: groupingNote(grain.totalCost),
+              asOf: asOf(totalCostQ.data?.window),
+            }) +
+            costUnpricedNote +
+            scopeNote(costUnscoped)
+          }
+          loading={totalCostIsAllTime ? false : busy(totalCostQ)}
+          error={totalCostIsAllTime ? false : totalCostQ.isError}
+          onRetry={totalCostQ.refetch}
+          empty={totalCostIsAllTime ? false : !busy(totalCostQ) && totalCost.length === 0}
+          controls={picker("totalCost", ALL_TIME_GRAINS)}
+          onExpand={() => setExpanded("totalCost")}
+          kpi={totalCostIsAllTime ? totalCostKpi : undefined}
+          chartId="AAQ-034"
+        >
+          <ScrollableChart data={totalCost}>
+            <SimpleBarChart data={totalCost} options={totalCostOpts} />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
 
       {/* ---------------------------- Detail views ------------------------- */}
       {/*
