@@ -905,18 +905,10 @@ export const en = {
     assignOrganizationSuccess: "Organization(s) assigned successfully",
     assignOrganizationError: "Failed to assign organization(s)",
     removeOrganizationSuccess: "Organization removed successfully",
-    liftRestrictionTitle: "Lift the organization restriction?",
-    liftRestrictionDescription: (name: string) =>
-      `**${name}** is their last organization. Removing it lifts the restriction, so they will see **every organization**.`,
-    liftRestrictionConfirm: "Remove and lift restriction",
     removeOrganizationError: "Failed to remove organization",
     remove: "Remove",
     selectOrganizations: "Select organizations to assign",
     noOrganizationsToAdd: "All organizations already assigned",
-    noOrganizationsMatch: "No organizations match your search",
-    searchOrganizationsPlaceholder: "Search organizations by name or code",
-    organizationsTruncated: (shown: number, total: number) =>
-      `Showing the first ${shown} of ${total} organizations. Search to find the rest.`,
   },
   eventConfiguration: {
     selectEvent: "Select an event",

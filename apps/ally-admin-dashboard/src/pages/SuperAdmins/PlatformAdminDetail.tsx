@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import {
   useGetAdminTenantsQuery,
+  useGetTenantsQuery,
   useGetUserFeatureTogglesQuery,
   useSetUserFeatureTogglesMutation,
 } from "@api";
@@ -12,6 +13,8 @@ import { AssignedOrganizations, Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
+  SORT_BY,
+  SORT_ORDER,
   FEATURE_TOGGLE_SECTION_ORDER,
   FEATURE_TOGGLE_KEY_TO_SECTION,
   DEFAULT_FEATURE_TOGGLE_SECTION,
@@ -42,6 +45,17 @@ export const PlatformAdminDetail: React.FC<PlatformAdminDetailProps> = ({ admin,
   useEffect(() => {
     setToggles(togglesData ?? []);
   }, [togglesData]);
+
+  // A large, single page of tenants — the same allowance useOrganizationManagement
+  // uses for its own tenant list — is enough for the allowlist picker; it isn't
+  // meant to search across thousands of orgs.
+  const { data: tenantsResponse } = useGetTenantsQuery({
+    limit: 100,
+    offset: 0,
+    sortBy: SORT_BY.CREATED_AT,
+    sortOrder: SORT_ORDER.DESC,
+  });
+  const allTenants = tenantsResponse?.data ?? [];
 
   // Any assigned organization restricts this admin, and the backend then
   // withholds every platform-only toggle from them — so say so on those rows
@@ -133,7 +147,7 @@ export const PlatformAdminDetail: React.FC<PlatformAdminDetailProps> = ({ admin,
               <p className="text-sm text-typography-600">{strings.tenantAllowlistSubtitle}</p>
             </div>
             <div className="border border-border-light rounded-md p-4">
-              <AssignedOrganizations userId={admin.id} canEdit />
+              <AssignedOrganizations userId={admin.id} canEdit allTenants={allTenants} />
             </div>
           </section>
         </div>

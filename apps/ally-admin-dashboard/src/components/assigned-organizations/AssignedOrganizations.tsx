@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Trash } from "@icons";
 import { toast } from "sonner";
@@ -6,57 +6,27 @@ import { toast } from "sonner";
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useGetAdminTenantsQuery,
-  useGetTenantsQuery,
   useAssignAdminTenantsMutation,
   useRemoveAdminTenantsMutation,
 } from "@api";
-import { ActionConfirmationPopup, Button } from "@components";
+import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, SORT_ORDER } from "@constants";
-import { AdminTenant } from "@types";
+import { en } from "@constants";
+import { Tenant, AdminTenant } from "@types";
 
 interface AssignedOrganizationsProps {
   userId: number;
   canEdit: boolean;
+  allTenants: Tenant[];
 }
-
-/**
- * Organizations listed in the add modal per request. The modal searches the
- * server (name or code) rather than filtering a page the caller loaded: that
- * page used to stop at 100, so any org past it could not be assigned at all.
- */
-const PICKER_PAGE_SIZE = 50;
-const SEARCH_DEBOUNCE_MS = 300;
 
 export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
   userId,
   canEdit,
+  allTenants,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const { data: tenantPage, isFetching: isSearching } = useGetTenantsQuery(
-    {
-      limit: PICKER_PAGE_SIZE,
-      offset: 0,
-      sortBy: "name",
-      sortOrder: SORT_ORDER.ASC,
-      ...(debouncedSearch ? { search: debouncedSearch } : {}),
-    },
-    { skip: !showAddModal },
-  );
-  // The org whose removal would leave the allowlist empty. An empty allowlist
-  // means unrestricted, so that removal widens the admin to every
-  // organization; the backend refuses it unless asked to lift the restriction,
-  // and this asks the person first.
-  const [pendingLift, setPendingLift] = useState<AdminTenant | null>(null);
 
   const { data: adminTenantsData, isFetching } = useGetAdminTenantsQuery(userId, {
     skip: !userId,
@@ -67,46 +37,17 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
 
   const assignedTenants: AdminTenant[] = adminTenantsData?.data ?? [];
 
-  // Matching tenants that are NOT yet assigned. `count` is every match on the
-  // server, so the modal can say when a search would find more than it lists.
+  // Tenants that are NOT yet assigned
   const assignedIds = new Set(assignedTenants.map(t => t.id));
-  const matches = tenantPage?.data ?? [];
-  const availableTenants = matches.filter(t => !assignedIds.has(t.id));
-  const matchCount = tenantPage?.count ?? matches.length;
+  const availableTenants = allTenants.filter(t => !assignedIds.has(t.id));
 
-  const closeAddModal = () => {
-    setShowAddModal(false);
-    setSelectedIds([]);
-    setSearch("");
-    setDebouncedSearch("");
-  };
-
-  const removeTenant = async (tenantId: string, liftRestriction = false) => {
+  const handleRemove = async (tenantId: string) => {
     try {
-      await removeAdminTenants({
-        userId,
-        tenantIds: [tenantId],
-        ...(liftRestriction ? { liftRestriction: true } : {}),
-      }).unwrap();
+      await removeAdminTenants({ userId, tenantIds: [tenantId] }).unwrap();
       toast.success(en.userManagement.removeOrganizationSuccess);
     } catch (err: any) {
       toast.error(err?.data?.message || en.userManagement.removeOrganizationError);
     }
-  };
-
-  const handleRemove = (tenant: AdminTenant) => {
-    if (assignedTenants.length === 1) {
-      setPendingLift(tenant);
-      return;
-    }
-    removeTenant(tenant.id);
-  };
-
-  const confirmLift = async () => {
-    if (!pendingLift) return;
-    const tenantId = pendingLift.id;
-    setPendingLift(null);
-    await removeTenant(tenantId, true);
   };
 
   const handleAssign = async () => {
@@ -114,7 +55,8 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
     try {
       await assignAdminTenants({ userId, tenantIds: selectedIds }).unwrap();
       toast.success(en.userManagement.assignOrganizationSuccess);
-      closeAddModal();
+      setShowAddModal(false);
+      setSelectedIds([]);
     } catch (err: any) {
       toast.error(err?.data?.message || en.userManagement.assignOrganizationError);
     }
@@ -176,7 +118,7 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
               {canEdit && (
                 <button
                   type="button"
-                  onClick={() => handleRemove(tenant)}
+                  onClick={() => handleRemove(tenant.id)}
                   disabled={isRemoving}
                   title={en.userManagement.remove}
                   aria-label={en.userManagement.remove}
@@ -190,30 +132,15 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
         )}
       </div>
 
-      {pendingLift && (
-        <ActionConfirmationPopup
-          isOpen
-          onClose={() => setPendingLift(null)}
-          title={en.userManagement.liftRestrictionTitle}
-          description={en.userManagement.liftRestrictionDescription(pendingLift.name)}
-          primaryButton={{
-            label: en.userManagement.liftRestrictionConfirm,
-            onClick: confirmLift,
-            variant: ButtonVariant.DESTRUCTIVE,
-          }}
-          secondaryButton={{
-            label: en.userManagement.cancel,
-            onClick: () => setPendingLift(null),
-          }}
-        />
-      )}
-
       {/* Add Organization Modal */}
       {showAddModal && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-[1px]"
           onClick={e => {
-            if (e.target === e.currentTarget) closeAddModal();
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+              setSelectedIds([]);
+            }
           }}
         >
           <div className="bg-white rounded-[10px] shadow-2xl w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[360px] max-w-[90vw] max-h-[80dvh] flex flex-col p-4 sm:p-5 gap-4 font-primary animate-fadeIn">
@@ -222,26 +149,11 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
               {en.userManagement.selectOrganizations}
             </h3>
 
-            <input
-              type="search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={en.userManagement.searchOrganizationsPlaceholder}
-              aria-label={en.userManagement.searchOrganizationsPlaceholder}
-              className="w-full rounded-lg border border-border-light px-3 py-2 text-sm text-typography-900 placeholder:text-typography-600 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            />
-
             {/* Tenant list */}
             <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 max-h-60 flex flex-col gap-1">
-              {isSearching && matches.length === 0 ? (
-                <p className="text-sm text-typography-600 py-4 text-center animate-pulse">
-                  {en.common.loading}
-                </p>
-              ) : availableTenants.length === 0 ? (
+              {availableTenants.length === 0 ? (
                 <p className="text-sm text-typography-600 italic py-4 text-center">
-                  {debouncedSearch
-                    ? en.userManagement.noOrganizationsMatch
-                    : en.userManagement.noOrganizationsToAdd}
+                  {en.userManagement.noOrganizationsToAdd}
                 </p>
               ) : (
                 availableTenants.map(tenant => (
@@ -272,15 +184,16 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
               )}
             </div>
 
-            {matchCount > matches.length && (
-              <p className="text-xs text-typography-600">
-                {en.userManagement.organizationsTruncated(matches.length, matchCount)}
-              </p>
-            )}
-
             {/* Modal actions */}
             <div className="flex gap-3 flex-shrink-0">
-              <Button variant={ButtonVariant.SECONDARY} onClick={closeAddModal} className="flex-1">
+              <Button
+                variant={ButtonVariant.SECONDARY}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setSelectedIds([]);
+                }}
+                className="flex-1"
+              >
                 {en.userManagement.cancel}
               </Button>
               <Button

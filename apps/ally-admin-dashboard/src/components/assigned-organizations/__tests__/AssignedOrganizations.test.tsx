@@ -6,7 +6,6 @@ import { AssignedOrganizations } from "../AssignedOrganizations";
 // Mock API hooks
 vi.mock("@api", () => ({
   useGetAdminTenantsQuery: vi.fn(),
-  useGetTenantsQuery: vi.fn(),
   useAssignAdminTenantsMutation: vi.fn(),
   useRemoveAdminTenantsMutation: vi.fn(),
 }));
@@ -34,15 +33,6 @@ vi.mock("@components", () => ({
       {children}
     </button>
   ),
-  ActionConfirmationPopup: ({ isOpen, title, description, primaryButton, secondaryButton }: any) =>
-    isOpen ? (
-      <div data-testid="confirmation-popup">
-        <div>{title}</div>
-        <div>{description}</div>
-        <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
-        <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
-      </div>
-    ) : null,
 }));
 
 // Mock sonner toast
@@ -55,7 +45,6 @@ vi.mock("sonner", () => ({
 
 // Mock constants
 vi.mock("@constants", () => ({
-  SORT_ORDER: { ASC: "ASC", DESC: "DESC" },
   en: {
     userManagement: {
       adminFor: "Admin for:",
@@ -64,17 +53,10 @@ vi.mock("@constants", () => ({
       remove: "Remove",
       selectOrganizations: "Select organizations to assign",
       noOrganizationsToAdd: "All organizations already assigned",
-      noOrganizationsMatch: "No organizations match your search",
-      searchOrganizationsPlaceholder: "Search organizations by name or code",
-      organizationsTruncated: (shown: number, total: number) =>
-        `Showing the first ${shown} of ${total} organizations. Search to find the rest.`,
       cancel: "Cancel",
       confirm: "Confirm",
       removeOrganizationSuccess: "Organization removed successfully",
       removeOrganizationError: "Failed to remove organization",
-      liftRestrictionTitle: "Lift the organization restriction?",
-      liftRestrictionDescription: (name: string) => `${name} is their last organization.`,
-      liftRestrictionConfirm: "Remove and lift restriction",
       assignOrganizationSuccess: "Organization(s) assigned successfully",
       assignOrganizationError: "Failed to assign organization(s)",
     },
@@ -86,7 +68,6 @@ vi.mock("@constants", () => ({
 
 import {
   useGetAdminTenantsQuery,
-  useGetTenantsQuery,
   useAssignAdminTenantsMutation,
   useRemoveAdminTenantsMutation,
 } from "@api";
@@ -117,11 +98,6 @@ describe("AssignedOrganizations", () => {
       data: mockAdminTenants,
       isFetching: false,
     });
-    // The add modal's server-side search: the three orgs, one already assigned.
-    (useGetTenantsQuery as any).mockReturnValue({
-      data: { data: mockAllTenants, count: mockAllTenants.length },
-      isFetching: false,
-    });
     (useAssignAdminTenantsMutation as any).mockReturnValue([
       mockAssignMutation,
       { isLoading: false },
@@ -133,7 +109,9 @@ describe("AssignedOrganizations", () => {
   });
 
   it("renders assigned organizations correctly", () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     expect(screen.getByText("Admin for:")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument(); // count
@@ -147,7 +125,9 @@ describe("AssignedOrganizations", () => {
       isFetching: true,
     });
 
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
@@ -158,20 +138,26 @@ describe("AssignedOrganizations", () => {
       isFetching: false,
     });
 
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     expect(screen.getByText("No organizations assigned yet")).toBeInTheDocument();
   });
 
   it("hides Add button and Remove icon when canEdit is false", () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={false} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={false} allTenants={mockAllTenants} />,
+    );
 
     expect(screen.queryByText("+ Add Organization")).not.toBeInTheDocument();
     expect(screen.queryByTitle("Remove")).not.toBeInTheDocument();
   });
 
   it("opens modal and allows assigning new organizations", async () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     fireEvent.click(screen.getByText("+ Add Organization"));
 
@@ -198,19 +184,13 @@ describe("AssignedOrganizations", () => {
     });
   });
 
-  const twoOrgs = {
-    data: [
-      { id: "t1", name: "Tenant 1", logoUrl: "" },
-      { id: "t2", name: "Tenant 2", logoUrl: "" },
-    ],
-    count: 2,
-  };
-
   it("allows removing an assigned organization", async () => {
-    (useGetAdminTenantsQuery as any).mockReturnValue({ data: twoOrgs, isFetching: false });
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
-    fireEvent.click(screen.getAllByTitle("Remove")[0]);
+    const removeBtn = screen.getByTitle("Remove");
+    fireEvent.click(removeBtn);
 
     await waitFor(() => {
       expect(mockRemoveMutation).toHaveBeenCalledWith({
@@ -227,7 +207,9 @@ describe("AssignedOrganizations", () => {
     });
     (useAssignAdminTenantsMutation as any).mockReturnValue([errorMutation, { isLoading: false }]);
 
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     fireEvent.click(screen.getByText("+ Add Organization"));
     const checkboxes = screen.getAllByRole("checkbox");
@@ -244,105 +226,22 @@ describe("AssignedOrganizations", () => {
       unwrap: vi.fn().mockRejectedValue({}),
     });
     (useRemoveAdminTenantsMutation as any).mockReturnValue([errorMutation, { isLoading: false }]);
-    (useGetAdminTenantsQuery as any).mockReturnValue({ data: twoOrgs, isFetching: false });
 
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
-    fireEvent.click(screen.getAllByTitle("Remove")[0]);
+    fireEvent.click(screen.getByTitle("Remove"));
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Failed to remove organization");
     });
   });
 
-  it("asks before removing the last organization, then lifts the restriction", async () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-
-    fireEvent.click(screen.getByTitle("Remove"));
-
-    expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
-    expect(screen.getByText("Tenant 1 is their last organization.")).toBeInTheDocument();
-    expect(mockRemoveMutation).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByText("Remove and lift restriction"));
-
-    await waitFor(() => {
-      expect(mockRemoveMutation).toHaveBeenCalledWith({
-        userId: mockUserId,
-        tenantIds: ["t1"],
-        liftRestriction: true,
-      });
-    });
-  });
-
-  it("keeps the last organization when the lift is cancelled", () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-
-    fireEvent.click(screen.getByTitle("Remove"));
-    fireEvent.click(screen.getAllByText("Cancel")[0]);
-
-    expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
-    expect(mockRemoveMutation).not.toHaveBeenCalled();
-  });
-
-  it("searches every organization on the server, not a page the caller loaded", async () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-
-    fireEvent.click(screen.getByText("+ Add Organization"));
-    expect(useGetTenantsQuery).toHaveBeenLastCalledWith(
-      expect.not.objectContaining({ search: expect.anything() }),
-      { skip: false },
-    );
-
-    fireEvent.change(screen.getByLabelText("Search organizations by name or code"), {
-      target: { value: "  Tenant 3 " },
-    });
-
-    await waitFor(() => {
-      expect(useGetTenantsQuery).toHaveBeenLastCalledWith(
-        expect.objectContaining({ search: "Tenant 3", limit: 50, offset: 0 }),
-        { skip: false },
-      );
-    });
-  });
-
-  it("says when more organizations match than it lists", () => {
-    (useGetTenantsQuery as any).mockReturnValue({
-      data: { data: mockAllTenants, count: 240 },
-      isFetching: false,
-    });
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-
-    fireEvent.click(screen.getByText("+ Add Organization"));
-
-    expect(
-      screen.getByText("Showing the first 3 of 240 organizations. Search to find the rest."),
-    ).toBeInTheDocument();
-  });
-
-  it("says when nothing matches the search", async () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-    fireEvent.click(screen.getByText("+ Add Organization"));
-    (useGetTenantsQuery as any).mockReturnValue({
-      data: { data: [], count: 0 },
-      isFetching: false,
-    });
-
-    fireEvent.change(screen.getByLabelText("Search organizations by name or code"), {
-      target: { value: "zzz" },
-    });
-
-    expect(await screen.findByText("No organizations match your search")).toBeInTheDocument();
-  });
-
-  it("does not fetch organizations until the add modal opens", () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
-
-    expect(useGetTenantsQuery).toHaveBeenLastCalledWith(expect.anything(), { skip: true });
-  });
-
   it("closes modal on cancel", () => {
-    render(<AssignedOrganizations userId={mockUserId} canEdit={true} />);
+    render(
+      <AssignedOrganizations userId={mockUserId} canEdit={true} allTenants={mockAllTenants} />,
+    );
 
     fireEvent.click(screen.getByText("+ Add Organization"));
     expect(screen.getByText("Select organizations to assign")).toBeInTheDocument();
