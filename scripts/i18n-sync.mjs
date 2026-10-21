@@ -220,7 +220,7 @@ const main = async () => {
 
   let anyUpdates = false;
   const updatedLangs = new Set();
-  const collectOnly = !SHOULD_TRANSLATE;
+  const collectOnly = false;
 
   if (collectOnly) {
     console.log("Translation skipped: OPENAI_API_KEY missing or provider disabled.");

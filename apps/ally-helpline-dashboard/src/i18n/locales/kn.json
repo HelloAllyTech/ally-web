@@ -62,7 +62,8 @@
     },
     "practiceAgain": "ಮತ್ತೆ ಅಭ್ಯಾಸ ಮಾಡಿ",
     "refresh": "ನವೀಕರಿಸಿ",
-    "play": "ಪ್ಲೇ ಮಾಡಿ"
+    "play": "ಪ್ಲೇ ಮಾಡಿ",
+    "submit": "Submit"
   },
   "carousel": {
     "slides": {
@@ -655,6 +656,25 @@
         "coursesCompleted": "ಕೋರ್ಸ್‌ಗಳು ಸಂಪೂರ್ಣವಾಗಿ ಮುಗಿದವು, ಮತ್ತು ಕೋರ್ಸ್‌ಗಳಲ್ಲಿ ಅವರು ನೋಂದಾಯಿತಿರುವ ಶೇನಾಗಿ ಅಂದಾಜಿಸಲಾಗಿದೆ. ಎಲ್ಲಾ ಕಾಲದಲ್ಲಿ."
       }
     },
+    "scenarioAttempts": {
+      "action": "Scenario attempts",
+      "actionTooltip": "Shows scenario quizzes this learner has started but not passed, so you can reopen their attempts after they run out.",
+      "title": "Scenario attempts: {{name}}",
+      "empty": "No scenario quizzes in progress for this learner.",
+      "errorTitle": "Couldn't load scenario attempts",
+      "errorSubtitle": "There was a problem fetching the data.",
+      "attemptsUsed": "{{used}} of {{max}} attempts used",
+      "attemptsUncapped": "{{used}} attempts",
+      "bestScore": "Best score {{score}}",
+      "pausedUntil": "Paused until {{when}}",
+      "inProgress": "In progress",
+      "reopen": "Reopen attempts",
+      "confirm": "Reopen attempts for {{name}}? They can try {{scenario}} again straight away.",
+      "confirmButton": "Reopen attempts",
+      "cancel": "Cancel",
+      "reopenSuccess": "Attempts reopened",
+      "reopenError": "Couldn't reopen attempts. Please try again."
+    },
     "courseUsage": {
       "title": "ಕೋರ್ಸ್ ಬಳಕೆ",
       "caption": "ಒಂದು ಕೋರ್ಸ್‌ಗೆ ಒಂದು ಸಾಲು — ಯಾವ ಕೋರ್ಸ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಲಾಗುತ್ತಿದೆ ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳು ಎಲ್ಲಿ ನಿಲ್ಲುತ್ತಿದ್ದಾರೆ ಎಂಬುದನ್ನು ನೋಡಿ",
@@ -861,7 +881,12 @@
       },
       "replyPlaceholder": "ಈ ಸೆಷನ್ ಬಗ್ಗೆ ಆಲಿಗೆ ಉತ್ತರಿಸಿ…",
       "transcriptReferences": "ಟ್ರಾನ್ಸ್ಕ್ರಿಪ್ಟ್ ಉಲ್ಲೇಖಗಳು",
-      "replyPrompt": "ಇದರ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದೆಯೇ? ಕೆಳಗೆ ಉತ್ತರಿಸಿ."
+      "replyPrompt": "ಇದರ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದೆಯೇ? ಕೆಳಗೆ ಉತ್ತರಿಸಿ.",
+      "feedback": {
+        "question": "Was this helpful?",
+        "thankYou": "Thank you for your feedback!",
+        "commentPlaceholder": "What did you like or dislike? (Optional)"
+      }
     }
   },
   "review": {
@@ -1616,6 +1641,154 @@
     "hold": "ಶ್ವಾಸ ಹಿಡಿ",
     "exhale": "ಉಸಿರಾಡಿ"
   },
+  "courseLanding": {
+    "documentTitle": "ಕೋರ್ಸ್",
+    "eyebrow": "ಕೋರ್ಸ್",
+    "summary_one": "{{count}} ಚಟುವಟಿಕೆ",
+    "summary_other": "{{count}} ಚಟುವಟಿಕೆಗಳು",
+    "summaryWithDuration_one": "{{count}} ಚಟುವಟಿಕೆ · ಸುಮಾರು {{minutes}} ನಿಮಿಷ",
+    "summaryWithDuration_other": "{{count}} ಚಟುವಟಿಕೆಗಳು · ಸುಮಾರು {{minutes}} ನಿಮಿಷ",
+    "sectionItems_one": "{{count}} ಚಟುವಟಿಕೆ",
+    "sectionItems_other": "{{count}} ಚಟುವಟಿಕೆಗಳು",
+    "outlineTitle": "ಈ ಕೋರ್ಸ್‌ನಲ್ಲಿ ಏನಿದೆ",
+    "start": "ಕೋರ್ಸ್ ಆರಂಭಿಸಿ",
+    "loginHint": "ಆರಂಭಿಸಲು ನೀವು ಲಾಗ್ ಇನ್ ಆಗಬೇಕು.",
+    "logIn": "ಲಾಗ್ ಇನ್",
+    "goToCourses": "ನನ್ನ ಕೋರ್ಸ್‌ಗಳಿಗೆ ಹೋಗಿ",
+    "unavailable": {
+      "title": "ಈ ಕೋರ್ಸ್ ಲಭ್ಯವಿಲ್ಲ",
+      "body": "ಲಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡಿರಬಹುದು, ಅಥವಾ ಕೋರ್ಸ್ ಈಗ ಪ್ರಕಟವಾಗಿಲ್ಲದಿರಬಹುದು. ಇದನ್ನು ನಿಮ್ಮೊಂದಿಗೆ ಹಂಚಿಕೊಂಡವರನ್ನು ಕೇಳಿ."
+    },
+    "denied": {
+      "toast": "ಈ ಕೋರ್ಸ್ ನಿಮ್ಮ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ",
+      "title": "ಈ ಕೋರ್ಸ್ ನಿಮ್ಮ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ",
+      "body": "ಇದನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆ ಅಥವಾ ಗುಂಪಿಗೆ ಲಭ್ಯವಾಗಿಸಿಲ್ಲ. ಇದು ನಿಮಗೆ ಸಿಗಬೇಕು ಎಂದು ನೀವು ಭಾವಿಸಿದರೆ, ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗೆ ಕೇಳಿ.",
+      "bodyWithEmail": "ನೀವು {{email}} ಆಗಿ ಲಾಗ್ ಇನ್ ಆಗಿದ್ದೀರಿ. ಈ ಕೋರ್ಸ್ ಅನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆ ಅಥವಾ ಗುಂಪಿಗೆ ಲಭ್ಯವಾಗಿಸಿಲ್ಲ — ಇದು ನಿಮಗೆ ಸಿಗಬೇಕು ಎಂದು ನೀವು ಭಾವಿಸಿದರೆ, ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗೆ ಕೇಳಿ.",
+      "closedTitle": "ಈ ಕೋರ್ಸ್ ಮುಚ್ಚಲಾಗಿದೆ",
+      "closedBody": "ಇದು ಈಗ ಹೊಸ ಕಲಿಕಾರ್ಥಿಗಳಿಗೆ ತೆರೆದಿಲ್ಲ."
+    },
+    "story": {
+      "start": "ಕಥೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ",
+      "eyebrow_one": "{{count}} ಕಥೆ",
+      "eyebrow_other": "{{count}} ಕಥೆಗಳು",
+      "durationMinutes_one": "{{count}} ನಿಮಿಷ",
+      "durationMinutes_other": "{{count}} ನಿಮಿಷಗಳು",
+      "durationHours_one": "{{count}} ಗಂಟೆ",
+      "durationHours_other": "{{count}} ಗಂಟೆಗಳು",
+      "roleplayCount_one": "{{count}} ಪಾತ್ರಾಭಿನಯ",
+      "roleplayCount_other": "{{count}} ಪಾತ್ರಾಭಿನಯಗಳು",
+      "sitting": {
+        "short": "ಸಣ್ಣ",
+        "medium": "ಮಧ್ಯಮ",
+        "long": "ದೀರ್ಘ"
+      },
+      "firstMove": {
+        "eyebrow": "ಮೊದಲ ನಡೆ",
+        "noScore": "ಇನ್ನೂ ಯಾವುದೇ ಅಂಕವಿಲ್ಲ",
+        "continue": "ಕಥೆಯನ್ನು ಮುಂದುವರಿಸಿ",
+        "tryAnother": "ಮತ್ತೊಂದು ಕಥೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ",
+        "loginHint": "ನಿಮ್ಮ ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲು ಲಾಗಿನ್ ಮಾಡಿ"
+      },
+      "arc": {
+        "eyebrow": "ಕಥೆಯ ಚಾಪ",
+        "title_one": "{{count}} ಅಧ್ಯಾಯ",
+        "title_other": "{{count}} ಅಧ್ಯಾಯಗಳು",
+        "curveLabel": "ಕಷ್ಟದ ವಕ್ರರೇಖೆ",
+        "hardCall": "ಕಠಿಣ ಕರೆ",
+        "chapterShort": "ಅಧ್ಯಾಯ {{count}}",
+        "contentNote": "ವಿಷಯ ಸೂಚನೆ"
+      },
+      "beats": {
+        "setup": "ಸ್ಥಾಪನೆ",
+        "conflict": "ಸಂಘರ್ಷ",
+        "challenge": "ಸವಾಲು",
+        "climax": "ಪರಾಕಾಷ್ಠೆ",
+        "resolution": "ಪರಿಹಾರ"
+      },
+      "kinds": {
+        "game": "ಆಟ"
+      },
+      "outcomes": {
+        "title": "ನೀವು ಏನು ಕಲಿಯುವಿರಿ"
+      },
+      "howItPlays": {
+        "title": "ಇದು ಹೇಗೆ ಆಡುತ್ತದೆ",
+        "retry": "ನೀವು ಇಷ್ಟಪಡುವಷ್ಟು ಬಾರಿ ಮರುಪ್ರಯತ್ನಿಸಿ",
+        "debrief": "ಪ್ರತಿ ಪಾತ್ರಾಭಿನಯದ ನಂತರ ತತ್ಕ್ಷಣದ ಪ್ರತಿಕ್ರಿಯೆ",
+        "keep": "ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಇರಿಸಿ",
+        "kinds": {
+          "roleplay": {
+            "title_one": "{{count}} ಪಾತ್ರಾಭಿನಯ",
+            "title_other": "{{count}} ಪಾತ್ರಾಭಿನಯಗಳು",
+            "hint": "ಧ್ವನಿ ಅಥವಾ ಪಠ್ಯದ ಮೂಲಕ AI ಪಾತ್ರದೊಂದಿಗೆ ಮಾತನಾಡಿ",
+            "withPersona": "{{persona}} ಜೊತೆಗೆ"
+          },
+          "case": {
+            "title_one": "{{count}} ಪ್ರಕರಣ",
+            "title_other": "{{count}} ಪ್ರಕರಣಗಳು",
+            "hint": "ಅಭ್ಯಾಸದಿಂದ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"
+          },
+          "quiz": {
+            "title_one": "{{count}} ರಸಪ್ರಶ್ನೆ",
+            "title_other": "{{count}} ರಸಪ್ರಶ್ನೆಗಳು",
+            "hint": "ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಿ"
+          },
+          "article": {
+            "title_one": "{{count}} ಲೇಖನ",
+            "title_other": "{{count}} ಲೇಖನಗಳು",
+            "hint": "ಪ್ರಮುಖ ಪರಿಕಲ್ಪನೆಗಳನ್ನು ಕಲಿಯಿರಿ"
+          },
+          "video": {
+            "title_one": "{{count}} ವೀಡಿಯೊ",
+            "title_other": "{{count}} ವೀಡಿಯೊಗಳು",
+            "hint": "ತಜ್ಞರಿಂದ ವೀಕ್ಷಿಸಿ ಮತ್ತು ಕಲಿಯಿರಿ"
+          },
+          "journal": {
+            "title_one": "{{count}} ಜರ್ನಲ್",
+            "title_other": "{{count}} ಜರ್ನಲ್‌ಗಳು",
+            "hint": "ನಿಮ್ಮ ಆಲೋಚನೆಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಿ"
+          },
+          "annotation": {
+            "title_one": "{{count}} ಟಿಪ್ಪಣಿ",
+            "title_other": "{{count}} ಟಿಪ್ಪಣಿಗಳು",
+            "hint": "ಉತ್ತಮ ಮತ್ತು ಕೆಟ್ಟದ್ದನ್ನು ಗುರುತಿಸಿ"
+          },
+          "game": {
+            "title_one": "{{count}} ಆಟ",
+            "title_other": "{{count}} ಆಟಗಳು",
+            "hint": "ಕಲಿಯಲು ಒಂದು ಮೋಜಿನ ದಾರಿ"
+          },
+          "scenario": {
+            "title_one": "Scenario",
+            "title_other": "Scenarios",
+            "hint": "Choose, then see what happens"
+          }
+        }
+      },
+      "cast": {
+        "title": "ಪಾತ್ರವರ್ಗ",
+        "caller": "ಕರೆಯುವವರು"
+      },
+      "xp": {
+        "title": "ನೀವು ಹೇಗೆ ಅಂಕಗಳನ್ನು ಗಳಿಸುತ್ತೀರಿ",
+        "withPractice": "ಅಭ್ಯಾಸದೊಂದಿಗೆ",
+        "activitiesOnly": "ಚಟುವಟಿಕೆಗಳು ಮಾತ್ರ",
+        "keep": "ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಇರಿಸಿ"
+      },
+      "notes": {
+        "title": "ಸೂಚನೆಗಳು",
+        "includes": "ಈ ಕಥೆ ಒಳಗೊಂಡಿದೆ:",
+        "warningWithChapters_one": "ವಿಷಯ ಎಚ್ಚರಿಕೆ: ಅಧ್ಯಾಯ {{chapters}}",
+        "warningWithChapters_other": "ವಿಷಯ ಎಚ್ಚರಿಕೆಗಳು: ಅಧ್ಯಾಯಗಳು {{chapters}}",
+        "pause": "ನಿಮಗೆ ಬೇಕಾದಾಗ ವಿರಾಮಗೊಳಿಸಿ",
+        "listAnd": "ಮತ್ತು"
+      },
+      "closing": {
+        "title": "ಅಭಿನಂದನೆಗಳು!",
+        "body": "ನೀವು ಈ ಕಥೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ. ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಇನ್ನೊಂದು ಕಥೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಕಲಿತದ್ದನ್ನು ಪರಿಶೀಲಿಸಿ."
+      }
+    }
+  },
   "tracks2": {
     "breadcrumb": "ಕಲಿಯಿರಿ",
     "language": {
@@ -1684,7 +1857,8 @@
       "lines_other": "{{count}} ಸಾಲುಗಳು",
       "labels": "{{count}} ಲೇಬಲ್",
       "labels_other": "{{count}} ಲೇಬಲ್‌ಗಳು",
-      "game": "ಗೇಮ್ · ಕೇವಲ ಮನರಂಜನೆಗಾಗಿ"
+      "game": "ಗೇಮ್ · ಕೇವಲ ಮನರಂಜನೆಗಾಗಿ",
+      "branching": "Scenario quiz"
     },
     "continueLearning": {
       "label": "ಕಲಿಕೆಯನ್ನು ಮುಂದುವರಿಸಿ"
@@ -1849,6 +2023,41 @@
         "missed_other": "{{count}} ಕಳೆದುಹೋಯಿತು",
         "notHere": "{{count}} ದೋಷದಲ್ಲಿ ಗುರುತಿಸಲಾಗಿದೆ",
         "notHere_other": "{{count}} ದೋಷವಾಗಿ ಗುರುತಿಸಲಾಗಿದೆ"
+      }
+    },
+    "branching": {
+      "sceneHeading": "Scene",
+      "choicesLabel": "Your choices",
+      "youChose": "You chose: {{choice}}",
+      "endingsSeen": "{{seen}} of {{total}} endings seen",
+      "takeaway": "Takeaway",
+      "scoreVsPass": "Your score: {{score}}% (pass mark {{pass}}%)",
+      "passed": "You passed.",
+      "notPassed": "Not quite there yet.",
+      "attemptsLeft": "{{count}} attempt left",
+      "attemptsLeft_other": "{{count}} attempts left",
+      "attemptsExhausted": "You've used all your attempts for now.",
+      "exhaustedHeading": "You've used all your attempts for now",
+      "newRoundIn": "A new round opens in about {{time}}. Your trainer can also open it sooner.",
+      "newRoundReady": "A new round is ready.",
+      "startNewRound": "Start a new round",
+      "startNewRoundFailed": "We couldn't open the new round. Please try again.",
+      "recapHeading": "What you reached",
+      "recapRunLabel": "Attempt {{number}}",
+      "recapScore": "Score: {{score}}%",
+      "backToCourse": "Back to course",
+      "waitHour": "{{count}} hour",
+      "waitHour_other": "{{count}} hours",
+      "waitMinute": "{{count}} minute",
+      "waitMinute_other": "{{count}} minutes",
+      "saving": "Saving your result…",
+      "continueCourse": "Continue course",
+      "tryAgain": "Try again",
+      "playAgain": "Play again",
+      "outcome": {
+        "POSITIVE": "Good outcome",
+        "MIXED": "Mixed outcome",
+        "NEGATIVE": "Difficult outcome"
       }
     },
     "game": {
@@ -2710,149 +2919,6 @@
       "chatsTitle": "ನಿಮ್ಮ ತೆರೆದ ಚಾಟ್‌ಗಳು",
       "chatFallback": "ಚಾಟ್",
       "elsewhere": "ಸಹಾಯವಾಣಿ ಆಫ್ ಆಗಿರುವವರೆಗೆ ಈ ಭಾಗ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ತೆರೆದ ಚಾಟ್‌ಗಳನ್ನು ಲಾಬಿಯಿಂದ ಮುಗಿಸಿ."
-    }
-  },
-  "courseLanding": {
-    "documentTitle": "ಕೋರ್ಸ್",
-    "eyebrow": "ಕೋರ್ಸ್",
-    "summary_one": "{{count}} ಚಟುವಟಿಕೆ",
-    "summary_other": "{{count}} ಚಟುವಟಿಕೆಗಳು",
-    "summaryWithDuration_one": "{{count}} ಚಟುವಟಿಕೆ · ಸುಮಾರು {{minutes}} ನಿಮಿಷ",
-    "summaryWithDuration_other": "{{count}} ಚಟುವಟಿಕೆಗಳು · ಸುಮಾರು {{minutes}} ನಿಮಿಷ",
-    "sectionItems_one": "{{count}} ಚಟುವಟಿಕೆ",
-    "sectionItems_other": "{{count}} ಚಟುವಟಿಕೆಗಳು",
-    "outlineTitle": "ಈ ಕೋರ್ಸ್‌ನಲ್ಲಿ ಏನಿದೆ",
-    "start": "ಕೋರ್ಸ್ ಆರಂಭಿಸಿ",
-    "loginHint": "ಆರಂಭಿಸಲು ನೀವು ಲಾಗ್ ಇನ್ ಆಗಬೇಕು.",
-    "logIn": "ಲಾಗ್ ಇನ್",
-    "goToCourses": "ನನ್ನ ಕೋರ್ಸ್‌ಗಳಿಗೆ ಹೋಗಿ",
-    "unavailable": {
-      "title": "ಈ ಕೋರ್ಸ್ ಲಭ್ಯವಿಲ್ಲ",
-      "body": "ಲಿಂಕ್ ಅನ್ನು ಆಫ್ ಮಾಡಿರಬಹುದು, ಅಥವಾ ಕೋರ್ಸ್ ಈಗ ಪ್ರಕಟವಾಗಿಲ್ಲದಿರಬಹುದು. ಇದನ್ನು ನಿಮ್ಮೊಂದಿಗೆ ಹಂಚಿಕೊಂಡವರನ್ನು ಕೇಳಿ."
-    },
-    "denied": {
-      "toast": "ಈ ಕೋರ್ಸ್ ನಿಮ್ಮ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ",
-      "title": "ಈ ಕೋರ್ಸ್ ನಿಮ್ಮ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ",
-      "body": "ಇದನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆ ಅಥವಾ ಗುಂಪಿಗೆ ಲಭ್ಯವಾಗಿಸಿಲ್ಲ. ಇದು ನಿಮಗೆ ಸಿಗಬೇಕು ಎಂದು ನೀವು ಭಾವಿಸಿದರೆ, ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗೆ ಕೇಳಿ.",
-      "bodyWithEmail": "ನೀವು {{email}} ಆಗಿ ಲಾಗ್ ಇನ್ ಆಗಿದ್ದೀರಿ. ಈ ಕೋರ್ಸ್ ಅನ್ನು ನಿಮ್ಮ ಸಂಸ್ಥೆ ಅಥವಾ ಗುಂಪಿಗೆ ಲಭ್ಯವಾಗಿಸಿಲ್ಲ — ಇದು ನಿಮಗೆ ಸಿಗಬೇಕು ಎಂದು ನೀವು ಭಾವಿಸಿದರೆ, ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗೆ ಕೇಳಿ.",
-      "closedTitle": "ಈ ಕೋರ್ಸ್ ಮುಚ್ಚಲಾಗಿದೆ",
-      "closedBody": "ಇದು ಈಗ ಹೊಸ ಕಲಿಕಾರ್ಥಿಗಳಿಗೆ ತೆರೆದಿಲ್ಲ."
-    },
-    "story": {
-      "start": "ಕಥೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ",
-      "eyebrow_one": "{{count}} ಕಥೆ",
-      "eyebrow_other": "{{count}} ಕಥೆಗಳು",
-      "durationMinutes_one": "{{count}} ನಿಮಿಷ",
-      "durationMinutes_other": "{{count}} ನಿಮಿಷಗಳು",
-      "durationHours_one": "{{count}} ಗಂಟೆ",
-      "durationHours_other": "{{count}} ಗಂಟೆಗಳು",
-      "roleplayCount_one": "{{count}} ಪಾತ್ರಾಭಿನಯ",
-      "roleplayCount_other": "{{count}} ಪಾತ್ರಾಭಿನಯಗಳು",
-      "sitting": {
-        "short": "ಸಣ್ಣ",
-        "medium": "ಮಧ್ಯಮ",
-        "long": "ದೀರ್ಘ"
-      },
-      "firstMove": {
-        "eyebrow": "ಮೊದಲ ನಡೆ",
-        "noScore": "ಇನ್ನೂ ಯಾವುದೇ ಅಂಕವಿಲ್ಲ",
-        "continue": "ಕಥೆಯನ್ನು ಮುಂದುವರಿಸಿ",
-        "tryAnother": "ಮತ್ತೊಂದು ಕಥೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ",
-        "loginHint": "ನಿಮ್ಮ ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲು ಲಾಗಿನ್ ಮಾಡಿ"
-      },
-      "arc": {
-        "eyebrow": "ಕಥೆಯ ಚಾಪ",
-        "title_one": "{{count}} ಅಧ್ಯಾಯ",
-        "title_other": "{{count}} ಅಧ್ಯಾಯಗಳು",
-        "curveLabel": "ಕಷ್ಟದ ವಕ್ರರೇಖೆ",
-        "hardCall": "ಕಠಿಣ ಕರೆ",
-        "chapterShort": "ಅಧ್ಯಾಯ {{count}}",
-        "contentNote": "ವಿಷಯ ಸೂಚನೆ"
-      },
-      "beats": {
-        "setup": "ಸ್ಥಾಪನೆ",
-        "conflict": "ಸಂಘರ್ಷ",
-        "challenge": "ಸವಾಲು",
-        "climax": "ಪರಾಕಾಷ್ಠೆ",
-        "resolution": "ಪರಿಹಾರ"
-      },
-      "kinds": {
-        "game": "ಆಟ"
-      },
-      "outcomes": {
-        "title": "ನೀವು ಏನು ಕಲಿಯುವಿರಿ"
-      },
-      "howItPlays": {
-        "title": "ಇದು ಹೇಗೆ ಆಡುತ್ತದೆ",
-        "retry": "ನೀವು ಇಷ್ಟಪಡುವಷ್ಟು ಬಾರಿ ಮರುಪ್ರಯತ್ನಿಸಿ",
-        "debrief": "ಪ್ರತಿ ಪಾತ್ರಾಭಿನಯದ ನಂತರ ತತ್ಕ್ಷಣದ ಪ್ರತಿಕ್ರಿಯೆ",
-        "keep": "ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಇರಿಸಿ",
-        "kinds": {
-          "roleplay": {
-            "title_one": "{{count}} ಪಾತ್ರಾಭಿನಯ",
-            "title_other": "{{count}} ಪಾತ್ರಾಭಿನಯಗಳು",
-            "hint": "ಧ್ವನಿ ಅಥವಾ ಪಠ್ಯದ ಮೂಲಕ AI ಪಾತ್ರದೊಂದಿಗೆ ಮಾತನಾಡಿ",
-            "withPersona": "{{persona}} ಜೊತೆಗೆ"
-          },
-          "case": {
-            "title_one": "{{count}} ಪ್ರಕರಣ",
-            "title_other": "{{count}} ಪ್ರಕರಣಗಳು",
-            "hint": "ಅಭ್ಯಾಸದಿಂದ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"
-          },
-          "quiz": {
-            "title_one": "{{count}} ರಸಪ್ರಶ್ನೆ",
-            "title_other": "{{count}} ರಸಪ್ರಶ್ನೆಗಳು",
-            "hint": "ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಿ"
-          },
-          "article": {
-            "title_one": "{{count}} ಲೇಖನ",
-            "title_other": "{{count}} ಲೇಖನಗಳು",
-            "hint": "ಪ್ರಮುಖ ಪರಿಕಲ್ಪನೆಗಳನ್ನು ಕಲಿಯಿರಿ"
-          },
-          "video": {
-            "title_one": "{{count}} ವೀಡಿಯೊ",
-            "title_other": "{{count}} ವೀಡಿಯೊಗಳು",
-            "hint": "ತಜ್ಞರಿಂದ ವೀಕ್ಷಿಸಿ ಮತ್ತು ಕಲಿಯಿರಿ"
-          },
-          "journal": {
-            "title_one": "{{count}} ಜರ್ನಲ್",
-            "title_other": "{{count}} ಜರ್ನಲ್‌ಗಳು",
-            "hint": "ನಿಮ್ಮ ಆಲೋಚನೆಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಿ"
-          },
-          "annotation": {
-            "title_one": "{{count}} ಟಿಪ್ಪಣಿ",
-            "title_other": "{{count}} ಟಿಪ್ಪಣಿಗಳು",
-            "hint": "ಉತ್ತಮ ಮತ್ತು ಕೆಟ್ಟದ್ದನ್ನು ಗುರುತಿಸಿ"
-          },
-          "game": {
-            "title_one": "{{count}} ಆಟ",
-            "title_other": "{{count}} ಆಟಗಳು",
-            "hint": "ಕಲಿಯಲು ಒಂದು ಮೋಜಿನ ದಾರಿ"
-          }
-        }
-      },
-      "cast": {
-        "title": "ಪಾತ್ರವರ್ಗ",
-        "caller": "ಕರೆಯುವವರು"
-      },
-      "xp": {
-        "title": "ನೀವು ಹೇಗೆ ಅಂಕಗಳನ್ನು ಗಳಿಸುತ್ತೀರಿ",
-        "withPractice": "ಅಭ್ಯಾಸದೊಂದಿಗೆ",
-        "activitiesOnly": "ಚಟುವಟಿಕೆಗಳು ಮಾತ್ರ",
-        "keep": "ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಇರಿಸಿ"
-      },
-      "notes": {
-        "title": "ಸೂಚನೆಗಳು",
-        "includes": "ಈ ಕಥೆ ಒಳಗೊಂಡಿದೆ:",
-        "warningWithChapters_one": "ವಿಷಯ ಎಚ್ಚರಿಕೆ: ಅಧ್ಯಾಯ {{chapters}}",
-        "warningWithChapters_other": "ವಿಷಯ ಎಚ್ಚರಿಕೆಗಳು: ಅಧ್ಯಾಯಗಳು {{chapters}}",
-        "pause": "ನಿಮಗೆ ಬೇಕಾದಾಗ ವಿರಾಮಗೊಳಿಸಿ",
-        "listAnd": "ಮತ್ತು"
-      },
-      "closing": {
-        "title": "ಅಭಿನಂದನೆಗಳು!",
-        "body": "ನೀವು ಈ ಕಥೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ. ನಿಮ್ಮ ಹೆಚ್ಚಿನ ಅಂಕವನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಇನ್ನೊಂದು ಕಥೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಕಲಿತದ್ದನ್ನು ಪರಿಶೀಲಿಸಿ."
-      }
     }
   },
   "homeV2": {

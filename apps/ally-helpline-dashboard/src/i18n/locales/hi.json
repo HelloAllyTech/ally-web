@@ -62,7 +62,8 @@
     },
     "practiceAgain": "फिर से अभ्यास करें",
     "refresh": "रिफ्रेश करें",
-    "play": "चलाएँ"
+    "play": "चलाएँ",
+    "submit": "Submit"
   },
   "carousel": {
     "slides": {
@@ -655,6 +656,25 @@
         "coursesCompleted": "कोर्स अंत से अंत तक समाप्त, और ब्रैकेट में यह उन कोर्सों के हिस्से के रूप में है जिनमें वे नामांकित हैं। सभी समय।"
       }
     },
+    "scenarioAttempts": {
+      "action": "Scenario attempts",
+      "actionTooltip": "Shows scenario quizzes this learner has started but not passed, so you can reopen their attempts after they run out.",
+      "title": "Scenario attempts: {{name}}",
+      "empty": "No scenario quizzes in progress for this learner.",
+      "errorTitle": "Couldn't load scenario attempts",
+      "errorSubtitle": "There was a problem fetching the data.",
+      "attemptsUsed": "{{used}} of {{max}} attempts used",
+      "attemptsUncapped": "{{used}} attempts",
+      "bestScore": "Best score {{score}}",
+      "pausedUntil": "Paused until {{when}}",
+      "inProgress": "In progress",
+      "reopen": "Reopen attempts",
+      "confirm": "Reopen attempts for {{name}}? They can try {{scenario}} again straight away.",
+      "confirmButton": "Reopen attempts",
+      "cancel": "Cancel",
+      "reopenSuccess": "Attempts reopened",
+      "reopenError": "Couldn't reopen attempts. Please try again."
+    },
     "courseUsage": {
       "title": "कोर्स का उपयोग",
       "caption": "प्रत्येक पाठ्यक्रम के लिए एक पंक्ति - देखें कि कौन से पाठ्यक्रम लिए जा रहे हैं औरLearners कहाँ रुकते हैं",
@@ -781,11 +801,41 @@
           "4": "हाँ",
           "5": "बिल्कुल",
           "tags": {
-            "1": ["खराब", "सहायक नहीं", "बहुत बुरा", "निराशाजनक", "अनुपयोगी"],
-            "2": ["औसत से कम", "कमज़ोर", "असंतोषजनक", "अपर्याप्त", "सुधार की ज़रूरत"],
-            "3": ["तटस्थ", "ठीक है", "औसत", "मध्यम", "स्वीकार्य"],
-            "4": ["अच्छा", "सहायक", "संतोषजनक", "प्रभावी", "उपयोगी"],
-            "5": ["उत्कृष्ट", "अद्भुत", "बहुत उपयोगी", "शानदार", "अत्यंत प्रभावी"]
+            "1": [
+              "खराब",
+              "सहायक नहीं",
+              "बहुत बुरा",
+              "निराशाजनक",
+              "अनुपयोगी"
+            ],
+            "2": [
+              "औसत से कम",
+              "कमज़ोर",
+              "असंतोषजनक",
+              "अपर्याप्त",
+              "सुधार की ज़रूरत"
+            ],
+            "3": [
+              "तटस्थ",
+              "ठीक है",
+              "औसत",
+              "मध्यम",
+              "स्वीकार्य"
+            ],
+            "4": [
+              "अच्छा",
+              "सहायक",
+              "संतोषजनक",
+              "प्रभावी",
+              "उपयोगी"
+            ],
+            "5": [
+              "उत्कृष्ट",
+              "अद्भुत",
+              "बहुत उपयोगी",
+              "शानदार",
+              "अत्यंत प्रभावी"
+            ]
           }
         }
       }
@@ -831,7 +881,12 @@
       },
       "replyPlaceholder": "इस सेशन के बारे में Ally को जवाब दें…",
       "transcriptReferences": "ट्रांसक्रिप्ट से संदर्भ",
-      "replyPrompt": "इसके बारे में कोई सवाल है? नीचे जवाब दें।"
+      "replyPrompt": "इसके बारे में कोई सवाल है? नीचे जवाब दें।",
+      "feedback": {
+        "question": "Was this helpful?",
+        "thankYou": "Thank you for your feedback!",
+        "commentPlaceholder": "What did you like or dislike? (Optional)"
+      }
     }
   },
   "review": {
@@ -1586,6 +1641,154 @@
     "hold": "साँस रोकें",
     "exhale": "साँस छोड़ें"
   },
+  "courseLanding": {
+    "documentTitle": "कोर्स",
+    "eyebrow": "कोर्स",
+    "summary_one": "{{count}} गतिविधि",
+    "summary_other": "{{count}} गतिविधियाँ",
+    "summaryWithDuration_one": "{{count}} गतिविधि · लगभग {{minutes}} मिनट",
+    "summaryWithDuration_other": "{{count}} गतिविधियाँ · लगभग {{minutes}} मिनट",
+    "sectionItems_one": "{{count}} गतिविधि",
+    "sectionItems_other": "{{count}} गतिविधियाँ",
+    "outlineTitle": "इस कोर्स में क्या है",
+    "start": "कोर्स शुरू करें",
+    "loginHint": "शुरू करने के लिए आपको लॉग इन करना होगा।",
+    "logIn": "लॉग इन करें",
+    "goToCourses": "मेरे कोर्स पर जाएँ",
+    "unavailable": {
+      "title": "यह कोर्स उपलब्ध नहीं है",
+      "body": "हो सकता है कि लिंक बंद कर दिया गया हो, या कोर्स अब प्रकाशित न हो। जिसने इसे आपके साथ साझा किया है, उनसे पूछें।"
+    },
+    "denied": {
+      "toast": "यह कोर्स आपके खाते के लिए उपलब्ध नहीं है",
+      "title": "यह कोर्स आपके खाते के लिए उपलब्ध नहीं है",
+      "body": "इसे आपके संगठन या समूह के लिए उपलब्ध नहीं कराया गया है। अगर आपको लगता है कि यह आपको मिलना चाहिए, तो अपने संगठन के एडमिन से पूछें।",
+      "bodyWithEmail": "आप {{email}} के रूप में लॉग इन हैं। यह कोर्स आपके संगठन या समूह के लिए उपलब्ध नहीं कराया गया है — अगर आपको लगता है कि यह आपको मिलना चाहिए, तो अपने संगठन के एडमिन से पूछें।",
+      "closedTitle": "यह कोर्स बंद है",
+      "closedBody": "यह अब नए शिक्षार्थियों के लिए खुला नहीं है।"
+    },
+    "story": {
+      "start": "Take the case",
+      "eyebrow_one": "A case in {{count}} chapter",
+      "eyebrow_other": "A case in {{count}} chapters",
+      "durationMinutes_one": "About {{count}} min",
+      "durationMinutes_other": "About {{count}} min",
+      "durationHours_one": "About {{count}} hour",
+      "durationHours_other": "About {{count}} hours",
+      "roleplayCount_one": "{{count}} roleplay",
+      "roleplayCount_other": "{{count}} roleplays",
+      "sitting": {
+        "short": "5–10 min sittings",
+        "medium": "10–15 min sittings",
+        "long": "15–20 min sittings"
+      },
+      "firstMove": {
+        "eyebrow": "Your first move · a moment from chapter one",
+        "noScore": "No score",
+        "continue": "Continue",
+        "tryAnother": "Try another reply",
+        "loginHint": "Continue opens the login. Nothing you pick here is saved."
+      },
+      "arc": {
+        "eyebrow": "The story",
+        "title_one": "One chapter",
+        "title_other": "{{count}} chapters",
+        "curveLabel": "How the story builds, chapter by chapter, to the hard call",
+        "hardCall": "The hard call",
+        "chapterShort": "Ch. {{number}}",
+        "contentNote": "Content note"
+      },
+      "beats": {
+        "setup": "Setup",
+        "conflict": "Conflict",
+        "challenge": "Challenge",
+        "climax": "Climax",
+        "resolution": "Resolution"
+      },
+      "kinds": {
+        "game": "Game"
+      },
+      "outcomes": {
+        "title": "By the end, you'll be able to"
+      },
+      "howItPlays": {
+        "title": "How it plays",
+        "retry": "Retry any roleplay as often as you like.",
+        "debrief": "Every roleplay ends in a debrief on what you did.",
+        "keep": "Nothing you earn is ever taken away.",
+        "kinds": {
+          "roleplay": {
+            "title_one": "Roleplay",
+            "title_other": "Roleplays",
+            "hint": "Voice practice",
+            "withPersona": "Voice practice with {{name}}"
+          },
+          "case": {
+            "title_one": "Case study",
+            "title_other": "Case studies",
+            "hint": "Linked conversations"
+          },
+          "quiz": {
+            "title_one": "Quick check",
+            "title_other": "Quick checks",
+            "hint": "A few questions each"
+          },
+          "article": {
+            "title_one": "Reading",
+            "title_other": "Readings",
+            "hint": "Short and to the point"
+          },
+          "video": {
+            "title_one": "Video",
+            "title_other": "Videos",
+            "hint": "Watch and notice"
+          },
+          "journal": {
+            "title_one": "Reflection",
+            "title_other": "Reflections",
+            "hint": "In your own words"
+          },
+          "annotation": {
+            "title_one": "Transcript",
+            "title_other": "Transcripts",
+            "hint": "Mark what you notice"
+          },
+          "game": {
+            "title_one": "Game",
+            "title_other": "Games",
+            "hint": "Just for fun"
+          },
+          "scenario": {
+            "title_one": "Scenario",
+            "title_other": "Scenarios",
+            "hint": "Choose, then see what happens"
+          }
+        }
+      },
+      "cast": {
+        "title": "Who you'll meet",
+        "caller": "{{name}} · the caller"
+      },
+      "xp": {
+        "title": "What you'll earn",
+        "withPractice": "Up to {{xp}} XP for the activities, plus XP for every minute you practise.",
+        "activitiesOnly": "Up to {{xp}} XP for the activities.",
+        "keep": "XP counts towards your level and is never taken away."
+      },
+      "notes": {
+        "title": "Before you start",
+        "includes": "This course includes {{warnings}}.",
+        "warningWithChapters_one": "{{name}} (chapter {{chapters}})",
+        "warningWithChapters_other": "{{name}} (chapters {{chapters}})",
+        "pause": "You can pause or leave any roleplay, and you won't lose anything if you do.",
+        "listAnd": "{{rest}} and {{last}}"
+      },
+      "closing": {
+        "title": "Ready when you are",
+        "body": "Log in with your organisation account to start."
+      }
+    }
+  },
   "tracks2": {
     "breadcrumb": "सीखें",
     "language": {
@@ -1654,7 +1857,8 @@
       "lines_other": "{{count}} पंक्तियाँ",
       "labels": "{{count}} लेबल",
       "labels_other": "{{count}} लेबल्स",
-      "game": "खेल · बस मज़े के लिए"
+      "game": "खेल · बस मज़े के लिए",
+      "branching": "Scenario quiz"
     },
     "continueLearning": {
       "label": "सीखना जारी रखें"
@@ -1819,6 +2023,41 @@
         "missed_other": "{{count}} चूक गया",
         "notHere": "{{count}} त्रुटि में चिह्नित किया गया",
         "notHere_other": "{{count}} त्रुटि में चिह्नित किया गया"
+      }
+    },
+    "branching": {
+      "sceneHeading": "Scene",
+      "choicesLabel": "Your choices",
+      "youChose": "You chose: {{choice}}",
+      "endingsSeen": "{{seen}} of {{total}} endings seen",
+      "takeaway": "Takeaway",
+      "scoreVsPass": "Your score: {{score}}% (pass mark {{pass}}%)",
+      "passed": "You passed.",
+      "notPassed": "Not quite there yet.",
+      "attemptsLeft": "{{count}} attempt left",
+      "attemptsLeft_other": "{{count}} attempts left",
+      "attemptsExhausted": "You've used all your attempts for now.",
+      "exhaustedHeading": "You've used all your attempts for now",
+      "newRoundIn": "A new round opens in about {{time}}. Your trainer can also open it sooner.",
+      "newRoundReady": "A new round is ready.",
+      "startNewRound": "Start a new round",
+      "startNewRoundFailed": "We couldn't open the new round. Please try again.",
+      "recapHeading": "What you reached",
+      "recapRunLabel": "Attempt {{number}}",
+      "recapScore": "Score: {{score}}%",
+      "backToCourse": "Back to course",
+      "waitHour": "{{count}} hour",
+      "waitHour_other": "{{count}} hours",
+      "waitMinute": "{{count}} minute",
+      "waitMinute_other": "{{count}} minutes",
+      "saving": "Saving your result…",
+      "continueCourse": "Continue course",
+      "tryAgain": "Try again",
+      "playAgain": "Play again",
+      "outcome": {
+        "POSITIVE": "Good outcome",
+        "MIXED": "Mixed outcome",
+        "NEGATIVE": "Difficult outcome"
       }
     },
     "game": {
@@ -2680,33 +2919,6 @@
       "chatsTitle": "आपकी खुली चैट",
       "chatFallback": "चैट",
       "elsewhere": "हेल्पलाइन बंद रहने तक यह हिस्सा उपलब्ध नहीं है। अपनी खुली चैट लॉबी से पूरी करें।"
-    }
-  },
-  "courseLanding": {
-    "documentTitle": "कोर्स",
-    "eyebrow": "कोर्स",
-    "summary_one": "{{count}} गतिविधि",
-    "summary_other": "{{count}} गतिविधियाँ",
-    "summaryWithDuration_one": "{{count}} गतिविधि · लगभग {{minutes}} मिनट",
-    "summaryWithDuration_other": "{{count}} गतिविधियाँ · लगभग {{minutes}} मिनट",
-    "sectionItems_one": "{{count}} गतिविधि",
-    "sectionItems_other": "{{count}} गतिविधियाँ",
-    "outlineTitle": "इस कोर्स में क्या है",
-    "start": "कोर्स शुरू करें",
-    "loginHint": "शुरू करने के लिए आपको लॉग इन करना होगा।",
-    "logIn": "लॉग इन करें",
-    "goToCourses": "मेरे कोर्स पर जाएँ",
-    "unavailable": {
-      "title": "यह कोर्स उपलब्ध नहीं है",
-      "body": "हो सकता है कि लिंक बंद कर दिया गया हो, या कोर्स अब प्रकाशित न हो। जिसने इसे आपके साथ साझा किया है, उनसे पूछें।"
-    },
-    "denied": {
-      "toast": "यह कोर्स आपके खाते के लिए उपलब्ध नहीं है",
-      "title": "यह कोर्स आपके खाते के लिए उपलब्ध नहीं है",
-      "body": "इसे आपके संगठन या समूह के लिए उपलब्ध नहीं कराया गया है। अगर आपको लगता है कि यह आपको मिलना चाहिए, तो अपने संगठन के एडमिन से पूछें।",
-      "bodyWithEmail": "आप {{email}} के रूप में लॉग इन हैं। यह कोर्स आपके संगठन या समूह के लिए उपलब्ध नहीं कराया गया है — अगर आपको लगता है कि यह आपको मिलना चाहिए, तो अपने संगठन के एडमिन से पूछें।",
-      "closedTitle": "यह कोर्स बंद है",
-      "closedBody": "यह अब नए शिक्षार्थियों के लिए खुला नहीं है।"
     }
   },
   "homeV2": {

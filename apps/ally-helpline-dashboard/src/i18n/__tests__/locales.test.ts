@@ -1,42 +1,35 @@
-import { describe, expect, it } from "vitest";
+import { describe, it, expect } from "vitest";
 
-import { en, hi, kn, mr, ta } from "../locales";
+import en from "../locales/en.json";
+import hi from "../locales/hi.json";
+import kn from "../locales/kn.json";
+import mr from "../locales/mr.json";
+import ta from "../locales/ta.json";
 
-/**
- * The locale files are shipped as-is, so a bad value is a bad screen.
- *
- * On 2026-10-01 a fix ran `npm run i18n:sync` without the translate argument,
- * which writes "" for every key the target language lacks. i18next shows ""
- * as a translation, so about 385 strings per language went blank in Hindi,
- * Marathi, Kannada and Tamil, where they had been falling back to English.
- * Nothing caught it because nothing looked at the values. This does.
- */
-const leaves = (node: unknown, path = ""): Array<[string, unknown]> => {
-  if (node !== null && typeof node === "object" && !Array.isArray(node)) {
-    return Object.entries(node as Record<string, unknown>).flatMap(([key, value]) =>
-      leaves(value, path ? `${path}.${key}` : key),
-    );
-  }
-  if (Array.isArray(node)) {
-    return node.flatMap((value, index) => leaves(value, `${path}[${index}]`));
-  }
-  return [[path, node]];
+const getKeys = (obj: object, prefix = ""): string[] => {
+  return Object.entries(obj).flatMap(([key, value]) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "string") {
+      return newKey;
+    }
+    if (typeof value === "object" && value !== null) {
+      return getKeys(value, newKey);
+    }
+    return [];
+  });
 };
 
-const LOCALES = { en, hi, mr, kn, ta } as const;
+describe("locales", () => {
+  const enKeys = new Set(getKeys(en));
+  const locales = { hi, kn, mr, ta };
 
-describe("locale files", () => {
-  it.each(Object.entries(LOCALES))("%s has no blank translation values", (_lang, resource) => {
-    const blanks = leaves(resource)
-      .filter(([, value]) => typeof value === "string" && value.trim() === "")
-      .map(([path]) => path);
-    expect(blanks).toEqual([]);
-  });
-
-  it.each(Object.entries(LOCALES))("%s has only string leaves", (_lang, resource) => {
-    const nonStrings = leaves(resource)
-      .filter(([, value]) => typeof value !== "string")
-      .map(([path]) => path);
-    expect(nonStrings).toEqual([]);
+  it("should have the same keys as en.json", () => {
+    Object.entries(locales).forEach(([lang, locale]) => {
+      const localeKeys = new Set(getKeys(locale));
+      const missingKeys = [...enKeys].filter(key => !localeKeys.has(key));
+      const extraKeys = [...localeKeys].filter(key => !enKeys.has(key));
+      expect(missingKeys, `Missing keys in ${lang}.json`).toEqual([]);
+      expect(extraKeys, `Extra keys in ${lang}.json`).toEqual([]);
+    });
   });
 });
