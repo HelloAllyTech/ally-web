@@ -107,7 +107,7 @@ export const ScenarioAttemptsDrawer: FunctionComponent<ScenarioAttemptsDrawerPro
               {group.items.map(item => (
                 <li
                   key={item.trackItemId}
-                  className="border border-solid border-[#e0ddd2] rounded p-3 flex flex-col gap-2"
+                  className="border border-solid border-border-light rounded p-3 flex flex-col gap-2"
                   data-testid="scenario-attempts-row"
                 >
                   <div className="text-sm font-medium text-typography-800">{item.title}</div>
