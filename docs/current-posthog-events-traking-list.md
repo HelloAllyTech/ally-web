@@ -302,6 +302,12 @@ index is enough to see which ones land.
 | -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | `API_ERROR_OCCURRED` | `api_error_occurred` | Any failed RTK Query request — fired automatically by Redux middleware. Carries the endpoint name, which is what the API-error-spike and error-loop detectors group by | `store/index.ts` (middleware) |
 
+### Scenario Attempts
+
+| Constant                       | Event Name                     | Description                               | Fires at |
+| ------------------------------ | ------------------------------ | ----------------------------------------- | -------- |
+| `SCENARIO_ATTEMPTS_REOPENED`   | `scenario_attempts_reopened`   | A trainer reopens a learner's attempts at a scenario quiz. |       |
+
 ### PostHog's own events (no constant, no component code)
 
 Captured by `posthog-js` from its `init` options in `utils/analytics.ts`, and read by the UX Signals
