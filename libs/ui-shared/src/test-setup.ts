@@ -34,3 +34,9 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock HTMLMediaElement.prototype.pause
+Object.defineProperty(HTMLMediaElement.prototype, "pause", {
+  writable: true,
+  value: vi.fn(),
+});

@@ -8,7 +8,7 @@ const useTracks = vi.fn();
 
 vi.mock("@livekit/components-react", () => ({
   useTracks: (...args: any[]) => useTracks(...args),
-  VideoTrack: (props: any) => <div data-testid="livekit-video-track" {...props} />,
+  VideoTrack: ({ trackRef, ...props }: any) => <div data-testid="livekit-video-track" {...props} />,
 }));
 
 vi.mock("livekit-client", () => ({

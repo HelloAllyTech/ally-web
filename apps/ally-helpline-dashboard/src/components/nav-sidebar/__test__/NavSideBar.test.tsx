@@ -92,7 +92,17 @@ vi.mock("@assets", () => ({
 vi.mock("@components", () => ({
   AppTooltip: ({ children }: any) => children,
   ConfirmationDialog: vi.fn(
-    ({ isOpen, onClose, onButtonClick, title, content, buttonText, icon, ...props }: any) => {
+    ({
+      isOpen,
+      onClose,
+      onButtonClick,
+      title,
+      content,
+      buttonText,
+      icon,
+      buttonVariant,
+      ...props
+    }: any) => {
       if (!isOpen) return null;
       return (
         <div data-testid="mock-confirmation-dialog" {...props}>
@@ -105,7 +115,7 @@ vi.mock("@components", () => ({
           <button data-testid="dialog-confirm-button" onClick={onButtonClick}>
             {buttonText}
           </button>
-          {icon && <div data-testid="dialog-icon">{icon}</div>}
+          {icon && <div data-testid="dialog-icon">{icon({})}</div>}
         </div>
       );
     },
