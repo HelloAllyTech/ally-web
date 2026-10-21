@@ -201,9 +201,7 @@ displays, so it is the number the learner just saw, not a second query.
 | Constant                        | Event Name                      | Description                                       |
 | ------------------------------- | ------------------------------- | ------------------------------------------------- |
 | `STATISTICS_DATE_RANGE_CHANGED` | `statistics.date_range_changed` | Date-range toggle changed on Organization Metrics |
-
-Fired from the native (Carbon charts) Organization Metrics range toggle — the only in-app
-date-range control on the Statistics page. `range` is the raw range code (`7d`, `30d`, …).
+| `LEARNER_SCENARIO_ATTEMPTS_REOPENED` | `learner_scenario_attempts_reopened` | A trainer reopens a learner's scenario attempts | `pages/analytics/ScenarioAttemptsDrawer.tsx` |
 
 The Metabase-embedded dashboards on this page (Real call logs / Simulations) render inside a
 **cross-origin iframe**, so their own date filter and their "Export as PDF" button cannot be

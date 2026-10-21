@@ -83,6 +83,7 @@ export const ANALYTICS_EVENTS = {
 
   // Statistics
   STATISTICS_DATE_RANGE_CHANGED: "statistics.date_range_changed",
+  LEARNER_SCENARIO_ATTEMPTS_REOPENED: "learner_scenario_attempts_reopened",
 
   // Account & global (sidebar account menu, language, streak history)
   PROFILE_SETTINGS_OPENED: "profile_settings.opened",
@@ -262,6 +263,9 @@ export const ANALYTICS_PROPS = {
 
   // Statistics
   RANGE: "range",
+  LEARNER_ID: "learner_id",
+  LEARNER_NAME: "learner_name",
+  TRACK_ITEM_ID: "track_item_id",
 
   // Account & global
   NAME_CHANGED: "name_changed",
