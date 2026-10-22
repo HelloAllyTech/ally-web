@@ -44,6 +44,7 @@ export const FeatureToggleKey = {
   COURSE_COPILOT: "course_copilot",
   OPERATIONAL_ADMIN_ACTIONS: "operational_admin_actions",
   VIDEO_ACTOR: "video_actor",
+  SIDEBAR_HOVER_EXPAND: "sidebar_hover_expand",
   // Component Library — global Track/Course item templates. No org-level
   // toggle (unlike Character Library): gating is this per-user toggle plus
   // the VIEW_ADMIN_TRACK/EDIT_ADMIN_TRACK/DELETE_ADMIN_TRACK permissions,
@@ -165,6 +166,7 @@ export const FEATURE_TOGGLE_KEY_TO_SECTION: Record<string, FeatureToggleSection>
   [FeatureToggleKey.BUILDER]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.COURSE_COPILOT]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
   [FeatureToggleKey.UX_SIGNALS]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
+  [FeatureToggleKey.SIDEBAR_HOVER_EXPAND]: FEATURE_TOGGLE_SECTIONS.PLATFORM_CONFIG,
 
   [FeatureToggleKey.USER_BADGES]: FEATURE_TOGGLE_SECTIONS.USER_AND_ORG_MANAGEMENT,
   [FeatureToggleKey.ADMIN_USER_MANAGEMENT]: FEATURE_TOGGLE_SECTIONS.USER_AND_ORG_MANAGEMENT,

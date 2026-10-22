@@ -4,6 +4,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import * as ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 
+import { initAnalytics, AnalyticsProvider } from "@ally-ui-mono/ui-shared";
+
 import App from "./App";
 import { store } from "./store";
 // Tailwind + global serif base rules first, then the Carbon design-language
@@ -15,6 +17,8 @@ const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
 
 const GOOGLE_AUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 
+initAnalytics();
+
 const AppWithProviders = GOOGLE_AUTH_CLIENT_ID ? (
   <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
     <App />
@@ -25,6 +29,8 @@ const AppWithProviders = GOOGLE_AUTH_CLIENT_ID ? (
 
 root.render(
   <StrictMode>
-    <Provider store={store}>{AppWithProviders}</Provider>
+    <Provider store={store}>
+      <AnalyticsProvider>{AppWithProviders}</AnalyticsProvider>
+    </Provider>
   </StrictMode>,
 );

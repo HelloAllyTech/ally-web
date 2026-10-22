@@ -61,6 +61,8 @@ import { UserModal } from "@components";
 import { AgentAvatar } from "@components/agent-avatar";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
+import { useAnalytics, ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@ally-ui-mono/ui-shared";
+import { FeatureToggleKey } from "../../constants/featureToggles";
 
 import { BuilderNavBadge } from "./BuilderNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
@@ -98,6 +100,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     uploadProfileImage,
     refetchUser,
   } = useUser();
+  const { track } = useAnalytics();
+
+  const isHoverExpandEnabled = user?.features?.includes(FeatureToggleKey.SIDEBAR_HOVER_EXPAND);
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPinned, setIsPinned] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("sidebar_pinned") === "true";
+  });
 
   // Press-and-drag: a click below the activation distance still navigates,
   // a press-and-move past it starts a reorder (and the trailing click is
@@ -124,9 +135,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   };
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(!isHoverExpandEnabled);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const showExpanded = isExpanded || isMobileViewport;
+  const showExpanded =
+    isMobileViewport || (isHoverExpandEnabled ? isPinned || isHovered : isExpanded);
   const [openSettings, setOpenSettings] = useState(false);
   const [navSearch, setNavSearch] = useState("");
 
@@ -147,8 +159,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
       location.pathname.includes(ROUTES.CREATE_PATH)
     ) {
       setIsExpanded(false);
+      if (isHoverExpandEnabled) {
+        setIsPinned(false);
+        localStorage.setItem("sidebar_pinned", "false");
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, isHoverExpandEnabled]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -179,7 +195,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   };
 
   const handleToggleSidebar = () => {
-    setIsExpanded(!isExpanded);
+    if (isHoverExpandEnabled) {
+      const newPinned = !isPinned;
+      setIsPinned(newPinned);
+      localStorage.setItem("sidebar_pinned", String(newPinned));
+      track(ANALYTICS_EVENTS.SIDEBAR_INTERACTION, {
+        [ANALYTICS_PROPS.ACTION]: newPinned ? "pinned" : "unpinned",
+      });
+    } else {
+      setIsExpanded(!isExpanded);
+    }
   };
   const handleProfileSettingClick = () => {
     setIsUserMenuOpen(false);
@@ -498,16 +523,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     </>
   );
 
+  const isOverlay = isHoverExpandEnabled && isHovered && !isPinned && !isMobileViewport;
+
   return (
     <>
-      {/* Phone: an off-canvas drawer over the page (z-50) and its overlay
-          (z-40). `invisible` while closed takes the off-screen links out of
-          the tab order; visibility transitions discretely, so the slide-out
-          still animates. At md and up this is the in-flow rail it always was. */}
+      {/* Spacer to maintain layout when sidebar is an overlay */}
+      <div
+        className={`hidden md:block transition-all duration-200 ${
+          isHoverExpandEnabled ? (isPinned ? "w-64" : "w-24") : showExpanded ? "w-64" : "w-24"
+        }`}
+      />
       <div
         id="admin-nav-sidebar"
         data-testid="admin-sidebar"
-        className={`flex flex-col h-dvh md:h-screen bg-white border-r border-border-light transition-all duration-300 fixed inset-y-0 left-0 z-50 max-w-[85vw] md:relative md:z-auto md:max-w-none md:translate-x-0 md:visible ${
+        onMouseEnter={() => isHoverExpandEnabled && setIsHovered(true)}
+        onMouseLeave={() => isHoverExpandEnabled && setIsHovered(false)}
+        className={`flex flex-col h-dvh md:h-screen bg-white border-r border-border-light transition-all duration-200 fixed inset-y-0 left-0 z-50 max-w-[85vw] ${
+          isOverlay ? "md:absolute shadow-xl" : "md:relative"
+        } md:z-auto md:max-w-none md:translate-x-0 md:visible ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full invisible"
         } ${showExpanded ? "w-64" : "w-24"} p-[12px] font-primary`}
       >
@@ -517,8 +550,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
           </div>
           <button
             onClick={handleToggleSidebar}
-            className={`hidden md:block ${showExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[20px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-background-secondary hover:rounded-md my-2`}
-            title={showExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            className={`hidden md:block ${
+              showExpanded
+                ? "px-5 mx-2"
+                : "absolute z-10 top-0 bg-white mx-2 px-[20px] py-[15px] opacity-0 hover:opacity-100"
+            } hover:bg-background-secondary hover:rounded-md my-2 ${
+              isHoverExpandEnabled && isPinned ? "text-primary-600" : ""
+            }`}
+            title={
+              isHoverExpandEnabled
+                ? isPinned
+                  ? "Unpin sidebar"
+                  : "Pin sidebar"
+                : showExpanded
+                  ? "Collapse sidebar"
+                  : "Expand sidebar"
+            }
           >
             <DockToRight />
           </button>

@@ -1,2 +1,1 @@
-export { AnalyticsProvider, useAnalyticsContext } from "./AnalyticsProvider";
-export { PageviewTracker } from "./PageviewTracker";
+export * from "@analytics/index";
