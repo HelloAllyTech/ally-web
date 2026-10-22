@@ -319,15 +319,23 @@ describe("Sidebar", () => {
       expect(screen.getByTitle("Simulation Studio")).toBeInTheDocument();
     });
 
-    it("R2: should expand on hover and collapse on mouse leave", () => {
+    it("R2: should expand on hover as an overlay and collapse on mouse leave", () => {
       renderWithProvider(<Sidebar />);
       const sidebar = screen.getByTestId("admin-sidebar");
 
       fireEvent.mouseEnter(sidebar);
       expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+      expect(sidebar).toHaveClass("md:absolute");
 
       fireEvent.mouseLeave(sidebar);
       expect(screen.queryByText("Simulation Studio")).not.toBeInTheDocument();
+      expect(sidebar).not.toHaveClass("md:absolute");
+    });
+
+    it("R4: should have 200ms animation duration", () => {
+      renderWithProvider(<Sidebar />);
+      const sidebar = screen.getByTestId("admin-sidebar");
+      expect(sidebar).toHaveClass("duration-200");
     });
 
     it("R3/R5: should stay expanded when pinned and persist to localStorage", () => {
@@ -345,7 +353,7 @@ describe("Sidebar", () => {
       expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
 
       fireEvent.click(screen.getByTitle("Unpin sidebar"));
-      expect(localStorage.getItem("sidebar_pinned")).toBe("false");
+      expect(localStorage.getItem("sidebar_pinned")).toBe(null);
       expect(trackMock).toHaveBeenCalledWith("sidebar_interaction", { action: "unpinned" });
     });
 

@@ -26,8 +26,8 @@ const AnalyticsContext = createContext<AnalyticsContextValue | null>(null);
 // ─── Provider ──────────────────────────────────────────────────────────────
 
 export function AnalyticsProvider({ children }: { children: ReactNode }) {
-  const user = useSelector((s: any) => s.user.user);
-  const isAuthenticated = useSelector((s: any) => s.user.isAuthenticated);
+  const user = useSelector((s: any) => s?.user?.user);
+  const isAuthenticated = useSelector((s: any) => s?.user?.isAuthenticated);
 
   // Sync PostHog identity with Redux auth state automatically
   useEffect(() => {

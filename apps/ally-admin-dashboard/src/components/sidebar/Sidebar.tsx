@@ -108,7 +108,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(() => {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem("sidebar_pinned") === "true";
+    try {
+      return localStorage.getItem("sidebar_pinned") === "true";
+    } catch (e) {
+      return false;
+    }
   });
 
   // Press-and-drag: a click below the activation distance still navigates,
@@ -136,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   };
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     if (features && !features.includes(FeatureToggleKey.SIDEBAR_HOVER_EXPAND)) {
@@ -150,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   const showExpanded =
     isMobileViewport ||
     (isHoverExpandEnabled
-      ? (isPinned && !isNarrowViewport && !isRouteForceCollapsed) || isHovered
+      ? (isPinned && !isRouteForceCollapsed) || isHovered
       : isExpanded);
   const [openSettings, setOpenSettings] = useState(false);
   const [navSearch, setNavSearch] = useState("");
@@ -211,7 +215,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     if (isHoverExpandEnabled) {
       const newPinned = !isPinned;
       setIsPinned(newPinned);
-      localStorage.setItem("sidebar_pinned", String(newPinned));
+      try {
+        if (newPinned) {
+          localStorage.setItem("sidebar_pinned", "true");
+        } else {
+          localStorage.removeItem("sidebar_pinned");
+        }
+      } catch (e) {
+        // Silently ignore localStorage errors
+      }
       track(ANALYTICS_EVENTS.SIDEBAR_INTERACTION, {
         [ANALYTICS_PROPS.ACTION]: newPinned ? "pinned" : "unpinned",
       });
@@ -536,14 +548,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     </>
   );
 
-  const isOverlay = isHoverExpandEnabled && isHovered && !isPinned && !isMobileViewport;
+  const isOverlay =
+    isHoverExpandEnabled &&
+    isHovered &&
+    (!isPinned || isRouteForceCollapsed) &&
+    !isMobileViewport &&
+    !isNarrowViewport;
 
   return (
     <>
       {/* Spacer to maintain layout when sidebar is an overlay */}
-      <div
-        className={`hidden md:block transition-all duration-200 ${isOverlay ? "w-24" : "w-0"}`}
-      />
+      <div className={`hidden md:block ${isOverlay ? "w-24" : "w-0"}`} />
       <div
         id="admin-nav-sidebar"
         data-testid="admin-sidebar"
