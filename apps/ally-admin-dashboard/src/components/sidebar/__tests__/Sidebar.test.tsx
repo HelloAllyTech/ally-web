@@ -4,6 +4,13 @@ import { Provider } from "react-redux";
 
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
+const trackMock = vi.fn();
+
+let mockUser = {
+  name: "Alice",
+  email: "alice@example.com",
+  features: [] as string[],
+};
 
 // Mock API first to prevent store initialization errors
 vi.mock("@api", () => ({
@@ -25,6 +32,15 @@ vi.mock("@api", () => ({
   // not in this test's nav items, so nothing renders it today — stubbed anyway
   // so adding that tab to the list here doesn't fail on a missing mock export.
   useGetBugHunterNotificationsQuery: () => ({ data: undefined }),
+}));
+
+import { CustomImage } from "@ally-ui-mono/ui-shared";
+
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  CustomImage: ({ alt }: any) => <img alt={alt} />,
+  useAnalytics: () => ({ track: trackMock }),
+  ANALYTICS_EVENTS: { SIDEBAR_INTERACTION: "sidebar_interaction" },
+  ANALYTICS_PROPS: { ACTION: "action" },
 }));
 
 import { store } from "../../../store";
@@ -57,8 +73,9 @@ vi.mock("@assets", () => ({
 vi.mock("@hooks", () => ({
   useClickOutside: (_ref: any, _handler: any) => {},
   useUser: () => ({
-    user: { name: "Alice", email: "alice@example.com" },
+    user: mockUser,
     logout: logoutMock,
+    features: mockUser.features,
     filteredNavigationItems: [
       { id: "SIMULATION_STUDIO", label: "Simulation Studio", path: "/simulation-studio" },
       { id: "EVENT_MANAGEMENT", label: "Events", path: "/events" },
@@ -282,6 +299,68 @@ describe("Sidebar", () => {
 
       expect(onMobileClose).toHaveBeenCalledTimes(3);
       expect(navigateMock).toHaveBeenCalledWith("/events");
+    });
+  });
+
+  describe("R1-R6: Hover and Pin behavior", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      localStorage.clear();
+      mockUser = {
+        name: "Alice",
+        email: "alice@example.com",
+        features: ["sidebar_hover_expand"],
+      };
+    });
+
+    it("R1: should render in collapsed state by default when feature is enabled", () => {
+      renderWithProvider(<Sidebar />);
+      expect(screen.queryByText("Simulation Studio")).not.toBeInTheDocument();
+      expect(screen.getByTitle("Simulation Studio")).toBeInTheDocument();
+    });
+
+    it("R2: should expand on hover as an overlay and collapse on mouse leave", () => {
+      renderWithProvider(<Sidebar />);
+      const sidebar = screen.getByTestId("admin-sidebar");
+
+      fireEvent.mouseEnter(sidebar);
+      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+      expect(sidebar).toHaveClass("md:absolute");
+
+      fireEvent.mouseLeave(sidebar);
+      expect(screen.queryByText("Simulation Studio")).not.toBeInTheDocument();
+      expect(sidebar).not.toHaveClass("md:absolute");
+    });
+
+    it("R4: should have 200ms animation duration", () => {
+      renderWithProvider(<Sidebar />);
+      const sidebar = screen.getByTestId("admin-sidebar");
+      expect(sidebar).toHaveClass("duration-200");
+    });
+
+    it("R3/R5: should stay expanded when pinned and persist to localStorage", () => {
+      renderWithProvider(<Sidebar />);
+      const sidebar = screen.getByTestId("admin-sidebar");
+
+      fireEvent.mouseEnter(sidebar);
+      const pinBtn = screen.getByTitle("Pin sidebar");
+      fireEvent.click(pinBtn);
+
+      expect(localStorage.getItem("sidebar_pinned")).toBe("true");
+      expect(trackMock).toHaveBeenCalledWith("sidebar_interaction", { action: "pinned" });
+
+      fireEvent.mouseLeave(sidebar);
+      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByTitle("Unpin sidebar"));
+      expect(localStorage.getItem("sidebar_pinned")).toBe(null);
+      expect(trackMock).toHaveBeenCalledWith("sidebar_interaction", { action: "unpinned" });
+    });
+
+    it("R5: should load in pinned state if localStorage is set", () => {
+      localStorage.setItem("sidebar_pinned", "true");
+      renderWithProvider(<Sidebar />);
+      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
     });
   });
 });

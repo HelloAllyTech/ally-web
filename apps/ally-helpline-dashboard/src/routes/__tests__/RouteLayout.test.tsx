@@ -31,7 +31,11 @@ vi.mock("@pages", () => ({
   HomeV2: () => <div data-testid="home-v2-page">Home v2 Page</div>,
 }));
 
-// Mock useAnalytics to avoid context error in PageviewTracker
+// Mock useAnalytics and PageviewTracker to avoid context error
+vi.mock("@analytics/PageviewTracker", () => ({
+  PageviewTracker: () => null,
+}));
+
 vi.mock("@hooks/useAnalytics", () => ({
   useAnalytics: () => ({
     capturePageview: vi.fn(),

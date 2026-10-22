@@ -20,7 +20,8 @@
     "baseUrl": ".",
     "paths": {
       "@ally-ui-mono/ui-shared": ["./libs/ui-shared/src"],
-      "@ally-ui-mono/ui-shared/*": ["./libs/ui-shared/src/*"]
+      "@ally-ui-mono/ui-shared/*": ["./libs/ui-shared/src/*"],
+      "@analytics/*": ["./libs/ui-shared/src/lib/analytics/*"]
     }
   }
 }

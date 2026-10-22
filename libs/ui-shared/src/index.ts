@@ -36,6 +36,8 @@ import { Tabs } from "./lib/tabs";
 import Toggle from "./lib/toggle";
 import { logger } from "./logger";
 
+export * from "./lib/analytics";
+
 // Central design system: canonical Carbon primitives, the single theme
 // boundary, and JS token constants. Apps import these from
 // `@ally-ui-mono/ui-shared` and never from `@carbon/react` directly.

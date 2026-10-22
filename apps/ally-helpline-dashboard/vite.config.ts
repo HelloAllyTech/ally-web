@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "path";
 
-import { buildGtmHeadSnippet } from "./src/analytics/gtmSnippet";
+import { buildGtmHeadSnippet } from "../../libs/ui-shared/src/lib/analytics/gtmSnippet";
 import { testResourceLimits } from "../../vitest.resource-limits";
 // Get absolute paths
 const projectRoot = __dirname;
@@ -121,6 +121,8 @@ export default defineConfig(({ mode }) => {
         "@theme": path.resolve(projectRoot, "./src/theme"),
         "@theme/*": path.resolve(projectRoot, "./src/theme/*"),
         "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+        "@analytics": path.resolve(projectRoot, "../../libs/ui-shared/src/lib/analytics"),
+        "@analytics/*": path.resolve(projectRoot, "../../libs/ui-shared/src/lib/analytics/*"),
         // Add any other aliases from tsconfig.base.json here
       },
     },

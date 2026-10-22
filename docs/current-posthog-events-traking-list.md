@@ -1,7 +1,7 @@
 Currently Tracked Events Reference
 
 > **Declared ≠ wired.** Every event below exists in
-> `apps/ally-helpline-dashboard/src/constants/analyticsEvents.ts`, but a name in that file only
+> `libs/ui-shared/src/lib/analytics/constants/analyticsEvents.ts`, but a name in that file only
 > becomes data when some component calls it. Rows with a **Fires at** entry have a live call site;
 > rows without one are declared and not yet emitting anything, so a query against them returns
 > nothing. Anyone reasoning about what PostHog actually holds needs that distinction, and anyone
@@ -319,12 +319,15 @@ detectors:
 ### Admin & Organization
 
 | Constant               | Event Name             | Description                                                 |
-| ---------------------- | ---------------------- | ----------------------------------------------------------- |
-| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown` | An upgrade prompt or paywall is shown to a learner or admin |
-| `UPGRADE_CLICKED`      | `upgrade.clicked`      | Learner or admin clicks an upgrade call-to-action           |
+| ---------------------- | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
+| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown` | An upgrade prompt or paywall is shown to a learner or admin | —                                                              |
+| `UPGRADE_CLICKED`      | `upgrade.clicked`      | Learner or admin clicks an upgrade call-to-action           | —                                                              |
+| `SIDEBAR_INTERACTION`  | `sidebar_interaction`  | Admin pins or unpins the sidebar                            | `apps/ally-admin-dashboard/src/components/sidebar/Sidebar.tsx` |
 
 `upgrade.prompt_shown` sends `org_id`, `trigger_source`, `current_plan`; `upgrade.clicked` sends
 `org_id`, `current_plan`, `target_plan`. Both are **registered but not yet emitted** — this app has
 no paywall or upgrade surface today. `useAnalytics()` exposes `trackUpgradePromptShown` and
 `trackUpgradeClicked` so whichever screen introduces the prompt fires the spec payload without
 re-deriving the property names.
+
+`sidebar_interaction` sends `action` as `pinned` or `unpinned`.

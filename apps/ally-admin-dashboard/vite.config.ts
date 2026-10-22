@@ -131,6 +131,8 @@ export default defineConfig(() => ({
       "@reducer": path.resolve(projectRoot, "./src/reducer"),
       "@reducer/*": path.resolve(projectRoot, "./src/reducer/*"),
       "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      "@analytics": path.resolve(projectRoot, "../../libs/ui-shared/src/lib/analytics"),
+      "@analytics/*": path.resolve(projectRoot, "../../libs/ui-shared/src/lib/analytics/*"),
       // Add any other aliases from tsconfig.base.json here
     },
   },

@@ -16,7 +16,13 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-    "types": ["vitest/globals", "node"],
+    "types": [
+      "vitest/globals",
+      "node",
+      "vite/client",
+      "@nx/react/typings/cssmodule.d.ts",
+      "@nx/react/typings/image.d.ts"
+    ],
     "baseUrl": ".",
     "paths": {
       "@src*": ["src/"],
@@ -48,7 +54,9 @@
       "@theme": ["src/theme"],
       "@theme/*": ["src/theme/*"],
       "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
-      "@ui-shared/*": ["../../libs/ui-shared/src/*"]
+      "@ui-shared/*": ["../../libs/ui-shared/src/*"],
+      "@analytics": ["../../libs/ui-shared/src/lib/analytics"],
+      "@analytics/*": ["../../libs/ui-shared/src/lib/analytics/*"]
     }
   },
   "include": [
@@ -56,6 +64,7 @@
     "src/**/*.test.tsx",
     "src/**/*.spec.ts",
     "src/**/*.spec.tsx",
+    "src/**/*.d.ts",
     "src/test-setup.ts"
   ]
 }
