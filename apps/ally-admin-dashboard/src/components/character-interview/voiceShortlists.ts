@@ -56,9 +56,14 @@ export const collectVoiceShortlists = (
 
   const byLanguage = new Map<string, VoiceShortlist>();
 
-  for (const message of messages) {
+  const lastIndex = messages.length - 1;
+  for (const [index, message] of messages.entries()) {
     const options = message.question?.options ?? [];
     if (options.length === 0) continue;
+    // The newest unanswered question is still a live card with its own play
+    // buttons, so listing it here as well showed every voice twice.
+    const isLive = index === lastIndex && !message.answeredAnswer && !message.answeredWith;
+    if (isLive) continue;
     if (!options.every(option => languageOfVoice.has(option.id))) continue;
 
     const selectedId = message.answeredAnswer?.selectedOptionIds?.[0];

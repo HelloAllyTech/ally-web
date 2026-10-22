@@ -26,23 +26,36 @@ const question = (id: string, optionIds: string[], extra: Record<string, unknown
         description: `${optionId} reason`,
       })),
     },
+    answeredWith: "answered",
     ...extra,
   }) as never;
-
+ 
 describe("collectVoiceShortlists", () => {
   it("groups each shortlist under the language its voices belong to", () => {
     const shortlists = collectVoiceShortlists(
       [question("q1", ["en-a", "en-b"]), question("q2", ["mr-a", "mr-b"])],
       catalog,
     );
-
+ 
     expect(shortlists.map(s => [s.languageId, s.languageLabel])).toEqual([
       ["1", "English (India)"],
       ["5", "Marathi (India)"],
     ]);
     expect(shortlists[0].options.map(o => o.id)).toEqual(["en-a", "en-b"]);
   });
-
+ 
+  it("leaves out the live unanswered question, whose card already plays its voices", () => {
+    const shortlists = collectVoiceShortlists(
+      [
+        question("q1", ["en-a", "en-b"]),
+        question("q2", ["mr-a", "mr-b"], { answeredWith: undefined }),
+      ],
+      catalog,
+    );
+ 
+    expect(shortlists.map(s => s.languageId)).toEqual(["1"]);
+  });
+ 
   it("keeps the shortlist available after the card was answered", () => {
     // The point of the strip: the card locks, the options stay playable.
     const [shortlist] = collectVoiceShortlists(

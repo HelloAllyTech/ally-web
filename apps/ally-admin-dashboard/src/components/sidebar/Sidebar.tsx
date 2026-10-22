@@ -136,10 +136,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   };
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(!isHoverExpandEnabled);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (features && !features.includes(FeatureToggleKey.SIDEBAR_HOVER_EXPAND)) {
+      setIsExpanded(true);
+    }
+  }, [features]);
+
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  const [isRouteForceCollapsed, setIsRouteForceCollapsed] = useState(false);
   const showExpanded =
-    isMobileViewport || (isHoverExpandEnabled ? isPinned || isHovered : isExpanded);
+    isMobileViewport ||
+    (isHoverExpandEnabled
+      ? (isPinned && !isNarrowViewport && !isRouteForceCollapsed) || isHovered
+      : isExpanded);
   const [openSettings, setOpenSettings] = useState(false);
   const [navSearch, setNavSearch] = useState("");
 
@@ -155,21 +167,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   const imageUploaded = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
-    if (
+    const isCreateRoute =
       location.pathname.includes(ROUTES.CREATE_SIMULATION) ||
-      location.pathname.includes(ROUTES.CREATE_PATH)
-    ) {
+      location.pathname.includes(ROUTES.CREATE_PATH);
+
+    setIsRouteForceCollapsed(isCreateRoute);
+
+    if (isCreateRoute) {
       setIsExpanded(false);
-      if (isHoverExpandEnabled) {
-        setIsPinned(false);
-        localStorage.setItem("sidebar_pinned", "false");
-      }
     }
-  }, [location.pathname, isHoverExpandEnabled]);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobileViewport(window.innerWidth < MOBILE_MAX_WIDTH);
+      setIsNarrowViewport(window.innerWidth < EXPANDED_WIDTH);
       if (window.innerWidth < EXPANDED_WIDTH) {
         setIsExpanded(false);
       }
@@ -530,9 +542,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     <>
       {/* Spacer to maintain layout when sidebar is an overlay */}
       <div
-        className={`hidden md:block transition-all duration-200 ${
-          isHoverExpandEnabled ? (isPinned ? "w-64" : "w-24") : showExpanded ? "w-64" : "w-24"
-        }`}
+        className={`hidden md:block transition-all duration-200 ${isOverlay ? "w-24" : "w-0"}`}
       />
       <div
         id="admin-nav-sidebar"
@@ -541,7 +551,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
         onMouseLeave={() => isHoverExpandEnabled && setIsHovered(false)}
         className={`flex flex-col h-dvh md:h-screen bg-white border-r border-border-light transition-all duration-200 fixed inset-y-0 left-0 z-50 max-w-[85vw] ${
           isOverlay ? "md:absolute shadow-xl" : "md:relative"
-        } md:z-auto md:max-w-none md:translate-x-0 md:visible ${
+        } ${isOverlay ? "md:z-50" : "md:z-auto"} md:max-w-none md:translate-x-0 md:visible ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full invisible"
         } ${showExpanded ? "w-64" : "w-24"} p-[12px] font-primary`}
       >
