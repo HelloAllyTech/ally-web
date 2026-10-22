@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
 
-import { useAnalytics } from "@hooks/useAnalytics";
+import { useAnalytics } from "./hooks/useAnalytics";
 
 /**
  * Fires a $pageview PostHog event on every React Router v6 route transition.

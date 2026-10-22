@@ -53,7 +53,9 @@
       "@reducer/*": ["src/reducer/*"],
       "@theme": ["src/theme"],
       "@theme/*": ["src/theme/*"],
-      "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"]
+      "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
+      "@analytics": ["../../libs/ui-shared/src/lib/analytics"],
+      "@analytics/*": ["../../libs/ui-shared/src/lib/analytics/*"]
     }
   },
   "include": ["src"],

@@ -99,10 +99,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
     deleteProfile,
     uploadProfileImage,
     refetchUser,
+    features,
   } = useUser();
   const { track } = useAnalytics();
 
-  const isHoverExpandEnabled = user?.features?.includes(FeatureToggleKey.SIDEBAR_HOVER_EXPAND);
+  const isHoverExpandEnabled = features?.includes(FeatureToggleKey.SIDEBAR_HOVER_EXPAND);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(() => {

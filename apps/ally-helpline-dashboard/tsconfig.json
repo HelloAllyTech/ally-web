@@ -38,7 +38,9 @@
       "@theme": ["src/theme"],
       "@theme/*": ["src/theme/*"],
       "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
-      "@ui-shared/*": ["../../libs/ui-shared/src/*"]
+      "@ui-shared/*": ["../../libs/ui-shared/src/*"],
+      "@analytics": ["../../libs/ui-shared/src/lib/analytics"],
+      "@analytics/*": ["../../libs/ui-shared/src/lib/analytics/*"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
