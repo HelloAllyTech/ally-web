@@ -319,9 +319,9 @@ detectors:
 ### Admin & Organization
 
 | Constant               | Event Name             | Description                                                 |
-| ---------------------- | ---------------------- | ----------------------------------------------------------- |
-| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown` | An upgrade prompt or paywall is shown to a learner or admin | —                                                             |
-| `UPGRADE_CLICKED`      | `upgrade.clicked`      | Learner or admin clicks an upgrade call-to-action           | —                                                             |
+| ---------------------- | ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
+| `UPGRADE_PROMPT_SHOWN` | `upgrade.prompt_shown` | An upgrade prompt or paywall is shown to a learner or admin | —                                                              |
+| `UPGRADE_CLICKED`      | `upgrade.clicked`      | Learner or admin clicks an upgrade call-to-action           | —                                                              |
 | `SIDEBAR_INTERACTION`  | `sidebar_interaction`  | Admin pins or unpins the sidebar                            | `apps/ally-admin-dashboard/src/components/sidebar/Sidebar.tsx` |
 
 `upgrade.prompt_shown` sends `org_id`, `trigger_source`, `current_plan`; `upgrade.clicked` sends

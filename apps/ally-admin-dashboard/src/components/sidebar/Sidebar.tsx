@@ -36,6 +36,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { useAnalytics, ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@ally-ui-mono/ui-shared";
 import {
   ArrowDown,
   Book,
@@ -61,11 +62,10 @@ import { UserModal } from "@components";
 import { AgentAvatar } from "@components/agent-avatar";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
-import { useAnalytics, ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@ally-ui-mono/ui-shared";
-import { FeatureToggleKey } from "../../constants/featureToggles";
 
 import { BuilderNavBadge } from "./BuilderNavBadge";
 import { SortableNavItem } from "./SortableNavItem";
+import { FeatureToggleKey } from "../../constants/featureToggles";
 
 const EXPANDED_WIDTH = 1200;
 // Below Tailwind's `md` the sidebar is an off-canvas drawer opened from the
