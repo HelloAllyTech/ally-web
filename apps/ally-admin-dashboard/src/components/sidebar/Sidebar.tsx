@@ -153,9 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onMobile
   const [isRouteForceCollapsed, setIsRouteForceCollapsed] = useState(false);
   const showExpanded =
     isMobileViewport ||
-    (isHoverExpandEnabled
-      ? (isPinned && !isRouteForceCollapsed) || isHovered
-      : isExpanded);
+    (isHoverExpandEnabled ? (isPinned && !isRouteForceCollapsed) || isHovered : isExpanded);
   const [openSettings, setOpenSettings] = useState(false);
   const [navSearch, setNavSearch] = useState("");
 
