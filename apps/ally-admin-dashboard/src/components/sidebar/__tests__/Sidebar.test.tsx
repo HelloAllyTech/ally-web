@@ -75,6 +75,7 @@ vi.mock("@hooks", () => ({
   useUser: () => ({
     user: mockUser,
     logout: logoutMock,
+    features: mockUser.features,
     filteredNavigationItems: [
       { id: "SIMULATION_STUDIO", label: "Simulation Studio", path: "/simulation-studio" },
       { id: "EVENT_MANAGEMENT", label: "Events", path: "/events" },
