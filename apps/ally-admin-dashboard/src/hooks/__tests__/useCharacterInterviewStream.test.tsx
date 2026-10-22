@@ -224,6 +224,27 @@ describe("useCharacterInterviewStream — a refused turn", () => {
     await waitFor(() => expect(assistant?.receipt?.searched).toEqual(["Voices — 6 voices"]));
     expect(assistant?.toolNotes).toBeUndefined();
   });
+
+  it("shows a generic error when the stream fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          sseResponse([
+            'event: error\ndata: {"message": ""}\n\n',
+          ]),
+        ),
+    );
+    const { result } = renderHook(() => useCharacterInterviewStream({ sessionId: "sess-1" }));
+
+    await act(async () => {
+      await result.current.sendMessage("Pick a voice");
+    });
+
+    const assistant = result.current.messages.find(m => m.role === "assistant");
+    await waitFor(() => expect(assistant?.error).toEqual(en.characterInterview.streamFailed));
+  });
 });
 
 describe("useCharacterInterviewStream — answering a question card", () => {

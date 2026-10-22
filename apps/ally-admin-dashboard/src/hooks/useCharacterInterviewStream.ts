@@ -320,7 +320,11 @@ export const useCharacterInterviewStream = ({
         case "error": {
           flushTokens();
           const id = currentAssistantIdRef.current;
-          if (id) patchAssistantMessage(id, { error: event.data.message, isStreaming: false });
+          if (id)
+            patchAssistantMessage(id, {
+              error: event.data.message || en.characterInterview.streamFailed,
+              isStreaming: false,
+            });
           toast.error(event.data.message || strings.streamFailed);
           break;
         }
