@@ -344,6 +344,8 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       const { id, ...rest } = formData;
       const data = {
         ...rest,
+        voices: rest.voices || {},
+        languageCharacteristics: rest.languageCharacteristics || {},
         // Drop rows the trainer added but never filled in, rather than
         // sending the backend a title-less knowledge source (400) or a
         // blank dialect sample it would just have to ignore.
